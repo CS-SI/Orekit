@@ -94,8 +94,8 @@ public class DEFile {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
@@ -395,12 +395,10 @@ public class DEFile {
      * @param bigEndian indicates the endianess of the file
      * @param name the name of the data file
      * @return the record size for this file
-     * @throws OrekitException if the file contains unexpected data
      */
     private static int computeRecordSize(final byte[] record,
                                          final boolean bigEndian,
-                                         final String name)
-        {
+                                         final String name) {
 
         int recordSize = 0;
         boolean ok = true;

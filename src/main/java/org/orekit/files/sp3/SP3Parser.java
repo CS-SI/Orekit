@@ -123,7 +123,6 @@ public class SP3Parser implements EphemerisFileParser {
      *
      * @param stream to read the SP3 file from.
      * @return a parsed SP3 file.
-     * @throws OrekitException if the ephemeris file cannot be parsed.
      * @throws IOException     if {@code stream} throws one.
      * @see #parse(String)
      * @see #parse(BufferedReader, String)

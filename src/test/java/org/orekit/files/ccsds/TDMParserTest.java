@@ -476,7 +476,6 @@ public class TDMParserTest {
     /**
      * Validation function for example 2.
      * @param file Parsed TDMFile to validate
-     * @throws OrekitException if UTC time scale cannot be retrieved
      */
     public static void validateTDMExample2(TDMFile file) {
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -538,7 +537,6 @@ public class TDMParserTest {
     /**
      * Validation function for example 4.
      * @param file Parsed TDMFile to validate
-     * @throws OrekitException if UTC time scale cannot be retrieved
      */
     public static void validateTDMExample4(TDMFile file) {
 
@@ -612,7 +610,6 @@ public class TDMParserTest {
     /**
      * Validation function for example 6.
      * @param file Parsed TDMFile to validate
-     * @throws OrekitException if UTC time scale cannot be retrieved
      */
     public static void validateTDMExample6(TDMFile file) {
 
@@ -677,7 +674,6 @@ public class TDMParserTest {
     /**
      * Validation function for example 8.
      * @param file Parsed TDMFile to validate
-     * @throws OrekitException if UTC time scale cannot be retrieved
      */
     public static void validateTDMExample8(TDMFile file) {
 
@@ -785,7 +781,6 @@ public class TDMParserTest {
     /**
      * Validation function for example 15.
      * @param file Parsed TDMFile to validate
-     * @throws OrekitException if UTC time scale cannot be retrieved
      */
     public static void validateTDMExample15(TDMFile file) {
 
@@ -914,7 +909,6 @@ public class TDMParserTest {
     /**
      * Validation function for example displaying all keywords.
      * @param file Parsed TDMFile to validate
-     * @throws OrekitException if UTC time scale cannot be retrieved
      */
     public static void validateTDMExampleAllKeywords(TDMFile file) {
 

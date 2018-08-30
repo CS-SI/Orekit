@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
@@ -40,8 +39,6 @@ public class AndDetectorTest {
 
     /**
      * check {@link BooleanDetector#g(SpacecraftState)}.
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testG() {
@@ -83,8 +80,6 @@ public class AndDetectorTest {
 
     /**
      * check {@link BooleanDetector} for cancellation.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testCancellation() {
@@ -104,8 +99,6 @@ public class AndDetectorTest {
 
     /**
      * Check wrapped detectors are initialized.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testInit() {

@@ -293,7 +293,6 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** Compute indices truncations for mean elements computations.
      * @param aux auxiliary elements
-     * @throws OrekitException if an error occurs
      */
     private void computeMeanElementsTruncations(final AuxiliaryElements aux) {
 
@@ -452,7 +451,6 @@ public class DSSTZonal implements DSSTForceModel {
     /** Compute the mean element rates.
      * @param date current date
      * @return the mean element rates
-     * @throws OrekitException if an error occurs in hansen computation
      */
     private double[] computeMeanElementRates(final AbsoluteDate date) {
         // Compute potential derivative
@@ -490,7 +488,6 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      *  @param date current date
      *  @return potential derivatives
-     *  @throws OrekitException if an error occurs in hansen computation
      */
     private double[] computeUDerivatives(final AbsoluteDate date) {
 
@@ -658,7 +655,6 @@ public class DSSTZonal implements DSSTForceModel {
     /** Generate the values for the D<sub>i</sub> coefficients.
      * @param date target date
      * @param slot slot to which the coefficients belong
-     * @throws OrekitException if an error occurs during the coefficient computation
      */
     private void computeDiCoefficients(final AbsoluteDate date, final Slot slot) {
         final double[] meanElementRates = computeMeanElementRates(date);
@@ -1245,7 +1241,6 @@ public class DSSTZonal implements DSSTForceModel {
          *  @param nMax maximum possible value for n
          *  @param sMax maximum possible value for s
          *  @param jMax maximum possible value for j
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         FourierCjSjCoefficients(final AbsoluteDate date,
                                 final int nMax, final int sMax, final int jMax) {
@@ -1274,7 +1269,6 @@ public class DSSTZonal implements DSSTForceModel {
 
         /** Generate all coefficients.
          * @param date the current date
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         private void generateCoefficients(final AbsoluteDate date) {
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);

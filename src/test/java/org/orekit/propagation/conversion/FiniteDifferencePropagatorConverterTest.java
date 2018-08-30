@@ -21,7 +21,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -48,8 +47,6 @@ public class FiniteDifferencePropagatorConverterTest {
 
     /**
      * Test case for bug #362. Check that scaling is only applied once.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testGetObjectiveFunctionParametersOnlyScaledOnce() {

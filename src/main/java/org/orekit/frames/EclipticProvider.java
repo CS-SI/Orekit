@@ -60,8 +60,6 @@ public class EclipticProvider implements TransformProvider {
     /**
      * Create a transform provider from MOD to an ecliptically aligned frame.
      * @param conventions IERS conventions
-     * @throws OrekitException if the mean obliquity of the ecliptic function can not be
-     *                         loaded.
      */
     public EclipticProvider(final IERSConventions conventions) {
         this.conventions = conventions;

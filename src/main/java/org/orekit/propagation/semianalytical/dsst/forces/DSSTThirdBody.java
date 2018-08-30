@@ -32,7 +32,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -243,7 +242,6 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
      *  @param meanOnly only mean elements will be used for the propagation
-     *  @throws OrekitException if some specific error occurs
      */
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {

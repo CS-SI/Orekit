@@ -271,7 +271,6 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Load celestial body.
      * @param name name of the celestial body
      * @return loaded celestial body
-     * @throws OrekitException if the body cannot be loaded
      */
     public CelestialBody loadCelestialBody(final String name) {
 
@@ -656,7 +655,6 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @param record the byte array containing the header record
      * @param name the name of the data file
      * @return the record size for this file
-     * @throws OrekitException if the file contains unexpected data
      */
     private int computeRecordSize(final byte[] record, final String name) {
 

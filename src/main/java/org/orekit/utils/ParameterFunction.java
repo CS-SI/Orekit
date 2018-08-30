@@ -16,8 +16,6 @@
  */
 package org.orekit.utils;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface representing a scalar function depending on a {@link ParameterDriver}.
  * @see Differentiation#differentiate(ParameterFunction, ParameterDriver, int, double)
  * @author Luc Maisonobe
@@ -28,7 +26,6 @@ public interface ParameterFunction {
     /** Evaluate the function.
      * @param parameterDriver driver for the parameter.
      * @return scalar value of the function
-     * @throws OrekitException if evaluation cannot be performed
      */
     double value(ParameterDriver parameterDriver);
 

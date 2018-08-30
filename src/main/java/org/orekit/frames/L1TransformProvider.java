@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -73,7 +72,6 @@ public class L1TransformProvider implements TransformProvider {
     /** Simple constructor.
      * @param primaryBody Primary body.
      * @param secondaryBody Secondary body.
-     * @throws OrekitException in .getInertiallyOrientedFrame() if frame cannot be retrieved
      */
     public L1TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody) {
         this.primaryBody   = primaryBody;
@@ -108,7 +106,6 @@ public class L1TransformProvider implements TransformProvider {
     /** Compute the coordinates of the L1 point.
      * @param primaryToSecondary relative position of secondary body with respect to primary body
      * @return coordinates of the L1 point given in frame: primaryBody.getInertiallyOrientedFrame()
-     * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
     private Vector3D getL1(final Vector3D primaryToSecondary) {
 
@@ -149,7 +146,6 @@ public class L1TransformProvider implements TransformProvider {
      * @param <T> type of the field elements
      * @param primaryToSecondary relative position of secondary body with respect to primary body
      * @return coordinates of the L1 point given in frame: primaryBody.getInertiallyOrientedFrame()
-     * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
     private <T extends RealFieldElement<T>> FieldVector3D<T>
         getL1(final FieldVector3D<T> primaryToSecondary) {

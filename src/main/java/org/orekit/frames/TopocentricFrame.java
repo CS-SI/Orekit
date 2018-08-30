@@ -243,7 +243,6 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param azimuth pointing azimuth from station
      * @param elevation pointing elevation from station
      * @return limit visibility point for the satellite
-     * @throws OrekitException if point cannot be found
      */
     public GeodeticPoint computeLimitVisibilityPoint(final double radius,
                                                      final double azimuth, final double elevation) {

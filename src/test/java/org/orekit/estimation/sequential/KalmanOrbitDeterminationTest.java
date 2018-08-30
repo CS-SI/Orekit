@@ -739,8 +739,7 @@ public class KalmanOrbitDeterminationTest {
             /** Date of the first measurement.*/
             private AbsoluteDate t0;
 
-            /** {@inheritDoc} 
-             * @throws OrekitException */
+            /** {@inheritDoc} */
             @Override
             @SuppressWarnings("unchecked")
             public void evaluationPerformed(final KalmanEstimation estimation) {
@@ -940,14 +939,13 @@ public class KalmanOrbitDeterminationTest {
      * @return The reference orbit at the same date as the Kalman filter
      * @throws IOException Input file cannot be opened
      * @throws IllegalArgumentException Issue in key/value reading of input file
-     * @throws OrekitException An Orekit exception... should be explicit
      * @throws ParseException Parsing of the input file or measurement file failed
      */
     private Orbit runReference(final File input, final OrbitType orbitType,
                                final Vector3D refPosition, final Vector3D refVelocity,
                                final ParameterDriversList refPropagationParameters,
                                final AbsoluteDate kalmanFinalDate)
-                    throws IOException, IllegalArgumentException, OrekitException, ParseException {
+                    throws IOException, IllegalArgumentException, ParseException {
 
         // Read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
@@ -1066,7 +1064,7 @@ public class KalmanOrbitDeterminationTest {
     }
     
     /** Display covariances and sigmas as predicted by a Kalman filter at date t. 
-     * @throws OrekitException */
+     */
     private void displayFinalCovariances(final PrintStream logStream, final KalmanEstimator kalman) 
         {
         
@@ -1170,14 +1168,13 @@ public class KalmanOrbitDeterminationTest {
      * @param orbit first orbit estimate
      * @return propagator builder
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private NumericalPropagatorBuilder createPropagatorBuilder(final KeyValueFileParser<ParameterKey> parser,
                                                                final IERSConventions conventions,
                                                                final NormalizedSphericalHarmonicsProvider gravityField,
                                                                final OneAxisEllipsoid body,
                                                                final Orbit orbit)
-                                                                               throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final double minStep;
         if (!parser.containsKey(ParameterKey.PROPAGATOR_MIN_STEP)) {
@@ -1350,10 +1347,9 @@ public class KalmanOrbitDeterminationTest {
      * @param parser input file parser
      * @return gravity field
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private NormalizedSphericalHarmonicsProvider createGravityField(final KeyValueFileParser<ParameterKey> parser)
-                    throws NoSuchElementException, OrekitException {
+                    throws NoSuchElementException {
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
         return GravityFieldFactory.getNormalizedProvider(degree, order);
@@ -1363,10 +1359,9 @@ public class KalmanOrbitDeterminationTest {
      * @param parser input file parser
      * @param mu     central attraction coefficient
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private OneAxisEllipsoid createBody(final KeyValueFileParser<ParameterKey> parser)
-                    throws NoSuchElementException, OrekitException {
+                    throws NoSuchElementException {
 
         final Frame bodyFrame;
         if (!parser.containsKey(ParameterKey.BODY_FRAME)) {
@@ -1397,11 +1392,9 @@ public class KalmanOrbitDeterminationTest {
      * @param parser input file parser
      * @param mu     central attraction coefficient
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if inertial frame cannot be created
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
-                              final double mu)
-                                              throws NoSuchElementException, OrekitException {
+                              final double mu) throws NoSuchElementException {
 
         final Frame frame;
         if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
@@ -1807,7 +1800,6 @@ public class KalmanOrbitDeterminationTest {
     /** Set up outliers manager for range measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
     private OutlierFilter<Range> createRangeOutliersManager(final KeyValueFileParser<ParameterKey> parser)
                     {
@@ -1826,7 +1818,6 @@ public class KalmanOrbitDeterminationTest {
     /** Set up outliers manager for range-rate measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
     private OutlierFilter<RangeRate> createRangeRateOutliersManager(final KeyValueFileParser<ParameterKey> parser)
                     {
@@ -1845,7 +1836,6 @@ public class KalmanOrbitDeterminationTest {
     /** Set up outliers manager for azimuth-elevation measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
     private OutlierFilter<AngularAzEl> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser)
                     {
@@ -1864,7 +1854,6 @@ public class KalmanOrbitDeterminationTest {
     /** Set up outliers manager for PV measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
     private OutlierFilter<PV> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser)
                     {

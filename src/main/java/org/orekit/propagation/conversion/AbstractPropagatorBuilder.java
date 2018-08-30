@@ -282,9 +282,12 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         orbitType.mapOrbitToArray(newOrbit, getPositionAngle(), orbitArray, null);
 
         // Update all the orbital drivers, selected or unselected
+        // Reset values and reference values
         final List<DelegatingDriver> orbitalDriversList = getOrbitalParametersDrivers().getDrivers();
-        for (int i = 0; i < 6; i++) {
-            orbitalDriversList.get(i).setValue(orbitArray[i]);
+        int i = 0;
+        for (DelegatingDriver driver : orbitalDriversList) {
+            driver.setReferenceValue(orbitArray[i]);
+            driver.setValue(orbitArray[i++]);
         }
 
         // Change the initial orbit date in the builder

@@ -209,8 +209,6 @@ public class Geoid implements EarthShape {
      *                         fields.
      * @return the undulation in m, positive means the geoid is higher than the
      * ellipsoid.
-     * @throws OrekitException if an error occurs converting latitude and
-     *                         longitude
      * @see Geoid
      * @see <a href="http://en.wikipedia.org/wiki/Geoid">Geoid on Wikipedia</a>
      */

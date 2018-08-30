@@ -29,7 +29,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.orbits.CartesianOrbit;
@@ -53,7 +52,6 @@ public class InterSatellitesRangeTest {
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
     public void testValues() {
@@ -68,7 +66,6 @@ public class InterSatellitesRangeTest {
     /**
      * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesEmitter() {
@@ -92,7 +89,6 @@ public class InterSatellitesRangeTest {
     /**
      * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesTransit() {
@@ -116,7 +112,6 @@ public class InterSatellitesRangeTest {
     /**
      * Generic test function for values of the inter-satellites range
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestValues(final boolean printResults) {
 

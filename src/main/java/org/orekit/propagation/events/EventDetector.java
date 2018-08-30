@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
@@ -60,7 +59,6 @@ public interface EventDetector extends Serializable {
      * @param s0 initial state
      * @param t target time for the integration
      *
-     * @throws OrekitException if some specific error occurs
      */
     default void init(SpacecraftState s0, AbsoluteDate t) {
         // nothing by default

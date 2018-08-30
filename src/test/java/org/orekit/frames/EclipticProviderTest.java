@@ -22,15 +22,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hamcrest.core.IsInstanceOf;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -71,7 +70,6 @@ public class EclipticProviderTest {
      *
      * @param start start date of check.
      * @param end   en date of check.
-     * @throws OrekitException on error
      */
     private void checkAlignment(AbsoluteDate start, AbsoluteDate end) {
         //setup
@@ -104,8 +102,6 @@ public class EclipticProviderTest {
 
     /**
      * Check frame has the right name.
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testGetName() {
@@ -119,8 +115,6 @@ public class EclipticProviderTest {
 
     /**
      * Check the parent frame is MOD.
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testGetParent() {

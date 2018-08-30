@@ -62,8 +62,6 @@ public class MarshallSolarActivityFutureEstimationTest {
      * Check {@link MarshallSolarActivityFutureEstimation#get24HoursKp(AbsoluteDate)} and
      * {@link MarshallSolarActivityFutureEstimation#getThreeHourlyKP(AbsoluteDate)} are
      * continuous.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testGetKp() {
@@ -90,8 +88,6 @@ public class MarshallSolarActivityFutureEstimationTest {
     /**
      * Check integration error is small when integrating the same equations over the same
      * interval.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testWithPropagator() {
@@ -143,7 +139,6 @@ public class MarshallSolarActivityFutureEstimationTest {
      * @param earth Earth.
      * @param ic    initial condition.
      * @return a propagator.
-     * @throws OrekitException on error.
      */
     private NumericalPropagator getNumericalPropagator(CelestialBody sun,
                                                        OneAxisEllipsoid earth,
@@ -167,7 +162,6 @@ public class MarshallSolarActivityFutureEstimationTest {
      * Load an edited flux file.
      *
      * @return loaded flux file.
-     * @throws OrekitException on error.
      */
     private DTM2000InputParameters getFlux() {
         MarshallSolarActivityFutureEstimation flux =

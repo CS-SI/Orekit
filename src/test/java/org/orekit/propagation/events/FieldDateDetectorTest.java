@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -225,8 +224,6 @@ public class FieldDateDetectorTest {
 
     /**
      * Check that a generic event handler can be used with an event detector.
-     *
-     * @throws OrekitException on error.
      */
 
     private <T extends RealFieldElement<T>> void doTestGenericHandler(Field<T> field) {

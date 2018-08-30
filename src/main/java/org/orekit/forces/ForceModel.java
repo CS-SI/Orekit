@@ -23,7 +23,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -74,8 +73,6 @@ public interface ForceModel {
      *
      * @param initialState spacecraft state at the start of propagation.
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
-     * @throws OrekitException if an implementing class overrides the default behavior and
-     *                         takes some action that throws an {@link OrekitException}.
      */
     default void init(SpacecraftState initialState, AbsoluteDate target) {
     }

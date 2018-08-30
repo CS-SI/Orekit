@@ -192,7 +192,6 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
 
     /** Find the data bracketing a specified date.
      * @param date date to bracket
-     * @throws OrekitException if specified date is out of range
      */
     private void bracketDate(final AbsoluteDate date) {
 

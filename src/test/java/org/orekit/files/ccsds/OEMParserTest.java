@@ -455,8 +455,6 @@ public class OEMParserTest {
 
     /**
      * Check the parser can parse several ITRF frames. Test case for #361.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testITRFFrames() {
