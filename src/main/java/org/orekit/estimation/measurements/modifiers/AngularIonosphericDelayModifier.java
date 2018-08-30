@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -61,7 +60,6 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
      * @param station station
      * @param state spacecraft state
      * @return the measurement error due to ionosphere
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double angularErrorIonosphericModel(final GroundStation station,
                                                 final SpacecraftState state) {

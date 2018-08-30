@@ -594,12 +594,10 @@ public class Phasing {
      * @param stepSize step size to use
      * @param propagator propagator
      * @return first crossing
-     * @throws OrekitException if state cannot be propagated
      */
     private SpacecraftState findFirstCrossing(final double latitude, final boolean ascending,
                                               final AbsoluteDate searchStart, final AbsoluteDate end,
-                                              final double stepSize, final Propagator propagator)
-        {
+                                              final double stepSize, final Propagator propagator) {
 
         double previousLatitude = Double.NaN;
         for (AbsoluteDate date = searchStart; date.compareTo(end) < 0; date = date.shiftedBy(stepSize)) {
@@ -628,7 +626,6 @@ public class Phasing {
      * @param maxShift maximum value that the shift value can take
      * @param propagator propagator used
      * @return state at latitude crossing time
-     * @throws OrekitException if state cannot be propagated
      * @throws MathRuntimeException if latitude cannot be bracketed in the search interval
      */
     private SpacecraftState findLatitudeCrossing(final double latitude,

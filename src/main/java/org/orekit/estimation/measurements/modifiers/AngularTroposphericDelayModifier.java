@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -73,7 +72,6 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
      * @param station station
      * @param state spacecraft state
      * @return the measurement error due to Troposphere
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double angularErrorTroposphericModel(final GroundStation station,
                                                  final SpacecraftState state) {

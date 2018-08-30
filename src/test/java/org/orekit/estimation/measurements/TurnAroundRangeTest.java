@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
@@ -52,7 +51,6 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the TAR (Turn-Around Range) comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
     public void testValues() {
@@ -67,7 +65,6 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the state derivatives
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivatives() {
@@ -93,7 +90,6 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the state derivatives with modifier
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifier() {
@@ -119,7 +115,6 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the parameter derivatives
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivatives() {
@@ -147,7 +142,6 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the parameter derivatives with modifier
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesWithModifier() {
@@ -174,7 +168,6 @@ public class TurnAroundRangeTest {
     /**
      * Generic test function for values of the TAR
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
                     {

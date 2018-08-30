@@ -239,7 +239,6 @@ public class ODMMetaData {
      * Keplerian elements data (and for the covariance reference frame if none is given).
      *
      * @return the reference frame
-     * @throws OrekitException if the reference frame cannot be created.
      */
     public Frame getFrame() {
         final Frame frame = this.getRefFrame();

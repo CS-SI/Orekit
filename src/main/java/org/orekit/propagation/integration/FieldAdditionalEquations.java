@@ -17,7 +17,6 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
@@ -83,8 +82,6 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      * @param initialState initial state information at the start of propagation.
      * @param target       date of propagation. Not equal to {@code
      *                     initialState.getDate()}.
-     * @throws OrekitException if there is an Orekit related error during
-     *                         initialization.
      */
     default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         // nothing by default

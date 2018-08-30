@@ -37,7 +37,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -105,8 +104,6 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
     /**
      * check the acceleration from relativity
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testAcceleration() {
@@ -165,8 +162,6 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
     /**
      * Check a nearly circular orbit.
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testAccelerationCircular() {
@@ -432,8 +427,6 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * check against example in Tapley, Schutz, and Born, p 65-66. They predict a
      * progression of perigee of 11 arcsec/year. To get the same results we must set the
      * propagation tolerances to 1e-5.
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testSmallEffectOnOrbit() {

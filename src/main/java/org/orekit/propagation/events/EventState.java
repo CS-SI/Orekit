@@ -23,7 +23,6 @@ import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -139,7 +138,6 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @param s0 initial state
      * @param t target time for the integration
      *
-     * @throws OrekitException if some specific error occurs
      */
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {
@@ -252,7 +250,6 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @param tb           latest possible time for root.
      * @param gb           g(tb).
      * @return if a zero crossing was found.
-     * @throws OrekitException if the event detector throws one
      */
     private boolean findRoot(final OrekitStepInterpolator interpolator,
                              final AbsoluteDate ta, final double ga,

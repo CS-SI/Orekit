@@ -56,7 +56,6 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      *                    BoundedPropagator#getMinDate()} of the next propagator then the
      *                    propagator with the latest {@link BoundedPropagator#getMinDate()}
      *                    is used.
-     * @throws OrekitException if {@code propagators} does not have at least one element.
      */
     public AggregateBoundedPropagator(
             final Collection<? extends BoundedPropagator> propagators) {

@@ -29,7 +29,6 @@ public class KlobucharIonoCoefficientsLoaderTest {
     @Test
     /**
      * Regular test for 1st of January 2017
-     * @throws OrekitException if file does not exist or data cannot be read properly
      */
     public void testRegularFile() {
 

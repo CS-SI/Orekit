@@ -206,7 +206,6 @@ public class DOPComputation {
      * @param zone the area to mesh
      * @param meshSize the size of the square meshes as a distance on the Earth surface (in meters)
      * @return a list of geodetic points sampling the zone of interest
-     * @throws OrekitException if the area cannot be meshed
      */
     private List<List<GeodeticPoint>> sample(final OneAxisEllipsoid shape,
                                              final List<GeodeticPoint> zone,

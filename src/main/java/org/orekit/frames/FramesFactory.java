@@ -1234,7 +1234,6 @@ public class FramesFactory {
      * @param to frame to which transformation ends
      * @param date date of the transform
      * @return transform between the two frames, avoiding interpolation
-     * @throws OrekitException if transform cannot be computed at this date
      */
     public static Transform getNonInterpolatingTransform(final Frame from, final Frame to,
                                                          final AbsoluteDate date) {
@@ -1286,7 +1285,6 @@ public class FramesFactory {
      * @param date date of the transform
      * @param <T> type of the field elements
      * @return transform between the two frames, avoiding interpolation
-     * @throws OrekitException if transform cannot be computed at this date
      * @since 9.0
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,

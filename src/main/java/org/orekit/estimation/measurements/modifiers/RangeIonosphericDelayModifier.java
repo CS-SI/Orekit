@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -64,7 +63,6 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @param station station
      * @param state spacecraft state
      * @return the measurement error due to ionosphere
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorIonosphericModel(final GroundStation station,
                                               final SpacecraftState state) {
@@ -100,7 +98,6 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @param refstate reference spacecraft state
      *
      * @return Jacobian of the delay wrt state
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
                                                final SpacecraftState refstate) {
@@ -128,7 +125,6 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @param state spacecraft state
      * @param delay current ionospheric delay
      * @return derivative of the delay wrt station offset parameter
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorParameterDerivative(final GroundStation station,
                                                  final ParameterDriver driver,

@@ -100,8 +100,6 @@ public abstract class GroundPointing implements AttitudeProvider {
      * @param frame frame in which observed ground point should be provided
      * @return observed ground point position (element 0) and velocity (at index 1)
      * in specified frame
-     * @throws OrekitException if some specific error occurs,
-     * such as no target reached
      */
     public abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv,
                                                          AbsoluteDate date, Frame frame);
@@ -113,8 +111,6 @@ public abstract class GroundPointing implements AttitudeProvider {
      * @param <T> type of the fiels elements
      * @return observed ground point position (element 0) and velocity (at index 1)
      * in specified frame
-     * @throws OrekitException if some specific error occurs,
-     * such as no target reached
      * @since 9.0
      */
     public abstract <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv,

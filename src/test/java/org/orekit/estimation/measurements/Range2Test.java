@@ -30,7 +30,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -60,7 +59,6 @@ public class Range2Test {
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
     public void testValues() {
@@ -75,7 +73,6 @@ public class Range2Test {
     /**
      * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivatives() {
@@ -100,7 +97,6 @@ public class Range2Test {
     /**
      * Test the values of the state derivatives with modifier using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifier() {
@@ -125,7 +121,6 @@ public class Range2Test {
     /**
      * Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivatives() {
@@ -149,7 +144,6 @@ public class Range2Test {
     /**
      * Test the values of the parameters' derivatives with modifier, using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesWithModifier() {
@@ -173,7 +167,6 @@ public class Range2Test {
     /**
      * Generic test function for values of the range
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
                     {

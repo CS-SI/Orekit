@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -74,7 +73,6 @@ public class OsculatingToMeanElementsConverter {
 
     /** Convert an osculating orbit into a mean orbit, in DSST sense.
      *  @return mean orbit state, in DSST sense
-     *  @throws OrekitException if state cannot be propagated throughout range
      */
     public final SpacecraftState convert() {
 

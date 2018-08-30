@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -285,7 +284,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  @param low lower bound of the integral interval
      *  @param high upper bound of the integral interval
      *  @return the mean element rates
-     *  @throws OrekitException if some specific error occurs
      */
     private double[] getMeanElementRate(final SpacecraftState state,
             final GaussQuadrature gauss,
@@ -1200,7 +1198,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Standard constructor.
          * @param state the current state
          * @param jMax maximum value for j
-         * @throws OrekitException in case of an error
          */
         FourierCjSjCoefficients(final SpacecraftState state, final int jMax) {
             //Initialise the fields
@@ -1222,7 +1219,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * as D<sub>i</sub><sup>m</sup> is always 0.
          * </p>
          * @param state the current state
-         * @throws OrekitException in case of an error
          */
         private void computeCoefficients(final SpacecraftState state) {
             // Computes the limits for the integral
@@ -1332,7 +1328,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param uijvij U and V coefficients
          * @param n Keplerian mean motion
          * @param a semi major axis
-         * @throws OrekitException if an error occurs
          */
         private void computeCoefficients(final SpacecraftState state, final Slot slot,
                                          final FourierCjSjCoefficients fourierCjSj,

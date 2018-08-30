@@ -25,7 +25,6 @@ import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -140,7 +139,6 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @param s0 initial state
      * @param t target time for the integration
      *
-     * @throws  OrekitException if some specific error occurs
      */
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
@@ -252,10 +250,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @param tb           latest possible time for root.
      * @param gb           g(tb).
      * @return if a zero crossing was found.
-     * @throws OrekitException if the event detector throws one
      */
-
-
     private boolean findRoot(final FieldOrekitStepInterpolator<T> interpolator,
                              final FieldAbsoluteDate<T> ta, final T ga,
                              final FieldAbsoluteDate<T> tb, final T gb) {

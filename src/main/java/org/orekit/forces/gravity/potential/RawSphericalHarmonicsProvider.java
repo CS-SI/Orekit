@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -59,7 +58,6 @@ public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvide
      * Get the raw spherical harmonic coefficients on a specific date.
      * @param date to evaluate the spherical harmonics
      * @return the raw spherical harmonics on {@code date}.
-     * @throws OrekitException on error
      */
     RawSphericalHarmonics onDate(AbsoluteDate date);
 

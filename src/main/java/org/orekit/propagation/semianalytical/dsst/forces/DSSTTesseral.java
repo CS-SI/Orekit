@@ -681,7 +681,6 @@ public class DSSTTesseral implements DSSTForceModel {
      *
      *  @param date current date
      *  @return potential derivatives
-     *  @throws OrekitException if an error occurs
      */
     private double[] computeUDerivatives(final AbsoluteDate date) {
 
@@ -818,7 +817,6 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
      *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
-     * @throws OrekitException if some error occurred
      */
     private double[][] computeNSum(final AbsoluteDate date,
                                    final int j, final int m, final int s, final int maxN, final double[] roaPow,
@@ -1022,7 +1020,6 @@ public class DSSTTesseral implements DSSTForceModel {
         /**
          * Generate the coefficients.
          * @param date the current date
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         public void generateCoefficients(final AbsoluteDate date) {
             // Compute only if there is at least one non-resonant tesseral
@@ -1064,7 +1061,6 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param m m index
          * @param j j index
          * @param maxN  maximum value for n index
-         * @throws OrekitException in case of Hansen kernel generation error
          */
         private void buildFourierCoefficients(final AbsoluteDate date,
                final int m, final int j, final int maxN) {

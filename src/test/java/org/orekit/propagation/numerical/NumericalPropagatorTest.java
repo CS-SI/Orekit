@@ -1350,7 +1350,6 @@ public class NumericalPropagatorTest {
      *  <p>See issue 449 in Orekit forge and 
      *  {@link org.orekit.propagation.Propagator#propagate(AbsoluteDate, AbsoluteDate)}.
      *  </p>
-     * @throws OrekitException if propagation failed
      */
     @Test
     public void testEventAndStepHandlerDeactivationIssue449() {

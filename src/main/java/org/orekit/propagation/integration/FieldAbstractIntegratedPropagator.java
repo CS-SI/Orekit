@@ -636,15 +636,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
          * @param initialState initial state information at the start of propagation.
          * @param target       date of propagation. Not equal to {@code
          *                     initialState.getDate()}.
-         * @throws OrekitException if there is an Orekit related error during
-         *                         initialization.
          */
         void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target);
 
         /** Compute differential equations for main state.
          * @param state current state
          * @return derivatives of main state
-         * @throws OrekitException if differentials cannot be computed
          */
         T[] computeDerivatives(FieldSpacecraftState<T> state);
 

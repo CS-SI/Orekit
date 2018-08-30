@@ -139,7 +139,6 @@ public abstract class ODMFile {
      *   <li>the coefficient set by the user with the parser's method setMu,</li>
      *   <li>the coefficient created from the knowledge of the central body.</li>
      * </ol>
-     * @throws OrekitException if no gravitational coefficient can be found
      */
     protected void setMuUsed() {
         if (!Double.isNaN(muParsed)) {

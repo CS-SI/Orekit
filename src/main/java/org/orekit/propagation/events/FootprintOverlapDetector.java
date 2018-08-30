@@ -156,7 +156,6 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param zone geographic zone to consider
      * @param samplingStep  linear step used for sampling the geographic zone (in meters)
      * @return sampling points
-     * @throws OrekitException if the region cannot be sampled
      */
     private static List<SamplingPoint> sample(final OneAxisEllipsoid body,
                                               final SphericalPolygonsSet zone,

@@ -656,14 +656,13 @@ public class OrbitDeterminationTest {
      * @param orbit first orbit estimate
      * @return propagator builder
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private NumericalPropagatorBuilder createPropagatorBuilder(final KeyValueFileParser<ParameterKey> parser,
                                                                final IERSConventions conventions,
                                                                final NormalizedSphericalHarmonicsProvider gravityField,
                                                                final OneAxisEllipsoid body,
                                                                final Orbit orbit)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final double minStep;
         if (!parser.containsKey(ParameterKey.PROPAGATOR_MIN_STEP)) {
@@ -836,10 +835,9 @@ public class OrbitDeterminationTest {
      * @param parser input file parser
      * @return gravity field
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private NormalizedSphericalHarmonicsProvider createGravityField(final KeyValueFileParser<ParameterKey> parser)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
         return GravityFieldFactory.getNormalizedProvider(degree, order);
@@ -849,10 +847,9 @@ public class OrbitDeterminationTest {
      * @param parser input file parser
      * @param mu     central attraction coefficient
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private OneAxisEllipsoid createBody(final KeyValueFileParser<ParameterKey> parser)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final Frame bodyFrame;
         if (!parser.containsKey(ParameterKey.BODY_FRAME)) {
@@ -883,11 +880,10 @@ public class OrbitDeterminationTest {
      * @param parser input file parser
      * @param mu     central attraction coefficient
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if inertial frame cannot be created
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
                               final double mu)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final Frame frame;
         if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
@@ -1293,10 +1289,8 @@ public class OrbitDeterminationTest {
     /** Set up outliers manager for range measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<Range> createRangeOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        {
+    private OutlierFilter<Range> createRangeOutliersManager(final KeyValueFileParser<ParameterKey> parser) {
         if (parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1312,10 +1306,8 @@ public class OrbitDeterminationTest {
     /** Set up outliers manager for range-rate measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<RangeRate> createRangeRateOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        {
+    private OutlierFilter<RangeRate> createRangeRateOutliersManager(final KeyValueFileParser<ParameterKey> parser) {
         if (parser.containsKey(ParameterKey.RANGE_RATE_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.RANGE_RATE_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1331,10 +1323,8 @@ public class OrbitDeterminationTest {
     /** Set up outliers manager for azimuth-elevation measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<AngularAzEl> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        {
+    private OutlierFilter<AngularAzEl> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser) {
         if (parser.containsKey(ParameterKey.AZ_EL_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1350,10 +1340,8 @@ public class OrbitDeterminationTest {
     /** Set up outliers manager for PV measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<PV> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        {
+    private OutlierFilter<PV> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser) {
         if (parser.containsKey(ParameterKey.PV_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.PV_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1382,11 +1370,10 @@ public class OrbitDeterminationTest {
      * @param propagatorBuilder propagator builder
      * @return estimator
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if some propagator parameters cannot be retrieved
      */
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
                                              final NumericalPropagatorBuilder propagatorBuilder)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
         final boolean optimizerIsLevenbergMarquardt;
         if (! parser.containsKey(ParameterKey.ESTIMATOR_OPTIMIZATION_ENGINE)) {
             optimizerIsLevenbergMarquardt = true;

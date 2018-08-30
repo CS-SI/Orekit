@@ -117,7 +117,6 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
          * </p>
          *
          * @param gpsOrbElt the GPS orbital elements to be used by the GPSpropagator.
-         * @throws OrekitException if data embedded in the library cannot be read
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)

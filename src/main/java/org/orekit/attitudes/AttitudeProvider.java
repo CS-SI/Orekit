@@ -19,7 +19,6 @@ package org.orekit.attitudes;
 import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -39,7 +38,6 @@ public interface AttitudeProvider extends Serializable {
      * @param date current date
      * @param frame reference frame from which attitude is computed
      * @return attitude attitude on the specified date and position-velocity state
-     * @throws OrekitException if attitude cannot be computed
      */
     Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame);
 
@@ -49,7 +47,6 @@ public interface AttitudeProvider extends Serializable {
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
      * @return attitude attitude on the specified date and position-velocity state
-     * @throws OrekitException if attitude cannot be computed
      * @since 9.0
      */
     <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,

@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -78,7 +77,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Create a copy of a NumericalPropagatorBuilder object.
      * @return Copied version of the NumericalPropagatorBuilder
-     * @throws OrekitException if parameters drivers cannot be scaled
      */
     public NumericalPropagatorBuilder copy() {
         final NumericalPropagatorBuilder copyBuilder =

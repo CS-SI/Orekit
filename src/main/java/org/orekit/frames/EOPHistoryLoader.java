@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import java.util.SortedSet;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.IERSConventions;
 
 /** Interface for loading Earth Orientation Parameters history.
@@ -30,7 +29,6 @@ public interface EOPHistoryLoader {
     /** Load celestial body.
      * @param converter converter to use for nutation corrections
      * @param history history to fill up
-     * @throws OrekitException if the history cannot be loaded
      */
     void fillHistory(IERSConventions.NutationCorrectionConverter converter,
                      SortedSet<EOPEntry> history);

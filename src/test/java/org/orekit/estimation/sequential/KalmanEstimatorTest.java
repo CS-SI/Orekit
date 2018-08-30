@@ -71,7 +71,6 @@ public class KalmanEstimatorTest {
     /**
      * Perfect PV measurements with a perfect start
      * Keplerian formalism
-     * @throws OrekitException
      */
     @Test
     public void testKeplerianPV() {
@@ -142,7 +141,6 @@ public class KalmanEstimatorTest {
     /**
      * Perfect range measurements with a biased start
      * Keplerian formalism
-     * @throws OrekitException
      */
     @Test
     public void testKeplerianRange() {
@@ -226,7 +224,6 @@ public class KalmanEstimatorTest {
     /**
      * Perfect range measurements with a biased start and an on-board antenna range offset
      * Keplerian formalism 
-     * @throws OrekitException
      */
     @Test
     public void testKeplerianRangeWithOnBoardAntennaOffset() {
@@ -320,7 +317,6 @@ public class KalmanEstimatorTest {
     /**
      * Perfect range rate measurements with a perfect start
      * Cartesian formalism
-     * @throws OrekitException
      */
     @Test
     public void testCartesianRangeRate() {
@@ -402,7 +398,6 @@ public class KalmanEstimatorTest {
     /**
      * Perfect azimuth/elevation measurements with a perfect start
      * Circular formalism
-     * @throws OrekitException
      */
     @Test
     public void testCircularAzimuthElevation() {
@@ -483,7 +478,6 @@ public class KalmanEstimatorTest {
     /**
      * Perfect right-ascension/declination measurements with a perfect start
      * Equinoctial formalism
-     * @throws OrekitException
      */
     @Test
     public void testEquinoctialRightAscensionDeclination() {
@@ -668,7 +662,6 @@ public class KalmanEstimatorTest {
     
     /**
      * Perfect range and range rate measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
     public void testKeplerianRangeAndRangeRate() {
@@ -872,7 +865,6 @@ public class KalmanEstimatorTest {
 
     /**
      * Test of a wrapped exception in a Kalman observer
-     * @throws OrekitException
      */
     @Test
     public void testWrappedException() {

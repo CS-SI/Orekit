@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -249,7 +248,6 @@ public class OMMFile extends OGMFile {
 
     /** Generate a {@link CartesianOrbit} from the {@link KeplerianOrbit}.
      * @return the {@link CartesianOrbit} generated from the OPM information
-     * @throws OrekitException if the Keplerian Orbit cannot be generated
      */
     public CartesianOrbit generateCartesianOrbit() {
         return new CartesianOrbit(generateKeplerianOrbit());

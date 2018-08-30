@@ -204,8 +204,6 @@ public class AggregateBoundedPropagatorTest {
 
     /**
      * Check that resetting the state is prohibited.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testResetState() {
@@ -230,8 +228,6 @@ public class AggregateBoundedPropagatorTest {
     /**
      * Check that creating an aggregate propagator from an empty list of propagators is
      * prohibited.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testEmptyList() {
@@ -251,7 +247,6 @@ public class AggregateBoundedPropagatorTest {
      * @param end   date.
      * @param v     true anomaly.
      * @return a bound propagator with the given dates.
-     * @throws OrekitException on error.
      */
     private BoundedPropagator createPropagator(AbsoluteDate start,
                                                AbsoluteDate end,

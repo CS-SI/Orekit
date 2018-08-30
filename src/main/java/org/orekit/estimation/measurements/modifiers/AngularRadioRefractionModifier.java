@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -58,7 +57,6 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
     * @param station station
     * @param state spacecraft state
     * @return the measurement error due to ionosphere
-    * @throws OrekitException  if frames transformations cannot be computed
     */
     private double angularErrorRadioRefractionModel(final GroundStation station,
                                                     final SpacecraftState state) {

@@ -26,7 +26,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -66,7 +65,6 @@ public abstract class CloseEventsAbstractTest {
      *
      * @param stepSize   required minimum step of integrator.
      * @return a usable propagator.
-     * @throws OrekitException
      */
     public abstract Propagator getPropagator(double stepSize);
 

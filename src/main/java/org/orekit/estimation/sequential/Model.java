@@ -124,7 +124,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @throws OrekitException propagation exception.
      */
     Model(final List<NumericalPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
@@ -415,7 +414,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Get the propagators estimated with the values set in the propagators builders.
      * @return numerical propagators based on the current values in the builder
-     * @throws OrekitException if propagators cannot be build
      */
     public NumericalPropagator[] getEstimatedPropagators() {
 
@@ -432,7 +430,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * The  STM is an mxm matrix where m is the size of the state vector.
      * m = nbOrb + nbPropag + nbMeas
      * @return the normalized error state transition matrix
-     * @throws OrekitException if Jacobians cannot be computed
      */
     private RealMatrix getErrorStateTransitionMatrix() {
 
@@ -515,7 +512,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * H contains the partial derivatives of the measurement with respect to the state.
      * H is an nxm matrix where n is the size of the measurement vector and m the size of the state vector.
      * @return the normalized measurement matrix H
-     * @throws OrekitException if Jacobians cannot be computed
      */
     private RealMatrix getMeasurementMatrix() {
 
@@ -616,7 +612,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Update the reference trajectories using the propagators as input.
      * @param propagators The new propagators to use
-     * @throws OrekitException if setting up the partial derivatives failed
      */
     private void updateReferenceTrajectories(final NumericalPropagator[] propagators) {
 
@@ -732,7 +727,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      *         - Ppred is the normalized predicted covariance matrix<p>
      *         - R is the normalized measurement noise matrix
      * @param <T> the type of measurement
-     * @throws OrekitException if modifier cannot be applied
      */
     private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
                                                                               final RealMatrix innovationCovarianceMatrix) {
@@ -907,7 +901,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * The predicted/propagated orbit is used to update the state vector
      * @param date prediction date
      * @return predicted state
-     * @throws OrekitException if the propagator builder could not be reset
      */
     private RealVector predictState(final AbsoluteDate date) {
 
@@ -944,7 +937,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Update the estimated parameters after the correction phase of the filter.
      * The min/max allowed values are handled by the parameter themselves.
-     * @throws OrekitException if setting the normalized values failed
      */
     private void updateParameters() {
         final RealVector correctedState = correctedEstimate.getState();
