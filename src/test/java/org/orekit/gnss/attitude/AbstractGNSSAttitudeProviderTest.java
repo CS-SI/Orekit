@@ -124,7 +124,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
             Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
 
-            try (java.io.PrintStream out = new java.io.PrintStream("/home/luc/x-" + ++count + ".dat")) {
+            try (java.io.PrintStream out = new java.io.PrintStream("/tmp" + ++count + ".dat")) {
             for (final ParsedLine parsedLine : dataBlock) {
 
                 // test on primitive double
