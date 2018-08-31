@@ -44,10 +44,7 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testCrossingBeta() {
-        // TODO: these results are not good,
-        // however the reference data is also highly suspicious
-        // this needs to be investigated
-        doTestAxes("beta-crossing-BLOCK-IIF.txt", 2.8e-100, 2.8, 9.7e-16);
+        doTestAxes("beta-crossing-BLOCK-IIF.txt", 9.5e-3, 9.5e-3, 9.7e-16);
     }
 
     @Test

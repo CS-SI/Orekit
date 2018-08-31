@@ -126,6 +126,14 @@ class TurnSpan implements Serializable, TimeStamped {
         return date.durationFrom(start);
     }
 
+    /** Get elapsed time until turn end (without margin).
+     * @param date date to check
+     * @return elapsed time from specified date to turn end (without margin)
+     */
+    public double timeUntilTurnEnd(final AbsoluteDate date) {
+        return end.durationFrom(date);
+    }
+
     /** Get turn start date.
      * @return turn start date
      */

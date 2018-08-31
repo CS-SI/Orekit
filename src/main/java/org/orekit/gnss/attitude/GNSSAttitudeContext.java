@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
@@ -290,11 +289,18 @@ class GNSSAttitudeContext implements TimeStamped {
             targetDate = turnSpan.getTurnEndDate();
         }
         final double targetYaw = yawAngle(targetDate);
-        System.out.println(new org.orekit.time.GPSDate(getDate()).getMilliInWeek() + " " +
-                           FastMath.toDegrees(MathUtils.normalizeAngle(targetYaw, linearPhi)) + " " +
-                           FastMath.toDegrees(linearPhi) + " " +
-                           FastMath.toDegrees((MathUtils.normalizeAngle(targetYaw, linearPhi) - linearPhi) * phiDot));
-        return (MathUtils.normalizeAngle(targetYaw, linearPhi) - linearPhi) * phiDot < 0;
+
+        // find the delay between the turn end and the closest crossing
+        // taking care of 2π wrapping (typically GPS block IIR takes only 1800s to perform a full turn)
+        final double nowToCrossing     = (targetYaw - linearPhi) / phiDot;
+        final double nowToTurnEnd      = turnSpan.timeUntilTurnEnd(date);
+        final double turnEndToCrossing = nowToCrossing - nowToTurnEnd;
+        final double halfTurn          = FastMath.PI / FastMath.abs(phiDot);
+        final double fullTurn          = 2 * halfTurn;
+        final double delay             = turnEndToCrossing - fullTurn * FastMath.floor((turnEndToCrossing + halfTurn) / fullTurn);
+
+        return nowToTurnEnd + delay <= 0;
+
     }
 
     /** Set up the midnight/noon turn region.

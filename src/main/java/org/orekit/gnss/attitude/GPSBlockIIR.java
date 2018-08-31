@@ -140,10 +140,11 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
                     // midnight turn
                     phiDot    = field.getZero().add(FastMath.copySign(YAW_RATE, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
-                    final T phiEnd = context.getYawEnd(beta);
-                    if (phiEnd.getReal() / linearPhi.getReal() < 0 || phiEnd.getReal() / linearPhi.getReal() > 1) {
-                        return context.nominalYaw(context.getDate());
-                    }
+                }
+
+                if (context.targetYawReached(linearPhi, phiDot)) {
+                    // we are already back in nominal yaw mode
+                    return context.nominalYaw(context.getDate());
                 }
 
                 return context.turnCorrectedAttitude(linearPhi, phiDot);
