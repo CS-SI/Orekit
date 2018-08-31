@@ -35,8 +35,6 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Base class for attitude providers for navigation satellites.
@@ -103,14 +101,9 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                                 final AbsoluteDate date,
                                 final Frame frame) {
 
-        // Sun/spacecraft geometry
-        // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
-        final TimeStampedPVCoordinates sunPV = sun.getPVCoordinates(date, inertialFrame);
-        final TimeStampedPVCoordinates svPV  = pvProv.getPVCoordinates(date, inertialFrame);
-
         // compute yaw correction
         final TurnSpan                      turnSpan  = getTurnSpan(date);
-        final GNSSAttitudeContext           context   = new GNSSAttitudeContext(sunPV, svPV, turnSpan);
+        final GNSSAttitudeContext           context   = new GNSSAttitudeContext(date, sun, pvProv, inertialFrame, turnSpan);
         final TimeStampedAngularCoordinates corrected = correctedYaw(context);
         if (turnSpan == null && context.getTurnSpan() != null) {
             // we have encountered a new turn, store it
@@ -127,14 +120,9 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame) {
 
-        // Sun/spacecraft geometry
-        // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
-        final TimeStampedFieldPVCoordinates<T> sunPV = sun.getPVCoordinates(date, inertialFrame);
-        final TimeStampedFieldPVCoordinates<T> svPV  = pvProv.getPVCoordinates(date, inertialFrame);
-
         // compute yaw correction
         final FieldTurnSpan<T>                      turnSpan  = getTurnSpan(date);
-        final GNSSFieldAttitudeContext<T>           context   = new GNSSFieldAttitudeContext<>(sunPV, svPV, turnSpan);
+        final GNSSFieldAttitudeContext<T>           context   = new GNSSFieldAttitudeContext<>(date, sun, pvProv, inertialFrame, turnSpan);
         final TimeStampedFieldAngularCoordinates<T> corrected = correctedYaw(context);
         if (turnSpan == null && context.getTurnSpan() != null) {
             // we have encountered a new turn, store it

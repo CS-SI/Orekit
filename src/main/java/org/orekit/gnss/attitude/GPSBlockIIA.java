@@ -89,7 +89,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final double absBeta = FastMath.abs(context.getBeta());
+            final double absBeta = FastMath.abs(context.beta());
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
                                 context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI),
@@ -115,9 +115,9 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         linearPhi = phiStart + phiDot * dtStart;
                     }
 
-                    if ((MathUtils.normalizeAngle(context.yawAngle(), linearPhi) - linearPhi) * phiDot < 0) {
-                     // we are already back in nominal yaw mode
-                        return context.getNominalYaw();
+                    if ((MathUtils.normalizeAngle(context.yawAngle(context.getDate()), linearPhi) - linearPhi) * phiDot < 0) {
+                        // we are already back in nominal yaw mode
+                        return context.nominalYaw(context.getDate());
                     }
 
                 } else {
@@ -131,11 +131,11 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         // we are in the recovery phase after turn
                         phiDot = yawRate;
                         final double phiEnd   = phiStart + phiDot * context.getTurnDuration();
-                        final double deltaPhi = context.yawAngle() - phiEnd;
+                        final double deltaPhi = context.yawAngle(context.getDate()) - phiEnd;
                         if (FastMath.abs(deltaPhi / phiDot) <= dtEnd) {
                             // time since turn end was sufficient for recovery
                             // we are already back in nominal yaw mode
-                            return context.getNominalYaw();
+                            return context.nominalYaw(context.getDate());
                         } else {
                             // recovery is not finished yet
                             linearPhi = phiEnd + FastMath.copySign(yawRate * dtEnd, deltaPhi);
@@ -150,7 +150,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 
@@ -168,7 +168,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final T absBeta = FastMath.abs(context.getBeta());
+            final T absBeta = FastMath.abs(context.beta(context.getDate()));
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))) :
                                 context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
@@ -194,9 +194,9 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     }
 
-                    if ((MathUtils.normalizeAngle(context.yawAngle().getReal(), linearPhi.getReal()) - linearPhi.getReal()) * phiDot.getReal() < 0) {
+                    if ((MathUtils.normalizeAngle(context.yawAngle(context.getDate()).getReal(), linearPhi.getReal()) - linearPhi.getReal()) * phiDot.getReal() < 0) {
                         // we are already back in nominal yaw mode
-                        return context.getNominalYaw();
+                        return context.nominalYaw(context.getDate());
                     }
 
                 } else {
@@ -210,11 +210,11 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         // we are in the recovery phase after turn
                         phiDot = field.getZero().add(yawRate);
                         final T phiEnd   = phiStart.add(phiDot.multiply(context.getTurnDuration()));
-                        final T deltaPhi = context.yawAngle().subtract(phiEnd);
+                        final T deltaPhi = context.yawAngle(context.getDate()).subtract(phiEnd);
                         if (FastMath.abs(deltaPhi.divide(phiDot).getReal()) <= dtEnd.getReal()) {
                             // time since turn end was sufficient for recovery
                             // we are already back in nominal yaw mode
-                            return context.getNominalYaw();
+                            return context.nominalYaw(context.getDate());
                         } else {
                             // recovery is not finished yet
                             linearPhi = phiEnd.add(dtEnd.multiply(yawRate).copySign(deltaPhi));
@@ -229,7 +229,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 

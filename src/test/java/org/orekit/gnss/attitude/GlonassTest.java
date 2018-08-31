@@ -44,7 +44,7 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testCrossingBeta() {
-        doTestAxes("beta-crossing-GLONASS.txt", 9.8e-3, 9.8e-3, 6.7e-16);
+        doTestAxes("beta-crossing-GLONASS.txt", 1.1e-2, 1.1e-2, 6.7e-16);
     }
 
     @Test

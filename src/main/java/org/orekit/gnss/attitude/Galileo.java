@@ -75,7 +75,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     @Override
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
-        if (FastMath.abs(context.getBeta()) < BETA_Y &&
+        if (FastMath.abs(context.beta()) < BETA_Y &&
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
             context.setHalfSpan(context.inSunSide() ?
@@ -85,7 +85,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
             if (context.inTurnTimeRange()) {
 
                 // handling both noon and midnight turns at once
-                final DerivativeStructure beta     = context.getBetaDS();
+                final DerivativeStructure beta     = context.betaDS();
                 final DerivativeStructure cosBeta  = beta.cos();
                 final DerivativeStructure sinBeta  = beta.sin();
                 final double              sinY     = FastMath.copySign(FastMath.sin(BETA_Y), context.getSecuredBeta());
@@ -104,7 +104,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 
@@ -112,7 +112,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     @Override
     protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
-        if (FastMath.abs(context.getBeta()).getReal() < BETA_Y &&
+        if (FastMath.abs(context.beta(context.getDate())).getReal() < BETA_Y &&
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
             final Field<T> field = context.getDate().getField();
@@ -124,7 +124,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
             if (context.inTurnTimeRange()) {
 
                 // handling both noon and midnight turns at once
-                final FieldDerivativeStructure<T> beta     = context.getBetaDS();
+                final FieldDerivativeStructure<T> beta     = context.betaDS();
                 final FieldDerivativeStructure<T> cosBeta  = beta.cos();
                 final FieldDerivativeStructure<T> sinBeta  = beta.sin();
                 final T                           sinY     = FastMath.sin(field.getZero().add(BETA_Y)).copySign(context.getSecuredBeta());
@@ -143,7 +143,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 

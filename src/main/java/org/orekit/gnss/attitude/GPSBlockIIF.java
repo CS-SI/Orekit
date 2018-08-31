@@ -78,7 +78,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final double absBeta = FastMath.abs(context.getBeta());
+            final double absBeta = FastMath.abs(context.beta());
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
                                 context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI),
@@ -106,7 +106,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
 
                     if (context.targetYawReached(linearPhi, phiDot)) {
                         // we are already back in nominal yaw mode
-                        return context.getNominalYaw();
+                        return context.nominalYaw(context.getDate());
                     }
 
                 } else {
@@ -114,9 +114,9 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                     phiDot    = context.yawRate(beta);
                     linearPhi = phiStart + phiDot * dtStart;
 
-                    if (context.timeUntilTurnEnd() <= 0.0) {
+                    if (context.afterTurnEnd()) {
                         // we are already back in nominal yaw mode
-                        return context.getNominalYaw();
+                        return context.nominalYaw(context.getDate());
                     }
 
                 }
@@ -128,7 +128,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 
@@ -146,7 +146,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final T absBeta = FastMath.abs(context.getBeta());
+            final T absBeta = FastMath.abs(context.beta(context.getDate()));
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))) :
                                 context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
@@ -174,7 +174,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
 
                     if (context.targetYawReached(linearPhi, phiDot)) {
                         // we are already back in nominal yaw mode
-                        return context.getNominalYaw();
+                        return context.nominalYaw(context.getDate());
                     }
 
                 } else {
@@ -182,9 +182,9 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                     phiDot    = context.yawRate(beta);
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
 
-                    if (context.timeUntilTurnEnd().getReal() <= 0.0) {
+                    if (context.afterTurnEnd()) {
                         // we are already back in nominal yaw mode
-                        return context.getNominalYaw();
+                        return context.nominalYaw(context.getDate());
                     }
 
                 }
@@ -196,7 +196,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 

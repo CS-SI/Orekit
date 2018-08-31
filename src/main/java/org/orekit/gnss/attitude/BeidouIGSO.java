@@ -52,13 +52,13 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
     @Override
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
-        if (FastMath.abs(context.getBeta()) < 2 * BETA_0) {
+        if (FastMath.abs(context.beta()) < 2 * BETA_0) {
             // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
             return context.orbitNormalYaw();
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 
@@ -66,13 +66,13 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
     @Override
     protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
-        if (FastMath.abs(context.getBeta()).getReal() < 2 * BETA_0) {
+        if (FastMath.abs(context.beta(context.getDate())).getReal() < 2 * BETA_0) {
             // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
             return context.orbitNormalYaw();
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 

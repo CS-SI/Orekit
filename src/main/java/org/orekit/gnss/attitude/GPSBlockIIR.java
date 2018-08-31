@@ -71,7 +71,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final double absBeta = FastMath.abs(context.getBeta());
+            final double absBeta = FastMath.abs(context.beta());
             context.setHalfSpan(absBeta * FastMath.sqrt(aNoon / absBeta - 1.0), END_MARGIN);
             if (context.inTurnTimeRange()) {
 
@@ -90,10 +90,11 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
                     // midnight turn
                     phiDot    = FastMath.copySign(YAW_RATE, beta);
                     linearPhi = phiStart + phiDot * dtStart;
-                    final double phiEnd = context.getYawEnd(beta);
-                    if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
-                        return context.getNominalYaw();
-                    }
+                }
+
+                if (context.targetYawReached(linearPhi, phiDot)) {
+                    // we are already back in nominal yaw mode
+                    return context.nominalYaw(context.getDate());
                 }
 
                 return context.turnCorrectedAttitude(linearPhi, phiDot);
@@ -103,7 +104,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 
@@ -120,7 +121,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final T absBeta = FastMath.abs(context.getBeta());
+            final T absBeta = FastMath.abs(context.beta(context.getDate()));
             context.setHalfSpan(absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))), END_MARGIN);
             if (context.inTurnTimeRange()) {
 
@@ -141,7 +142,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     final T phiEnd = context.getYawEnd(beta);
                     if (phiEnd.getReal() / linearPhi.getReal() < 0 || phiEnd.getReal() / linearPhi.getReal() > 1) {
-                        return context.getNominalYaw();
+                        return context.nominalYaw(context.getDate());
                     }
                 }
 
@@ -152,7 +153,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
         }
 
         // in nominal yaw mode
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
 
     }
 

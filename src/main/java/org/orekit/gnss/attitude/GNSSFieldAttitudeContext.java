@@ -27,11 +27,14 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -53,19 +56,22 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTimeStamped<T> {
 
+    /** Derivation order. */
+    private static final int ORDER = 2;
+
     /** Constant Y axis. */
-    private static final PVCoordinates PLUS_Y =
+    private static final PVCoordinates PLUS_Y_PV =
             new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Constant Z axis. */
-    private static final PVCoordinates MINUS_Z =
+    private static final PVCoordinates MINUS_Z_PV =
             new PVCoordinates(Vector3D.MINUS_K, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);
 
-    /** Derivation order. */
-    private static final int ORDER = 2;
+    /** Time derivation factory. */
+    private final FDSFactory<T> factory;
 
     /** Constant Y axis. */
     private final FieldPVCoordinates<T> plusY;
@@ -73,26 +79,32 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     /** Constant Z axis. */
     private final FieldPVCoordinates<T> minusZ;
 
+    /** Constant Y axis. */
+    private final FieldPVCoordinates<FieldDerivativeStructure<T>> plusYDS;
+
+    /** Constant Z axis. */
+    private final FieldPVCoordinates<FieldDerivativeStructure<T>> minusZDS;
+
     /** Context date. */
     private final AbsoluteDate dateDouble;
 
-    /** Sun position-velocity in inertial frame. */
-    private final TimeStampedFieldPVCoordinates<T> sunPV;
+    /** Current date. */
+    private final FieldAbsoluteDate<T> date;
 
-    /** Spacecraft position-velocity in inertial frame. */
-    private final TimeStampedFieldPVCoordinates<T> svPV;
+    /** Current date. */
+    private final FieldAbsoluteDate<FieldDerivativeStructure<T>> dateDS;
 
-    /** Angle between Sun and orbital plane. */
-    private final FieldDerivativeStructure<T> beta;
+    /** Provider for Sun position. */
+    private final ExtendedPVCoordinatesProvider sun;
+
+    /** Provider for spacecraft position. */
+    private final FieldPVCoordinatesProvider<T> pvProv;
+
+    /** Inertial frame where velocity are computed. */
+    private final Frame inertialFrame;
 
     /** Cosine of the angle between spacecraft and Sun direction. */
     private final FieldDerivativeStructure<T> svbCos;
-
-    /** Nominal yaw. */
-    private final TimeStampedFieldAngularCoordinates<T> nominalYaw;
-
-    /** Nominal yaw. */
-    private final FieldRotation<FieldDerivativeStructure<T>> nominalYawDS;
 
     /** Spacecraft angular velocity. */
     private T muRate;
@@ -110,32 +122,37 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     private FieldTurnSpan<T> turnSpan;
 
     /** Simple constructor.
-     * @param sunPV Sun position-velocity in inertial frame
-     * @param svPV spacecraft position-velocity in inertial frame
+     * @param date current date
+     * @param sun provider for Sun position
+     * @param pvProv provider for spacecraft position
+     * @param inertialFrame inertial frame where velocity are computed
      * @param turnSpan turn time data, if a turn has already been identified in the date neighborhood,
      * null otherwise
      */
-    GNSSFieldAttitudeContext(final TimeStampedFieldPVCoordinates<T> sunPV, final TimeStampedFieldPVCoordinates<T> svPV,
-                             final FieldTurnSpan<T> turnSpan) {
+    GNSSFieldAttitudeContext(final FieldAbsoluteDate<T> date,
+                             final ExtendedPVCoordinatesProvider sun, final FieldPVCoordinatesProvider<T> pvProv,
+                             final Frame inertialFrame,  final FieldTurnSpan<T> turnSpan) {
 
-        final Field<T> field = sunPV.getDate().getField();
-        plusY  = new FieldPVCoordinates<>(field, PLUS_Y);
-        minusZ = new FieldPVCoordinates<>(field, MINUS_Z);
+        final Field<T> field = date.getField();
+        factory  = new FDSFactory<>(field, 1, ORDER);
+        plusY    = new FieldPVCoordinates<>(field, PLUS_Y_PV);
+        minusZ   = new FieldPVCoordinates<>(field, MINUS_Z_PV);
+        plusYDS  = plusY.toDerivativeStructurePV(factory.getCompiler().getOrder());
+        minusZDS = minusZ.toDerivativeStructurePV(factory.getCompiler().getOrder());
 
-        this.dateDouble = svPV.getDate().toAbsoluteDate();
+        this.dateDouble    = date.toAbsoluteDate();
+        this.date          = date;
+        this.dateDS        = addDerivatives(date);
+        this.sun           = sun;
+        this.pvProv        = pvProv;
+        this.inertialFrame = inertialFrame;
+        final FieldPVCoordinates<FieldDerivativeStructure<T>> sunPVDS = sun.getPVCoordinates(dateDS, inertialFrame);
 
-        final FieldPVCoordinates<FieldDerivativeStructure<T>> sunPVDS = sunPV.toDerivativeStructurePV(ORDER);
-        this.sunPV   = sunPV;
-        this.svPV    = svPV;
-        final FieldPVCoordinates<FieldDerivativeStructure<T>> svPVDS  = svPV.toDerivativeStructurePV(ORDER);
+        final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(date, inertialFrame);
+        final FieldPVCoordinates<FieldDerivativeStructure<T>> svPVDS  =
+                        svPV.toDerivativeStructurePV(factory.getCompiler().getOrder());
         this.svbCos  = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
-                       divide(sunPVDS.getPosition().getNorm().
-                       multiply(svPVDS.getPosition().getNorm()));
-        this.beta    = computeBeta(sunPVDS, svPVDS);
-
-        // nominal yaw steering
-        this.nominalYaw = computeNominalYaw(sunPV, svPV);
-        this.nominalYawDS = nominalYaw.toDerivativeStructureRotation(ORDER);
+                       divide(sunPVDS.getPosition().getNorm().multiply(svPVDS.getPosition().getNorm()));
 
         this.muRate = svPV.getAngularVelocity().getNorm();
 
@@ -143,37 +160,97 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
 
     }
 
+    /** Convert a date, removing derivatives.
+     * @param d date to convert
+     * @return date without derivatives
+     */
+    private FieldAbsoluteDate<T> removeDerivatives(final FieldAbsoluteDate<FieldDerivativeStructure<T>> d) {
+        final AbsoluteDate                dd     = d.toAbsoluteDate();
+        final FieldDerivativeStructure<T> offset = d.durationFrom(dd);
+        return new FieldAbsoluteDate<>(date.getField(), dd).shiftedBy(offset.getValue());
+    }
+
+    /** Convert a date, adding derivatives.
+     * @param d date to convert
+     * @return date without derivatives
+     */
+    private FieldAbsoluteDate<FieldDerivativeStructure<T>> addDerivatives(final FieldAbsoluteDate<T> d) {
+        final AbsoluteDate dd     = d.toAbsoluteDate();
+        final T            offset = d.durationFrom(dd);
+        return new FieldAbsoluteDate<>(factory.getDerivativeField(), dd).shiftedBy(factory.variable(0, offset));
+    }
+
     /** Compute nominal yaw steering.
-     * @param sun Sun position-velocity in inertial frame
-     * @param sat spacecraft position-velocity in inertial frame
+     * @param d computation date
      * @return nominal yaw steering
      */
-    private TimeStampedFieldAngularCoordinates<T> computeNominalYaw(final TimeStampedFieldPVCoordinates<T> sun,
-                                                                    final TimeStampedFieldPVCoordinates<T> sat) {
-        return new TimeStampedFieldAngularCoordinates<>(svPV.getDate(),
+    public TimeStampedFieldAngularCoordinates<T> nominalYaw(final FieldAbsoluteDate<T> d) {
+        final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(date, inertialFrame);
+        return new TimeStampedFieldAngularCoordinates<>(d,
                                                         svPV.normalize(),
-                                                        sunPV.crossProduct(svPV).normalize(),
+                                                        sun.getPVCoordinates(date, inertialFrame).crossProduct(svPV).normalize(),
                                                         minusZ,
                                                         plusY,
                                                         1.0e-9);
     }
 
+    /** Compute nominal yaw steering.
+     * @param d computation date
+     * @return nominal yaw steering
+     */
+    private TimeStampedFieldAngularCoordinates<FieldDerivativeStructure<T>> nominalYawDS(final FieldAbsoluteDate<FieldDerivativeStructure<T>> d) {
+        final FieldPVCoordinates<FieldDerivativeStructure<T>> svPV = pvProv.getPVCoordinates(removeDerivatives(d), inertialFrame).
+                                                                     toDerivativeStructurePV(d.getField().getZero().getOrder());
+        return new TimeStampedFieldAngularCoordinates<>(d,
+                                                        svPV.normalize(),
+                                                        sun.getPVCoordinates(d, inertialFrame).crossProduct(svPV).normalize(),
+                                                        minusZDS,
+                                                        plusYDS,
+                                                        1.0e-9);
+    }
+
     /** Compute Sun elevation.
-     * @param sun Sun position-velocity in inertial frame
-     * @param sat spacecraft position-velocity in inertial frame
+     * @param d computation date
      * @return Sun elevation
      */
-    private FieldDerivativeStructure<T> computeBeta(final FieldPVCoordinates<FieldDerivativeStructure<T>> sun,
-                                                    final FieldPVCoordinates<FieldDerivativeStructure<T>> sat) {
-        return FieldVector3D.angle(sun.getPosition(), sat.getMomentum()).
+    public T beta(final FieldAbsoluteDate<T> d) {
+        final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(d, inertialFrame);
+        return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
                negate().
                add(0.5 * FastMath.PI);
+    }
+
+    /** Compute Sun elevation.
+     * @param d computation date
+     * @return Sun elevation
+     */
+    private FieldDerivativeStructure<T> betaDS(final FieldAbsoluteDate<FieldDerivativeStructure<T>> d) {
+        final FieldPVCoordinates<FieldDerivativeStructure<T>> svPV =
+                        pvProv.getPVCoordinates(removeDerivatives(d), inertialFrame).
+                        toDerivativeStructurePV(d.getField().getZero().getOrder());
+        return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
+               negate().
+               add(0.5 * FastMath.PI);
+    }
+
+    /** Compute Sun elevation.
+     * @return Sun elevation
+     */
+    public FieldDerivativeStructure<T> betaDS() {
+        return betaDS(dateDS);
     }
 
     /** {@inheritDoc} */
     @Override
     public FieldAbsoluteDate<T> getDate() {
-        return svPV.getDate();
+        return date;
+    }
+
+    /** Get the current date.
+     * @return current date
+     */
+    public FieldAbsoluteDate<FieldDerivativeStructure<T>> getDateDS() {
+        return dateDS;
     }
 
     /** Get the turn span.
@@ -190,24 +267,6 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         return svbCos.getValue();
     }
 
-    /** Get the angle between Sun and orbital plane.
-     * @return angle between Sun and orbital plane
-     * @see #getBetaDS()
-     * @see #getSecuredBeta(TurnTimeRange)
-     */
-    public T getBeta() {
-        return beta.getValue();
-    }
-
-    /** Get the angle between Sun and orbital plane.
-     * @return angle between Sun and orbital plane
-     * @see #getBeta()
-     * @see #getSecuredBeta(TurnTimeRange)
-     */
-    public FieldDerivativeStructure<T> getBetaDS() {
-        return beta;
-    }
-
     /** Get a Sun elevation angle that does not change sign within the turn.
      * <p>
      * This method either returns the current beta or replaces it with the
@@ -215,53 +274,36 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * turn. As of 9.2, it is only useful for GPS and Glonass.
      * </p>
      * @return secured Sun elevation angle
-     * @see #getBeta()
-     * @see #getBetaDS()
+     * @see #beta(FieldAbsoluteDate)
+     * @see #betaDS(FieldAbsoluteDate)
      */
     public T getSecuredBeta() {
+        final T beta = beta(getDate());
         return FastMath.abs(beta.getReal()) < BETA_SIGN_CHANGE_PROTECTION ?
-               beta.taylor(timeSinceTurnStart().negate()) :
-               getBeta();
-    }
-
-    /** Get the nominal yaw.
-     * @return nominal yaw
-     */
-    public TimeStampedFieldAngularCoordinates<T> getNominalYaw() {
-        return nominalYaw;
+               beta(turnSpan.getTurnStartDate()) :
+               beta;
     }
 
     /** Compute nominal yaw angle.
-     * @param nominalRotation rotation of the nominal yaw attitude
-     * @param velocity spacecraft velocity
-     * @param b beta angle
+     * @param d computation date
      * @return nominal yaw angle
      */
-    private T yawAngle(final FieldRotation<T> nominalRotation,
-                       final FieldVector3D<T> velocity,
-                       final T b) {
-        final FieldVector3D<T> xSat = nominalRotation.applyInverseTo(Vector3D.PLUS_I);
-        return FastMath.copySign(FieldVector3D.angle(velocity, xSat), -b.getReal());
+    public T yawAngle(final FieldAbsoluteDate<T> d) {
+        final FieldVector3D<T> xSat     = nominalYaw(d).getRotation().applyInverseTo(Vector3D.PLUS_I);
+        final FieldVector3D<T> velocity = pvProv.getPVCoordinates(d, inertialFrame).getVelocity();
+        return FastMath.copySign(FieldVector3D.angle(velocity, xSat), beta(d).negate());
     }
 
     /** Compute nominal yaw angle.
+     * @param d computation date
      * @return nominal yaw angle
      */
-    public T yawAngle() {
-        return yawAngle(nominalYaw.getRotation(), svPV.getVelocity(), beta.getValue());
-    }
-
-    /** Compute nominal yaw angle.
-     * @return nominal yaw angle
-     */
-    public FieldDerivativeStructure<T> yawAngleDS() {
-        final FieldVector3D<FieldDerivativeStructure<T>> xSat    = nominalYawDS.applyInverseTo(Vector3D.PLUS_I);
-        final FDSFactory<T>                              factory = xSat.getX().getFactory();
-        final FieldVector3D<T>                           v       = svPV.getVelocity();
-        final FieldVector3D<FieldDerivativeStructure<T>> vDS     = new FieldVector3D<>(factory.constant(v.getX()),
-                                                                                       factory.constant(v.getY()),
-                                                                                       factory.constant(v.getZ()));
-        return FieldVector3D.angle(vDS, xSat).copySign(beta.getValue().negate());
+    public FieldDerivativeStructure<T> yawAngleDS(final FieldAbsoluteDate<FieldDerivativeStructure<T>> d) {
+        final FieldVector3D<FieldDerivativeStructure<T>> xSat     = nominalYawDS(d).getRotation().applyInverseTo(Vector3D.PLUS_I);
+        final FieldVector3D<FieldDerivativeStructure<T>> velocity =
+                        pvProv.getPVCoordinates(removeDerivatives(d), inertialFrame).
+                        toDerivativeStructurePV(d.getField().getZero().getOrder()).getVelocity();
+        return FastMath.copySign(FieldVector3D.angle(velocity, xSat), betaDS(d).negate());
     }
 
     /** Check if a linear yaw model has already reached target yaw.
@@ -270,24 +312,18 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return true if linear model has already reached target yaw
      */
     public boolean targetYawReached(final T linearPhi, final T phiDot) {
-        final T dt = turnSpan.timeUntilTurnEnd(getDate());
-        final double targetYaw;
-        if (dt.getReal() > 0) {
-            // we are still within the turn
-            // the nominal is not yet valid, we compare with the yaw at end of turn
-            final TimeStampedFieldPVCoordinates<T> sunEnd  = sunPV.shiftedBy(dt);
-            final TimeStampedFieldPVCoordinates<T> satEnd  = svPV.shiftedBy(dt);
-            final T                                betaEnd = beta.taylor(dt);
-            final TimeStampedFieldAngularCoordinates<T> nominalYawEnd = computeNominalYaw(sunEnd, satEnd);
-            targetYaw = yawAngle(nominalYawEnd.getRotation(),
-                                 satEnd.getVelocity(),
-                                 betaEnd).getReal();
-        } else {
+        final FieldAbsoluteDate<T> targetDate;
+        if (afterTurnEnd()) {
             // we are after the end of the turn, probably during the recovery margin
             // the nominal yaw is valid, we compare with the current nominal yaw
-            targetYaw = yawAngle().getReal();
+            targetDate = date;
+        } else {
+            // we are within the turn
+            // the nominal yaw is not yet valid, we compare to the yaw at turn end
+            targetDate = turnSpan.getTurnEndDate();
         }
-        return (MathUtils.normalizeAngle(targetYaw, linearPhi.getReal()) - linearPhi.getReal()) * phiDot.getReal() < 0;
+        final T targetYaw = yawAngle(targetDate);
+        return (MathUtils.normalizeAngle(targetYaw.getReal(), linearPhi.getReal()) - linearPhi.getReal()) * phiDot.getReal() < 0;
     }
 
     /** Set up the midnight/noon turn region.
@@ -319,13 +355,6 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
             return inTurnTimeRange();
         }
 
-    }
-
-    /** Get the relative orbit angle to turn center.
-     * @return relative orbit angle to turn center
-     */
-    public T getDelta() {
-        return delta.getValue();
     }
 
     /** Get the relative orbit angle to turn center.
@@ -391,7 +420,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return angle projected into orbital plane, always positive
      */
     private FieldDerivativeStructure<T> inOrbitPlaneAbsoluteAngle(final FieldDerivativeStructure<T> angle) {
-        return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta)));
+        return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta(getDate()))));
     }
 
     /** Project a spacecraft/Sun angle into orbital plane.
@@ -405,7 +434,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return angle projected into orbital plane, always positive
      */
     public T inOrbitPlaneAbsoluteAngle(final T angle) {
-        return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta.getReal())));
+        return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta(getDate()))));
     }
 
     /** Compute yaw.
@@ -425,8 +454,8 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @param endMargin margin in seconds after turn end
      */
     public void setHalfSpan(final T halfSpan, final double endMargin) {
-        final FieldAbsoluteDate<T> start = svPV.getDate().shiftedBy(delta.getValue().subtract(halfSpan).divide(muRate));
-        final FieldAbsoluteDate<T> end   = svPV.getDate().shiftedBy(delta.getValue().add(halfSpan).divide(muRate));
+        final FieldAbsoluteDate<T> start = date.shiftedBy(delta.getValue().subtract(halfSpan).divide(muRate));
+        final FieldAbsoluteDate<T> end   = date.shiftedBy(delta.getValue().add(halfSpan).divide(muRate));
         if (turnSpan == null) {
             turnSpan = new FieldTurnSpan<>(start, end, getDate().toAbsoluteDate(), endMargin);
         } else {
@@ -455,11 +484,11 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         return turnSpan.timeSinceTurnStart(getDate());
     }
 
-    /** Get elapsed time until turn end (without margin).
-     * @return elapsed time from current date to turn end (without margin)
+    /** Check if we are after turn end (without margin).
+     * @return true if we are after turn end (without margin)
      */
-    public T timeUntilTurnEnd() {
-        return turnSpan.timeUntilTurnEnd(getDate());
+    public boolean afterTurnEnd() {
+        return date.durationFrom(turnSpan.getTurnEndDate()).getReal() >= 0.0;
     }
 
     /** Generate an attitude with turn-corrected yaw.
@@ -468,7 +497,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return attitude with specified yaw
      */
     public TimeStampedFieldAngularCoordinates<T> turnCorrectedAttitude(final T yaw, final T yawDot) {
-        return turnCorrectedAttitude(beta.getFactory().build(yaw, yawDot, yaw.getField().getZero()));
+        return turnCorrectedAttitude(factory.build(yaw, yawDot, yaw.getField().getZero()));
     }
 
     /** Generate an attitude with turn-corrected yaw.
@@ -477,16 +506,18 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      */
     public TimeStampedFieldAngularCoordinates<T> turnCorrectedAttitude(final FieldDerivativeStructure<T> yaw) {
 
+        // compute nominal yaw
+        final FieldDerivativeStructure<T> nominalAngle = yawAngleDS(dateDS);
+
         // compute a linear yaw correction model
-        final FieldDerivativeStructure<T> nominalAngle   = yawAngleDS();
         final TimeStampedFieldAngularCoordinates<T> correction =
-                        new TimeStampedFieldAngularCoordinates<>(nominalYaw.getDate(),
+                        new TimeStampedFieldAngularCoordinates<>(date,
                                                                  new FieldRotation<>(FieldVector3D.getPlusK(nominalAngle.getField()),
                                                                                      nominalAngle.subtract(yaw),
                                                                                      RotationConvention.VECTOR_OPERATOR));
 
         // combine the two parts of the attitude
-        return correction.addOffset(getNominalYaw());
+        return correction.addOffset(nominalYaw(date));
 
     }
 
@@ -494,8 +525,8 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return Orbit Normal yaw, using inertial frame as reference
      */
     public TimeStampedFieldAngularCoordinates<T> orbitNormalYaw() {
-        final FieldTransform<T> t = LOFType.VVLH.transformFromInertial(svPV.getDate(), svPV);
-        return new TimeStampedFieldAngularCoordinates<>(svPV.getDate(),
+        final FieldTransform<T> t = LOFType.VVLH.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
+        return new TimeStampedFieldAngularCoordinates<>(date,
                                                         t.getRotation(),
                                                         t.getRotationRate(),
                                                         t.getRotationAcceleration());

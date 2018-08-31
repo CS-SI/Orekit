@@ -129,12 +129,18 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
         return date.durationFrom(start);
     }
 
-    /** Get elapsed time until turn end (without margin).
-     * @param date date to check
-     * @return elapsed time from specified date to turn end (without margin)
+    /** Get turn start date.
+     * @return turn start date
      */
-    public T timeUntilTurnEnd(final FieldAbsoluteDate<T> date) {
-        return end.durationFrom(date);
+    public FieldAbsoluteDate<T> getTurnStartDate() {
+        return start;
+    }
+
+    /** Get turn end date (without margin).
+     * @return turn end date (without margin)
+     */
+    public FieldAbsoluteDate<T> getTurnEndDate() {
+        return end;
     }
 
     /** Check if a date is within range.
