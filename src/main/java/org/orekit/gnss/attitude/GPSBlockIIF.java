@@ -104,7 +104,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                         linearPhi = phiStart + phiDot * dtStart;
                     }
 
-                    if (context.nominalYawReached(linearPhi, phiDot)) {
+                    if (context.targetYawReached(linearPhi, phiDot)) {
                         // we are already back in nominal yaw mode
                         return context.getNominalYaw();
                     }
@@ -172,7 +172,7 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     }
 
-                    if (context.nominalYawReached(linearPhi, phiDot)) {
+                    if (context.targetYawReached(linearPhi, phiDot)) {
                         // we are already back in nominal yaw mode
                         return context.getNominalYaw();
                     }

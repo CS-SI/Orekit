@@ -264,21 +264,30 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         return FieldVector3D.angle(vDS, xSat).copySign(beta.getValue().negate());
     }
 
-    /** Check if a linear yaw model has already reached nominal yaw.
+    /** Check if a linear yaw model has already reached target yaw.
      * @param linearPhi value of the linear yaw model
      * @param phiDot slope of the linear yaw model
-     * @return true if linear model has already reached nominal yaw
+     * @return true if linear model has already reached target yaw
      */
-    public boolean nominalYawReached(final T linearPhi, final T phiDot) {
-        final T                   dt     = turnSpan.timeUntilTurnEnd(getDate());
-        final TimeStampedFieldPVCoordinates<T> sunEnd = sunPV.shiftedBy(dt);
-        final TimeStampedFieldPVCoordinates<T> satEnd = svPV.shiftedBy(dt);
-        final T betaEnd                  = beta.taylor(dt);
-        final TimeStampedFieldAngularCoordinates<T> nominalYawEnd = computeNominalYaw(sunEnd, satEnd);
-        final T yawAtTurnEnd = yawAngle(nominalYawEnd.getRotation(),
-                                        satEnd.getVelocity(),
-                                        betaEnd.negate());
-        return (MathUtils.normalizeAngle(yawAtTurnEnd.getReal(), linearPhi.getReal()) - linearPhi.getReal()) * phiDot.getReal() < 0;
+    public boolean targetYawReached(final T linearPhi, final T phiDot) {
+        final T dt = turnSpan.timeUntilTurnEnd(getDate());
+        final double targetYaw;
+        if (dt.getReal() > 0) {
+            // we are still within the turn
+            // the nominal is not yet valid, we compare with the yaw at end of turn
+            final TimeStampedFieldPVCoordinates<T> sunEnd  = sunPV.shiftedBy(dt);
+            final TimeStampedFieldPVCoordinates<T> satEnd  = svPV.shiftedBy(dt);
+            final T                                betaEnd = beta.taylor(dt);
+            final TimeStampedFieldAngularCoordinates<T> nominalYawEnd = computeNominalYaw(sunEnd, satEnd);
+            targetYaw = yawAngle(nominalYawEnd.getRotation(),
+                                 satEnd.getVelocity(),
+                                 betaEnd).getReal();
+        } else {
+            // we are after the end of the turn, probably during the recovery margin
+            // the nominal yaw is valid, we compare with the current nominal yaw
+            targetYaw = yawAngle().getReal();
+        }
+        return (MathUtils.normalizeAngle(targetYaw, linearPhi.getReal()) - linearPhi.getReal()) * phiDot.getReal() < 0;
     }
 
     /** Set up the midnight/noon turn region.
