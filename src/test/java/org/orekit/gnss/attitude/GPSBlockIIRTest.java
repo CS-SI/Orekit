@@ -39,15 +39,7 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallNegativeBeta() {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // - Orekit updates turn time span as new points are evaluated
-        //   Kouba computes turn time span once near turn start and never updates it
-        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-negative-BLOCK-IIR.txt", 2.0e-104, 2.0e-104, 9.1e-16);
+        doTestAxes("beta-small-negative-BLOCK-IIR.txt", 3.1e-13, 3.1e-13, 9.1e-16);
     }
 
     @Test
@@ -60,15 +52,7 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallPositiveBeta() {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // - Orekit updates turn time span as new points are evaluated
-        //   Kouba computes turn time span once near turn start and never updates it
-        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-positive-BLOCK-IIR.txt", 8.6e-105, 8.6e-105, 7.9e-16);
+        doTestAxes("beta-small-positive-BLOCK-IIR.txt", 8.0e-13, 8.0e-13, 7.9e-16);
     }
 
     @Test

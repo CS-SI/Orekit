@@ -1,7 +1,7 @@
---- eclips_May2017.f	2018-07-13 15:13:08.952370404 +0200
-+++ eclips_May2017_patched.f	2018-07-13 15:16:08.822431497 +0200
-@@ -111,6 +111,9 @@
- C                                    AT END OF BLOCK-IIR TURN (Luc Maisonobe)
+--- eclips_May2017.f	2018-09-03 20:05:20.619974240 +0200
++++ eclips_May2017_patched.f	2018-09-03 20:05:20.619974240 +0200
+@@ -109,6 +109,9 @@
+ C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
  C                      Jul 10, 2018  ENSURE CONVERGENCE OF GLONASS YAWEND
  C                                    ITERATIVE COMPUTATION (Luc Maisonobe)
 +C                      Jul 12, 2018  UPDATE ESTIMATED ECLIPSE START AND END TIME
@@ -10,7 +10,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -184,23 +187,23 @@
+@@ -182,23 +185,23 @@
  C
  C     MAXSAT - MAXIMUM NUMBER OF SATELLITES, CHANGED IF REQUIRED
  C      
@@ -38,7 +38,7 @@
        REAL*8    XSV(*), SANTXYZ(*), VSVC(*), BETA, MURATE, YANGLE, DET,
  C Jan 10, 2017
  C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
-@@ -210,6 +213,8 @@
+@@ -208,6 +211,8 @@
        REAL*8    YAWEND
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
@@ -47,7 +47,7 @@
  C Dec 12, 2013
        REAL*8 YBIAS
        INTEGER*4 IBLK(*), J, I
-@@ -231,7 +236,8 @@
+@@ -229,7 +234,8 @@
  C                Note: THE BEIDOU HARDWARE RATES NOT NEEDED
  C    &  ,.1140d0, 32*0.250d0/
       &  ,.1140d0, 32*0.250d0, 36*0.203d0, 36*0.203d0/
@@ -57,7 +57,7 @@
  C     GAL  BETAy => BETA0
  C     GAL  BETAx => ANOON=15DEG:  (ANIGHT-180); ANIGHT =180 + 15 DEG
  C NOTE:BETA0= 0 DISABLES GALILEO AND/OR BEIDOU IGEO/MEO ECLIPSING!
-@@ -264,7 +270,6 @@
+@@ -262,7 +268,6 @@
  C Jan 10, 2017 -end
  C
        IECLIPS=0
@@ -65,7 +65,7 @@
        HALFHR= 1800.D0
  C Jan 10, 2017 - no 1/2h extension for GALILEO
          IF(IPRN .GT.64.AND.IPRN.LE.100) HALFHR= 0.D0
-@@ -416,11 +421,9 @@
+@@ -414,11 +419,9 @@
  C ONLY FORWARD
         IF (IDIR .GT. 0 ) THEN
  C
@@ -78,7 +78,7 @@
  C IIR MIDNIGHT/NOON TURN or II/IIA NOON TURN START
  C for IIR/GLONAS NIGHT (turn) only makes sense when |BETADG| < ANOON!
  C For IIA it gets here only when NOON is true and that happens only when |BETADG|< ANOON!
-@@ -433,17 +436,17 @@
+@@ -431,17 +434,17 @@
  C jan 10, 2017       - ALSO GAL NOON TURN TIMES(ANOON=ANIGHT-180deg)
  C           IF(     IPRN .GT.32.AND.IPRN.LE.64) THEN
              IF(     IPRN .GT.32.AND.IPRN.LE.100) THEN
@@ -105,7 +105,7 @@
              ENDIF
            END IF
  C     II/IIA SHADOW START & END TIMES
-@@ -451,12 +454,11 @@
+@@ -449,12 +452,11 @@
  C         IF((IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5).AND.NIGHT) THEN
            IF((IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5
       &         .OR.(IPRN .GT.64.AND.IPRN.LE.100)).AND.NIGHT) THEN
@@ -123,7 +123,7 @@
            END IF
        END IF
  C
-@@ -465,17 +467,10 @@
+@@ -463,17 +465,10 @@
  C
          IF( (NIGHT .AND. SVBCOS .LT. CNIGHT)
       &       .OR. (NOON .AND. SVBCOS .GT. CNOON) ) THEN
@@ -141,7 +141,7 @@
  C IIR MIDNIGHT/NOON TURN  or II/IIA NOON TURN START
  C                                  AND GLONASS NOON
              IF(IBLK(IPRN).GT.3.AND.IBLK(IPRN).LE.5.OR.NOON) THEN
-@@ -486,16 +481,16 @@
+@@ -484,16 +479,16 @@
  C            IF(IPRN.GT.32.AND.IPRN.LE.64) THEN
               IF(IPRN.GT.32.AND.IPRN.LE.100) THEN
  C GLONASS NOON TURN MODE ACORDING TO DILSSNER ET AL 2010 
@@ -166,7 +166,7 @@
  C May 03, 2017 -remove Jan 10 dead code below
  C Jan 10, 2017 - GALILEO NOON - start
  C             IF(IPRN .GT.64.AND.IPRN.LE.100)THEN
-@@ -514,12 +509,10 @@
+@@ -512,12 +507,10 @@
       &           .OR.(IPRN .GT.64.AND.IPRN.LE.100)).AND.NIGHT) THEN
               TMP = ACOS(MAX(-1.0D0, MIN(1.0D0,
       &                  -COS(ANIGHT*DTR) / COS(BETADG*DTR)))) / DTR
@@ -182,7 +182,7 @@
          ENDIF
  C  END OF FORWARD (FWD) LOOP (IDIR = 1)
         ENDIF
-@@ -549,7 +542,7 @@
+@@ -547,7 +540,7 @@
                V(J)=VSVC(J)/SQRT(V2)
                R(J)=XSV(J)/SQRT(P2) 
               END DO
@@ -191,7 +191,7 @@
               DET= MURATE*(ECLETM(IPRN,I)-
       &                        ECLSTM(IPRN,I))/2.d0
  C Dec 12, 2013 - start
-@@ -658,7 +651,7 @@
+@@ -656,7 +649,7 @@
                 IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
  C  SIN ORB ANGLE MU => YAWEND
                 YAWEND=
@@ -200,7 +200,7 @@
  C Jan 10, 2017 - start
  C GAL ECLIPS MODEL: Shy => BETAE
               BETAE=0.5D0*(-SIGN(SIN(BETA0*DTR),BETADG)-SIN(BETADG*DTR))
-@@ -738,7 +731,7 @@
+@@ -736,7 +729,7 @@
                 IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
  C  SIN ORB ANGLE MU => YAWEND
                 YAWEND= SIN(
@@ -209,7 +209,7 @@
  C Jan 10, 2017
  C GAL ECLIPS MODEL: Shy => BETAE
               BETAE=0.5D0*(-SIGN(SIN(BETA0*DTR),BETADG)-SIN(BETADG*DTR))
-@@ -774,6 +767,85 @@
+@@ -772,6 +765,85 @@
            SANTXYZ(3)= QZ
        END IF
        ENDIF
