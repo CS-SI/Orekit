@@ -112,7 +112,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     @Override
     protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
-        if (FastMath.abs(context.beta(context.getDate())).getReal() < BETA_Y &&
+        if (FastMath.abs(context.beta()).getReal() < BETA_Y &&
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
             final Field<T> field = context.getDate().getField();

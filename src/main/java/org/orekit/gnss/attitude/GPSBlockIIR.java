@@ -121,7 +121,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final T absBeta = FastMath.abs(context.beta(context.getDate()));
+            final T absBeta = FastMath.abs(context.beta());
             context.setHalfSpan(absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))), END_MARGIN);
             if (context.inTurnTimeRange()) {
 

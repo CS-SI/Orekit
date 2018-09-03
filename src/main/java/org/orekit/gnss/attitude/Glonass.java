@@ -147,7 +147,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         final Field<T> field = context.getDate().getField();
 
         // noon beta angle limit from yaw rate
-        final T realBeta = context.beta(context.getDate());
+        final T realBeta = context.beta();
         final T muRate   = context.getMuRate();
         final T aNight   = field.getZero().add(NIGHT_TURN_LIMIT);
         T       aNoon    = FastMath.atan(muRate.divide(YAW_RATE));

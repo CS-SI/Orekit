@@ -66,7 +66,7 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
     @Override
     protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
-        if (FastMath.abs(context.beta(context.getDate())).getReal() < 2 * BETA_0) {
+        if (FastMath.abs(context.beta()).getReal() < 2 * BETA_0) {
             // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
             return context.orbitNormalYaw();
         }
