@@ -151,7 +151,7 @@ class GNSSAttitudeContext implements TimeStamped {
         final PVCoordinates svPV = pvProv.getPVCoordinates(d, inertialFrame);
         return new TimeStampedAngularCoordinates(d,
                                                  svPV.normalize(),
-                                                 PVCoordinates.crossProduct(sun.getPVCoordinates(date, inertialFrame), svPV).normalize(),
+                                                 PVCoordinates.crossProduct(sun.getPVCoordinates(d, inertialFrame), svPV).normalize(),
                                                  MINUS_Z_PV,
                                                  PLUS_Y_PV,
                                                  1.0e-9);

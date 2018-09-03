@@ -184,10 +184,10 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return nominal yaw steering
      */
     public TimeStampedFieldAngularCoordinates<T> nominalYaw(final FieldAbsoluteDate<T> d) {
-        final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(date, inertialFrame);
+        final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(d, inertialFrame);
         return new TimeStampedFieldAngularCoordinates<>(d,
                                                         svPV.normalize(),
-                                                        sun.getPVCoordinates(date, inertialFrame).crossProduct(svPV).normalize(),
+                                                        sun.getPVCoordinates(d, inertialFrame).crossProduct(svPV).normalize(),
                                                         minusZ,
                                                         plusY,
                                                         1.0e-9);

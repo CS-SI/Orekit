@@ -19,7 +19,6 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -114,33 +113,15 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         phiDot    = -FastMath.copySign(yawRate, beta);
                         linearPhi = phiStart + phiDot * dtStart;
                     }
-
-                    if ((MathUtils.normalizeAngle(context.yawAngle(context.getDate()), linearPhi) - linearPhi) * phiDot < 0) {
-                        // we are already back in nominal yaw mode
-                        return context.nominalYaw(context.getDate());
-                    }
-
                 } else {
                     // midnight turn
-                    final double dtEnd = dtStart - context.getTurnDuration();
-                    if (dtEnd < 0) {
-                        // we are within the turn itself
-                        phiDot    = yawRate;
-                        linearPhi = phiStart + phiDot * dtStart;
-                    } else {
-                        // we are in the recovery phase after turn
-                        phiDot = yawRate;
-                        final double phiEnd   = phiStart + phiDot * context.getTurnDuration();
-                        final double deltaPhi = context.yawAngle(context.getDate()) - phiEnd;
-                        if (FastMath.abs(deltaPhi / phiDot) <= dtEnd) {
-                            // time since turn end was sufficient for recovery
-                            // we are already back in nominal yaw mode
-                            return context.nominalYaw(context.getDate());
-                        } else {
-                            // recovery is not finished yet
-                            linearPhi = phiEnd + FastMath.copySign(yawRate * dtEnd, deltaPhi);
-                        }
-                    }
+                    phiDot    = yawRate;
+                    linearPhi = phiStart + phiDot * dtStart;
+                }
+
+                if (context.targetYawReached(linearPhi, phiDot)) {
+                    // we are already back in nominal yaw mode
+                    return context.nominalYaw(context.getDate());
                 }
 
                 return context.turnCorrectedAttitude(linearPhi, phiDot);
@@ -168,7 +149,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final T absBeta = FastMath.abs(context.beta(context.getDate()));
+            final T absBeta = FastMath.abs(context.beta());
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))) :
                                 context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
@@ -193,33 +174,15 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         phiDot    = field.getZero().add(-FastMath.copySign(yawRate, beta.getReal()));
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     }
-
-                    if ((MathUtils.normalizeAngle(context.yawAngle(context.getDate()).getReal(), linearPhi.getReal()) - linearPhi.getReal()) * phiDot.getReal() < 0) {
-                        // we are already back in nominal yaw mode
-                        return context.nominalYaw(context.getDate());
-                    }
-
                 } else {
                     // midnight turn
-                    final T dtEnd = dtStart.subtract(context.getTurnDuration());
-                    if (dtEnd.getReal() < 0) {
-                        // we are within the turn itself
-                        phiDot    = field.getZero().add(yawRate);
-                        linearPhi = phiStart.add(phiDot.multiply(dtStart));
-                    } else {
-                        // we are in the recovery phase after turn
-                        phiDot = field.getZero().add(yawRate);
-                        final T phiEnd   = phiStart.add(phiDot.multiply(context.getTurnDuration()));
-                        final T deltaPhi = context.yawAngle(context.getDate()).subtract(phiEnd);
-                        if (FastMath.abs(deltaPhi.divide(phiDot).getReal()) <= dtEnd.getReal()) {
-                            // time since turn end was sufficient for recovery
-                            // we are already back in nominal yaw mode
-                            return context.nominalYaw(context.getDate());
-                        } else {
-                            // recovery is not finished yet
-                            linearPhi = phiEnd.add(dtEnd.multiply(yawRate).copySign(deltaPhi));
-                        }
-                    }
+                    phiDot    = field.getZero().add(yawRate);
+                    linearPhi = phiStart.add(phiDot.multiply(dtStart));
+                }
+
+                if (context.targetYawReached(linearPhi, phiDot)) {
+                    // we are already back in nominal yaw mode
+                    return context.nominalYaw(context.getDate());
                 }
 
                 return context.turnCorrectedAttitude(linearPhi, phiDot);

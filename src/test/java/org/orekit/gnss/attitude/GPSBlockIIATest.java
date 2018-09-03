@@ -39,40 +39,17 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallNegativeBeta() {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // - Orekit updates turn time span as new points are evaluated
-        //   Kouba computes turn time span once near turn start and never updates it
-        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-negative-BLOCK-IIA.txt", 8.1e-104, 8.1e-104, 6.2e-16);
+        doTestAxes("beta-small-negative-BLOCK-IIA.txt", 5.1e-6, 5.1e-6, 6.2e-16);
     }
 
     @Test
     public void testCrossingBeta() {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // - Orekit updates turn time span as new points are evaluated
-        //   Kouba computes turn time span once near turn start and never updates it
         doTestAxes("beta-crossing-BLOCK-IIA.txt", 0.049e-100, 0.049e-100, 1.0e-15);
     }
 
     @Test
     public void testSmallPositiveBeta() {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // - Orekit updates turn time span as new points are evaluated
-        //   Kouba computes turn time span once near turn start and never updates it
-        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-positive-BLOCK-IIA.txt", 8.2e-104, 8.2e-104, 9.8e-16);
+        doTestAxes("beta-small-positive-BLOCK-IIA.txt", 1.1e-5, 1.1e-5, 9.8e-16);
     }
 
     @Test
