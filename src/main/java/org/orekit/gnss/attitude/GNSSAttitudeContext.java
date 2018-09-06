@@ -238,7 +238,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * <p>
      * This method either returns the current beta or replaces it with the
      * value at turn start, so the sign remains constant throughout the
-     * turn. As of 9.2, it is only useful for GPS and Glonass.
+     * turn. As of 9.2, it is used for GPS, Glonass and Galileo.
      * </p>
      * @return secured Sun elevation angle
      * @see #beta(AbsoluteDate)

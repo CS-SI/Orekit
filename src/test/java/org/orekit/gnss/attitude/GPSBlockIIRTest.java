@@ -44,10 +44,7 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testCrossingBeta() {
-        // TODO: these results are not good,
-        // however the reference data is also highly suspicious
-        // this needs to be investigated
-        doTestAxes("beta-crossing-BLOCK-IIR.txt", 2.7e-100, 2.7, 6.8e-16);
+        doTestAxes("beta-crossing-BLOCK-IIR.txt", 5.2e-5, 5.2e-5, 6.8e-16);
     }
 
     @Test
