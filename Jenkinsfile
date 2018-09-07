@@ -1,6 +1,10 @@
 pipeline {
 
     agent any
+    tools {
+        maven 'mvn-default'
+        jdk   'openjdk-8'
+    }
 
     options {
         timeout(time: 30, unit: 'MINUTES')
@@ -16,15 +20,12 @@ pipeline {
 
         stage('Build') {
             steps {
-                withEnv(["JAVA_HOME=${tool 'openjdk-8'}",
-                         "PATH+MAVEN=${tool 'mvn-default'}/bin:${env.JAVA_HOME}/bin"]) {
-                    script {
-                        if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
-                            sh 'mvn verify assembly:single'
-                        }
-                        else {
-                            sh 'mvn verify site'
-                        }
+                script {
+                    if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
+                        sh 'mvn verify assembly:single'
+                    }
+                    else {
+                        sh 'mvn verify site'
                     }
                 }
             }
