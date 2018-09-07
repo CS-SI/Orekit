@@ -640,13 +640,13 @@ public class TLE implements TimeStamped, Serializable {
         final int checksum1 = checksum(line1);
         if (Integer.parseInt(line1.substring(68)) != (checksum1 % 10)) {
             throw new OrekitException(OrekitMessages.TLE_CHECKSUM_ERROR,
-                                      1, line1.substring(68), checksum1 % 10, line1);
+                                      1, Integer.toString(checksum1 % 10), line1.substring(68), line1);
         }
 
         final int checksum2 = checksum(line2);
         if (Integer.parseInt(line2.substring(68)) != (checksum2 % 10)) {
             throw new OrekitException(OrekitMessages.TLE_CHECKSUM_ERROR,
-                                      2, line2.substring(68), checksum2 % 10, line2);
+                                      2, Integer.toString(checksum2 % 10), line2.substring(68), line2);
         }
 
         return true;
