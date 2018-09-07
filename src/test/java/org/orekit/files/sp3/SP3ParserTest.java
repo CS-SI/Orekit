@@ -323,6 +323,7 @@ public class SP3ParserTest {
         final SP3File file = parser.parse(new UnixCompressFilter().filter(compressed).getStreamOpener().openStream());
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assert.assertEquals("FIT",file.getOrbitTypeKey());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
         Assert.assertEquals(71, file.getSatelliteCount());
@@ -412,6 +413,45 @@ public class SP3ParserTest {
             Assert.assertEquals(13, ((Integer) oe.getParts()[0]).intValue());
         }
 
+    }
+
+    @Test
+    public void testBHN() throws IOException {
+        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final String      ex           = "/sp3/esaBHN.sp3.Z";
+        final NamedData   compressed   = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final NamedData   uncompressed = new UnixCompressFilter().filter(compressed);
+        final InputStream is           = uncompressed.getStreamOpener().openStream();
+        final SP3File     file         = parser.parse(is);
+        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assert.assertEquals("BHN",file.getOrbitTypeKey());
+    }
+
+    @Test
+    public void testPRO() throws IOException {
+        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final String      ex           = "/sp3/esaPRO.sp3.Z";
+        final NamedData   compressed   = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final NamedData   uncompressed = new UnixCompressFilter().filter(compressed);
+        final InputStream is           = uncompressed.getStreamOpener().openStream();
+        final SP3File     file         = parser.parse(is);
+        Assert.assertEquals(SP3OrbitType.EXT, file.getOrbitType());
+        Assert.assertEquals("PRO",file.getOrbitTypeKey());
+    }
+
+    @Test
+    public void testUnknownType() throws IOException {
+        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final String      ex           = "/sp3/unknownType.sp3.Z";
+        final NamedData   compressed   = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final NamedData   uncompressed = new UnixCompressFilter().filter(compressed);
+        final InputStream is           = uncompressed.getStreamOpener().openStream();
+        final SP3File     file         = parser.parse(is);
+        Assert.assertEquals(SP3OrbitType.OTHER, file.getOrbitType());
+        Assert.assertEquals("UKN",file.getOrbitTypeKey());
     }
 
     @Test
