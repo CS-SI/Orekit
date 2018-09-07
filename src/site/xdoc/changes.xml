@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+	  <action dev="maxime" type="add" issue="485">
+        Added access to Kalman filter matrices.
+		KalmanEstimation interface now has methods returning the physical values of:
+		state transition matrix phi, measurement matrix H, innovation matrix S and Kalman gain matrix K.
+		The methods are implemented in Model class. A class ModelTest was added to test these values.
+		Fixes issue #485
+      </action>
       <action dev="luc" type="fix" issue="492" due-to="Lebas">
         Fixed error message for TLE with incorrect checksum.
         Fixes #492.
