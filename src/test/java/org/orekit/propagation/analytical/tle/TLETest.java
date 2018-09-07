@@ -283,16 +283,36 @@ public class TLETest {
                        "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testWrongChecksum1() {
-        TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
-                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        try {
+            TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
+                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_CHECKSUM_ERROR, oe.getSpecifier());
+            Assert.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("0", oe.getParts()[1]);
+            Assert.assertEquals("1", oe.getParts()[2]);
+            Assert.assertEquals("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
+                                oe.getParts()[3]);
+        }
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testWrongChecksum2() {
-        TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61");
+        try {
+            TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_CHECKSUM_ERROR, oe.getSpecifier());
+            Assert.assertEquals(2, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("2", oe.getParts()[1]);
+            Assert.assertEquals("1", oe.getParts()[2]);
+            Assert.assertEquals("2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61",
+                                oe.getParts()[3]);
+        }
     }
 
     @Test

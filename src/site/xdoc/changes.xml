@@ -21,18 +21,22 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
-      <action dev="maxime" type="fix">
+      <action dev="luc" type="fix" issue="492" due-to="Lebas">
+        Fixed error message for TLE with incorrect checksum.
+        Fixes #492.
+      </action>
+      <action dev="maxime" type="fix" issue="490">
         Fixed reference value of parameter drivers updating in Kalman filter. 
         When resetting the orbit in the propagator builder, the reference values
         of the drivers are now reset too.
         Fixes issue #490.
       </action>
-      <action dev="maxime" type="add">
+      <action dev="maxime" type="add" issue="489">
         Made ParameterDriver class fully mutable.
         By adding setters for attributes scale, reference, minimum and maximum values.
         Fixes issue #489.
       </action>
-      <action dev="maxime" type="fix">
+      <action dev="maxime" type="fix" issue="488">
         Fixed method unNormalizeStateVector in Model class of Kalman estimator.
         Previous value did not take into account the reference values of the drivers.
         Fixes issue #488.
@@ -55,7 +59,7 @@
         Fix generics in EventEnablingPredicateFilter.
         Fixes #476.
       </action>
-      <action dev="maxime" type="fix">
+      <action dev="maxime" type="fix" issue="473">
         Fixed wrong values of radec generated in AngularRaDecMeasurementCreator.
         Fixed wrong values of range rate generated in RangeRateMeasurementCreator.
         Added tests that check the values of measurements for each type of measurement.
