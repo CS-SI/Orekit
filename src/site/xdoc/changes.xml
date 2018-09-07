@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="491">
+        Allow parsing of SP3 files that use non-predefined orbit types.
+        Fixes issue #491.
+      </action>
 	  <action dev="maxime" type="add" issue="485">
         Added access to Kalman filter matrices.
 		KalmanEstimation interface now has methods returning the physical values of:
@@ -30,7 +34,7 @@
       </action>
       <action dev="luc" type="fix" issue="492" due-to="Lebas">
         Fixed error message for TLE with incorrect checksum.
-        Fixes #492.
+        Fixes issue #492.
       </action>
       <action dev="maxime" type="fix" issue="490">
         Fixed reference value of parameter drivers updating in Kalman filter. 

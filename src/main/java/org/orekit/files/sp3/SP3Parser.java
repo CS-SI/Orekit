@@ -36,7 +36,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.files.sp3.SP3File.SP3Coordinate;
 import org.orekit.files.sp3.SP3File.SP3FileType;
-import org.orekit.files.sp3.SP3File.SP3OrbitType;
 import org.orekit.files.sp3.SP3File.TimeSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -310,7 +309,7 @@ public class SP3Parser implements EphemerisFileParser {
                     pi.file.setDataUsed(scanner.next());
 
                     pi.file.setCoordinateSystem(scanner.next());
-                    pi.file.setOrbitType(SP3OrbitType.parseType(scanner.next()));
+                    pi.file.setOrbitTypeKey(scanner.next());
                     pi.file.setAgency(scanner.next());
                 }
             }
