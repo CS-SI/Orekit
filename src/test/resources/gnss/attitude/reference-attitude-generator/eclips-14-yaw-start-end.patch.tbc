@@ -1,0 +1,114 @@
+--- eclips_May2017.f	2018-09-06 09:42:38.862801247 +0200
++++ eclips_May2017_patched.f	2018-09-13 13:17:45.247553056 +0200
+@@ -115,6 +115,8 @@
+ C                      Sep 06, 2018  USE LINEAR INTERPOLATION MODEL FOR BETA TO
+ C                                    REDUCE RESULT SENSITIVITY TO SAMPLING RATE
+ C                                    INDUCED BY CALLING ROUTINE (Luc Maisonobe)
++C                      Sep 13, 2010  USE THE LINEAR BETA MODEL TO COMPUTE
++C                                    START AND END YAW (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -211,7 +213,7 @@
+      &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
+ C    &          SMTH, BETAE
+      &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3)
+-      REAL*8    YAWEND
++      REAL*8    YAWEND, YS, YE
+       REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
+       REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
+       REAL*8    SGAP(MAXSAT, MAXECL), EGAP(MAXSAT, MAXECL)
+@@ -558,29 +560,32 @@
+ C ORBIT ANGLE MU AT ECLIPSE/TURN END
+              DET= MURATE*(ECLETM(IPRN,I)-
+      &                        ECLSTM(IPRN,I))/2.d0
++           IF (SVBCOS .LT. 0) THEN
++C SHADOW CROSSING
++             YS = ATAN2(-TAN(BINTRP(IPRN, ECLSTM(IPRN, NECLIPS(IPRN)),
++     &                              BTTAG, BSMPL)),
++     &                  SIN(-DET*DTR))
++             YE = ATAN2(-TAN(BINTRP(IPRN, ECLETM(IPRN, NECLIPS(IPRN)),
++     &                              BTTAG, BSMPL)),
++     &                  SIN( DET*DTR))
+ C Dec 12, 2013 - start
+ C YAWEND HERE - IIF SHADOW YAW RATE
+ C HERE |YAW start-YAW end| ALWAYS < 180 DEG DUE TO POSSIBLE USE OF BETAINI
+-                  YAWEND=(ATAN2(-TAN(BETADG*DTR), SIN( DET*DTR))- 
+-     &             ATAN2(-TAN(BETADG*DTR), SIN(-DET*DTR)))/DTR/
+-     &                  (ECLETM(IPRN,I)-ECLSTM(IPRN,I))
++                  YAWEND=(YE-YS) / DTR / (ECLETM(IPRN,I)-ECLSTM(IPRN,I))
+ c Dec 12, 2013 - end
+-           IF (SVBCOS .LT. 0) THEN
+-C SHADOW CROSSING
+ C BLK IIA/IIF SHADOW CROSSING
+                 IF(IPRN.LE.32.AND.(IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5))
+      &             THEN
+                  IF(TTAG.LE.ECLETM(IPRN,I)) THEN
+ C IIA NIGHT TURN
+                   IF(IBLK(IPRN).LE.3) 
+-     &             PHI=ATAN2(-TAN(BETADG*DTR), SIN(-DET*DTR))/DTR
+-     &           +SIGN(YRATE(IPRN),YBIAS)*(TTAG-ECLSTM(IPRN,I)) 
++     &             PHI=YS+SIGN(YRATE(IPRN),YBIAS)*(TTAG-ECLSTM(IPRN,I)) 
+                write(*,*) iprn, phi, betadg, betaini(iprn)
+ C Dec 12, 2013
+ c    &           +SIGN(YRATE(IPRN),0.5d0)*(TTAG-ECLSTM(IPRN,I)) 
+ C IIF NIGHT TURN (DILSSNER  2010)
+                    IF(IBLK(IPRN).GT.5)
+-     &             PHI=ATAN2(-TAN(BETADG*DTR), SIN(-DET*DTR))/DTR
++     &             PHI=YS
+ C Dec 12, 2013- start
+ C Correct IIF  NIGHT CROSSING USING COMPUTING YAW RATE (YAWEND)
+ C ACCORDING TO THE USAF IIF DOCUMENT
+@@ -594,7 +599,7 @@
+ C **** WARNING
+ C GPS IIA  AT SHADOW EXIT
+                    IF(IBLK(IPRN).LE.3)
+-     &             PHI=ATAN2(-TAN(BETADG*DTR), SIN(-DET*DTR))/DTR
++     &             PHI=YS
+ C Dec 12, 2013
+ C    &          +SIGN(YRATE(IPRN),0.5d0)*(ECLETM(IPRN,I)-ECLSTM(IPRN,I))
+      &          +SIGN(YRATE(IPRN),YBIAS)*(ECLETM(IPRN,I)-ECLSTM(IPRN,I))
+@@ -635,10 +640,10 @@
+ C GLONASS      NIGHT TURN (DILSSNER AT AL 2010 )
+                  IF(TTAG.GT.ECLETM(IPRN,I)) GOTO 1
+                  YAWEND=YRATE(IPRN) 
+-                 PHI=ATAN2(-TAN(BETADG*DTR), SIN(-DET*DTR))/DTR
++                 PHI=YS
+      &      +SIGN(YAWEND     ,BETADG)*(TTAG-ECLSTM(IPRN,I)) 
+ C YAWEND -YAW ANGLE AT THE (GLONASS) SHADOW EXIT
+-                  YAWEND=ATAN2(-TAN(BETADG*DTR), SIN( DET*DTR))/DTR
++                  YAWEND=YE
+                  IF((YAWEND/PHI).GE.1.d0.OR.(PHI/YAWEND).LT.0.d0) THEN  
+                   PHI = YAWEND
+                  ENDIF
+@@ -654,7 +659,7 @@
+ C BLK II R SHADOW (MIDNIGHT TURN) CROSSING
+ C Jan 16, 2015
+ c               PHI=ATAN2( TAN(BETADG*DTR),-SIN(-DET*DTR))/DTR
+-                PHI=ATAN2(-TAN(BETADG*DTR), SIN(-DET*DTR))/DTR
++                PHI=YS
+      &      +SIGN(YRATE(IPRN),BETADG)*(TTAG-ECLSTM(IPRN,I)) 
+ C Jan 16, 2015
+ C               IF((PHI/YANGLE).GE.1.d0.OR.(PHI/YANGLE).LT.0.d0) GO TO 1
+@@ -687,8 +692,10 @@
+              IECLIPS=1
+            ELSE
+ C NOON TURNS 
+-           PHI=ATAN2(-TAN(BETADG*DTR),SIN(PI-DET*DTR))/DTR
+-     &      -SIGN(YRATE(IPRN),BETADG)*(TTAG-ECLSTM(IPRN,I))
++             YS = ATAN2(-TAN(BINTRP(IPRN, ECLSTM(IPRN, NECLIPS(IPRN)),
++     &                              BTTAG, BSMPL)),
++     &                  SIN(PI-DET*DTR))
++           PHI=YS-SIGN(YRATE(IPRN),BETADG)*(TTAG-ECLSTM(IPRN,I))
+ C Dec 12, 2013 -start
+ C SMALL NEGATIVE BETA IIF OR SMALL POSITIVE IIA NOON TURN PROBLEM
+ C Jan 24, 2014
+@@ -703,7 +710,7 @@
+ C    &             (BETADG*SIGN(1.D0,YBIAS)).LE.0.9D0  .AND.
+      &             (BETADG*SIGN(1.D0,YBIAS)).LE.ABS(YBIAS).AND.
+      &             (BETADG*YBIAS).GT.0.0D0)                  THEN
+-                    PHI=ATAN2(-TAN(BETADG*DTR),SIN(PI-DET*DTR))/DTR
++                    PHI=YS
+      &              +SIGN(YRATE(IPRN),YBIAS )*(TTAG-ECLSTM(IPRN,I))
+                  ENDIF
+ C Dec 12, 2013 - end

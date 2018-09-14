@@ -20,9 +20,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.FieldTransform;
@@ -523,18 +521,28 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      */
     public TimeStampedFieldAngularCoordinates<T> turnCorrectedAttitude(final FieldDerivativeStructure<T> yaw) {
 
-        // compute nominal yaw
-        final FieldDerivativeStructure<T> nominalAngle = yawAngleDS(dateDS);
+        // Earth pointing (Z aligned with position) with linear yaw (momentum with known cos/sin in the X/Y plane)
+        final FieldPVCoordinates<T> svPV          = pvProv.getPVCoordinates(date, inertialFrame);
+        final FieldVector3D<T>      p             = svPV.getPosition();
+        final FieldVector3D<T>      v             = svPV.getVelocity();
+        final FieldVector3D<T>      a             = svPV.getAcceleration();
+        final T                     r2            = p.getNormSq();
+        final T                     r             = FastMath.sqrt(r2);
+        final FieldVector3D<T>      keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a,
+                                                                        a.getNorm().negate().divide(r), v);
+        final FieldPVCoordinates<T> velocity      = new FieldPVCoordinates<>(v, a, keplerianJerk);
+        final FieldPVCoordinates<T> momentum      = svPV.crossProduct(velocity);
 
-        // compute a linear yaw correction model
-        final TimeStampedFieldAngularCoordinates<T> correction =
-                        new TimeStampedFieldAngularCoordinates<>(date,
-                                                                 new FieldRotation<>(FieldVector3D.getPlusK(nominalAngle.getField()),
-                                                                                     nominalAngle.subtract(yaw),
-                                                                                     RotationConvention.VECTOR_OPERATOR));
-
-        // combine the two parts of the attitude
-        return correction.addOffset(nominalYaw(date));
+        final FieldDerivativeStructure<T> c = FastMath.cos(yaw).negate();
+        final FieldDerivativeStructure<T> s = FastMath.sin(yaw).negate();
+        final T                           z = yaw.getFactory().getValueField().getZero();
+        final FieldVector3D<T> m0 = new FieldVector3D<>(s.getValue(),              c.getValue(),              z);
+        final FieldVector3D<T> m1 = new FieldVector3D<>(s.getPartialDerivative(1), c.getPartialDerivative(1), z);
+        final FieldVector3D<T> m2 = new FieldVector3D<>(s.getPartialDerivative(2), c.getPartialDerivative(2), z);
+        return new TimeStampedFieldAngularCoordinates<>(date,
+                                                        svPV.normalize(), momentum.normalize(),
+                                                        minusZ, new FieldPVCoordinates<>(m0, m1, m2),
+                                                        1.0e-9);
 
     }
 

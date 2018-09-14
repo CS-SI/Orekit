@@ -1,0 +1,74 @@
+--- eclips_May2017.f	2018-09-14 18:11:58.347027855 +0200
++++ eclips_May2017_patched.f	2018-09-14 18:14:25.845328035 +0200
+@@ -115,6 +115,9 @@
+ C                      Sep 06, 2018  USE LINEAR INTERPOLATION MODEL FOR BETA TO
+ C                                    REDUCE RESULT SENSITIVITY TO SAMPLING RATE
+ C                                    INDUCED BY CALLING ROUTINE (Luc Maisonobe)
++C                      Sep 14, 2018  APPLY DIRECTLY LINEAR PHI FROM LOCAL ORBITAL
++C                                    FRAME INSTEAD OF APPLYING A CORRECTION TO
++C                                    NOMINAL YAW (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -203,20 +206,21 @@
+       REAL*8    ECLETM(MAXSAT,*)
+       REAL*8    ANOON, ANIGHT
+       REAL*8    CNOON, CNIGHT
+-      REAL*8    C, S, QX, QY, QZ
++      REAL*8    C, S
+       REAL*8    DTR
+       REAL*8    XSV(*), SANTXYZ(*), VSVC(*), BETA, MURATE, YANGLE, DET,
+ C Jan 10, 2017
+ C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
+      &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
+ C    &          SMTH, BETAE
+-     &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3)
++     &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3), OMGN
+       REAL*8    YAWEND
+       REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
+       REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
+       REAL*8    SGAP(MAXSAT, MAXECL), EGAP(MAXSAT, MAXECL)
+       REAL*8    CGAP(MAXSAT, MAXECL), ECLCTM(MAXSAT,MAXECL)
+       REAL*8    BTTAG(MAXSAT, 2), BSMPL(MAXSAT, 2), BINTRP
++      REAL*8    LOFI(3), LOFIN
+ C Dec 12, 2013
+       REAL*8 YBIAS
+       INTEGER*4 IBLK(*), J, I
+@@ -284,7 +288,8 @@
+       OMG(1) = (XSV(2)*VSVC(3)-XSV(3)*VSVC(2)) / P2 
+       OMG(2) = (XSV(3)*VSVC(1)-XSV(1)*VSVC(3)) / P2 
+       OMG(3) = (XSV(1)*VSVC(2)-XSV(2)*VSVC(1)) / P2 
+-      MURATE = SQRT(OMG(1)*OMG(1)+OMG(2)*OMG(2)+OMG(3)*OMG(3))/DTR
++      OMGN   = SQRT(OMG(1)*OMG(1)+OMG(2)*OMG(2)+OMG(3)*OMG(3))
++      MURATE = OMGN/DTR
+       ANOON=ATAN(MURATE/YRATE(IPRN))/DTR
+ C Jan 10, 2017
+ C  GAL & BEI NOON TURN LIMITS
+@@ -769,15 +774,18 @@
+            END IF
+ C ROTATE X-VECTOR TO ECLIPSING YAW ANGLE PHI 
+ C ECLIPSING (II/IIA) NOT TO BE USED  A HALF HR AFTER SHADOW !
+-          C  = COS((PHI-YANGLE)*DTR)
+-          S  = SIN((PHI-YANGLE)*DTR)
+-          QX = C*SANTXYZ(1)-S*(R(2)*SANTXYZ(3)-R(3)*SANTXYZ(2))
+-          QY = C*SANTXYZ(2)-S*(R(3)*SANTXYZ(1)-R(1)*SANTXYZ(3))
+-          QZ = C*SANTXYZ(3)-S*(R(1)*SANTXYZ(2)-R(2)*SANTXYZ(1))
+-C THE BODY-X UNIT VECTOR ROTATED BY (PHI-YANGLE) RETURNED
+-          SANTXYZ(1)= QX
+-          SANTXYZ(2)= QY
+-          SANTXYZ(3)= QZ
++          LOFI(1) = P2 * VSVC(1) - PV * XSV(1) 
++          LOFI(2) = P2 * VSVC(2) - PV * XSV(2) 
++          LOFI(3) = P2 * VSVC(3) - PV * XSV(3)
++          LOFIN   = SQRT(LOFI(1) * LOFI(1)
++     &                 + LOFI(2) * LOFI(2)
++     &                 + LOFI(3) * LOFI(3))
++          C  = COS(PHI*DTR)
++          S  = SIN(PHI*DTR)
++C THE BODY-X UNIT VECTOR RETURNED
++          SANTXYZ(1)= C * LOFI(1) / LOFIN - S * OMG(1) / OMGN
++          SANTXYZ(2)= C * LOFI(2) / LOFIN - S * OMG(2) / OMGN
++          SANTXYZ(3)= C * LOFI(3) / LOFIN - S * OMG(3) / OMGN
+       END IF
+       ENDIF
+  1    RETURN

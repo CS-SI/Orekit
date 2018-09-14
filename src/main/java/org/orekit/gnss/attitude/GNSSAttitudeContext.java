@@ -18,9 +18,7 @@ package org.orekit.gnss.attitude;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
@@ -72,10 +70,6 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Constant Z axis. */
     private static final FieldPVCoordinates<DerivativeStructure>  MINUS_Z_PV_DS =
             MINUS_Z_PV.toDerivativeStructurePV(FACTORY.getCompiler().getOrder());
-
-    /** Constant Z axis. */
-    private static final FieldVector3D<DerivativeStructure>  PLUS_Z_DS =
-            FieldVector3D.getPlusK(FACTORY.getDerivativeField());
 
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);
@@ -485,18 +479,26 @@ class GNSSAttitudeContext implements TimeStamped {
      */
     public TimeStampedAngularCoordinates turnCorrectedAttitude(final DerivativeStructure yaw) {
 
-        // compute nominal yaw
-        final DerivativeStructure nominalAngle = yawAngleDS(dateDS);
+        // Earth pointing (Z aligned with position) with linear yaw (momentum with known cos/sin in the X/Y plane)
+        final PVCoordinates svPV          = pvProv.getPVCoordinates(date, inertialFrame);
+        final Vector3D      p             = svPV.getPosition();
+        final Vector3D      v             = svPV.getVelocity();
+        final Vector3D      a             = svPV.getAcceleration();
+        final double        r2            = p.getNormSq();
+        final double        r             = FastMath.sqrt(r2);
+        final Vector3D      keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
+        final PVCoordinates velocity      = new PVCoordinates(v, a, keplerianJerk);
+        final PVCoordinates momentum      = PVCoordinates.crossProduct(svPV, velocity);
 
-        // compute a linear yaw correction model
-        final TimeStampedAngularCoordinates correction =
-                        new TimeStampedAngularCoordinates(date,
-                                                          new FieldRotation<>(PLUS_Z_DS,
-                                                                              nominalAngle.subtract(yaw),
-                                                                              RotationConvention.VECTOR_OPERATOR));
-
-        // combine the two parts of the attitude
-        return correction.addOffset(nominalYaw(date));
+        final DerivativeStructure c = FastMath.cos(yaw).negate();
+        final DerivativeStructure s = FastMath.sin(yaw).negate();
+        final Vector3D m0 = new Vector3D(s.getValue(),              c.getValue(),              0.0);
+        final Vector3D m1 = new Vector3D(s.getPartialDerivative(1), c.getPartialDerivative(1), 0.0);
+        final Vector3D m2 = new Vector3D(s.getPartialDerivative(2), c.getPartialDerivative(2), 0.0);
+        return new TimeStampedAngularCoordinates(date,
+                                                 svPV.normalize(), momentum.normalize(),
+                                                 MINUS_Z_PV, new PVCoordinates(m0, m1, m2),
+                                                 1.0e-9);
 
     }
 
