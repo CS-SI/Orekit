@@ -1,24 +1,24 @@
---- eclips_May2017.f	2018-09-06 09:42:38.862801247 +0200
-+++ eclips_May2017_patched.f	2018-09-13 13:17:45.247553056 +0200
-@@ -115,6 +115,8 @@
+--- eclips_May2017.f.orig	2018-09-17 10:19:42.787478136 +0200
++++ eclips_May2017.f	2018-09-17 10:21:52.486665748 +0200
+@@ -111,6 +111,8 @@
  C                      Sep 06, 2018  USE LINEAR INTERPOLATION MODEL FOR BETA TO
  C                                    REDUCE RESULT SENSITIVITY TO SAMPLING RATE
  C                                    INDUCED BY CALLING ROUTINE (Luc Maisonobe)
 +C                      Sep 13, 2010  USE THE LINEAR BETA MODEL TO COMPUTE
 +C                                    START AND END YAW (Luc Maisonobe)
- C
- C     PARAMETERS        DESCRIPTION
- C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -211,7 +213,7 @@
-      &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
+ C                      Sep 14, 2018  FIXED BODY-X UNIT VECTOR COMPUTATION
+ C                                    EXACTLY AT NODE (AVOID NaNs), IMPROVE
+ C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
+@@ -213,7 +215,7 @@
+      &          YRATE(136),BETADG, PHI, SANTX, v(3),r(3), BETA0,
  C    &          SMTH, BETAE
-      &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3)
--      REAL*8    YAWEND
-+      REAL*8    YAWEND, YS, YE
+      &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3), OMGN
+-      REAL*8    YAWEND, LOFI(3), LOFIN, CPHI, SPHI
++      REAL*8    YAWEND, YS, YE, LOFI(3), LOFIN, CPHI, SPHI
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
        REAL*8    SGAP(MAXSAT, MAXECL), EGAP(MAXSAT, MAXECL)
-@@ -558,29 +560,32 @@
+@@ -561,29 +563,32 @@
  C ORBIT ANGLE MU AT ECLIPSE/TURN END
               DET= MURATE*(ECLETM(IPRN,I)-
       &                        ECLSTM(IPRN,I))/2.d0
@@ -59,7 +59,7 @@
  C Dec 12, 2013- start
  C Correct IIF  NIGHT CROSSING USING COMPUTING YAW RATE (YAWEND)
  C ACCORDING TO THE USAF IIF DOCUMENT
-@@ -594,7 +599,7 @@
+@@ -597,7 +602,7 @@
  C **** WARNING
  C GPS IIA  AT SHADOW EXIT
                     IF(IBLK(IPRN).LE.3)
@@ -68,7 +68,7 @@
  C Dec 12, 2013
  C    &          +SIGN(YRATE(IPRN),0.5d0)*(ECLETM(IPRN,I)-ECLSTM(IPRN,I))
       &          +SIGN(YRATE(IPRN),YBIAS)*(ECLETM(IPRN,I)-ECLSTM(IPRN,I))
-@@ -635,10 +640,10 @@
+@@ -638,10 +643,10 @@
  C GLONASS      NIGHT TURN (DILSSNER AT AL 2010 )
                   IF(TTAG.GT.ECLETM(IPRN,I)) GOTO 1
                   YAWEND=YRATE(IPRN) 
@@ -81,7 +81,7 @@
                   IF((YAWEND/PHI).GE.1.d0.OR.(PHI/YAWEND).LT.0.d0) THEN  
                    PHI = YAWEND
                   ENDIF
-@@ -654,7 +659,7 @@
+@@ -657,7 +662,7 @@
  C BLK II R SHADOW (MIDNIGHT TURN) CROSSING
  C Jan 16, 2015
  c               PHI=ATAN2( TAN(BETADG*DTR),-SIN(-DET*DTR))/DTR
@@ -90,7 +90,7 @@
       &      +SIGN(YRATE(IPRN),BETADG)*(TTAG-ECLSTM(IPRN,I)) 
  C Jan 16, 2015
  C               IF((PHI/YANGLE).GE.1.d0.OR.(PHI/YANGLE).LT.0.d0) GO TO 1
-@@ -687,8 +692,10 @@
+@@ -690,8 +695,10 @@
               IECLIPS=1
             ELSE
  C NOON TURNS 
@@ -103,7 +103,7 @@
  C Dec 12, 2013 -start
  C SMALL NEGATIVE BETA IIF OR SMALL POSITIVE IIA NOON TURN PROBLEM
  C Jan 24, 2014
-@@ -703,7 +710,7 @@
+@@ -706,7 +713,7 @@
  C    &             (BETADG*SIGN(1.D0,YBIAS)).LE.0.9D0  .AND.
       &             (BETADG*SIGN(1.D0,YBIAS)).LE.ABS(YBIAS).AND.
       &             (BETADG*YBIAS).GT.0.0D0)                  THEN

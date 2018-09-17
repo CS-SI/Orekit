@@ -1,6 +1,6 @@
---- eclips_May2017.f	2018-07-09 17:10:56.303657649 +0200
-+++ eclips_May2017_patched.f	2018-07-09 17:11:56.719868653 +0200
-@@ -100,6 +100,9 @@
+--- eclips_May2017.f.orig	2018-09-17 09:44:07.157764245 +0200
++++ eclips_May2017.f	2018-09-17 09:45:05.109265596 +0200
+@@ -96,6 +96,9 @@
  C                      Jul 09, 2018  FIXED BODY-X UNIT VECTOR FOR BEIDOU,
  C                                    CONSIDERING NON-PERFECTLY CIRCULAR
  C                                    ORBITS (Luc Maisonobe)
@@ -10,7 +10,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -195,10 +198,10 @@
+@@ -190,10 +193,10 @@
  C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
       &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
  C    &          SMTH, BETAE
@@ -23,7 +23,7 @@
  C Dec 12, 2013
        REAL*8 YBIAS
        INTEGER*4 IBLK(*), J, I
-@@ -368,7 +371,7 @@
+@@ -363,7 +366,7 @@
        END IF
  C Jan 10, 2017  end
        IF ( (NIGHT .OR. NOON)) THEN
@@ -32,7 +32,7 @@
         PHI = PI/2.d0
  C Check if already after a midnight or noon
         IF(NIGHT) THEN
-@@ -384,7 +387,7 @@
+@@ -379,7 +382,7 @@
  C Jan 16, 2015- end
         END IF 
         IF(NOON) THEN
@@ -41,7 +41,7 @@
  C Jan 16, 2015- start (NO IIR X-REVERSAL!)
  c        IF(IBLK(IPRN).EQ.4.OR.IBLK(IPRN).EQ.5) THEN
  c         IF(DABS(YANGLE).LT.90.d0) DET=-DET
-@@ -434,10 +437,12 @@
+@@ -429,10 +432,12 @@
  C         IF((IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5).AND.NIGHT) THEN
            IF((IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5
       &         .OR.(IPRN .GT.64.AND.IPRN.LE.100)).AND.NIGHT) THEN
@@ -56,7 +56,7 @@
            END IF
        END IF
  C
-@@ -493,10 +498,12 @@
+@@ -488,10 +493,12 @@
  C           IF((IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5).AND.NIGHT) THEN
              IF((IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5
       &           .OR.(IPRN .GT.64.AND.IPRN.LE.100)).AND.NIGHT) THEN

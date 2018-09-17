@@ -1,6 +1,6 @@
---- eclips_May2017.f	2018-07-09 15:05:17.306973039 +0200
-+++ eclips_May2017_patched.f	2018-07-09 15:06:47.019809958 +0200
-@@ -94,6 +94,9 @@
+--- eclips_May2017.f.orig	2018-09-17 09:40:53.608840778 +0200
++++ eclips_May2017.f	2018-09-17 09:42:36.784734015 +0200
+@@ -90,6 +90,9 @@
  C                                    OF ALL MATHEMATICAL FUNCTIONS (Luc Maisonobe)
  C                      Jun 08, 2018  ENSURE ALL LITTERAL CONSTANTS ARE DOUBLE
  C                                    PRECISION (Luc Maisonobe)
@@ -10,7 +10,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -323,7 +326,8 @@
+@@ -318,7 +321,8 @@
  C      IF(BETADG.LT.0.d0.AND.IBLK(IPRN).GE.4.AND.IBLK(IPRN).LE.5)
  C    &            YANGLE=-YANGLE
  c      IF(BETADG.GT.0.d0.AND.IBLK(IPRN).NE.4.AND.IBLK(IPRN).NE.5)

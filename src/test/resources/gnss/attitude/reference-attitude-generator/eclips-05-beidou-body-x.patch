@@ -1,6 +1,6 @@
---- eclips_May2017.f	2018-07-09 15:07:38.465996017 +0200
-+++ eclips_May2017_patched.f	2018-07-09 15:11:18.534591739 +0200
-@@ -97,6 +97,9 @@
+--- eclips_May2017.f.orig	2018-09-17 09:42:36.784734015 +0200
++++ eclips_May2017.f	2018-09-17 09:44:07.157764245 +0200
+@@ -93,6 +93,9 @@
  C                      Jun 25, 2018  FIXED TOO EARLY ABRUPT SWITCH BACK TO
  C                                    NOMINAL YAW WHEN BETA SIGN CHANGES DURING
  C                                    THE TURN (Luc Maisonobe)
@@ -10,7 +10,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -192,7 +195,7 @@
+@@ -187,7 +190,7 @@
  C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
       &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
  C    &          SMTH, BETAE
@@ -19,7 +19,7 @@
        REAL*8    YAWEND
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX
-@@ -257,8 +260,10 @@
+@@ -252,8 +255,10 @@
        DTR=PI/180.D0
  C compute the noon beta angle limit (beta zero) FOR A NOON TURN from YRATEs
  C & THE ACTUAL SAT ORBIT ANGLE RATE (MURATE) (~0.00836 FOR GPS; ~ 0.00888 GLNS)
@@ -32,7 +32,7 @@
        ANOON=ATAN(MURATE/YRATE(IPRN))/DTR
  C Jan 10, 2017
  C  GAL & BEI NOON TURN LIMITS
-@@ -316,10 +321,9 @@
+@@ -311,10 +316,9 @@
  C     IF SV IN NIGHT SHADOW OR NOON TURN DURING FORWARD PASS
  C     STORE START AND END TIME OF YAW MANEUVRE (FOR THE BACKWARD RUN)
  C
@@ -45,7 +45,7 @@
  C IIR REVERSAL NO LONGER APPLICABLE/USED
  C IIR YANGLE has the same sign as beta, II/IIA has the opposite sign
  C Jan 16, 2015
-@@ -337,10 +341,12 @@
+@@ -332,10 +336,12 @@
  C      IF(IBLK(IPRN).EQ.23.OR.IBLK(IPRN).EQ.27.OR.ABS(BETADG).LE.BETA0)
        IF(IBLK(IPRN).EQ.23.OR.IBLK(IPRN).EQ.27.OR.ABS(BETADG).LE.2*BETA0)
       &     THEN
@@ -59,7 +59,7 @@
            ENDDO
            PHI =  0.D0                       
          IF (NIGHT) THEN
-@@ -519,8 +525,8 @@
+@@ -514,8 +520,8 @@
       &         .AND.BETAINI(IPRN).NE.0.0D0) BETADG = BETAINI(IPRN)
  C velocity & radius unit vectors V & R
               DO J=1,3

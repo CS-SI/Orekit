@@ -1,15 +1,15 @@
---- eclips_May2017.f	2018-09-03 20:01:41.483977636 +0200
-+++ eclips_May2017_patched.f	2018-09-03 20:03:27.395975995 +0200
-@@ -107,6 +107,8 @@
+--- eclips_May2017.f.orig	2018-09-17 10:12:06.751702167 +0200
++++ eclips_May2017.f	2018-09-17 10:13:46.822350160 +0200
+@@ -103,6 +103,8 @@
  C                                    OF GPS TURN RECOVERY (Luc Maisonobe)
  C                      Jul 10, 2018  TAKE ECCENTRICITY INTO ACCOUNT WHEN
  C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
 +C                      Jul 10, 2018  ENSURE CONVERGENCE OF GLONASS YAWEND
 +C                                    ITERATIVE COMPUTATION (Luc Maisonobe)
- C
- C     PARAMETERS        DESCRIPTION
- C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -291,12 +293,15 @@
+ C                      Sep 14, 2018  FIXED BODY-X UNIT VECTOR COMPUTATION
+ C                                    EXACTLY AT NODE (AVOID NaNs), IMPROVE
+ C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
+@@ -294,12 +296,15 @@
  C GLONASS NOON TURN MODE ACORDING TO DILSSNER 2010 
           YAWEND=75.D0
  C  ITERATION FOR YAWEND OF THE GLONASS  NOON TURN

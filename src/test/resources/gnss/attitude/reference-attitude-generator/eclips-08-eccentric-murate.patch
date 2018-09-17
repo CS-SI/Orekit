@@ -1,6 +1,6 @@
---- eclips_May2017.f	2018-07-10 16:33:46.723205194 +0200
-+++ eclips_May2017_pached.f	2018-07-10 16:44:32.967186299 +0200
-@@ -105,6 +105,8 @@
+--- eclips_May2017.f.orig	2018-09-17 09:45:41.980254773 +0200
++++ eclips_May2017.f	2018-09-17 09:47:58.755986444 +0200
+@@ -101,6 +101,8 @@
  C                                    FOR SOLVING SOME TRIANGLES (Luc Maisonobe)
  C                      Jul 10, 2018  FIXED OVERSHOOT OF NOMINAL YAW AT THE END
  C                                    OF GPS TURN RECOVERY (Luc Maisonobe)
@@ -9,16 +9,16 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -200,7 +202,7 @@
+@@ -195,7 +197,7 @@
  C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
       &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
  C    &          SMTH, BETAE
 -     &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP
-+     &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3)
++     &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3), OMGN
        REAL*8    YAWEND
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
-@@ -268,7 +270,10 @@
+@@ -263,7 +265,11 @@
        P2 = XSV(1)**2+XSV(2)**2+XSV(3)**2
        V2 = VSVC(1)**2+VSVC(2)**2+VSVC(3)**2
        PV = XSV(1)*VSVC(1)+XSV(2)*VSVC(2)+XSV(3)*VSVC(3)
@@ -26,7 +26,8 @@
 +      OMG(1) = (XSV(2)*VSVC(3)-XSV(3)*VSVC(2)) / P2 
 +      OMG(2) = (XSV(3)*VSVC(1)-XSV(1)*VSVC(3)) / P2 
 +      OMG(3) = (XSV(1)*VSVC(2)-XSV(2)*VSVC(1)) / P2 
-+      MURATE = SQRT(OMG(1)*OMG(1)+OMG(2)*OMG(2)+OMG(3)*OMG(3))/DTR
++      OMGN   = SQRT(OMG(1)*OMG(1)+OMG(2)*OMG(2)+OMG(3)*OMG(3))
++      MURATE = OMGN/DTR
        ANOON=ATAN(MURATE/YRATE(IPRN))/DTR
  C Jan 10, 2017
  C  GAL & BEI NOON TURN LIMITS
