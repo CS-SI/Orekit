@@ -32,7 +32,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -62,14 +61,6 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Constant Z axis. */
     private static final PVCoordinates MINUS_Z_PV =
             new PVCoordinates(Vector3D.MINUS_K, Vector3D.ZERO, Vector3D.ZERO);
-
-    /** Constant Y axis. */
-    private static final FieldPVCoordinates<DerivativeStructure> PLUS_Y_PV_DS =
-            PLUS_Y_PV.toDerivativeStructurePV(FACTORY.getCompiler().getOrder());
-
-    /** Constant Z axis. */
-    private static final FieldPVCoordinates<DerivativeStructure>  MINUS_Z_PV_DS =
-            MINUS_Z_PV.toDerivativeStructurePV(FACTORY.getCompiler().getOrder());
 
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);
@@ -149,21 +140,6 @@ class GNSSAttitudeContext implements TimeStamped {
                                                  MINUS_Z_PV,
                                                  PLUS_Y_PV,
                                                  1.0e-9);
-    }
-
-    /** Compute nominal yaw steering.
-     * @param d computation date
-     * @return nominal yaw steering
-     */
-    private TimeStampedFieldAngularCoordinates<DerivativeStructure> nominalYawDS(final FieldAbsoluteDate<DerivativeStructure> d) {
-        final FieldPVCoordinates<DerivativeStructure> svPV = pvProv.getPVCoordinates(d.toAbsoluteDate(), inertialFrame).
-                        toDerivativeStructurePV(d.getField().getZero().getOrder());
-        return new TimeStampedFieldAngularCoordinates<>(d,
-                                                        svPV.normalize(),
-                                                        sun.getPVCoordinates(d, inertialFrame).crossProduct(svPV).normalize(),
-                                                        MINUS_Z_PV_DS,
-                                                        PLUS_Y_PV_DS,
-                                                        1.0e-9);
     }
 
     /** Compute Sun elevation.
@@ -249,21 +225,10 @@ class GNSSAttitudeContext implements TimeStamped {
      * @param d computation date
      * @return nominal yaw angle
      */
-    public double yawAngle(final AbsoluteDate d) {
+    private double yawAngle(final AbsoluteDate d) {
         final Vector3D xSat     = nominalYaw(d).getRotation().applyInverseTo(Vector3D.PLUS_I);
         final Vector3D velocity = pvProv.getPVCoordinates(d, inertialFrame).getVelocity();
         return FastMath.copySign(Vector3D.angle(velocity, xSat), -beta(d));
-    }
-
-    /** Compute nominal yaw angle.
-     * @param d computation date
-     * @return nominal yaw angle
-     */
-    public DerivativeStructure yawAngleDS(final FieldAbsoluteDate<DerivativeStructure> d) {
-        final FieldVector3D<DerivativeStructure> xSat     = nominalYawDS(d).getRotation().applyInverseTo(Vector3D.PLUS_I);
-        final FieldVector3D<DerivativeStructure> velocity = pvProv.getPVCoordinates(d.toAbsoluteDate(), inertialFrame).
-                        toDerivativeStructurePV(d.getField().getZero().getOrder()).getVelocity();
-        return FastMath.copySign(FieldVector3D.angle(velocity, xSat), betaDS(d).negate());
     }
 
     /** Check if a linear yaw model has already reached target yaw.
