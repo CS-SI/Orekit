@@ -1,5 +1,5 @@
---- eclips_May2017.f.orig	2018-09-17 10:22:48.130178931 +0200
-+++ eclips_May2017.f	2018-09-17 10:24:22.929190391 +0200
+--- eclips_May2017.f.orig	2018-09-17 17:37:19.414655558 +0200
++++ eclips_May2017.f	2018-09-17 17:37:48.549971299 +0200
 @@ -105,6 +105,8 @@
  C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
  C                      Jul 10, 2018  ENSURE CONVERGENCE OF GLONASS YAWEND
@@ -9,7 +9,7 @@
  C                      Jul 12, 2018  UPDATE ESTIMATED ECLIPSE START AND END TIME
  C                                    WHEN THEY ARE ESTIMATED FROM A CLOSER
  C                                    DATE THAN PREVIOUS ESTIME (Luc Maisonobe)
-@@ -647,7 +649,7 @@
+@@ -643,7 +645,7 @@
       &      +SIGN(YAWEND     ,BETADG)*(TTAG-ECLSTM(IPRN,I)) 
  C YAWEND -YAW ANGLE AT THE (GLONASS) SHADOW EXIT
                    YAWEND=YE

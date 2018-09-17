@@ -89,7 +89,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
                 final DerivativeStructure cosBeta  = beta.cos();
                 final DerivativeStructure sinBeta  = beta.sin();
                 final double              sinY     = FastMath.copySign(FastMath.sin(BETA_Y), context.getSecuredBeta());
-                final DerivativeStructure sd       = FastMath.sin(context.getDeltaDS()).
+                final DerivativeStructure sd      = FastMath.sin(context.getDeltaDS()).
                                                      multiply(FastMath.copySign(1.0, -context.getSVBcos() * context.getDeltaDS().getPartialDerivative(1)));
                 final DerivativeStructure c        = sd.multiply(cosBeta);
                 final DerivativeStructure shy      = sinBeta.negate().subtract(sinY).
