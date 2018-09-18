@@ -47,6 +47,9 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
     /** Best estimate of the end of the turn, excluding margin. */
     private FieldAbsoluteDate<T> end;
 
+    /** Solved for end of turn. */
+    private AbsoluteDate solvedEnd;
+
     /** Best estimate of the end of the turn, including margin. */
     private FieldAbsoluteDate<T> endPlusMargin;
 
@@ -70,6 +73,7 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
         this.start               = start;
         this.startDouble         = start.toAbsoluteDate();
         this.end                 = end;
+        this.solvedEnd           = end.toAbsoluteDate();
         this.endPlusMargin       = end.shiftedBy(endMargin);
         this.endPlusMarginDouble = endPlusMargin.toAbsoluteDate();
         this.startProjection     = FastMath.abs(start.durationFrom(estimationDate).getReal());
@@ -129,19 +133,25 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
         return date.durationFrom(start);
     }
 
-    /** Get elapsed time until turn end (without margin).
-     * @param date date to check
-     * @return elapsed time from specified date to turn end (without margin)
-     */
-    public T timeUntilTurnEnd(final FieldAbsoluteDate<T> date) {
-        return end.durationFrom(date);
-    }
-
     /** Get turn start date.
      * @return turn start date
      */
     public FieldAbsoluteDate<T> getTurnStartDate() {
         return start;
+    }
+
+    /** Set solved-for turn end date (without margin).
+     * @param solvedEnd solved-for turn end date (without margin)
+     */
+    public void setSolvedEnd(final AbsoluteDate solvedEnd) {
+        this.solvedEnd = solvedEnd;
+    }
+
+    /** Get solved-for turn end date (without margin).
+     * @return solved-for turn end date (without margin)
+     */
+    public AbsoluteDate getSolvedEnd() {
+        return solvedEnd;
     }
 
     /** Get turn end date (without margin).

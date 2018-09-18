@@ -18,11 +18,15 @@ package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -265,44 +269,46 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
                beta;
     }
 
-    /** Compute nominal yaw angle.
-     * @param d computation date
-     * @return nominal yaw angle
-     */
-    private T yawAngle(final FieldAbsoluteDate<T> d) {
-        final FieldVector3D<T> xSat     = nominalYaw(d).getRotation().applyInverseTo(Vector3D.PLUS_I);
-        final FieldVector3D<T> velocity = pvProv.getPVCoordinates(d, inertialFrame).getVelocity();
-        return FastMath.copySign(FieldVector3D.angle(velocity, xSat), beta(d).negate());
-    }
-
     /** Check if a linear yaw model has already reached target yaw.
      * @param linearPhi value of the linear yaw model
      * @param phiDot slope of the linear yaw model
      * @return true if linear model has already reached target yaw
      */
     public boolean targetYawReached(final T linearPhi, final T phiDot) {
-        final FieldAbsoluteDate<T> targetDate;
-        if (afterTurnEnd()) {
-            // we are after the end of the turn, probably during the recovery margin
-            // the nominal yaw is valid, we compare with the current nominal yaw
-            targetDate = date;
-        } else {
-            // we are within the turn
-            // the nominal yaw is not yet valid, we compare to the yaw at turn end
-            targetDate = turnSpan.getTurnEndDate();
+        final AbsoluteDate absDate = date.toAbsoluteDate();
+        final double dt0 = turnSpan.getSolvedEnd().durationFrom(absDate);
+        final UnivariateFunction yawReached = dt -> {
+            final AbsoluteDate  t       = absDate.shiftedBy(dt);
+            final Vector3D      pSun    = sun.getPVCoordinates(t, inertialFrame).getPosition();
+            final PVCoordinates pv      = pvProv.getPVCoordinates(date.shiftedBy(dt), inertialFrame).toPVCoordinates();
+            final Vector3D      pSat    = pv.getPosition();
+            final Vector3D      targetX = Vector3D.crossProduct(pSat, Vector3D.crossProduct(pSun, pSat)).normalize();
+
+            final double        phi         = linearPhi.getReal() + dt * phiDot.getReal();
+            final SinCos        sc          = FastMath.sinCos(phi);
+            final Vector3D      pU          = pv.getPosition().normalize();
+            final Vector3D      mU          = pv.getMomentum().normalize();
+            final Vector3D      omega       = new Vector3D(-phiDot.getReal(), pU);
+            final Vector3D      currentX    = new Vector3D(-sc.sin(), mU, -sc.cos(), Vector3D.crossProduct(pU, mU));
+            final Vector3D      currentXDot = Vector3D.crossProduct(omega, currentX);
+
+            return Vector3D.dotProduct(targetX, currentXDot);
+        };
+        final double fullTurn = 2 * FastMath.PI / FastMath.abs(phiDot.getReal());
+        final double dtMin    = FastMath.min(-turnSpan.timeSinceTurnStart(date).getReal(), dt0 - 60.0);
+        final double dtMax    = FastMath.max(dtMin + fullTurn, dt0 + 60.0);
+        double[] bracket = UnivariateSolverUtils.bracket(yawReached, dt0,
+                                                         dtMin, dtMax, 1.0, 2.0, 15);
+        if (yawReached.value(bracket[0]) <= 0.0) {
+            // we have bracketed the wrong crossing
+            bracket = UnivariateSolverUtils.bracket(yawReached, 0.5 * (bracket[0] + bracket[1] + fullTurn),
+                                                    bracket[1], bracket[1] + fullTurn, 1.0, 2.0, 15);
         }
-        final T targetYaw = yawAngle(targetDate);
+        final double dt = new BracketingNthOrderBrentSolver(1.0e-3, 5).
+                        solve(100, yawReached, bracket[0], bracket[1]);
+        turnSpan.setSolvedEnd(absDate.shiftedBy(dt));
 
-        // find the delay between the turn end and the closest crossing
-        // taking care of 2π wrapping (typically GPS block IIR takes only 1800s to perform a full turn)
-        final double nowToCrossing     = (targetYaw.getReal() - linearPhi.getReal()) / phiDot.getReal();
-        final double nowToTurnEnd      = turnSpan.timeUntilTurnEnd(date).getReal();
-        final double turnEndToCrossing = nowToCrossing - nowToTurnEnd;
-        final double halfTurn          = FastMath.PI / FastMath.abs(phiDot.getReal());
-        final double fullTurn          = 2 * halfTurn;
-        final double delay             = turnEndToCrossing - fullTurn * FastMath.floor((turnEndToCrossing + halfTurn) / fullTurn);
-
-        return nowToTurnEnd + delay <= 0;
+        return dt <= 0.0;
 
     }
 
