@@ -5,7 +5,7 @@
 C
       integer idir, iprn, preprn
       integer neclips(satmax), ieclips(satmax), iblk(satmax)
-      integer day, month, year, week, isat, code, uin, uout
+      integer year, month, day, week, isat, code, uin, uout
       double precision ttag, svbcos, anoon, anight, pi, nan
       double precision rawbet, beta, betaini(satmax), milli, delta
       double precision sp, p2, v2, a, phi1, phi2, prephi
@@ -41,7 +41,7 @@ C        header line
          write (uout, '(a)') trim(line)
       else
 C        data line
-         read (line, 9000) day, month, year, week, milli,
+         read (line, 9000) year, month, day, week, milli,
      &        id1, type, id2, xsv(1), xsv(2), xsv(3),
      &        vsvc(1), vsvc(2), vsvc(3), sun(1), sun(2), sun(3),
      &        rawbet, delta
@@ -136,7 +136,7 @@ C        data line
         phi1   = conti(phi(xsv, vsvc, santxyz) * 180d0 / pi, prephi)
         phi2   = conti(phi(xsv, vsvc, out)     * 180d0 / pi, phi1)
         prephi = phi1
-        write (uout, 9010) day, month, year, week, milli,
+        write (uout, 9010) year, month, day, week, milli,
      &     id1, type, id2, xsv(1), xsv(2), xsv(3),
      &     vsvc(1), vsvc(2), vsvc(3), sun(1), sun(2), sun(3),
      &       rawbet, delta,
@@ -145,7 +145,7 @@ C        data line
  9010   format (i4, '-', i2.2, '-', i2.2, x, i4, x, f16.6, x, a3, x,
      &          a11, 2x, a4, x, f16.6, 2x, f16.6, 2x, f16.6, x,
      &          f16.9, 2x, f16.9, 2x, f16.9, 3(2x, f16.2), 2(x, f15.11),
-     &          2(3(2x, f18.15), 2x, f15.10))
+     &          2(3(2x, f19.15), 2x, f15.10))
       endif
       goto 10
  20   continue
