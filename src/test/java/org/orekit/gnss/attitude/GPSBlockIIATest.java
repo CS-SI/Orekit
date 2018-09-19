@@ -39,12 +39,12 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallNegativeBeta() {
-        doTestAxes("beta-small-negative-BLOCK-IIA.txt", 5.1e-6, 5.1e-6, 6.2e-16);
+        doTestAxes("beta-small-negative-BLOCK-IIA.txt", 5.1e-6, 5.1e-6, 5.1e-16);
     }
 
     @Test
     public void testCrossingBeta() {
-        doTestAxes("beta-crossing-BLOCK-IIA.txt", 0.049e-100, 0.049e-100, 1.0e-15);
+        doTestAxes("beta-crossing-BLOCK-IIA.txt", 5.2e-4, 5.2e-4, 5.1e-16);
     }
 
     @Test
