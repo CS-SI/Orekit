@@ -33,23 +33,43 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta()  {
-        doTestAxes("beta-large-negative-BEIDOU-2G.txt", 8.0e-16, 5.9e-16, 3.4e-16);
+    public void testPatchedLargeNegativeBeta()  {
+        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2G.txt", 8.0e-16, 5.9e-16, 3.4e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() {
-        doTestAxes("beta-small-negative-BEIDOU-2G.txt", 9.3e-16, 7.6e-16, 4.0e-16);
+    public void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 9.3e-16, 7.6e-16, 4.0e-16);
     }
 
     @Test
-    public void testCrossingBeta() {
-        doTestAxes("beta-crossing-BEIDOU-2G.txt", 9.0e-16, 7.4e-16, 4.6e-16);
+    public void testPatchedCrossingBeta() {
+        doTestAxes("patched-eclips/beta-crossing-BEIDOU-2G.txt", 9.0e-16, 7.4e-16, 4.6e-16);
     }
 
     @Test
-    public void testSmallPositiveBeta() {
-        doTestAxes("beta-small-positive-BEIDOU-2G.txt", 7.0e-16, 6.8e-16, 4.3e-16);
+    public void testPatchedSmallPositiveBeta() {
+        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2G.txt", 7.0e-16, 6.8e-16, 4.3e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBeta()  {
+        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2G.txt", 7.1e-4, 7.1e-4, 3.4e-16);
+    }
+
+    @Test
+    public void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2G.txt", 3.1e-4, 3.1e-4, 4.0e-16);
+    }
+
+    @Test
+    public void testOriginalCrossingBeta() {
+        doTestAxes("original-eclips/beta-crossing-BEIDOU-2G.txt", 5.3e-4, 5.3e-4, 4.6e-16);
+    }
+
+    @Test
+    public void testOriginalSmallPositiveBeta() {
+        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2G.txt", 5.8e-4, 5.8e-4, 4.3e-16);
     }
 
 }

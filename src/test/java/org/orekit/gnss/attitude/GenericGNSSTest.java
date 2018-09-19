@@ -33,53 +33,103 @@ public class GenericGNSSTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBetaGalileo() {
-        doTestAxes("beta-large-negative-GALILEO.txt", 1.3e-15, 1.2e-15, 5.5e-16);
+    public void testPatchedLargeNegativeBetaGalileo() {
+        doTestAxes("patched-eclips/beta-large-negative-GALILEO.txt", 1.3e-15, 1.2e-15, 5.5e-16);
     }
 
     @Test
-    public void testLargePositiveBetaGalileo() {
-        doTestAxes("beta-large-positive-GALILEO.txt", 1.4e-15, 5.5e-16, 7.1e-16);
+    public void testPatchedLargePositiveBetaGalileo() {
+        doTestAxes("patched-eclips/beta-large-positive-GALILEO.txt", 1.4e-15, 5.5e-16, 7.1e-16);
     }
 
     @Test
-    public void testLargeNegativeBetaBlonass() {
-        doTestAxes("beta-large-negative-GLONASS.txt", 1.5e-15, 1.1e-15, 3.1e-16);
+    public void testPatchedLargeNegativeBetaGlonass() {
+        doTestAxes("patched-eclips/beta-large-negative-GLONASS.txt", 1.5e-15, 1.1e-15, 3.1e-16);
     }
 
     @Test
-    public void testLargePositiveBetaGLONASS() {
-        doTestAxes("beta-large-positive-GLONASS.txt", 1.3e-15, 7.7e-16, 5.4e-16);
+    public void testPatchedLargePositiveBetaGLONASS() {
+        doTestAxes("patched-eclips/beta-large-positive-GLONASS.txt", 1.3e-15, 7.7e-16, 5.4e-16);
     }
 
     @Test
-    public void testLargeNegativeBetaBlockIIA() {
-        doTestAxes("beta-large-negative-BLOCK-IIA.txt", 1.1e-15, 8.4e-15, 4.0e-16);
+    public void testPatchedLargeNegativeBetaBlockIIA() {
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 1.1e-15, 8.4e-15, 4.0e-16);
     }
 
     @Test
-    public void testLargePositiveBetaBlockIIA() {
-        doTestAxes("beta-large-positive-BLOCK-IIA.txt", 9.0e-16, 1.2e-15, 8.0e-16);
+    public void testPatchedLargePositiveBetaBlockIIA() {
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIA.txt", 9.0e-16, 1.2e-15, 8.0e-16);
     }
 
     @Test
-    public void testLargeNegativeBetaBlockIIF() {
-        doTestAxes("beta-large-negative-BLOCK-IIF.txt", 1.1e-15, 8.9e-16, 4.2e-16);
+    public void testPatchedLargeNegativeBetaBlockIIF() {
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt", 1.1e-15, 8.9e-16, 4.2e-16);
     }
 
     @Test
-    public void testLargePositiveBetaBlockIIF() {
-        doTestAxes("beta-large-positive-BLOCK-IIF.txt", 1.1e-15, 7.7e-16, 3.2e-16);
+    public void testPatchedLargePositiveBetaBlockIIF() {
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIF.txt", 1.1e-15, 7.7e-16, 3.2e-16);
     }
 
     @Test
-    public void testLargeNegativeBetaBlockIIR() {
-        doTestAxes("beta-large-negative-BLOCK-IIR.txt", 1.5e-15, 1.2e-15, 8.8e-16);
+    public void testPatchedLargeNegativeBetaBlockIIR() {
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIR.txt", 1.5e-15, 1.2e-15, 8.8e-16);
     }
 
     @Test
-    public void testLargePositiveBetaBlockIIR() {
-        doTestAxes("beta-large-positive-BLOCK-IIR.txt",  1.3e-15, 7.0e-15, 8.5e-16);
+    public void testPatchedLargePositiveBetaBlockIIR() {
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIR.txt",  1.3e-15, 7.0e-15, 8.5e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBetaGalileo() {
+        doTestAxes("original-eclips/beta-large-negative-GALILEO.txt", 1.3e-15, 1.2e-15, 5.5e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBetaGalileo() {
+        doTestAxes("original-eclips/beta-large-positive-GALILEO.txt", 1.4e-15, 5.5e-16, 7.1e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBetaGlonass() {
+        doTestAxes("original-eclips/beta-large-negative-GLONASS.txt", 1.5e-15, 1.1e-15, 3.1e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBetaGLONASS() {
+        doTestAxes("original-eclips/beta-large-positive-GLONASS.txt", 1.3e-15, 7.7e-16, 5.4e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBetaBlockIIA() {
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 1.1e-15, 8.4e-15, 4.0e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBetaBlockIIA() {
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIA.txt", 9.0e-16, 1.2e-15, 8.0e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBetaBlockIIF() {
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt", 1.1e-15, 8.9e-16, 4.2e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBetaBlockIIF() {
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIF.txt", 1.1e-15, 7.7e-16, 3.2e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBetaBlockIIR() {
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIR.txt", 1.5e-15, 1.2e-15, 8.8e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBetaBlockIIR() {
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIR.txt",  1.3e-15, 7.0e-15, 8.5e-16);
     }
 
 }

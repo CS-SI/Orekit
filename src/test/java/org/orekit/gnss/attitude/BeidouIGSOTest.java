@@ -33,28 +33,53 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() {
-        doTestAxes("beta-large-negative-BEIDOU-2I.txt", 1.4e-15, 1.4e-15, 4.8e-16);
+    public void testPatchedLargeNegativeBeta() {
+        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2I.txt", 1.4e-15, 1.4e-15, 4.8e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() {
-        doTestAxes("beta-small-negative-BEIDOU-2I.txt", 8.8e-16, 7.6e-16, 4.6e-16);
+    public void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2I.txt", 8.8e-16, 7.6e-16, 4.6e-16);
     }
 
     @Test
-    public void testCrossingBeta() {
-        doTestAxes("beta-crossing-BEIDOU-2I.txt", 8.0e-16, 7.6e-16, 3.7e-16);
+    public void testPatchedCrossingBeta() {
+        doTestAxes("patched-eclips/beta-crossing-BEIDOU-2I.txt", 8.0e-16, 7.6e-16, 3.7e-16);
     }
 
     @Test
-    public void testSmallPositiveBeta() {
-        doTestAxes("beta-small-positive-BEIDOU-2I.txt", 1.1e-15, 1.2e-15, 7.5e-16);
+    public void testPatchedSmallPositiveBeta() {
+        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2I.txt", 1.1e-15, 1.2e-15, 7.5e-16);
     }
 
     @Test
-    public void testLargePositiveBeta() {
-        doTestAxes("beta-large-positive-BEIDOU-2I.txt", 9.2e-16, 7.8e-16, 4.8e-16);
+    public void testPatchedLargePositiveBeta() {
+        doTestAxes("patched-eclips/beta-large-positive-BEIDOU-2I.txt", 9.2e-16, 7.8e-16, 4.8e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBeta() {
+        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2I.txt", 1.4e-15, 1.4e-15, 4.8e-16);
+    }
+
+    @Test
+    public void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2I.txt", 3.3e-3, 3.3e-3, 4.6e-16);
+    }
+
+    @Test
+    public void testOriginalCrossingBeta() {
+        doTestAxes("original-eclips/beta-crossing-BEIDOU-2I.txt", 3.2e-3, 3.2e-3, 3.7e-16);
+    }
+
+    @Test
+    public void testOriginalSmallPositiveBeta() {
+        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2I.txt", 3.2e-3, 3.2e-3, 7.5e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBeta() {
+        doTestAxes("original-eclips/beta-large-positive-BEIDOU-2I.txt", 9.2e-16, 7.8e-16, 4.8e-16);
     }
 
 }

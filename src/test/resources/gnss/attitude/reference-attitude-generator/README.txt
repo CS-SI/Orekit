@@ -80,3 +80,6 @@ The data files for attitude reference were created as follows:
    done
 
 6) edited the files to select just a few test cases in all configurations at noon and midnight
+
+7) repeat steps 4, 5 and 6 but WITHOUT applying the patches, in order to get reference data
+   from the original Kouba reference (which of course will lead to slightly different results)

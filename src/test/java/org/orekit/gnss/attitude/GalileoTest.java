@@ -33,28 +33,53 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() {
-        doTestAxes("beta-large-negative-GALILEO.txt", 1.3e-15, 1.2e-15, 5.5e-16);
+    public void testPatchedLargeNegativeBeta() {
+        doTestAxes("patched-eclips/beta-large-negative-GALILEO.txt", 1.3e-15, 1.2e-15, 5.5e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() {
-        doTestAxes("beta-small-negative-GALILEO.txt", 2.9e-12, 2.9e-12, 5.4e-16);
+    public void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 2.9e-12, 5.4e-16);
     }
 
     @Test
-    public void testCrossingBeta() {
-        doTestAxes("beta-crossing-GALILEO.txt", 1.2e-12, 1.2e-12, 6.2e-16);
+    public void testPatchedCrossingBeta() {
+        doTestAxes("patched-eclips/beta-crossing-GALILEO.txt", 1.2e-12, 1.2e-12, 6.2e-16);
     }
 
     @Test
-    public void testSmallPositiveBeta() {
-        doTestAxes("beta-small-positive-GALILEO.txt", 4.1e-12, 4.1e-12, 7.8e-16);
+    public void testPatchedSmallPositiveBeta() {
+        doTestAxes("patched-eclips/beta-small-positive-GALILEO.txt", 4.1e-12, 4.1e-12, 7.8e-16);
     }
 
     @Test
-    public void testLargePositiveBeta() {
-        doTestAxes("beta-large-positive-GALILEO.txt", 1.4e-15, 5.5e-16, 7.1e-16);
+    public void testPatchedLargePositiveBeta() {
+        doTestAxes("patched-eclips/beta-large-positive-GALILEO.txt", 1.4e-15, 5.5e-16, 7.1e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBeta() {
+        doTestAxes("original-eclips/beta-large-negative-GALILEO.txt", 1.3e-15, 1.2e-15, 5.5e-16);
+    }
+
+    @Test
+    public void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-GALILEO.txt", 2.2e-2, 2.2e-2, 5.4e-16);
+    }
+
+    @Test
+    public void testOriginalCrossingBeta() {
+        doTestAxes("original-eclips/beta-crossing-GALILEO.txt", 9.4e-3, 9.4e-3, 6.2e-16);
+    }
+
+    @Test
+    public void testOriginalSmallPositiveBeta() {
+        doTestAxes("original-eclips/beta-small-positive-GALILEO.txt", 7.1e-3, 7.1e-3, 7.8e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBeta() {
+        doTestAxes("original-eclips/beta-large-positive-GALILEO.txt", 1.4e-15, 5.5e-16, 7.1e-16);
     }
 
 }

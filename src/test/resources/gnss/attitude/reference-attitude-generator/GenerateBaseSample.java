@@ -141,8 +141,8 @@ public class GenerateBaseSample {
                                 "   Id    type     satCode" +
                                 "    PxSat (m)         PySat (m)         PzSat (m)       VxSat (m/s)       VySat (m/s)       VZsat (m/s)" +
                                 "        PxSun (m)         PySun (m)         PzSun (m)         β (deg)        Δ (deg)" +
-                                "        xsatX (nominal)     ysatX (nominal)     zsatX (nominal)     ψ nom. (deg)" +
-                                "      xsatX (eclips)      ysatX (eclips)      zsatX (eclips)      ψ ecl. (deg)%n";
+                                "         xsatX (nominal)      ysatX (nominal)      zsatX (nominal)     ψ nom. (deg)" +
+                                "       xsatX (eclips)       ysatX (eclips)       zsatX (eclips)      ψ ecl. (deg)%n";
                 outLargeNeg.format(Locale.US, header);            
                 outSmallNeg.format(Locale.US, header);             
                 outCrossing.format(Locale.US, header);            
