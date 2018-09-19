@@ -92,12 +92,10 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
                     linearPhi = phiStart + phiDot * dtStart;
                 }
 
-                if (context.targetYawReached(linearPhi, phiDot)) {
-                    // we are already back in nominal yaw mode
-                    return context.nominalYaw(context.getDate());
+                if (context.linearModelStillActive(linearPhi, phiDot)) {
+                    // we are still in the linear model phase
+                    return context.turnCorrectedAttitude(linearPhi, phiDot);
                 }
-
-                return context.turnCorrectedAttitude(linearPhi, phiDot);
 
             }
 
@@ -142,12 +140,10 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 }
 
-                if (context.targetYawReached(linearPhi, phiDot)) {
-                    // we are already back in nominal yaw mode
-                    return context.nominalYaw(context.getDate());
+                if (context.linearModelStillActive(linearPhi, phiDot)) {
+                    // we are still in the linear model phase
+                    return context.turnCorrectedAttitude(linearPhi, phiDot);
                 }
-
-                return context.turnCorrectedAttitude(linearPhi, phiDot);
 
             }
 

@@ -103,25 +103,17 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                         phiDot    = -FastMath.copySign(YAW_RATE, beta);
                         linearPhi = phiStart + phiDot * dtStart;
                     }
-
-                    if (context.targetYawReached(linearPhi, phiDot)) {
-                        // we are already back in nominal yaw mode
-                        return context.nominalYaw(context.getDate());
-                    }
-
                 } else {
                     // midnight turn
                     phiDot    = context.yawRate(beta);
                     linearPhi = phiStart + phiDot * dtStart;
-
-                    if (context.afterTurnEnd()) {
-                        // we are already back in nominal yaw mode
-                        return context.nominalYaw(context.getDate());
-                    }
-
                 }
 
-                return context.turnCorrectedAttitude(linearPhi, phiDot);
+                if (context.linearModelStillActive(linearPhi, phiDot)) {
+                    // we are still in the linear model phase
+                    return context.turnCorrectedAttitude(linearPhi, phiDot);
+                }
+
 
             }
 
@@ -171,25 +163,16 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                         phiDot    = field.getZero().add(-FastMath.copySign(YAW_RATE, beta.getReal()));
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     }
-
-                    if (context.targetYawReached(linearPhi, phiDot)) {
-                        // we are already back in nominal yaw mode
-                        return context.nominalYaw(context.getDate());
-                    }
-
                 } else {
                     // midnight turn
                     phiDot    = context.yawRate(beta);
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
-
-                    if (context.afterTurnEnd()) {
-                        // we are already back in nominal yaw mode
-                        return context.nominalYaw(context.getDate());
-                    }
-
                 }
 
-                return context.turnCorrectedAttitude(linearPhi, phiDot);
+                if (context.linearModelStillActive(linearPhi, phiDot)) {
+                    // we are still in the linear model phase
+                    return context.turnCorrectedAttitude(linearPhi, phiDot);
+                }
 
             }
 

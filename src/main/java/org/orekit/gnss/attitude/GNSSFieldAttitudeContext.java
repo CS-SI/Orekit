@@ -231,13 +231,6 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         return date;
     }
 
-    /** Get the current date.
-     * @return current date
-     */
-    public FieldAbsoluteDate<FieldDerivativeStructure<T>> getDateDS() {
-        return dateDS;
-    }
-
     /** Get the turn span.
      * @return turn span, may be null if context is outside of turn
      */
@@ -269,14 +262,14 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
                beta;
     }
 
-    /** Check if a linear yaw model has already reached target yaw.
+    /** Check if a linear yaw model is still active or if we already reached target yaw.
      * @param linearPhi value of the linear yaw model
      * @param phiDot slope of the linear yaw model
-     * @return true if linear model has already reached target yaw
+     * @return true if linear model is still active
      */
-    public boolean targetYawReached(final T linearPhi, final T phiDot) {
+    public boolean linearModelStillActive(final T linearPhi, final T phiDot) {
         final AbsoluteDate absDate = date.toAbsoluteDate();
-        final double dt0 = turnSpan.getSolvedEnd().durationFrom(absDate);
+        final double dt0 = turnSpan.getTurnEndDate().durationFrom(date).getReal();
         final UnivariateFunction yawReached = dt -> {
             final AbsoluteDate  t       = absDate.shiftedBy(dt);
             final Vector3D      pSun    = sun.getPVCoordinates(t, inertialFrame).getPosition();
@@ -295,7 +288,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
             return Vector3D.dotProduct(targetX, currentXDot);
         };
         final double fullTurn = 2 * FastMath.PI / FastMath.abs(phiDot.getReal());
-        final double dtMin    = FastMath.min(-turnSpan.timeSinceTurnStart(date).getReal(), dt0 - 60.0);
+        final double dtMin    = FastMath.min(turnSpan.getTurnStartDate().durationFrom(date).getReal(), dt0 - 60.0);
         final double dtMax    = FastMath.max(dtMin + fullTurn, dt0 + 60.0);
         double[] bracket = UnivariateSolverUtils.bracket(yawReached, dt0,
                                                          dtMin, dtMax, 1.0, 2.0, 15);
@@ -305,10 +298,10 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
                                                     bracket[1], bracket[1] + fullTurn, 1.0, 2.0, 15);
         }
         final double dt = new BracketingNthOrderBrentSolver(1.0e-3, 5).
-                        solve(100, yawReached, bracket[0], bracket[1]);
-        turnSpan.setSolvedEnd(absDate.shiftedBy(dt));
+                          solve(100, yawReached, bracket[0], bracket[1]);
+        turnSpan.updateEnd(date.shiftedBy(dt), absDate);
 
-        return dt <= 0.0;
+        return dt > 0.0;
 
     }
 
@@ -386,7 +379,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return yaw rate
      */
     public T yawRate(final T sunBeta) {
-        return getYawEnd(sunBeta).subtract(getYawStart(sunBeta)).divide(getTurnDuration());
+        return getYawEnd(sunBeta).subtract(getYawStart(sunBeta)).divide(turnSpan.getTurnDuration());
     }
 
     /** Get the spacecraft angular velocity.
@@ -442,10 +435,12 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     public void setHalfSpan(final T halfSpan, final double endMargin) {
         final FieldAbsoluteDate<T> start = date.shiftedBy(delta.getValue().subtract(halfSpan).divide(muRate));
         final FieldAbsoluteDate<T> end   = date.shiftedBy(delta.getValue().add(halfSpan).divide(muRate));
+        final AbsoluteDate estimationDate = getDate().toAbsoluteDate();
         if (turnSpan == null) {
-            turnSpan = new FieldTurnSpan<>(start, end, getDate().toAbsoluteDate(), endMargin);
+            turnSpan = new FieldTurnSpan<>(start, end, estimationDate, endMargin);
         } else {
-            turnSpan.update(start, end, getDate().toAbsoluteDate());
+            turnSpan.updateStart(start, estimationDate);
+            turnSpan.updateEnd(end, estimationDate);
         }
     }
 
@@ -456,25 +451,11 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         return turnSpan != null && turnSpan.inTurnTimeRange(dateDouble);
     }
 
-    /** Get turn duration.
-     * @return turn duration
-     */
-    public T getTurnDuration() {
-        return turnSpan.getTurnDuration();
-    }
-
     /** Get elapsed time since turn start.
      * @return elapsed time from turn start to current date
      */
     public T timeSinceTurnStart() {
-        return turnSpan.timeSinceTurnStart(getDate());
-    }
-
-    /** Check if we are after turn end (without margin).
-     * @return true if we are after turn end (without margin)
-     */
-    public boolean afterTurnEnd() {
-        return date.durationFrom(turnSpan.getTurnEndDate()).getReal() >= 0.0;
+        return getDate().durationFrom(turnSpan.getTurnStartDate());
     }
 
     /** Generate an attitude with turn-corrected yaw.

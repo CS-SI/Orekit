@@ -187,13 +187,6 @@ class GNSSAttitudeContext implements TimeStamped {
         return date;
     }
 
-    /** Get the current date.
-     * @return current date
-     */
-    public FieldAbsoluteDate<DerivativeStructure> getDateDS() {
-        return dateDS;
-    }
-
     /** Get the turn span.
      * @return turn span, may be null if context is outside of turn
      */
@@ -225,13 +218,13 @@ class GNSSAttitudeContext implements TimeStamped {
                beta;
     }
 
-    /** Check if a linear yaw model has already reached target yaw.
+    /** Check if a linear yaw model is still active or if we already reached target yaw.
      * @param linearPhi value of the linear yaw model
      * @param phiDot slope of the linear yaw model
-     * @return true if linear model has already reached target yaw
+     * @return true if linear model is still active
      */
-    public boolean targetYawReached(final double linearPhi, final double phiDot) {
-        final double dt0 = turnSpan.getSolvedEnd().durationFrom(date);
+    public boolean linearModelStillActive(final double linearPhi, final double phiDot) {
+        final double dt0 = turnSpan.getTurnEndDate().durationFrom(date);
         final UnivariateFunction yawReached = dt -> {
             final AbsoluteDate  t       = date.shiftedBy(dt);
             final Vector3D      pSun    = sun.getPVCoordinates(t, inertialFrame).getPosition();
@@ -250,7 +243,7 @@ class GNSSAttitudeContext implements TimeStamped {
             return Vector3D.dotProduct(targetX, currentXDot);
         };
         final double fullTurn = 2 * FastMath.PI / FastMath.abs(phiDot);
-        final double dtMin    = FastMath.min(-turnSpan.timeSinceTurnStart(date), dt0 - 60.0);
+        final double dtMin    = FastMath.min(turnSpan.getTurnStartDate().durationFrom(date), dt0 - 60.0);
         final double dtMax    = FastMath.max(dtMin + fullTurn, dt0 + 60.0);
         double[] bracket = UnivariateSolverUtils.bracket(yawReached, dt0,
                                                          dtMin, dtMax, 1.0, 2.0, 15);
@@ -260,10 +253,10 @@ class GNSSAttitudeContext implements TimeStamped {
                                                     bracket[1], bracket[1] + fullTurn, 1.0, 2.0, 15);
         }
         final double dt = new BracketingNthOrderBrentSolver(1.0e-3, 5).
-                        solve(100, yawReached, bracket[0], bracket[1]);
-        turnSpan.setSolvedEnd(date.shiftedBy(dt));
+                          solve(100, yawReached, bracket[0], bracket[1]);
+        turnSpan.updateEnd(date.shiftedBy(dt), date);
 
-        return dt <= 0.0;
+        return dt > 0.0;
 
     }
 
@@ -398,11 +391,13 @@ class GNSSAttitudeContext implements TimeStamped {
 
         final AbsoluteDate start = date.shiftedBy((delta.getValue() - halfSpan) / muRate);
         final AbsoluteDate end   = date.shiftedBy((delta.getValue() + halfSpan) / muRate);
+        final AbsoluteDate estimationDate = getDate();
 
         if (turnSpan == null) {
-            turnSpan = new TurnSpan(start, end, getDate(), endMargin);
+            turnSpan = new TurnSpan(start, end, estimationDate, endMargin);
         } else {
-            turnSpan.update(start, end, getDate());
+            turnSpan.updateStart(start, estimationDate);
+            turnSpan.updateEnd(end, estimationDate);
         }
     }
 
@@ -413,25 +408,11 @@ class GNSSAttitudeContext implements TimeStamped {
         return turnSpan != null && turnSpan.inTurnTimeRange(getDate());
     }
 
-    /** Get turn duration.
-     * @return turn duration
-     */
-    public double getTurnDuration() {
-        return turnSpan.getTurnDuration();
-    }
-
     /** Get elapsed time since turn start.
      * @return elapsed time from turn start to current date
      */
     public double timeSinceTurnStart() {
-        return turnSpan.timeSinceTurnStart(getDate());
-    }
-
-    /** Check if we are after turn end (without margin).
-     * @return true if we are after turn end (without margin)
-     */
-    public boolean afterTurnEnd() {
-        return date.durationFrom(turnSpan.getTurnEndDate()) >= 0.0;
+        return getDate().durationFrom(turnSpan.getTurnStartDate());
     }
 
     /** Generate an attitude with turn-corrected yaw.

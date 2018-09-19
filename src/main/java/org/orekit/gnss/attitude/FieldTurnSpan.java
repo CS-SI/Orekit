@@ -47,12 +47,6 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
     /** Best estimate of the end of the turn, excluding margin. */
     private FieldAbsoluteDate<T> end;
 
-    /** Solved for end of turn. */
-    private AbsoluteDate solvedEnd;
-
-    /** Best estimate of the end of the turn, including margin. */
-    private FieldAbsoluteDate<T> endPlusMargin;
-
     /** Best estimate of the end of the turn, including margin. */
     private AbsoluteDate endPlusMarginDouble;
 
@@ -62,6 +56,9 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
     /** Time between end and its estimation date. */
     private double endProjection;
 
+    /** Turn duration. */
+    private T duration;
+
     /** Simple constructor.
      * @param start estimate of the start of the turn
      * @param end estimate of the end of the turn, excluding margin
@@ -70,28 +67,26 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
      */
     FieldTurnSpan(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> end,
                   final AbsoluteDate estimationDate, final double endMargin) {
+        final FieldAbsoluteDate<T> endPlusMargin = end.shiftedBy(endMargin);
+        this.endMargin           = endMargin;
         this.start               = start;
         this.startDouble         = start.toAbsoluteDate();
         this.end                 = end;
-        this.solvedEnd           = end.toAbsoluteDate();
-        this.endPlusMargin       = end.shiftedBy(endMargin);
         this.endPlusMarginDouble = endPlusMargin.toAbsoluteDate();
         this.startProjection     = FastMath.abs(start.durationFrom(estimationDate).getReal());
         this.endProjection       = FastMath.abs(endPlusMargin.durationFrom(estimationDate).getReal());
-        this.endMargin           = endMargin;
+        this.duration            = end.durationFrom(start);
     }
 
-    /** Update the estimate of the turn boundaries.
+    /** Update the estimate of the turn start.
      * <p>
-     * Start and end boundaries are updated only if they are performed
-     * at a time closer to the boundary than the previous estimate.
+     * Start boundary is updated only if it is estimated
+     * from a time closer to the boundary than the previous estimate.
      * </p>
      * @param newStart new estimate of the start of the turn
-     * @param newEnd new estimate of the end of the turn, excluding margin
-     * @param estimationDate date at which turn boundaries have been estimated
+     * @param estimationDate date at which turn start has been estimated
      */
-    public void update(final FieldAbsoluteDate<T> newStart, final FieldAbsoluteDate<T> newEnd,
-                       final AbsoluteDate estimationDate) {
+    public void updateStart(final FieldAbsoluteDate<T> newStart, final AbsoluteDate estimationDate) {
 
         // update the start date if this estimate is closer than the previous one
         final double newStartProjection = FastMath.abs(newStart.toAbsoluteDate().durationFrom(estimationDate));
@@ -99,15 +94,29 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
             this.start           = newStart;
             this.startDouble     = newStart.toAbsoluteDate();
             this.startProjection = newStartProjection;
+            this.duration        = end.durationFrom(start);
         }
 
-        // update the end date if this estimate is closer than the previous one
+    }
+
+    /** Update the estimate of the turn end.
+     * <p>
+     * End boundary is updated only if it is estimated
+     * from a time closer to the boundary than the previous estimate.
+     * </p>
+     * @param newEnd new estimate of the end of the turn
+     * @param estimationDate date at which turn end has been estimated
+     */
+    public void updateEnd(final FieldAbsoluteDate<T> newEnd, final AbsoluteDate estimationDate) {
+
+       // update the end date if this estimate is closer than the previous one
         final double newEndProjection = FastMath.abs(newEnd.toAbsoluteDate().durationFrom(estimationDate));
         if (newEndProjection <= endProjection) {
+            final FieldAbsoluteDate<T> endPlusMargin       = newEnd.shiftedBy(endMargin);
             this.end                 = newEnd;
-            this.endPlusMargin       = newEnd.shiftedBy(endMargin);
             this.endPlusMarginDouble = endPlusMargin.toAbsoluteDate();
             this.endProjection       = newEndProjection;
+            this.duration            = end.durationFrom(start);
         }
 
     }
@@ -122,15 +131,7 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
      * @return turn duration
      */
     public T getTurnDuration() {
-        return end.durationFrom(start);
-    }
-
-    /** Get elapsed time since turn start.
-     * @param date date to check
-     * @return elapsed time from turn start to specified date
-     */
-    public T timeSinceTurnStart(final FieldAbsoluteDate<T> date) {
-        return date.durationFrom(start);
+        return duration;
     }
 
     /** Get turn start date.
@@ -138,20 +139,6 @@ class FieldTurnSpan<T extends RealFieldElement<T>> implements TimeStamped {
      */
     public FieldAbsoluteDate<T> getTurnStartDate() {
         return start;
-    }
-
-    /** Set solved-for turn end date (without margin).
-     * @param solvedEnd solved-for turn end date (without margin)
-     */
-    public void setSolvedEnd(final AbsoluteDate solvedEnd) {
-        this.solvedEnd = solvedEnd;
-    }
-
-    /** Get solved-for turn end date (without margin).
-     * @return solved-for turn end date (without margin)
-     */
-    public AbsoluteDate getSolvedEnd() {
-        return solvedEnd;
     }
 
     /** Get turn end date (without margin).

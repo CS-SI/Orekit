@@ -47,9 +47,6 @@ class TurnSpan implements Serializable, TimeStamped {
     /** Best estimate of the end of the turn, excluding margin. */
     private AbsoluteDate end;
 
-    /** Solved for end of turn. */
-    private AbsoluteDate solvedEnd;
-
     /** Best estimate of the end of the turn, including margin. */
     private AbsoluteDate endPlusMargin;
 
@@ -59,6 +56,9 @@ class TurnSpan implements Serializable, TimeStamped {
     /** Time between end and its estimation date. */
     private double endProjection;
 
+    /** Turn duration. */
+    private double duration;
+
     /** Simple constructor.
      * @param start estimate of the start of the turn
      * @param end estimate of the end of the turn, excluding margin
@@ -67,33 +67,44 @@ class TurnSpan implements Serializable, TimeStamped {
      */
     TurnSpan(final AbsoluteDate start, final AbsoluteDate end,
              final AbsoluteDate estimationDate, final double endMargin) {
+        this.endMargin       = endMargin;
         this.start           = start;
         this.end             = end;
-        this.solvedEnd       = end;
         this.endPlusMargin   = end.shiftedBy(endMargin);
         this.startProjection = FastMath.abs(start.durationFrom(estimationDate));
         this.endProjection   = FastMath.abs(endPlusMargin.durationFrom(estimationDate));
-        this.endMargin       = endMargin;
+        this.duration        = end.durationFrom(start);
     }
 
-    /** Update the estimate of the turn boundaries.
+    /** Update the estimate of the turn start.
      * <p>
-     * Start and end boundaries are updated only if they are performed
-     * at a time closer to the boundary than the previous estimate.
+     * Start boundary is updated only if it is estimated
+     * from a time closer to the boundary than the previous estimate.
      * </p>
      * @param newStart new estimate of the start of the turn
-     * @param newEnd new estimate of the end of the turn, excluding margin
-     * @param estimationDate date at which turn boundaries have been estimated
+     * @param estimationDate date at which turn start has been estimated
      */
-    public void update(final AbsoluteDate newStart, final AbsoluteDate newEnd,
-                       final AbsoluteDate estimationDate) {
+    public void updateStart(final AbsoluteDate newStart,  final AbsoluteDate estimationDate) {
 
         // update the start date if this estimate is closer than the previous one
         final double newStartProjection = FastMath.abs(newStart.durationFrom(estimationDate));
         if (newStartProjection <= startProjection) {
             this.start           = newStart;
             this.startProjection = newStartProjection;
+            this.duration        = end.durationFrom(start);
         }
+
+    }
+
+    /** Update the estimate of the turn end.
+     * <p>
+     * end boundary is updated only if it is estimated
+     * from a time closer to the boundary than the previous estimate.
+     * </p>
+     * @param newEnd new estimate of the end of the turn
+     * @param estimationDate date at which turn end has been estimated
+     */
+    public void updateEnd(final AbsoluteDate newEnd, final AbsoluteDate estimationDate) {
 
         // update the end date if this estimate is closer than the previous one
         final double newEndProjection = FastMath.abs(newEnd.durationFrom(estimationDate));
@@ -101,6 +112,7 @@ class TurnSpan implements Serializable, TimeStamped {
             this.end             = newEnd;
             this.endPlusMargin   = newEnd.shiftedBy(endMargin);
             this.endProjection   = newEndProjection;
+            this.duration        = end.durationFrom(start);
         }
 
     }
@@ -119,15 +131,7 @@ class TurnSpan implements Serializable, TimeStamped {
      * @return turn duration
      */
     public double getTurnDuration() {
-        return end.durationFrom(start);
-    }
-
-    /** Get elapsed time since turn start.
-     * @param date date to check
-     * @return elapsed time from turn start to specified date
-     */
-    public double timeSinceTurnStart(final AbsoluteDate date) {
-        return date.durationFrom(start);
+        return duration;
     }
 
     /** Get turn start date.
@@ -135,20 +139,6 @@ class TurnSpan implements Serializable, TimeStamped {
      */
     public AbsoluteDate getTurnStartDate() {
         return start;
-    }
-
-    /** Set solved-for turn end date (without margin).
-     * @param solvedEnd solved-for turn end date (without margin)
-     */
-    public void setSolvedEnd(final AbsoluteDate solvedEnd) {
-        this.solvedEnd = solvedEnd;
-    }
-
-    /** Get solved-for turn end date (without margin).
-     * @return solved-for turn end date (without margin)
-     */
-    public AbsoluteDate getSolvedEnd() {
-        return solvedEnd;
     }
 
     /** Get turn end date (without margin).
