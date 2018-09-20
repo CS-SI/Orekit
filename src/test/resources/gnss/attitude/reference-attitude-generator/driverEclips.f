@@ -3,12 +3,12 @@
       integer satmax, eclmax
       parameter (satmax = 136, eclmax = 1)
 C
-      integer idir, iprn, preprn
+      integer idir, iprn, preprn, inprn
       integer neclips(satmax), ieclips(satmax), iblk(satmax)
       integer year, month, day, week, isat, code, uin, uout
       double precision ttag, svbcos, anoon, anight, pi, nan
       double precision rawbet, beta, betaini(satmax), milli, delta
-      double precision sp, p2, v2, a, phi1, phi2, prephi
+      double precision sp, p2, v2, a, phi1, phi2, prephi, yrtin, ybsin
       double precision eclstm(satmax, eclmax), ecletm(satmax, eclmax)
       double precision xsv(3), santxyz(3), vsvc(3), sun(3), out(3)
       character line*512, type*11, id1*3, id2*4, system*1
@@ -130,9 +130,13 @@ C        data line
             ecletm(iprn, 1) = 0
         endif
         preprn = iprn
+        yrtin  = 0.0d0
+        ybsin  = 0.0d0
+        inprn  = 0
         call eclips(idir, iprn, ttag, svbcos, anoon, anight,
      &              neclips, eclstm, ecletm, ieclips, pi,
-     &              xsv, out, vsvc, beta, iblk, betaini)
+     &              xsv, out, vsvc, beta, iblk, betaini,
+     &              yrtin, ybsin, inprn)
         phi1   = conti(phi(xsv, vsvc, santxyz) * 180d0 / pi, prephi)
         phi2   = conti(phi(xsv, vsvc, out)     * 180d0 / pi, phi1)
         prephi = phi1

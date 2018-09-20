@@ -1,6 +1,6 @@
---- eclips_May2017.f.orig	2018-09-17 09:45:05.109265596 +0200
-+++ eclips_May2017.f	2018-09-17 09:45:41.980254773 +0200
-@@ -99,6 +99,8 @@
+--- eclips_Dec2017.f.orig	2018-09-20 14:49:44.284396704 +0200
++++ eclips_Dec2017.f	2018-09-20 14:50:01.520397137 +0200
+@@ -113,6 +113,8 @@
  C                      Jul 09, 2018  IMPROVED ACCURACY BY REPLACING PROJECTED
  C                                    PLANAR GEOMETRY WITH SPHERICAL TRIGONOMETRY
  C                                    FOR SOLVING SOME TRIANGLES (Luc Maisonobe)
@@ -9,7 +9,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -593,7 +595,10 @@
+@@ -772,7 +774,10 @@
                     IF(ABS(SANTX).GT.180.D0) SANTX = SANTX -360.D0*
       &               SANTX /ABS(SANTX )
  C STOP! THE NOMINAL YAW (YANGLE) REACHED!

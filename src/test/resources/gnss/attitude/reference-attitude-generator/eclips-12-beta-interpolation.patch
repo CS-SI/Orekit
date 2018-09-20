@@ -1,6 +1,6 @@
---- eclips_May2017.f.orig	2018-09-17 15:26:17.335394858 +0200
-+++ eclips_May2017.f	2018-09-17 15:27:11.149569482 +0200
-@@ -108,6 +108,9 @@
+--- eclips_Dec2017.f.orig	2018-09-20 14:52:58.476401585 +0200
++++ eclips_Dec2017.f	2018-09-20 14:54:14.984403509 +0200
+@@ -122,6 +122,9 @@
  C                      Jul 12, 2018  UPDATE ESTIMATED ECLIPSE START AND END TIME
  C                                    WHEN THEY ARE ESTIMATED FROM A CLOSER
  C                                    DATE THAN PREVIOUS ESTIME (Luc Maisonobe)
@@ -10,7 +10,7 @@
  C                      Sep 14, 2018  FIXED BODY-X UNIT VECTOR COMPUTATION
  C                                    EXACTLY AT NODE (AVOID NaNs), IMPROVE
  C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
-@@ -215,6 +218,7 @@
+@@ -246,6 +249,7 @@
        REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
        REAL*8    SGAP(MAXSAT, MAXECL), EGAP(MAXSAT, MAXECL)
        REAL*8    ECLCTM(MAXSAT,MAXECL)
@@ -18,16 +18,16 @@
  C Dec 12, 2013
        REAL*8 YBIAS
        INTEGER*4 IBLK(*), J, I
-@@ -236,7 +240,7 @@
- C                Note: THE BEIDOU HARDWARE RATES NOT NEEDED
- C    &  ,.1140d0, 32*0.250d0/
-      &  ,.1140d0, 32*0.250d0, 36*0.203d0, 36*0.203d0/
+@@ -273,7 +277,7 @@
+ C    &  ,.1140d0, 32*0.250d0, 36*0.203d0, 36*0.203d0/
+ C BEIDOU RATES OF 0.085 & 0.158 ACCORDING TO DILSSNER (Nov 2017) 
+      &  ,.1140d0, 32*0.250d0, 36*0.203d0, 10*0.085D0, 26*0.158d0/
 -      SAVE SGAP, EGAP, ECLCTM
 +      SAVE SGAP, EGAP, ECLCTM, BTTAG, BSMPL
- C     Jan 10, 2017
+ C Jan 10, 2017
  C     GAL  BETAy => BETA0
  C     GAL  BETAx => ANOON=15DEG:  (ANIGHT-180); ANIGHT =180 + 15 DEG
-@@ -294,7 +298,14 @@
+@@ -372,7 +376,14 @@
  C
        NOON=.FALSE.
        NIGHT=.FALSE.
@@ -43,20 +43,20 @@
  C Mar 09, 2016
  C      IF(IPRN.GT.32.AND.ABS(BETADG).LT.ANOON) THEN
         IF(IPRN.GT.32.AND.IPRN.LE.64.AND.ABS(BETADG).LT.ANOON) THEN
-@@ -468,7 +479,11 @@
- C Feb 27, 2017
- C SET GPS, GLN, GAL BETAINI IF APPLICABLE, I.E. FWD & |BETA| =< 0.07 DEG
-             IF(IDIR.GT.0.AND.IPRN.LE.100.AND.ABS(BETADG).LE.0.07D0
--     &         .AND.BETAINI(IPRN).EQ.0.D0) BETAINI(IPRN)= BETADG
-+     &          .AND.BETAINI(IPRN).EQ.0.D0) THEN
-+C              SET TO THE BETA VALUE INTERPOLATED AT TURN START
-+               BETAINI(IPRN)= BINTRP(IPRN, ECLSTM(IPRN, NECLIPS(IPRN)),
-+     &                               BTTAG, BSMPL)
-+            ENDIF
+@@ -643,7 +654,11 @@
+ C           IF(IDIR.GT.0.AND.IPRN.LE.100.AND.ABS(BETADG).LE.0.07D0
+          IF(IDIR.GT.0.AND.(IPRN.LE.100.OR.IPRN.EQ.INPRN)
+      &     .AND.ABS(BETADG).LE.0.07D0
+-     &     .AND.BETAINI(IPRN).EQ.0.D0) BETAINI(IPRN)= BETADG
++     &     .AND.BETAINI(IPRN).EQ.0.D0) THEN
++C            SET TO THE BETA VALUE INTERPOLATED AT TURN START
++             BETAINI(IPRN)= BINTRP(IPRN, ECLSTM(IPRN, NECLIPS(IPRN)),
++     &                             BTTAG, BSMPL)
++         ENDIF
  C IIR MIDNIGHT/NOON TURN  or II/IIA NOON TURN START
  C                                  AND GLONASS NOON
              IF(IBLK(IPRN).GT.3.AND.IBLK(IPRN).LE.5.OR.NOON) THEN
-@@ -849,3 +864,39 @@
+@@ -1033,3 +1048,39 @@
        ENDIF
        RETURN
        END

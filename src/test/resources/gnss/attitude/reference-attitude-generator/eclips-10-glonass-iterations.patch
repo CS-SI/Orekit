@@ -1,6 +1,6 @@
---- eclips_May2017.f.orig	2018-09-17 10:12:06.751702167 +0200
-+++ eclips_May2017.f	2018-09-17 10:13:46.822350160 +0200
-@@ -103,6 +103,8 @@
+--- eclips_Dec2017.f.orig	2018-09-20 14:50:39.136398083 +0200
++++ eclips_Dec2017.f	2018-09-20 14:51:00.120398610 +0200
+@@ -117,6 +117,8 @@
  C                                    OF GPS TURN RECOVERY (Luc Maisonobe)
  C                      Jul 10, 2018  TAKE ECCENTRICITY INTO ACCOUNT WHEN
  C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
@@ -9,7 +9,7 @@
  C                      Sep 14, 2018  FIXED BODY-X UNIT VECTOR COMPUTATION
  C                                    EXACTLY AT NODE (AVOID NaNs), IMPROVE
  C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
-@@ -294,12 +296,15 @@
+@@ -372,12 +374,15 @@
  C GLONASS NOON TURN MODE ACORDING TO DILSSNER 2010 
           YAWEND=75.D0
  C  ITERATION FOR YAWEND OF THE GLONASS  NOON TURN

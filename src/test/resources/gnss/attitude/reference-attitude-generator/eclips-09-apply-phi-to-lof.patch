@@ -1,6 +1,6 @@
---- eclips_May2017.f.orig	2018-09-17 10:08:05.243372533 +0200
-+++ eclips_May2017.f	2018-09-17 10:12:06.751702167 +0200
-@@ -103,6 +103,13 @@
+--- eclips_Dec2017.f.orig	2018-09-20 14:50:15.972397500 +0200
++++ eclips_Dec2017.f	2018-09-20 14:50:39.136398083 +0200
+@@ -117,6 +117,13 @@
  C                                    OF GPS TURN RECOVERY (Luc Maisonobe)
  C                      Jul 10, 2018  TAKE ECCENTRICITY INTO ACCOUNT WHEN
  C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
@@ -14,7 +14,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -194,11 +201,11 @@
+@@ -225,11 +232,11 @@
        REAL*8    DTR, DTTAG
        REAL*8    XSV(*), SANTXYZ(*), VSVC(*), BETA, MURATE, YANGLE, DET,
  C Jan 10, 2017
@@ -29,8 +29,8 @@
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
  C Dec 12, 2013
-@@ -750,19 +757,20 @@
-      & BETADG, ECLSTM(IPRN,I)                  
+@@ -933,19 +940,20 @@
+      & BETADG, ECLSTM(IPRN,I),beta0                  
               IECLIPS=2
             END IF
 -C ROTATE X-VECTOR TO ECLIPSING YAW ANGLE PHI 
@@ -61,4 +61,4 @@
 +          SANTXYZ(3)= CPHI * LOFI(3) / LOFIN - SPHI * OMG(3) / OMGN
        END IF
        ENDIF
- 1     RETURN
+ 1     CONTINUE

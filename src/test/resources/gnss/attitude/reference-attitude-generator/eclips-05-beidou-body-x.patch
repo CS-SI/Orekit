@@ -1,6 +1,6 @@
---- eclips_May2017.f.orig	2018-09-17 09:42:36.784734015 +0200
-+++ eclips_May2017.f	2018-09-17 09:44:07.157764245 +0200
-@@ -93,6 +93,9 @@
+--- eclips_Dec2017.f.orig	2018-09-20 14:48:56.916395513 +0200
++++ eclips_Dec2017.f	2018-09-20 14:49:13.576395932 +0200
+@@ -107,6 +107,9 @@
  C                      Jun 25, 2018  FIXED TOO EARLY ABRUPT SWITCH BACK TO
  C                                    NOMINAL YAW WHEN BETA SIGN CHANGES DURING
  C                                    THE TURN (Luc Maisonobe)
@@ -10,7 +10,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -187,7 +190,7 @@
+@@ -218,7 +221,7 @@
  C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
       &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
  C    &          SMTH, BETAE
@@ -19,7 +19,7 @@
        REAL*8    YAWEND
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX
-@@ -252,8 +255,10 @@
+@@ -328,8 +331,10 @@
        DTR=PI/180.D0
  C compute the noon beta angle limit (beta zero) FOR A NOON TURN from YRATEs
  C & THE ACTUAL SAT ORBIT ANGLE RATE (MURATE) (~0.00836 FOR GPS; ~ 0.00888 GLNS)
@@ -30,9 +30,9 @@
 +      PV = XSV(1)*VSVC(1)+XSV(2)*VSVC(2)+XSV(3)*VSVC(3)
 +      MURATE= sqrt(V2/P2)/DTR
        ANOON=ATAN(MURATE/YRATE(IPRN))/DTR
- C Jan 10, 2017
- C  GAL & BEI NOON TURN LIMITS
-@@ -311,10 +316,9 @@
+ C Dec 5, 2017  reset BETA0 (BUT ONLY IF NON ZERO!)
+       IF(BETA0.NE.0.D0) BETA0= ANOON
+@@ -393,10 +398,9 @@
  C     IF SV IN NIGHT SHADOW OR NOON TURN DURING FORWARD PASS
  C     STORE START AND END TIME OF YAW MANEUVRE (FOR THE BACKWARD RUN)
  C
@@ -42,24 +42,24 @@
 -     &santxyz(2)*vsvc(2)+santxyz(3)*vsvc(3))/sqrt(vsvc(1)**2+vsvc(2)**2+
 -     & vsvc(3)**2))/DTR                          
 +     &santxyz(2)*vsvc(2)+santxyz(3)*vsvc(3))/sqrt(V2))/DTR                          
- C IIR REVERSAL NO LONGER APPLICABLE/USED
+ C IIR REVERSAL NO LONGER APPLICABLE/USED !
  C IIR YANGLE has the same sign as beta, II/IIA has the opposite sign
  C Jan 16, 2015
-@@ -332,10 +336,12 @@
- C      IF(IBLK(IPRN).EQ.23.OR.IBLK(IPRN).EQ.27.OR.ABS(BETADG).LE.BETA0)
-       IF(IBLK(IPRN).EQ.23.OR.IBLK(IPRN).EQ.27.OR.ABS(BETADG).LE.2*BETA0)
-      &     THEN
+@@ -497,10 +501,12 @@
+         GO TO 1
+ 2       CONTINUE
+ C ON MODE
 +         COEFFP = -PV / SQRT(P2 * P2 * V2 - PV * PV * P2)
 +         COEFFV = +P2 / SQRT(P2 * P2 * V2 - PV * PV * P2)
           DO J=1,3
- C BODY-X ON(ORBIT NORMAL YAW) FOR BEIDOU GEO(BLK 23,28) OR FOR
- C |BETA| =< BETA0  (BODYX =>  SAT VELOCITY (YAW PHI=0))
+ C BODY-X ON(ORBIT NORMAL YAW) FOR BEIDOU GEO(BLK 23,27) OR FOR
+ C |BETA| =< ~ 4 DG (BODYX =>  SAT VELOCITY (YAW PHI=0))
 -           SANTXYZ(J)= VSVC(J)/sqrt(VSVC(1)**2+VSVC(2)**2+VSVC(3)**2)
-+            SANTXYZ(J)= COEFFP * XSV(J) + COEFFV * VSVC(J)
++           SANTXYZ(J)= COEFFP * XSV(J) + COEFFV * VSVC(J)
            ENDDO
            PHI =  0.D0                       
-         IF (NIGHT) THEN
-@@ -514,8 +520,8 @@
+ C Jul 12, 2017
+@@ -694,8 +700,8 @@
       &         .AND.BETAINI(IPRN).NE.0.0D0) BETADG = BETAINI(IPRN)
  C velocity & radius unit vectors V & R
               DO J=1,3

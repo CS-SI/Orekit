@@ -46,16 +46,23 @@ The data files for attitude reference were created as follows:
      rm $f
    done
 
-4) applied seven patches to Kouba reference eclips routine from May 2017 to fix issues detected
+4) applied thirteen patches to Kouba reference eclips routine from December 2017 to fix issues detected
    during validation:
-     - prevent NaNs appearing due to numerical noise at exact alignment
-     - fix rotated X vector normalization problem when orbit is not perfectly circular
-     - fix rotated X vector division by zero at orbit node
-     - missing declaration for math functions leading to them being used as simple precision instead of double precision
-     - fix literal constants leading to them being used as simple precision instead of double precision
-     - fix abrupt switch back to nominal yaw in some beta crossing cases
-     - replaced projected planar geometry with spherical geometry in triangles solving
-     - fix Beidou attitude in non-perfectly circular orbits
+     01) prevent NaNs appearing due to numerical noise at exact alignment
+     02) missing declaration for math functions leading to them being used as simple precision instead of double precision
+     03) fix literal constants leading to them being used as simple precision instead of double precision
+     04) fix abrupt switch back to nominal yaw in some beta crossing cases
+     05) fix Beidou attitude in non-perfectly circular orbits
+     06) replaced projected planar geometry with spherical geometry in triangles solving
+     07) fix overshoot of nominal yaw just after turn end
+     08) improve local orbital rate computation by taking eccentricity into account
+     09) fix rotated X vector normalization problem when orbit is not perfectly circular
+         fix rotated X vector division by zero at orbit node
+         fix rotated X vector ill-conditioning by not basing it on the singular nominal yaw steering
+     10) ensure Glonass model fixed-point algorithm reaches convergence
+     11) improve turn start/end dates by recomputing them at each step and keeping the best estimates
+     12) removed dependency on caller sampling rate by using interpolated beta model
+     13) directly recompute orbit angle in Galileo model rather than assuming linear evolution
    The Kouba reference routine can be found at the IGS Analysis Center Coordinator site
    (http://acc.igs.org/orbits). In fact, as an additional precaution, we took care in the base
    sample generator program to avoid extracting sample points exactly at alignment (we extracted
@@ -63,11 +70,11 @@ The data files for attitude reference were created as follows:
    have been safely ignored with these specific samples (but it was mandatory in our first tests
    as we used the perfectly aligned points provided by Orekit alignment detector)
 
-   echo eclips_May2017.f | tar xvf /the/path/to/eclips_May2017.tar --files-from -
+   echo eclips_Dec2017.f | tar xvf /the/path/to/eclips_Dec_2017.tar --files-from -
    for f in eclips-*.patch ; do
      patch -p0 < $f
    done
-   gfortran -g -o driverEclips driverEclips.f eclips_May2017.f
+   gfortran -g -o driverEclips driverEclips.f eclips_Dec2017.f
 
 5) compiled the eclips driver program and linked it with the patched Kouba reference
    eclipse routine, and ran it on the small files to add new columns at the end of each

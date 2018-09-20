@@ -1,6 +1,6 @@
---- eclips_May2017.f.orig	2018-09-17 15:25:58.716026574 +0200
-+++ eclips_May2017.f	2018-09-17 15:26:17.335394858 +0200
-@@ -105,6 +105,9 @@
+--- eclips_Dec2017.f.orig	2018-09-20 14:51:00.120398610 +0200
++++ eclips_Dec2017.f	2018-09-20 14:52:58.476401585 +0200
+@@ -119,6 +119,9 @@
  C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
  C                      Jul 10, 2018  ENSURE CONVERGENCE OF GLONASS YAWEND
  C                                    ITERATIVE COMPUTATION (Luc Maisonobe)
@@ -10,7 +10,7 @@
  C                      Sep 14, 2018  FIXED BODY-X UNIT VECTOR COMPUTATION
  C                                    EXACTLY AT NODE (AVOID NaNs), IMPROVE
  C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
-@@ -185,22 +188,22 @@
+@@ -216,22 +219,22 @@
  C
  C     MAXSAT - MAXIMUM NUMBER OF SATELLITES, CHANGED IF REQUIRED
  C      
@@ -37,7 +37,7 @@
        REAL*8    XSV(*), SANTXYZ(*), VSVC(*), BETA, MURATE, YANGLE, DET,
  C Jan 10, 2017
  C    &          YRATE(64), BETADG, PHI, SANTX,        v(3),r(3)
-@@ -210,6 +213,8 @@
+@@ -241,6 +244,8 @@
        REAL*8    YAWEND, LOFI(3), LOFIN, CPHI, SPHI
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
@@ -46,25 +46,23 @@
  C Dec 12, 2013
        REAL*8 YBIAS
        INTEGER*4 IBLK(*), J, I
-@@ -231,7 +236,8 @@
- C                Note: THE BEIDOU HARDWARE RATES NOT NEEDED
- C    &  ,.1140d0, 32*0.250d0/
-      &  ,.1140d0, 32*0.250d0, 36*0.203d0, 36*0.203d0/
--C Jan 10, 2017
+@@ -268,6 +273,7 @@
+ C    &  ,.1140d0, 32*0.250d0, 36*0.203d0, 36*0.203d0/
+ C BEIDOU RATES OF 0.085 & 0.158 ACCORDING TO DILSSNER (Nov 2017) 
+      &  ,.1140d0, 32*0.250d0, 36*0.203d0, 10*0.085D0, 26*0.158d0/
 +      SAVE SGAP, EGAP, ECLCTM
-+C     Jan 10, 2017
+ C Jan 10, 2017
  C     GAL  BETAy => BETA0
  C     GAL  BETAx => ANOON=15DEG:  (ANIGHT-180); ANIGHT =180 + 15 DEG
- C NOTE:BETA0= 0 DISABLES GALILEO AND/OR BEIDOU IGEO/MEO ECLIPSING!
-@@ -264,7 +270,6 @@
+@@ -338,7 +344,6 @@
  C Jan 10, 2017 -end
  C
        IECLIPS=0
 -      TWOHR = 7200.D0
        HALFHR= 1800.D0
  C Jan 10, 2017 - no 1/2h extension for GALILEO
-         IF(IPRN .GT.64.AND.IPRN.LE.100) HALFHR= 0.D0
-@@ -417,11 +422,9 @@
+ C Dec 5, 2017  - as well as  INPRN (Beidou) SAT!
+@@ -584,11 +589,9 @@
  C ONLY FORWARD
         IF (IDIR .GT. 0 ) THEN
  C
@@ -77,16 +75,14 @@
  C IIR MIDNIGHT/NOON TURN or II/IIA NOON TURN START
  C for IIR/GLONAS NIGHT (turn) only makes sense when |BETADG| < ANOON!
  C For IIA it gets here only when NOON is true and that happens only when |BETADG|< ANOON!
-@@ -434,17 +437,15 @@
- C jan 10, 2017       - ALSO GAL NOON TURN TIMES(ANOON=ANIGHT-180deg)
- C           IF(     IPRN .GT.32.AND.IPRN.LE.64) THEN
-             IF(     IPRN .GT.32.AND.IPRN.LE.100) THEN
--C GLONASS NOON TURN MODE, ANOON ACORDING TO DILSSNER ET AL 2010 
+@@ -604,16 +607,14 @@
+ C           IF(     IPRN .GT.32.AND.IPRN.LE.100) THEN
+             IF(    (IPRN .GT.32.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
+ C GLONASS NOON TURN MODE, ANOON ACORDING TO DILSSNER ET AL 2010 
 -             ECLSTM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))-
 -     &        ANOON/MURATE
 -             ECLETM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))+
 -     &        2.D0*ANOON/MURATE
-+C GLONASS NOON TURN MODE, ANOON ACORDING TO DILSSNER ET AL 2010
 +               CALL UPDECL(IPRN, NECLIPS, ECLSTM, ECLETM, ECLCTM,
 +     &              SGAP, EGAP, TTAG+DET/MURATE, ANOON/MURATE, TTAG)
              ELSE
@@ -102,10 +98,10 @@
              ENDIF
            END IF
  C     II/IIA SHADOW START & END TIMES
-@@ -452,12 +453,10 @@
- C         IF((IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5).AND.NIGHT) THEN
-           IF((IBLK(IPRN).LE.3.OR.IBLK(IPRN).GT.5
-      &         .OR.(IPRN .GT.64.AND.IPRN.LE.100)).AND.NIGHT) THEN
+@@ -624,12 +625,10 @@
+ C    &         .OR.(IPRN .GT.64.AND.IPRN.LE.100)).AND.NIGHT) THEN
+      &     .OR.(IPRN .GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN)
+      &     .AND.NIGHT) THEN
 -           TMP = ACOS(MAX(-1.0D0, MIN(1.0D0,
 -     &                -COS(ANIGHT*DTR) / COS(BETADG*DTR)))) / DTR
 -           ECLSTM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))-
@@ -119,7 +115,7 @@
            END IF
        END IF
  C
-@@ -466,17 +465,10 @@
+@@ -638,10 +637,6 @@
  C
          IF( (NIGHT .AND. SVBCOS .LT. CNIGHT)
       &       .OR. (NOON .AND. SVBCOS .GT. CNOON) ) THEN
@@ -129,17 +125,20 @@
 -C
  C Feb 27, 2017
  C SET GPS, GLN, GAL BETAINI IF APPLICABLE, I.E. FWD & |BETA| =< 0.07 DEG
-             IF(IDIR.GT.0.AND.IPRN.LE.100.AND.ABS(BETADG).LE.0.07D0
-      &         .AND.BETAINI(IPRN).EQ.0.D0) BETAINI(IPRN)= BETADG
+ C Dec 5, 2017
+@@ -649,9 +644,6 @@
+          IF(IDIR.GT.0.AND.(IPRN.LE.100.OR.IPRN.EQ.INPRN)
+      &     .AND.ABS(BETADG).LE.0.07D0
+      &     .AND.BETAINI(IPRN).EQ.0.D0) BETAINI(IPRN)= BETADG
 -         IF( DTTAG .GT. TWOHR ) THEN
 -          NECLIPS(IPRN)=NECLIPS(IPRN)+1
 -            ECLSTM(IPRN,NECLIPS(IPRN))=TTAG+DET/MURATE
  C IIR MIDNIGHT/NOON TURN  or II/IIA NOON TURN START
  C                                  AND GLONASS NOON
              IF(IBLK(IPRN).GT.3.AND.IBLK(IPRN).LE.5.OR.NOON) THEN
-@@ -487,16 +479,14 @@
- C            IF(IPRN.GT.32.AND.IPRN.LE.64) THEN
-              IF(IPRN.GT.32.AND.IPRN.LE.100) THEN
+@@ -664,16 +656,14 @@
+ C            IF(IPRN.GT.32.AND.IPRN.LE.100) THEN
+              IF((IPRN.GT.32.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
  C GLONASS NOON TURN MODE ACORDING TO DILSSNER ET AL 2010 
 -              ECLSTM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))-
 -     &          ANOON/MURATE
@@ -152,7 +151,7 @@
 -              ECLSTM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))-
 -     &         ABS(BETADG)*sqrt(ANOON/ABS(BETADG)-1.d0)/MURATE
 -              ECLETM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))+
--     &         2*ABS(BETADG)*sqrt(ANOON/ABS(BETADG)-1.d0)/MURATE
+-     &         2.D0*ABS(BETADG)*sqrt(ANOON/ABS(BETADG)-1.d0)/MURATE
 +               CALL UPDECL(IPRN, NECLIPS, ECLSTM, ECLETM, ECLCTM,
 +     &              SGAP, EGAP, TTAG+DET/MURATE,
 +     &              ABS(BETADG)*sqrt(ANOON/ABS(BETADG)-1.d0)/MURATE,
@@ -160,8 +159,8 @@
  C May 03, 2017 -remove Jan 10 dead code below
  C Jan 10, 2017 - GALILEO NOON - start
  C             IF(IPRN .GT.64.AND.IPRN.LE.100)THEN
-@@ -515,12 +505,9 @@
-      &           .OR.(IPRN .GT.64.AND.IPRN.LE.100)).AND.NIGHT) THEN
+@@ -695,12 +685,9 @@
+      &       .AND.NIGHT) THEN
               TMP = ACOS(MAX(-1.0D0, MIN(1.0D0,
       &                  -COS(ANIGHT*DTR) / COS(BETADG*DTR)))) / DTR
 -             ECLSTM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))-
@@ -175,7 +174,7 @@
          ENDIF
  C  END OF FORWARD (FWD) LOOP (IDIR = 1)
         ENDIF
-@@ -550,7 +537,7 @@
+@@ -730,7 +717,7 @@
                V(J)=VSVC(J)/SQRT(V2)
                R(J)=XSV(J)/SQRT(P2) 
               END DO
@@ -184,8 +183,8 @@
               DET= MURATE*(ECLETM(IPRN,I)-
       &                        ECLSTM(IPRN,I))/2.d0
  C Dec 12, 2013 - start
-@@ -659,7 +646,7 @@
-                IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
+@@ -840,7 +827,7 @@
+                IF((IPRN.GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
  C  SIN ORB ANGLE MU => YAWEND
                 YAWEND=
 -     &         SIN((ttag-(ECLSTM(IPRN,I)+ECLETM(IPRN,I))/2)*MURATE*DTR)
@@ -193,8 +192,8 @@
  C Jan 10, 2017 - start
  C GAL ECLIPS MODEL: Shy => BETAE
               BETAE=0.5D0*(-SIGN(SIN(BETA0*DTR),BETADG)-SIN(BETADG*DTR))
-@@ -739,7 +726,7 @@
-                IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
+@@ -922,7 +909,7 @@
+                IF((IPRN.GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
  C  SIN ORB ANGLE MU => YAWEND
                 YAWEND= SIN(
 -     &         PI +(TTAG-(ECLSTM(IPRN,I)+ECLETM(IPRN,I))/2)*MURATE*DTR)
@@ -202,14 +201,12 @@
  C Jan 10, 2017
  C GAL ECLIPS MODEL: Shy => BETAE
               BETAE=0.5D0*(-SIGN(SIN(BETA0*DTR),BETADG)-SIN(BETADG*DTR))
-@@ -778,6 +765,87 @@
-           SANTXYZ(3)= CPHI * LOFI(3) / LOFIN - SPHI * OMG(3) / OMGN
-       END IF
+@@ -963,5 +950,86 @@
        ENDIF
--1     RETURN
-+ 1    RETURN
+ 1     CONTINUE
+       RETURN
 +      END
-+C
+ C
 +      SUBROUTINE UPDECL(IPRN, NECLIPS, ECLSTM, ECLETM, ECLCTM,
 +     &                  SGAP, EGAP, ECLCTR, HALF, ESTTIM)
 +C     NAME           UPDECL
@@ -232,7 +229,7 @@
 +C     ECLCTR         ESTIMATED ECLIPSE CENTER TIME
 +C     HALF           HALF TIME SPAN OF THE ECLIPSE
 +C     ESTTIM         ESTIMATION TIME
- C
++C
 +      IMPLICIT NONE
 +      INTEGER   MAXSAT, MAXECL
 +      PARAMETER (MAXSAT=136, MAXECL=10)

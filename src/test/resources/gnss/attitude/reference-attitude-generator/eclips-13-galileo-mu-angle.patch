@@ -1,6 +1,6 @@
---- eclips_May2017.f.orig	2018-09-17 17:34:57.685823263 +0200
-+++ eclips_May2017.f	2018-09-17 17:36:22.755955724 +0200
-@@ -118,6 +118,8 @@
+--- eclips_Dec2017.f.orig	2018-09-20 14:54:14.984403509 +0200
++++ eclips_Dec2017.f	2018-09-20 14:54:31.564403926 +0200
+@@ -132,6 +132,8 @@
  C                                    LOCAL ORBITAL FRAME INSTEAD OF APPLYING
  C                                    A CORRECTION TO NUMERICALLY UNSTABLE
  C                                    NOMINAL YAW (Luc Maisonobe)
@@ -9,9 +9,9 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -660,8 +662,11 @@
- C jan 10, 2017 - GALILEO night - start
-                IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
+@@ -841,8 +843,11 @@
+ C              IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
+                IF((IPRN.GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
  C  SIN ORB ANGLE MU => YAWEND
 -               YAWEND=
 -     &         SIN((ttag-ECLCTM(IPRN,I))*MURATE*DTR)
@@ -23,9 +23,9 @@
  C Jan 10, 2017 - start
  C GAL ECLIPS MODEL: Shy => BETAE
               BETAE=0.5D0*(-SIGN(SIN(BETA0*DTR),BETADG)-SIN(BETADG*DTR))
-@@ -740,8 +745,11 @@
- C Jan 10, 2017 - GALILEO noon  - start
-                IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
+@@ -923,8 +928,11 @@
+ C              IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
+                IF((IPRN.GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
  C  SIN ORB ANGLE MU => YAWEND
 -               YAWEND= SIN(
 -     &         PI +(TTAG-ECLCTM(IPRN,I))*MURATE*DTR)
