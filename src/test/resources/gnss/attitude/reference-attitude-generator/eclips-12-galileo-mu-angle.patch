@@ -1,6 +1,6 @@
---- eclips_Dec2017.f.orig	2018-09-20 14:54:14.984403509 +0200
-+++ eclips_Dec2017.f	2018-09-20 14:54:31.564403926 +0200
-@@ -132,6 +132,8 @@
+--- eclips_Dec2017.f.orig	2018-09-21 17:51:23.227141405 +0200
++++ eclips_Dec2017.f	2018-09-21 17:51:51.498861980 +0200
+@@ -130,6 +130,8 @@
  C                                    LOCAL ORBITAL FRAME INSTEAD OF APPLYING
  C                                    A CORRECTION TO NUMERICALLY UNSTABLE
  C                                    NOMINAL YAW (Luc Maisonobe)
@@ -9,7 +9,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -841,8 +843,11 @@
+@@ -836,8 +838,11 @@
  C              IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
                 IF((IPRN.GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
  C  SIN ORB ANGLE MU => YAWEND
@@ -23,7 +23,7 @@
  C Jan 10, 2017 - start
  C GAL ECLIPS MODEL: Shy => BETAE
               BETAE=0.5D0*(-SIGN(SIN(BETA0*DTR),BETADG)-SIN(BETADG*DTR))
-@@ -923,8 +928,11 @@
+@@ -918,8 +923,11 @@
  C              IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
                 IF((IPRN.GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
  C  SIN ORB ANGLE MU => YAWEND

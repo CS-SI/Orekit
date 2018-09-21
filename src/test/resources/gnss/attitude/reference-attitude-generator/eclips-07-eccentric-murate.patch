@@ -1,15 +1,15 @@
---- eclips_Dec2017.f.orig	2018-09-20 14:50:01.520397137 +0200
-+++ eclips_Dec2017.f	2018-09-20 14:50:15.972397500 +0200
-@@ -115,6 +115,8 @@
+--- eclips_Dec2017.f.orig	2018-09-21 17:47:38.807533381 +0200
++++ eclips_Dec2017.f	2018-09-21 17:48:42.317409717 +0200
+@@ -113,6 +113,8 @@
+ C                      Jul 09, 2018  IMPROVED ACCURACY BY REPLACING PROJECTED
+ C                                    PLANAR GEOMETRY WITH SPHERICAL TRIGONOMETRY
  C                                    FOR SOLVING SOME TRIANGLES (Luc Maisonobe)
- C                      Jul 10, 2018  FIXED OVERSHOOT OF NOMINAL YAW AT THE END
- C                                    OF GPS TURN RECOVERY (Luc Maisonobe)
 +C                      Jul 10, 2018  TAKE ECCENTRICITY INTO ACCOUNT WHEN
 +C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -226,7 +228,7 @@
+@@ -224,7 +226,7 @@
  C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
       &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
  C    &          SMTH, BETAE
@@ -18,7 +18,7 @@
        REAL*8    YAWEND
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
-@@ -339,7 +341,11 @@
+@@ -337,7 +339,11 @@
        P2 = XSV(1)**2+XSV(2)**2+XSV(3)**2
        V2 = VSVC(1)**2+VSVC(2)**2+VSVC(3)**2
        PV = XSV(1)*VSVC(1)+XSV(2)*VSVC(2)+XSV(3)*VSVC(3)

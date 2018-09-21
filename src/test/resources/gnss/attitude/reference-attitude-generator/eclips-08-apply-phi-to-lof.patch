@@ -1,7 +1,7 @@
---- eclips_Dec2017.f.orig	2018-09-20 14:50:15.972397500 +0200
-+++ eclips_Dec2017.f	2018-09-20 14:50:39.136398083 +0200
-@@ -117,6 +117,13 @@
- C                                    OF GPS TURN RECOVERY (Luc Maisonobe)
+--- eclips_Dec2017.f.orig	2018-09-21 17:48:42.317409717 +0200
++++ eclips_Dec2017.f	2018-09-21 17:49:55.007789083 +0200
+@@ -115,6 +115,13 @@
+ C                                    FOR SOLVING SOME TRIANGLES (Luc Maisonobe)
  C                      Jul 10, 2018  TAKE ECCENTRICITY INTO ACCOUNT WHEN
  C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
 +C                      Sep 14, 2018  FIXED BODY-X UNIT VECTOR COMPUTATION
@@ -14,7 +14,7 @@
  C
  C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -225,11 +232,11 @@
+@@ -223,11 +230,11 @@
        REAL*8    DTR, DTTAG
        REAL*8    XSV(*), SANTXYZ(*), VSVC(*), BETA, MURATE, YANGLE, DET,
  C Jan 10, 2017
@@ -29,7 +29,7 @@
        REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
        REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
  C Dec 12, 2013
-@@ -933,19 +940,20 @@
+@@ -928,19 +935,20 @@
       & BETADG, ECLSTM(IPRN,I),beta0                  
               IECLIPS=2
             END IF
