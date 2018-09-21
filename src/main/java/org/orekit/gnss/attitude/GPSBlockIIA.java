@@ -53,14 +53,14 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
         FastMath.toRadians(0.1228), FastMath.toRadians(0.1165), FastMath.toRadians(0.0969), FastMath.toRadians(0.1140)
     };
 
+    /** Default yaw bias (rad). */
+    public static final double DEFAULT_YAW_BIAS = FastMath.toRadians(0.5);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20171114L;
 
     /** Satellite-Sun angle limit for a midnight turn maneuver. */
     private static final double NIGHT_TURN_LIMIT = FastMath.toRadians(180.0 - 13.25);
-
-    /** Bias. */
-    private static final double YAW_BIAS = FastMath.toRadians(0.5);
 
     /** Margin on turn end. */
     private final double END_MARGIN = 1800.0;
@@ -68,19 +68,24 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
     /** Yaw rate for current spacecraft. */
     private final double yawRate;
 
+    /** Yaw bias. */
+    private final double yawBias;
+
     /** Simple constructor.
      * @param yawRate yaw rate to use in radians per seconds (typically {@link #DEFAULT_YAW_RATES}{@code [prnNumber]})
+     * @param yawBias yaw bias to use (rad) (typicall {@link #DEFAULT_YAW_BIAS})
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
      * @param sun provider for Sun position
      * @param inertialFrame inertial frame where velocity are computed
      * @param prnNumber number within the GPS constellation (between 1 and 32)
      */
-    public GPSBlockIIA(final double yawRate,
+    public GPSBlockIIA(final double yawRate, final double yawBias,
                        final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
                        final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame, final int prnNumber) {
         super(validityStart, validityEnd, sun, inertialFrame);
         this.yawRate = yawRate;
+        this.yawBias = yawBias;
     }
 
     /** {@inheritDoc} */
@@ -110,7 +115,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                 final double phiDot;
                 if (context.inSunSide()) {
                     // noon turn
-                    if (beta > 0 && beta < YAW_BIAS) {
+                    if (beta > 0 && beta < yawBias) {
                         // noon turn problem for small positive beta in block IIA
                         // rotation is in the wrong direction for these spacecrafts
                         phiDot    = FastMath.copySign(yawRate, beta);
@@ -169,7 +174,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                 final T phiDot;
                 if (context.inSunSide()) {
                     // noon turn
-                    if (beta.getReal() > 0 && beta.getReal() < YAW_BIAS) {
+                    if (beta.getReal() > 0 && beta.getReal() < yawBias) {
                         // noon turn problem for small positive beta in block IIA
                         // rotation is in the wrong direction for these spacecrafts
                         phiDot    = field.getZero().add(FastMath.copySign(yawRate, beta.getReal()));

@@ -29,7 +29,7 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
                                                   final ExtendedPVCoordinatesProvider sun,
                                                   final Frame inertialFrame,
                                                   final int prnNumber) {
-        return new GPSBlockIIF(GPSBlockIIF.DEFAULT_YAW_RATE,
+        return new GPSBlockIIF(GPSBlockIIF.DEFAULT_YAW_RATE, GPSBlockIIF.DEFAULT_YAW_BIAS,
                                validityStart, validityEnd, sun, inertialFrame);
     }
 
