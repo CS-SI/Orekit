@@ -29,7 +29,8 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
                                                   final ExtendedPVCoordinatesProvider sun,
                                                   final Frame inertialFrame,
                                                   final int prnNumber) {
-        return new Galileo(validityStart, validityEnd, sun, inertialFrame);
+        return new Galileo(Galileo.DEFAULT_YAW_RATE,
+                           validityStart, validityEnd, sun, inertialFrame);
     }
 
     @Test
@@ -39,12 +40,12 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 2.9e-12, 5.4e-16);
+        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 2.9e-12, 4.2e-16);
     }
 
     @Test
     public void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-GALILEO.txt", 1.2e-12, 1.2e-12, 6.2e-16);
+        doTestAxes("patched-eclips/beta-crossing-GALILEO.txt", 1.2e-12, 1.2e-12, 5.7e-16);
     }
 
     @Test
@@ -64,12 +65,12 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-GALILEO.txt", 2.2e-2, 2.2e-2, 5.4e-16);
+        doTestAxes("original-eclips/beta-small-negative-GALILEO.txt", 2.0e-2, 2.0e-2, 4.2e-16);
     }
 
     @Test
     public void testOriginalCrossingBeta() {
-        doTestAxes("original-eclips/beta-crossing-GALILEO.txt", 9.4e-3, 9.4e-3, 6.2e-16);
+        doTestAxes("original-eclips/beta-crossing-GALILEO.txt", 9.4e-3, 9.4e-3, 5.7e-16);
     }
 
     @Test

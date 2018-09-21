@@ -42,14 +42,14 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class Galileo extends AbstractGNSSAttitudeProvider {
 
+    /** Default yaw rates for all spacecrafts in radians per seconds. */
+    public static final double DEFAULT_YAW_RATE = FastMath.toRadians(0.203);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20171114L;
 
     /** Constants for Galileo turns. */
     private static final double BETA_X = FastMath.toRadians(15.0);
-
-    /** Constants for Galileo turns. */
-    private static final double BETA_Y = FastMath.toRadians(2.0);
 
     /** Limit for the noon turn. */
     private static final double COS_NOON = FastMath.cos(BETA_X);
@@ -60,22 +60,31 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     /** No margin on turn end for Galileo. */
     private final double END_MARGIN = 0.0;
 
+    /** Yaw rate. */
+    private final double yawRate;
+
     /** Simple constructor.
+     * @param yawRate yaw rate to use in radians per seconds (typically {@link #DEFAULT_YAW_RATE})
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
      * @param sun provider for Sun position
      * @param inertialFrame inertial frame where velocity are computed
      */
-    public Galileo(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
+    public Galileo(final double yawRate,
+                   final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
                    final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
+        this.yawRate = yawRate;
     }
 
     /** {@inheritDoc} */
     @Override
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
-        if (FastMath.abs(context.beta()) < BETA_Y &&
+        // noon beta angle limit from yaw rate
+        final double beta0 = FastMath.atan(context.getMuRate() / yawRate);
+
+        if (FastMath.abs(context.beta()) < beta0 &&
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
             context.setHalfSpan(context.inSunSide() ?
@@ -88,14 +97,14 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
                 final DerivativeStructure beta     = context.betaDS();
                 final DerivativeStructure cosBeta  = beta.cos();
                 final DerivativeStructure sinBeta  = beta.sin();
-                final double              sinY     = FastMath.copySign(FastMath.sin(BETA_Y), context.getSecuredBeta());
-                final DerivativeStructure sd      = FastMath.sin(context.getDeltaDS()).
+                final double              sinY     = FastMath.copySign(FastMath.sin(beta0), context.getSecuredBeta());
+                final DerivativeStructure sd       = FastMath.sin(context.getDeltaDS()).
                                                      multiply(FastMath.copySign(1.0, -context.getSVBcos() * context.getDeltaDS().getPartialDerivative(1)));
                 final DerivativeStructure c        = sd.multiply(cosBeta);
                 final DerivativeStructure shy      = sinBeta.negate().subtract(sinY).
                                                      add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
                                                      multiply(0.5);
-                final DerivativeStructure phi     = FastMath.atan2(shy, c);
+                final DerivativeStructure phi      = FastMath.atan2(shy, c);
 
                 return context.turnCorrectedAttitude(phi);
 
@@ -112,7 +121,10 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     @Override
     protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
-        if (FastMath.abs(context.beta()).getReal() < BETA_Y &&
+        // noon beta angle limit from yaw rate
+        final double beta0 = FastMath.atan(context.getMuRate().getReal() / yawRate);
+
+        if (FastMath.abs(context.beta()).getReal() < beta0 &&
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
             final Field<T> field = context.getDate().getField();
@@ -127,14 +139,14 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
                 final FieldDerivativeStructure<T> beta     = context.betaDS();
                 final FieldDerivativeStructure<T> cosBeta  = beta.cos();
                 final FieldDerivativeStructure<T> sinBeta  = beta.sin();
-                final T                           sinY     = FastMath.sin(field.getZero().add(BETA_Y)).copySign(context.getSecuredBeta());
+                final T                           sinY     = FastMath.sin(field.getZero().add(beta0)).copySign(context.getSecuredBeta());
                 final FieldDerivativeStructure<T> sd       = FastMath.sin(context.getDeltaDS()).
                                                              multiply(FastMath.copySign(1.0, -context.getSVBcos().getReal() * context.getDeltaDS().getPartialDerivative(1).getReal()));
                 final FieldDerivativeStructure<T> c        = sd.multiply(cosBeta);
                 final FieldDerivativeStructure<T> shy      = sinBeta.negate().subtract(sinY).
                                                              add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
                                                              multiply(0.5);
-                final FieldDerivativeStructure<T> phi     = FastMath.atan2(shy, c);
+                final FieldDerivativeStructure<T> phi      = FastMath.atan2(shy, c);
 
                 return context.turnCorrectedAttitude(phi);
 
