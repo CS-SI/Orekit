@@ -40,24 +40,30 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
+    /** Default yaw rates for all spacecrafts in radians per seconds. */
+    public static final double DEFAULT_YAW_RATE = FastMath.toRadians(0.2);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20171114L;
-
-    /** Yaw rates for all spacecrafts. */
-    private static final double YAW_RATE = FastMath.toRadians(0.2);
 
     /** Margin on turn end. */
     private final double END_MARGIN = 1800.0;
 
+    /** Yaw rate. */
+    private final double yawRate;
+
     /** Simple constructor.
+     * @param yawRate yaw rate to use in radians per seconds (typically {@link #DEFAULT_YAW_RATE})
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
      * @param sun provider for Sun position
      * @param inertialFrame inertial frame where velocity are computed
      */
-    public GPSBlockIIR(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
+    public GPSBlockIIR(final double yawRate,
+                       final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
                        final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
+        this.yawRate = yawRate;
     }
 
     /** {@inheritDoc} */
@@ -65,7 +71,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
         // noon beta angle limit from yaw rate
-        final double aNoon  = FastMath.atan(context.getMuRate() / YAW_RATE);
+        final double aNoon  = FastMath.atan(context.getMuRate() / yawRate);
         final double cNoon  = FastMath.cos(aNoon);
         final double cNight = -cNoon;
 
@@ -84,11 +90,11 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
                 if (context.inSunSide()) {
                     // noon turn
-                    phiDot    = -FastMath.copySign(YAW_RATE, beta);
+                    phiDot    = -FastMath.copySign(yawRate, beta);
                     linearPhi = phiStart + phiDot * dtStart;
                 } else {
                     // midnight turn
-                    phiDot    = FastMath.copySign(YAW_RATE, beta);
+                    phiDot    = FastMath.copySign(yawRate, beta);
                     linearPhi = phiStart + phiDot * dtStart;
                 }
 
@@ -113,7 +119,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
         final Field<T> field = context.getDate().getField();
 
         // noon beta angle limit from yaw rate
-        final T      aNoon  = FastMath.atan(context.getMuRate().divide(YAW_RATE));
+        final T      aNoon  = FastMath.atan(context.getMuRate().divide(yawRate));
         final double cNoon  = FastMath.cos(aNoon.getReal());
         final double cNight = -cNoon;
 
@@ -132,11 +138,11 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
                 if (context.inSunSide()) {
                     // noon turn
-                    phiDot    = field.getZero().add(-FastMath.copySign(YAW_RATE, beta.getReal()));
+                    phiDot    = field.getZero().add(-FastMath.copySign(yawRate, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 } else {
                     // midnight turn
-                    phiDot    = field.getZero().add(FastMath.copySign(YAW_RATE, beta.getReal()));
+                    phiDot    = field.getZero().add(FastMath.copySign(yawRate, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 }
 

@@ -40,6 +40,19 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
+    /** Default yaw rates for all spacecrafts in radians per seconds (indexed by prnNumber, hence entry 0 is unused). */
+    public static final double[] DEFAULT_YAW_RATES = new double[] {
+        Double.NaN,  // unused entry 0
+        FastMath.toRadians(0.1211), FastMath.toRadians(0.1339), FastMath.toRadians(0.1230), FastMath.toRadians(0.1233),
+        FastMath.toRadians(0.1180), FastMath.toRadians(0.1266), FastMath.toRadians(0.1269), FastMath.toRadians(0.1033),
+        FastMath.toRadians(0.1278), FastMath.toRadians(0.0978), FastMath.toRadians(0.2000), FastMath.toRadians(0.1990),
+        FastMath.toRadians(0.2000), FastMath.toRadians(0.0815), FastMath.toRadians(0.1303), FastMath.toRadians(0.0838),
+        FastMath.toRadians(0.1401), FastMath.toRadians(0.1069), FastMath.toRadians(0.0980), FastMath.toRadians(0.1030),
+        FastMath.toRadians(0.1366), FastMath.toRadians(0.1025), FastMath.toRadians(0.1140), FastMath.toRadians(0.1089),
+        FastMath.toRadians(0.1001), FastMath.toRadians(0.1227), FastMath.toRadians(0.1194), FastMath.toRadians(0.1260),
+        FastMath.toRadians(0.1228), FastMath.toRadians(0.1165), FastMath.toRadians(0.0969), FastMath.toRadians(0.1140)
+    };
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20171114L;
 
@@ -49,14 +62,6 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
     /** Bias. */
     private static final double YAW_BIAS = FastMath.toRadians(0.5);
 
-    /** Yaw rates for all spacecrafts. */
-    private static final double[] YAW_RATES = new double[] {
-        0.1211, 0.1339, 0.1230, 0.1233, 0.1180, 0.1266, 0.1269, 0.1033,
-        0.1278, 0.0978, 0.2000, 0.1990, 0.2000, 0.0815, 0.1303, 0.0838,
-        0.1401, 0.1069, 0.0980, 0.1030, 0.1366, 0.1025, 0.1140, 0.1089,
-        0.1001, 0.1227, 0.1194, 0.1260, 0.1228, 0.1165, 0.0969, 0.1140
-    };
-
     /** Margin on turn end. */
     private final double END_MARGIN = 1800.0;
 
@@ -64,16 +69,18 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
     private final double yawRate;
 
     /** Simple constructor.
+     * @param yawRate yaw rate to use in radians per seconds (typically {@link #DEFAULT_YAW_RATES}{@code [prnNumber]})
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
      * @param sun provider for Sun position
      * @param inertialFrame inertial frame where velocity are computed
      * @param prnNumber number within the GPS constellation (between 1 and 32)
      */
-    public GPSBlockIIA(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
+    public GPSBlockIIA(final double yawRate,
+                       final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
                        final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame, final int prnNumber) {
         super(validityStart, validityEnd, sun, inertialFrame);
-        yawRate = FastMath.toRadians(YAW_RATES[prnNumber - 1]);
+        this.yawRate = yawRate;
     }
 
     /** {@inheritDoc} */

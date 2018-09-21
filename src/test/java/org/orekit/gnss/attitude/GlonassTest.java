@@ -29,7 +29,7 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
                                                   final ExtendedPVCoordinatesProvider sun,
                                                   final Frame inertialFrame,
                                                   final int prnNumber) {
-        return new Glonass(validityStart, validityEnd, sun, inertialFrame);
+        return new Glonass(Glonass.DEFAULT_YAW_RATE, validityStart, validityEnd, sun, inertialFrame);
     }
 
     @Test
