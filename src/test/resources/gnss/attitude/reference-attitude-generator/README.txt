@@ -31,6 +31,10 @@ The data files for attitude reference were created as follows:
    mapping between PRN numbers and sat code, parse and propagate through all
    available SP3 files
 
+   the base sample generator generates only the first few columns of the reference
+   data (date, spacecraft position and velocity, sun position, β and δ  angles. The
+   other columns will be completed in the next steps.
+
 3) split the big files into smaller files for various constellations:
 
    for f in beta-crossing.txt \
