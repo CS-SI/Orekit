@@ -191,18 +191,11 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @param d computation date
      * @return Sun elevation
      */
-    private T beta(final FieldAbsoluteDate<T> d) {
+    public T beta(final FieldAbsoluteDate<T> d) {
         final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(d, inertialFrame);
         return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
                negate().
                add(0.5 * FastMath.PI);
-    }
-
-    /** Compute Sun elevation.
-     * @return Sun elevation
-     */
-    public T beta() {
-        return beta(date);
     }
 
     /** Compute Sun elevation.

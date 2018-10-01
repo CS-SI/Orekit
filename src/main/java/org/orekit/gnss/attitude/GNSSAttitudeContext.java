@@ -150,16 +150,9 @@ class GNSSAttitudeContext implements TimeStamped {
      * @param d computation date
      * @return Sun elevation
      */
-    private double beta(final AbsoluteDate d) {
+    public double beta(final AbsoluteDate d) {
         final TimeStampedPVCoordinates svPV = pvProv.getPVCoordinates(d, inertialFrame);
         return 0.5 * FastMath.PI - Vector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum());
-    }
-
-    /** Compute Sun elevation.
-     * @return Sun elevation
-     */
-    public double beta() {
-        return beta(date);
     }
 
     /** Compute Sun elevation.

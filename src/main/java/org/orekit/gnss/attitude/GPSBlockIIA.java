@@ -100,7 +100,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final double absBeta = FastMath.abs(context.beta());
+            final double absBeta = FastMath.abs(context.beta(context.getDate()));
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
                                 context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI),
@@ -159,7 +159,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final T absBeta = FastMath.abs(context.beta());
+            final T absBeta = FastMath.abs(context.beta(context.getDate()));
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))) :
                                 context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),

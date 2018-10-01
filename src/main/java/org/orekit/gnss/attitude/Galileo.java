@@ -84,7 +84,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
         // noon beta angle limit from yaw rate
         final double beta0 = FastMath.atan(context.getMuRate() / yawRate);
 
-        if (FastMath.abs(context.beta()) < beta0 &&
+        if (FastMath.abs(context.beta(context.getDate())) < beta0 &&
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
             context.setHalfSpan(context.inSunSide() ?
@@ -124,7 +124,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
         // noon beta angle limit from yaw rate
         final double beta0 = FastMath.atan(context.getMuRate().getReal() / yawRate);
 
-        if (FastMath.abs(context.beta()).getReal() < beta0 &&
+        if (FastMath.abs(context.beta(context.getDate())).getReal() < beta0 &&
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
             final Field<T> field = context.getDate().getField();

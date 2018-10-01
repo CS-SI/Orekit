@@ -83,7 +83,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
         // noon beta angle limit from yaw rate
-        final double realBeta = context.beta();
+        final double realBeta = context.beta(context.getDate());
         final double muRate   = context.getMuRate();
         final double aNight   = NIGHT_TURN_LIMIT;
         double       aNoon    = FastMath.atan(muRate / yawRate);
@@ -153,7 +153,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         final Field<T> field = context.getDate().getField();
 
         // noon beta angle limit from yaw rate
-        final T realBeta = context.beta();
+        final T realBeta = context.beta(context.getDate());
         final T muRate   = context.getMuRate();
         final T aNight   = field.getZero().add(NIGHT_TURN_LIMIT);
         T       aNoon    = FastMath.atan(muRate.divide(yawRate));
