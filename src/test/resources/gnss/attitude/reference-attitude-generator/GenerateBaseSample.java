@@ -50,14 +50,17 @@ import org.orekit.gnss.antenna.AntexLoader;
 import org.orekit.gnss.antenna.SatelliteAntenna;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.AlignmentDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.time.GPSDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap;
 
 
@@ -156,23 +159,50 @@ public class GenerateBaseSample {
                     try (InputStream is = new UnixCompressFilter().filter(compressed).getStreamOpener().openStream()) {
                         final SP3File sp3 = new SP3Parser().parse(is);
                         for (final Map.Entry<String, SP3Ephemeris> entry : sp3.getSatellites().entrySet()) {
+                            final String sat = entry.getKey();
                             try {
+                                final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(sat.substring(0, 1));
+                                final TimeSpanMap<SatelliteAntenna> map =
+                                                loader.findSatelliteAntenna(system, Integer.parseInt(sat.substring(1)));
+                                final SatelliteAntenna antenna = map.get(sp3.getEpoch());
                                 final BoundedPropagator propagator = entry.getValue().getPropagator();
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new SunHandler<>(sun, loader, -19.0, outLargeNeg, entry.getKey())));
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new SunHandler<>(sun, loader,  -1.5, outSmallNeg, entry.getKey())));
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new SunHandler<>(sun, loader,   0.0, outCrossing, entry.getKey())));
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new SunHandler<>(sun, loader,  +1.5, outSmallPos, entry.getKey())));
-                                propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
-                                                            withHandler(new SunHandler<>(sun, loader, +30.0, outLargePos, entry.getKey())));
+                                if ("BEIDOU-2M".equals(antenna.getType()) || "BEIDOU-2I".equals(antenna.getType())) {
+                                    // for Beidou MEO and IGSO, we are only interested in large β and (more importantly) in β = ±4°
+                                    propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, -19.0).
+                                                                withHandler(new Handler<>(sun, antenna, -19.0, outLargeNeg, sat,
+                                                                                          48, 3 * 3600.0)));
+                                    propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, -4.0).
+                                                                withHandler(new Handler<>(sun, antenna, -4.0, outSmallNeg, sat,
+                                                                                          48, 3 * 3600.0)));
+                                    propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, +4.0).
+                                                                withHandler(new Handler<>(sun, antenna, +4.0, outSmallPos, sat,
+                                                                                          48, 3 * 3600.0)));
+                                    propagator.addEventDetector(new BetaDetector(900.0, 1.0, sun, +30.0).
+                                                                withHandler(new Handler<>(sun, antenna, +30.0, outLargePos, sat,
+                                                                                          48, 3 * 3600.0)));
+                                } else {
+                                    // for other satellites, we are interested in noon/midnight turns
+                                    propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                                withHandler(new Handler<>(sun, antenna, -19.0, outLargeNeg, sat,
+                                                                                          14, 6 * 60.0)));
+                                    propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                                withHandler(new Handler<>(sun, antenna,  -1.5, outSmallNeg, sat,
+                                                                                          14, 6 * 60.0)));
+                                    propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                                withHandler(new Handler<>(sun, antenna,   0.0, outCrossing, sat,
+                                                                                          14, 6 * 60.0)));
+                                    propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                                withHandler(new Handler<>(sun, antenna,  +1.5, outSmallPos, sat,
+                                                                                          14, 6 * 60.0)));
+                                    propagator.addEventDetector(new AlignmentDetector(900.0, 1.0, sun, 0.0).
+                                                                withHandler(new Handler<>(sun, antenna, +30.0, outLargePos, sat,
+                                                                                          14, 6 * 60.0)));
+                                }
                                 propagator.propagate(propagator.getMinDate().shiftedBy( 10),
                                                      propagator.getMaxDate().shiftedBy(-10));
                             } catch (OrekitException oe) {
                                 if (oe.getSpecifier() != OrekitMessages.CANNOT_FIND_SATELLITE_IN_SYSTEM) {
-                                    System.err.println("# unable to propagate " + entry.getKey());
+                                    System.err.println("# unable to propagate " + sat);
                                 }
                             }
                         }
@@ -184,42 +214,84 @@ public class GenerateBaseSample {
         }
     }
 
-    private static class SunHandler<T extends EventDetector> implements EventHandler<T> {
+    private static class BetaDetector extends AbstractDetector<BetaDetector> {
+
+        private static final long serialVersionUID = 20181003L;
+        private final PVCoordinatesProvider sun;
+        private final double targetAngle;
+
+        BetaDetector(final double maxCheck, final double threshold,
+                     final PVCoordinatesProvider sun,
+                     final double targetAngleDeg) {
+            this(maxCheck, threshold, DEFAULT_MAX_ITER,
+                 new StopOnIncreasing<BetaDetector>(),
+                 sun, FastMath.toRadians(targetAngleDeg));
+        }
+
+        private BetaDetector(final double maxCheck, final double threshold,
+                             final int maxIter, final EventHandler<? super BetaDetector> handler,
+                             final PVCoordinatesProvider sun,
+                             final double targetAngle) {
+                super(maxCheck, threshold, maxIter, handler);
+            this.sun         = sun;
+            this.targetAngle = targetAngle;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected BetaDetector create(final double newMaxCheck, final double newThreshold,
+                                      final int newMaxIter, final EventHandler<? super BetaDetector> newHandler) {
+            return new BetaDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, sun, targetAngle);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double g(final SpacecraftState s) {
+            final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+            final Vector3D mSat = s.getPVCoordinates().getMomentum();
+            final double beta = 0.5 * FastMath.PI - Vector3D.angle(pSun, mSat);
+            return beta - targetAngle;
+        }
+
+    }
+
+    private static class Handler<T extends EventDetector> implements EventHandler<T> {
         final CelestialBody     sun;
         final double            betaRef;
         final String            sat;
+        final SatelliteAntenna  antenna;
         final PrintStream       out;
-        final TimeSpanMap<SatelliteAntenna> map;
         final TimeScale         gps;
         final Frame             itrf;
+        final int               nbPoints;
+        final double            step;
 
-        SunHandler(final CelestialBody sun, final AntexLoader loader,
-                   final double betaRef, final PrintStream out, final String sat)
-            {
-            this.sun     = sun;
-            this.betaRef = betaRef;
-            this.sat     = sat;
-            this.out     = out;
-            this.map     = loader.findSatelliteAntenna(SatelliteSystem.parseSatelliteSystem(sat.substring(0, 1)),
-                                                       Integer.parseInt(sat.substring(1)));
-            this.gps     = TimeScalesFactory.getGPS();
-            this.itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Handler(final CelestialBody sun, final SatelliteAntenna antenna,
+                final double betaRef, final PrintStream out, final String sat,
+                final int nbPoints, final double step) {
+            this.sun      = sun;
+            this.betaRef  = betaRef;
+            this.sat      = sat;
+            this.antenna  = antenna;
+            this.out      = out;
+            this.gps      = TimeScalesFactory.getGPS();
+            this.itrf     = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+            this.nbPoints = nbPoints;
+            this.step     = step;
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, T detector, boolean increasing)
-            {
+        public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
             if (FastMath.abs(beta(s) - betaRef) < 0.5 &&
-                (beta(s.shiftedBy(-1800)) - betaRef) * (beta(s.shiftedBy(+1800)) - betaRef) < 0) {
-                for (int dt = -39; dt <= 39; dt += 6) {
-                    display(s.shiftedBy(dt * 60.0));
+                (beta(s.shiftedBy(-1800)) - betaRef) * (beta(s.shiftedBy(+1800)) - betaRef) <= 0) {
+                for (int i = 0; i < nbPoints; ++i) {
+                    display(s.shiftedBy((2 * i + 1 - nbPoints) * step / 2), antenna);
                 }
             }
             return Action.CONTINUE;
         }
 
-        private void display(final SpacecraftState s) {
-            SatelliteAntenna antenna = map.get(s.getDate());
+        private void display(final SpacecraftState s, final SatelliteAntenna antenna) {
             GPSDate gpsDate = new GPSDate(s.getDate());
             PVCoordinates pvSatInert = s.getPVCoordinates();
             Transform t = s.getFrame().getTransformTo(itrf, s.getDate());

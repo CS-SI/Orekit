@@ -39,7 +39,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 9.3e-16, 7.6e-16, 4.0e-16);
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 9.7e-16, 9.7e-16, 4.0e-16);
     }
 
     @Test

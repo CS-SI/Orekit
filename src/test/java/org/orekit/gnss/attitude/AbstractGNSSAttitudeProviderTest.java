@@ -177,7 +177,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 parsedLine = new ParsedLine(line, eme2000, itrf);
                 if (previous != null &&
                     (parsedLine.prnNumber != previous.prnNumber ||
-                     parsedLine.gpsDate.getDate().durationFrom(previous.gpsDate.getDate()) > 3600)) {
+                     parsedLine.gpsDate.getDate().durationFrom(previous.gpsDate.getDate()) > 14400)) {
                     dataBlocks.add(new ArrayList<>());
                 }
                 dataBlocks.get(dataBlocks.size() - 1).add(parsedLine);

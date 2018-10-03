@@ -35,7 +35,7 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 1.1e-15, 8.4e-15, 4.0e-16);
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 1.8e-15, 1.8e-15, 4.0e-16);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 1.1e-15, 8.4e-15, 4.0e-16);
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 1.8e-15, 1.8e-15, 4.0e-16);
     }
 
     @Test

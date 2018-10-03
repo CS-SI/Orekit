@@ -3,11 +3,11 @@ The data files for attitude reference were created as follows:
 1) retrieved SP3 files for several different constellations from IGS MGEX
    data analysis at <ftp://cddis.gsfc.nasa.gov/pub/gps/products/mgex/>.
    The files selected came from GFZ (GeoForschungsZentrum Potsdam)
-   and correspond to data from week 1800 to week 1999, except for 2 files
-   missing in the archive at time of retrieval
+   and correspond to data from week 1800 to week 2007, except for a few
+   files missing in the archive at time of retrieval
 
    baseurl=ftp://cddis.gsfc.nasa.gov/pub/gps/products/mgex
-   for week in $(seq 1800 1999) ; do
+   for week in $(seq 1800 2007) ; do
      for day in $(seq 0 6) ; do
        curl $baseurl/$week/gbm$week$day.sp3.Z > gbm$week$day.sp3.Z
      done
@@ -24,9 +24,17 @@ The data files for attitude reference were created as follows:
    all spacecraft types so we can exercise various cases of the attitude models
    for each detected event in the subsets, we sampled input data that will be needed
    for Kouba reference eclips routine and for Orekit models, from 39 minutes
-   before the event to 39 minutes after the event.
+   before the event to 39 minutes after the event with a 6 minutes step size
 
-   the base sample generator is configured to use ITRF using IERS 2010 conventions
+   for Beidou MEO and IGSO, the attitude model calls for only four subsets:
+     - one subset where the beta angle is around -19°
+     - one subset where the beta angle is around -4°
+     - one subset where the beta angle is around +4°
+     - one subset where the beta angle is around +30°
+   and the sample was generated from 72 hours before the event to 72 hours
+   after the event with a three hours step size
+
+   the base sample generator was configured to use ITRF using IERS 2010 conventions
    and complete EOP including tides, parse an ANTEX file to retrieve the time-dependent
    mapping between PRN numbers and sat code, parse and propagate through all
    available SP3 files
@@ -50,7 +58,7 @@ The data files for attitude reference were created as follows:
      rm $f
    done
 
-4) applied twelve patches to Kouba reference eclips routine from December 2017 to fix issues detected
+4) applied twelve patches to Kouba reference eclips routine from December 2017 to fix issues identified
    during validation:
      01) prevent NaNs appearing due to numerical noise at exact alignment
      02) missing declaration for math functions leading to them being used as simple precision instead of double precision
@@ -85,11 +93,13 @@ The data files for attitude reference were created as follows:
 
    for f in beta-*.txt ; do
      mv $f $f.old
-     ./driverEclips $f.old $f
+     ../reference-attitude-generator/driverEclips $f.old $f
      rm $f.old 
    done
 
-6) edited the files to select just a few test cases in all configurations at noon and midnight
+6) edited the files to select just a few test cases in all configurations at noon and midnight,
+   and to remove first point in Beidou case when wrong (this is due a known limitation of
+   eclips when starting already in Orbit Normal mode)
 
 7) repeat steps 4, 5 and 6 but WITHOUT applying the patches, in order to get reference data
    from the original Kouba reference (which of course will lead to slightly different results)

@@ -87,6 +87,12 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Cosine of the angle between spacecraft and Sun direction. */
     private final DerivativeStructure svbCos;
 
+    /** Morning/Evening half orbit indicator. */
+    private final boolean morning;
+
+    /** Relative orbit angle to turn center. */
+    private final DerivativeStructure delta;
+
     /** Spacecraft angular velocity. */
     private double muRate;
 
@@ -95,9 +101,6 @@ class GNSSAttitudeContext implements TimeStamped {
 
     /** Limit cosine for the noon turn. */
     private double cNoon;
-
-    /** Relative orbit angle to turn center. */
-    private DerivativeStructure delta;
 
     /** Turn time data. */
     private TurnSpan turnSpan;
@@ -115,7 +118,7 @@ class GNSSAttitudeContext implements TimeStamped {
                         final Frame inertialFrame, final TurnSpan turnSpan) {
 
         this.date          = date;
-        this.dateDS        = new FieldAbsoluteDate<>(FACTORY.getDerivativeField(), date);
+        this.dateDS        = addDerivatives(date);
         this.sun           = sun;
         this.pvProv        = pvProv;
         this.inertialFrame = inertialFrame;
@@ -125,11 +128,39 @@ class GNSSAttitudeContext implements TimeStamped {
         final FieldPVCoordinates<DerivativeStructure> svPVDS  = svPV.toDerivativeStructurePV(FACTORY.getCompiler().getOrder());
         this.svbCos  = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
                        divide(sunPVDS.getPosition().getNorm().multiply(svPVDS.getPosition().getNorm()));
+        this.morning = Vector3D.dotProduct(svPV.getVelocity(), sunPVDS.getPosition().toVector3D()) >= 0.0;
 
         this.muRate = svPV.getAngularVelocity().getNorm();
 
         this.turnSpan = turnSpan;
 
+        final DerivativeStructure absDelta;
+        if (svbCos.getValue() <= 0) {
+            // night side
+            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
+        } else {
+            // Sun side
+            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos());
+        }
+        delta = FastMath.copySign(absDelta, -absDelta.getPartialDerivative(1));
+
+    }
+
+    /** Convert a date, removing derivatives.
+     * @param d date to convert
+     * @return date without derivatives
+     */
+    private AbsoluteDate removeDerivatives(final FieldAbsoluteDate<DerivativeStructure> d) {
+        return d.toAbsoluteDate();
+    }
+
+    /** Convert a date, adding derivatives.
+     * @param d date to convert
+     * @return date without derivatives
+     */
+    private FieldAbsoluteDate<DerivativeStructure> addDerivatives(final AbsoluteDate d) {
+        return new FieldAbsoluteDate<>(FACTORY.getDerivativeField(), d).
+               shiftedBy(FACTORY.variable(0, 0.0));
     }
 
     /** Compute nominal yaw steering.
@@ -160,7 +191,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * @return Sun elevation
      */
     private DerivativeStructure betaDS(final FieldAbsoluteDate<DerivativeStructure> d) {
-        final TimeStampedPVCoordinates svPV = pvProv.getPVCoordinates(d.toAbsoluteDate(), inertialFrame);
+        final TimeStampedPVCoordinates svPV = pvProv.getPVCoordinates(removeDerivatives(d), inertialFrame);
         final FieldPVCoordinates<DerivativeStructure> svPVDS  = svPV.toDerivativeStructurePV(FACTORY.getCompiler().getOrder());
         return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPVDS.getMomentum()).
                negate().
@@ -262,17 +293,6 @@ class GNSSAttitudeContext implements TimeStamped {
         this.cNight = cosNight;
         this.cNoon  = cosNoon;
 
-        // update relative orbit angle
-        final DerivativeStructure absDelta;
-        if (svbCos.getValue() <= 0) {
-            // night side
-            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
-        } else {
-            // Sun side
-            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos());
-        }
-        delta = FastMath.copySign(absDelta, -absDelta.getPartialDerivative(1));
-
         if (svbCos.getValue() < cNight || svbCos.getValue() > cNoon) {
             // we are within turn triggering zone
             return true;
@@ -289,6 +309,14 @@ class GNSSAttitudeContext implements TimeStamped {
      */
     public DerivativeStructure getDeltaDS() {
         return delta;
+    }
+
+    /** Get the orbit angle since solar midnight.
+     * @return orbit angle since solar midnight
+     */
+    public double getOrbitAngleSinceMidnight() {
+        final double absAngle = inOrbitPlaneAbsoluteAngle(FastMath.PI - FastMath.acos(svbCos.getValue()));
+        return morning ? absAngle : -absAngle;
     }
 
     /** Check if spacecraft is in the half orbit closest to Sun.

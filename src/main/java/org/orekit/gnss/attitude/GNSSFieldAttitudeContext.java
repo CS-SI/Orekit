@@ -101,6 +101,12 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     /** Cosine of the angle between spacecraft and Sun direction. */
     private final FieldDerivativeStructure<T> svbCos;
 
+    /** Morning/Evening half orbit indicator. */
+    private final boolean morning;
+
+    /** Relative orbit angle to turn center. */
+    private final FieldDerivativeStructure<T> delta;
+
     /** Spacecraft angular velocity. */
     private T muRate;
 
@@ -109,9 +115,6 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
 
     /** Limit cosine for the noon turn. */
     private double cNoon;
-
-    /** Relative orbit angle to turn center. */
-    private FieldDerivativeStructure<T> delta;
 
     /** Turn time data. */
     private FieldTurnSpan<T> turnSpan;
@@ -146,10 +149,21 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
                         svPV.toDerivativeStructurePV(factory.getCompiler().getOrder());
         this.svbCos  = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
                        divide(sunPVDS.getPosition().getNorm().multiply(svPVDS.getPosition().getNorm()));
+        this.morning = Vector3D.dotProduct(svPV.getVelocity().toVector3D(), sunPVDS.getPosition().toVector3D()) >= 0.0;
 
         this.muRate = svPV.getAngularVelocity().getNorm();
 
         this.turnSpan = turnSpan;
+
+        final FieldDerivativeStructure<T> absDelta;
+        if (svbCos.getValue().getReal() <= 0) {
+            // in eclipse turn mode
+            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
+        } else {
+            // in noon turn mode
+            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos());
+        }
+        delta = absDelta.copySign(absDelta.getPartialDerivative(1).negate());
 
     }
 
@@ -307,17 +321,6 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         this.cNight = cosNight;
         this.cNoon  = cosNoon;
 
-        // update relative orbit angle
-        final FieldDerivativeStructure<T> absDelta;
-        if (svbCos.getValue().getReal() <= 0) {
-            // in eclipse turn mode
-            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
-        } else {
-            // in noon turn mode
-            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos());
-        }
-        delta = absDelta.copySign(absDelta.getPartialDerivative(1).negate());
-
         if (svbCos.getValue().getReal() < cNight || svbCos.getValue().getReal() > cNoon) {
             // we are within turn triggering zone
             return true;
@@ -334,6 +337,14 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      */
     public FieldDerivativeStructure<T> getDeltaDS() {
         return delta;
+    }
+
+    /** Get the orbit angle since solar midnight.
+     * @return orbit angle since solar midnight
+     */
+    public T getOrbitAngleSinceMidnight() {
+        final T absAngle = inOrbitPlaneAbsoluteAngle(FastMath.acos(svbCos.getValue()).negate().add(FastMath.PI));
+        return morning ? absAngle : absAngle.negate();
     }
 
     /** Check if spacecraft is in the half orbit closest to Sun.
