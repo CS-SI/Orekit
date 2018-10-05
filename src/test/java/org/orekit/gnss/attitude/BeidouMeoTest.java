@@ -33,43 +33,43 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() {
-        doTestAxes("beta-large-negative-BEIDOU-2M.txt", 1.1e-15, 1.1e-15, 5.6e-16);
+    public void testPatchedLargeNegativeBeta() {
+        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2M.txt", 8.8e-15, 7.3e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() {
-        // the "large" error for the X axis (a few tenth of a degree)
-        // are due to the reference fortran program assuming perfect circular orbits
-        // whereas Orekit takes the non-orthogonality of position and velocity into account
-        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
-        // does not really correspond to an orthogonal frame
-        doTestAxes("beta-small-negative-BEIDOU-2M.txt", 0.0014, 8.9e-16, 4.8e-16);
+    public void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2M.txt", 7.7e-15, 7.0e-16);
     }
 
     @Test
-    public void testCrossingBeta() {
-        // the "large" error for the X axis (a few tenth of a degree)
-        // are due to the reference fortran program assuming perfect circular orbits
-        // whereas Orekit takes the non-orthogonality of position and velocity into account
-        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
-        // does not really correspond to an orthogonal frame
-        doTestAxes("beta-crossing-BEIDOU-2M.txt", 0.0018, 6.2e-16, 3.7e-16);
+    public void testPatchedSmallPositiveBeta() {
+        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2M.txt", 7.9e-15, 4.3e-16);
     }
 
     @Test
-    public void testSmallPositiveBeta() {
-        // the "large" error for the X axis (a few tenth of a degree)
-        // are due to the reference fortran program assuming perfect circular orbits
-        // whereas Orekit takes the non-orthogonality of position and velocity into account
-        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
-        // does not really correspond to an orthogonal frame
-        doTestAxes("beta-small-positive-BEIDOU-2M.txt", 0.0013, 7.2e-16, 4.1e-16);
+    public void testPatchedLargePositiveBeta() {
+        doTestAxes("patched-eclips/beta-large-positive-BEIDOU-2M.txt", 8.4e-15, 6.5e-16);
     }
 
     @Test
-    public void testLargePositiveBeta() {
-        doTestAxes("beta-large-positive-BEIDOU-2M.txt", 9.0e-16, 8.6e-16, 3.1e-16);
+    public void testOriginalLargeNegativeBeta() {
+        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2M.txt", 8.8e-15, 7.3e-16);
+    }
+
+    @Test
+    public void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2M.txt", 2.2e-3, 6.5e-16);
+    }
+
+    @Test
+    public void testOriginalSmallPositiveBeta() {
+        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2M.txt", 2.7e-3, 3.6e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBeta() {
+        doTestAxes("original-eclips/beta-large-positive-BEIDOU-2M.txt", 8.4e-15, 6.5e-16);
     }
 
 }

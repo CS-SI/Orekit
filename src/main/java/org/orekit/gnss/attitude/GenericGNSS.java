@@ -49,14 +49,14 @@ public class GenericGNSS extends AbstractGNSSAttitudeProvider {
     @Override
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
         // no eclipse/noon turn mode for generic spacecraft
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
     }
 
     /** {@inheritDoc} */
     @Override
     protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
         // no eclipse/noon turn mode for generic spacecraft
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
     }
 
 }
