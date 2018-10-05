@@ -102,7 +102,7 @@ public class BeidouMeo extends AbstractGNSSAttitudeProvider {
                 // we are going towards the β = 0 limit
                 if (FastMath.abs(betaQuadrature) <= BETA_YS_ON) {
                     // we have switched to Orbit Normal mode since last quadrature
-                   return context.orbitNormalYaw();
+                    return context.orbitNormalYaw();
                 }
             } else {
                 // we are going away from the β = 0 limit
