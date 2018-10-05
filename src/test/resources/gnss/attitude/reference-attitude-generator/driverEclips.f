@@ -5,9 +5,10 @@
 C
       integer idir, iprn, preprn, inprn
       integer neclips(satmax), ieclips(satmax), iblk(satmax)
-      integer year, month, day, week, isat, code, uin, uout
-      double precision ttag, svbcos, anoon, anight, pi, nan
-      double precision rawbet, beta, betaini(satmax), milli, delta
+      integer year, month, day, week, oweek, pweek
+      integer isat, code, uin, uout
+      double precision mill, omill, pmill, ttag, svbcos, anoon, anight
+      double precision rawbet, beta, betaini(satmax), delta, pi, nan
       double precision sp, p2, v2, a, phi1, phi2, prephi, yrtin, ybsin
       double precision eclstm(satmax, eclmax), ecletm(satmax, eclmax)
       double precision xsv(3), santxyz(3), vsvc(3), sun(3), out(3)
@@ -31,6 +32,8 @@ C
       nan    = sqrt(nan)
       prephi = 0.0d0
       preprn = -1
+      pweek  = -1
+      pmill = 0.0
  9000 format (i4, x, i2, x, i2, x, i4, x, f16.6, x, a3, x, a11, 2x,
      &        a4, x, f16.6, 2x, f16.6, 2x, f16.6, x,
      &        f16.9, 2x, f16.9, 2x, f16.9, 3(2x, f16.2), 2(x, f15.11))
@@ -41,7 +44,7 @@ C        header line
          write (uout, '(a)') trim(line)
       else
 C        data line
-         read (line, 9000) year, month, day, week, milli,
+         read (line, 9000) year, month, day, oweek, omill,
      &        id1, type, id2, xsv(1), xsv(2), xsv(3),
      &        vsvc(1), vsvc(2), vsvc(3), sun(1), sun(2), sun(3),
      &        rawbet, delta
@@ -104,7 +107,19 @@ C        data line
            anight     = 180.0d0 + 14.2d0
         endif
         idir = 1
-        ttag = milli / 1000.0d0
+        if (iprn .eq. preprn .and.
+     &      omill .lt. pmill .and. oweek .eq. (pweek + 1)) then
+C           fix week to avoid decreasing ttag
+            week = oweek - 1
+            mill = omill + 7.0D0 * 86400.0D0 * 1000.0D0
+        else
+C           keep original week
+            week = oweek
+            mill = omill
+        endif
+        ttag  = mill / 1000.0d0
+        pweek = week
+        pmill = mill
         svbcos = cos(delta * pi / 180.0d0)
         beta   = (90.0d0 + rawbet) * pi / 180.0d0
         sp = xsv(1) * sun(1) + xsv(2) * sun(2) + xsv(3) * sun(3)
@@ -140,7 +155,7 @@ C        data line
         phi1   = conti(phi(xsv, vsvc, santxyz) * 180d0 / pi, prephi)
         phi2   = conti(phi(xsv, vsvc, out)     * 180d0 / pi, phi1)
         prephi = phi1
-        write (uout, 9010) year, month, day, week, milli,
+        write (uout, 9010) year, month, day, oweek, omill,
      &     id1, type, id2, xsv(1), xsv(2), xsv(3),
      &     vsvc(1), vsvc(2), vsvc(3), sun(1), sun(2), sun(3),
      &       rawbet, delta,
@@ -149,7 +164,7 @@ C        data line
  9010   format (i4, '-', i2.2, '-', i2.2, x, i4, x, f16.6, x, a3, x,
      &          a11, 2x, a4, x, f16.6, 2x, f16.6, 2x, f16.6, x,
      &          f16.9, 2x, f16.9, 2x, f16.9, 3(2x, f16.2), 2(x, f15.11),
-     &          2(3(2x, f19.15), 2x, f15.10))
+     &          2(3(2x, f21.14), 2x, f15.10))
       endif
       goto 10
  20   continue

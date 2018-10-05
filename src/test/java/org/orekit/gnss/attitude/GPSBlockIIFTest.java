@@ -35,37 +35,37 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt",  1.1e-15, 8.9e-16, 4.2e-16);
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt",  6.7e-15, 7.6e-16);
     }
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIF.txt", 8.2e-13, 8.2e-13, 9.2e-16);
+        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIF.txt", 1.8e-12, 9.2e-16);
     }
 
     @Test
     public void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIF.txt", 5.7e-4, 5.7e-4, 7.8e-16);
+        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIF.txt", 5.7e-4, 7.8e-16);
     }
 
     @Test
     public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIF.txt", 2.9e-12, 2.9e-12, 5.0e-16);
+        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIF.txt", 2.9e-12, 5.0e-16);
     }
 
     @Test
     public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIF.txt", 1.1e-15, 7.7e-16, 3.2e-16);
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIF.txt", 7.2e-15, 6.3e-16);
     }
 
     @Test
     public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt",  1.1e-15, 8.9e-16, 4.2e-16);
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt",  6.7e-15, 7.6e-16);
     }
 
     @Test
     public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIF.txt", 2.8e-3, 2.8e-3, 9.2e-16);
+        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIF.txt", 2.8e-3, 9.2e-16);
     }
 
     @Test
@@ -74,17 +74,12 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
         // the output of the routine is limited to the x-sat vector, the yaw angle itself
         // is not output. However, in some cases the x-sat vector is not normalised at all.
         // looking in the reference data file original-eclips/beta-crossing-BLOCK-IIF.txt,
-        // one can see that the axis at line 6 is about (0.1455, 0.1232, 1.0537), at line 7
-        // it is about (0.43789, 0.9574, 1.3427) and at line 24 it is about (-0.3545, -0.5993,
-        // 1.0565). The yaw angles extracted from these wrong vectors and written as the last
-        // field in the same lines read -136.5778°, -107.3698° and 293.7100°, whereas Orekit
-        // values are -141.0539°, -120.6270° and -59.1380 (equivalent to 300.8619°). However,
-        // looking at the log from the original routine, we get:
-        // R           6   348067.10899436299       -179.95495754951264       -141.05951131830636...
-        // R           6   348427.10899436299       -179.97175156958741       -120.62312989589805...
-        // ...
-        // S          24   576951.53755731299        179.85738967852436       -59.415765665963555...
-        // so we see that the yaw values are -141.0595°, -120.6231 and -59.4157°, very close to Orekit values.
+        // one can see that the axis at line 8 is about (0.4380, 0.9578, 1.3430). The yaw
+        // angle extracted from these wrong vector and written as the last field in the same
+        // line reads -107.3651°, whereas Orekit value is -120.6269°. However, looking at the
+        // log from the original routine, we get:
+        // R           6   348427.10900000000       -179.97172706071467       -120.62317675422287 ...
+        // so we see that the yaw value is -120.6232°, very close to Orekit value.
         // As the testOriginal...() series of tests explicitly do *not* patch the original routine
         // at all, it was not possible to output the internal phi variable to write reference
         // data properly. We also decided to not edit the file to set the correct angle value,
@@ -92,17 +87,17 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
         // As a conclusion, we consider here that the reference output is wrong and that
         // Orekit behaviour is correct, so we increased the threshold so the test pass,
         // and wrote this big comment to explain the situation
-        doTestAxes("original-eclips/beta-crossing-BLOCK-IIF.txt", 0.24, 0.24, 7.8e-16);
+        doTestAxes("original-eclips/beta-crossing-BLOCK-IIF.txt", 0.24, 7.8e-16);
     }
 
     @Test
     public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIF.txt", 2.8e-4, 2.8e-4, 5.0e-16);
+        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIF.txt", 2.8e-4, 5.0e-16);
     }
 
     @Test
     public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIF.txt", 1.1e-15, 7.7e-16, 3.2e-16);
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIF.txt", 7.2e-15, 6.3e-16);
     }
 
 }

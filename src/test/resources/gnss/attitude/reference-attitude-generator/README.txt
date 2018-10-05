@@ -13,7 +13,7 @@ The data files for attitude reference were created as follows:
      done
    done
    
-2) ran the GenerateBaseSample java program to pick up 5 subsets of
+2) ran the FindBaseSamples java program to pick up 5 subsets of
    alignment events:
      - one subset where the beta angle is around -19°
      - one subset where the beta angle is around -1.5°
@@ -39,11 +39,20 @@ The data files for attitude reference were created as follows:
    mapping between PRN numbers and sat code, parse and propagate through all
    available SP3 files
 
-   the base sample generator generates only the first few columns of the reference
+   the base samples finder generates only the meta-data for each event (satellite,
+   event type, start and end of smapling time range, SP3 files coering the range).
+
+3) edited the samples-meta-data.txt file to select only some events, in order to
+   get tests for several interesting cases. Some start and end date jave also been
+   manually edited to match the SP3 files coverage. The samples-meta-data.txt file
+   in the same folder as this README.txt file is the result from this manual edition
+
+4) ran the GenerateBaseSamples java program on the edited samples-meta-data.txt.
+   the base samples generator generates only first few columns of the reference
    data (date, spacecraft position and velocity, sun position, β and δ  angles. The
    other columns will be completed in the next steps.
 
-3) split the big files into smaller files for various constellations:
+5) split the big files into smaller files for various constellations:
 
    for f in beta-crossing.txt \
             beta-small-negative.txt beta-small-positive.txt \
@@ -58,7 +67,7 @@ The data files for attitude reference were created as follows:
      rm $f
    done
 
-4) applied twelve patches to Kouba reference eclips routine from December 2017 to fix issues identified
+6) applied twelve patches to Kouba reference eclips routine from December 2017 to fix issues identified
    during validation:
      01) prevent NaNs appearing due to numerical noise at exact alignment
      02) missing declaration for math functions leading to them being used as simple precision instead of double precision
@@ -87,7 +96,7 @@ The data files for attitude reference were created as follows:
    done
    gfortran -g -o driverEclips driverEclips.f eclips_Dec2017.f
 
-5) compiled the eclips driver program and linked it with the patched Kouba reference
+7) compiled the eclips driver program and linked it with the patched Kouba reference
    eclipse routine, and ran it on the small files to add new columns at the end of each
    line with the reference values of the yaw and the rotated X axis direction.
 
@@ -97,9 +106,9 @@ The data files for attitude reference were created as follows:
      rm $f.old 
    done
 
-6) edited the files to select just a few test cases in all configurations at noon and midnight,
+8) edited the files to select just a few test cases in all configurations at noon and midnight,
    and to remove first point in Beidou case when wrong (this is due a known limitation of
    eclips when starting already in Orbit Normal mode)
 
-7) repeat steps 4, 5 and 6 but WITHOUT applying the patches, in order to get reference data
+9) repeat steps 4, 5 and 6 but WITHOUT applying the patches, in order to get reference data
    from the original Kouba reference (which of course will lead to slightly different results)

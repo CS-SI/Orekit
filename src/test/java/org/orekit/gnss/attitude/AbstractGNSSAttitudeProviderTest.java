@@ -34,6 +34,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.orekit.Utils;
@@ -92,8 +93,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     }
 
-    protected void doTestAxes(final String fileName, final double tolX, double tolY, double tolZ)
-        {
+    protected void doTestAxes(final String fileName, final double tolXY, double tolZ) {
 
         if (getClass().getResource("/gnss/attitude/" + fileName) == null) {
             Assert.fail("file not found: " + fileName);
@@ -112,6 +112,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         double maxErrorX = 0;
         double maxErrorY = 0;
         double maxErrorZ = 0;
+        int count = 0;
         for (final List<ParsedLine> dataBlock : dataBlocks) {
             final AbsoluteDate validityStart = dataBlock.get(0).gpsDate.getDate();
             final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).gpsDate.getDate();
@@ -122,6 +123,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
             Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
 
+            try (java.io.PrintStream out = new java.io.PrintStream("/tmp/x-" + ++count + ".dat")) {
             for (final ParsedLine parsedLine : dataBlock) {
 
                 // test on primitive double
@@ -132,6 +134,9 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 maxErrorX = FastMath.max(maxErrorX, CheckAxis.X_AXIS.error(attitude1, x, z));
                 maxErrorY = FastMath.max(maxErrorY, CheckAxis.Y_AXIS.error(attitude1, x, z));
                 maxErrorZ = FastMath.max(maxErrorZ, CheckAxis.Z_AXIS.error(attitude1, x, z));
+                final Vector3D xTest = attitude1.getRotation().applyInverseTo(Vector3D.PLUS_I);
+                final double phi = FastMath.copySign(Vector3D.angle(pv.getVelocity(), xTest),
+                                                     -Vector3D.dotProduct(pv.getMomentum(), xTest));
 
                 // test on field
                 final Field<Decimal64> field = Decimal64Field.getInstance();
@@ -144,16 +149,27 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 final FieldAttitude<Decimal64> attitude64 =
                                 attitudeProvider.getAttitude(orbit64, orbit64.getDate(), parsedLine.orbit.getFrame());
                 final Attitude attitude2 = attitude64.toAttitude();
+                final Vector3D x2Test = attitude2.getRotation().applyInverseTo(Vector3D.PLUS_I);
+                final double phi2 = FastMath.copySign(Vector3D.angle(pv.getVelocity(), x2Test),
+                                                     -Vector3D.dotProduct(pv.getMomentum(), x2Test));
                 maxErrorX = FastMath.max(maxErrorX, CheckAxis.X_AXIS.error(attitude2, x, z));
                 maxErrorY = FastMath.max(maxErrorY, CheckAxis.Y_AXIS.error(attitude2, x, z));
                 maxErrorZ = FastMath.max(maxErrorZ, CheckAxis.Z_AXIS.error(attitude2, x, z));
+                out.println(parsedLine.gpsDate.getMilliInWeek() +
+                            " " + FastMath.toDegrees(parsedLine.nominalPsi) +
+                            " " + FastMath.toDegrees(parsedLine.eclipsPsi) +
+                            " " + FastMath.toDegrees(MathUtils.normalizeAngle(phi, parsedLine.eclipsPsi)) +
+                            " " + FastMath.toDegrees(MathUtils.normalizeAngle(phi2, parsedLine.eclipsPsi)));
 
+            }
+            } catch (IOException ioe) {
+                Assert.fail(ioe.getLocalizedMessage());
             }
 
         }
 
-        Assert.assertEquals(0, maxErrorX, tolX);
-        Assert.assertEquals(0, maxErrorY, tolY);
+        Assert.assertEquals(0, maxErrorX, tolXY);
+        Assert.assertEquals(0, maxErrorY, tolXY);
         Assert.assertEquals(0, maxErrorZ, tolZ);
 
     }
@@ -248,6 +264,8 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         final Orbit    orbit;
         final Vector3D sunP;
         final Vector3D eclipsX;
+        final double   nominalPsi;
+        final double   eclipsPsi;
 
         ParsedLine(final String line, final Frame eme2000, final Frame itrf) {
             final String[] fields = line.split("\\s+");
@@ -270,11 +288,11 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 //            nominalX   = t.transformVector(new Vector3D(Double.parseDouble(fields[17]),
 //                                                        Double.parseDouble(fields[18]),
 //                                                        Double.parseDouble(fields[19])));
-//            nominalPsi = FastMath.toRadians(Double.parseDouble(fields[20]));
+            nominalPsi = FastMath.toRadians(Double.parseDouble(fields[20]));
             eclipsX    = t.transformVector(new Vector3D(Double.parseDouble(fields[21]),
                                                         Double.parseDouble(fields[22]),
                                                         Double.parseDouble(fields[23])));
-//            eclipsPsi  = FastMath.toRadians(Double.parseDouble(fields[24]));
+            eclipsPsi  = FastMath.toRadians(Double.parseDouble(fields[24]));
         }
 
     }
