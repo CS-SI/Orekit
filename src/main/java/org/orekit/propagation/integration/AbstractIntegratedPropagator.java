@@ -620,8 +620,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @param initialState initial state information at the start of propagation.
          * @param target       date of propagation. Not equal to {@code
          *                     initialState.getDate()}.
-         * @throws OrekitException if there is an Orekit related error during
-         *                         initialization.
          */
         default void init(final SpacecraftState initialState, final AbsoluteDate target) {
         }
@@ -629,7 +627,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Compute differential equations for main state.
          * @param state current state
          * @return derivatives of main state
-         * @throws OrekitException if differentials cannot be computed
          */
         double[] computeDerivatives(SpacecraftState state);
 

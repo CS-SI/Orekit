@@ -20,7 +20,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -132,7 +131,6 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @param date date at which state is requested
      * @param frame reference frame from which attitude is computed
      * @return satellite base attitude state, i.e without compensation.
-     * @throws OrekitException if some specific error occurs
      */
     public Attitude getBaseState(final PVCoordinatesProvider pvProv,
                                  final AbsoluteDate date, final Frame frame) {
@@ -145,7 +143,6 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
      * @return satellite base attitude state, i.e without compensation.
-     * @throws OrekitException if some specific error occurs
      * @since 9.0
      */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,

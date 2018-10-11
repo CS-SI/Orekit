@@ -133,7 +133,6 @@ public interface EphemerisFile {
          * <p> Each call to this method creates a new propagator.
          *
          * @return a propagator for all the data in this ephemeris file.
-         * @throws OrekitException if any of the conditions are not met.
          */
         default BoundedPropagator getPropagator() {
             final List<BoundedPropagator> propagators = new ArrayList<>();
@@ -186,8 +185,6 @@ public interface EphemerisFile {
          * Get the reference frame for this ephemeris segment.
          *
          * @return the reference frame for this segment. Never {@code null}.
-         * @throws OrekitException if a frame cannot be created from {@link
-         *                         #getFrameString()} and there is no default frame.
          */
         Frame getFrame();
 
@@ -203,9 +200,6 @@ public interface EphemerisFile {
          * Get the time scale for this ephemeris segment.
          *
          * @return the time scale for this segment. Never {@code null}.
-         * @throws OrekitException if a time scale can not be constructed based on {@link
-         *                         #getTimeScaleString()} and there is no default time
-         *                         scale.
          */
         TimeScale getTimeScale();
 
@@ -274,7 +268,6 @@ public interface EphemerisFile {
          * <p> Each call to this method creates a new propagator.
          *
          * @return a propagator for this ephemeris segment.
-         * @throws OrekitException if any of the conditions are not met.
          */
         default BoundedPropagator getPropagator() {
             return new EphemerisSegmentPropagator(this);

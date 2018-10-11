@@ -234,14 +234,14 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://www.orekit.org/git/orekit-main.git</connection>
-    <developerConnection>scm:git:ssh://git@www.orekit.org/orekit-main.git</developerConnection>
-    <url>https://www.orekit.org/forge/projects/orekit/repository</url>
+    <connection>scm:git:https://gitlab.orekit.org/orekit/orekit.git</connection>
+    <developerConnection>scm:git:ssh://git@gitlab.orekit.org:orekit/orekit.git</developerConnection>
+    <url>https://gitlab.orekit.org/orekit/orekit/tree/master</url>
   </scm>
 
   <issueManagement>
-      <system>Redmine</system>
-      <url>https://www.orekit.org/forge/projects/orekit/issues</url>
+      <system>Gitlab</system>
+      <url>https://gitlab.orekit.org/orekit/orekit/issues</url>
   </issueManagement>
 
   <mailingLists>

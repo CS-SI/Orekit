@@ -1,0 +1,33 @@
+--- eclips_Dec2017.f.orig	2018-09-21 17:47:38.807533381 +0200
++++ eclips_Dec2017.f	2018-09-21 17:48:42.317409717 +0200
+@@ -113,6 +113,8 @@
+ C                      Jul 09, 2018  IMPROVED ACCURACY BY REPLACING PROJECTED
+ C                                    PLANAR GEOMETRY WITH SPHERICAL TRIGONOMETRY
+ C                                    FOR SOLVING SOME TRIANGLES (Luc Maisonobe)
++C                      Jul 10, 2018  TAKE ECCENTRICITY INTO ACCOUNT WHEN
++C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -224,7 +226,7 @@
+ C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
+      &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
+ C    &          SMTH, BETAE
+-     &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP
++     &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3), OMGN
+       REAL*8    YAWEND
+       REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
+       REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
+@@ -337,7 +339,11 @@
+       P2 = XSV(1)**2+XSV(2)**2+XSV(3)**2
+       V2 = VSVC(1)**2+VSVC(2)**2+VSVC(3)**2
+       PV = XSV(1)*VSVC(1)+XSV(2)*VSVC(2)+XSV(3)*VSVC(3)
+-      MURATE= sqrt(V2/P2)/DTR
++      OMG(1) = (XSV(2)*VSVC(3)-XSV(3)*VSVC(2)) / P2 
++      OMG(2) = (XSV(3)*VSVC(1)-XSV(1)*VSVC(3)) / P2 
++      OMG(3) = (XSV(1)*VSVC(2)-XSV(2)*VSVC(1)) / P2 
++      OMGN   = SQRT(OMG(1)*OMG(1)+OMG(2)*OMG(2)+OMG(3)*OMG(3))
++      MURATE = OMGN/DTR
+       ANOON=ATAN(MURATE/YRATE(IPRN))/DTR
+ C Dec 5, 2017  reset BETA0 (BUT ONLY IF NON ZERO!)
+       IF(BETA0.NE.0.D0) BETA0= ANOON

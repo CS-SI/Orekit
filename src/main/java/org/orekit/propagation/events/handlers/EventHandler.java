@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events.handlers;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
@@ -84,7 +83,6 @@ public interface EventHandler<T extends EventDetector> {
      * @param initialState initial state
      * @param target target date for the propagation
      *
-     * @throws OrekitException if some specific error occurs
      */
     default void init(SpacecraftState initialState, AbsoluteDate target) {
         // nothing by default

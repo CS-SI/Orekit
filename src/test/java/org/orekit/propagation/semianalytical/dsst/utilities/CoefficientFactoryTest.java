@@ -206,8 +206,6 @@ public class CoefficientFactoryTest {
 
     /**
      * Direct computation for the Vmns coefficient from equation 2.7.1 - (6)
-     *
-     * @throws OrekitException
      */
     private static double getVmns2(final int m,
                                    final int n,

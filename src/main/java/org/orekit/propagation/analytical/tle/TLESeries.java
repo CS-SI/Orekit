@@ -166,7 +166,6 @@ public class TLESeries implements DataLoader {
 
     /** Get the available satellite numbers.
      * @return available satellite numbers
-     * @throws OrekitException if some data can't be read, some
      * file content is corrupted or no TLE data is available
      */
     public Set<Integer> getAvailableSatelliteNumbers() {

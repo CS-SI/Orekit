@@ -55,7 +55,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 9.2
  */
-class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
+public class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 
     /** Builders for propagators. */
     private final List<NumericalPropagatorBuilder> builders;
@@ -124,7 +124,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @throws OrekitException propagation exception.
      */
     Model(final List<NumericalPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
@@ -342,6 +341,24 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** {@inheritDoc} */
     @Override
+    public ParameterDriversList getEstimatedOrbitalParameters() {
+        return allEstimatedOrbitalParameters;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriversList getEstimatedPropagationParameters() {
+        return allEstimatedPropagationParameters;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriversList getEstimatedMeasurementsParameters() {
+        return estimatedMeasurementsParameters;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public SpacecraftState[] getPredictedSpacecraftStates() {
         return predictedSpacecraftStates.clone();
     }
@@ -350,6 +367,181 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     @Override
     public SpacecraftState[] getCorrectedSpacecraftStates() {
         return correctedSpacecraftStates.clone();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealVector getPhysicalEstimatedState() {
+        // Method {@link ParameterDriver#getValue()} is used to get
+        // the physical values of the state.
+        // The scales'array is used to get the size of the state vector
+        final RealVector physicalEstimatedState = new ArrayRealVector(scale.length);
+        int i = 0;
+        for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
+            physicalEstimatedState.setEntry(i++, driver.getValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
+            physicalEstimatedState.setEntry(i++, driver.getValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+            physicalEstimatedState.setEntry(i++, driver.getValue());
+        }
+
+        return physicalEstimatedState;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
+        // Un-normalize the estimated covariance matrix (P) from Hipparchus and return it.
+        // The covariance P is an mxm matrix where m = nbOrb + nbPropag + nbMeas
+        // For each element [i,j] of P the corresponding normalized value is:
+        // Pn[i,j] = P[i,j] / (scale[i]*scale[j])
+        // Consequently: P[i,j] = Pn[i,j] * scale[i] * scale[j]
+
+        // Normalized covariance matrix
+        final RealMatrix normalizedP = correctedEstimate.getCovariance();
+
+        // Initialize physical covariance matrix
+        final int nbParams = normalizedP.getRowDimension();
+        final RealMatrix physicalP = MatrixUtils.createRealMatrix(nbParams, nbParams);
+
+        // Un-normalize the covairance matrix
+        for (int i = 0; i < nbParams; ++i) {
+            for (int j = 0; j < nbParams; ++j) {
+                physicalP.setEntry(i, j, normalizedP.getEntry(i, j) * scale[i] * scale[j]);
+            }
+        }
+        return physicalP;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getPhysicalStateTransitionMatrix() {
+        //  Un-normalize the state transition matrix (φ) from Hipparchus and return it.
+        // φ is an mxm matrix where m = nbOrb + nbPropag + nbMeas
+        // For each element [i,j] of normalized φ (φn), the corresponding physical value is:
+        // φ[i,j] = φn[i,j] * scale[i] / scale[j]
+
+        // Normalized matrix
+        final RealMatrix normalizedSTM = correctedEstimate.getStateTransitionMatrix();
+
+        if (normalizedSTM == null) {
+            return null;
+        } else {
+            // Initialize physical matrix
+            final int nbParams = normalizedSTM.getRowDimension();
+            final RealMatrix physicalSTM = MatrixUtils.createRealMatrix(nbParams, nbParams);
+
+            // Un-normalize the matrix
+            for (int i = 0; i < nbParams; ++i) {
+                for (int j = 0; j < nbParams; ++j) {
+                    physicalSTM.setEntry(i, j,
+                                         normalizedSTM.getEntry(i, j) * scale[i] / scale[j]);
+                }
+            }
+            return physicalSTM;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getPhysicalMeasurementJacobian() {
+        // Un-normalize the measurement matrix (H) from Hipparchus and return it.
+        // H is an nxm matrix where:
+        //  - m = nbOrb + nbPropag + nbMeas is the number of estimated parameters
+        //  - n is the size of the measurement being processed by the filter
+        // For each element [i,j] of normalized H (Hn) the corresponding physical value is:
+        // H[i,j] = Hn[i,j] * σ[i] / scale[j]
+
+        // Normalized matrix
+        final RealMatrix normalizedH = correctedEstimate.getMeasurementJacobian();
+
+        if (normalizedH == null) {
+            return null;
+        } else {
+            // Get current measurement sigmas
+            final double[] sigmas = correctedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
+
+            // Initialize physical matrix
+            final int nbLine = normalizedH.getRowDimension();
+            final int nbCol  = normalizedH.getColumnDimension();
+            final RealMatrix physicalH = MatrixUtils.createRealMatrix(nbLine, nbCol);
+
+            // Un-normalize the matrix
+            for (int i = 0; i < nbLine; ++i) {
+                for (int j = 0; j < nbCol; ++j) {
+                    physicalH.setEntry(i, j, normalizedH.getEntry(i, j) * sigmas[i] / scale[j]);
+                }
+            }
+            return physicalH;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getPhysicalInnovationCovarianceMatrix() {
+        // Un-normalize the innovation covariance matrix (S) from Hipparchus and return it.
+        // S is an nxn matrix where n is the size of the measurement being processed by the filter
+        // For each element [i,j] of normalized S (Sn) the corresponding physical value is:
+        // S[i,j] = Sn[i,j] * σ[i] * σ[j]
+
+        // Normalized matrix
+        final RealMatrix normalizedS = correctedEstimate.getInnovationCovariance();
+
+        if (normalizedS == null) {
+            return null;
+        } else {
+            // Get current measurement sigmas
+            final double[] sigmas = correctedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
+
+            // Initialize physical matrix
+            final int nbMeas = sigmas.length;
+            final RealMatrix physicalS = MatrixUtils.createRealMatrix(nbMeas, nbMeas);
+
+            // Un-normalize the matrix
+            for (int i = 0; i < nbMeas; ++i) {
+                for (int j = 0; j < nbMeas; ++j) {
+                    physicalS.setEntry(i, j, normalizedS.getEntry(i, j) * sigmas[i] *   sigmas[j]);
+                }
+            }
+            return physicalS;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getPhysicalKalmanGain() {
+        // Un-normalize the Kalman gain (K) from Hipparchus and return it.
+        // K is an mxn matrix where:
+        //  - m = nbOrb + nbPropag + nbMeas is the number of estimated parameters
+        //  - n is the size of the measurement being processed by the filter
+        // For each element [i,j] of normalized K (Kn) the corresponding physical value is:
+        // K[i,j] = Kn[i,j] * scale[i] / σ[j]
+
+        // Normalized matrix
+        final RealMatrix normalizedK = correctedEstimate.getKalmanGain();
+
+        if (normalizedK == null) {
+            return null;
+        } else {
+            // Get current measurement sigmas
+            final double[] sigmas = correctedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
+
+            // Initialize physical matrix
+            final int nbLine = normalizedK.getRowDimension();
+            final int nbCol  = normalizedK.getColumnDimension();
+            final RealMatrix physicalK = MatrixUtils.createRealMatrix(nbLine, nbCol);
+
+            // Un-normalize the matrix
+            for (int i = 0; i < nbLine; ++i) {
+                for (int j = 0; j < nbCol; ++j) {
+                    physicalK.setEntry(i, j, normalizedK.getEntry(i, j) * scale[i] / sigmas[j]);
+                }
+            }
+            return physicalK;
+        }
     }
 
     /** {@inheritDoc} */
@@ -376,36 +568,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         return correctedMeasurement;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public RealVector getPhysicalEstimatedState() {
-        return unNormalizeStateVector(correctedEstimate.getState());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
-        return unNormalizeCovarianceMatrix(correctedEstimate.getCovariance());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriversList getEstimatedOrbitalParameters() {
-        return allEstimatedOrbitalParameters;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriversList getEstimatedPropagationParameters() {
-        return allEstimatedPropagationParameters;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriversList getEstimatedMeasurementsParameters() {
-        return estimatedMeasurementsParameters;
-    }
-
     /** Get the current corrected estimate.
      * @return current corrected estimate
      */
@@ -415,7 +577,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Get the propagators estimated with the values set in the propagators builders.
      * @return numerical propagators based on the current values in the builder
-     * @throws OrekitException if propagators cannot be build
      */
     public NumericalPropagator[] getEstimatedPropagators() {
 
@@ -432,7 +593,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * The  STM is an mxm matrix where m is the size of the state vector.
      * m = nbOrb + nbPropag + nbMeas
      * @return the normalized error state transition matrix
-     * @throws OrekitException if Jacobians cannot be computed
      */
     private RealMatrix getErrorStateTransitionMatrix() {
 
@@ -515,7 +675,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * H contains the partial derivatives of the measurement with respect to the state.
      * H is an nxm matrix where n is the size of the measurement vector and m the size of the state vector.
      * @return the normalized measurement matrix H
-     * @throws OrekitException if Jacobians cannot be computed
      */
     private RealMatrix getMeasurementMatrix() {
 
@@ -616,7 +775,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Update the reference trajectories using the propagators as input.
      * @param propagators The new propagators to use
-     * @throws OrekitException if setting up the partial derivatives failed
      */
     private void updateReferenceTrajectories(final NumericalPropagator[] propagators) {
 
@@ -635,26 +793,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             mappers[k] = pde.getMapper();
         }
 
-    }
-
-    /** Un-normalize a state vector.
-     * A state vector S is of size m = nbOrb + nbPropag + nbMeas
-     * For each parameter i the normalized value of the state vector is:
-     * Sn[i] = S[i] / scale[i]
-     * @param normalizedStateVector The normalized state vector in input
-     * @return the "physical" state vector
-     */
-    private RealVector unNormalizeStateVector(final RealVector normalizedStateVector) {
-
-        // Initialize output matrix
-        final int nbParams = normalizedStateVector.getDimension();
-        final RealVector physicalStateVector = new ArrayRealVector(nbParams);
-
-        // Normalize the state matrix
-        for (int i = 0; i < nbParams; ++i) {
-            physicalStateVector.setEntry(i, normalizedStateVector.getEntry(i) * scale[i]);
-        }
-        return physicalStateVector;
     }
 
     /** Normalize a covariance matrix.
@@ -681,44 +819,19 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         return normalizedCovarianceMatrix;
     }
 
-    /** Un-normalize a covariance matrix.
-     * The covariance P is an mxm matrix where m = nbOrb + nbPropag + nbMeas
-     * For each element [i,j] of P the corresponding normalized value is:
-     * Pn[i,j] = P[i,j] / (scale[i]*scale[j])
-     * @param normalizedCovarianceMatrix The normalized covariance matrix in input
-     * @return the "physical" covariance matrix
-     */
-    private RealMatrix unNormalizeCovarianceMatrix(final RealMatrix normalizedCovarianceMatrix) {
-
-        // Initialize output matrix
-        final int nbParams = normalizedCovarianceMatrix.getRowDimension();
-        final RealMatrix physicalCovarianceMatrix = MatrixUtils.createRealMatrix(nbParams, nbParams);
-
-        // Normalize the state matrix
-        for (int i = 0; i < nbParams; ++i) {
-            for (int j = 0; j < nbParams; ++j) {
-                physicalCovarianceMatrix.setEntry(i, j,
-                                                  normalizedCovarianceMatrix.getEntry(i, j) *
-                                                  (scale[i] * scale[j]));
-            }
-        }
-        return physicalCovarianceMatrix;
-    }
-
-    /** Set and apply a dynamic outlier filter on a measurement.<p>
-     * Loop on the modifiers to see if a dynamic outlier filter needs to be applied.<p>
-     * Compute the sigma array using the matrix in input and set the filter.<p>
-     * Apply the filter by calling the modify method on the estimated measurement.<p>
+    /** <p>Set and apply a dynamic outlier filter on a measurement.</p>
+     * Loop on the modifiers to see if a dynamic outlier filter needs to be applied.<br>
+     * Compute the sigma array using the matrix in input and set it in the filter.<br>
+     * Apply the filter by calling the modify method on the estimated measurement.<br>
      * Reset the filter.
      * @param measurement measurement to filter
-     * @param innovationCovarianceMatrix So called innovation covariance matrix S, with:<p>
-     *        S = H.Ppred.Ht + R<p>
-     *        Where:<p>
-     *         - H is the normalized measurement matrix (Ht its transpose)<p>
-     *         - Ppred is the normalized predicted covariance matrix<p>
-     *         - R is the normalized measurement noise matrix
+     * @param innovationCovarianceMatrix So called innovation covariance matrix S, with:
+     *        <p>S = H.Ppred.Ht + R</p>
+     *        Where:<ul>
+     *         <li>H is the normalized measurement matrix (Ht its transpose)
+     *         <li>Ppred is the normalized predicted covariance matrix
+     *         <li>R is the normalized measurement noise matrix</ul>
      * @param <T> the type of measurement
-     * @throws OrekitException if modifier cannot be applied
      */
     private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
                                                                               final RealMatrix innovationCovarianceMatrix) {
@@ -783,7 +896,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         //   * 1 for Range, RangeRate and TurnAroundRange
         //   * 2 for Angular (Azimuth/Elevation or Right-ascension/Declination)
         //   * 6 for Position/Velocity
-        // - m = size of the state vector. n = nbOrb + nbPropag + nbMeas
+        // - m = size of the state vector. m = nbOrb + nbPropag + nbMeas
 
         // Predict the state vector (mx1)
         final RealVector predictedState = predictState(observedMeasurement.getDate());
@@ -850,12 +963,12 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         } else {
             // Normalized innovation of the measurement (Nx1)
             final double[] observed  = predictedMeasurement.getObservedMeasurement().getObservedValue();
-            final double[] estimated = predictedMeasurement.getEstimatedValue();
+            final double[] predicted = predictedMeasurement.getEstimatedValue();
             final double[] sigma     = predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
             final double[] residuals = new double[observed.length];
 
             for (int i = 0; i < observed.length; i++) {
-                residuals[i] = (observed[i] - estimated[i]) / sigma[i];
+                residuals[i] = (observed[i] - predicted[i]) / sigma[i];
             }
             return MatrixUtils.createRealVector(residuals);
         }
@@ -893,7 +1006,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * The predicted/propagated orbit is used to update the state vector
      * @param date prediction date
      * @return predicted state
-     * @throws OrekitException if the propagator builder could not be reset
      */
     private RealVector predictState(final AbsoluteDate date) {
 
@@ -930,7 +1042,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Update the estimated parameters after the correction phase of the filter.
      * The min/max allowed values are handled by the parameter themselves.
-     * @throws OrekitException if setting the normalized values failed
      */
     private void updateParameters() {
         final RealVector correctedState = correctedEstimate.getState();

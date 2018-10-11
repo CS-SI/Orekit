@@ -325,10 +325,9 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * @param reader the reader
      * @param pi the parser info
      * @throws IOException if an error occurs while reading from the stream
-     * @throws OrekitException if the frame cannot be retrieved
      */
     private void parseCovarianceDataLines(final BufferedReader reader, final ParseInfo pi)
-        throws IOException, OrekitException  {
+        throws IOException {
         int i = 0;
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 

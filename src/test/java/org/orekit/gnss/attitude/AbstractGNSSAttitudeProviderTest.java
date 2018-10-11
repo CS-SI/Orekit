@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -52,6 +53,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -90,8 +92,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     }
 
-    protected void doTestAxes(final String fileName, final double tolX, double tolY, double tolZ)
-        {
+    protected void doTestAxes(final String fileName, final double tolXY, double tolZ) {
 
         if (getClass().getResource("/gnss/attitude/" + fileName) == null) {
             Assert.fail("file not found: " + fileName);
@@ -124,8 +125,9 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
                 // test on primitive double
                 final Attitude attitude1 = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.gpsDate.getDate(), parsedLine.orbit.getFrame());
-                final Vector3D x = parsedLine.eclipsX;
-                final Vector3D z = parsedLine.orbit.getPVCoordinates().getPosition().normalize().negate();
+                final Vector3D      x  = parsedLine.eclipsX;
+                final PVCoordinates pv = parsedLine.orbit.getPVCoordinates();
+                final Vector3D      z  = pv.getPosition().normalize().negate();
                 maxErrorX = FastMath.max(maxErrorX, CheckAxis.X_AXIS.error(attitude1, x, z));
                 maxErrorY = FastMath.max(maxErrorY, CheckAxis.Y_AXIS.error(attitude1, x, z));
                 maxErrorZ = FastMath.max(maxErrorZ, CheckAxis.Z_AXIS.error(attitude1, x, z));
@@ -149,8 +151,8 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
         }
 
-        Assert.assertEquals(0, maxErrorX, tolX);
-        Assert.assertEquals(0, maxErrorY, tolY);
+        Assert.assertEquals(0, maxErrorX, tolXY);
+        Assert.assertEquals(0, maxErrorY, tolXY);
         Assert.assertEquals(0, maxErrorZ, tolZ);
 
     }
@@ -174,7 +176,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 parsedLine = new ParsedLine(line, eme2000, itrf);
                 if (previous != null &&
                     (parsedLine.prnNumber != previous.prnNumber ||
-                     parsedLine.gpsDate.getDate().durationFrom(previous.gpsDate.getDate()) > 3600)) {
+                     parsedLine.gpsDate.getDate().durationFrom(previous.gpsDate.getDate()) > 14400)) {
                     dataBlocks.add(new ArrayList<>());
                 }
                 dataBlocks.get(dataBlocks.size() - 1).add(parsedLine);
@@ -190,20 +192,31 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     private static class FakedSun implements ExtendedPVCoordinatesProvider {
 
+        final int SAMPLE_SIZE = 5;
         final List<ParsedLine> parsedLines;
 
         FakedSun(final List<ParsedLine> parsedLines) {
             this.parsedLines = parsedLines;
         }
 
+        private Stream<ParsedLine> getCloseLines(final AbsoluteDate date) {
+            final int margin = SAMPLE_SIZE / 2;
+            int closest = margin;
+            for (int i = closest + 1; i < parsedLines.size() - margin; ++i) {
+                if (FastMath.abs(date.durationFrom(parsedLines.get(i).gpsDate.getDate())) <
+                    FastMath.abs(date.durationFrom(parsedLines.get(closest).gpsDate.getDate()))) {
+                    closest = i;
+                }
+            }
+            return parsedLines.subList(closest - margin, closest + margin + 1).stream();
+         }
+
         @Override
         public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date,
                                                          Frame frame) {
-            return TimeStampedPVCoordinates.interpolate(date,
+           return TimeStampedPVCoordinates.interpolate(date,
                                                         CartesianDerivativesFilter.USE_P,
-                                                        parsedLines.stream().
-                                                        filter(parsedLine ->
-                                                        FastMath.abs(date.durationFrom(parsedLine.gpsDate.getDate())) < 300).
+                                                        getCloseLines(date).
                                                         map(parsedLine ->
                                                             new TimeStampedPVCoordinates(parsedLine.gpsDate.getDate(),
                                                                                          parsedLine.sunP,
@@ -217,9 +230,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             final Field<T> field = date.getField();
             return TimeStampedFieldPVCoordinates.interpolate(date,
                                                              CartesianDerivativesFilter.USE_P,
-                                                             parsedLines.stream().
-                                                             filter(parsedLine ->
-                                                             FastMath.abs(date.durationFrom(parsedLine.gpsDate.getDate())).getReal() < 300).
+                                                             getCloseLines(date.toAbsoluteDate()).
                                                              map(parsedLine ->
                                                                  new TimeStampedFieldPVCoordinates<>(parsedLine.gpsDate.getDate(),
                                                                                                      new FieldVector3D<>(field, parsedLine.sunP),

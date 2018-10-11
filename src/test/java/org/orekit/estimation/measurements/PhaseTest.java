@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.gnss.Frequency;
@@ -51,7 +50,6 @@ public class PhaseTest {
     /**
      * Test the values of the phase comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
     public void testValues() {
@@ -66,7 +64,6 @@ public class PhaseTest {
     /**
      * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivatives() {
@@ -90,7 +87,6 @@ public class PhaseTest {
     /**
      * Test the values of the state derivatives with modifier using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifier() {
@@ -114,7 +110,6 @@ public class PhaseTest {
     /**
      * Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivatives() {
@@ -137,7 +132,6 @@ public class PhaseTest {
     /**
      * Generic test function for values of the phase
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
         {

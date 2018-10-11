@@ -95,8 +95,6 @@ public class KeplerianPropagatorTest {
     /**
      * Check that the date returned by {@link KeplerianPropagator#propagate(AbsoluteDate)}
      * is the same as the date passed to propagate().
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testPropagationDate() {

@@ -161,8 +161,6 @@ public enum CcsdsTimeScale {
      * @param conventions          IERS conventions for {@link #UT1} and {@link #GMST}.
      * @param missionReferenceDate epoch for {@link #MET} and {@link #MRT}.
      * @return parsed {@code date}.
-     * @throws OrekitException if an {@link AbsoluteDate} cannot be created from {@code
-     *                         date} in this time scale.
      */
     public AbsoluteDate parseDate(final String date,
                                   final IERSConventions conventions,
@@ -175,7 +173,6 @@ public enum CcsdsTimeScale {
      *
      * @param conventions IERS Conventions for the {@link #GMST} and {@link #UT1} scales.
      * @return the time scale.
-     * @throws OrekitException if the time scale cannot be constructed.
      */
     public abstract TimeScale getTimeScale(IERSConventions conventions);
 

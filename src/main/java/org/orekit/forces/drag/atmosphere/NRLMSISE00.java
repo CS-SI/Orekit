@@ -1190,7 +1190,6 @@ public class NRLMSISE00 implements Atmosphere {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return the local solar time (hour in [0, 24[)
-     * @throws OrekitException if position cannot be computed in given frame
      */
     private double localSolarTime(final AbsoluteDate date,
                                   final Vector3D position,
@@ -1208,7 +1207,6 @@ public class NRLMSISE00 implements Atmosphere {
      * @param frame the frame in which is defined the position
      * @param <T> type of the filed elements
      * @return the local solar time (hour in [0, 24[)
-     * @throws OrekitException if position cannot be computed in given frame
      */
     private <T extends RealFieldElement<T>> T localSolarTime(final AbsoluteDate date,
                                                              final FieldVector3D<T> position,

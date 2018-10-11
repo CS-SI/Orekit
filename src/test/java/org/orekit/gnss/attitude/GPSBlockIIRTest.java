@@ -29,47 +29,65 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
                                                   final ExtendedPVCoordinatesProvider sun,
                                                   final Frame inertialFrame,
                                                   final int prnNumber) {
-        return new GPSBlockIIR(validityStart, validityEnd, sun, inertialFrame);
+        return new GPSBlockIIR(GPSBlockIIR.DEFAULT_YAW_RATE,
+                               validityStart, validityEnd, sun, inertialFrame);
     }
 
     @Test
-    public void testLargeNegativeBeta() {
-        doTestAxes("beta-large-negative-BLOCK-IIR.txt", 1.5e-15, 1.2e-15, 8.8e-16);
+    public void testPatchedLargeNegativeBeta() {
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIR.txt", 8.0e-15, 8.8e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-negative-BLOCK-IIR.txt", 2.0e-4, 2.0e-4, 9.1e-16);
+    public void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIR.txt", 4.9e-13, 9.1e-16);
     }
 
     @Test
-    public void testCrossingBeta() {
-        // TODO: these results are not good,
-        // however the reference data is also highly suspicious
-        // this needs to be investigated
-        doTestAxes("beta-crossing-BLOCK-IIR.txt", 2.7, 2.7, 4.7e-16);
+    public void testPatchedCrossingBeta() {
+        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIR.txt", 5.2e-5, 6.1e-16);
     }
 
     @Test
-    public void testSmallPositiveBeta() {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-positive-BLOCK-IIR.txt", 8.6e-5, 8.6e-5, 7.9e-16);
+    public void testPatchedSmallPositiveBeta() {
+        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIR.txt", 1.2e-12, 7.9e-16);
     }
 
     @Test
-    public void testLargePositiveBeta() {
-        doTestAxes("beta-large-positive-BLOCK-IIR.txt", 1.3e-15, 7.0e-15, 8.5e-16);
+    public void testPatchedLargePositiveBeta() {
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIR.txt", 6.3e-15, 9.1e-16);
+    }
+
+    @Test
+    public void testOriginalLargeNegativeBeta() {
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIR.txt", 8.0e-15, 8.8e-16);
+    }
+
+    @Test
+    public void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-BLOCK-IIR.txt", 6.5e-4, 9.1e-16);
+    }
+
+    @Test
+    public void testOriginalCrossingBeta() {
+        // the very high threshold (1.68 radians) is due to the same probable bugs in original eclips
+        // as the corresponding test for block-IIA. There are non-normalized vectors in the
+        // "original-eclips/beta-crossing-BLOCK-IIR.txt" (one of them having a norm greater than 43000!)
+        // leading to wrong yaw and there are sign changes for PHI/YANGLE
+        // As a conclusion, we consider here that the reference output is wrong and that
+        // Orekit behaviour is correct, so we increased the threshold so the test pass,
+        // and wrote this big comment to explain the situation
+        doTestAxes("original-eclips/beta-crossing-BLOCK-IIR.txt", 1.68, 6.1e-16);
+    }
+
+    @Test
+    public void testOriginalSmallPositiveBeta() {
+        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIR.txt", 7.4e-4, 7.9e-16);
+    }
+
+    @Test
+    public void testOriginalLargePositiveBeta() {
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIR.txt", 6.3e-15, 9.1e-16);
     }
 
 }

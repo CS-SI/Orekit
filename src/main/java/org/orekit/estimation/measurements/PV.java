@@ -67,7 +67,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param sigmaPosition theoretical standard deviation on position components
      * @param sigmaVelocity theoretical standard deviation on velocity components
      * @param baseWeight base weight
-     * @throws OrekitException if the built inside covariance matrix does not have the proper size
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double sigmaPosition, final double sigmaVelocity, final double baseWeight) {
@@ -87,7 +86,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param sigmaVelocity theoretical standard deviation on velocity components
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @throws OrekitException if the built inside covariance matrix does not have the proper size
      * @since 9.0
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -118,7 +116,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param sigmaPosition 3-sized vector of the standard deviations of the position
      * @param sigmaVelocity 3-sized vector of the standard deviations of the velocity
      * @param baseWeight base weight
-     * @throws OrekitException if input standard deviations vectors do not have the proper sizes
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -138,7 +135,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param sigmaVelocity 3-sized vector of the standard deviations of the velocity
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @throws OrekitException if input standard deviations vectors do not have the proper sizes
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -160,7 +156,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param velocity velocity
      * @param sigmaPV 6-sized vector of the standard deviations
      * @param baseWeight base weight
-     * @throws OrekitException if input standard deviations vector does not have the proper size
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -177,7 +172,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param sigmaPV 6-sized vector of the standard deviations
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @throws OrekitException if input standard deviations vector does not have the proper size
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -201,7 +195,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param positionCovarianceMatrix 3x3 covariance matrix of the position
      * @param velocityCovarianceMatrix 3x3 covariance matrix of the velocity
      * @param baseWeight base weight
-     * @throws OrekitException if input covariance matrices do not have the proper sizes
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -222,7 +215,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param velocityCovarianceMatrix 3x3 covariance matrix of the velocity
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @throws OrekitException if input covariance matrices do not have the proper sizes
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -245,7 +237,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param velocity velocity
      * @param covarianceMatrix 6x6 covariance matrix of the PV measurement
      * @param baseWeight base weight
-     * @throws OrekitException if input covariance matrix does not have the proper size
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -262,7 +253,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param covarianceMatrix 6x6 covariance matrix of the PV measurement
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @throws OrekitException if input covariance matrix does not have the proper size
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -359,7 +349,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param pvCovarianceMatrix the 6x6 PV covariance matrix
      * @return the standard deviations (6-sized vector), they are
      * the square roots of the diagonal elements of the covariance matrix in input.
-     * @throws OrekitException if the PV covariance matrix is not a 6x6 matrix
      */
     private static double[] extractSigmas(final double[][] pvCovarianceMatrix) {
 
@@ -383,7 +372,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param positionCovarianceMatrix the 3x3 covariance matrix in position
      * @param velocityCovarianceMatrix the 3x3 covariance matrix in velocity
      * @return the 6x6 PV covariance matrix
-     * @throws OrekitException if the matrices do not have the proper size
      */
     private static double[][] buildPvCovarianceMatrix(final double[][] positionCovarianceMatrix,
                                                       final double[][] velocityCovarianceMatrix) {
@@ -415,7 +403,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param sigmaPV 6-sized vector with position standard deviations on the first 3 elements
      * and velocity standard deviations on the last 3 elements
      * @return the 6x6 PV covariance matrix
-     * @throws OrekitException if the size of the vector is different from 6
      */
     private static double[][] buildPvCovarianceMatrix(final double[] sigmaPV) {
         // Check the size of the vector first
@@ -437,7 +424,6 @@ public class PV extends AbstractMeasurement<PV> {
      * @param sigmaPosition standard deviations of the position (3-size vector)
      * @param sigmaVelocity standard deviations of the velocity (3-size vector)
      * @return the 6x6 PV covariance matrix
-     * @throws OrekitException if the vectors do not have the proper sizes
      */
     private static double[][] buildPvCovarianceMatrix(final double[] sigmaPosition,
                                                       final double[] sigmaVelocity) {

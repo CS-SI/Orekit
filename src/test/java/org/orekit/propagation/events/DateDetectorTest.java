@@ -121,8 +121,6 @@ public class DateDetectorTest {
 
     /**
      * Check that a generic event handler can be used with an event detector.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testGenericHandler() {

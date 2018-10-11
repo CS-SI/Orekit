@@ -10,7 +10,6 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -85,12 +84,10 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * @param initialState
      * @param state
      * @return
-     * @throws OrekitException
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
                                                                                   final SpacecraftState initialState,
-                                                                                  final SpacecraftState state)
-        {
+                                                                                  final SpacecraftState state) {
 
         // Stations attributes from parent Range class
         final GroundStation masterGroundStation = this.getMasterStation();
@@ -545,11 +542,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * @param evaluation
      * @param state
      * @return
-     * @throws OrekitException
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationValidation(final int iteration, final int evaluation,
-                                                                                    final SpacecraftState state)
-        {
+                                                                                    final SpacecraftState state) {
         // Stations & DSFactory attributes from parent TurnArounsRange class
         final GroundStation masterGroundStation       = getMasterStation();
         final GroundStation slaveGroundStation        = getSlaveStation();

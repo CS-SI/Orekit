@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -84,7 +83,6 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
      * @param station station
      * @param state spacecraft state
      * @return the measurement error due to Troposphere
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     public double rangeRateErrorTroposphericModel(final GroundStation station,
                                                   final SpacecraftState state) {
@@ -136,7 +134,6 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
      * @param refstate spacecraft state
      * @param delay current tropospheric delay
      * @return Jacobian of the delay wrt state
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeRateErrorJacobianState(final GroundStation station,
                                                    final SpacecraftState refstate,
@@ -162,7 +159,6 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
     * @param state spacecraft state
     * @param delay current ionospheric delay
     * @return derivative of the delay wrt station offset parameter
-    * @throws OrekitException  if frames transformations cannot be computed
     */
     private double rangeRateErrorParameterDerivative(final GroundStation station,
                                                      final ParameterDriver driver,

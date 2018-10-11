@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 /** Interface representing the Jacobian of a vector function depending on {@link SpacecraftState}.
@@ -31,8 +30,7 @@ public interface StateJacobian {
     /** Evaluate the Jacobian of the function.
      * @param state spacecraft state as the sole free parameter of the function.
      * @return Jacobian matric
-     * @throws OrekitException if evaluation cannot be performed
-     */
+      */
     double[][] value(SpacecraftState state);
 
 }

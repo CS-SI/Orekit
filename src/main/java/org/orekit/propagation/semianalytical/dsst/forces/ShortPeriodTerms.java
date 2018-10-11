@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 
@@ -66,7 +65,6 @@ public interface ShortPeriodTerms extends Serializable {
      * (empty set means all coefficients are selected)
      * @return the selected coefficients of the short periodic variations,
      * in a map where all keys start with {@link #getCoefficientsKeyPrefix()}
-     * @throws OrekitException if some specific error occurs
      */
     Map<String, double[]> getCoefficients(AbsoluteDate date, Set<String> selected);
 

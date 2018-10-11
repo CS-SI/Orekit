@@ -16,20 +16,19 @@
  */
 package org.orekit.models.earth;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hipparchus.util.FastMath.PI;
+import static org.hipparchus.util.FastMath.abs;
+import static org.junit.Assert.assertEquals;
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.Constants;
-
-import static org.hipparchus.util.FastMath.PI;
-import static org.hipparchus.util.FastMath.abs;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 /**
  * Unit tests for {@link ReferenceEllipsoid}.
@@ -131,8 +130,6 @@ public class ReferenceEllipsoidTest {
 
     /**
      * check {@link ReferenceEllipsoid#getWgs84(Frame)}
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testGetWgs84() {

@@ -60,7 +60,6 @@ public class BatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
     public void testKeplerPV() {
@@ -151,7 +150,6 @@ public class BatchLSEstimatorTest {
 
     /**
      * Perfect range measurements with a biased start
-     * @throws OrekitException
      */
     @Test
     public void testKeplerRange() {
@@ -247,7 +245,6 @@ public class BatchLSEstimatorTest {
 
     /**
      * Perfect range measurements with a biased start and an on-board antenna range offset 
-     * @throws OrekitException
      */
     @Test
     public void testKeplerRangeWithOnBoardAntennaOffset() {
@@ -510,7 +507,6 @@ public class BatchLSEstimatorTest {
      *  One common (µ)
      *  Some specifics for each satellite (Cr and Ca)
      * 
-     * @throws OrekitException
      */
     @Test
     public void testMultiSatWithParameters() {
@@ -765,7 +761,6 @@ public class BatchLSEstimatorTest {
 
     /**
      * Perfect range rate measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
     public void testKeplerRangeRate() {
@@ -806,7 +801,6 @@ public class BatchLSEstimatorTest {
 
     /**
      * Perfect range and range rate measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
     public void testKeplerRangeAndRangeRate() {

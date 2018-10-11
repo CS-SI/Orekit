@@ -100,8 +100,8 @@ public class Phasing {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
@@ -594,12 +594,10 @@ public class Phasing {
      * @param stepSize step size to use
      * @param propagator propagator
      * @return first crossing
-     * @throws OrekitException if state cannot be propagated
      */
     private SpacecraftState findFirstCrossing(final double latitude, final boolean ascending,
                                               final AbsoluteDate searchStart, final AbsoluteDate end,
-                                              final double stepSize, final Propagator propagator)
-        {
+                                              final double stepSize, final Propagator propagator) {
 
         double previousLatitude = Double.NaN;
         for (AbsoluteDate date = searchStart; date.compareTo(end) < 0; date = date.shiftedBy(stepSize)) {
@@ -628,7 +626,6 @@ public class Phasing {
      * @param maxShift maximum value that the shift value can take
      * @param propagator propagator used
      * @return state at latitude crossing time
-     * @throws OrekitException if state cannot be propagated
      * @throws MathRuntimeException if latitude cannot be bracketed in the search interval
      */
     private SpacecraftState findLatitudeCrossing(final double latitude,

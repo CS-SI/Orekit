@@ -20,7 +20,6 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
@@ -39,8 +38,6 @@ public class FunctionalDetectorTest {
 
     /**
      * Check {@link FunctionalDetector}.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testFunctionalDetector() {

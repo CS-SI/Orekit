@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.Model;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -82,7 +81,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
 
     /** Create a copy of a NumericalPropagatorBuilder object.
      * @return Copied version of the NumericalPropagatorBuilder
-     * @throws OrekitException if parameters drivers cannot be scaled
      */
     public NumericalPropagatorBuilder copy() {
         final NumericalPropagatorBuilder copyBuilder =
@@ -184,8 +182,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     public Model buildModel(final IntegratedPropagatorBuilder[] builders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
-                            final ModelObserver observer)
-        throws OrekitException {
+                            final ModelObserver observer) {
         return new Model(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 

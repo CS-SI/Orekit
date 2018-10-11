@@ -79,6 +79,7 @@ public interface DSSTForceModel {
      *  <p>
      *  This method aims at being called at the very beginning of a propagation.
      *  </p>
+<<<<<<< HEAD
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param type type of the elements used during the propagation

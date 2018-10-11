@@ -71,7 +71,6 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
      * the frame for orbits created by this propagator.
      *
      * @param ephemeris segment containing the data for this propagator.
-     * @throws OrekitException if {@link EphemerisSegment#getFrame()} throws one.
      */
     EphemerisSegmentPropagator(final EphemerisSegment ephemeris) {
         super(Propagator.DEFAULT_LAW);

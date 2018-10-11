@@ -17,7 +17,6 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -86,7 +85,6 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * @param initialState initial state
      * @param target target date for the propagation
      *
-     * @throws  OrekitException if some specific error occurs
      */
     default void init(FieldSpacecraftState<T> initialState,
                       FieldAbsoluteDate<T> target) {

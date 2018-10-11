@@ -16,8 +16,6 @@
  */
 package org.orekit.bodies;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface for loading celestial bodies.
  * @author Luc Maisonobe
  */
@@ -26,7 +24,6 @@ public interface CelestialBodyLoader {
     /** Load celestial body.
      * @param name name of the celestial body
      * @return loaded celestial body
-     * @throws OrekitException if the body cannot be loaded
      */
     CelestialBody loadCelestialBody(String name);
 

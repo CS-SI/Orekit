@@ -16,19 +16,25 @@
  */
 package org.orekit.gnss.attitude;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Base class for attitude providers for navigation satellites.
@@ -53,6 +59,12 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     /** Inertial frame where velocity are computed. */
     private final Frame inertialFrame;
 
+    /** Turns already encountered. */
+    private final SortedSet<TimeStamped> turns;
+
+    /** Turns already encountered. */
+    private final transient Map<Field<? extends RealFieldElement<?>>, SortedSet<TimeStamped>> fieldTurns;
+
     /** Simple constructor.
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
@@ -67,6 +79,8 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
         this.validityEnd   = validityEnd;
         this.sun           = sun;
         this.inertialFrame = inertialFrame;
+        this.turns         = new TreeSet<>(new ChronologicalComparator());
+        this.fieldTurns    = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -87,13 +101,14 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                                 final AbsoluteDate date,
                                 final Frame frame) {
 
-        // Sun/spacecraft geometry
-        // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
-        final TimeStampedPVCoordinates sunPV = sun.getPVCoordinates(date, inertialFrame);
-        final TimeStampedPVCoordinates svPV  = pvProv.getPVCoordinates(date, inertialFrame);
-
         // compute yaw correction
-        final TimeStampedAngularCoordinates corrected = correctedYaw(new GNSSAttitudeContext(sunPV, svPV));
+        final TurnSpan                      turnSpan  = getTurnSpan(date);
+        final GNSSAttitudeContext           context   = new GNSSAttitudeContext(date, sun, pvProv, inertialFrame, turnSpan);
+        final TimeStampedAngularCoordinates corrected = correctedYaw(context);
+        if (turnSpan == null && context.getTurnSpan() != null) {
+            // we have encountered a new turn, store it
+            turns.add(context.getTurnSpan());
+        }
 
         return new Attitude(inertialFrame, corrected).withReferenceFrame(frame);
 
@@ -105,18 +120,72 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame) {
 
-        // Sun/spacecraft geometry
-        // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
-        final TimeStampedFieldPVCoordinates<T> sunPV = sun.getPVCoordinates(date, inertialFrame);
-        final TimeStampedFieldPVCoordinates<T> svPV  = pvProv.getPVCoordinates(date, inertialFrame);
-
         // compute yaw correction
-        final TimeStampedFieldAngularCoordinates<T> corrected = correctedYaw(new GNSSFieldAttitudeContext<>(sunPV, svPV));
+        final FieldTurnSpan<T>                      turnSpan  = getTurnSpan(date);
+        final GNSSFieldAttitudeContext<T>           context   = new GNSSFieldAttitudeContext<>(date, sun, pvProv, inertialFrame, turnSpan);
+        final TimeStampedFieldAngularCoordinates<T> corrected = correctedYaw(context);
+        if (turnSpan == null && context.getTurnSpan() != null) {
+            // we have encountered a new turn, store it
+            fieldTurns.get(date.getField()).add(context.getTurnSpan());
+        }
 
         return new FieldAttitude<>(inertialFrame, corrected).withReferenceFrame(frame);
 
     }
 
+    /** Get the turn span covering a date.
+     * @param date date to check
+     * @return turn span covering the date, or null if no span covers this date
+     */
+    private TurnSpan getTurnSpan(final AbsoluteDate date) {
+
+        // as the reference date of the turn span is the end + margin date,
+        // the span to consider can only be the first span that is after date
+        final SortedSet<TimeStamped> after = turns.tailSet(date);
+        if (!after.isEmpty()) {
+            final TurnSpan ts = (TurnSpan) after.first();
+            if (ts.inTurnTimeRange(date)) {
+                return ts;
+            }
+        }
+
+        // no turn covers the date
+        return null;
+
+    }
+
+    /** Get the turn span covering a date.
+     * @param date date to check
+     * @param <T> type of the field elements
+     * @return turn span covering the date, or null if no span covers this date
+     */
+    private <T extends RealFieldElement<T>> FieldTurnSpan<T> getTurnSpan(final FieldAbsoluteDate<T> date) {
+
+        SortedSet<TimeStamped> sortedSet = fieldTurns.get(date.getField());
+        if (sortedSet == null) {
+            // this is the first time we manage such a field, prepare a sorted set for it
+            sortedSet = new TreeSet<>(new ChronologicalComparator());
+            fieldTurns.put(date.getField(), sortedSet);
+        }
+
+        // as the reference date of the turn span is the end + margin date,
+        // the span to consider can only be the first span that is after date
+        final AbsoluteDate dateDouble = date.toAbsoluteDate();
+        final SortedSet<TimeStamped> after = sortedSet.tailSet(dateDouble);
+        if (!after.isEmpty()) {
+            @SuppressWarnings("unchecked")
+            final FieldTurnSpan<T> ts = (FieldTurnSpan<T>) after.first();
+            if (ts.inTurnTimeRange(dateDouble)) {
+                return ts;
+            }
+        }
+
+        // no turn covers the date
+        return null;
+
+    }
+
+    /** Select the
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
      * @param context context data for attitude computation
      * @return corrected yaw, using inertial frame as the reference

@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -56,7 +55,6 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
      *
      * @param date of evaluation
      * @return normalized coefficients on {@code date}.
-     * @throws OrekitException on error
      * @since 6.1
      */
     NormalizedSphericalHarmonics onDate(AbsoluteDate date);

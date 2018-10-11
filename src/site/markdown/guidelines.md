@@ -2,9 +2,9 @@
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
     http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -85,7 +85,7 @@ Orbits, dates, vectors, and rotations are all immutable objects.
 ## Source Control Management
 
 The source code control management system used is [Git](http://git-scm.com/). The
-main Orekit repository is located at [https://www.orekit.org/git/orekit-main.git](https://www.orekit.org/git/orekit-main.git).
+main Orekit repository is located at [https://gitlab.orekit.org/orekit/orekit.git](https://gitlab.orekit.org/orekit/orekit.git).
 
 Starting after version 9.0, the branch management workflow is adapted from
 both [git flow](http://nvie.com/posts/a-successful-git-branching-model/)
@@ -144,55 +144,55 @@ root directory.
 * *header rule*
 
   all source files start with the Apache license header,
-  
+
 * *indentation rules*
 
   no tabs, 4 spaces indentation, no indentation for case statements,
-  
+
 * *operators wrapping rules*
 
   lines are wrapped after operators (unlike Sun),
-  
+
 * *whitespace rules*
 
   operators are surrounded by spaces, method parameters open parenthesis
   is not preceded by space, lines do not end with white space,
-  
+
 * *curly brace rules*
 
   open curly brace are at end of line, with the matching closing curly brace
   aligned with the start of the corresponding keyword (_if_, _for_,
   _while_, _case_ or _do_),
-  
+
 * *encoding rules*
 
   characters encoding is _UTF8_, the git property _core.autocrlf_ should be
   set to _input_ on Linux development machines and to _true_ on Windows
   development machines (to ensure proper conversion on all operating systems),
-  
+
 * *naming rules*
 
   classes names begin with upper case, instance methods and fields
   names begin with lower case, class fields are all upper case with
   words separated by underscores,
-  
+
 * *ordering rules*
 
   class variables come first, followed by instance variables, followed
   by constructors, and followed by methods, public modifiers come first,
   followed by protected modifiers followed by private modifiers,
-  
+
 * *javadoc rules*
 
   all elements have complete javadoc, even private fields and methods
   (there are some rare exceptions, in case of code translated from
   the fortran language and models with huge parameters sets),
-  
+
 * *robustness rules*
 
   switch/case construct have a default argument, even when all possible
   cases are already handled, as many classes as possible are immutable,
-  
+
 * *miscellaneous rules*
 
   _star_ imports are forbidden, parameters and local variables are final

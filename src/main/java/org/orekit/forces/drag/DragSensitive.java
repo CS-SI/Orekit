@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -72,7 +71,6 @@ public interface DragSensitive {
      * in the same inertial frame as spacecraft orbit (m/s)
      * @param parameters values of the force model parameters
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
-     * @throws OrekitException if acceleration cannot be computed
      */
     Vector3D dragAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
                               Rotation rotation, double mass,
@@ -95,7 +93,6 @@ public interface DragSensitive {
      * @param parameters values of the force model parameters
      * @param <T> instance of a RealFieldElement
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
-     * @throws OrekitException if acceleration cannot be computed
      * @since 9.0
      */
     <T extends RealFieldElement<T>> FieldVector3D<T> dragAcceleration(FieldAbsoluteDate<T> date, Frame frame,

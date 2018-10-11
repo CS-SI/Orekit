@@ -84,7 +84,6 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
      * @param positionAngle the position angle used for the computation of the process noise
      * @param lofCartesianOrbitalParametersEvolution Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian orbit type
      * @param propagationParametersEvolution Array of univariate functions for the propagation parameters process noise evolution
-     * @throws OrekitException if lofOrbitalParametersEvolution array size is different from 6
      */
     public UnivariateProcessNoise(final RealMatrix initialCovarianceMatrix,
                                   final LOFType lofType,

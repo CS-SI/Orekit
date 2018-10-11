@@ -70,19 +70,34 @@ public class SP3File implements EphemerisFile {
         /** broadcast. */
         BCT,
         /** fitted after applying a Helmert transformation. */
-        HLM;
+        HLM,
+        /** other type, defined by SP3 file producing agency.
+         * @since 9.4
+         */
+        OTHER;
 
         /** Parse a string to get the type.
          * @param s string to parse
          * @return the type corresponding to the string
-         * @exception IllegalArgumentException if the string does not correspond to a type
          */
         public static SP3OrbitType parseType(final String s) {
             final String normalizedString = s.trim().toUpperCase();
             if ("EST".equals(normalizedString)) {
                 return FIT;
+            } else if ("BHN".equals(normalizedString)) {
+                // ESOC navigation team uses BHN for files produced
+                // by their main parameter estimation program Bahn
+                return FIT;
+            } else if ("PRO".equals(normalizedString)) {
+                // ESOC navigation team uses PRO for files produced
+                // by their orbit propagation program Propag
+                return EXT;
             } else {
-                return valueOf(normalizedString);
+                try {
+                    return valueOf(normalizedString);
+                } catch (IllegalArgumentException iae) {
+                    return OTHER;
+                }
             }
         }
 
@@ -139,6 +154,11 @@ public class SP3File implements EphemerisFile {
 
     /** Orbit type. */
     private SP3OrbitType orbitType;
+
+    /** Key for orbit type.
+     * @since 9.4
+     */
+    private String orbitTypeKey;
 
     /** Agency providing the file. */
     private String agency;
@@ -372,9 +392,27 @@ public class SP3File implements EphemerisFile {
 
     /** Set the {@link SP3OrbitType} for this SP3 file.
      * @param oType the orbit type to be set
+     * @deprecated as of 9.4, replaced by {@link #setOrbitTypeKey(String)}
      */
     void setOrbitType(final SP3OrbitType oType) {
         this.orbitType = oType;
+    }
+
+    /** Returns the orbit type key for this SP3 file.
+     * @return the orbit type key
+     * @since 9.4
+     */
+    public String getOrbitTypeKey() {
+        return orbitTypeKey;
+    }
+
+    /** Set the orbit type key for this SP3 file.
+     * @param oTypeKey the orbit type key to be set
+     * @since 9.4
+     */
+    void setOrbitTypeKey(final String oTypeKey) {
+        this.orbitTypeKey = oTypeKey;
+        this.orbitType    = SP3OrbitType.parseType(oTypeKey);
     }
 
     /** Returns the agency that prepared this SP3 file.

@@ -61,16 +61,16 @@ public class ParameterDriver {
     private String name;
 
     /** Reference value. */
-    private final double referenceValue;
+    private double referenceValue;
 
     /** Scaling factor. */
-    private final double scale;
+    private double scale;
 
     /** Minimum value. */
-    private final double minValue;
+    private double minValue;
 
     /** Maximum value. */
-    private final double maxValue;
+    private double maxValue;
 
     /** Reference date.
      * @since 9.0
@@ -184,11 +184,39 @@ public class ParameterDriver {
         return referenceValue;
     }
 
+    /** Set reference parameter value.
+     * @since 9.3
+     * @param referenceValue the reference value to set.
+     */
+    public void setReferenceValue(final double referenceValue)
+    {
+        final double previousReferenceValue = this.referenceValue;
+        this.referenceValue = referenceValue;
+        for (final ParameterObserver observer : observers) {
+            observer.referenceValueChanged(previousReferenceValue, this);
+        }
+    }
+
     /** Get minimum parameter value.
      * @return minimum parameter value
      */
     public double getMinValue() {
         return minValue;
+    }
+
+    /** Set minimum parameter value.
+     * @since 9.3
+     * @param minValue the minimum value to set.
+     */
+    public void setMinValue(final double minValue)
+    {
+        final double previousMinValue = this.minValue;
+        this.minValue = minValue;
+        for (final ParameterObserver observer : observers) {
+            observer.minValueChanged(previousMinValue, this);
+        }
+        // Check if current value is not out of min/max range
+        setValue(value);
     }
 
     /** Get maximum parameter value.
@@ -198,11 +226,39 @@ public class ParameterDriver {
         return maxValue;
     }
 
+    /** Set maximum parameter value.
+     * @since 9.3
+     * @param maxValue the maximum value to set.
+     */
+    public void setMaxValue(final double maxValue)
+    {
+        final double previousMaxValue = this.maxValue;
+        this.maxValue = maxValue;
+        for (final ParameterObserver observer : observers) {
+            observer.maxValueChanged(previousMaxValue, this);
+        }
+        // Check if current value is not out of min/max range
+        setValue(value);
+    }
+
     /** Get scale.
      * @return scale
      */
     public double getScale() {
         return scale;
+    }
+
+    /** Set scale.
+     * @since 9.3
+     * @param scale the scale to set.
+     */
+    public void setScale(final double scale)
+    {
+        final double previousScale = this.scale;
+        this.scale = scale;
+        for (final ParameterObserver observer : observers) {
+            observer.scaleChanged(previousScale, this);
+        }
     }
 
     /** Get normalized value.

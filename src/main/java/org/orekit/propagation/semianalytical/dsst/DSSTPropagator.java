@@ -344,19 +344,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         if (force instanceof DSSTNewtonianAttraction) {
             // we want to add the central attraction force model
 
-            try {
-                // ensure we are notified of any mu change
-                force.getParametersDrivers()[0].addObserver(new ParameterObserver() {
-                    /** {@inheritDoc} */
-                    @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                        superSetMu(driver.getValue());
-                    }
-                });
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
+            // ensure we are notified of any mu change
+            force.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    superSetMu(driver.getValue());
+                }
+            });
 
             if (hasNewtonianAttraction()) {
                 // there is already a central attraction model, replace it
@@ -663,6 +658,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS, i);
+
     }
 
     /** Compute osculating state from mean state.
@@ -1007,13 +1003,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          *  @param auxiliaryElements auxiliary elements related to the current orbit
          *  @param parameters force model parameters
          *  @return the mean equinoctial elements rates da<sub>i</sub> / dt
-         *  @throws OrekitException if some specific error occurs
          */
         private double[] elementRates(final DSSTForceModel forceModel,
                                       final SpacecraftState state,
                                       final AuxiliaryElements auxiliaryElements,
-                                      final double[] parameters)
-            throws OrekitException {
+                                      final double[] parameters) {
             return forceModel.getMeanElementRate(state, auxiliaryElements, parameters);
         }
 

@@ -1416,13 +1416,11 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param context container for attributes
          * @param hansenObjects initialization of hansen objects
          * @param field field used by default
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         public void generateCoefficients(final FieldAbsoluteDate<T> date,
                                          final FieldDSSTTesseralContext<T> context,
                                          final FieldHansenObjects<T> hansenObjects,
-                                         final Field<T> field)
-            throws OrekitException {
+                                         final Field<T> field) {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
             // Compute only if there is at least one non-resonant tesseral
@@ -1467,14 +1465,12 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param context container for attributes
          * @param hansenObjects initialization of hansen objects
          * @param field field used by default
-         * @throws OrekitException in case of Hansen kernel generation error
          */
         private void buildFourierCoefficients(final FieldAbsoluteDate<T> date,
                                               final int m, final int j, final int maxN,
                                               final FieldDSSTTesseralContext<T> context,
                                               final FieldHansenObjects<T> hansenObjects,
-                                              final Field<T> field)
-            throws OrekitException {
+                                              final Field<T> field) {
 
             // Zero
             final T zero = field.getZero();
@@ -2053,7 +2049,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         /** {@inheritDoc} */
         @Override
-        public T[] value(final FieldOrbit<T> meanOrbit) throws OrekitException {
+        public T[] value(final FieldOrbit<T> meanOrbit) {
 
             // select the coefficients slot
             final FieldSlot<T> slot = slots.get(meanOrbit.getDate());
@@ -2135,8 +2131,7 @@ public class DSSTTesseral implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected)
-            throws OrekitException {
+        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected) {
 
             // select the coefficients slot
             final FieldSlot<T> slot = slots.get(date);
@@ -2394,10 +2389,8 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param date current date
          * @param context container for attributes
          * @param hansen hansen objects
-         * @throws OrekitException if some specific error occurs
          */
-        UAnddU(final AbsoluteDate date, final DSSTTesseralContext context, final HansenObjects hansen)
-            throws OrekitException {
+        UAnddU(final AbsoluteDate date, final DSSTTesseralContext context, final HansenObjects hansen) {
 
             // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
@@ -2615,10 +2608,9 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param date current date
          * @param context container for attributes
          * @param hansen hansen objects
-         * @throws OrekitException if some specific error occurs
          */
         FieldUAnddU(final FieldAbsoluteDate<T> date, final FieldDSSTTesseralContext<T> context,
-                    final FieldHansenObjects<T> hansen) throws OrekitException {
+                    final FieldHansenObjects<T> hansen) {
 
             // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();

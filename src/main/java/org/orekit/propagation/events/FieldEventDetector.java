@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.time.FieldAbsoluteDate;
@@ -59,7 +58,6 @@ public interface FieldEventDetector <T extends RealFieldElement<T>> {
      * @param s0 initial state
      * @param t target time for the integration
      *
-     * @throws OrekitException if some specific error occurs
      */
     default void init(FieldSpacecraftState<T> s0,
                       FieldAbsoluteDate<T> t) {
