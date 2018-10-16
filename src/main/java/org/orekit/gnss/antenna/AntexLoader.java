@@ -161,7 +161,7 @@ public class AntexLoader {
                 int                              lineNumber           = 0;
                 SatelliteSystem                  satelliteSystem      = null;
                 String                           antennaType          = null;
-                SatelliteAntennaCode             satelliteAntennaCode = null;
+                SatelliteType                    satelliteType        = null;
                 String                           serialNumber         = null;
                 int                              prnNumber            = -1;
                 int                              satelliteCode        = -1;
@@ -206,7 +206,7 @@ public class AntexLoader {
                             // reset antenna data
                             satelliteSystem      = null;
                             antennaType          = null;
-                            satelliteAntennaCode = null;
+                            satelliteType        = null;
                             serialNumber         = null;
                             prnNumber            = -1;
                             satelliteCode        = -1;
@@ -230,7 +230,7 @@ public class AntexLoader {
                         case "TYPE / SERIAL NO" :
                             antennaType = parseString(line, 0, 20);
                             try {
-                                satelliteAntennaCode = SatelliteAntennaCode.parseSatelliteAntennaCode(antennaType);
+                                satelliteType = SatelliteType.parseSatelliteType(antennaType);
                                 final String satField = parseString(line, 20, 20);
                                 if (satField.length() > 0) {
                                     satelliteSystem = SatelliteSystem.parseSatelliteSystem(satField);
@@ -355,11 +355,12 @@ public class AntexLoader {
                             inRMS = false;
                             break;
                         case "END OF ANTENNA" :
-                            if (satelliteAntennaCode == null) {
+                            if (satelliteType == null) {
                                 addReceiverAntenna(new ReceiverAntenna(antennaType, sinexCode, patterns, serialNumber));
                             } else {
                                 addSatelliteAntenna(new SatelliteAntenna(antennaType, sinexCode, patterns,
-                                                                         satelliteSystem, prnNumber, satelliteCode,
+                                                                         satelliteSystem, prnNumber,
+                                                                         satelliteType, satelliteCode,
                                                                          cosparID, validFrom, validUntil));
                             }
                             break;

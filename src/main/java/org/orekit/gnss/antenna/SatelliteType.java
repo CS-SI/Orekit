@@ -23,14 +23,12 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
 /**
- * Enumerate for satellite antenna codes.
+ * Enumerate for satellite types.
  *
  * @author Luc Maisonobe
- * @since 9.2
- * @deprecated as of 9.3 replaced by {@link SatelliteType}
+ * @since 9.3
  */
-@Deprecated
-public enum SatelliteAntennaCode {
+public enum SatelliteType {
 
     /** BeiDou-2 GEO. */
     BEIDOU_2G("BEIDOU-2G"),
@@ -108,9 +106,9 @@ public enum SatelliteAntennaCode {
     QZSS_2G("QZSS-2G");
 
     /** Parsing map. */
-    private static final Map<String, SatelliteAntennaCode> NAMES_MAP = new HashMap<>();
+    private static final Map<String, SatelliteType> NAMES_MAP = new HashMap<>();
     static {
-        for (final SatelliteAntennaCode satelliteAntennaCode : values()) {
+        for (final SatelliteType satelliteAntennaCode : values()) {
             NAMES_MAP.put(satelliteAntennaCode.getName(), satelliteAntennaCode);
         }
     }
@@ -121,7 +119,7 @@ public enum SatelliteAntennaCode {
     /** Simple constructor.
      * @param name IGS name for the antenna code
      */
-    SatelliteAntennaCode(final String name) {
+    SatelliteType(final String name) {
         this.name = name;
     }
 
@@ -132,14 +130,14 @@ public enum SatelliteAntennaCode {
         return name;
     }
 
-    /** Parse a string to get the satellite antenna code.
+    /** Parse a string to get the satellite type.
      * @param s string to parse (must be a strict IGS name)
-     * @return the satellite antenna code
+     * @return the satellite type
      * @exception OrekitIllegalArgumentException if the string does not correspond to a satellite antenna code
      */
-    public static SatelliteAntennaCode parseSatelliteAntennaCode(final String s)
+    public static SatelliteType parseSatelliteType(final String s)
         throws OrekitIllegalArgumentException {
-        final SatelliteAntennaCode satelliteAntennaCode = NAMES_MAP.get(s);
+        final SatelliteType satelliteAntennaCode = NAMES_MAP.get(s);
         if (satelliteAntennaCode == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_SATELLITE_ANTENNA_CODE, s);
         }
