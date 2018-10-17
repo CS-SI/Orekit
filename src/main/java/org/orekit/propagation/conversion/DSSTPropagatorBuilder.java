@@ -23,9 +23,11 @@ import java.util.List;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.leastsquares.DSSTModel;
+import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.DSSTKalmanModel;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -194,12 +196,26 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
-    public DSSTModel buildModel(final IntegratedPropagatorBuilder[] builders,
+    public DSSTBatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer)
         throws OrekitException {
-        return new DSSTModel(builders, measurements, estimatedMeasurementsParameters, observer, propagationType, stateType);
+        return new DSSTBatchLSModel(builders,
+                                    measurements,
+                                    estimatedMeasurementsParameters,
+                                    observer,
+                                    propagationType, stateType);
+    }
+
+    /** {@inheritDoc} */
+    public DSSTKalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                  final ParameterDriversList estimatedMeasurementsParameters) {
+        return new DSSTKalmanModel(propagatorBuilders,
+                                   covarianceMatricesProviders,
+                                   estimatedMeasurementsParameters,
+                                   propagationType, stateType);
     }
 
 }

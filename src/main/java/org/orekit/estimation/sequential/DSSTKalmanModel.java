@@ -38,23 +38,23 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
-import org.orekit.propagation.numerical.JacobiansMapper;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
+import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
  * @author Romain Gerbaud
  * @author Maxime Journot
  * @since 9.2
  */
-public class KalmanModel implements KalmanODModel {
+public class DSSTKalmanModel implements KalmanODModel {
 
     /** Builders for propagators. */
     private final List<IntegratedPropagatorBuilder> builders;
@@ -90,10 +90,10 @@ public class KalmanModel implements KalmanODModel {
     private final double[] scale;
 
     /** Mappers for extracting Jacobians from integrated states. */
-    private final JacobiansMapper[] mappers;
+    private final DSSTJacobiansMapper[] mappers;
 
     /** Propagators for the reference trajectories, up to current date. */
-    private NumericalPropagator[] referenceTrajectories;
+    private DSSTPropagator[] referenceTrajectories;
 
     /** Current corrected estimate. */
     private ProcessEstimate correctedEstimate;
@@ -119,15 +119,24 @@ public class KalmanModel implements KalmanODModel {
     /** Corrected measurement. */
     private EstimatedMeasurement<?> correctedMeasurement;
 
+    /** Type of the orbit used for the propagation.*/
+    private PropagationType propagationType;
+
+    /** Type of the elements used to define the orbital state.*/
+    private PropagationType stateType;
+
     /** Kalman process model constructor (package private).
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @throws OrekitException propagation exception.
+     * @param propagationType type of the orbit used for the propagation (mean or osculating)
+     * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
-    public KalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+    public DSSTKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-          final ParameterDriversList estimatedMeasurementParameters) {
+          final ParameterDriversList estimatedMeasurementParameters,
+          final PropagationType propagationType,
+          final PropagationType stateType) {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -135,6 +144,8 @@ public class KalmanModel implements KalmanODModel {
         this.currentMeasurementNumber        = 0;
         this.referenceDate                   = propagatorBuilders.get(0).getInitialOrbitDate();
         this.currentDate                     = referenceDate;
+        this.propagationType                 = propagationType;
+        this.stateType                       = stateType;
 
         final Map<String, Integer> orbitalParameterColumns = new HashMap<>(6 * builders.size());
         orbitsStartColumns      = new int[builders.size()];
@@ -240,7 +251,7 @@ public class KalmanModel implements KalmanODModel {
         }
 
         // Build the reference propagators and add their partial derivatives equations implementation
-        mappers = new JacobiansMapper[builders.size()];
+        mappers = new DSSTJacobiansMapper[builders.size()];
         updateReferenceTrajectories(getEstimatedPropagators());
         this.predictedSpacecraftStates = new SpacecraftState[referenceTrajectories.length];
         for (int i = 0; i < predictedSpacecraftStates.length; ++i) {
@@ -411,12 +422,12 @@ public class KalmanModel implements KalmanODModel {
     }
 
     /** {@inheritDoc} */
-    public NumericalPropagator[] getEstimatedPropagators() {
+    public DSSTPropagator[] getEstimatedPropagators() {
 
         // Return propagators built with current instantiation of the propagator builders
-        final NumericalPropagator[] propagators = new NumericalPropagator[builders.size()];
+        final DSSTPropagator[] propagators = new DSSTPropagator[builders.size()];
         for (int k = 0; k < builders.size(); ++k) {
-            propagators[k] = (NumericalPropagator) builders.get(k).buildPropagator(builders.get(k).getSelectedNormalizedParameters());
+            propagators[k] = (DSSTPropagator) builders.get(k).buildPropagator(builders.get(k).getSelectedNormalizedParameters());
         }
         return propagators;
     }
@@ -456,6 +467,9 @@ public class KalmanModel implements KalmanODModel {
 
         // loop over all orbits
         for (int k = 0; k < predictedSpacecraftStates.length; ++k) {
+
+            // Short period derivatives
+            mappers[k].setShortPeriodJacobians(predictedSpacecraftStates[k]);
 
             // Derivatives of the state vector with respect to initial state vector
             final double[][] dYdY0 = new double[6][6];
@@ -564,6 +578,8 @@ public class KalmanModel implements KalmanODModel {
             // Jacobian of the measurement with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[p].getNbParams();
             if (nbParams > 0) {
+                // Short period derivatives
+                mappers[p].setShortPeriodJacobians(evaluationStates[k]);
                 final double[][] aYPp  = new double[6][nbParams];
                 mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
                 final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
@@ -612,7 +628,7 @@ public class KalmanModel implements KalmanODModel {
      * @param propagators The new propagators to use
      * @throws OrekitException if setting up the partial derivatives failed
      */
-    private void updateReferenceTrajectories(final NumericalPropagator[] propagators) {
+    private void updateReferenceTrajectories(final DSSTPropagator[] propagators) {
 
         // Update the reference trajectory propagator
         referenceTrajectories = propagators;
@@ -620,12 +636,12 @@ public class KalmanModel implements KalmanODModel {
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            final PartialDerivativesEquations pde = new PartialDerivativesEquations(equationName, referenceTrajectories[k]);
+            final DSSTPartialDerivativesEquations pde = new DSSTPartialDerivativesEquations(equationName, referenceTrajectories[k], propagationType);
 
             // Reset the Jacobians
             final SpacecraftState rawState = referenceTrajectories[k].getInitialState();
             final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-            referenceTrajectories[k].resetInitialState(stateWithDerivatives);
+            referenceTrajectories[k].setInitialState(stateWithDerivatives, stateType);
             mappers[k] = pde.getMapper();
         }
 
@@ -865,7 +881,7 @@ public class KalmanModel implements KalmanODModel {
 
         // Get the estimated propagator (mirroring parameter update in the builder)
         // and the estimated spacecraft state
-        final NumericalPropagator[] estimatedPropagators = getEstimatedPropagators();
+        final DSSTPropagator[] estimatedPropagators = getEstimatedPropagators();
         for (int k = 0; k < estimatedPropagators.length; ++k) {
             correctedSpacecraftStates[k] = estimatedPropagators[k].getInitialState();
         }

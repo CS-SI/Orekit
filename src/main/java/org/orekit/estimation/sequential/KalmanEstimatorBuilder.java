@@ -24,7 +24,7 @@ import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for a Kalman filter estimator.
@@ -38,7 +38,7 @@ public class KalmanEstimatorBuilder {
     private MatrixDecomposer decomposer;
 
     /** Builders for propagators. */
-    private List<NumericalPropagatorBuilder> propagatorBuilders;
+    private List<IntegratedPropagatorBuilder> propagatorBuilders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
@@ -108,7 +108,7 @@ public class KalmanEstimatorBuilder {
      * @see CovarianceMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
      * org.orekit.propagation.SpacecraftState) getProcessNoiseMatrix(previous, current)
      */
-    public KalmanEstimatorBuilder addPropagationConfiguration(final NumericalPropagatorBuilder builder,
+    public KalmanEstimatorBuilder addPropagationConfiguration(final IntegratedPropagatorBuilder builder,
                                                               final CovarianceMatrixProvider provider) {
         propagatorBuilders.add(builder);
         processNoiseMatricesProviders.add(provider);
