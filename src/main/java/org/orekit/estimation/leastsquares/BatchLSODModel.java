@@ -23,7 +23,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.utils.ParameterDriversList;
 
-public interface ODModel extends MultivariateJacobianFunction {
+public interface BatchLSODModel extends MultivariateJacobianFunction {
 
     /** Get the selected propagation drivers for a propagatorBuilder.
      * @param iBuilder index of the builder in the builders' array

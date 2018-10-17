@@ -35,15 +35,14 @@ import org.hipparchus.util.Pair;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.numerical.JacobiansMapper;
+import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
-import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
-import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
@@ -56,7 +55,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class DSSTModel implements ODModel {
+public class BatchLSModel implements BatchLSODModel {
 
     /** Builders for propagators. */
     private final IntegratedPropagatorBuilder[] builders;
@@ -104,7 +103,7 @@ public class DSSTModel implements ODModel {
     private final boolean forwardPropagation;
 
     /** Mappers for Jacobians. */
-    private DSSTJacobiansMapper[] mappers;
+    private JacobiansMapper[] mappers;
 
     /** Model function value. */
     private RealVector value;
@@ -112,26 +111,16 @@ public class DSSTModel implements ODModel {
     /** Model function Jacobian. */
     private RealMatrix jacobian;
 
-    /** Type of the orbit used for the propagation.*/
-    private PropagationType propagationType;
-
-    /** Type of the elements used to define the orbital state.*/
-    private PropagationType stateType;
-
     /** Simple constructor.
      * @param builders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
-     * @param propagationType type of the orbit used for the propagation (mean or osculating)
-     * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
-    public DSSTModel(final IntegratedPropagatorBuilder[] builders,
-                     final List<ObservedMeasurement<?>> measurements,
-                     final ParameterDriversList estimatedMeasurementsParameters,
-                     final ModelObserver observer,
-                     final PropagationType propagationType,
-                     final PropagationType stateType) {
+    public BatchLSModel(final IntegratedPropagatorBuilder[] builders,
+                 final List<ObservedMeasurement<?>> measurements,
+                 final ParameterDriversList estimatedMeasurementsParameters,
+                 final ModelObserver observer) {
 
         this.builders                        = builders;
         this.measurements                    = measurements;
@@ -140,9 +129,7 @@ public class DSSTModel implements ODModel {
         this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
-        this.mappers                         = new DSSTJacobiansMapper[builders.length];
-        this.propagationType                 = propagationType;
-        this.stateType                       = stateType;
+        this.mappers                         = new JacobiansMapper[builders.length];
 
         // allocate vector and matrix
         int rows = 0;
@@ -234,7 +221,7 @@ public class DSSTModel implements ODModel {
     public Pair<RealVector, RealMatrix> value(final RealVector point) {
 
         // Set up the propagators parallelizer
-        final DSSTPropagator[] propagators = createPropagators(point);
+        final NumericalPropagator[] propagators = createPropagators(point);
         final Orbit[] orbits = new Orbit[propagators.length];
         for (int i = 0; i < propagators.length; ++i) {
             mappers[i] = configureDerivatives(propagators[i]);
@@ -304,9 +291,9 @@ public class DSSTModel implements ODModel {
     }
 
     /** {@inheritDoc} */
-    public DSSTPropagator[] createPropagators(final RealVector point) {
+    public NumericalPropagator[] createPropagators(final RealVector point) {
 
-        final DSSTPropagator[] propagators = new DSSTPropagator[builders.length];
+        final NumericalPropagator[] propagators = new NumericalPropagator[builders.length];
 
         // Set up the propagators
         for (int i = 0; i < builders.length; ++i) {
@@ -333,7 +320,7 @@ public class DSSTModel implements ODModel {
             }
 
             // Build the propagator
-            propagators[i] = (DSSTPropagator) builders[i].buildPropagator(propagatorArray);
+            propagators[i] = (NumericalPropagator) builders[i].buildPropagator(propagatorArray);
         }
 
         return propagators;
@@ -378,16 +365,16 @@ public class DSSTModel implements ODModel {
      * @param propagators {@link Propagator} to configure
      * @return mapper for this propagator
      */
-    private DSSTJacobiansMapper configureDerivatives(final DSSTPropagator propagators) {
+    private JacobiansMapper configureDerivatives(final NumericalPropagator propagators) {
 
-        final String equationName = DSSTModel.class.getName() + "-derivatives";
+        final String equationName = BatchLSModel.class.getName() + "-derivatives";
 
-        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, propagators, propagationType);
+        final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagators);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagators.getInitialState();
         final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        propagators.setInitialState(stateWithDerivatives, stateType);
+        propagators.resetInitialState(stateWithDerivatives);
 
         return partials.getMapper();
 
@@ -400,12 +387,13 @@ public class DSSTModel implements ODModel {
         final SpacecraftState[]      evaluationStates    = evaluation.getStates();
         final ObservedMeasurement<?> observedMeasurement = evaluation.getObservedMeasurement();
 
-        // compute weighted residuals
         evaluations.put(observedMeasurement, evaluation);
+
         if (evaluation.getStatus() == EstimatedMeasurement.Status.REJECTED) {
             return;
         }
 
+        // compute weighted residuals
         final double[] evaluated = evaluation.getEstimatedValue();
         final double[] observed  = observedMeasurement.getObservedValue();
         final double[] sigma     = observedMeasurement.getTheoreticalStandardDeviation();
@@ -428,9 +416,6 @@ public class DSSTModel implements ODModel {
             final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
-            // short period derivatives
-            mappers[p].setShortPeriodJacobians(evaluationStates[k]);
-
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];
             mappers[p].getStateJacobian(evaluationStates[k], aYY0);
@@ -450,7 +435,7 @@ public class DSSTModel implements ODModel {
             // Jacobian of the measurement with respect to propagation parameters
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
             final int nbParams = selectedPropagationDrivers.getNbParams();
-            if ( nbParams > 0) {
+            if (nbParams > 0) {
                 final double[][] aYPp  = new double[6][nbParams];
                 mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
                 final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
