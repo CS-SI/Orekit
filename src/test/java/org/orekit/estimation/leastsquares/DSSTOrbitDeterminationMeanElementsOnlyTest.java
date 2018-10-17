@@ -509,8 +509,10 @@ public class DSSTOrbitDeterminationMeanElementsOnlyTest {
 
         propagatorBuilder.addForceModel(new DSSTTesseral(body.getBodyFrame(),
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField,
-                                                         8, 8, 4, 12, 8, 8, 6));
-        propagatorBuilder.addForceModel(new DSSTZonal(gravityField, 3, 0, 2));
+                                                         gravityField.getMaxDegree(), gravityField.getMaxOrder(), 4, 12,
+                                                         gravityField.getMaxDegree(), gravityField.getMaxOrder(), 4));
+        propagatorBuilder.addForceModel(new DSSTZonal(gravityField, gravityField.getMaxDegree(), 4,
+                                                      2 * gravityField.getMaxDegree() + 1));
         // third body attraction
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) &&
             parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
