@@ -23,8 +23,8 @@ The data files for attitude reference were created as follows:
    the beta angle have been selected so we get sample in each category for
    all spacecraft types so we can exercise various cases of the attitude models
    for each detected event in the subsets, we sampled input data that will be needed
-   for Kouba reference eclips routine and for Orekit models, from 39 minutes
-   before the event to 39 minutes after the event with a 6 minutes step size
+   for Kouba reference eclips routine and for Orekit models, from 45 minutes
+   before the event to 45 minutes after the event with a 6 minutes step size
 
    for Beidou MEO and IGSO, the attitude model calls for only four subsets:
      - one subset where the beta angle is around -19°
@@ -32,7 +32,7 @@ The data files for attitude reference were created as follows:
      - one subset where the beta angle is around +4°
      - one subset where the beta angle is around +30°
    and the sample was generated from 72 hours before the event to 72 hours
-   after the event with a three hours step size
+   after the event with a one hour step size
 
    the base sample generator was configured to use ITRF using IERS 2010 conventions
    and complete EOP including tides, parse an ANTEX file to retrieve the time-dependent
@@ -40,12 +40,14 @@ The data files for attitude reference were created as follows:
    available SP3 files
 
    the base samples finder generates only the meta-data for each event (satellite,
-   event type, start and end of smapling time range, SP3 files coering the range).
+   event type, start and end of sampling time range, SP3 files covering the range).
 
 3) edited the samples-meta-data.txt file to select only some events, in order to
-   get tests for several interesting cases. Some start and end date jave also been
-   manually edited to match the SP3 files coverage. The samples-meta-data.txt file
-   in the same folder as this README.txt file is the result from this manual edition
+   get tests for several interesting cases. Some start and end date have also been
+   manually edited to match the SP3 files coverage and avoid getting points in the
+   15 minutes period after last point of a one day file (at 23:45) and first point
+   on the next day file (at 00:00). The samples-meta-data.txt file in the same folder
+   as this README.txt file is the result from this manual edition
 
 4) ran the GenerateBaseSamples java program on the edited samples-meta-data.txt.
    the base samples generator generates only first few columns of the reference
@@ -68,7 +70,8 @@ The data files for attitude reference were created as follows:
    done
 
 6) applied twelve patches to Kouba reference eclips routine from December 2017 to fix issues identified
-   during validation:
+   during validation (these patches have also been sent to the author if he wants to include them
+   in a next eclips version):
      01) prevent NaNs appearing due to numerical noise at exact alignment
      02) missing declaration for math functions leading to them being used as simple precision instead of double precision
      03) fix literal constants leading to them being used as simple precision instead of double precision
@@ -84,11 +87,7 @@ The data files for attitude reference were created as follows:
      11) removed dependency on caller sampling rate by using interpolated beta model
      12) directly recompute orbit angle in Galileo model rather than assuming linear evolution
    The Kouba reference routine can be found at the IGS Analysis Center Coordinator site
-   (http://acc.igs.org/orbits). In fact, as an additional precaution, we took care in the base
-   sample generator program to avoid extracting sample points exactly at alignment (we extracted
-   points at -39min, -33min, ..., -3min, +3min, ..., +33min, +39min), so the first patch could
-   have been safely ignored with these specific samples (but it was mandatory in our first tests
-   as we used the perfectly aligned points provided by Orekit alignment detector)
+   (http://acc.igs.org/orbits).
 
    echo eclips_Dec2017.f | tar xvf /the/path/to/eclips_Dec_2017.tar --files-from -
    for f in eclips-*.patch ; do

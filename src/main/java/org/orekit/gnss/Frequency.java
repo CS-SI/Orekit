@@ -17,7 +17,7 @@
 package org.orekit.gnss;
 
 /**
- * Enumerate for satellite system.
+ * Enumerate for GNSS frequencies.
  *
  * @author Luc Maisonobe
  * @since 9.2
