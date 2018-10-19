@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import java.util.function.Function;
 
+import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -278,18 +279,18 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
          * This computation is an approximation because it relies on
          * {@link Orbit#shiftedBy(double)} only.
          * </p>
-         * @param target target value for offset angle
+         * @param offset target value for offset angle
          * @param orbit current orbit
          * @return approximate date at which offset reached specified value
          */
-        public AbsoluteDate dateForOffset(final double target, final Orbit orbit) {
+        public AbsoluteDate dateForOffset(final double offset, final Orbit orbit) {
 
             // bracket the search
             final double period = orbit.getKeplerianPeriod();
             final double delta0 = delta(orbit);
             final double searchInf;
             final double searchSup;
-            if ((delta0 - target) * sign >= 0) {
+            if ((delta0 - offset) * sign >= 0) {
                 // the date is before current orbit
                 searchInf = -period;
                 searchSup = 0;
@@ -301,9 +302,8 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
 
             // find the date as an offset from current orbit
             final BracketingNthOrderBrentSolver solver = new BracketingNthOrderBrentSolver(getThreshold(), 5);
-            final double root = solver.solve(getMaxIterationCount(),
-                                             dt -> delta(orbit.shiftedBy(dt)) - target,
-                                             searchInf, searchSup);
+            final UnivariateFunction            f      = dt -> delta(orbit.shiftedBy(dt)) - offset;
+            final double                        root   = solver.solve(getMaxIterationCount(), f, searchInf, searchSup);
 
             return orbit.getDate().shiftedBy(root);
 
