@@ -197,6 +197,7 @@
       * azimuth/elevation
       * right ascension/declination
       * position-velocity
+      * position
       * inter-satellites range (one way and two way)
       * GNSS code
       * GNSS phase
