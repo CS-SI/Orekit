@@ -29,7 +29,7 @@
   package org.orekit.gnss #ECEBD8 {
 
     class RinexLoader {
-      +List<ObservationDataSet>> getObservationDataSets()
+      +List<ObservationDataSet> getObservationDataSets()
     }
 
     enum SatelliteSystem {
@@ -51,12 +51,27 @@
       +L1C
       ...
       +S8X
+      +getMeasurementType()
+      +getFrequency(SatelliteSystem)
     }
 
-    class RinexHeader {
-      +Vector3D getApproxPos()
-      +String getReceiverType()
-      +...()
+    enum MeasurementType {
+      +PSEUDO_RANGE
+      +CARRIER_PHASE
+      +DOPPLER
+      +SIGNAL_STRENGTH
+    }
+
+    enum Frequency {
+      +G01
+      +...
+      +J06
+      +...
+      +S05
+      +String getName()
+      +SatelliteSystem getSatelliteSystem()
+      +double getRatio()
+      +double getMHzFrequency()
     }
 
     class ObservationData {
@@ -69,16 +84,18 @@
       +AbsoluteDate getDate()
       +SatelliteSystem getSatelliteSystem()
       +int getPrnNumber()
-      +List<ObservationData> getObservationData()
       +double getRcvrClkOffset()
+      +List<ObservationData> getObservationData()
     }
 
-    ObservationDataSet *--> "1" SatelliteSystem
+    ObservationDataSet *-left-> "1" SatelliteSystem
     RinexHeader        *--> "1" SatelliteSystem
     RinexHeader        "*" <--* ObservationDataSet
     RinexLoader        *--> "*" ObservationDataSet
     ObservationDataSet *--> "*" ObservationData
-    ObservationData    *--> "1" ObservationType
+    ObservationType  "1" <-left-* ObservationData
+    ObservationType    *--> "1" MeasurementType
+    ObservationType    *--> "*" Frequency
   }
 
 @enduml
