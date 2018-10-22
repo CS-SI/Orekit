@@ -26,7 +26,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modeling a position-velocity state.
+/** Class modeling a position-velocity measurement.
+ * <p>
+ * For position-only measurement see {@link Position}.
+ * </p>
+ * @see Position
  * @author Luc Maisonobe
  * @since 8.0
  */
@@ -53,14 +57,14 @@ public class PV extends AbstractMeasurement<PV> {
     private final double[][] covarianceMatrix;
 
     /** Constructor with two double for the standard deviations.
-     * The first double is the position's standard deviation, common to the 3 position's components.
-     * The second double is the position's standard deviation, common to the 3 position's components.
+     * <p>The first double is the position's standard deviation, common to the 3 position's components.
+     * The second double is the position's standard deviation, common to the 3 position's components.</p>
      * <p>
      * The measurement must be in the orbit propagation frame.
      * </p>
-     * This constructor uses 0 as the index of the propagator related
+     * <p>This constructor uses 0 as the index of the propagator related
      * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.
+     * orbit determination.</p>
      * @param date date of the measurement
      * @param position position
      * @param velocity velocity
@@ -74,8 +78,8 @@ public class PV extends AbstractMeasurement<PV> {
     }
 
     /** Constructor with two double for the standard deviations.
-     * The first double is the position's standard deviation, common to the 3 position's components.
-     * The second double is the position's standard deviation, common to the 3 position's components.
+     * <p>The first double is the position's standard deviation, common to the 3 position's components.
+     * The second double is the position's standard deviation, common to the 3 position's components.</p>
      * <p>
      * The measurement must be in the orbit propagation frame.
      * </p>
@@ -103,13 +107,13 @@ public class PV extends AbstractMeasurement<PV> {
     }
 
     /** Constructor with two vectors for the standard deviations and default value for propagator index..
-     * One 3-sized vectors for position standard deviations.
+     * <p>One 3-sized vectors for position standard deviations.
      * One 3-sized vectors for velocity standard deviations.
-     * The 3-sized vectors are the square root of the diagonal elements of the covariance matrix.
+     * The 3-sized vectors are the square root of the diagonal elements of the covariance matrix.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
-     * This constructor uses 0 as the index of the propagator related
+     * <p>This constructor uses 0 as the index of the propagator related
      * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.
+     * orbit determination.</p>
      * @param date date of the measurement
      * @param position position
      * @param velocity velocity
@@ -124,9 +128,9 @@ public class PV extends AbstractMeasurement<PV> {
     }
 
     /** Constructor with two vectors for the standard deviations.
-     * One 3-sized vectors for position standard deviations.
+     * <p>One 3-sized vectors for position standard deviations.
      * One 3-sized vectors for velocity standard deviations.
-     * The 3-sized vectors are the square root of the diagonal elements of the covariance matrix.
+     * The 3-sized vectors are the square root of the diagonal elements of the covariance matrix.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
      * @param date date of the measurement
      * @param position position
@@ -146,11 +150,11 @@ public class PV extends AbstractMeasurement<PV> {
     }
 
     /** Constructor with one vector for the standard deviations and default value for propagator index.
-     * The 6-sized vector is the square root of the diagonal elements of the covariance matrix.
+     * <p>The 6-sized vector is the square root of the diagonal elements of the covariance matrix.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
-     * This constructor uses 0 as the index of the propagator related
+     * <p>This constructor uses 0 as the index of the propagator related
      * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.
+     * orbit determination.</p>
      * @param date date of the measurement
      * @param position position
      * @param velocity velocity
@@ -164,7 +168,7 @@ public class PV extends AbstractMeasurement<PV> {
     }
 
     /** Constructor with one vector for the standard deviations.
-     * The 6-sized vector is the square root of the diagonal elements of the covariance matrix.
+     * <p>The 6-sized vector is the square root of the diagonal elements of the covariance matrix.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
      * @param date date of the measurement
      * @param position position
@@ -183,12 +187,12 @@ public class PV extends AbstractMeasurement<PV> {
 
     /**
      * Constructor with 2 smaller covariance matrices and default value for propagator index.
-     * One 3x3 covariance matrix for position and one 3x3 covariance matrix for velocity.
-     * The fact that the covariance matrices are symmetric and positive definite is not checked.
+     * <p>One 3x3 covariance matrix for position and one 3x3 covariance matrix for velocity.
+     * The fact that the covariance matrices are symmetric and positive definite is not checked.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
-     * This constructor uses 0 as the index of the propagator related
+     * <p>This constructor uses 0 as the index of the propagator related
      * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.
+     * orbit determination.</p>
      * @param date date of the measurement
      * @param position position
      * @param velocity velocity
@@ -205,8 +209,8 @@ public class PV extends AbstractMeasurement<PV> {
 
     /**
      * Constructor with 2 smaller covariance matrices.
-     * One 3x3 covariance matrix for position and one 3x3 covariance matrix for velocity.
-     * The fact that the covariance matrices are symmetric and positive definite is not checked.
+     * <p>One 3x3 covariance matrix for position and one 3x3 covariance matrix for velocity.
+     * The fact that the covariance matrices are symmetric and positive definite is not checked.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
      * @param date date of the measurement
      * @param position position
@@ -227,11 +231,11 @@ public class PV extends AbstractMeasurement<PV> {
 
     /**
      * Constructor with full covariance matrix but default index for propagator.
-     * The fact that the covariance matrix is symmetric and positive definite is not checked.
+     * <p>The fact that the covariance matrix is symmetric and positive definite is not checked.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
-     * This constructor uses 0 as the index of the propagator related
+     * <p>This constructor uses 0 as the index of the propagator related
      * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.
+     * orbit determination.</p>
      * @param date date of the measurement
      * @param position position
      * @param velocity velocity
@@ -245,7 +249,7 @@ public class PV extends AbstractMeasurement<PV> {
     }
 
     /** Constructor with full covariance matrix and all inputs.
-     * The fact that the covariance matrix is symmetric and positive definite is not checked.
+     * <p>The fact that the covariance matrix is symmetric and positive definite is not checked.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
      * @param date date of the measurement
      * @param position position
@@ -353,9 +357,9 @@ public class PV extends AbstractMeasurement<PV> {
     private static double[] extractSigmas(final double[][] pvCovarianceMatrix) {
 
         // Check the size of the covariance matrix, should be 6x6
-        if (pvCovarianceMatrix[0].length != 6 || pvCovarianceMatrix[1].length != 6) {
+        if (pvCovarianceMatrix.length != 6 || pvCovarianceMatrix[0].length != 6) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
-                                      pvCovarianceMatrix[0].length, pvCovarianceMatrix[1],
+                                      pvCovarianceMatrix.length, pvCovarianceMatrix[0],
                                       6, 6);
         }
 
@@ -376,14 +380,14 @@ public class PV extends AbstractMeasurement<PV> {
     private static double[][] buildPvCovarianceMatrix(final double[][] positionCovarianceMatrix,
                                                       final double[][] velocityCovarianceMatrix) {
         // Check the sizes of the matrices first
-        if (positionCovarianceMatrix[0].length != 3 || positionCovarianceMatrix[1].length != 3) {
+        if (positionCovarianceMatrix.length != 3 || positionCovarianceMatrix[0].length != 3) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
-                                      positionCovarianceMatrix[0].length, positionCovarianceMatrix[1],
+                                      positionCovarianceMatrix.length, positionCovarianceMatrix[0],
                                       3, 3);
         }
-        if (velocityCovarianceMatrix[0].length != 3 || velocityCovarianceMatrix[1].length != 3) {
+        if (velocityCovarianceMatrix.length != 3 || velocityCovarianceMatrix[0].length != 3) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
-                                      velocityCovarianceMatrix[0].length, velocityCovarianceMatrix[1],
+                                      velocityCovarianceMatrix.length, velocityCovarianceMatrix[0],
                                       3, 3);
         }
 
