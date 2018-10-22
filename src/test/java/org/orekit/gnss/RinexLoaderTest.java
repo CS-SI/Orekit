@@ -46,9 +46,9 @@ public class RinexLoaderTest {
         
         //Tests Rinex 2 with only GPS Constellation
         RinexLoader  loader = new RinexLoader("^jnu10110\\.17o$");
-        Assert.assertEquals(1, loader.getObservations().size());
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            RinexHeader header = entry.getKey();
+        Assert.assertEquals(44, loader.getObservationDataSets().size());
+        for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
+            RinexHeader header = dataSet.getHeader();
 
             Assert.assertEquals(2.11, header.getRinexVersion(), 1.0e-15);
             Assert.assertEquals(SatelliteSystem.GPS,    header.getSatelliteSystem());
@@ -81,9 +81,8 @@ public class RinexLoaderTest {
 
         //Tests Rinex 3 with Multiple Constellations
         RinexLoader  loader = new RinexLoader("^aaaa0000\\.00o$");
-        Assert.assertEquals(1, loader.getObservations().size());
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            RinexHeader header = entry.getKey();
+        for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
+            RinexHeader header = dataSet.getHeader();
 
             Assert.assertEquals(3.02, header.getRinexVersion(), 1.0e-15);
             Assert.assertEquals(SatelliteSystem.MIXED,  header.getSatelliteSystem());
@@ -140,39 +139,37 @@ public class RinexLoaderTest {
         RinexLoader  loader = new RinexLoader("^jnu10110\\.17o$");
         String[] typesobs = {"L1","L2","P1","P2","C1","S1","S2"};
 
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            List<ObservationDataSet> list = entry.getValue();
-            Assert.assertEquals(44, list.size());
+        List<ObservationDataSet> list = loader.getObservationDataSets();
+        Assert.assertEquals(44, list.size());
 
-            checkObservation(list.get(0),
-                             2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 2, -0.03,
-                             typesobs, ObservationType.L1, 124458652.886, 4, 0);
-            checkObservation(list.get(0),
-                             2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 2, -0.03,
-                             typesobs, ObservationType.P1, Double.NaN, 0, 0);
-            checkObservation(list.get(3),
-                             2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 6, -0.03,
-                             typesobs, ObservationType.S2, 42.300, 4, 0);
-            checkObservation(list.get(11),
-                             2017, 1, 11, 0, 0, 30, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 2, -0.08,
-                             typesobs, ObservationType.C1, 23688342.361, 4, 0);
-            checkObservation(list.get(23),
-                             2017, 1, 11, 0, 1, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 3, 0,
-                             typesobs, ObservationType.P2, 25160656.959, 4, 0);
-            checkObservation(list.get(23),
-                             2017, 1, 11, 0, 1, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 3, 0,
-                             typesobs, ObservationType.P1, Double.NaN, 0, 0);
-            checkObservation(list.get(43),
-                             2017, 1, 11, 0, 1, 30, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 30, 0,
-                             typesobs, ObservationType.S1, 41.6, 4, 0);
-        }
+        checkObservation(list.get(0),
+                         2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 2, -0.03,
+                         typesobs, ObservationType.L1, 124458652.886, 4, 0);
+        checkObservation(list.get(0),
+                         2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 2, -0.03,
+                         typesobs, ObservationType.P1, Double.NaN, 0, 0);
+        checkObservation(list.get(3),
+                         2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 6, -0.03,
+                         typesobs, ObservationType.S2, 42.300, 4, 0);
+        checkObservation(list.get(11),
+                         2017, 1, 11, 0, 0, 30, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 2, -0.08,
+                         typesobs, ObservationType.C1, 23688342.361, 4, 0);
+        checkObservation(list.get(23),
+                         2017, 1, 11, 0, 1, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 3, 0,
+                         typesobs, ObservationType.P2, 25160656.959, 4, 0);
+        checkObservation(list.get(23),
+                         2017, 1, 11, 0, 1, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 3, 0,
+                         typesobs, ObservationType.P1, Double.NaN, 0, 0);
+        checkObservation(list.get(43),
+                         2017, 1, 11, 0, 1, 30, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 30, 0,
+                         typesobs, ObservationType.S1, 41.6, 4, 0);
 
     }
 
@@ -182,38 +179,37 @@ public class RinexLoaderTest {
         RinexLoader  loader = new RinexLoader("^aiub0000\\.00o$");
         String[] typesobs2 = {"P1","L1","L2","P2"};
 
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            List<ObservationDataSet> list = entry.getValue();
-            Assert.assertEquals(24, list.size());
-            checkObservation(list.get(0),
-                             2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 12, -.123456789,
-                             typesobs2, ObservationType.P1, 23629347.915, 0, 0);
-            checkObservation(list.get(1),
-                             2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 9, -.123456789,
-                             typesobs2, ObservationType.L1, -0.12, 0, 9);
-            checkObservation(list.get(2),
-                             2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 6, -.123456789,
-                             typesobs2, ObservationType.P2, 20607605.848, 4, 4);
-            checkObservation(list.get(3),
-                             2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 12, -.123456789,
-                             typesobs2, ObservationType.L2, -41981.375, 0, 0);
-            checkObservation(list.get(6),
-                             2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GLONASS, 21, -.123456789,
-                             typesobs2, ObservationType.P1, 21345678.576, 0, 0);
-            checkObservation(list.get(7),
-                             2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GLONASS, 22, -.123456789,
-                             typesobs2, ObservationType.P2, Double.NaN, 0, 0);
-            checkObservation(list.get(23),
-                             2001, 3, 24, 13, 14, 48, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 6, -.123456234,
-                             typesobs2, ObservationType.L1, 267583.678, 1, 7);
-        }
+        List<ObservationDataSet> list = loader.getObservationDataSets();
+        Assert.assertEquals(24, list.size());
+
+        checkObservation(list.get(0),
+                         2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 12, -.123456789,
+                         typesobs2, ObservationType.P1, 23629347.915, 0, 0);
+        checkObservation(list.get(1),
+                         2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 9, -.123456789,
+                         typesobs2, ObservationType.L1, -0.12, 0, 9);
+        checkObservation(list.get(2),
+                         2001, 3, 24, 13, 10, 36, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 6, -.123456789,
+                         typesobs2, ObservationType.P2, 20607605.848, 4, 4);
+        checkObservation(list.get(3),
+                         2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 12, -.123456789,
+                         typesobs2, ObservationType.L2, -41981.375, 0, 0);
+        checkObservation(list.get(6),
+                         2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GLONASS, 21, -.123456789,
+                         typesobs2, ObservationType.P1, 21345678.576, 0, 0);
+        checkObservation(list.get(7),
+                         2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GLONASS, 22, -.123456789,
+                         typesobs2, ObservationType.P2, Double.NaN, 0, 0);
+        checkObservation(list.get(23),
+                         2001, 3, 24, 13, 14, 48, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 6, -.123456234,
+                         typesobs2, ObservationType.L1, 267583.678, 1, 7);
         
     }
 
@@ -226,38 +222,36 @@ public class RinexLoaderTest {
         String[] typesobsR = {"C1C","L1C","S1C","C1P","L1P","S1P","C2C","L2C","S2C","C2P","L2P","S2P"};
         String[] typesobsE = {"C1X","L1X","S1X","C5X","L5X","S5X","C7X","L7X","S7X","C8X","L8X","S8X"};
         String[] typesobsC = {"C1I","L1I","S1I","C7I","L7I","S7I","C6I","L6I","S6I"};
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            List<ObservationDataSet> list = entry.getValue();
-            checkObservation(list.get(0),
-                             2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GLONASS, 10, 0.0,
-                             typesobsR, ObservationType.C1C, 23544632.969, 0, 6);
-            checkObservation(list.get(1),
-                             2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 27, 0.0,
-                             typesobsG, ObservationType.C1C, 22399181.883, 0, 7);
-            checkObservation(list.get(9),
-                             2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 3, 0.0,
-                             typesobsG, ObservationType.S5X,         47.600, 0, 0);
-            checkObservation(list.get(10),
-                             2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GALILEO, 14, 0.0,
-                             typesobsE, ObservationType.L8X, 76221970.869, 0, 8);
-            checkObservation(list.get(25),
-                             2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.BEIDOU, 12, 0.0,
-                             typesobsC, ObservationType.S7I, 31.100, 0, 0);
-            checkObservation(list.get(25),
-                             2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.BEIDOU, 12, 0.0,
-                             typesobsC, ObservationType.S7I, 31.100, 0, 0);
-            checkObservation(list.get(50),
-                             2016, 1, 11, 0, 0, 15, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.BEIDOU, 11, 0.0,
-                             typesobsC, ObservationType.C7I, 23697971.738, 0, 7);
-        }
-
+        List<ObservationDataSet> list = loader.getObservationDataSets();
+        Assert.assertEquals(51, list.size());
+        checkObservation(list.get(0),
+                         2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GLONASS, 10, 0.0,
+                         typesobsR, ObservationType.C1C, 23544632.969, 0, 6);
+        checkObservation(list.get(1),
+                         2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 27, 0.0,
+                         typesobsG, ObservationType.C1C, 22399181.883, 0, 7);
+        checkObservation(list.get(9),
+                         2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 3, 0.0,
+                         typesobsG, ObservationType.S5X,         47.600, 0, 0);
+        checkObservation(list.get(10),
+                         2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GALILEO, 14, 0.0,
+                         typesobsE, ObservationType.L8X, 76221970.869, 0, 8);
+        checkObservation(list.get(25),
+                         2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.BEIDOU, 12, 0.0,
+                         typesobsC, ObservationType.S7I, 31.100, 0, 0);
+        checkObservation(list.get(25),
+                         2016, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.BEIDOU, 12, 0.0,
+                         typesobsC, ObservationType.S7I, 31.100, 0, 0);
+        checkObservation(list.get(50),
+                         2016, 1, 11, 0, 0, 15, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.BEIDOU, 11, 0.0,
+                         typesobsC, ObservationType.C7I, 23697971.738, 0, 7);
     }
 
     @Test
@@ -270,49 +264,49 @@ public class RinexLoaderTest {
         String[] typesobsS2 = {"C1C","L1C","S1C","C5I","L5I","S5I"};
         String[] typesobsC2 = {"C2I","L2I","S2I","C7I","L7I","S7I","C6I","L6I","S6I"};
         String[] typesobsJ2 = {"C1C","L1C","S1C","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            List<ObservationDataSet> list = entry.getValue();
-            checkObservation(list.get(0),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 30, 0.0,
-                             typesobsG2, ObservationType.C1C, 20422534.056, 0, 8);
-            checkObservation(list.get(2),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GLONASS, 10, 0.0,
-                             typesobsR2, ObservationType.S2C, 49.250, 0, 0);
-            checkObservation(list.get(2),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GLONASS, 10, 0.0,
-                             typesobsR2, ObservationType.C1C, 19186.904493, 0, 9);
-            checkObservation(list.get(7),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GALILEO, 5, 0.0,
-                             typesobsE2, ObservationType.L8Q, 103747111.324, 0, 8);
-            checkObservation(list.get(13),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.BEIDOU, 4, 0.0,
-                             typesobsC2, ObservationType.C7I, 41010665.465, 0, 5);
-            checkObservation(list.get(13),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.BEIDOU, 4, 0.0,
-                             typesobsC2, ObservationType.L2I, Double.NaN, 0, 0);
-            checkObservation(list.get(12),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.SBAS, 138, 0.0,
-                             typesobsS2, ObservationType.C1C, 40430827.124, 0, 6);
-            checkObservation(list.get(12),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.SBAS, 138, 0.0,
-                             typesobsS2, ObservationType.S5I, 39.750, 0, 0);
-            checkObservation(list.get(34),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.QZSS, 193, 0.0,
-                             typesobsJ2, ObservationType.L2L, 168639076.823, 0, 6);
-            checkObservation(list.get(32),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GLONASS, 2, 0.0,
-                             typesobsR2, ObservationType.S1C, 0.0445, 0, 0);
-        }
+        List<ObservationDataSet> list = loader.getObservationDataSets();
+        Assert.assertEquals(36, list.size());
+
+        checkObservation(list.get(0),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 30, 0.0,
+                         typesobsG2, ObservationType.C1C, 20422534.056, 0, 8);
+        checkObservation(list.get(2),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GLONASS, 10, 0.0,
+                         typesobsR2, ObservationType.S2C, 49.250, 0, 0);
+        checkObservation(list.get(2),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GLONASS, 10, 0.0,
+                         typesobsR2, ObservationType.C1C, 19186.904493, 0, 9);
+        checkObservation(list.get(7),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GALILEO, 5, 0.0,
+                         typesobsE2, ObservationType.L8Q, 103747111.324, 0, 8);
+        checkObservation(list.get(13),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.BEIDOU, 4, 0.0,
+                         typesobsC2, ObservationType.C7I, 41010665.465, 0, 5);
+        checkObservation(list.get(13),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.BEIDOU, 4, 0.0,
+                         typesobsC2, ObservationType.L2I, Double.NaN, 0, 0);
+        checkObservation(list.get(12),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.SBAS, 138, 0.0,
+                         typesobsS2, ObservationType.C1C, 40430827.124, 0, 6);
+        checkObservation(list.get(12),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.SBAS, 138, 0.0,
+                         typesobsS2, ObservationType.S5I, 39.750, 0, 0);
+        checkObservation(list.get(34),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.QZSS, 193, 0.0,
+                         typesobsJ2, ObservationType.L2L, 168639076.823, 0, 6);
+        checkObservation(list.get(32),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GLONASS, 2, 0.0,
+                         typesobsR2, ObservationType.S1C, 0.0445, 0, 0);
     }
 
     @Test
@@ -322,33 +316,33 @@ public class RinexLoaderTest {
         String[] typesobsG4 = {"C1C","L1C","S1C","C1W","S1W","C2W","L2W","S2W","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
         String[] typesobsR4 = {"C1C","L1C","S1C","C2C","L2C","S2C"};
         String[] typesobsE4 = {"C1C","L1C","S1C","C6C","L6C","S6C","C5Q","L5Q","S5Q","C7Q","L7Q","S7Q","C8Q","L8Q","S8Q"};
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            List<ObservationDataSet> list = entry.getValue();
-            checkObservation(list.get(0),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GPS, 30, 0.0,
-                             typesobsG4, ObservationType.C1C, 20422534.056, 0, 8);
-            checkObservation(list.get(2),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GLONASS, 10, 0.0,
-                             typesobsR4, ObservationType.S2C, 49.250, 0, 0);
-            checkObservation(list.get(2),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GLONASS, 10, 0.0,
-                             typesobsR4, ObservationType.C1C, 19186904.493, 0, 9);
-            checkObservation(list.get(7),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GALILEO, 5, 0.0,
-                             typesobsE4, ObservationType.L8Q, 103747.111324, 0, 8);
-            checkObservation(list.get(26),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GALILEO, 8, 0.0,
-                             typesobsE4, ObservationType.C1C, 23499.584944, 0, 7);
-            checkObservation(list.get(26),
-                             2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
-                             SatelliteSystem.GALILEO, 8, 0.0,
-                             typesobsE4, ObservationType.S8Q, 0.051, 0, 0);
-        }
+        List<ObservationDataSet> list = loader.getObservationDataSets();
+        Assert.assertEquals(36, list.size());
+
+        checkObservation(list.get(0),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GPS, 30, 0.0,
+                         typesobsG4, ObservationType.C1C, 20422534.056, 0, 8);
+        checkObservation(list.get(2),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GLONASS, 10, 0.0,
+                         typesobsR4, ObservationType.S2C, 49.250, 0, 0);
+        checkObservation(list.get(2),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GLONASS, 10, 0.0,
+                         typesobsR4, ObservationType.C1C, 19186904.493, 0, 9);
+        checkObservation(list.get(7),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GALILEO, 5, 0.0,
+                         typesobsE4, ObservationType.L8Q, 103747.111324, 0, 8);
+        checkObservation(list.get(26),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GALILEO, 8, 0.0,
+                         typesobsE4, ObservationType.C1C, 23499.584944, 0, 7);
+        checkObservation(list.get(26),
+                         2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
+                         SatelliteSystem.GALILEO, 8, 0.0,
+                         typesobsE4, ObservationType.S8Q, 0.051, 0, 0);
 
     }
     
@@ -430,8 +424,10 @@ public class RinexLoaderTest {
     @Test
     public void testDCBSApplied() {
         RinexLoader  loader = new RinexLoader("^dcbs\\.00o$");
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            RinexHeader header = entry.getKey();
+        List<ObservationDataSet> l = loader.getObservationDataSets();
+        Assert.assertEquals(51, l.size());
+        for (ObservationDataSet dataSet : l) {
+            RinexHeader header = dataSet.getHeader();
             List<AppliedDCBS> list = header.getListAppliedDCBS();
             Assert.assertEquals(2, list.size());
             Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
@@ -446,8 +442,10 @@ public class RinexLoaderTest {
     @Test
     public void testPCVSApplied() {
         RinexLoader  loader = new RinexLoader("^pcvs\\.00o$");
-        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            RinexHeader header = entry.getKey();
+        List<ObservationDataSet> l = loader.getObservationDataSets();
+        Assert.assertEquals(51, l.size());
+        for (ObservationDataSet dataSet : l) {
+            RinexHeader header = dataSet.getHeader();
             List<AppliedPCVS> list = header.getListAppliedPCVS();
             Assert.assertEquals(2, list.size());
             Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
@@ -456,6 +454,20 @@ public class RinexLoaderTest {
             Assert.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
             Assert.assertEquals("pcvs-program-name", list.get(1).getProgPCVS());
             Assert.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
+        }
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecated() {
+        RinexLoader  loader = new RinexLoader("^aaaa0000\\.00o$");
+        Map<RinexHeader, List<ObservationDataSet>> map = loader.getObservations();
+        for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
+            boolean found = false;
+            for (final ObservationDataSet other : map.get(dataSet.getHeader())) {
+                found |= other == dataSet;
+            }
+            Assert.assertTrue(found);
         }
     }
 

@@ -25,6 +25,9 @@ import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.gnss.RinexLoader.Parser.PhaseShiftCorrection;
 import org.orekit.time.AbsoluteDate;
 
+/** Container for Rinex file header.
+ * @since 9.2
+ */
 public class RinexHeader {
 
     /** Rinex Version. */
