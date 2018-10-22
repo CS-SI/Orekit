@@ -75,7 +75,7 @@ public class PVTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             
-            // Estimate the AZEL value
+            // Estimate the PV value
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
             
             // Store the difference between estimated and observed values in the stats
