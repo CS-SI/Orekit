@@ -142,6 +142,7 @@ public class RinexHeader {
      * @param satelliteSystem Satellite System of the observation file (G/R/S/E/M)
      * @param markerName name of the antenna marker
      * @param markerNumber number of the antenna marker
+     * @param markerType Type of Antenna marker
      * @param observerName name of the observer
      * @param agencyName name of the agency
      * @param receiverNumber number of the receiver
@@ -152,6 +153,9 @@ public class RinexHeader {
      * @param approxPos Approximate Marker Position (WGS84)
      * @param antHeight antenna height
      * @param eccentricities Eccentricities of antenna center
+     * @param antRefPoint Position of antenna reference point for antenna on vehicle
+     * @param antBSight Antenna B.Sight
+     * @param centerMass Current center of mass of vehicle in body fixed coordinate system
      * @param interval Observation interval in seconds
      * @param tFirstObs Time of First observation record
      * @param tLastObs Time of last observation record
@@ -159,16 +163,18 @@ public class RinexHeader {
      * @param leapSeconds Number of leap seconds since 6-Jan-1980
      */
     public RinexHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
-                       final String markerName, final String markerNumber, final String observerName,
-                       final String agencyName, final String receiverNumber, final String receiverType,
-                       final String receiverVersion, final String antennaNumber, final String antennaType,
-                       final Vector3D approxPos, final double antHeight, final Vector2D eccentricities,
-                       final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
+                       final String markerName, final String markerNumber, final String markerType,
+                       final String observerName, final String agencyName, final String receiverNumber,
+                       final String receiverType, final String receiverVersion, final String antennaNumber,
+                       final String antennaType, final Vector3D approxPos, final double antHeight,
+                       final Vector2D eccentricities, final Vector3D antRefPoint, final Vector3D antBSight,
+                       final Vector3D centerMass, final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
                        final int clkOffset, final int leapSeconds) {
         this.rinexVersion = rinexVersion;
         this.satelliteSystem = satelliteSystem;
         this.markerName = markerName;
         this.markerNumber = markerNumber;
+        this.markerType = markerType;
         this.observerName = observerName;
         this.agencyName = agencyName;
         this.receiverNumber = receiverNumber;
@@ -179,6 +185,9 @@ public class RinexHeader {
         this.approxPos = approxPos;
         this.antHeight = antHeight;
         this.eccentricities = eccentricities;
+        this.antRefPoint = antRefPoint;
+        this.antBSight = antBSight;
+        this.centerMass = centerMass;
         this.interval = interval;
         this.tFirstObs = tFirstObs;
         this.tLastObs = tLastObs;

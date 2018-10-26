@@ -457,6 +457,27 @@ public class RinexLoaderTest {
         }
     }
 
+    @Test
+    public void testRinex220Spaceborne() {
+        RinexLoader  loader = new RinexLoader("^ice12720\\.07o$");
+        List<ObservationDataSet> l = loader.getObservationDataSets();
+        Assert.assertEquals(4, l.size());
+        for (ObservationDataSet dataSet : l) {
+            Assert.assertEquals("SPACEBORNE", dataSet.getHeader().getMarkerType());
+            List<ObservationData> list = dataSet.getObservationData();
+            Assert.assertEquals(9, list.size());
+            Assert.assertEquals(ObservationType.L1, list.get(0).getObservationType());
+            Assert.assertEquals(ObservationType.L2, list.get(1).getObservationType());
+            Assert.assertEquals(ObservationType.P1, list.get(2).getObservationType());
+            Assert.assertEquals(ObservationType.P2, list.get(3).getObservationType());
+            Assert.assertEquals(ObservationType.C1, list.get(4).getObservationType());
+            Assert.assertEquals(ObservationType.LA, list.get(5).getObservationType());
+            Assert.assertEquals(ObservationType.S1, list.get(6).getObservationType());
+            Assert.assertEquals(ObservationType.S2, list.get(7).getObservationType());
+            Assert.assertEquals(ObservationType.SA, list.get(8).getObservationType());
+        }
+    }
+
     @Deprecated
     @Test
     public void testDeprecated() {

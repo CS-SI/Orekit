@@ -30,19 +30,19 @@ import java.util.Map;
 public enum ObservationType {
 
     /** Pseudorange GPS L1 / GLONASS G1 / Galileo E2-L1-E1 / SBAS L1 for Rinex2. */
-    C1(MeasurementType.PSEUDO_RANGE, Frequency.G01, Frequency.R01, Frequency.C01, Frequency.S01),
+    C1(MeasurementType.PSEUDO_RANGE, Frequency.G01, Frequency.R01, Frequency.E01, Frequency.S01),
 
-    /** Pseudorange GPS L2 / GLONASS G2 for Rinex2. */
-    C2(MeasurementType.PSEUDO_RANGE, Frequency.G02, Frequency.R02),
+    /** Pseudorange GPS L2 / GLONASS G2 / Beidou B02 for Rinex2. */
+    C2(MeasurementType.PSEUDO_RANGE, Frequency.G02, Frequency.R02, Frequency.B02),
 
     /** Pseudorange GPS L5 / Galileo E5a / SBAS L5 for Rinex2. */
     C5(MeasurementType.PSEUDO_RANGE, Frequency.G05, Frequency.E05, Frequency.S05),
 
-    /** Pseudorange Galileo E6 for Rinex2. */
-    C6(MeasurementType.PSEUDO_RANGE, Frequency.E06),
+    /** Pseudorange Galileo E6 / Beidou B03 for Rinex2. */
+    C6(MeasurementType.PSEUDO_RANGE, Frequency.E06, Frequency.B03),
 
-    /** Pseudorange Galileo E5b for Rinex2. */
-    C7(MeasurementType.PSEUDO_RANGE, Frequency.E07),
+    /** Pseudorange Galileo E5b / Beidou B02 for Rinex2. */
+    C7(MeasurementType.PSEUDO_RANGE, Frequency.E07, Frequency.B02),
 
     /** Pseudorange Galileo E5a+b for Rinex2. */
     C8(MeasurementType.PSEUDO_RANGE, Frequency.E08),
@@ -54,55 +54,67 @@ public enum ObservationType {
     P2(MeasurementType.PSEUDO_RANGE, Frequency.G02, Frequency.R02),
 
     /** Carrier-phase GPS L1 / GLONASS G1 / Galileo E2-L1-E1 / SBAS L1 for Rinex2. */
-    L1(MeasurementType.CARRIER_PHASE, Frequency.G01, Frequency.R01, Frequency.C01, Frequency.S01),
+    L1(MeasurementType.CARRIER_PHASE, Frequency.G01, Frequency.R01, Frequency.E01, Frequency.S01),
 
-    /** Carrier-phase GPS L2 / GLONASS G2 for Rinex2. */
-    L2(MeasurementType.CARRIER_PHASE, Frequency.G02, Frequency.R02),
+    /** Carrier-phase GPS L2 / GLONASS G2 / Beidou B02 for Rinex2. */
+    L2(MeasurementType.CARRIER_PHASE, Frequency.G02, Frequency.R02, Frequency.B02),
 
     /** Carrier-phase GPS L5 / Galileo E5a / SBAS L5 for Rinex2. */
     L5(MeasurementType.CARRIER_PHASE, Frequency.G05, Frequency.E05, Frequency.S05),
 
-    /** Carrier-phase Galileo E6 for Rinex2. */
-    L6(MeasurementType.CARRIER_PHASE, Frequency.E06),
+    /** Carrier-phase Galileo E6 / Beidou B03 for Rinex2. */
+    L6(MeasurementType.CARRIER_PHASE, Frequency.E06, Frequency.C07),
 
-    /** Carrier-phase Galileo E5b for Rinex2. */
-    L7(MeasurementType.CARRIER_PHASE, Frequency.E07),
+    /** Carrier-phase Galileo E5b / Beidou B02 for Rinex2. */
+    L7(MeasurementType.CARRIER_PHASE, Frequency.E07, Frequency.B02),
 
     /** Carrier-phase Galileo E5a+b for Rinex2. */
     L8(MeasurementType.CARRIER_PHASE, Frequency.E08),
 
-    /** Doppler GPS L1 / GLONASS G1 / Galileo E2-L1-E1 / SBAS L1 for Rinex2. */
-    D1(MeasurementType.DOPPLER, Frequency.G01, Frequency.R01, Frequency.C01, Frequency.S01),
+    /** Carrier-phase GPS L1 C/A / GLONASS G1 C/A for Rinex2. */
+    LA(MeasurementType.CARRIER_PHASE, Frequency.G01, Frequency.R01),
 
-    /** Doppler GPS L2 / GLONASS G2 for Rinex2. */
-    D2(MeasurementType.DOPPLER, Frequency.G02, Frequency.R02),
+    /** Carrier-phase GPS L1C for Rinex2. */
+    LB(MeasurementType.CARRIER_PHASE, Frequency.G01),
+
+    /** Carrier-phase GPS L2C for Rinex2. */
+    LC(MeasurementType.CARRIER_PHASE, Frequency.G02),
+
+    /** Carrier-phase GLONASS G2 for Rinex2. */
+    LD(MeasurementType.CARRIER_PHASE, Frequency.R02),
+
+    /** Doppler GPS L1 / GLONASS G1 / Galileo E2-L1-E1 / SBAS L1 for Rinex2. */
+    D1(MeasurementType.DOPPLER, Frequency.G01, Frequency.R01, Frequency.E01, Frequency.S01),
+
+    /** Doppler GPS L2 / GLONASS G2 / Beidou BO2 for Rinex2. */
+    D2(MeasurementType.DOPPLER, Frequency.G02, Frequency.R02, Frequency.B02),
 
     /** Doppler GPS L5 / Galileo E5a / SBAS L5 for Rinex2. */
     D5(MeasurementType.DOPPLER, Frequency.G05, Frequency.E05, Frequency.S05),
 
-    /** Doppler Galileo E6 for Rinex2. */
-    D6(MeasurementType.DOPPLER, Frequency.E06),
+    /** Doppler Galileo E6 / Beidou B03 for Rinex2. */
+    D6(MeasurementType.DOPPLER, Frequency.E06, Frequency.C07),
 
-    /** Doppler Galileo E5b for Rinex2. */
-    D7(MeasurementType.DOPPLER, Frequency.E07),
+    /** Doppler Galileo E5b / Beidou B02 for Rinex2. */
+    D7(MeasurementType.DOPPLER, Frequency.E07, Frequency.B02),
 
     /** Doppler Galileo E5a+b for Rinex2. */
     D8(MeasurementType.DOPPLER, Frequency.E08),
 
     /** Doppler GPS L1 / GLONASS G1 / Galileo E2-L1-E1 / SBAS L1 for Rinex2. */
-    S1(MeasurementType.SIGNAL_STRENGTH, Frequency.G01, Frequency.R01, Frequency.C01, Frequency.S01),
+    S1(MeasurementType.SIGNAL_STRENGTH, Frequency.G01, Frequency.R01, Frequency.E01, Frequency.S01),
 
-    /** Signal Strength GPS L2 / GLONASS G2 for Rinex2. */
-    S2(MeasurementType.SIGNAL_STRENGTH, Frequency.G02, Frequency.R02),
+    /** Signal Strength GPS L2 / GLONASS G2 / Beidou B02 for Rinex2. */
+    S2(MeasurementType.SIGNAL_STRENGTH, Frequency.G02, Frequency.R02, Frequency.B02),
 
     /** Signal Strength GPS L5 / Galileo E5a / SBAS L5 for Rinex2. */
     S5(MeasurementType.SIGNAL_STRENGTH, Frequency.G05, Frequency.E05, Frequency.S05),
 
-    /** Signal Strength Galileo E6 for Rinex2. */
-    S6(MeasurementType.SIGNAL_STRENGTH, Frequency.E06),
+    /** Signal Strength Galileo E6 / Beidou B03 for Rinex2. */
+    S6(MeasurementType.SIGNAL_STRENGTH, Frequency.E06, Frequency.C07),
 
-    /** Signal Strength Galileo E5b for Rinex2. */
-    S7(MeasurementType.SIGNAL_STRENGTH, Frequency.E07),
+    /** Signal Strength Galileo E5b / Beidou B02 for Rinex2. */
+    S7(MeasurementType.SIGNAL_STRENGTH, Frequency.E07, Frequency.B02),
 
     /** Signal Strength Galileo E5a+b for Rinex2. */
     S8(MeasurementType.SIGNAL_STRENGTH, Frequency.E08),
@@ -179,14 +191,32 @@ public enum ObservationType {
     /** Pseudorange GPS L2 Y for Rinex3. */
     C2Y(MeasurementType.PSEUDO_RANGE, Frequency.G02),
 
+    /** Pseudorange GLONASS G3 I for Rinex3. */
+    C3I(MeasurementType.PSEUDO_RANGE, Frequency.R03),
+
+    /** Pseudorange GLONASS G3 Q for Rinex3. */
+    C3Q(MeasurementType.PSEUDO_RANGE, Frequency.R03),
+
+    /** Pseudorange GLONASS G3 I+Q for Rinex3. */
+    C3X(MeasurementType.PSEUDO_RANGE, Frequency.R03),
+
+    /** Pseudorange IRNSS L5 A for Rinex3. */
+    C5A(MeasurementType.PSEUDO_RANGE, Frequency.I05),
+
+    /** Pseudorange IRNSS L5 B for Rinex3. */
+    C5B(MeasurementType.PSEUDO_RANGE, Frequency.I05),
+
+    /** Pseudorange IRNSS L5 C for Rinex3. */
+    C5C(MeasurementType.PSEUDO_RANGE, Frequency.I05),
+
     /** Pseudorange GPS L5 I/ Galileo E5a F/NAV OS / SBAS L5 I / QZSS L5 I for Rinex3. */
     C5I(MeasurementType.PSEUDO_RANGE, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
 
     /** Pseudorange GPS L5 Q/ Galileo E5a Q / SBAS L5 Q / QZSS L5 Q for Rinex3. */
     C5Q(MeasurementType.PSEUDO_RANGE, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
 
-    /** Pseudorange GPS L5 I+Q/ Galileo E5a I+Q / SBAS L5 I+Q / QZSS L5 I+Q for Rinex3. */
-    C5X(MeasurementType.PSEUDO_RANGE, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
+    /** Pseudorange GPS L5 I+Q/ Galileo E5a I+Q / SBAS L5 I+Q / QZSS L5 I+Q / IRNSS L5 B+C for Rinex3. */
+    C5X(MeasurementType.PSEUDO_RANGE, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05, Frequency.I05),
 
     /** Pseudorange Galileo E6 A PRS for Rinex3. */
     C6A(MeasurementType.PSEUDO_RANGE, Frequency.E06),
@@ -202,6 +232,12 @@ public enum ObservationType {
 
     /** Pseudorange Beidou B3 Q for Rinex3. */
     C6Q(MeasurementType.PSEUDO_RANGE, Frequency.B03),
+
+    /** Pseudorange QZSS LEX(6) L for Rinex3. */
+    C6L(MeasurementType.PSEUDO_RANGE, Frequency.J06),
+
+    /** Pseudorange QZSS LEX(6) S for Rinex3. */
+    C6S(MeasurementType.PSEUDO_RANGE, Frequency.J06),
 
     /** Pseudorange Galileo E6 B+C / QZSS LEX(6) S+L / Beidou B3 I+Q for Rinex3. */
     C6X(MeasurementType.PSEUDO_RANGE, Frequency.E06, Frequency.J06, Frequency.B03),
@@ -226,6 +262,30 @@ public enum ObservationType {
 
     /** Pseudorange Galileo E5(E5a+E5b) I+Q for Rinex3. */
     C8X(MeasurementType.PSEUDO_RANGE, Frequency.E08),
+
+    /** Pseudorange IRNSS S A for Rinex3. */
+    C9A(MeasurementType.PSEUDO_RANGE, Frequency.I09),
+
+    /** Pseudorange IRNSS S B for Rinex3. */
+    C9B(MeasurementType.PSEUDO_RANGE, Frequency.I09),
+
+    /** Pseudorange IRNSS S C for Rinex3. */
+    C9C(MeasurementType.PSEUDO_RANGE, Frequency.I09),
+
+    /** Pseudorange IRNSS S B+C for Rinex3. */
+    C9X(MeasurementType.PSEUDO_RANGE, Frequency.I09),
+
+    /** Pseudorange GPS L1 C/A / GLONASS G1 C/A for Rinex2. */
+    CA(MeasurementType.PSEUDO_RANGE, Frequency.G01, Frequency.R01),
+
+    /** Pseudorange GPS L1C for Rinex2. */
+    CB(MeasurementType.PSEUDO_RANGE, Frequency.G01),
+
+    /** Pseudorange GPS L2C for Rinex2. */
+    CC(MeasurementType.PSEUDO_RANGE, Frequency.G02),
+
+    /** Pseudorange GLONASS G2 for Rinex2. */
+    CD(MeasurementType.PSEUDO_RANGE, Frequency.R02),
 
     /** Doppler Galileo E1 A for Rinex3. */
     D1A(MeasurementType.DOPPLER, Frequency.E01),
@@ -302,14 +362,32 @@ public enum ObservationType {
     /** Doppler GPS L2 Y for Rinex3. */
     D2Y(MeasurementType.DOPPLER, Frequency.G02),
 
+    /** Doppler GLONASS G3 I for Rinex3. */
+    D3I(MeasurementType.DOPPLER, Frequency.R03),
+
+    /** Doppler GLONASS G3 Q for Rinex3. */
+    D3Q(MeasurementType.DOPPLER, Frequency.R03),
+
+    /** Doppler GLONASS G3 I+Q for Rinex3. */
+    D3X(MeasurementType.DOPPLER, Frequency.R03),
+
+    /** Doppler IRNSS L5 A for Rinex3. */
+    D5A(MeasurementType.DOPPLER, Frequency.I05),
+
+    /** Doppler IRNSS L5 B for Rinex3. */
+    D5B(MeasurementType.DOPPLER, Frequency.I05),
+
+    /** Doppler IRNSS L5 C for Rinex3. */
+    D5C(MeasurementType.DOPPLER, Frequency.I05),
+
     /** Doppler GPS L5 I/ Galileo E5a F/NAV OS / SBAS L5 I / QZSS L5 I for Rinex3. */
     D5I(MeasurementType.DOPPLER, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
 
     /** Doppler GPS L5 Q/ Galileo E5a Q / SBAS L5 Q / QZSS L5 Q for Rinex3. */
     D5Q(MeasurementType.DOPPLER, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
 
-    /** Doppler GPS L5 I+Q/ Galileo E5a I+Q / SBAS L5 I+Q / QZSS L5 I+Q for Rinex3. */
-    D5X(MeasurementType.DOPPLER, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
+    /** Doppler GPS L5 I+Q/ Galileo E5a I+Q / SBAS L5 I+Q / QZSS L5 I+Q / IRNSS L5 B+C for Rinex3. */
+    D5X(MeasurementType.DOPPLER, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05, Frequency.I05),
 
     /** Doppler Galileo E6 A PRS for Rinex3. */
     D6A(MeasurementType.DOPPLER, Frequency.E06),
@@ -325,6 +403,12 @@ public enum ObservationType {
 
     /** Doppler Beidou B3 Q for Rinex3. */
     D6Q(MeasurementType.DOPPLER, Frequency.B03),
+
+    /** Doppler QZSS LEX(6) L for Rinex3. */
+    D6L(MeasurementType.DOPPLER, Frequency.J06),
+
+    /** Doppler QZSS LEX(6) S for Rinex3. */
+    D6S(MeasurementType.DOPPLER, Frequency.J06),
 
     /** Doppler Galileo E6 B+C / QZSS LEX(6) S+L / Beidou B3 I+Q for Rinex3. */
     D6X(MeasurementType.DOPPLER, Frequency.E06, Frequency.J06, Frequency.B03),
@@ -349,6 +433,30 @@ public enum ObservationType {
 
     /** Doppler Galileo E5(E5a+E5b) I+Q for Rinex3. */
     D8X(MeasurementType.DOPPLER, Frequency.E08),
+
+    /** Doppler IRNSS S A for Rinex3. */
+    D9A(MeasurementType.DOPPLER, Frequency.I09),
+
+    /** Doppler IRNSS S B for Rinex3. */
+    D9B(MeasurementType.DOPPLER, Frequency.I09),
+
+    /** Doppler IRNSS S C for Rinex3. */
+    D9C(MeasurementType.DOPPLER, Frequency.I09),
+
+    /** Doppler IRNSS S B+C for Rinex3. */
+    D9X(MeasurementType.DOPPLER, Frequency.I09),
+
+    /** Doppler GPS L1 C/A / GLONASS G1 C/A for Rinex2. */
+    DA(MeasurementType.DOPPLER, Frequency.G01, Frequency.R01),
+
+    /** Doppler GPS L1C for Rinex2. */
+    DB(MeasurementType.DOPPLER, Frequency.G01),
+
+    /** Doppler GPS L2C for Rinex2. */
+    DC(MeasurementType.DOPPLER, Frequency.G02),
+
+    /** Doppler GLONASS G2 for Rinex2. */
+    DD(MeasurementType.DOPPLER, Frequency.R02),
 
     /** Carrier-phase Galileo E1 A for Rinex3. */
     L1A(MeasurementType.CARRIER_PHASE, Frequency.E01),
@@ -425,14 +533,32 @@ public enum ObservationType {
     /** Carrier-phase GPS L2 Y for Rinex3. */
     L2Y(MeasurementType.CARRIER_PHASE, Frequency.G02),
 
+    /** Carrier-phase GLONASS G3 I for Rinex3. */
+    L3I(MeasurementType.CARRIER_PHASE, Frequency.R03),
+
+    /** Carrier-phase GLONASS G3 Q for Rinex3. */
+    L3Q(MeasurementType.CARRIER_PHASE, Frequency.R03),
+
+    /** Carrier-phase GLONASS G3 I+Q for Rinex3. */
+    L3X(MeasurementType.CARRIER_PHASE, Frequency.R03),
+
+    /** Carrier-phase IRNSS L5 A for Rinex3. */
+    L5A(MeasurementType.CARRIER_PHASE, Frequency.I05),
+
+    /** Carrier-phase IRNSS L5 B for Rinex3. */
+    L5B(MeasurementType.CARRIER_PHASE, Frequency.I05),
+
+    /** Carrier-phase IRNSS L5 C for Rinex3. */
+    L5C(MeasurementType.CARRIER_PHASE, Frequency.I05),
+
     /** Carrier-phase GPS L5 I/ Galileo E5a F/NAV OS / SBAS L5 I / QZSS L5 I for Rinex3. */
     L5I(MeasurementType.CARRIER_PHASE, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
 
     /** Carrier-phase GPS L5 Q/ Galileo E5a Q / SBAS L5 Q / QZSS L5 Q for Rinex3. */
     L5Q(MeasurementType.CARRIER_PHASE, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
 
-    /** Carrier-phase GPS L5 I+Q/ Galileo E5a I+Q / SBAS L5 I+Q / QZSS L5 I+Q for Rinex3. */
-    L5X(MeasurementType.CARRIER_PHASE, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
+    /** Carrier-phase GPS L5 I+Q/ Galileo E5a I+Q / SBAS L5 I+Q / QZSS L5 I+Q / IRNSS L5 B+C for Rinex3. */
+    L5X(MeasurementType.CARRIER_PHASE, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05, Frequency.I05),
 
     /** Carrier-phase Galileo E6 A PRS for Rinex3. */
     L6A(MeasurementType.CARRIER_PHASE, Frequency.E06),
@@ -448,6 +574,12 @@ public enum ObservationType {
 
     /** Carrier-phase Beidou B3 Q for Rinex3. */
     L6Q(MeasurementType.CARRIER_PHASE, Frequency.B03),
+
+    /** Carrier-phase QZSS LEX(6) L for Rinex3. */
+    L6L(MeasurementType.CARRIER_PHASE, Frequency.J06),
+
+    /** Carrier-phase QZSS LEX(6) S for Rinex3. */
+    L6S(MeasurementType.CARRIER_PHASE, Frequency.J06),
 
     /** Carrier-phase Galileo E6 B+C / QZSS LEX(6) S+L / Beidou B3 I+Q for Rinex3. */
     L6X(MeasurementType.CARRIER_PHASE, Frequency.E06, Frequency.J06, Frequency.B03),
@@ -472,6 +604,18 @@ public enum ObservationType {
 
     /** Carrier-phase Galileo E5(E5a+E5b) I+Q for Rinex3. */
     L8X(MeasurementType.CARRIER_PHASE, Frequency.E08),
+
+    /** Carrier-phase IRNSS S A for Rinex3. */
+    L9A(MeasurementType.CARRIER_PHASE, Frequency.I09),
+
+    /** Carrier-phase IRNSS S B for Rinex3. */
+    L9B(MeasurementType.CARRIER_PHASE, Frequency.I09),
+
+    /** Carrier-phase IRNSS S C for Rinex3. */
+    L9C(MeasurementType.CARRIER_PHASE, Frequency.I09),
+
+    /** Carrier-phase IRNSS S B+C for Rinex3. */
+    L9X(MeasurementType.CARRIER_PHASE, Frequency.I09),
 
     /** Signal-strength Galileo E1 A for Rinex3. */
     S1A(MeasurementType.SIGNAL_STRENGTH, Frequency.E01),
@@ -548,14 +692,32 @@ public enum ObservationType {
     /** Signal-strength GPS L2 Y for Rinex3. */
     S2Y(MeasurementType.SIGNAL_STRENGTH, Frequency.G02),
 
+    /** Signal-strength GLONASS G3 I for Rinex3. */
+    S3I(MeasurementType.SIGNAL_STRENGTH, Frequency.R03),
+
+    /** Signal-strength GLONASS G3 Q for Rinex3. */
+    S3Q(MeasurementType.SIGNAL_STRENGTH, Frequency.R03),
+
+    /** Signal-strength GLONASS G3 I+Q for Rinex3. */
+    S3X(MeasurementType.SIGNAL_STRENGTH, Frequency.R03),
+
+    /** Signal-strength IRNSS L5 A for Rinex3. */
+    S5A(MeasurementType.SIGNAL_STRENGTH, Frequency.I05),
+
+    /** Signal-strength IRNSS L5 B for Rinex3. */
+    S5B(MeasurementType.SIGNAL_STRENGTH, Frequency.I05),
+
+    /** Signal-strength IRNSS L5 C for Rinex3. */
+    S5C(MeasurementType.SIGNAL_STRENGTH, Frequency.I05),
+
     /** Signal-strength GPS L5 I/ Galileo E5a F/NAV OS / SBAS L5 I / QZSS L5 I for Rinex3. */
     S5I(MeasurementType.SIGNAL_STRENGTH, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
 
     /** Signal-strength GPS L5 Q/ Galileo E5a Q / SBAS L5 Q / QZSS L5 Q for Rinex3. */
     S5Q(MeasurementType.SIGNAL_STRENGTH, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
 
-    /** Signal-strength GPS L5 I+Q/ Galileo E5a I+Q / SBAS L5 I+Q / QZSS L5 I+Q for Rinex3. */
-    S5X(MeasurementType.SIGNAL_STRENGTH, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05),
+    /** Signal-strength GPS L5 I+Q/ Galileo E5a I+Q / SBAS L5 I+Q / QZSS L5 I+Q / IRNSS L5 B+C for Rinex3. */
+    S5X(MeasurementType.SIGNAL_STRENGTH, Frequency.G05, Frequency.E05, Frequency.S05, Frequency.J05, Frequency.I05),
 
     /** Signal-strength Galileo E6 A PRS for Rinex3. */
     S6A(MeasurementType.SIGNAL_STRENGTH, Frequency.E06),
@@ -571,6 +733,12 @@ public enum ObservationType {
 
     /** Signal-strength Beidou B3 Q for Rinex3. */
     S6Q(MeasurementType.SIGNAL_STRENGTH, Frequency.B03),
+
+    /** Signal-strength QZSS LEX(6) L for Rinex3. */
+    S6L(MeasurementType.SIGNAL_STRENGTH, Frequency.J06),
+
+    /** Signal-strength QZSS LEX(6) S for Rinex3. */
+    S6S(MeasurementType.SIGNAL_STRENGTH, Frequency.J06),
 
     /** Signal-strength Galileo E6 B+C / QZSS LEX(6) S+L / Beidou B3 I+Q for Rinex3. */
     S6X(MeasurementType.SIGNAL_STRENGTH, Frequency.E06, Frequency.J06, Frequency.B03),
@@ -594,7 +762,31 @@ public enum ObservationType {
     S8Q(MeasurementType.SIGNAL_STRENGTH, Frequency.E08),
 
     /** Signal-strength Galileo E5(E5a+E5b) I+Q for Rinex3. */
-    S8X(MeasurementType.SIGNAL_STRENGTH, Frequency.E08);
+    S8X(MeasurementType.SIGNAL_STRENGTH, Frequency.E08),
+
+    /** Signal-strength IRNSS S A for Rinex3. */
+    S9A(MeasurementType.SIGNAL_STRENGTH, Frequency.I09),
+
+    /** Signal-strength IRNSS S B for Rinex3. */
+    S9B(MeasurementType.SIGNAL_STRENGTH, Frequency.I09),
+
+    /** Signal-strength IRNSS S C for Rinex3. */
+    S9C(MeasurementType.SIGNAL_STRENGTH, Frequency.I09),
+
+    /** Signal-strength IRNSS S B+C for Rinex3. */
+    S9X(MeasurementType.SIGNAL_STRENGTH, Frequency.I09),
+
+    /** Signal-strength GPS L1 C/A / GLONASS G1 C/A for Rinex2. */
+    SA(MeasurementType.SIGNAL_STRENGTH, Frequency.G01, Frequency.R01),
+
+    /** Signal-strength GPS L1C for Rinex2. */
+    SB(MeasurementType.SIGNAL_STRENGTH, Frequency.G01),
+
+    /** Signal-strength GPS L2C for Rinex2. */
+    SC(MeasurementType.SIGNAL_STRENGTH, Frequency.G02),
+
+    /** Signal-strength GLONASS G2 for Rinex2. */
+    SD(MeasurementType.SIGNAL_STRENGTH, Frequency.R02);
 
     /** Measurement type. */
     private final MeasurementType type;
