@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.orekit.time.AbsoluteDate;
@@ -27,6 +28,9 @@ import org.orekit.time.TimeStamped;
  */
 public class ObservationDataSet implements TimeStamped {
 
+    /** Rinex header associated with this data set. */
+    private final RinexHeader header;
+
     /** Satellite System. */
     private final SatelliteSystem satelliteSystem;
 
@@ -34,30 +38,40 @@ public class ObservationDataSet implements TimeStamped {
     private final int prnNumber;
 
     /** Date of the observation. */
-    private AbsoluteDate tObs;
+    private final AbsoluteDate tObs;
 
     /** List of Observation data. */
-    private List<ObservationData> observationData;
+    private final List<ObservationData> observationData;
 
     /** Receiver clock offset (seconds). */
-    private double rcvrClkOffset;
+    private final double rcvrClkOffset;
 
     /**
      * Simple constructor.
+     * @param header Rinex header associated with this data set
      * @param satelliteSystem Satellite system
      * @param prnNumber PRN number
      * @param tObs Observation date
      * @param rcvrClkOffset Receiver clock offset (optional, 0 by default)
      * @param observationData List of observation data
      */
-    public ObservationDataSet(final SatelliteSystem satelliteSystem,
+    public ObservationDataSet(final RinexHeader header, final SatelliteSystem satelliteSystem,
                               final int prnNumber, final AbsoluteDate tObs,
                               final double rcvrClkOffset, final List<ObservationData> observationData) {
+        this.header          = header;
         this.satelliteSystem = satelliteSystem;
         this.prnNumber       = prnNumber;
         this.tObs            = tObs;
         this.observationData = observationData;
         this.rcvrClkOffset   = rcvrClkOffset;
+    }
+
+    /** Get the Rinex header associated with this data set.
+     * @return Rinex header associated with this data set
+     * @since 9.3
+     */
+    public RinexHeader getHeader() {
+        return header;
     }
 
     /** Get Satellite System.
@@ -81,10 +95,10 @@ public class ObservationDataSet implements TimeStamped {
     }
 
     /** Get list of observation data.
-     * @return list of observation data for the observed satellite
+     * @return unmodifiable view of of observation data for the observed satellite
      */
     public List<ObservationData> getObservationData() {
-        return observationData;
+        return Collections.unmodifiableList(observationData);
     }
 
     /** Get receiver clock offset.

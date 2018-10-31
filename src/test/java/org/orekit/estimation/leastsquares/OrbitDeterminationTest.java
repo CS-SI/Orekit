@@ -107,7 +107,6 @@ import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexHeader;
 import org.orekit.gnss.RinexLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
@@ -1462,58 +1461,55 @@ public class OrbitDeterminationTest {
         }
         final Iono iono = new Iono(false);
         final RinexLoader loader = new RinexLoader(new FileInputStream(file), file.getAbsolutePath());
-        for (final Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            final RinexHeader header = entry.getKey();
-            for (final ObservationDataSet observationDataSet : entry.getValue()) {
-                if (observationDataSet.getSatelliteSystem() == system    &&
-                    observationDataSet.getPrnNumber()       == prnNumber) {
-                    for (final ObservationData od : observationDataSet.getObservationData()) {
-                        if (!Double.isNaN(od.getValue())) {
-                            if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-                                // this is a measurement we want
-                                final String stationName = header.getMarkerName() + "/" + od.getObservationType();
-                                StationData stationData = stations.get(stationName);
-                                if (stationData == null) {
-                                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                                              stationName + " not configured");
-                                }
-                                Range range = new Range(stationData.station, observationDataSet.getDate(),
-                                                        od.getValue(), stationData.rangeSigma,
-                                                        weights.rangeBaseWeight, false);
-                                range.addModifier(iono.getRangeModifier(od.getObservationType().getFrequency(system),
-                                                                        observationDataSet.getDate()));
-                                if (satAntennaRangeModifier != null) {
-                                    range.addModifier(satAntennaRangeModifier);
-                                }
-                                if (stationData.rangeBias != null) {
-                                    range.addModifier(stationData.rangeBias);
-                                }
-                                if (satRangeBias != null) {
-                                    range.addModifier(satRangeBias);
-                                }
-                                if (stationData.rangeTroposphericCorrection != null) {
-                                    range.addModifier(stationData.rangeTroposphericCorrection);
-                                }
-                                addIfNonZeroWeight(range, measurements);
-
-                            } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
-                                // this is a measurement we want
-                                final String stationName = header.getMarkerName() + "/" + od.getObservationType();
-                                StationData stationData = stations.get(stationName);
-                                if (stationData == null) {
-                                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                                              stationName + " not configured");
-                                }
-                                RangeRate rangeRate = new RangeRate(stationData.station, observationDataSet.getDate(),
-                                                                    od.getValue(), stationData.rangeRateSigma,
-                                                                    weights.rangeRateBaseWeight, false);
-                                rangeRate.addModifier(iono.getRangeRateModifier(od.getObservationType().getFrequency(system),
-                                                                                observationDataSet.getDate()));
-                                if (stationData.rangeRateBias != null) {
-                                    rangeRate.addModifier(stationData.rangeRateBias);
-                                }
-                                addIfNonZeroWeight(rangeRate, measurements);
+        for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
+            if (observationDataSet.getSatelliteSystem() == system    &&
+                observationDataSet.getPrnNumber()       == prnNumber) {
+                for (final ObservationData od : observationDataSet.getObservationData()) {
+                    if (!Double.isNaN(od.getValue())) {
+                        if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+                            // this is a measurement we want
+                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            StationData stationData = stations.get(stationName);
+                            if (stationData == null) {
+                                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                                          stationName + " not configured");
                             }
+                            Range range = new Range(stationData.station, observationDataSet.getDate(),
+                                                    od.getValue(), stationData.rangeSigma,
+                                                    weights.rangeBaseWeight, false);
+                            range.addModifier(iono.getRangeModifier(od.getObservationType().getFrequency(system),
+                                                                    observationDataSet.getDate()));
+                            if (satAntennaRangeModifier != null) {
+                                range.addModifier(satAntennaRangeModifier);
+                            }
+                            if (stationData.rangeBias != null) {
+                                range.addModifier(stationData.rangeBias);
+                            }
+                            if (satRangeBias != null) {
+                                range.addModifier(satRangeBias);
+                            }
+                            if (stationData.rangeTroposphericCorrection != null) {
+                                range.addModifier(stationData.rangeTroposphericCorrection);
+                            }
+                            addIfNonZeroWeight(range, measurements);
+
+                        } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
+                            // this is a measurement we want
+                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            StationData stationData = stations.get(stationName);
+                            if (stationData == null) {
+                                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                                          stationName + " not configured");
+                            }
+                            RangeRate rangeRate = new RangeRate(stationData.station, observationDataSet.getDate(),
+                                                                od.getValue(), stationData.rangeRateSigma,
+                                                                weights.rangeRateBaseWeight, false);
+                            rangeRate.addModifier(iono.getRangeRateModifier(od.getObservationType().getFrequency(system),
+                                                                            observationDataSet.getDate()));
+                            if (stationData.rangeRateBias != null) {
+                                rangeRate.addModifier(stationData.rangeRateBias);
+                            }
+                            addIfNonZeroWeight(rangeRate, measurements);
                         }
                     }
                 }
