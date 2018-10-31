@@ -19,6 +19,7 @@ package org.orekit.gnss;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -461,9 +462,34 @@ public class RinexLoaderTest {
     public void testRinex220Spaceborne() {
         RinexLoader  loader = new RinexLoader("^ice12720\\.07o$");
         List<ObservationDataSet> l = loader.getObservationDataSets();
-        Assert.assertEquals(4, l.size());
-        for (ObservationDataSet dataSet : l) {
+        Assert.assertEquals(4 * 7, l.size());
+        for (int i = 0; i < l.size(); ++i) {
+            ObservationDataSet dataSet = l.get(i);
             Assert.assertEquals("SPACEBORNE", dataSet.getHeader().getMarkerType());
+            Assert.assertEquals(SatelliteSystem.GPS, dataSet.getHeader().getSatelliteSystem());
+            switch (i % 7) {
+                case 0 :
+                    Assert.assertEquals( 1, dataSet.getPrnNumber());
+                    break;
+                case 1 :
+                    Assert.assertEquals( 5, dataSet.getPrnNumber());
+                    break;
+                case 2 :
+                    Assert.assertEquals( 9, dataSet.getPrnNumber());
+                    break;
+                case 3 :
+                    Assert.assertEquals(12, dataSet.getPrnNumber());
+                    break;
+                case 4 :
+                    Assert.assertEquals(14, dataSet.getPrnNumber());
+                    break;
+                case 5 :
+                    Assert.assertEquals(22, dataSet.getPrnNumber());
+                    break;
+                case 6 :
+                    Assert.assertEquals(30, dataSet.getPrnNumber());
+                    break;
+            }
             List<ObservationData> list = dataSet.getObservationData();
             Assert.assertEquals(9, list.size());
             Assert.assertEquals(ObservationType.L1, list.get(0).getObservationType());
@@ -475,6 +501,35 @@ public class RinexLoaderTest {
             Assert.assertEquals(ObservationType.S1, list.get(6).getObservationType());
             Assert.assertEquals(ObservationType.S2, list.get(7).getObservationType());
             Assert.assertEquals(ObservationType.SA, list.get(8).getObservationType());
+        }
+    }
+
+    @Test
+    public void testRinex220SpaceborneScaled() {
+        List<ObservationDataSet> raw    = new RinexLoader("^ice12720\\.07o$").getObservationDataSets();
+        List<ObservationDataSet> scaled = new RinexLoader("^ice12720-scaled\\.07o$").getObservationDataSets();
+        Assert.assertEquals(4 * 7, raw.size());
+        Assert.assertEquals(4 * 7, scaled.size());
+        for (int i = 0; i < raw.size(); ++i) {
+
+            ObservationDataSet rawDataSet    = raw.get(i);
+            Assert.assertEquals("SPACEBORNE", rawDataSet.getHeader().getMarkerType());
+            Assert.assertEquals(SatelliteSystem.GPS, rawDataSet.getHeader().getSatelliteSystem());
+
+            ObservationDataSet scaledDataSet = scaled.get(i);
+            Assert.assertEquals("SPACEBORNE", scaledDataSet.getHeader().getMarkerType());
+            Assert.assertEquals(SatelliteSystem.GPS, scaledDataSet.getHeader().getSatelliteSystem());
+
+            List<ObservationData> rawList    = rawDataSet.getObservationData();
+            List<ObservationData> scaledList = scaledDataSet.getObservationData();
+            Assert.assertEquals(9, rawList.size());
+            Assert.assertEquals(9, scaledList.size());
+            for (int j = 0; j < rawList.size(); ++j) {
+                final ObservationData rawData    = rawList.get(j);
+                final ObservationData scaledData = scaledList.get(j);
+                Assert.assertEquals(rawData.getObservationType(), scaledData.getObservationType());
+                Assert.assertEquals(rawData.getValue(), scaledData.getValue(), FastMath.ulp(rawData.getValue()));
+            }
         }
     }
 

@@ -97,6 +97,7 @@ public class RinexLoader {
     private static final String SYS_PHASE_SHIFT      = "SYS / PHASE SHIFT";
     private static final String GLONASS_SLOT_FRQ_NB  = "GLONASS SLOT / FRQ #";
     private static final String GLONASS_COD_PHS_BIS  = "GLONASS COD/PHS/BIS";
+    private static final String OBS_SCALE_FACTOR     = "OBS SCALE FACTOR";
 
     private static final String GPS                  = "GPS";
     private static final String GAL                  = "GAL";
@@ -241,6 +242,10 @@ public class RinexLoader {
                 boolean                          inGlonassSlot          = false;
                 boolean                          inGlonassCOD           = false;
                 RinexHeader                      rinexHeader            = null;
+                int                               scaleFactor            = 1;
+                int                               nbObsScaleFactor       = 0;
+                final List<ScaleFactorCorrection> scaleFactorCorrections = new ArrayList<>();
+                final Map<SatelliteSystem, List<ObservationType>> listTypeObs = new HashMap<>();
 
                 //First line must  always contain Rinex Version, File Type and Satellite Systems Observed
                 String line = reader.readLine();
@@ -262,11 +267,12 @@ public class RinexLoader {
                 inRinexVersion = true;
 
                 switch (format100 / 100) {
-                    case 2:
+                    case 2: {
 
                         final int                   MAX_OBS_TYPES_PER_LINE_RNX2 = 9;
                         final int                   MAX_N_SAT_OBSERVATION       = 12;
                         final int                   MAX_N_TYPES_OBSERVATION     = 5;
+                        final int                   MAX_OBS_TYPES_SCALE_FACTOR  = 8;
                         final List<ObservationType> typesObs = new ArrayList<>();
 
                         for (line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -428,6 +434,20 @@ public class RinexLoader {
                                         }
                                         inTypesObs = true;
                                         break;
+                                    case OBS_SCALE_FACTOR :
+                                        scaleFactor      = FastMath.max(1, parseInt(line, 0,  6));
+                                        nbObsScaleFactor = parseInt(line, 6, 6);
+                                        if (nbObsScaleFactor > MAX_OBS_TYPES_SCALE_FACTOR) {
+                                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                                      lineNumber, name, line);
+                                        }
+                                        final List<ObservationType> typesObsScaleFactor = new ArrayList<>(nbObsScaleFactor);
+                                        for (int i = 0; i < nbObsScaleFactor; i++) {
+                                            typesObsScaleFactor.add(ObservationType.valueOf(parseString(line, 16 + (6 * i), 2)));
+                                        }
+                                        scaleFactorCorrections.add(new ScaleFactorCorrection(satelliteSystem,
+                                                                                             scaleFactor, typesObsScaleFactor));
+                                        break;
                                     case END_OF_HEADER :
                                         //We make sure that we have read all the mandatory fields inside the header of the Rinex
                                         if (!inRinexVersion || !inRunBy || !inMarkerName ||
@@ -541,15 +561,35 @@ public class RinexLoader {
                                             lineNumber++;
                                             final int iMax = FastMath.min(MAX_N_TYPES_OBSERVATION, nbTypes - observationData.size());
                                             for (int i = 0; i < iMax; i++) {
-                                                observationData.add(new ObservationData(typesObs.get(observationData.size()),
-                                                                                        parseDouble(line, 16 * i, 14),
+                                                final ObservationType type = typesObs.get(observationData.size());
+                                                double value = parseDouble(line, 16 * i, 14);
+                                                boolean scaleFactorFound = false;
+                                                //We look for the lines of ScaledFactorCorrections
+                                                for (int l = 0; l < scaleFactorCorrections.size() && !scaleFactorFound; ++l) {
+                                                    //We check if the next Observation Type to read needs to be scaled
+                                                    if (scaleFactorCorrections.get(l).getTypesObsScaled().contains(type)) {
+                                                        value /= scaleFactorCorrections.get(l).getCorrection();
+                                                        scaleFactorFound = true;
+                                                    }
+                                                }
+                                                observationData.add(new ObservationData(type,
+                                                                                        value,
                                                                                         parseInt(line, 14 + 16 * i, 1),
                                                                                         parseInt(line, 15 + 16 * i, 1)));
                                             }
                                         }
 
                                         //We check that the Satellite type is consistent with Satellite System in the top of the file
-                                        final SatelliteSystem satelliteSystemSat = SatelliteSystem.parseSatelliteSystem(satsObsList[k]);
+                                        final SatelliteSystem satelliteSystemSat;
+                                        final int id;
+                                        if (satsObsList[k].length() < 3) {
+                                            // missing satellite system, we use the global one
+                                            satelliteSystemSat = satelliteSystem;
+                                            id                 = Integer.parseInt(satsObsList[k]);
+                                        } else {
+                                            satelliteSystemSat = SatelliteSystem.parseSatelliteSystem(satsObsList[k]);
+                                            id                 = Integer.parseInt(satsObsList[k].substring(1, 3).trim());
+                                        }
                                         if (!satelliteSystem.equals(SatelliteSystem.MIXED)) {
                                             if (!satelliteSystemSat.equals(satelliteSystem)) {
                                                 throw new OrekitException(OrekitMessages.INCONSISTENT_SATELLITE_SYSTEM,
@@ -562,10 +602,10 @@ public class RinexLoader {
                                             case GPS:
                                             case GLONASS:
                                             case GALILEO:
-                                                prnNumber = Integer.parseInt(satsObsList[k].substring(1, 3).trim());
+                                                prnNumber = id;
                                                 break;
                                             case SBAS:
-                                                prnNumber = Integer.parseInt(satsObsList[k].substring(1, 3).trim()) + 100;
+                                                prnNumber = id + 100;
                                                 break;
                                             default:
                                                 // MIXED satellite system is not allowed here
@@ -581,13 +621,13 @@ public class RinexLoader {
                             }
                         }
                         break;
-                    case 3:
+                    }
+                    case 3: {
 
                         final int                   MAX_OBS_TYPES_PER_LINE_RNX3 = 13;
                         final int           MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE = 12;
                         final int                    MAX_N_SAT_PHSHIFT_PER_LINE = 10;
 
-                        final Map<SatelliteSystem, List<ObservationType>> listTypeObs            = new HashMap<>();
                         final List<ObservationType>                       typeObs                = new ArrayList<>();
                         String                                            sigStrengthUnit        = null;
                         int                                               leapSecondsFuture      = 0;
@@ -596,10 +636,6 @@ public class RinexLoader {
                         final List<AppliedDCBS>                           listAppliedDCBs        = new ArrayList<>();
                         final List<AppliedPCVS>                           listAppliedPCVS        = new ArrayList<>();
                         SatelliteSystem                                   satSystemScaleFactor   = null;
-                        int                                               scaleFactor            = 1;
-                        int                                               nbObsScaleFactor       = 0;
-                        final List<ObservationType>                       typesObsScaleFactor    = new ArrayList<>();
-                        final List<ScaleFactorCorrection>                 scaleFactorCorrections = new ArrayList<>();
                         String[]                                          satsPhaseShift         = null;
                         int                                               nbSatPhaseShift        = 0;
                         SatelliteSystem                                   satSystemPhaseShift    = null;
@@ -829,6 +865,7 @@ public class RinexLoader {
                                         satSystemScaleFactor = SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1));
                                         scaleFactor          = parseInt(line, 2, 4);
                                         nbObsScaleFactor     = parseInt(line, 8, 2);
+                                        final List<ObservationType> typesObsScaleFactor = new ArrayList<>(nbObsScaleFactor);
 
                                         if (nbObsScaleFactor == 0) {
                                             typesObsScaleFactor.addAll(listTypeObs.get(satSystemScaleFactor));
@@ -1031,6 +1068,7 @@ public class RinexLoader {
                             }
                         }
                         break;
+                    }
                     default:
                         //If RINEX Version is neither 2 nor 3
                         throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
