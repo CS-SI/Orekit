@@ -16,28 +16,22 @@
  */
 package org.orekit.models.earth;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
  * <p>
- * Models that implement this interface don't split the delay into hydrostatic
+ * Models that implement this interface split the delay into hydrostatic
  * and non-hydrostatic part.
+ * <pre>
+ * δ = δ<sub>h</sub> + δ<sub>nh</sub>
+ * <li>δ<sub>h</sub>  =  hydrostatic delay
+ * <li>δ<sub>nh</sub> =  non-hydrostatic delay
+ * </pre>
  * </p>
- * @author Thomas Neidhart
- * @since 7.1
+ * @author Bryan Cazabonne
  */
-public interface TroposphericModel extends DiscreteTroposphericModel {
-
-    /** Calculates the tropospheric path delay for the signal path from a ground
-     * station to a satellite.
-     *
-     * @param elevation the elevation of the satellite, in radians
-     * @param height the height of the station in m above sea level
-     * @return the path delay due to the troposphere in m
-     */
-    double pathDelay(double elevation, double height);
+public interface DiscreteTroposphericModel extends MappingFunction {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
@@ -47,9 +41,7 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    default double pathDelay(double elevation, double height, AbsoluteDate date) {
-        return pathDelay(elevation, height);
-    }
+    double pathDelay(double elevation, double height, AbsoluteDate date);
 
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
@@ -60,28 +52,6 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * @param height the height of the station in m above sea level.
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    default double[] computeZenithDelay(double height) {
-        return new double[] {
-            pathDelay(0.5 * FastMath.PI, height),
-            0
-        };
-    }
+     double[] computeZenithDelay(double height);
 
-    /** This method allows the computation of the hydrostatic and
-     * wet mapping functions. The resulting element is an array having the following form:
-     * <ul>
-     * <li>double[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
-     * <li>double[1] = m<sub>w</sub>(e) -&gt wet mapping function
-     * </ul>
-     * @param height the height of the station in m above sea level.
-     * @param elevation the elevation of the satellite, in radians.
-     * @param date current date
-     * @return a two components array containing the hydrostatic and wet mapping functions.
-     */
-    default double[] mappingFactors(double height, double elevation, AbsoluteDate date) {
-        return new double[] {
-            1.0,
-            1.0
-        };
-    }
 }
