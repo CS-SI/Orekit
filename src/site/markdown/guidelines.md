@@ -42,7 +42,7 @@ The second goal, robustness, has some specific implications for a low level
 component like Orekit. In some sense, it can be considered an extension of the
 previous goal as it can also be improved by testing. It can also be improved
 by automatic checking tools that analyze either source code or binary code. The
-[findbugs](http://findbugs.sourceforge.net/) tool is already configured for
+[spotbugs](https://spotbugs.github.io/) tool is already configured for
 automatic checks of the library using a maven plugin.
 
 This is however not sufficient. A library is intended to be used by applications
@@ -204,9 +204,9 @@ root directory.
 
   seek for a line test coverage of at least 80% (more is better)
 
-* *findbugs* (robustness)
+* *spotbugs* (robustness)
 
-  fix _all_ errors and warnings found by findbugs
+  fix _all_ errors and warnings found by spotbugs
 
 * *no runtime assumptions* (robustness)
 

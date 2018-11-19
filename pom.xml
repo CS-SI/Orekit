@@ -20,7 +20,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.findbugs-maven-plugin.version>3.0.4</orekit.findbugs-maven-plugin.version>
+    <orekit.spotbugs-maven-plugin.version>3.1.7</orekit.spotbugs-maven-plugin.version>
     <orekit.jacoco-maven-plugin.version>0.7.9</orekit.jacoco-maven-plugin.version>
     <orekit.maven-assembly-plugin.version>3.0.0</orekit.maven-assembly-plugin.version>
     <orekit.maven-bundle-plugin.version>3.3.0</orekit.maven-bundle-plugin.version>
@@ -596,13 +596,13 @@
         <version>${orekit.maven-project-info-reports-plugin.version}</version>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${orekit.findbugs-maven-plugin.version}</version>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${orekit.spotbugs-maven-plugin.version}</version>
         <configuration>
           <threshold>Normal</threshold>
           <effort>Default</effort>
-          <excludeFilterFile>${basedir}/findbugs-exclude-filter.xml</excludeFilterFile>
+          <excludeFilterFile>${basedir}/spotbugs-exclude-filter.xml</excludeFilterFile>
        </configuration>
       </plugin>
       <plugin>

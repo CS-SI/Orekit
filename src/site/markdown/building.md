@@ -81,7 +81,7 @@ with the following command:
 
 For other commands like generating the site, or generating the
 [checkstyle](http://checkstyle.sourceforge.net/),
-[findbugs](http://findbugs.sourceforge.net/) or
+[spotbugs](https://spotbugs.github.io/) or
 [jacoco](http://www.eclemma.org/jacoco/) reports, see the maven
 plugins documentation at [maven site](http://maven.apache.org/plugins/index.html).
 

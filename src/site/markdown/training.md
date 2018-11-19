@@ -65,7 +65,7 @@ are taught:
    * Eclipse integrated development environment
    * Maven build tool
    * Testing tools (Junit, Jacoco)
-   * Auditing tools (Checkstyle, Findbugs, PMD ...)
+   * Auditing tools (Checkstyle, SpotBugs, PMD ...)
 
 |              type            |                           prerequisites                           |  duration |
 |------------------------------|-------------------------------------------------------------------|-----------|
