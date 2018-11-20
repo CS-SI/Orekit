@@ -71,71 +71,65 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
 
-        // Compute spherical harmonics Eq. 3
-        final int degree = 9;
-        final int order  = 9;
-        final int dim = degree * order;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order);
-
-        int i = 0;
-        final double[] aCoef = new double[dim];
-        final double[] bCoef = new double[dim];
-        for (int n = 0; n <= 9; n++) {
-            for (int m = 0; m <= n; m++) {
-                // Pnm(sin(Phi)) * cos(m * longitude)
-                aCoef[i] = p.getPnm(n, m) * FastMath.cos(m * longitude);
-                // Pnm(sin(Phi)) * sin(m * longitude)
-                bCoef[i] = p.getPnm(n, m) * FastMath.sin(m * longitude);
-                i = i + 1;
-            }
-        }
-
-        // a, b and c constants | HYDROSTATIC PART
+        // bh and ch constants (Boehm, J et al, 2006) | HYDROSTATIC PART
         final double bh  = 0.0029;
         final double c0h = 0.062;
         final double c10h;
         final double c11h;
         final double psi;
 
-        // sin(latitude) > 0 -> northern hemisphere
         if (FastMath.sin(latitude) > 0) {
+            // northern hemisphere case
             c10h = 0.001;
             c11h = 0.005;
             psi  = 0.0;
         } else {
+            // southern hemisphere case
             c10h = 0.002;
             c11h = 0.007;
             psi  = FastMath.PI;
         }
 
-        // Compute hydrostatique coefficient ch
         final double coef = ((dofyear + 1 - 28) / 365.25) * 2 * FastMath.PI + psi;
         final double ch = c0h + ((FastMath.cos(coef) + 1) * (c11h / 2.0) + c10h) * (1.0 - FastMath.cos(latitude));
 
-        // Compute hydrostatic coefficient ah Eq. 2 et Eq. 3
-        double a0Hydro   = 0.;
-        double amplHydro = 0.;
-        final ABCoefficients abCoef = new ABCoefficients();
-        final double arrayLength = abCoef.getLength();
-        for (int index = 0; index < arrayLength; index++) {
-            a0Hydro   = a0Hydro + (abCoef.getAHMean(index) * aCoef[index] + abCoef.getBHMean(index) * bCoef[index]) * 1e-5;
-            amplHydro = amplHydro + (abCoef.getAHAmplitude(index) * aCoef[index] + abCoef.getBHAmplitude(index) * bCoef[index]) * 1e-5;
-        }
-
-        final double ah = a0Hydro + amplHydro * FastMath.cos(coef - psi);
-
-        // a, b and c constants | WET PART
+        // bw and cw constants (Boehm, J et al, 2006) | WET PART
         final double bw = 0.00146;
         final double cw = 0.04391;
 
-        // Compute wet coefficient aw Eq. 2 et Eq. 3
+        // Compute coefficients ah and aw with spherical harmonics Eq. 3 (Ref 1)
+
+        // Compute Legendre Polynomials Pnm(sin(phi))
+        final int degree = 9;
+        final int order  = 9;
+        final LegendrePolynomials p = new LegendrePolynomials(degree, order);
+
+        double a0Hydro   = 0.;
+        double amplHydro = 0.;
         double a0Wet   = 0.;
         double amplWet = 0.;
-        for (int index = 0; index < arrayLength; index++) {
-            a0Wet   = a0Wet + (abCoef.getAWMean(index) * aCoef[index] + abCoef.getBWMean(index) * bCoef[index]) * 1.0e-5;
-            amplWet = amplWet + (abCoef.getAWAmplitude(index) * aCoef[index] + abCoef.getBWAmplitude(index) * bCoef[index]) * 1.0e-5;
+        final ABCoefficients abCoef = new ABCoefficients();
+        int j = 0;
+        for (int n = 0; n <= 9; n++) {
+            for (int m = 0; m <= n; m++) {
+                a0Hydro   = a0Hydro + (abCoef.getAHMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
+                                abCoef.getBHMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+
+                a0Wet     = a0Wet + (abCoef.getAWMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
+                                abCoef.getBWMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+
+                amplHydro = amplHydro + (abCoef.getAHAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
+                                abCoef.getBHAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+
+                amplWet   = amplWet + (abCoef.getAWAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
+                                abCoef.getBWAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+
+                j = j + 1;
+            }
         }
 
+        // Eq. 2 (Ref 1)
+        final double ah = a0Hydro + amplHydro * FastMath.cos(coef - psi);
         final double aw = a0Wet + amplWet * FastMath.cos(coef - psi);
 
         final double[] function = new double[2];
@@ -218,15 +212,16 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
             for (int n = 0; n <= degree; n++) {
 
-                for (int m = 0; m <= order; m++) {
+                // m shall be <= n (Heiskanen and Moritz, 1967, pp 21)
+                for (int m = 0; m <= FastMath.min(n, order); m++) {
 
                     // r = int((n - m) / 2)
                     final int r = (int) (n - m) / 2;
                     double sum = 0.;
                     for (int k = 0; k <= r; k++) {
-                        final double term = FastMath.pow(-1.0, k) * CombinatoricsUtils.factorialDouble(2 * n - 2 * k + 1) /
-                                        (CombinatoricsUtils.factorialDouble(k + 1) * CombinatoricsUtils.factorialDouble(n - k + 1) *
-                                         CombinatoricsUtils.factorialDouble(n - m - 2 * k + 1)) *
+                        final double term = FastMath.pow(-1.0, k) * CombinatoricsUtils.factorialDouble(2 * n - 2 * k) /
+                                        (CombinatoricsUtils.factorialDouble(k) * CombinatoricsUtils.factorialDouble(n - k) *
+                                         CombinatoricsUtils.factorialDouble(n - m - 2 * k)) *
                                          FastMath.pow(t, n - m - 2 * k);
                         sum = sum + term;
                     }
@@ -724,20 +719,9 @@ public class GlobalMappingFunctionModel implements MappingFunction {
             -5.700e-09
         };
 
-        /** Arrays dimension. */
-        private final int length;
-
         /** Build a new instance. */
         ABCoefficients() {
-            this.length = AH_MEAN.length;
-        }
 
-        /** Get the length of the coefficient arrays.
-         *  The length is the same for all the arrays.
-         * @return the length
-         */
-        public int getLength() {
-            return length;
         }
 
         /** Get the value of the mean hydrostatique coefficient ah for the given index.
