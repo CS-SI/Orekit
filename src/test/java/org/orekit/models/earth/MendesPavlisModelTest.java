@@ -116,11 +116,9 @@ public class MendesPavlisModelTest {
                                                                humidity, latitude, lambda);
         
         final double[] computedMapping = model.mappingFactors(height, elevation, date);
-        
-        // As indicated in the JavaDoc of the mappingFactors function,
-        // for the Mendes-Pavlis model the total contribution is in
-        // the first component of the resulting vector.
+
         Assert.assertEquals(expectedMapping, computedMapping[0], 5.0e-8);
+        Assert.assertEquals(expectedMapping, computedMapping[1], 5.0e-8);
     }
 
     @Test

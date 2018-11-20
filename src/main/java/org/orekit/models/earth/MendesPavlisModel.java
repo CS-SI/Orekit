@@ -113,7 +113,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
         // mapping function
         final double[] mappingFunction = mappingFactors(height, elevation, date);
         // Tropospheric path delay
-        return zenithDelay[0] * mappingFunction[0] + zenithDelay[1] * mappingFunction[0];
+        return zenithDelay[0] * mappingFunction[0] + zenithDelay[1] * mappingFunction[1];
     }
 
     /** {@inheritDoc} */
@@ -158,17 +158,19 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     /** With the Mendes Pavlis tropospheric model, the mapping
      * function is not split into hydrostatic and wet component.
      * <p>
-     * Therefore, we choose to put the total contribution of the
-     * mapping function in the first component of the array, the
-     * second component is therefore equal to 0.
+     * Therefore, the two components of the resulting array are
+     * equals.
      * <ul>
      * <li>double[0] = m(e) -&gt total mapping function
-     * <li>double[1] = 0
+     * <li>double[1] = m(e) -&gt total mapping function
      * </ul>
      * </p><p>
      * The total delay will thus be computed as this:
      * <pre>
-     * δ = D<sub>hz</sub> * double[0] + D<sub>wz</sub> * double[0]
+     * δ = D<sub>hz</sub> * m(e) + D<sub>wz</sub> * m(e)
+     * </pre>
+     * <pre>
+     * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
      * </pre>
      * </p>
      * */
@@ -194,9 +196,11 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
         // Denominateur
         final double denMP = sinE + a1 / (sinE + a2 / (sinE + a3));
 
+        final double factor = numMP / denMP;
+
         return new double[] {
-            numMP / denMP,
-            0.
+            factor,
+            factor
         };
     }
 
