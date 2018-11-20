@@ -67,8 +67,8 @@ public class GlobalMappingFunctionModelTest {
         
         final double[] computedMapping = model.mappingFactors(height, elevation, date);
         
-        Assert.assertEquals(expectedHydro, computedMapping[0], 1.3e-4);
-        Assert.assertEquals(expectedWet,   computedMapping[1], 8.0e-4);
+        Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
+        Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
     }
 
 }
