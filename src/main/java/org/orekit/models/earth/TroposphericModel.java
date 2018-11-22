@@ -46,7 +46,10 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
-     *
+     * <p>
+     * It is discourage to use this method. It has been developed to respect the
+     * current architecture of the tropospheric models.
+     * </p>
      * @param <T> type of the elements
      * @param elevation the elevation of the satellite, in radians
      * @param height the height of the station in m above sea level
