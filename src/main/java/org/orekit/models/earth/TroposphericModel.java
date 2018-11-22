@@ -18,6 +18,7 @@ package org.orekit.models.earth;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -44,10 +45,11 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      *
      * @param elevation the elevation of the satellite, in radians
      * @param height the height of the station in m above sea level
+     * @param parameters tropospheric model parameters.
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    default double pathDelay(double elevation, double height, AbsoluteDate date) {
+    default double pathDelay(double elevation, double height, double[] parameters, AbsoluteDate date) {
         return pathDelay(elevation, height);
     }
 
@@ -58,9 +60,10 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * <li>double[1] = D<sub>wz</sub> -&gt zenith wet delay
      * </ul>
      * @param height the height of the station in m above sea level.
+     * @param parameters tropospheric model parameters.
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    default double[] computeZenithDelay(double height) {
+    default double[] computeZenithDelay(double height, double[] parameters) {
         return new double[] {
             pathDelay(0.5 * FastMath.PI, height),
             0
@@ -83,5 +86,12 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
             1.0,
             1.0
         };
+    }
+
+    /** Get the drivers for tropospheric model parameters.
+     * @return drivers for tropospheric model parameters
+     */
+    default ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[0];
     }
 }

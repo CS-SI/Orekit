@@ -95,7 +95,7 @@ public class ViennaOneModelTest {
         final double[] a = { 0.00127683, 0.00060955 };
         final double[] z = {2.0966, 0.2140};
         ViennaOneModel model = new ViennaOneModel(a, z, FastMath.toRadians(45.0));
-        final double path = model.pathDelay(FastMath.toRadians(elevation), height, date);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), height, model.getParameters(), date);
         Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
@@ -109,7 +109,7 @@ public class ViennaOneModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), 350, date);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), 350, model.getParameters(), date);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }

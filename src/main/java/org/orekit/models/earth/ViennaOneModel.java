@@ -20,10 +20,11 @@ import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.ParameterDriver;
 
 /** The Vienna1 tropospheric delay model for radio techniques.
  * The Vienna model data are given with a time interval of 6 hours
- * as well on a global 2.5° * 2.0° grid.
+ * as well as on a global 2.5° * 2.0° grid.
  *
  * This version considered the height correction for the hydrostatic part
  * developed by Niell, 1996.
@@ -64,9 +65,10 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final double height, final AbsoluteDate date) {
+    public double pathDelay(final double elevation, final double height,
+                            final double[] parameters, final AbsoluteDate date) {
         // zenith delay
-        final double[] delays = computeZenithDelay(height);
+        final double[] delays = computeZenithDelay(height, parameters);
         // mapping function
         final double[] mappingFunction = mappingFactors(height, elevation, date);
         // Tropospheric path delay
@@ -75,7 +77,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] computeZenithDelay(final double height) {
+    public double[] computeZenithDelay(final double height, final double[] parameters) {
         return zenithDelay;
     }
 
@@ -122,6 +124,12 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         function[0] = function[0] + correction;
 
         return function;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[0];
     }
 
     /** Compute the mapping function related to the coefficient values and the elevation.
