@@ -16,8 +16,12 @@
  */
 package org.orekit.models.earth;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** The Mendes - Pavlis tropospheric delay model for optical techniques.
@@ -120,6 +124,20 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+        // Field
+        final Field<T> field = date.getField();
+        // zenith delay
+        final T[] delays = computeZenithDelay(height, parameters, field);
+        // mapping function
+        final T[] mappingFunction = mappingFactors(height, elevation, date);
+        // Tropospheric path delay
+        return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double[] computeZenithDelay(final double height, final double[] parameters) {
         final double fsite   = getSiteFunctionValue(height);
 
@@ -153,6 +171,49 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
         // Zenith delay for the non-hydrostatic component
         delay[1] = 0.0001 * (5.316 * fLambdaNH - 3.759 * fLambdaH) * (e0 / fsite);
+
+        return delay;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height,
+                                                                  final T[] parameters,
+                                                                  final Field<T> field) {
+        final T zero = field.getZero();
+
+        final T fsite   = getSiteFunctionValue(height);
+
+        // Array for zenith delay
+        final T[] delay = MathArrays.buildArray(field, 2);
+
+        // Dispertion Equation for the Hydrostatic component
+        final T sigma  = zero.add(1 / lambda);
+        final T sigma2 = sigma.multiply(sigma);
+        final T coef1  = sigma2.add(K_COEFFICIENTS[0]);
+        final T coef2  = sigma2.negate().add(K_COEFFICIENTS[0]);
+        final T coef3  = sigma2.add(K_COEFFICIENTS[2]);
+        final T coef4  = sigma2.negate().add(K_COEFFICIENTS[2]);
+
+        final T frac1 = coef1.divide(coef2.multiply(coef2));
+        final T frac2 = coef3.divide(coef4.multiply(coef4));
+
+        final T fLambdaH = frac1.multiply(K_COEFFICIENTS[1]).add(frac2.multiply(K_COEFFICIENTS[3])).multiply(0.01 * C02);
+
+        // Zenith delay for the hydrostatic component
+        delay[0] =  fLambdaH.divide(fsite).multiply(P0).multiply(0.002416579);
+
+        // Dispertion Equation for the Non-Hydrostatic component
+        final T sigma4 = sigma2.multiply(sigma2);
+        final T sigma6 = sigma4.multiply(sigma2);
+        final T w1s2   = sigma2.multiply(3 * W_COEFFICIENTS[1]);
+        final T w2s4   = sigma4.multiply(5 * W_COEFFICIENTS[2]);
+        final T w3s6   = sigma6.multiply(7 * W_COEFFICIENTS[3]);
+
+        final T fLambdaNH = w1s2.add(w2s4).add(w3s6).add(W_COEFFICIENTS[0]).multiply(0.003101);
+
+        // Zenith delay for the non-hydrostatic component
+        delay[1] = fLambdaNH.multiply(5.316).subtract(fLambdaH.multiply(3.759)).multiply(fsite.divide(e0).reciprocal()).multiply(0.0001);
 
         return delay;
     }
@@ -208,6 +269,41 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
+                                                              final FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
+
+        final T sinE = FastMath.sin(elevation);
+
+        final double T2degree = T0 - 273.15;
+
+        // Mapping function coefficients
+        final T a1 = computeMFCoeffient(A_COEFFICIENTS[0][0], A_COEFFICIENTS[0][1],
+                                        A_COEFFICIENTS[0][2], A_COEFFICIENTS[0][3],
+                                        T2degree, height);
+        final T a2 = computeMFCoeffient(A_COEFFICIENTS[1][0], A_COEFFICIENTS[1][1],
+                                        A_COEFFICIENTS[1][2], A_COEFFICIENTS[1][3],
+                                        T2degree, height);
+        final T a3 = computeMFCoeffient(A_COEFFICIENTS[2][0], A_COEFFICIENTS[2][1],
+                                        A_COEFFICIENTS[2][2], A_COEFFICIENTS[2][3],
+                                        T2degree, height);
+
+        // Numerator
+        final T numMP = a1.divide(a2.divide(a3.add(1.0)).add(1.0)).add(1.0);
+        // Denominateur
+        final T denMP = a1.divide(a2.divide(a3.add(sinE)).add(sinE)).add(sinE);
+
+        final T factor = numMP.divide(denMP);
+
+        final T[] mapping = MathArrays.buildArray(field, 2);
+        mapping[0] = factor;
+        mapping[1] = factor;
+
+        return mapping;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return new ParameterDriver[0];
     }
@@ -221,19 +317,45 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
         return 1. - 0.00266 * FastMath.cos(2 * latitude) - 0.00000028 * height;
     }
 
+    /** Get the laser frequency parameter f(lambda).
+    *
+    * @param <T> type of the elements
+    * @param height height above the geoid, m
+    * @return the laser frequency parameter f(lambda).
+    */
+    private <T extends RealFieldElement<T>> T getSiteFunctionValue(final T height) {
+        return height.multiply(0.00000028).negate().add(1. - 0.00266 * FastMath.cos(2 * latitude));
+    }
+
     /** Compute the coefficients of the Mapping Function.
-     *
-     * @param T the temperature at the station site, °C
-     * @param a0 first coefficient
-     * @param a1 second coefficient
-     * @param a2 third coefficient
-     * @param a3 fourth coefficient
-     * @param height the height of the station in m above sea level
-     * @return the value of the coefficient
-     */
+    *
+    * @param T the temperature at the station site, °C
+    * @param a0 first coefficient
+    * @param a1 second coefficient
+    * @param a2 third coefficient
+    * @param a3 fourth coefficient
+    * @param height the height of the station in m above sea level
+    * @return the value of the coefficient
+    */
     private double computeMFCoeffient(final double a0, final double a1, final double a2, final double a3,
                                       final double T, final double height) {
         return a0 + a1 * T + a2 * FastMath.cos(latitude) + a3 * height;
+    }
+
+   /** Compute the coefficients of the Mapping Function.
+   *
+   * @param <T> type of the elements
+   * @param temp the temperature at the station site, °C
+   * @param a0 first coefficient
+   * @param a1 second coefficient
+   * @param a2 third coefficient
+   * @param a3 fourth coefficient
+   * @param height the height of the station in m above sea level
+   * @return the value of the coefficient
+   */
+    private <T extends RealFieldElement<T>> T computeMFCoeffient(final double a0, final double a1, final double a2, final double a3,
+                                                                 final double temp, final T height) {
+        return height.multiply(a3).add(a0 + a1 * temp + a2 * FastMath.cos(latitude));
     }
 
     /** Get the water vapor.

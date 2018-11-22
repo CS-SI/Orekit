@@ -16,8 +16,12 @@
  */
 package org.orekit.models.earth;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
@@ -43,6 +47,19 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
      *
+     * @param <T> type of the elements
+     * @param elevation the elevation of the satellite, in radians
+     * @param height the height of the station in m above sea level
+     * @return the path delay due to the troposphere in m
+     */
+    default <T extends RealFieldElement<T>> T pathDelay(T elevation, T height) {
+        final T zero = height.getField().getZero();
+        return zero.add(pathDelay(elevation.getReal(), height.getReal()));
+    }
+
+    /** Calculates the tropospheric path delay for the signal path from a ground
+     * station to a satellite.
+     *
      * @param elevation the elevation of the satellite, in radians
      * @param height the height of the station in m above sea level
      * @param parameters tropospheric model parameters.
@@ -51,6 +68,22 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      */
     default double pathDelay(double elevation, double height, double[] parameters, AbsoluteDate date) {
         return pathDelay(elevation, height);
+    }
+
+    /** Calculates the tropospheric path delay for the signal path from a ground
+     * station to a satellite.
+     *
+     * @param <T> type of the elements
+     * @param elevation the elevation of the satellite, in radians
+     * @param height the height of the station in m above sea level
+     * @param parameters tropospheric model parameters.
+     * @param date current date
+     * @return the path delay due to the troposphere in m
+     */
+    default <T extends RealFieldElement<T>> T pathDelay(T elevation, T height, T[] parameters, FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
+        final T zero = field.getZero();
+        return zero.add(pathDelay(elevation, height));
     }
 
     /** This method allows the  computation of the zenith hydrostatic and
@@ -70,6 +103,26 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
         };
     }
 
+    /** This method allows the  computation of the zenith hydrostatic and
+     * zenith wet delay. The resulting element is an array having the following form:
+     * <ul>
+     * <li>double[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
+     * <li>double[1] = D<sub>wz</sub> -&gt zenith wet delay
+     * </ul>
+     * @param <T> type of the elements
+     * @param height the height of the station in m above sea level.
+     * @param parameters tropospheric model parameters.
+     * @param field field to which the elements belong
+     * @return a two components array containing the zenith hydrostatic and wet delays.
+     */
+    default <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, Field<T> field) {
+        final T zero = field.getZero();
+        final T[] delay = MathArrays.buildArray(field, 2);
+        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), height);
+        delay[1] = zero;
+        return delay;
+    }
+
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
      * <ul>
@@ -86,6 +139,27 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
             1.0,
             1.0
         };
+    }
+
+    /** This method allows the computation of the hydrostatic and
+     * wet mapping functions. The resulting element is an array having the following form:
+     * <ul>
+     * <li>double[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
+     * <li>double[1] = m<sub>w</sub>(e) -&gt wet mapping function
+     * </ul>
+     * @param <T> type of the elements
+     * @param height the height of the station in m above sea level.
+     * @param elevation the elevation of the satellite, in radians.
+     * @param date current date
+     * @return a two components array containing the hydrostatic and wet mapping functions.
+     */
+    default <T extends RealFieldElement<T>> T[] mappingFactors(T height, T elevation, FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
+        final T one = field.getOne();
+        final T[] factors = MathArrays.buildArray(field, 2);
+        factors[0] = one;
+        factors[1] = one;
+        return factors;
     }
 
     /** Get the drivers for tropospheric model parameters.

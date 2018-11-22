@@ -18,7 +18,9 @@ package org.orekit.models.earth;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface for mapping functions used in the tropospheric delay computation.
  * @author Bryan Cazabonne
@@ -37,4 +39,18 @@ public interface MappingFunction extends Serializable {
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
     double[] mappingFactors(double height, double elevation, AbsoluteDate date);
+
+    /** This method allows the computation of the hydrostatic and
+     * wet mapping functions. The resulting element is an array having the following form:
+     * <ul>
+     * <li>T[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
+     * <li>T[1] = m<sub>w</sub>(e) -&gt wet mapping function
+     * </ul>
+     * @param <T> type of the elements
+     * @param height the height of the station in m above sea level.
+     * @param elevation the elevation of the satellite, in radians.
+     * @param date current date
+     * @return a two components array containing the hydrostatic and wet mapping functions.
+     */
+    <T extends RealFieldElement<T>> T[] mappingFactors(T height, T elevation, FieldAbsoluteDate<T> date);
 }

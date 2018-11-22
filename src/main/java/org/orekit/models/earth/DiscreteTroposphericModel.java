@@ -20,6 +20,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
@@ -48,6 +49,18 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      */
     double pathDelay(double elevation, double height, double[] parameters, AbsoluteDate date);
 
+    /** Calculates the tropospheric path delay for the signal path from a ground
+     * station to a satellite.
+     *
+     * @param <T> type of the elements
+     * @param elevation the elevation of the satellite, in radians
+     * @param height the height of the station in m above sea level
+     * @param parameters tropospheric model parameters.
+     * @param date current date
+     * @return the path delay due to the troposphere in m
+     */
+    <T extends RealFieldElement<T>> T pathDelay(T elevation, T height, T[] parameters, FieldAbsoluteDate<T> date);
+
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
      * <ul>
@@ -59,6 +72,20 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
      double[] computeZenithDelay(double height, double[] parameters);
+
+     /** This method allows the  computation of the zenith hydrostatic and
+      * zenith wet delay. The resulting element is an array having the following form:
+      * <ul>
+      * <li>T[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
+      * <li>T[1] = D<sub>wz</sub> -&gt zenith wet delay
+      * </ul>
+      * @param <T> type of the elements
+      * @param height the height of the station in m above sea level.
+      * @param parameters tropospheric model parameters.
+      * @param field field to which the elements belong
+      * @return a two components array containing the zenith hydrostatic and wet delays.
+      */
+    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, Field<T> field);
 
     /** Get the drivers for tropospheric model parameters.
      * @return drivers for tropospheric model parameters

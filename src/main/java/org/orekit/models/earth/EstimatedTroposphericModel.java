@@ -16,8 +16,12 @@
  */
 package org.orekit.models.earth;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
@@ -69,6 +73,13 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
+                                                              final FieldAbsoluteDate<T> date) {
+        return model.mappingFactors(height, elevation, date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
@@ -81,11 +92,36 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+        // Field
+        final Field<T> field = date.getField();
+        // zenith delay
+        final T[] delays = computeZenithDelay(height, parameters, field);
+        // mapping function
+        final T[] mappingFunction = mappingFactors(height, elevation, date);
+        // Tropospheric path delay
+        return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double[] computeZenithDelay(final double height, final double[] parameters) {
         return new double[] {
             parameters[0],
             parameters[1]
         };
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height,
+                                                                  final T[] parameters,
+                                                                  final Field<T> field) {
+        final T[] delay = MathArrays.buildArray(field, 2);
+        delay[0] = parameters[0];
+        delay[1] = parameters[1];
+        return delay;
     }
 
     /** {@inheritDoc} */
