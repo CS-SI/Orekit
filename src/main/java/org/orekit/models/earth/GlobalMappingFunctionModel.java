@@ -16,10 +16,14 @@
  */
 package org.orekit.models.earth;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 /** The Global Mapping Function  model for radio techniques.
@@ -143,6 +147,88 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         return function;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
+                                                              final FieldAbsoluteDate<T> date) {
+        // Day of year computation
+        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final int dofyear = dtc.getDate().getDayOfYear();
+
+        final Field<T> field = date.getField();
+        final T zero = field.getZero();
+
+        // bh and ch constants (Boehm, J et al, 2006) | HYDROSTATIC PART
+        final T bh  = zero.add(0.0029);
+        final T c0h = zero.add(0.062);
+        final T c10h;
+        final T c11h;
+        final T psi;
+
+        // sin(latitude) > 0 -> northern hemisphere
+        if (FastMath.sin(latitude) > 0) {
+            c10h = zero.add(0.001);
+            c11h = zero.add(0.005);
+            psi  = zero;
+        } else {
+            c10h = zero.add(0.002);
+            c11h = zero.add(0.007);
+            psi  = zero.add(FastMath.PI);
+        }
+
+        final T coef = psi.add(((dofyear + 1 - 28) / 365.25) * 2 * FastMath.PI);
+        final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(1 - FastMath.cos(latitude)).add(c0h);
+
+        // bw and cw constants (Boehm, J et al, 2006) | WET PART
+        final T bw = zero.add(0.00146);
+        final T cw = zero.add(0.04391);
+
+        // Compute coefficients ah and aw with spherical harmonics Eq. 3 (Ref 1)
+
+        // Compute Legendre Polynomials Pnm(sin(phi))
+        final int degree = 9;
+        final int order  = 9;
+        final LegendrePolynomials p = new LegendrePolynomials(degree, order);
+
+        T a0Hydro   = zero;
+        T amplHydro = zero;
+        T a0Wet     = zero;
+        T amplWet   = zero;
+        final ABCoefficients abCoef = new ABCoefficients();
+        int j = 0;
+        for (int n = 0; n <= 9; n++) {
+            for (int m = 0; m <= n; m++) {
+                a0Hydro   = a0Hydro.add((abCoef.getAHMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
+                                abCoef.getBHMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+
+                a0Wet     = a0Wet.add((abCoef.getAWMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
+                                abCoef.getBWMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+
+                amplHydro = amplHydro.add((abCoef.getAHAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
+                                abCoef.getBHAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+
+                amplWet   = amplWet.add((abCoef.getAWAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
+                                abCoef.getBWAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+
+                j = j + 1;
+            }
+        }
+
+        // Eq. 2 (Ref 1)
+        final T ah = a0Hydro.add(amplHydro.multiply(FastMath.cos(coef.subtract(psi))));
+        final T aw = a0Wet.add(amplWet.multiply(FastMath.cos(coef.subtract(psi))));
+
+        final T[] function = MathArrays.buildArray(field, 2);
+        function[0] = computeFunction(ah, bh, ch, elevation);
+        function[1] = computeFunction(aw, bw, cw, elevation);
+
+        // Apply height correction
+        final T correction = computeHeightCorrection(elevation, height, field);
+        function[0] = function[0].add(correction);
+
+        return function;
+    }
+
     /** Compute the mapping function related to the coefficient values and the elevation.
      * @param a a coefficient
      * @param b b coefficient
@@ -158,6 +244,26 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final double denMP = sinE + a / (sinE + b / (sinE + c));
 
         final double felevation = numMP / denMP;
+
+        return felevation;
+    }
+
+    /** Compute the mapping function related to the coefficient values and the elevation.
+     * @param <T> type of the elements
+     * @param a a coefficient
+     * @param b b coefficient
+     * @param c c coefficient
+     * @param elevation the elevation of the satellite, in radians.
+     * @return the value of the function at a given elevation
+     */
+    private <T extends RealFieldElement<T>> T computeFunction(final T a, final T b, final T c, final T elevation) {
+        final T sinE = FastMath.sin(elevation);
+        // Numerator
+        final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
+        // Denominateur
+        final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
+
+        final T felevation = numMP.divide(denMP);
 
         return felevation;
     }
@@ -182,6 +288,32 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final double dmdh = (1 / sinE) - function;
         // Ref: Eq. 7
         final double correction = dmdh * (height / 1000.0);
+        return correction;
+    }
+
+    /** This method computes the height correction for the hydrostatic
+     *  component of the mapping function.
+     *  The formulas are given by Neill's paper, 1996:
+     *<p>
+     *      Niell A. E. (1996)
+     *      "Global mapping functions for the atmosphere delay of radio wavelengths,”
+     *      J. Geophys. Res., 101(B2), pp.  3227–3246, doi:  10.1029/95JB03048.
+     *</p>
+     * @param <T> type of the elements
+     * @param elevation the elevation of the satellite, in radians.
+     * @param height the height of the station in m above sea level.
+     * @param field field to which the elements belong
+     * @return the height correction, in m
+     */
+    private <T extends RealFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
+        final T zero = field.getZero();
+        final T sinE = FastMath.sin(elevation);
+        // Ref: Eq. 4
+        final T function = computeFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
+        // Ref: Eq. 6
+        final T dmdh = sinE.reciprocal().subtract(function);
+        // Ref: Eq. 7
+        final T correction = dmdh.multiply(height.divide(1000.0));
         return correction;
     }
 
