@@ -94,10 +94,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     @Override
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
-        // Field
-        final Field<T> field = date.getField();
         // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters, field);
+        final T[] delays = computeZenithDelay(height, parameters);
         // mapping function
         final T[] mappingFunction = mappingFactors(height, elevation, date);
         // Tropospheric path delay
@@ -115,9 +113,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height,
-                                                                  final T[] parameters,
-                                                                  final Field<T> field) {
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters) {
+        final Field<T> field = height.getField();
         final T[] delay = MathArrays.buildArray(field, 2);
         delay[0] = parameters[0];
         delay[1] = parameters[1];

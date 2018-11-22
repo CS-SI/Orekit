@@ -83,10 +83,8 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
     @Override
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
-        // Field
-        final Field<T> field = date.getField();
         // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters, field);
+        final T[] delays = computeZenithDelay(height, parameters);
         // mapping function
         final T[] mappingFunction = mappingFactors(height, elevation, date);
         // Tropospheric path delay
@@ -101,9 +99,8 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height,
-                                                                  final T[] parameters,
-                                                                  final Field<T> field) {
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters) {
+        final Field<T> field = height.getField();
         final T zero = field.getZero();
         final T[] delays = MathArrays.buildArray(field, 2);
         delays[0] = zero.add(zenithDelay[0]);

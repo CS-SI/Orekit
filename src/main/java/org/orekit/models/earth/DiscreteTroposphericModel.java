@@ -82,10 +82,9 @@ public interface DiscreteTroposphericModel extends MappingFunction {
       * @param <T> type of the elements
       * @param height the height of the station in m above sea level.
       * @param parameters tropospheric model parameters.
-      * @param field field to which the elements belong
       * @return a two components array containing the zenith hydrostatic and wet delays.
       */
-    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, Field<T> field);
+    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters);
 
     /** Get the drivers for tropospheric model parameters.
      * @return drivers for tropospheric model parameters
