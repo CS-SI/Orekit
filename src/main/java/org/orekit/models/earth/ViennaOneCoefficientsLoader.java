@@ -102,8 +102,8 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
 
     /** Constructor with supported names given by user.
      * @param supportedNames Supported names
-     * @param latitude geodetic latitude of the station, between [-90°,90°]
-     * @param longitude geodetic latitude of the station, between [0°,357.5°]
+     * @param latitude geodetic latitude of the station, in degrees
+     * @param longitude geodetic latitude of the station, in degrees
      */
     public ViennaOneCoefficientsLoader(final String supportedNames, final double latitude,
                                        final double longitude) {
@@ -115,8 +115,8 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
     }
 
     /** Constructor with default supported names.
-     * @param latitude geodetic latitude of the station, in radians
-     * @param longitude geodetic latitude of the station, in radians
+     * @param latitude geodetic latitude of the station, in degrees
+     * @param longitude geodetic latitude of the station, in degrees
      */
     public ViennaOneCoefficientsLoader(final double latitude, final double longitude) {
         this(DEFAULT_SUPPORTED_NAMES, latitude, longitude);
@@ -124,8 +124,8 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
 
     /** Returns the a coefficients array.
      * <ul>
-     * <li>double[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
-     * <li>double[1] = m<sub>w</sub>(e) -&gt wet mapping function
+     * <li>double[0] = a<sub>h</sub>
+     * <li>double[1] = a<sub>w</sub>
      * </ul>
      * @return the a coefficients array
      */
@@ -156,7 +156,7 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
     public void loadViennaOneCoefficients() {
         DataProvidersManager.getInstance().feed(supportedNames, this);
 
-        // Throw an exception if alphas or betas were not loaded properly
+        // Throw an exception if ah, ah, zh or zw were not loaded properly
         if (coefficientsA == null || zenithDelay == null) {
             throw new OrekitException(OrekitMessages.VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_NOT_LOADED, supportedNames);
         }
