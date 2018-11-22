@@ -18,6 +18,7 @@ package org.orekit.models.earth;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** The Mendes - Pavlis tropospheric delay model for optical techniques.
 * It is valid for a wide range of wavelengths from 0.355µm to 1.064µm (Mendes and Pavlis, 2003)
@@ -107,9 +108,10 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final double height, final AbsoluteDate date) {
+    public double pathDelay(final double elevation, final double height,
+                            final double[] parameters, final AbsoluteDate date) {
         // zenith delay
-        final double[] zenithDelay = computeZenithDelay(height);
+        final double[] zenithDelay = computeZenithDelay(height, parameters);
         // mapping function
         final double[] mappingFunction = mappingFactors(height, elevation, date);
         // Tropospheric path delay
@@ -118,7 +120,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] computeZenithDelay(final double height) {
+    public double[] computeZenithDelay(final double height, final double[] parameters) {
         final double fsite   = getSiteFunctionValue(height);
 
         // Array for zenith delay
@@ -202,6 +204,12 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
             factor,
             factor
         };
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[0];
     }
 
     /** Get the laser frequency parameter f(lambda).

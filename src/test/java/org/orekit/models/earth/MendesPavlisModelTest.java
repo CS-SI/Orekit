@@ -75,7 +75,7 @@ public class MendesPavlisModelTest {
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, latitude, lambda);
         
-        final double[] computedDelay = model.computeZenithDelay(height);
+        final double[] computedDelay = model.computeZenithDelay(height, model.getParameters());
         
         Assert.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
         Assert.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
@@ -127,7 +127,7 @@ public class MendesPavlisModelTest {
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
         MendesPavlisModel model = MendesPavlisModel.getStandardModel(FastMath.toRadians(45.0), 0.6943);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), height, date);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), height, model.getParameters(), date);
         Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
@@ -139,7 +139,7 @@ public class MendesPavlisModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), 350, date);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), 350, model.getParameters(), date);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }

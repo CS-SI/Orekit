@@ -16,7 +16,11 @@
  */
 package org.orekit.models.earth;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.MathArrays;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -26,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * <pre>
  * δ = δ<sub>h</sub> + δ<sub>nh</sub>
  * <li>δ<sub>h</sub>  =  hydrostatic delay
- * <li>δ<sub>nh</sub> =  non-hydrostatic delay
+ * <li>δ<sub>nh</sub> =  non-hydrostatic (or wet) delay
  * </pre>
  * </p>
  * @author Bryan Cazabonne
@@ -38,10 +42,11 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      *
      * @param elevation the elevation of the satellite, in radians
      * @param height the height of the station in m above sea level
+     * @param parameters tropospheric model parameters.
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    double pathDelay(double elevation, double height, AbsoluteDate date);
+    double pathDelay(double elevation, double height, double[] parameters, AbsoluteDate date);
 
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
@@ -50,8 +55,40 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      * <li>double[1] = D<sub>wz</sub> -&gt zenith wet delay
      * </ul>
      * @param height the height of the station in m above sea level.
+     * @param parameters tropospheric model parameters.
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-     double[] computeZenithDelay(double height);
+     double[] computeZenithDelay(double height, double[] parameters);
+
+    /** Get the drivers for tropospheric model parameters.
+     * @return drivers for tropospheric model parameters
+     */
+    ParameterDriver[] getParametersDrivers();
+
+    /** Get tropospheric model parameters.
+     * @return tropospheric model parameters
+     */
+    default double[] getParameters() {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.length];
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = drivers[i].getValue();
+        }
+        return parameters;
+    }
+
+    /** Get force model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @return force model parameters
+     */
+    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.length);
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = field.getZero().add(drivers[i].getValue());
+        }
+        return parameters;
+    }
 
 }
