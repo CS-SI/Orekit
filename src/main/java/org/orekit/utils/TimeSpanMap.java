@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import java.util.Collections;
 import java.util.NavigableSet;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.time.AbsoluteDate;
@@ -150,6 +149,27 @@ public class TimeSpanMap<T> {
         }
     }
 
+    /** Get the time span containing a specified date.
+     * @param date date belonging to the desired time span
+     * @return time span containing the specified date
+     * @since 9.3
+     */
+    public Span<T> getSpan(final AbsoluteDate date) {
+        final Transition<T> previous = data.floor(new Transition<T>(date, null, null));
+        if (previous == null) {
+            // there are no transition before the specified date
+            // return the first valid entry
+            return new Span<>(data.first().getBefore(),
+                              AbsoluteDate.PAST_INFINITY,
+                              data.first().getDate());
+        } else {
+            final Transition<T> next = data.higher(previous);
+            return new Span<>(previous.getAfter(),
+                              previous.getDate(),
+                              next == null ? AbsoluteDate.FUTURE_INFINITY : next.getDate());
+        }
+    }
+
     /** Extract a range of the map.
      * <p>
      * The object returned will be a new independent instance that will contain
@@ -194,11 +214,20 @@ public class TimeSpanMap<T> {
     /** Get an unmodifiable view of the sorted transitions.
      * @return unmodifiable view of the sorted transitions
      */
-    public SortedSet<Transition<T>> getTransitions() {
-        return Collections.unmodifiableSortedSet(data);
+    public NavigableSet<Transition<T>> getTransitions() {
+        return Collections.unmodifiableNavigableSet(data);
     }
 
-    /** Local class holding transition times. */
+    /** Class holding transition times.
+     * <p>
+     * This data type is dual to {@link Span}, it is
+     * focused one transition date, and gives access to
+     * surrounding valid data whereas {@link Span} is focused
+     * on one valid data, and gives access to surrounding
+     * transition dates.
+     * </p>
+     * @param <S> Type of the data.
+     */
     public static class Transition<S> implements TimeStamped {
 
         /** Transition date. */
@@ -241,6 +270,62 @@ public class TimeSpanMap<T> {
          */
         public S getAfter() {
             return after;
+        }
+
+    }
+
+    /** Holder for one time span.
+     * <p>
+     * This data type is dual to {@link Transition}, it
+     * is focused on one valid data, and gives access to
+     * surrounding transition dates whereas {@link Transition}
+     * is focused on one transition date, and gives access to
+     * surrounding valid data.
+     * </p>
+     * @param <S> Type of the data.
+     * @since 9.3
+     */
+    public static class Span<S> {
+
+        /** Valid data. */
+        private final S data;
+
+        /** Start of validity for the data. */
+        private final AbsoluteDate start;
+
+        /** End of validity for the data. */
+        private final AbsoluteDate end;
+
+        /** Simple constructor.
+         * @param data valid data
+         * @param start start of validity for the data
+         * @param end end of validity for the data
+         */
+        private Span(final S data, final AbsoluteDate start, final AbsoluteDate end) {
+            this.data  = data;
+            this.start = start;
+            this.end   = end;
+        }
+
+        /** Get the data valid during this time span.
+         * @return data valid during this time span
+         */
+        public S getData() {
+            return data;
+        }
+
+        /** Get the start of this time span.
+         * @return start of this time span
+         */
+        public AbsoluteDate getStart() {
+            return start;
+        }
+
+        /** Get the end of this time span.
+         * @return end of this time span
+         */
+        public AbsoluteDate getEnd() {
+            return end;
         }
 
     }
