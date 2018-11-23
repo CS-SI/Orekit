@@ -22,6 +22,9 @@
   <body>
     <release version="TBD" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added direct building of attitude provider from GNSS satellite type.
+      </action>
+      <action dev="luc" type="add">
         Added parsing of unofficial versions 2.12 and 2.20 of Rinex files
         (used by some spaceborne receivers like IceSat 1).
       </action>
