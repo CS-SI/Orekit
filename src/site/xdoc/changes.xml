@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="500">
+        Added retrieval of full time span (start time, end time and data) containing
+        a specified date in TimeSpanMap.
+        Fixes issue #500
+      </action>
       <action dev="luc" type="add">
         Added direct building of attitude provider from GNSS satellite type.
       </action>
