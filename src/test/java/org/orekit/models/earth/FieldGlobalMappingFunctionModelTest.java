@@ -20,6 +20,8 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -76,6 +78,29 @@ public class FieldGlobalMappingFunctionModelTest {
         
         Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
+    }
+
+    @Test
+    public void testFixedHeight() {
+        doTestFixedHeight(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
+        final T zero = field.getZero();
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        MappingFunction model = new GlobalMappingFunctionModel(FastMath.toRadians(45.0), FastMath.toRadians(45.0));
+        final T[] lastFactors = MathArrays.buildArray(field, 2);
+        lastFactors[0] = zero.add(Double.MAX_VALUE);
+        lastFactors[1] = zero.add(Double.MAX_VALUE);
+
+        // mapping functions shall decline with increasing elevation angle
+        for (double elev = 10d; elev < 90d; elev += 8d) {
+            final T[] factors = model.mappingFactors(zero.add(350), zero.add(FastMath.toRadians(elev)), date, model.getParameters(field));
+            Assert.assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
+            Assert.assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
+            lastFactors[0] = factors[0];
+            lastFactors[1] = factors[1];
+        }
     }
 
 }
