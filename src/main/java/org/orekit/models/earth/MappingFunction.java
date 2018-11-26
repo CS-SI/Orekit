@@ -76,10 +76,10 @@ public interface MappingFunction extends Serializable {
         return parameters;
     }
 
-    /** Get force model parameters.
+    /** Get tropospheric model parameters.
      * @param field field to which the elements belong
      * @param <T> type of the elements
-     * @return force model parameters
+     * @return tropospheric model parameters
      */
     default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
         final ParameterDriver[] drivers = getParametersDrivers();
