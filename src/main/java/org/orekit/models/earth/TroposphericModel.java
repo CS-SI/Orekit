@@ -135,9 +135,10 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * @param height the height of the station in m above sea level.
      * @param elevation the elevation of the satellite, in radians.
      * @param date current date
+     * @param parameters tropospheric model parameters.
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    default double[] mappingFactors(double height, double elevation, AbsoluteDate date) {
+    default double[] mappingFactors(double height, double elevation, AbsoluteDate date, double[] parameters) {
         return new double[] {
             1.0,
             1.0
@@ -154,9 +155,11 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * @param height the height of the station in m above sea level.
      * @param elevation the elevation of the satellite, in radians.
      * @param date current date
+     * @param parameters tropospheric model parameters.
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    default <T extends RealFieldElement<T>> T[] mappingFactors(T height, T elevation, FieldAbsoluteDate<T> date) {
+    default <T extends RealFieldElement<T>> T[] mappingFactors(T height, T elevation,
+                                                               FieldAbsoluteDate<T> date, T[] parameters) {
         final Field<T> field = date.getField();
         final T one = field.getOne();
         final T[] factors = MathArrays.buildArray(field, 2);

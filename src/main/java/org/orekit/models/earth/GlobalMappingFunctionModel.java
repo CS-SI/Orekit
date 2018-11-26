@@ -25,6 +25,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.ParameterDriver;
 
 /** The Global Mapping Function  model for radio techniques.
  *  This model is an empirical mapping function. It only needs the
@@ -70,7 +71,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     /** {@inheritDoc} */
     @Override
     public double[] mappingFactors(final double height, final double elevation,
-                                   final AbsoluteDate date) {
+                                   final AbsoluteDate date, final double[] parameters) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -150,7 +151,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
-                                                              final FieldAbsoluteDate<T> date) {
+                                                              final FieldAbsoluteDate<T> date, final T[] parameters) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -227,6 +228,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         function[0] = function[0].add(correction);
 
         return function;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[0];
     }
 
     /** Compute the mapping function related to the coefficient values and the elevation.

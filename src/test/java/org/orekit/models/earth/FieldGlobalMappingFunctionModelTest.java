@@ -72,7 +72,7 @@ public class FieldGlobalMappingFunctionModelTest {
 
         final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
         
-        final T[] computedMapping = model.mappingFactors(zero.add(height), zero.add(elevation), date);
+        final T[] computedMapping = model.mappingFactors(zero.add(height), zero.add(elevation), date, model.getParameters(field));
         
         Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
