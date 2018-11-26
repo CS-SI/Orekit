@@ -24,6 +24,20 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
+/** An estimated tropospheric delay model.
+ * <p>
+ * With this implementation, the hydrostatic δ<sub>h</sub> and wet δ<sub>w</sub> zenith delays are
+ * estimated.
+ * </p> <p>
+ * The mapping functions m<sub>h</sub>(e) and m<sub>w</sub>(e) are
+ * computed thanks to a {@link #model} initialized by the user.
+ * The user has the possiblility to use several mapping function models for the computations:
+ * the {@link GlobalMappingFunctionModel Global Mapping Function},
+ * the {@link NiellMappingFunctionModel Niell Mapping Function}
+ * or the {@link MendesPavlisModel Mendes & Pavlis} model for the optical wavelenghts.
+ * </p>
+ * @author Bryan Cazabonne
+ * */
 public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** Name of the parameters of this model: the zenith delay. */
@@ -38,7 +52,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private final double SCALE = FastMath.scalb(1.0, 3);
+    private final double SCALE = FastMath.scalb(1.0, 5);
 
     /** Mapping Function model. */
     private final MappingFunction model;
