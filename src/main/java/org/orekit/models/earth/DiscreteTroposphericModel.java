@@ -16,12 +16,9 @@
  */
 package org.orekit.models.earth;
 
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.util.MathArrays;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -85,36 +82,5 @@ public interface DiscreteTroposphericModel extends MappingFunction {
       * @return a two components array containing the zenith hydrostatic and wet delays.
       */
     <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters);
-
-    /** Get the drivers for tropospheric model parameters.
-     * @return drivers for tropospheric model parameters
-     */
-    ParameterDriver[] getParametersDrivers();
-
-    /** Get tropospheric model parameters.
-     * @return tropospheric model parameters
-     */
-    default double[] getParameters() {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.length];
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].getValue();
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return force model parameters
-     */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
-        }
-        return parameters;
-    }
 
 }
