@@ -17,6 +17,7 @@
 package org.orekit.models.earth;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -65,10 +66,28 @@ public class GlobalMappingFunctionModelTest {
 
         final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
         
-        final double[] computedMapping = model.mappingFactors(height, elevation, date);
+        final double[] computedMapping = model.mappingFactors(height, elevation, date, model.getParameters());
         
         Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
+    }
+
+    @Test
+    public void testFixedHeight() {
+        final AbsoluteDate date = new AbsoluteDate();
+        MappingFunction model = new GlobalMappingFunctionModel(FastMath.toRadians(45.0), FastMath.toRadians(45.0));
+        double[] lastFactors = new double[] {
+            Double.MAX_VALUE,
+            Double.MAX_VALUE
+        };
+        // mapping functions shall decline with increasing elevation angle
+        for (double elev = 10d; elev < 90d; elev += 8d) {
+            final double[] factors = model.mappingFactors(350, FastMath.toRadians(elev), date, model.getParameters());
+            Assert.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
+            Assert.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
+            lastFactors[0] = factors[0];
+            lastFactors[1] = factors[1];
+        }
     }
 
 }
