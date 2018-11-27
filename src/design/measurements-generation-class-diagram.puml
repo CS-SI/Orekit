@@ -1,0 +1,102 @@
+' Copyright 2002-2018 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package org.hipparchus #ECEBD8 {
+      interface CorrelatedRandomVectorGenerator
+  }
+
+  package org.orekit #ECEBD8 {
+
+    package estimation.measurements #DDEBD8 {
+
+      package generation #CEEBD8 {
+
+        interface "MeasurementBuilder<T>" as MeasurementBuilder_T_ {
+          +addModifier(estimationModifier)
+          +T build(spacecraftStates)
+         }
+
+        class "...MeasurementBuilder" as XXXMeasurementBuilder
+        note right
+          one for each
+          measurement type
+        end note
+
+        class Generator {
+          +addSequencer(sequencer)
+          +SortedSet<ObservedMeasurements> generate(startDate, endDate, propagators)
+        }
+
+        interface "Sequencer<T>" as Sequencer_T_ {
+          +SortedSet<T> generateSequence(interpolators)
+        }
+
+        class "GroundVisibility<T>"   as GroundVisibility_T_
+        class "InterSatVisibility<T>" as InterSatVisibility_T_
+        class "BurstSequencer<T>"     as BurstSequencer_T_
+
+        XXXMeasurementBuilder                 ..|>          MeasurementBuilder_T_
+        Generator                             *--> "*"      Sequencer_T_
+        Sequencer_T_                          *-right-> "1" MeasurementBuilder_T_
+        CorrelatedRandomVectorGenerator "0,1" <--           XXXMeasurementBuilder : noise source
+        Sequencer_T_                          <|..          GroundVisibility_T_   
+        Sequencer_T_                          <|..          InterSatVisibility_T_ 
+        Sequencer_T_                          <|..          BurstSequencer_T_     
+
+      }
+
+      interface "EstimationModifier<T>" as EstimationModifier_T_
+      interface "ObservedMeasurement<T>" as ObservedMeasurement_T_
+      class "...Measurement" as XXXMeasurement
+      note left
+        this box represents any
+        measurement type
+        (range, range-rate, ...)
+      end note
+
+ 
+      EstimationModifier_T_    "*" <--*    ObservedMeasurement_T_ 
+      ObservedMeasurement_T_    <|..       XXXMeasurement
+      XXXMeasurementBuilder    -->      XXXMeasurement
+      XXXMeasurementBuilder   *-->      EstimationModifier_T_ 
+
+    }
+
+   package propagation #DDEBD8 {
+      interface PropagatorsParallelizer {
+        propagate()
+      }
+      interface OrekitStepInterpolator
+      PropagatorsParallelizer <-left- Generator
+      PropagatorsParallelizer -->     OrekitStepInterpolator
+      OrekitStepInterpolator  <-left- Sequencer_T_
+    }
+
+  }
+
+@enduml
