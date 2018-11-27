@@ -30,26 +30,25 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateTimeComponents;
 
-/** Loads Vienna-1 tropospheric coefficients a given input stream.
+/** Loads Vienna tropospheric coefficients a given input stream.
  * A stream contains, for a given day and a given hour, the hydrostatic and wet zenith delays
  * and the ah and aw coefficients used for the computation of the mapping function.
- * The coefficients are given with a time interval of 6 hours, as well as on a global 2.5° x 2.0°
- * [longitude x latitude] grid.
+ * The coefficients are given with a time interval of 6 hours.
  * <p>
  * A bilinear interpolation is performed the case of the user initialize the latitude and the
  * longitude with values that are not contained in the stream.
  * </p>
  * <p>
- * The coefficients are obtained from <a href="http://vmf.geo.tuwien.ac.at/trop_products/GRID/2.5x2/VMF1/">Vienna Mapping Functions Open Access Data</a>.
- * Find more on the files at the <a href="http://vmf.geo.tuwien.ac.at/readme.txt">VMF1 Model Documentation</a>.
+ * The coefficients are obtained from <a href="http://vmf.geo.tuwien.ac.at/trop_products/GRID/">Vienna Mapping Functions Open Access Data</a>.
+ * Find more on the files at the <a href="http://vmf.geo.tuwien.ac.at/readme.txt">VMF Model Documentation</a>.
  * <p>
  * The files have to be extracted to UTF-8 text files before being read by this loader.
  * <p>
- * After extraction, it is assumed they are named VMFG_YYYYMMDD.Hhh where YYYY is the 4-digits year, MM the month, DD the day
- * and hh the 2-digits hour.
+ * After extraction, it is assumed they are named VMFG_YYYYMMDD.Hhh for {@link ViennaOneModel} and VMF3_YYYYMMDD.Hhh {@link ViennaThreeModel}.
+ * Where YYYY is the 4-digits year, MM the month, DD the day and hh the 2-digits hour.
  *
  * <p>
- * The format is always the same, with and example shown below.
+ * The format is always the same, with and example shown below for VMF1 model.
  * <p>
  * Example:
  * </p>
@@ -76,10 +75,10 @@ import org.orekit.time.DateTimeComponents;
  * </pre>
  * @author Bryan Cazabonne
  */
-public class ViennaOneCoefficientsLoader implements DataLoader {
+public class ViennaModelCoefficientsLoader implements DataLoader {
 
     /** Default supported files name pattern. */
-    public static final String DEFAULT_SUPPORTED_NAMES = "VMFG_\\\\*\\*\\.*H$";
+    public static final String DEFAULT_SUPPORTED_NAMES = "VMF*_\\\\*\\*\\.*H$";
 
     /** Regular expression for supported file name. */
     private String supportedNames;
@@ -96,26 +95,33 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
     /** Geodetic site longitude, degrees.*/
     private double longitude;
 
+    /** Vienna tropospheric model type.*/
+    private ViennaModelType type;
+
     /** Constructor with supported names given by user.
      * @param supportedNames Supported names
      * @param latitude geodetic latitude of the station, in degrees
      * @param longitude geodetic latitude of the station, in degrees
+     * @param type the type of Vienna tropospheric model (one or three)
      */
-    public ViennaOneCoefficientsLoader(final String supportedNames, final double latitude,
-                                       final double longitude) {
+    public ViennaModelCoefficientsLoader(final String supportedNames, final double latitude,
+                                         final double longitude, final ViennaModelType type) {
         this.coefficientsA  = null;
         this.zenithDelay    = null;
         this.supportedNames = supportedNames;
         this.latitude       = latitude;
         this.longitude      = longitude;
+        this.type           = type;
     }
 
     /** Constructor with default supported names.
      * @param latitude geodetic latitude of the station, in degrees
      * @param longitude geodetic latitude of the station, in degrees
+     * @param type the type of Vienna tropospheric model (one or three)
      */
-    public ViennaOneCoefficientsLoader(final double latitude, final double longitude) {
-        this(DEFAULT_SUPPORTED_NAMES, latitude, longitude);
+    public ViennaModelCoefficientsLoader(final double latitude, final double longitude,
+                                         final ViennaModelType type) {
+        this(DEFAULT_SUPPORTED_NAMES, latitude, longitude, type);
     }
 
     /** Returns the a coefficients array.
@@ -149,12 +155,12 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
 
     /** Load the data using supported names .
      */
-    public void loadViennaOneCoefficients() {
+    public void loadViennaCoefficients() {
         DataProvidersManager.getInstance().feed(supportedNames, this);
 
         // Throw an exception if ah, ah, zh or zw were not loaded properly
         if (coefficientsA == null || zenithDelay == null) {
-            throw new OrekitException(OrekitMessages.VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_NOT_LOADED, supportedNames);
+            throw new OrekitException(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED, supportedNames);
         }
     }
 
@@ -162,10 +168,10 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
      * @param dateTimeComponents date and time component.
      * @throws OrekitException if the coefficients could not be loaded
      */
-    public void loadViennaOneCoefficients(final DateTimeComponents dateTimeComponents) {
+    public void loadViennaCoefficients(final DateTimeComponents dateTimeComponents) {
 
-        // The files are named VMFG_YYYYMMDD.Hhh where YYYY is the 4-digits year, MM the month, DD the day of the month
-        // and hh the 2-digits hour.
+        // The files are named VMFG_YYYYMMDD.Hhh for Vienna-1 model and VMF3_YYYYMMDD.Hhh for Vienna-3 model.
+        // Where YYYY is the 4-digits year, MM the month, DD the day of the month and hh the 2-digits hour.
         // Coefficients are only available for hh = 00 or 06 or 12 or 18.
         final int    year        = dateTimeComponents.getDate().getYear();
         final int    month       = dateTimeComponents.getDate().getMonth();
@@ -196,13 +202,24 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
             hourString = String.valueOf(hour);
         }
 
-        this.supportedNames = String.format("VMFG_%04d%2s%2s.H%2s", year, monthString, dayString, hourString);
+        // Name of the file is different between VMF1 and VMF3.
+        // For VMF1 it starts with "VMFG" whereas with VMF3 it starts with "VMF3"
+        switch (type) {
+            case VIENNA_ONE:
+                this.supportedNames = String.format("VMFG_%04d%2s%2s.H%2s", year, monthString, dayString, hourString);
+                break;
+            case VIENNA_THREE:
+                this.supportedNames = String.format("VMF3_%04d%2s%2s.H%2s", year, monthString, dayString, hourString);
+                break;
+            default:
+                break;
+        }
 
         try {
-            this.loadViennaOneCoefficients();
+            this.loadViennaCoefficients();
         } catch (OrekitException oe) {
             throw new OrekitException(oe,
-                                      OrekitMessages.VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE,
+                                      OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE,
                                       dateTimeComponents.toString());
         }
     }
@@ -243,9 +260,15 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
                         latitudes.add(lat);
                     }
 
-                    // Longitude list -> Stop at 357.5° not at 360°
-                    for (double lon = Double.valueOf(range_line[4]); lon < Double.valueOf(range_line[5]); lon = lon + Double.valueOf(range_line[7])) {
+                    // Longitude list
+                    for (double lon = Double.valueOf(range_line[4]); lon <= Double.valueOf(range_line[5]); lon = lon + Double.valueOf(range_line[7])) {
                         longitudes.add(lon);
+                        // For VFM1 files, header specify that longitudes end at 360°
+                        // In reality they end at 357.5°. That is why we stop the loop when the longitude
+                        // is equal to 357.5°.
+                        if (type == ViennaModelType.VIENNA_ONE && lon == 357.5) {
+                            break;
+                        }
                     }
                 }
 
@@ -315,7 +338,7 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
 
         // Check that ah, aw, zh and zw were found
         if (coefficientsA == null || zenithDelay == null) {
-            throw new OrekitException(OrekitMessages.NO_VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_IN_FILE, name);
+            throw new OrekitException(OrekitMessages.NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE, name);
         }
 
     }

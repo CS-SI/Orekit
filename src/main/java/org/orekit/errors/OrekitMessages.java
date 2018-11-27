@@ -219,9 +219,9 @@ public enum OrekitMessages implements Localizable {
     NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE("file {0} is not a supported Unix-compressed file"),
     UNEXPECTED_END_OF_FILE("unexpected end of file {0}"),
     CORRUPTED_FILE("file {0} is corrupted"),
-    VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_NOT_LOADED("Vienna1 coefficients ah or aw or zh or zw could not be loaded from {0}"),
-    VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE("Vienna1 coefficients ah or aw or zh or zw not available for date {0}"),
-    NO_VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_IN_FILE("file {0} does not contain Vienna1 coefficients ah, aw, zh or zw");
+    VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED("Vienna coefficients ah or aw or zh or zw could not be loaded from {0}"),
+    VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE("Vienna coefficients ah or aw or zh or zw not available for date {0}"),
+    NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE("file {0} does not contain Vienna coefficients ah, aw, zh or zw");
 
 
     // CHECKSTYLE: resume JavadocVariable check
