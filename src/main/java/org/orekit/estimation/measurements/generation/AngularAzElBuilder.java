@@ -39,9 +39,9 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
      * @param propagatorIndex index of the propagator related to this measurement
      */
     public AngularAzElBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                        final GroundStation station,
-                        final double[] sigma, final double[] baseWeight,
-                        final int propagatorIndex) {
+                              final GroundStation station,
+                              final double[] sigma, final double[] baseWeight,
+                              final int propagatorIndex) {
         super(noiseSource, sigma, baseWeight, propagatorIndex);
         this.station = station;
     }
