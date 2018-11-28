@@ -35,7 +35,7 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param station ground station from which measurement is performed
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given

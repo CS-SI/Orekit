@@ -34,7 +34,7 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
     /** Slave ground station reflecting the signal. */
     private final GroundStation slaveStation;
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param masterStation ground station from which measurement is performed
      * @param slaveStation ground station reflecting the signal

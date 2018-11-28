@@ -30,7 +30,7 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
     /** Flag indicating whether it is a two-way measurement. */
     private final boolean twoway;
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param satellite1Index index of satellite 1 propagator
      * (i.e. the satellite which receives the signal and performs

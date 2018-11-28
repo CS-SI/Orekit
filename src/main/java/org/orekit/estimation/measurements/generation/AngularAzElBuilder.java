@@ -31,7 +31,7 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param station ground station from which measurement is performed
      * @param sigma theoretical standard deviation

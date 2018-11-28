@@ -48,7 +48,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
     /** Indices of the propagators related to this measurement. */
     private final int[] propagatorsIndices;
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
@@ -65,7 +65,7 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
              }, propagatorsIndices);
     }
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight

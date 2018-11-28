@@ -34,7 +34,7 @@ public class RangeBuilder extends AbstractMeasurementBuilder<Range> {
     /** Flag indicating whether it is a two-way measurement. */
     private final boolean twoway;
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param station ground station from which measurement is performed
      * @param twoWay flag indicating whether it is a two-way measurement

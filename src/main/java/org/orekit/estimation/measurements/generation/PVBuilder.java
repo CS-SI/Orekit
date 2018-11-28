@@ -28,7 +28,7 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class PVBuilder extends AbstractMeasurementBuilder<PV> {
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param sigmaPosition theoretical standard deviation on position components
      * @param sigmaVelocity theoretical standard deviation on velocity components

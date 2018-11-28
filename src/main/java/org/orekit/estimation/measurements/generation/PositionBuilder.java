@@ -28,7 +28,7 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class PositionBuilder extends AbstractMeasurementBuilder<Position> {
 
-    /** Simmple constructor.
+    /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
