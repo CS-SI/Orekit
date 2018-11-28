@@ -27,7 +27,7 @@
   skinparam PackageFontSize       12
 
   package org.hipparchus #ECEBD8 {
-      interface CorrelatedRandomVectorGenerator
+      interface RandomVectorGenerator
   }
 
   package org.orekit #ECEBD8 {
@@ -42,48 +42,56 @@
          }
 
         class "...MeasurementBuilder" as XXXMeasurementBuilder
-        note right
+        note left
           one for each
           measurement type
         end note
 
         class Generator {
-          +addSequencer(sequencer)
+          +addScheduler(Scheduler)
           +SortedSet<ObservedMeasurements> generate(startDate, endDate, propagators)
         }
 
-        interface "Sequencer<T>" as Sequencer_T_ {
-          +SortedSet<T> generateSequence(interpolators)
+        interface "Scheduler<T>" as Scheduler_T_ {
+          +SortedSet<T> generate(interpolators)
         }
 
-        class "GroundVisibility<T>"   as GroundVisibility_T_
-        class "InterSatVisibility<T>" as InterSatVisibility_T_
-        class "BurstSequencer<T>"     as BurstSequencer_T_
+        class "PredicateScheduler<T>" as PredicateScheduler_T_
 
-        XXXMeasurementBuilder                 ..|>          MeasurementBuilder_T_
-        Generator                             *--> "*"      Sequencer_T_
-        Sequencer_T_                          *-right-> "1" MeasurementBuilder_T_
-        CorrelatedRandomVectorGenerator "0,1" <--           XXXMeasurementBuilder : noise source
-        Sequencer_T_                          <|..          GroundVisibility_T_   
-        Sequencer_T_                          <|..          InterSatVisibility_T_ 
-        Sequencer_T_                          <|..          BurstSequencer_T_     
+        interface SchedulingPredicate {
+          {static} +SchedulingPredicate andCombine(predicates)
+          {static} +SchedulingPredicate orCombine(predicates)
+          {static} +SchedulingPredicate notCombine(predicate)
+          +boolean feasibleMeasurement(spacecraftStates)
+        }
+
+        XXXMeasurementBuilder       ..|>          MeasurementBuilder_T_
+        Generator                   *--> "*"      Scheduler_T_
+        Scheduler_T_                *-right-> "1" MeasurementBuilder_T_
+        RandomVectorGenerator "0,1" <--           XXXMeasurementBuilder : noise source
+        Scheduler_T_                <|..          PredicateScheduler_T_
+        PredicateScheduler_T_       -right-> "1"  SchedulingPredicate
+        SchedulingPredicate         <|..          VisibleFromGround  
+        SchedulingPredicate         <|..          InterSatVisibility
+        SchedulingPredicate         <|..          GroundAtNight  
+        SchedulingPredicate         <|..          Sunlit  
 
       }
 
       interface "EstimationModifier<T>" as EstimationModifier_T_
       interface "ObservedMeasurement<T>" as ObservedMeasurement_T_
       class "...Measurement" as XXXMeasurement
-      note left
+      note bottom
         this box represents any
         measurement type
         (range, range-rate, ...)
       end note
 
  
-      EstimationModifier_T_    "*" <--*    ObservedMeasurement_T_ 
-      ObservedMeasurement_T_    <|..       XXXMeasurement
-      XXXMeasurementBuilder    -->      XXXMeasurement
-      XXXMeasurementBuilder   *-->      EstimationModifier_T_ 
+      EstimationModifier_T_  "*" <--*          ObservedMeasurement_T_ 
+      ObservedMeasurement_T_     <|..          XXXMeasurement
+      XXXMeasurementBuilder       -->          XXXMeasurement
+      XXXMeasurementBuilder     *-right->  "*" EstimationModifier_T_ 
 
     }
 
@@ -94,9 +102,14 @@
       interface OrekitStepInterpolator
       PropagatorsParallelizer <-left- Generator
       PropagatorsParallelizer -->     OrekitStepInterpolator
-      OrekitStepInterpolator  <-left- Sequencer_T_
+      OrekitStepInterpolator  <-left- Scheduler_T_
     }
 
+  }
+
+  package mission.specific #C4D2C5 {
+    class "CustomScheduler<T>" as CustomScheduler_T_ #D5E0D5/E2EBE2
+    CustomScheduler_T_ ..|> Scheduler_T_
   }
 
 @enduml

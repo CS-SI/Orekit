@@ -27,7 +27,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
  * @author Luc Maisonobe
  * @since 9.3
  */
-public interface Sequencer<T extends ObservedMeasurement<T>> {
+public interface Scheduler<T extends ObservedMeasurement<T>> {
 
     /** Generate a sequence of measurements.
      * @param interpolators interpolators for spacecraft states

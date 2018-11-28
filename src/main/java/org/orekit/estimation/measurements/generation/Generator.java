@@ -32,20 +32,20 @@ import org.orekit.time.AbsoluteDate;
 public class Generator {
 
     /** Sequences generators. */
-    private final List<Sequencer<?>> sequencers;
+    private final List<Scheduler<?>> schedulers;
 
     /** Build a generator with no sequences generator.
      */
     public Generator() {
-        this.sequencers = new ArrayList<>();
+        this.schedulers = new ArrayList<>();
     }
 
     /** Add a sequences generator for a specific measurement type.
-     * @param sequencer sequences generator to add
+     * @param scheduler sequences generator to add
      * @param <T> the type of the measurement
      */
-    public <T extends ObservedMeasurement<T>> void addSequencer(final Sequencer<T> sequencer) {
-        sequencers.add(sequencer);
+    public <T extends ObservedMeasurement<T>> void addScheduler(final Scheduler<T> scheduler) {
+        schedulers.add(scheduler);
     }
 
     /** Generate measurements.
