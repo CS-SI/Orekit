@@ -139,9 +139,22 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return bodyFrame;
     }
 
-    /** {@inheritDoc} */
-    public GeodeticPoint getIntersectionPoint(final Line line, final Vector3D close,
-                                              final Frame frame, final AbsoluteDate date) {
+    /** Get the intersection point of a line with the surface of the body.
+     * <p>A line may have several intersection points with a closed
+     * surface (we consider the one point case as a degenerated two
+     * points case). The close parameter is used to select which of
+     * these points should be returned. The selected point is the one
+     * that is closest to the close point.</p>
+     * @param line test line (may intersect the body or not)
+     * @param close point used for intersections selection
+     * @param frame frame in which line is expressed
+     * @param date date of the line in given frame
+     * @return intersection point at altitude zero or null if the line does
+     * not intersect the surface
+     * @since 9.3
+     */
+    public Vector3D getCartesianIntersectionPoint(final Line line, final Vector3D close,
+                                                  final Frame frame, final AbsoluteDate date) {
 
         // transform line and close to body frame
         final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
@@ -180,7 +193,15 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // select the right point
         final double k =
             (FastMath.abs(k1 - closeAbscissa) < FastMath.abs(k2 - closeAbscissa)) ? k1 : k2;
-        final Vector3D intersection = lineInBodyFrame.pointAt(k);
+        return lineInBodyFrame.pointAt(k);
+
+    }
+
+    /** {@inheritDoc} */
+    public GeodeticPoint getIntersectionPoint(final Line line, final Vector3D close,
+                                              final Frame frame, final AbsoluteDate date) {
+
+        final Vector3D intersection = getCartesianIntersectionPoint(line, close, frame, date);
         final double ix = intersection.getX();
         final double iy = intersection.getY();
         final double iz = intersection.getZ();
@@ -192,10 +213,10 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
-                                                                                      final FieldVector3D<T> close,
-                                                                                      final Frame frame,
-                                                                                      final FieldAbsoluteDate<T> date) {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> getCartesianIntersectionPoint(final FieldLine<T> line,
+                                                                                          final FieldVector3D<T> close,
+                                                                                          final Frame frame,
+                                                                                          final FieldAbsoluteDate<T> date) {
 
         // transform line and close to body frame
         final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
@@ -234,7 +255,16 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // select the right point
         final T k = (FastMath.abs(k1.getReal() - closeAbscissa.getReal()) < FastMath.abs(k2.getReal() - closeAbscissa.getReal())) ?
                     k1 : k2;
-        final FieldVector3D<T> intersection = lineInBodyFrame.pointAt(k);
+        return lineInBodyFrame.pointAt(k);
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
+                                                                                      final FieldVector3D<T> close,
+                                                                                      final Frame frame,
+                                                                                      final FieldAbsoluteDate<T> date) {
+
+        final FieldVector3D<T> intersection = getCartesianIntersectionPoint(line, close, frame, date);
         final T ix = intersection.getX();
         final T iy = intersection.getY();
         final T iz = intersection.getZ();
