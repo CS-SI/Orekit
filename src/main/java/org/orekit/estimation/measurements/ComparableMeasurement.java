@@ -19,9 +19,9 @@ package org.orekit.estimation.measurements;
 import org.orekit.time.TimeStamped;
 
 
-/** Base interface for comparing measurements regardless of thei type.
+/** Base interface for comparing measurements regardless of their type.
  * @author Luc Maisonobe
-     * @since 9.2
+ * @since 9.2
  */
 public interface ComparableMeasurement extends TimeStamped, Comparable<ComparableMeasurement> {
 

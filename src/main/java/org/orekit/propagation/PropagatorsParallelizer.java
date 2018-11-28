@@ -40,7 +40,7 @@ import org.orekit.time.TimeStamped;
  *
  * <p>
  * Multi-satellites propagation is based on multi-threading. Therefore,
- * care must be taken so that all propagtors can be run in a multi-thread
+ * care must be taken so that all propagators can be run in a multi-thread
  * context. This implies that all propagators are built independently and
  * that they rely on force models that are also built independently. An
  * obvious mistake would be to reuse a maneuver force model, as these models
