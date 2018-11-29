@@ -100,9 +100,10 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * </ul>
      * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
+     * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    default double[] computeZenithDelay(double height, double[] parameters) {
+    default double[] computeZenithDelay(double height, double[] parameters, AbsoluteDate date) {
         return new double[] {
             pathDelay(0.5 * FastMath.PI, height),
             0
@@ -118,9 +119,10 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * @param <T> type of the elements
      * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
+     * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    default <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters) {
+    default <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, FieldAbsoluteDate<T> date) {
         final Field<T> field = height.getField();
         final T zero = field.getZero();
         final T[] delay = MathArrays.buildArray(field, 2);

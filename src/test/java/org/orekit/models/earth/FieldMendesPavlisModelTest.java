@@ -102,10 +102,12 @@ public class FieldMendesPavlisModelTest {
         
         final double precision = 4.0e-6;
         
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2009, 8, 12, TimeScalesFactory.getUTC());
+
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, latitude, lambda);
         
-        final T[] computedDelay = model.computeZenithDelay(zero.add(height), model.getParameters(field));
+        final T[] computedDelay = model.computeZenithDelay(zero.add(height), model.getParameters(field), date);
         
         Assert.assertEquals(expectedHydroDelay, computedDelay[0].getReal(),                    precision);
         Assert.assertEquals(expectedWetDelay,   computedDelay[1].getReal(), precision);

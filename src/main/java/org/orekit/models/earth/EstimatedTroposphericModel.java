@@ -93,7 +93,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
-        final double[] zenithDelay = computeZenithDelay(height, parameters);
+        final double[] zenithDelay = computeZenithDelay(height, parameters, null);
         // mapping function
         final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
@@ -105,7 +105,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters);
+        final T[] delays = computeZenithDelay(height, parameters, null);
         // mapping function
         final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
@@ -114,7 +114,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] computeZenithDelay(final double height, final double[] parameters) {
+    public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
         return new double[] {
             parameters[0],
             parameters[1]
@@ -123,7 +123,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters) {
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+                                                                  final FieldAbsoluteDate<T> date) {
         final Field<T> field = height.getField();
         final T[] delay = MathArrays.buildArray(field, 2);
         delay[0] = parameters[0];

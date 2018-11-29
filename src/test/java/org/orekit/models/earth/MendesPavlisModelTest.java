@@ -72,10 +72,12 @@ public class MendesPavlisModelTest {
         
         final double precision = 4.0e-6;
         
+        final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
+
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, latitude, lambda);
         
-        final double[] computedDelay = model.computeZenithDelay(height, model.getParameters());
+        final double[] computedDelay = model.computeZenithDelay(height, model.getParameters(), date);
         
         Assert.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
         Assert.assertEquals(expectedWetDelay,                      computedDelay[1], precision);

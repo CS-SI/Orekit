@@ -66,9 +66,10 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      * </ul>
      * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
+     * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-     double[] computeZenithDelay(double height, double[] parameters);
+     double[] computeZenithDelay(double height, double[] parameters, AbsoluteDate date);
 
      /** This method allows the  computation of the zenith hydrostatic and
       * zenith wet delay. The resulting element is an array having the following form:
@@ -78,9 +79,10 @@ public interface DiscreteTroposphericModel extends MappingFunction {
       * </ul>
       * @param <T> type of the elements
       * @param height the height of the station in m above sea level.
-      * @param parameters tropospheric model parameters.
+     * @param parameters tropospheric model parameters.
+     * @param date current date
       * @return a two components array containing the zenith hydrostatic and wet delays.
       */
-    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters);
+    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, FieldAbsoluteDate<T> date);
 
 }
