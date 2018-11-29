@@ -46,14 +46,6 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     /** Serializable UID. */
     private static final long serialVersionUID = -2348714833140436533L;
 
-    /** Parameters scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private final double SCALE = FastMath.scalb(1.0, 5);
-
     /** Mapping Function model. */
     private final MappingFunction model;
 
@@ -72,9 +64,9 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
                                       final double dhz,
                                       final double dwz) {
         dhzParameterDriver = new ParameterDriver("hydrostatic" + EstimatedTroposphericModel.ZENITH_DELAY,
-                                                 dhz, SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                 dhz, FastMath.scalb(1.0, -2), 0.0, Double.POSITIVE_INFINITY);
         dwzParameterDriver = new ParameterDriver("wet" + EstimatedTroposphericModel.ZENITH_DELAY,
-                                                 dwz, SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                 dwz, FastMath.scalb(1.0, -5), 0.0, Double.POSITIVE_INFINITY);
         this.model = model;
     }
 

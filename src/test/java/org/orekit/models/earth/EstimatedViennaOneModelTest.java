@@ -39,7 +39,6 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -47,7 +46,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class EstimatedTroposphericModelTest {
+public class EstimatedViennaOneModelTest {
 
     @BeforeClass
     public static void setUpGlobal() {
@@ -60,146 +59,23 @@ public class EstimatedTroposphericModelTest {
     }
 
     @Test
-    public void testMendesPavlis() {
-
-        // Site:   McDonald Observatory
-        //         latitude:  30.67166667°
-        //         height:    2075 m
-        //
-        // Meteo:  pressure:            798.4188 hPa
-        //         water vapor presure: 14.322 hPa
-        //         temperature:         300.15 K
-        //         humidity:            40 %
-        //
-        // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-        //         IERS Technical Note No. 36, BKG (2010)
-
-        final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
-        
-        final double latitude    = FastMath.toRadians(30.67166667);
-        final double height      = 2075;
-        final double pressure    = 798.4188;
-        final double temperature = 300.15;
-        final double humidity    = 0.4;
-        final double lambda      = 0.532;
-        
-        final double elevation        = FastMath.toRadians(15.0);
-        // Expected mapping factor: 3.80024367 (Ref)
-        final double[] expectedMapping = new double[] {
-            3.80024367,
-            3.80024367
-        };
-        
-        // Test for the second constructor
-        final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
-                                                               humidity, latitude, lambda);
-
-        doTestMappingFactor(expectedMapping, model, height, elevation, date, 5.0e-8);
-    }
-
-    @Test
-    public void testGMF() {
-
-        // Site (NRAO, Green Bank, WV): latitude:  0.6708665767 radians
-        //                              longitude: -1.393397187 radians
-        //                              height:    844.715 m
-        //
-        // Date: MJD 55055 -> 12 August 2009 at 0h UT
-        //
-        // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-        //         IERS Technical Note No. 36, BKG (2010)
-        //
-        // Expected mapping factors : hydrostatic -> 3.425246 (Ref)
-        //                                    wet -> 3.449589 (Ref)
-
-        final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC());
-        
-        final double latitude    = 0.6708665767;
-        final double longitude   = -1.393397187;
-        final double height      = 844.715;
-
-        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
-        final double expectedHydro = 3.425246;
-        final double expectedWet   = 3.449589;
-
-        final double[] expectedMappingFactors = new double[] {
-            expectedHydro,
-            expectedWet
-        };
-
-        final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
-
-        doTestMappingFactor(expectedMappingFactors, model, height, elevation, date, 1.0e-6);
-
-    }
-    
-    @Test
-    public void testVMF1() {
-
-        // Site (NRAO, Green Bank, WV): latitude:  38°
-        //                              longitude: 280°
-        //                              height:    824.17 m
-        //
-        // Date: MJD 55055 -> 12 August 2009 at 0h UT
-        //
-        // Ref for the inputs:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-        //                        IERS Technical Note No. 36, BKG (2010)
-        //
-        // Values: ah  = 0.00127683
-        //         aw  = 0.00060955
-        //         zhd = 2.0966 m
-        //         zwd = 0.2140 m
-        //
-        // Values taken from: http://vmf.geo.tuwien.ac.at/trop_products/GRID/2.5x2/VMF1/VMF1_OP/2009/VMFG_20090812.H00
-        //
-        // Expected mapping factors : hydrostatic -> 3.425088
-        //                                    wet -> 3.448300
-        //
-        // Expected outputs are obtained by performing the Matlab script vmf1_ht.m provided by TU WIEN:
-        // http://vmf.geo.tuwien.ac.at/codes/
-        //
-
-        final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC());
-        
-        final double latitude    = FastMath.toRadians(38.0);
-        final double height      = 824.17;
-
-        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
-        final double expectedHydro = 3.425088;
-        final double expectedWet   = 3.448300;
-        
-        final double[] expectedMappingFactors = new double[] {
-            expectedHydro,
-            expectedWet
-        };
-        
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
-        
-        final ViennaOneModel model = new ViennaOneModel(a, z, latitude);
-
-        doTestMappingFactor(expectedMappingFactors, model, height, elevation, date, 4.1e-6);
-
-    }
-
-    private void doTestMappingFactor(final double[] expectedMappingFactors, final MappingFunction model,
-                                     final double height, final double elevation, final AbsoluteDate date,
-                                     final double precision) {
-
-        final double[] computedMappingFactors = model.mappingFactors(height, elevation, date, model.getParameters());
-
-        Assert.assertEquals(expectedMappingFactors[0],   computedMappingFactors[0], precision);
-        Assert.assertEquals(expectedMappingFactors[1],   computedMappingFactors[1], precision);
-    }
-
-    @Test
     public void testZHDParameterDerivative() {
-        doTestParametersDerivatives("hydrostatic" + EstimatedTroposphericModel.ZENITH_DELAY, 2.3e-16);
+        doTestParametersDerivatives("hydrostatic" + EstimatedViennaOneModel.ZENITH_DELAY, 1.0e-16);
     }
 
     @Test
     public void testZWDParameterDerivative() {
-        doTestParametersDerivatives("wet" + EstimatedTroposphericModel.ZENITH_DELAY, 1.2e-14);
+        doTestParametersDerivatives("wet" + EstimatedViennaOneModel.ZENITH_DELAY, 8.7e-15);
+    }
+
+    @Test
+    public void testAHParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaOneModel.COEFFICIENTS + " ah", 2.3e-12);
+    }
+
+    @Test
+    public void testAWParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaOneModel.COEFFICIENTS + " aw", 1.5e-13);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance) {
@@ -217,8 +93,7 @@ public class EstimatedTroposphericModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
         
         // Tropospheric model
-        final MappingFunction gmf = new GlobalMappingFunctionModel(latitude, longitude);
-        final DiscreteTroposphericModel model = new EstimatedTroposphericModel(gmf, 2.0966, 0.2140);
+        final DiscreteTroposphericModel model = new EstimatedViennaOneModel(2.0966, 0.2140, 0.00127683, 0.00060955, latitude);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {

@@ -52,14 +52,6 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     /** Serializable UID. */
     private static final long serialVersionUID = 3421856575466386588L;
 
-    /** Parameters scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private final double SCALE = FastMath.scalb(1.0, 5);
-
     /** Geodetic site latitude, radians.*/
     private final double latitude;
 
@@ -86,16 +78,16 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
                                    final double ah, final double aw,
                                    final double latitude) {
         dhzParameterDriver = new ParameterDriver("hydrostatic" + EstimatedViennaOneModel.ZENITH_DELAY,
-                                                 dhz, SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                 dhz, FastMath.scalb(1.0, -2), 0.0, Double.POSITIVE_INFINITY);
 
         dwzParameterDriver = new ParameterDriver("wet" + EstimatedViennaOneModel.ZENITH_DELAY,
-                                                 dwz, SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                 dwz, FastMath.scalb(1.0, -5), 0.0, Double.POSITIVE_INFINITY);
 
         ahParameterDriver = new ParameterDriver(EstimatedViennaOneModel.COEFFICIENTS + " ah",
-                                                 ah, SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                 ah, FastMath.scalb(1.0, -12), 0.0, Double.POSITIVE_INFINITY);
 
         awParameterDriver = new ParameterDriver(EstimatedViennaOneModel.COEFFICIENTS + " aw",
-                                                 aw, SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                 aw, FastMath.scalb(1.0, -14), 0.0, Double.POSITIVE_INFINITY);
 
         this.latitude  = latitude;
     }
