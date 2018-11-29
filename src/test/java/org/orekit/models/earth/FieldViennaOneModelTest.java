@@ -111,7 +111,7 @@ public class FieldViennaOneModelTest {
         
         final ViennaOneModel model = new ViennaOneModel(a, z, latitude);
         
-        final T[] computedMapping = model.mappingFactors(zero.add(height), zero.add(elevation), date, model.getParameters(field));
+        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height), model.getParameters(field), date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 4.1e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);

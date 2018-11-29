@@ -148,8 +148,8 @@ public class NiellMappingFunctionModel implements MappingFunction {
     }
 
     @Override
-    public double[] mappingFactors(final double height, final double elevation,
-                                   final AbsoluteDate date, final double[] parameters) {
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -179,8 +179,8 @@ public class NiellMappingFunctionModel implements MappingFunction {
     }
 
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
-                                                              final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
         final Field<T> field = height.getField();
         final T zero = field.getZero();
 

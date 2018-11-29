@@ -36,13 +36,13 @@ public interface MappingFunction extends Serializable {
      * <li>double[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
      * <li>double[1] = m<sub>w</sub>(e) -&gt wet mapping function
      * </ul>
-     * @param height the height of the station in m above sea level.
      * @param elevation the elevation of the satellite, in radians.
-     * @param date current date
+     * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
+     * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    double[] mappingFactors(double height, double elevation, AbsoluteDate date, double[] parameters);
+    double[] mappingFactors(double elevation, double height, double[] parameters, AbsoluteDate date);
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -50,14 +50,14 @@ public interface MappingFunction extends Serializable {
      * <li>T[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
      * <li>T[1] = m<sub>w</sub>(e) -&gt wet mapping function
      * </ul>
-     * @param <T> type of the elements
-     * @param height the height of the station in m above sea level.
      * @param elevation the elevation of the satellite, in radians.
-     * @param date current date
+     * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
+     * @param date current date
+     * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    <T extends RealFieldElement<T>> T[] mappingFactors(T height, T elevation, FieldAbsoluteDate<T> date, T[] parameters);
+    <T extends RealFieldElement<T>> T[] mappingFactors(T elevation, T height, T[] parameters, FieldAbsoluteDate<T> date);
 
     /** Get the drivers for tropospheric model parameters.
      * @return drivers for tropospheric model parameters

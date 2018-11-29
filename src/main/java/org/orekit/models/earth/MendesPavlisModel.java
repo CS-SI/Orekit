@@ -117,7 +117,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
         // zenith delay
         final double[] zenithDelay = computeZenithDelay(height, parameters);
         // mapping function
-        final double[] mappingFunction = mappingFactors(height, elevation, date, parameters);
+        final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return zenithDelay[0] * mappingFunction[0] + zenithDelay[1] * mappingFunction[1];
     }
@@ -129,7 +129,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
         // zenith delay
         final T[] delays = computeZenithDelay(height, parameters);
         // mapping function
-        final T[] mappingFunction = mappingFactors(height, elevation, date, parameters);
+        final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
@@ -235,8 +235,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      * </p>
      * */
     @Override
-    public double[] mappingFactors(final double height, final double elevation,
-                                   final AbsoluteDate date, final double[] parameters) {
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
         final double sinE = FastMath.sin(elevation);
 
         final double T2degree = T0 - 273.15;
@@ -267,8 +267,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
-                                                              final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
 
         final T sinE = FastMath.sin(elevation);

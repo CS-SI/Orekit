@@ -72,16 +72,16 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double height, final double elevation,
-                                   final AbsoluteDate date, final double[] parameters) {
-        return model.mappingFactors(height, elevation, date, parameters);
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
+        return model.mappingFactors(elevation, height, parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
-                                                              final FieldAbsoluteDate<T> date, final T[] parameters) {
-        return model.mappingFactors(height, elevation, date, parameters);
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+        return model.mappingFactors(elevation, height, parameters, date);
     }
 
     /** {@inheritDoc} */
@@ -91,7 +91,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
         // zenith delay
         final double[] zenithDelay = computeZenithDelay(height, parameters);
         // mapping function
-        final double[] mappingFunction = mappingFactors(height, elevation, date, parameters);
+        final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return zenithDelay[0] * mappingFunction[0] + zenithDelay[1] * mappingFunction[1];
     }
@@ -103,7 +103,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
         // zenith delay
         final T[] delays = computeZenithDelay(height, parameters);
         // mapping function
-        final T[] mappingFunction = mappingFactors(height, elevation, date, parameters);
+        final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }

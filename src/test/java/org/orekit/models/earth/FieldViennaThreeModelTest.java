@@ -111,8 +111,8 @@ public class FieldViennaThreeModelTest {
         
         final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
         
-        final T[] computedMapping = model.mappingFactors(zero.add(height), zero.add(elevation),
-                                                         date, model.getParameters(field));
+        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height),
+                                                         model.getParameters(field), date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
@@ -162,8 +162,8 @@ public class FieldViennaThreeModelTest {
         
         final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
         
-        final T[] computedMapping = model.mappingFactors(zero.add(height), zero.add(elevation),
-                                                         date, model.getParameters(field));
+        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height),
+                                                         model.getParameters(field), date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
@@ -213,8 +213,8 @@ public class FieldViennaThreeModelTest {
         
         final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
         
-        final T[] computedMapping = model.mappingFactors(zero.add(height), zero.add(elevation),
-                                                         date, model.getParameters(field));
+        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height),
+                                                         model.getParameters(field), date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);

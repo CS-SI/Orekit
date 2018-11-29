@@ -74,7 +74,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         // zenith delay
         final double[] delays = computeZenithDelay(height, parameters);
         // mapping function
-        final double[] mappingFunction = mappingFactors(height, elevation, date, parameters);
+        final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return delays[0] * mappingFunction[0] + delays[1] * mappingFunction[1];
     }
@@ -86,7 +86,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         // zenith delay
         final T[] delays = computeZenithDelay(height, parameters);
         // mapping function
-        final T[] mappingFunction = mappingFactors(height, elevation, date, parameters);
+        final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
@@ -110,8 +110,8 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double height, final double elevation,
-                                   final AbsoluteDate date, final double[] parameters) {
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -155,8 +155,8 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
-                                                              final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 

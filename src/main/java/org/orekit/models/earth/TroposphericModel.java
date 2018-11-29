@@ -132,13 +132,13 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * <li>double[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
      * <li>double[1] = m<sub>w</sub>(e) -&gt wet mapping function
      * </ul>
-     * @param height the height of the station in m above sea level.
      * @param elevation the elevation of the satellite, in radians.
-     * @param date current date
+     * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
+     * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    default double[] mappingFactors(double height, double elevation, AbsoluteDate date, double[] parameters) {
+    default double[] mappingFactors(double elevation, double height, double[] parameters, AbsoluteDate date) {
         return new double[] {
             1.0,
             1.0
@@ -151,15 +151,15 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * <li>double[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
      * <li>double[1] = m<sub>w</sub>(e) -&gt wet mapping function
      * </ul>
-     * @param <T> type of the elements
-     * @param height the height of the station in m above sea level.
      * @param elevation the elevation of the satellite, in radians.
-     * @param date current date
+     * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
+     * @param date current date
+     * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    default <T extends RealFieldElement<T>> T[] mappingFactors(T height, T elevation,
-                                                               FieldAbsoluteDate<T> date, T[] parameters) {
+    default <T extends RealFieldElement<T>> T[] mappingFactors(T elevation, T height,
+                                                               T[] parameters, FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T one = field.getOne();
         final T[] factors = MathArrays.buildArray(field, 2);

@@ -191,7 +191,7 @@ public class EstimatedTroposphericModelTest {
                                      final double height, final double elevation, final AbsoluteDate date,
                                      final double precision) {
 
-        final double[] computedMappingFactors = model.mappingFactors(height, elevation, date, model.getParameters());
+        final double[] computedMappingFactors = model.mappingFactors(elevation, height, model.getParameters(), date);
 
         Assert.assertEquals(expectedMappingFactors[0],   computedMappingFactors[0], precision);
         Assert.assertEquals(expectedMappingFactors[1],   computedMappingFactors[1], precision);
