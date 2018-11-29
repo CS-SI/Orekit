@@ -16,6 +16,8 @@
  */
 package org.orekit.models.earth;
 
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -268,13 +270,13 @@ public class EstimatedTroposphericModelTest {
         final DerivativeStructure dsElevation = extPointTopo.getDelta();
 
         // Add parameter as a variable
-        final ParameterDriver[] drivers = model.getParametersDrivers();
-        final DerivativeStructure[] parameters = new DerivativeStructure[drivers.length];
+        final List<ParameterDriver> drivers = model.getParametersDrivers();
+        final DerivativeStructure[] parameters = new DerivativeStructure[drivers.size()];
         int index = 6;
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].isSelected() ?
-                            factory.variable(index++, drivers[i].getValue()) :
-                            factory.constant(drivers[i].getValue());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).isSelected() ?
+                            factory.variable(index++, drivers.get(i).getValue()) :
+                            factory.constant(drivers.get(i).getValue());
         }
 
         // Compute delay state derivatives

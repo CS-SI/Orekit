@@ -16,6 +16,10 @@
  */
 package org.orekit.models.earth;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
@@ -230,13 +234,13 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            dhzParameterDriver,
-            dwzParameterDriver,
-            ahParameterDriver,
-            awParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        final List<ParameterDriver> list = new ArrayList<>(4);
+        list.add(dhzParameterDriver);
+        list.add(dwzParameterDriver);
+        list.add(ahParameterDriver);
+        list.add(awParameterDriver);
+        return Collections.unmodifiableList(list);
     }
 
     /** Compute the mapping function related to the coefficient values and the elevation.

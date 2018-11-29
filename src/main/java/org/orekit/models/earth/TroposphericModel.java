@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
@@ -171,7 +174,7 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
     /** Get the drivers for tropospheric model parameters.
      * @return drivers for tropospheric model parameters
      */
-    default ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[0];
+    default List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 }

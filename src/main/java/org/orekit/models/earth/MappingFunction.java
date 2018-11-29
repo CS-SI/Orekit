@@ -17,6 +17,7 @@
 package org.orekit.models.earth;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -62,16 +63,16 @@ public interface MappingFunction extends Serializable {
     /** Get the drivers for tropospheric model parameters.
      * @return drivers for tropospheric model parameters
      */
-    ParameterDriver[] getParametersDrivers();
+    List<ParameterDriver> getParametersDrivers();
 
     /** Get tropospheric model parameters.
      * @return tropospheric model parameters
      */
     default double[] getParameters() {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.length];
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].getValue();
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
         }
         return parameters;
     }
@@ -82,10 +83,10 @@ public interface MappingFunction extends Serializable {
      * @return tropospheric model parameters
      */
     default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
         }
         return parameters;
     }

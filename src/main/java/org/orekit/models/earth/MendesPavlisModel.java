@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
@@ -302,8 +305,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[0];
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Get the laser frequency parameter f(lambda).

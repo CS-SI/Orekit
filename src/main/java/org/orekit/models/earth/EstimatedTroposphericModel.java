@@ -16,6 +16,10 @@
  */
 package org.orekit.models.earth;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
@@ -129,11 +133,11 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            dhzParameterDriver,
-            dwzParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        final List<ParameterDriver> list = new ArrayList<>(2);
+        list.add(dhzParameterDriver);
+        list.add(dwzParameterDriver);
+        return Collections.unmodifiableList(list);
     }
 
 }
