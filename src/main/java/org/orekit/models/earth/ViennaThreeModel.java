@@ -256,7 +256,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
-        final double[] delays = computeZenithDelay(height, parameters, null);
+        final double[] delays = computeZenithDelay(height, parameters, date);
         // mapping function
         final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
@@ -268,7 +268,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height, final T[] parameters,
                   final FieldAbsoluteDate<T> date) {
         // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters, null);
+        final T[] delays = computeZenithDelay(height, parameters, date);
         // mapping function
         final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
