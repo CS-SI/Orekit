@@ -201,12 +201,12 @@ public class EstimatedTroposphericModelTest {
 
     @Test
     public void testZHDParameterDerivative() {
-        doTestParametersDerivatives("hydrostatic" + EstimatedTroposphericModel.ZENITH_DELAY, 2.3e-16);
+        doTestParametersDerivatives(EstimatedTroposphericModel.HYDROSTATIC_ZENITH_DELAY, 2.3e-16);
     }
 
     @Test
     public void testZWDParameterDerivative() {
-        doTestParametersDerivatives("wet" + EstimatedTroposphericModel.ZENITH_DELAY, 1.2e-14);
+        doTestParametersDerivatives(EstimatedTroposphericModel.WET_ZENITH_DELAY, 1.2e-14);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance) {
@@ -268,6 +268,11 @@ public class EstimatedTroposphericModelTest {
         final FieldTransform<DerivativeStructure> t = dsState.getFrame().getTransformTo(baseFrame, dsDate);
         final FieldVector3D<DerivativeStructure> extPointTopo = t.transformPosition(position);
         final DerivativeStructure dsElevation = extPointTopo.getDelta();
+
+        // Set drivers reference date
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setReferenceDate(dsDate.toAbsoluteDate());
+        }
 
         // Add parameter as a variable
         final List<ParameterDriver> drivers = model.getParametersDrivers();
@@ -425,6 +430,11 @@ public class EstimatedTroposphericModelTest {
         final FieldTransform<DerivativeStructure> t = dsState.getFrame().getTransformTo(baseFrame, dsDate);
         final FieldVector3D<DerivativeStructure> extPointTopo = t.transformPosition(position);
         final DerivativeStructure dsElevation = extPointTopo.getDelta();
+
+        // Set drivers reference date
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setReferenceDate(dsDate.toAbsoluteDate());
+        }
 
         // Compute Delay with state derivatives
         final DerivativeStructure delay = model.pathDelay(dsElevation, zero, model.getParameters(field), dsDate);

@@ -44,8 +44,17 @@ import org.orekit.utils.ParameterDriver;
  * */
 public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
-    /** Name of the parameters of this model: the zenith delay. */
-    public static final String ZENITH_DELAY = " zenith delay";
+    /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
+    public static final String HYDROSTATIC_ZENITH_DELAY = "hydrostatic zenith delay";
+
+    /** Name of one of the parameters of this model: the slope hydrostatic zenith delay. */
+    public static final String SLOPE_HYDROSTATIC_ZENITH_DELAY = "slope hydrostatic zenith delay";
+
+    /** Name of one of the parameters of this model: the wet zenith delay. */
+    public static final String WET_ZENITH_DELAY = "wet zenith delay";
+
+    /** Name of one of the parameters of this model: the slope wet zenith delay. */
+    public static final String SLOPE_WET_ZENITH_DELAY = "slope wet zenith delay";
 
     /** Serializable UID. */
     private static final long serialVersionUID = -2348714833140436533L;
@@ -56,8 +65,14 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     /** Driver for hydrostatic tropospheric delay parameter. */
     private final ParameterDriver dhzParameterDriver;
 
+    /** Driver for slope hydrostatic tropospheric delay parameter. */
+    private final ParameterDriver dhzSlopeParameterDriver;
+
     /** Driver for wet tropospheric delay parameter. */
     private final ParameterDriver dwzParameterDriver;
+
+    /** Driver for wet tropospheric delay parameter. */
+    private final ParameterDriver dwzSlopeParameterDriver;
 
     /** Build a new instance.
      * @param model mapping function model.
@@ -67,10 +82,18 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public EstimatedTroposphericModel(final MappingFunction model,
                                       final double dhz,
                                       final double dwz) {
-        dhzParameterDriver = new ParameterDriver("hydrostatic" + EstimatedTroposphericModel.ZENITH_DELAY,
+        dhzParameterDriver      = new ParameterDriver(EstimatedTroposphericModel.HYDROSTATIC_ZENITH_DELAY,
                                                  dhz, FastMath.scalb(1.0, -2), 0.0, Double.POSITIVE_INFINITY);
-        dwzParameterDriver = new ParameterDriver("wet" + EstimatedTroposphericModel.ZENITH_DELAY,
+
+        dhzSlopeParameterDriver = new ParameterDriver(EstimatedTroposphericModel.SLOPE_HYDROSTATIC_ZENITH_DELAY,
+                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+        dwzParameterDriver      = new ParameterDriver(EstimatedTroposphericModel.WET_ZENITH_DELAY,
                                                  dwz, FastMath.scalb(1.0, -5), 0.0, Double.POSITIVE_INFINITY);
+
+        dwzSlopeParameterDriver = new ParameterDriver(EstimatedTroposphericModel.SLOPE_WET_ZENITH_DELAY,
+                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
         this.model = model;
     }
 
@@ -93,7 +116,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
-        final double[] zenithDelay = computeZenithDelay(height, parameters, null);
+        final double[] zenithDelay = computeZenithDelay(height, parameters, date);
         // mapping function
         final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
@@ -105,7 +128,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters, null);
+        final T[] delays = computeZenithDelay(height, parameters, date);
         // mapping function
         final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
@@ -115,29 +138,33 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
-        return new double[] {
-            parameters[0],
-            parameters[1]
-        };
+        final double[] delays = new double[2];
+        final double dt = date.durationFrom(getParametersDrivers().get(0).getReferenceDate());
+        delays[0] = parameters[1] * dt + parameters[0];
+        delays[1] = parameters[3] * dt + parameters[2];
+        return delays;
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
-        final Field<T> field = height.getField();
-        final T[] delay = MathArrays.buildArray(field, 2);
-        delay[0] = parameters[0];
-        delay[1] = parameters[1];
-        return delay;
+        final Field<T> field = date.getField();
+        final T[] delays = MathArrays.buildArray(field, 2);
+        final T dt = date.durationFrom(getParametersDrivers().get(0).getReferenceDate());
+        delays[0] = parameters[1].multiply(dt).add(parameters[0]);
+        delays[1] = parameters[3].multiply(dt).add(parameters[2]);
+        return delays;
     }
 
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        final List<ParameterDriver> list = new ArrayList<>(2);
-        list.add(dhzParameterDriver);
-        list.add(dwzParameterDriver);
+        final List<ParameterDriver> list = new ArrayList<>(4);
+        list.add(0, dhzParameterDriver);
+        list.add(1, dhzSlopeParameterDriver);
+        list.add(2, dwzParameterDriver);
+        list.add(3, dwzSlopeParameterDriver);
         return Collections.unmodifiableList(list);
     }
 

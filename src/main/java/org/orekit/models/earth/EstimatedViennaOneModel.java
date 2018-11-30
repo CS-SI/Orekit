@@ -47,11 +47,29 @@ import org.orekit.utils.ParameterDriver;
  */
 public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
 
-    /** Name of the parameters of this model: the zenith delay. */
-    public static final String ZENITH_DELAY = " zenith delay";
+    /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
+    public static final String HYDROSTATIC_ZENITH_DELAY = "hydrostatic zenith delay";
 
-    /** Name of the parameters of this model: the mapping function coefficients. */
-    public static final String COEFFICIENTS = "mapping function coefficient";
+    /** Name of one of the parameters of this model: the slope hydrostatic zenith delay. */
+    public static final String SLOPE_HYDROSTATIC_ZENITH_DELAY = "slope hydrostatic zenith delay";
+
+    /** Name of one of the parameters of this model: the wet zenith delay. */
+    public static final String WET_ZENITH_DELAY = "wet zenith delay";
+
+    /** Name of one of the parameters of this model: the slope wet zenith delay. */
+    public static final String SLOPE_WET_ZENITH_DELAY = "slope wet zenith delay";
+
+    /** Name of the parameters of this model: the mapping function coefficient a<sub>h</sub>. */
+    public static final String AH_COEFFICIENT = "mapping function coefficient ah";
+
+    /** Name of the parameters of this model: the mapping function slope coefficient a<sub>h</sub>. */
+    public static final String AH_SLOPE_COEFFICIENT = "mapping function slope coefficient ah";
+
+    /** Name of the parameters of this model: the mapping function coefficient a<sub>w</sub>. */
+    public static final String AW_COEFFICIENT = "mapping function coefficient aw";
+
+    /** Name of the parameters of this model: the mapping function slope coefficient a<sub>w</sub>. */
+    public static final String AW_SLOPE_COEFFICIENT = "mapping function slope coefficient aw";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3421856575466386588L;
@@ -62,36 +80,60 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     /** Driver for hydrostatic tropospheric delay parameter. */
     private final ParameterDriver dhzParameterDriver;
 
+    /** Driver for slope hydrostatic tropospheric delay parameter. */
+    private final ParameterDriver dhzSlopeParameterDriver;
+
     /** Driver for wet tropospheric delay parameter. */
     private final ParameterDriver dwzParameterDriver;
 
-    /** Driver for hydrostatic coefficient ah. */
+    /** Driver for slope wet tropospheric delay parameter. */
+    private final ParameterDriver dwzSlopeParameterDriver;
+
+    /** Driver for hydrostatic coefficient a<sub>h</sub>. */
     private final ParameterDriver ahParameterDriver;
 
-    /** Driver for wet coefficient aw. */
+    /** Driver for slope hydrostatic coefficient a<sub>h</sub>. */
+    private final ParameterDriver ahSlopeParameterDriver;
+
+    /** Driver for wet coefficient a<sub>w</sub>. */
     private final ParameterDriver awParameterDriver;
+
+    /** Driver for slope wet coefficient a<sub>h</sub>. */
+    private final ParameterDriver awSlopeParameterDriver;
 
     /** Build a new instance.
      * @param dhz initial value for the hydrostatic zenith delay
      * @param dwz initial value for the wet zenith delay
-     * @param ah initial value for coefficient ah
-     * @param aw initial value for coefficient aw
+     * @param ah initial value for coefficient a<sub>h</sub>
+     * @param aw initial value for coefficient a<sub>w</sub>
      * @param latitude geodetic latitude of the station
      */
     public EstimatedViennaOneModel(final double dhz, final double dwz,
                                    final double ah, final double aw,
                                    final double latitude) {
-        dhzParameterDriver = new ParameterDriver("hydrostatic" + EstimatedViennaOneModel.ZENITH_DELAY,
+        dhzParameterDriver = new ParameterDriver(EstimatedViennaOneModel.HYDROSTATIC_ZENITH_DELAY,
                                                  dhz, FastMath.scalb(1.0, -2), 0.0, Double.POSITIVE_INFINITY);
 
-        dwzParameterDriver = new ParameterDriver("wet" + EstimatedViennaOneModel.ZENITH_DELAY,
+        dhzSlopeParameterDriver = new ParameterDriver(EstimatedViennaOneModel.SLOPE_HYDROSTATIC_ZENITH_DELAY,
+                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+        dwzParameterDriver = new ParameterDriver(EstimatedViennaOneModel.WET_ZENITH_DELAY,
                                                  dwz, FastMath.scalb(1.0, -5), 0.0, Double.POSITIVE_INFINITY);
 
-        ahParameterDriver = new ParameterDriver(EstimatedViennaOneModel.COEFFICIENTS + " ah",
+        dwzSlopeParameterDriver = new ParameterDriver(EstimatedViennaOneModel.SLOPE_WET_ZENITH_DELAY,
+                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+        ahParameterDriver = new ParameterDriver(EstimatedViennaOneModel.AH_COEFFICIENT,
                                                  ah, FastMath.scalb(1.0, -12), 0.0, Double.POSITIVE_INFINITY);
 
-        awParameterDriver = new ParameterDriver(EstimatedViennaOneModel.COEFFICIENTS + " aw",
+        ahSlopeParameterDriver = new ParameterDriver(EstimatedViennaOneModel.AH_SLOPE_COEFFICIENT,
+                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+        awParameterDriver = new ParameterDriver(EstimatedViennaOneModel.AW_COEFFICIENT,
                                                  aw, FastMath.scalb(1.0, -14), 0.0, Double.POSITIVE_INFINITY);
+
+        awSlopeParameterDriver = new ParameterDriver(EstimatedViennaOneModel.AW_SLOPE_COEFFICIENT,
+                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
         this.latitude  = latitude;
     }
@@ -101,7 +143,7 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
-        final double[] delays = computeZenithDelay(height, parameters, null);
+        final double[] delays = computeZenithDelay(height, parameters, date);
         // mapping function
         final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
@@ -113,7 +155,7 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters, null);
+        final T[] delays = computeZenithDelay(height, parameters, date);
         // mapping function
         final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
@@ -123,20 +165,22 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
-        return new double[] {
-            parameters[0],
-            parameters[1]
-        };
+        final double[] delays = new double[2];
+        final double dt = date.durationFrom(getParametersDrivers().get(0).getReferenceDate());
+        delays[0] = parameters[1] * dt + parameters[0];
+        delays[1] = parameters[3] * dt + parameters[2];
+        return delays;
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
-        final Field<T> field = height.getField();
+        final Field<T> field = date.getField();
         final T[] delays = MathArrays.buildArray(field, 2);
-        delays[0] = parameters[0];
-        delays[1] = parameters[1];
+        final T dt = date.durationFrom(getParametersDrivers().get(0).getReferenceDate());
+        delays[0] = parameters[1].multiply(dt).add(parameters[0]);
+        delays[1] = parameters[3].multiply(dt).add(parameters[2]);
         return delays;
     }
 
@@ -174,9 +218,14 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
         final double bw = 0.00146;
         final double cw = 0.04391;
 
+        // ah and aw coefficients : linear model
+        final double dt = date.durationFrom(getParametersDrivers().get(4).getReferenceDate());
+        final double ah = parameters[5] * dt + parameters[4];
+        final double aw = parameters[7] * dt + parameters[6];
+
         final double[] function = new double[2];
-        function[0] = computeFunction(parameters[2], bh, ch, elevation);
-        function[1] = computeFunction(parameters[3], bw, cw, elevation);
+        function[0] = computeFunction(ah, bh, ch, elevation);
+        function[1] = computeFunction(aw, bw, cw, elevation);
 
         // Apply height correction
         final double correction = computeHeightCorrection(elevation, height);
@@ -222,9 +271,14 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
         final T bw = zero.add(0.00146);
         final T cw = zero.add(0.04391);
 
+        // ah and aw coefficients : linear model
+        final T dt = date.durationFrom(getParametersDrivers().get(4).getReferenceDate());
+        final T ah = parameters[5].multiply(dt).add(parameters[4]);
+        final T aw = parameters[7].multiply(dt).add(parameters[6]);
+
         final T[] function = MathArrays.buildArray(field, 2);
-        function[0] = computeFunction(parameters[2], bh, ch, elevation);
-        function[1] = computeFunction(parameters[3], bw, cw, elevation);
+        function[0] = computeFunction(ah, bh, ch, elevation);
+        function[1] = computeFunction(aw, bw, cw, elevation);
 
         // Apply height correction
         final T correction = computeHeightCorrection(elevation, height, field);
@@ -236,11 +290,15 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        final List<ParameterDriver> list = new ArrayList<>(4);
-        list.add(dhzParameterDriver);
-        list.add(dwzParameterDriver);
-        list.add(ahParameterDriver);
-        list.add(awParameterDriver);
+        final List<ParameterDriver> list = new ArrayList<>(8);
+        list.add(0, dhzParameterDriver);
+        list.add(1, dhzSlopeParameterDriver);
+        list.add(2, dwzParameterDriver);
+        list.add(3, dwzSlopeParameterDriver);
+        list.add(4, ahParameterDriver);
+        list.add(5, ahSlopeParameterDriver);
+        list.add(6, awParameterDriver);
+        list.add(7, awSlopeParameterDriver);
         return Collections.unmodifiableList(list);
     }
 

@@ -68,22 +68,22 @@ public class EstimatedViennaOneModelTest {
 
     @Test
     public void testZHDParameterDerivative() {
-        doTestParametersDerivatives("hydrostatic" + EstimatedViennaOneModel.ZENITH_DELAY, 1.0e-16);
+        doTestParametersDerivatives(EstimatedViennaOneModel.HYDROSTATIC_ZENITH_DELAY, 1.0e-16);
     }
 
     @Test
     public void testZWDParameterDerivative() {
-        doTestParametersDerivatives("wet" + EstimatedViennaOneModel.ZENITH_DELAY, 8.7e-15);
+        doTestParametersDerivatives(EstimatedViennaOneModel.WET_ZENITH_DELAY, 8.7e-15);
     }
 
     @Test
     public void testAHParameterDerivative() {
-        doTestParametersDerivatives(EstimatedViennaOneModel.COEFFICIENTS + " ah", 2.3e-12);
+        doTestParametersDerivatives(EstimatedViennaOneModel.AH_COEFFICIENT, 2.3e-12);
     }
 
     @Test
     public void testAWParameterDerivative() {
-        doTestParametersDerivatives(EstimatedViennaOneModel.COEFFICIENTS + " aw", 1.5e-13);
+        doTestParametersDerivatives(EstimatedViennaOneModel.AW_COEFFICIENT, 1.5e-13);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance) {
@@ -144,6 +144,11 @@ public class EstimatedViennaOneModelTest {
         final FieldTransform<DerivativeStructure> t = dsState.getFrame().getTransformTo(baseFrame, dsDate);
         final FieldVector3D<DerivativeStructure> extPointTopo = t.transformPosition(position);
         final DerivativeStructure dsElevation = extPointTopo.getDelta();
+
+        // Set drivers reference date
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setReferenceDate(dsDate.toAbsoluteDate());
+        }
 
         // Add parameter as a variable
         final List<ParameterDriver> drivers = model.getParametersDrivers();
@@ -276,6 +281,11 @@ public class EstimatedViennaOneModelTest {
         final FieldTransform<DerivativeStructure> t = dsState.getFrame().getTransformTo(baseFrame, dsDate);
         final FieldVector3D<DerivativeStructure> extPointTopo = t.transformPosition(position);
         final DerivativeStructure dsElevation = extPointTopo.getDelta();
+
+        // Set drivers reference date
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setReferenceDate(dsDate.toAbsoluteDate());
+        }
 
         // Compute Delay with state derivatives
         final DerivativeStructure delay = model.pathDelay(dsElevation, zero, model.getParameters(field), dsDate);
