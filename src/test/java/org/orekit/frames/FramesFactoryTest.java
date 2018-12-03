@@ -158,6 +158,7 @@ public class FramesFactoryTest {
             }
         };
         Frame parent = FramesFactory.getGCRF();
+        Assert.assertEquals("GCRF", parent.getName());
         Frame frame  = new Frame(parent,
                                  new InterpolatingTransformProvider(raw,
                                                                     CartesianDerivativesFilter.USE_P,
@@ -227,6 +228,7 @@ public class FramesFactoryTest {
     @Test
     public void testTreeICRF() {
         Frame icrf = FramesFactory.getFrame(Predefined.ICRF);
+        Assert.assertEquals("ICRF", icrf.getName());
         Transform t = icrf.getTransformTo(FramesFactory.getGCRF(),
                                           new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
         Assert.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
@@ -297,11 +299,7 @@ public class FramesFactoryTest {
         for (Predefined predefined : Predefined.values()) {
 
             Frame original = FramesFactory.getFrame(predefined);
-            if (predefined == Predefined.ICRF) {
-                Assert.assertEquals(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial", original.getName());
-            } else {
-                Assert.assertEquals(predefined.getName(), original.getName());
-            }
+            Assert.assertEquals(predefined.getName(), original.getName());
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream    oos = new ObjectOutputStream(bos);

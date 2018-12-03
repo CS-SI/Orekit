@@ -39,6 +39,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -279,6 +280,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final double scale;
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
+        String inertialFrameName = null;
+        String bodyOrientedFrameName = null;
         switch (generateType) {
             case SOLAR_SYSTEM_BARYCENTER : {
                 scale = -1.0;
@@ -288,6 +291,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                         parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
                 rawPVProvider = new EphemerisRawPVProvider();
+                inertialFrameName = Predefined.ICRF.getName();
+                bodyOrientedFrameName = null;
                 break;
             }
             case EARTH_MOON :
@@ -318,7 +323,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         // build the celestial body
         return new JPLCelestialBody(name, supportedNames, generateType, rawPVProvider,
-                                    gm, scale, iauPole, definingFrameAlignedWithICRF);
+                                    gm, scale, iauPole, definingFrameAlignedWithICRF,
+                                    inertialFrameName, bodyOrientedFrameName);
 
     }
 
