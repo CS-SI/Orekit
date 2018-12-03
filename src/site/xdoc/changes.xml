@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="evan" type="update" issue="501">
+        Deprecate GFunction in favor of ToDoubleFunction.
+      </action>
       <action dev="luc" type="add" issue="500">
         Added retrieval of full time span (start time, end time and data) containing
         a specified date in TimeSpanMap.
