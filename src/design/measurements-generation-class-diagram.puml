@@ -42,7 +42,7 @@
          }
 
         class "...MeasurementBuilder" as XXXMeasurementBuilder
-        note left
+        note right
           one for each
           measurement type
         end note
@@ -52,30 +52,24 @@
           +SortedSet<ObservedMeasurements> generate(startDate, endDate, propagators)
         }
 
+        enum SignSemantic {
+          +FEASIBLE_MEASUREMENT_WHEN_POSITIVE
+          +FEASIBLE_MEASUREMENT_WHEN_NEGATIVE
+        }
+        class "EventBasedScheduler<T>" as EventBasedScheduler_T_
+
         interface "Scheduler<T>" as Scheduler_T_ {
           +SortedSet<T> generate(interpolators)
         }
 
-        class "PredicateScheduler<T>" as PredicateScheduler_T_
-
-        interface SchedulingPredicate {
-          {static} +SchedulingPredicate andCombine(predicates)
-          {static} +SchedulingPredicate orCombine(predicates)
-          {static} +SchedulingPredicate notCombine(predicate)
-          +boolean feasibleMeasurement(spacecraftStates)
-        }
 
         XXXMeasurementBuilder       ..|>          MeasurementBuilder_T_
-        Generator                   *--> "*"      Scheduler_T_
-        Scheduler_T_                *-right-> "1" MeasurementBuilder_T_
-        RandomVectorGenerator "0,1" <--           XXXMeasurementBuilder : noise source
-        Scheduler_T_                <|..          PredicateScheduler_T_
-        PredicateScheduler_T_       -right-> "1"  SchedulingPredicate
-        SchedulingPredicate         <|..          VisibleFromGround  
-        SchedulingPredicate         <|..          InterSatVisibility
-        SchedulingPredicate         <|..          GroundAtNight  
-        SchedulingPredicate         <|..          Sunlit  
-
+        Scheduler_T_ "*" <--* Generator
+        MeasurementBuilder_T_ "1" <--* Scheduler_T_
+        XXXMeasurementBuilder       *-up-> "0,1"    RandomVectorGenerator
+        SignSemantic "1" <--* EventBasedScheduler_T_
+        EventBasedScheduler_T_ ..|> Scheduler_T_
+  
       }
 
       interface "EstimationModifier<T>" as EstimationModifier_T_
@@ -95,21 +89,33 @@
 
     }
 
-   package propagation #DDEBD8 {
-      interface PropagatorsParallelizer {
+
+    package propagation #DDEBD8 {
+      package events #CEEBD8 {
+        interface EventsDetector
+        note bottom
+          ground visibility,
+          ground at night,
+          sunlit satellite,
+          inter sat direct view,
+          boolean combination...
+        end note
+      }
+      EventsDetector "1" <--* EventBasedScheduler_T_
+      class PropagatorsParallelizer {
         propagate()
       }
       interface OrekitStepInterpolator
-      PropagatorsParallelizer <-left- Generator
-      PropagatorsParallelizer -->     OrekitStepInterpolator
-      OrekitStepInterpolator  <-left- Scheduler_T_
+      PropagatorsParallelizer --> OrekitStepInterpolator
+      OrekitStepInterpolator <-- Scheduler_T_
+      PropagatorsParallelizer <-- Generator
     }
 
   }
 
   package mission.specific #C4D2C5 {
     class "CustomScheduler<T>" as CustomScheduler_T_ #D5E0D5/E2EBE2
-    CustomScheduler_T_ ..|> Scheduler_T_
+    Scheduler_T_ <|.up. CustomScheduler_T_
   }
 
 @enduml
