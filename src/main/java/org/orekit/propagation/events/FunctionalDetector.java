@@ -16,13 +16,15 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.function.ToDoubleFunction;
+
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 
 /**
- * A detector that implements the {@link #g(SpacecraftState)} function using a
- * {@link GFunction lambda} that can be set using {@link #withGFunction(GFunction)}.
+ * A detector that implements the {@link #g(SpacecraftState)} function using a lambda that
+ * can be set using {@link #withFunction(ToDoubleFunction)}.
  *
  * <p>For example, to create a simple date detector use:
  *
@@ -40,8 +42,12 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
     /** Serializable UID. */
     private static final long serialVersionUID = 20180525L;
 
-    /** The g function. */
+    /** The g function. Deprecated in favor of the standard java.util interface. */
+    @Deprecated
     private final GFunction gFunction;
+
+    /** The g function. */
+    private final ToDoubleFunction<SpacecraftState> function;
 
     /**
      * Create an event detector with the default values. These are {@link
@@ -50,7 +56,8 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      */
     public FunctionalDetector() {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                new ContinueOnEvent<>(), a -> 1.0);
+                new ContinueOnEvent<>(),
+                (ToDoubleFunction<SpacecraftState>) value -> 1.0);
     }
 
     /**
@@ -61,7 +68,10 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      * @param gFunction the switching function.
+     * @deprecated Use {@link #FunctionalDetector(double, double, int, EventHandler,
+     * ToDoubleFunction)} instead. Will be removed in the next major release.
      */
+    @Deprecated
     private FunctionalDetector(final double maxCheck,
                                final double threshold,
                                final int maxIter,
@@ -69,7 +79,28 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
                                final GFunction gFunction) {
         super(maxCheck, threshold, maxIter, handler);
         this.gFunction = gFunction;
+        this.function = gFunction::apply;
     }
+
+    /**
+     * Private constructor.
+     *
+     * @param maxCheck  maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param maxIter   maximum number of iterations in the event time search
+     * @param handler   event handler to call at event occurrences
+     * @param function  the switching function.
+     */
+    private FunctionalDetector(final double maxCheck,
+                               final double threshold,
+                               final int maxIter,
+                               final EventHandler<? super FunctionalDetector> handler,
+                               final ToDoubleFunction<SpacecraftState> function) {
+        super(maxCheck, threshold, maxIter, handler);
+        this.gFunction = function::applyAsDouble;
+        this.function = function;
+    }
+
 
     @Override
     public double g(final SpacecraftState s) {
@@ -89,12 +120,29 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
 
     /**
      * Create a new event detector with a new g function, keeping all other attributes the
-     * same. It is recommended to use {@link #withMaxCheck(double)} and
-     * {@link #withThreshold(double)} to set appropriate values for this g function.
+     * same. It is recommended to use {@link #withMaxCheck(double)} and {@link
+     * #withThreshold(double)} to set appropriate values for this g function.
      *
      * @param newGFunction the new g function.
      * @return a new detector with the new g function.
      */
+    public FunctionalDetector withFunction(
+            final ToDoubleFunction<SpacecraftState> newGFunction) {
+        return new FunctionalDetector(getMaxCheckInterval(), getThreshold(),
+                getMaxIterationCount(), getHandler(), newGFunction);
+    }
+
+    /**
+     * Create a new event detector with a new g function, keeping all other attributes the
+     * same. It is recommended to use {@link #withMaxCheck(double)} and {@link
+     * #withThreshold(double)} to set appropriate values for this g function.
+     *
+     * @param newGFunction the new g function.
+     * @return a new detector with the new g function.
+     * @deprecated Use {@link #withFunction(ToDoubleFunction)} instead. Will be removed in
+     * next major release.
+     */
+    @Deprecated
     public FunctionalDetector withGFunction(final GFunction newGFunction) {
         return new FunctionalDetector(getMaxCheckInterval(), getThreshold(),
                 getMaxIterationCount(), getHandler(), newGFunction);
@@ -104,13 +152,31 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      * Get the switching function.
      *
      * @return the function used in {@link #g(SpacecraftState)}.
+     * @deprecated use {@link #getFunction()} instead. Will be removed in next major
+     * release.
      */
+    @Deprecated
     public GFunction getGFunction() {
         return gFunction;
     }
 
-    /** A functional interface for the {@link #g(SpacecraftState)} function. */
+    /**
+     * Get the switching function.
+     *
+     * @return the function used in {@link #g(SpacecraftState)}.
+     */
+    public ToDoubleFunction<SpacecraftState> getFunction() {
+        return function;
+    }
+
+    /**
+     * A functional interface for the {@link #g(SpacecraftState)} function.
+     *
+     * @deprecated Use {@link ToDoubleFunction}<SpaceraftState> instead. Will be removed
+     * in next major release.
+     */
     @FunctionalInterface
+    @Deprecated
     public interface GFunction {
 
         /**
@@ -118,7 +184,10 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
          *
          * @param value the function argument
          * @return the function result
+         * @deprecated Use {@link ToDoubleFunction#applyAsDouble(Object)} instead. Will be
+         * removed in next major release.
          */
+        @Deprecated
         double apply(SpacecraftState value);
 
     }
