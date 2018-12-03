@@ -142,6 +142,7 @@
       * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal
       * inter-satellites direct view
+      * ground at night
       * impulse maneuvers occurrence
 
     * possibility of slightly shifting events in time (for example to switch from

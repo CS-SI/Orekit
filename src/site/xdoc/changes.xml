@@ -22,6 +22,9 @@
   <body>
     <release version="TBD" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added ground at night detector.
+      </action>
+      <action dev="luc" type="add">
         Added inter-satellites direct view detector.
       </action>
       <action dev="luc" type="add">
