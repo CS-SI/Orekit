@@ -22,6 +22,9 @@
   <body>
     <release version="TBD" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added inter-satellites direct view detector.
+      </action>
+      <action dev="luc" type="add">
         Added constants defined by IAU 2015 resolution B3 for Sun, Earth and Jupiter.
       </action>
       <action dev="luc" type="add" issue="500">

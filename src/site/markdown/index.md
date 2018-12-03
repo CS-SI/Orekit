@@ -141,6 +141,7 @@
       * spacecraft detection in ground based Field Of View (any shape)
       * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal
+      * inter-satellites direct view
       * impulse maneuvers occurrence
 
     * possibility of slightly shifting events in time (for example to switch from

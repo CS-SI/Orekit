@@ -159,10 +159,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // transform line and close to body frame
         final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
-        final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
-        final double closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
 
-        // compute some miscellaneous variables outside of the loop
+        // compute some miscellaneous variables
         final Vector3D point    = lineInBodyFrame.getOrigin();
         final double x          = point.getX();
         final double y          = point.getY();
@@ -191,6 +189,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double k2 = c / (a * k1);
 
         // select the right point
+        final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
+        final double   closeAbscissa    = lineInBodyFrame.getAbscissa(closeInBodyFrame);
         final double k =
             (FastMath.abs(k1 - closeAbscissa) < FastMath.abs(k2 - closeAbscissa)) ? k1 : k2;
         return lineInBodyFrame.pointAt(k);
@@ -221,10 +221,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // transform line and close to body frame
         final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
         final FieldLine<T>      lineInBodyFrame  = frameToBodyFrame.transformLine(line);
-        final FieldVector3D<T>  closeInBodyFrame = frameToBodyFrame.transformPosition(close);
-        final T                 closeAbscissa    = lineInBodyFrame.getAbscissa(closeInBodyFrame);
 
-        // compute some miscellaneous variables outside of the loop
+        // compute some miscellaneous variables
         final FieldVector3D<T> point = lineInBodyFrame.getOrigin();
         final T x  = point.getX();
         final T y  = point.getY();
@@ -253,6 +251,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final T k2 = c.divide(a.multiply(k1));
 
         // select the right point
+        final FieldVector3D<T>  closeInBodyFrame = frameToBodyFrame.transformPosition(close);
+        final T                 closeAbscissa    = lineInBodyFrame.getAbscissa(closeInBodyFrame);
         final T k = (FastMath.abs(k1.getReal() - closeAbscissa.getReal()) < FastMath.abs(k2.getReal() - closeAbscissa.getReal())) ?
                     k1 : k2;
         return lineInBodyFrame.pointAt(k);
