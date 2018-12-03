@@ -386,7 +386,7 @@ public class Frame implements Serializable {
     private static class LazyRootHolder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE = new Frame("GCRF", true) {
+        private static final Frame INSTANCE = new Frame(Predefined.GCRF.getName(), true) {
 
             /** Serializable UID. */
             private static final long serialVersionUID = -2654403496396721543L;
