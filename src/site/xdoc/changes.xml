@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="486">
+        Make FieldTransform.shiftedBy(T) public.
+      </action>
       <action dev="evan" type="fix" issue="496">
         Fix JavaDoc for TimeComponents.getSecond().
       </action>
