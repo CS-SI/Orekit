@@ -202,6 +202,9 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                               final Frame frame, final AbsoluteDate date) {
 
         final Vector3D intersection = getCartesianIntersectionPoint(line, close, frame, date);
+        if (intersection == null) {
+            return null;
+        }
         final double ix = intersection.getX();
         final double iy = intersection.getY();
         final double iz = intersection.getZ();
@@ -265,6 +268,9 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                                                       final FieldAbsoluteDate<T> date) {
 
         final FieldVector3D<T> intersection = getCartesianIntersectionPoint(line, close, frame, date);
+        if (intersection == null) {
+            return null;
+        }
         final T ix = intersection.getX();
         final T iy = intersection.getY();
         final T iz = intersection.getZ();
