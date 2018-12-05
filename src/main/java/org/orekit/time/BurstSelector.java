@@ -80,8 +80,8 @@ public class BurstSelector implements DatesSelector {
         this.highRateStep       = highRateStep;
         this.burstPeriod        = burstPeriod;
         this.alignmentTimeScale = alignmentTimeScale;
-        this.last               = AbsoluteDate.PAST_INFINITY;
-        this.first              = AbsoluteDate.PAST_INFINITY;
+        this.last               = null;
+        this.first              = null;
         this.lastSize           = 0;
     }
 
@@ -91,28 +91,55 @@ public class BurstSelector implements DatesSelector {
 
         final List<AbsoluteDate> selected = new ArrayList<>();
 
-        for (AbsoluteDate next = start.durationFrom(last) > highRateStep ? start : last.shiftedBy(highRateStep);
+        boolean reset = first == null || start.durationFrom(first) > burstPeriod;
+        for (AbsoluteDate next = reset ? start : last.shiftedBy(highRateStep);
              next.compareTo(end) <= 0;
              next = last.shiftedBy(highRateStep)) {
 
-            if (lastSize == maxBurstSize) {
-                // we have exceeded burst size, we have to wait for next burst
-                last     = first.shiftedBy(burstPeriod - highRateStep);
+            if (reset) {
+                first    = null;
                 lastSize = 0;
-            } else {
-                if (lastSize == 0) {
-                    if (alignmentTimeScale != null) {
-                        // align date to time scale
-                        final double t  = next.getComponents(alignmentTimeScale).getTime().getSecondsInLocalDay();
-                        final double dt = burstPeriod * FastMath.round(t / burstPeriod) - t;
-                        next = next.shiftedBy(dt);
-                    }
-                    first = next;
-                }
-                selected.add(next);
-                last = next;
-                ++lastSize;
+                reset    = false;
             }
+
+            if (lastSize == maxBurstSize) {
+                // we have exceeded burst size, jump to next burst
+                next     = first.shiftedBy(burstPeriod);
+                first    = null;
+                lastSize = 0;
+                if (next.compareTo(end) > 0) {
+                    // next burst is out of current interval
+                    break;
+                }
+            }
+
+            if (first == null && alignmentTimeScale != null) {
+                // align date to time scale
+                final double t  = next.getComponents(alignmentTimeScale).getTime().getSecondsInLocalDay();
+                final double dt = burstPeriod * FastMath.round(t / burstPeriod) - t;
+                next = next.shiftedBy(dt);
+                if (next.compareTo(start) < 0) {
+                    // alignment shifted date before interval
+                    next = next.shiftedBy(burstPeriod);
+                }
+            }
+
+            if (next.compareTo(start) >= 0) {
+                if (next.compareTo(end) <= 0) {
+                    // the date is within range, select it
+                    if (first == null) {
+                        first    = next;
+                        lastSize = 0;
+                    }
+                    selected.add(next);
+                    ++lastSize;
+                } else {
+                    // we have exceeded date range
+                    break;
+                }
+            }
+            last = next;
+
         }
 
         return selected;

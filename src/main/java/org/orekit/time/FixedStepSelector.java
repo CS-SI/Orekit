@@ -50,7 +50,7 @@ public class FixedStepSelector implements DatesSelector {
     public FixedStepSelector(final double step, final TimeScale alignmentTimeScale) {
         this.step               = step;
         this.alignmentTimeScale = alignmentTimeScale;
-        this.last               = AbsoluteDate.PAST_INFINITY;
+        this.last               = null;
     }
 
     /** {@inheritDoc} */
@@ -59,17 +59,33 @@ public class FixedStepSelector implements DatesSelector {
 
         final List<AbsoluteDate> selected = new ArrayList<>();
 
-        for (AbsoluteDate next = start.durationFrom(last) > step ? start : last.shiftedBy(step);
+        final boolean reset = last == null || start.durationFrom(last) > step;
+        for (AbsoluteDate next = reset ? start : last.shiftedBy(step);
              next.compareTo(end) <= 0;
              next = last.shiftedBy(step)) {
+
             if (alignmentTimeScale != null) {
                 // align date to time scale
                 final double t  = next.getComponents(alignmentTimeScale).getTime().getSecondsInLocalDay();
                 final double dt = step * FastMath.round(t / step) - t;
                 next = next.shiftedBy(dt);
+                if (next.compareTo(start) < 0) {
+                    // alignment shifted date before interval
+                    next = next.shiftedBy(step);
+                }
             }
-            selected.add(next);
+
+            if (next.compareTo(start) >= 0) {
+                if (next.compareTo(end) <= 0) {
+                    // the date is within range, select it
+                    selected.add(next);
+                } else {
+                    // we have exceeded date range
+                    break;
+                }
+            }
             last = next;
+
         }
 
         return selected;
