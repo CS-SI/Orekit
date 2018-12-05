@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="pascal" type="fix" issue="495">
+        The MarshallSolarActivityFutureEstimation class implements
+        the NRLMSISE00InputParameters interface.
+      </action>
       <action dev="evan" type="fix" issue="486">
         Make FieldTransform.shiftedBy(T) public.
       </action>

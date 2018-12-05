@@ -272,8 +272,6 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     public abstract T getHy();
 
     /** Get the second component of the inclination vector derivative.
-     * <p>
-     * </p>
      * @return second component of the inclination vector derivative
      */
     public abstract T getHyDot();
