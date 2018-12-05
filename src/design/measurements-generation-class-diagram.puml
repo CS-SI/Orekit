@@ -32,6 +32,16 @@
 
   package org.orekit #ECEBD8 {
 
+    package propagation.events #DDEBD8 {
+      interface EventsDetector
+      note top
+        ground visibility,
+        ground at night,
+        sunlit satellite,
+        inter sat direct view,
+        boolean combination...
+      end note
+    }
     package estimation.measurements #DDEBD8 {
 
       package generation #CEEBD8 {
@@ -62,14 +72,14 @@
           +SortedSet<T> generate(interpolators)
         }
 
-
         XXXMeasurementBuilder       ..|>          MeasurementBuilder_T_
-        Scheduler_T_ "*" <--* Generator
         MeasurementBuilder_T_ "1" <--* Scheduler_T_
-        XXXMeasurementBuilder       *-up-> "0,1"    RandomVectorGenerator
+        XXXMeasurementBuilder -up-> RandomVectorGenerator
         SignSemantic "1" <--* EventBasedScheduler_T_
-        EventBasedScheduler_T_ ..|> Scheduler_T_
+        Scheduler_T_ <|.left. EventBasedScheduler_T_
+        Scheduler_T_ "*" <--* Generator
   
+        EventBasedScheduler_T_ *-right-> "1" EventsDetector
       }
 
       interface "EstimationModifier<T>" as EstimationModifier_T_
@@ -82,33 +92,32 @@
       end note
 
  
-      EstimationModifier_T_  "*" <--*          ObservedMeasurement_T_ 
+      EstimationModifier_T_  "*" <-left-*          ObservedMeasurement_T_ 
       ObservedMeasurement_T_     <|..          XXXMeasurement
       XXXMeasurementBuilder       -->          XXXMeasurement
-      XXXMeasurementBuilder     *-right->  "*" EstimationModifier_T_ 
+      EstimationModifier_T_ "*" <--* XXXMeasurementBuilder 
 
     }
 
 
     package propagation #DDEBD8 {
-      package events #CEEBD8 {
-        interface EventsDetector
-        note bottom
-          ground visibility,
-          ground at night,
-          sunlit satellite,
-          inter sat direct view,
-          boolean combination...
-        end note
-      }
-      EventsDetector "1" <--* EventBasedScheduler_T_
       class PropagatorsParallelizer {
         propagate()
       }
-      interface OrekitStepInterpolator
-      PropagatorsParallelizer --> OrekitStepInterpolator
-      OrekitStepInterpolator <-- Scheduler_T_
-      PropagatorsParallelizer <-- Generator
+      Generator --> PropagatorsParallelizer
+    }
+
+    package time #DDEBD8 {
+        class FixedStepSelector
+        class BurstSelector
+        interface DatesSelector {
+          +selectDates(interval)
+        }
+
+
+        FixedStepSelector --|> DatesSelector
+        BurstSelector --|> DatesSelector
+        Scheduler_T_ *--> "1" DatesSelector
     }
 
   }

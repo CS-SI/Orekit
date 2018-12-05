@@ -21,7 +21,7 @@ import java.util.SortedSet;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DatesSelector;
 
 
 /** {@link Scheduler} based on {@link EventDetector} for generating measurements sequences.
@@ -49,10 +49,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class EventBasedScheduler<T extends ObservedMeasurement<T>> implements Scheduler<T> {
-
-    /** Builder for individual measurements. */
-    private final MeasurementBuilder<T> builder;
+public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends AbstractScheduler<T> {
 
     /** Detector for checking measurements feasibility. */
     private final EventDetector detector;
@@ -60,51 +57,17 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> implements Sc
     /** Semantic of the detector g function sign to use. */
     private final SignSemantic signSemantic;
 
-    /** Maximum number of measurements in a sequence. */
-    private final int maxMeasurementsInSequence;
-
-    /** Step between two consecutive meaurements within a sequence. */
-    private final double stepWithinSequence;
-
-    /** Step between sequences. */
-    private final double stepBetweenSequences;
-
-    /** Date of the previous measurement. */
-    private AbsoluteDate previousDate;
-
     /** Simple constructor.
      * @param builder builder for individual measurements
+     * @param selector selector for dates
      * @param detector detector for checking measurements feasibility
      * @param signSemantic semantic of the detector g function sign to use
-     * @param step step between two consecutive meaurements (s)
      */
-    public EventBasedScheduler(final MeasurementBuilder<T> builder,
-                               final EventDetector detector, final SignSemantic signSemantic,
-                               final double step) {
-        this(builder, detector, signSemantic, Integer.MAX_VALUE, step, step);
-    }
-
-    /** Simple constructor.
-     * @param builder builder for individual measurements
-     * @param detector detector for checking measurements feasibility
-     * @param signSemantic semantic of the detector g function sign to use
-     * @param maxMeasurementsInSequence maximum number of measurements in a sequence
-     * @param stepWithinSequence step between two consecutive meaurements within a sequence (s)
-     * @param stepBetweenSequences step between the last measurement of a sequence and the first
-     * measurement of the next sequence (s)
-     */
-    public EventBasedScheduler(final MeasurementBuilder<T> builder,
-                               final EventDetector detector, final SignSemantic signSemantic,
-                               final int maxMeasurementsInSequence,
-                               final double stepWithinSequence,
-                               final double stepBetweenSequences) {
-        this.builder                   = builder;
-        this.detector                  = detector;
-        this.signSemantic              = signSemantic;
-        this.maxMeasurementsInSequence = maxMeasurementsInSequence;
-        this.stepWithinSequence        = stepWithinSequence;
-        this.stepBetweenSequences      = stepBetweenSequences;
-        this.previousDate = AbsoluteDate.PAST_INFINITY;
+    public EventBasedScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector,
+                               final EventDetector detector, final SignSemantic signSemantic) {
+        super(builder, selector);
+        this.detector     = detector;
+        this.signSemantic = signSemantic;
     }
 
     /** {@inheritDoc} */

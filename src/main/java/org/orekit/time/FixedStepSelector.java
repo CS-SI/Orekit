@@ -1,0 +1,79 @@
+/* Copyright 2002-2018 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.time;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hipparchus.util.FastMath;
+
+
+/** Selector generating a continuous stream of dates separated by a constant step.
+ * <p>
+ * The dates can be aligned to whole steps in some time scale. So for example
+ * if a step of 60s is used and the alignment time scale is set to
+ * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, dates will be selected
+ * at whole minutes in UTC time.
+ * </p>
+ * @author Luc Maisonobe
+ * @since 9.3
+ */
+public class FixedStepSelector implements DatesSelector {
+
+    /** Step between two consecutive dates. */
+    private final double step;
+
+    /** Alignment time scale (null is alignment is not needed). */
+    private final TimeScale alignmentTimeScale;
+
+    /** Last selected date. */
+    private AbsoluteDate last;
+
+    /** Simple constructor.
+     * @param step step between two consecutive dates (s)
+     * @param alignmentTimeScale alignment time scale (null is alignment is not needed)
+     */
+    public FixedStepSelector(final double step, final TimeScale alignmentTimeScale) {
+        this.step               = step;
+        this.alignmentTimeScale = alignmentTimeScale;
+        this.last               = AbsoluteDate.PAST_INFINITY;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<AbsoluteDate> selectDates(final AbsoluteDate start, final AbsoluteDate end) {
+
+        final List<AbsoluteDate> selected = new ArrayList<>();
+
+        for (AbsoluteDate next = start.durationFrom(last) > step ? start : last.shiftedBy(step);
+             next.compareTo(end) <= 0;
+             next = last.shiftedBy(step)) {
+            if (alignmentTimeScale != null) {
+                // align date to time scale
+                final double t  = next.getComponents(alignmentTimeScale).getTime().getSecondsInLocalDay();
+                final double dt = step * FastMath.round(t / step) - t;
+                next = next.shiftedBy(dt);
+            }
+            selected.add(next);
+            last = next;
+        }
+
+        return selected;
+
+    }
+
+}
