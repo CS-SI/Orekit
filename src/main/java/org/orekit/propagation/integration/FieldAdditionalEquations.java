@@ -19,6 +19,7 @@ package org.orekit.propagation.integration;
 import org.hipparchus.RealFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
@@ -72,7 +73,7 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      *
      * <p>
      * This method will be called once at propagation start,
-     * before any calls to {@link #computeDerivatives(SpacecraftState)}.
+     * before any calls to {@link #computeDerivatives(SpacecraftState , AbsoluteDate[])}.
      * </p>
      *
      * <p>
