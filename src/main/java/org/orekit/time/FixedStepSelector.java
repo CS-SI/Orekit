@@ -29,6 +29,11 @@ import org.hipparchus.util.FastMath;
  * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, dates will be selected
  * at whole minutes in UTC time.
  * </p>
+ * <p>
+ * This class stores internally the last selected dates, so it is <em>not</em>
+ * thread-safe. A separate selector should be used for each thread in multi-threading
+ * context.
+ * </p>
  * @author Luc Maisonobe
  * @since 9.3
  */

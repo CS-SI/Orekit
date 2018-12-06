@@ -29,6 +29,11 @@ import org.hipparchus.util.FastMath;
  * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, the first date of
  * each burst will occur at whole hours in UTC time.
  * </p>
+ * <p>
+ * This class stores internally the last selected dates, so it is <em>not</em>
+ * thread-safe. A separate selector should be used for each thread in multi-threading
+ * context.
+ * </p>
  * @author Luc Maisonobe
  * @since 9.3
  */
@@ -91,16 +96,15 @@ public class BurstSelector implements DatesSelector {
 
         final List<AbsoluteDate> selected = new ArrayList<>();
 
-        boolean reset = first == null || start.durationFrom(first) > burstPeriod;
+        final boolean reset = first == null || start.durationFrom(first) > burstPeriod;
+        if (reset) {
+            first    = null;
+            lastSize = 0;
+        }
+
         for (AbsoluteDate next = reset ? start : last.shiftedBy(highRateStep);
              next.compareTo(end) <= 0;
              next = last.shiftedBy(highRateStep)) {
-
-            if (reset) {
-                first    = null;
-                lastSize = 0;
-                reset    = false;
-            }
 
             if (lastSize == maxBurstSize) {
                 // we have exceeded burst size, jump to next burst
