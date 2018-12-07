@@ -33,6 +33,17 @@ import java.util.List;
 public interface DatesSelector {
 
     /** Select dates within an interval.
+     * <p>
+     * The {@code start} and {@code end} date may be either in direct or reverse
+     * chronological order. The list is produced in the same order as {@code start}
+     * and {@code end}, i.e. direct chronological order if {@code start} is earlier
+     * than {@code end} or reverse chronological order if {@code start} is later
+     * than {@code end}.
+     * </p>
+     * <p>
+     * The ordering (direct or reverse chronological order) should not be changed
+     * between calls, otherwise unpredictable results may occur.
+     * </p>
      * @param start interval start
      * @param end interval end
      * @return selected dates within this interval

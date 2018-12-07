@@ -48,7 +48,7 @@ public class FixedStepSelectorTest {
     }
 
     @Test
-    public void testAlignUTCBefore() {
+    public void testAlignUTCBeforeForward() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new FixedStepSelector(5.0, utc);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
@@ -61,7 +61,20 @@ public class FixedStepSelectorTest {
     }
 
     @Test
-    public void testAlignUTCAfter() {
+    public void testAlignUTCBeforeBackward() {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final DatesSelector selector = new FixedStepSelector(5.0, utc);
+        final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
+        final AbsoluteDate t1 = t0.shiftedBy(17);
+        final List<AbsoluteDate> list = selector.selectDates(t1, t0);
+        Assert.assertEquals(3, list.size());
+        Assert.assertEquals( 40.0, list.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 35.0, list.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 30.0, list.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+    }
+
+    @Test
+    public void testAlignUTCAfterForward() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new FixedStepSelector(10.0, utc);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
@@ -80,6 +93,28 @@ public class FixedStepSelectorTest {
         Assert.assertEquals( 90.0, list2.get(6).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(100.0, list2.get(7).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(110.0, list2.get(8).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+    }
+
+    @Test
+    public void testAlignUTCAfterBackward() {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final DatesSelector selector = new FixedStepSelector(10.0, utc);
+        final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
+        final AbsoluteDate t1 = t0.shiftedBy(2);
+        final AbsoluteDate t2 = t1.shiftedBy(89);
+        final List<AbsoluteDate> list1 = selector.selectDates(t2, t1);
+        Assert.assertEquals(9, list1.size());
+        Assert.assertEquals(110.0, list1.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals(100.0, list1.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 90.0, list1.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 80.0, list1.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 70.0, list1.get(4).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 60.0, list1.get(5).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 50.0, list1.get(6).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 40.0, list1.get(7).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        Assert.assertEquals( 30.0, list1.get(8).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        final List<AbsoluteDate> list2 = selector.selectDates(t1, t0);
+        Assert.assertEquals(0, list2.size());
     }
 
     @Test

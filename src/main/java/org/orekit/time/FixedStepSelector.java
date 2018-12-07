@@ -62,26 +62,23 @@ public class FixedStepSelector implements DatesSelector {
     @Override
     public List<AbsoluteDate> selectDates(final AbsoluteDate start, final AbsoluteDate end) {
 
+        final double sign = FastMath.copySign(1, end.durationFrom(start));
         final List<AbsoluteDate> selected = new ArrayList<>();
 
-        final boolean reset = last == null || start.durationFrom(last) > step;
-        for (AbsoluteDate next = reset ? start : last.shiftedBy(step);
-             next.compareTo(end) <= 0;
-             next = last.shiftedBy(step)) {
+        final boolean reset = last == null || sign * start.durationFrom(last) > step;
+        for (AbsoluteDate next = reset ? start : last.shiftedBy(sign * step);
+             sign * next.durationFrom(end) <= 0;
+             next = last.shiftedBy(sign * step)) {
 
             if (alignmentTimeScale != null) {
                 // align date to time scale
                 final double t  = next.getComponents(alignmentTimeScale).getTime().getSecondsInLocalDay();
                 final double dt = step * FastMath.round(t / step) - t;
                 next = next.shiftedBy(dt);
-                if (next.compareTo(start) < 0) {
-                    // alignment shifted date before interval
-                    next = next.shiftedBy(step);
-                }
             }
 
-            if (next.compareTo(start) >= 0) {
-                if (next.compareTo(end) <= 0) {
+            if (sign * next.durationFrom(start) >= 0) {
+                if (sign * next.durationFrom(end) <= 0) {
                     // the date is within range, select it
                     selected.add(next);
                 } else {

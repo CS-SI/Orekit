@@ -26,7 +26,7 @@ import org.hipparchus.util.FastMath;
  * <p>
  * The dates can be aligned to whole steps in some time scale. So for example
  * if a rest period of 3600s is used and the alignment time scale is set to
- * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, the first date of
+ * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, the earliest date of
  * each burst will occur at whole hours in UTC time.
  * </p>
  * <p>
@@ -57,8 +57,8 @@ public class BurstSelector implements DatesSelector {
     /** Last selected date. */
     private AbsoluteDate last;
 
-    /** Number of selected dates in last burst. */
-    private int lastSize;
+    /** Index of last selected date in current burst. */
+    private int index;
 
     /** Simple constructor.
      * <p>
@@ -87,62 +87,73 @@ public class BurstSelector implements DatesSelector {
         this.alignmentTimeScale = alignmentTimeScale;
         this.last               = null;
         this.first              = null;
-        this.lastSize           = 0;
+        this.index              = 0;
     }
 
     /** {@inheritDoc} */
     @Override
     public List<AbsoluteDate> selectDates(final AbsoluteDate start, final AbsoluteDate end) {
 
+        final int    increment          = end.durationFrom(start) > 0 ? +1 : -1;
+        final int    firstIndex         = increment > 0 ? 0 : maxBurstSize - 1;
+        final int    lastIndex          = maxBurstSize - 1 - firstIndex;
+        final double signedHighRateStep = FastMath.copySign(highRateStep, increment);
+        final double signedBurstPeriod  = FastMath.copySign(burstPeriod, increment);
+
         final List<AbsoluteDate> selected = new ArrayList<>();
 
-        final boolean reset = first == null || start.durationFrom(first) > burstPeriod;
+        final boolean reset = first == null || increment * start.durationFrom(first) > burstPeriod;
         if (reset) {
-            first    = null;
-            lastSize = 0;
+            first = null;
+            index = firstIndex;
         }
 
-        for (AbsoluteDate next = reset ? start : last.shiftedBy(highRateStep);
-             next.compareTo(end) <= 0;
-             next = last.shiftedBy(highRateStep)) {
+        for (AbsoluteDate next = reset ? start : last.shiftedBy(signedHighRateStep);
+             increment * next.durationFrom(end) <= 0;
+             next = last.shiftedBy(signedHighRateStep)) {
 
-            if (lastSize == maxBurstSize) {
+            if (index == lastIndex + increment) {
                 // we have exceeded burst size, jump to next burst
-                next     = first.shiftedBy(burstPeriod);
-                first    = null;
-                lastSize = 0;
-                if (next.compareTo(end) > 0) {
+                next  = first.shiftedBy(signedBurstPeriod);
+                first = null;
+                index = firstIndex;
+                if (increment * next.durationFrom(end) > 0) {
                     // next burst is out of current interval
                     break;
                 }
             }
 
             if (first == null && alignmentTimeScale != null) {
-                // align date to time scale
-                final double t  = next.getComponents(alignmentTimeScale).getTime().getSecondsInLocalDay();
-                final double dt = burstPeriod * FastMath.round(t / burstPeriod) - t;
+                // align earliest burst date to time scale
+                final double offset = firstIndex * highRateStep;
+                final double t      = next.getComponents(alignmentTimeScale).getTime().getSecondsInLocalDay() - offset;
+                final double dt     = burstPeriod * FastMath.round(t / burstPeriod) - t;
                 next = next.shiftedBy(dt);
-                if (next.compareTo(start) < 0) {
-                    // alignment shifted date before interval
-                    next = next.shiftedBy(burstPeriod);
+                while (index != lastIndex && increment * next.durationFrom(start) < 0) {
+                    next = next.shiftedBy(signedHighRateStep);
+                    index += increment;
+                }
+                if (increment * next.durationFrom(start) < 0) {
+                    // alignment shifted date out of interval
+                    next  = next.shiftedBy(signedBurstPeriod - (maxBurstSize - 1) * signedHighRateStep);
+                    index = firstIndex;
                 }
             }
 
-            if (next.compareTo(start) >= 0) {
-                if (next.compareTo(end) <= 0) {
+            if (increment * next.durationFrom(start) >= 0) {
+                if (increment * next.durationFrom(end) <= 0) {
                     // the date is within range, select it
                     if (first == null) {
-                        first    = next;
-                        lastSize = 0;
+                        first = next.shiftedBy(-signedHighRateStep * index);
                     }
                     selected.add(next);
-                    ++lastSize;
                 } else {
                     // we have exceeded date range
                     break;
                 }
             }
-            last = next;
+            last   = next;
+            index += increment;
 
         }
 
