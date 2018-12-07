@@ -59,7 +59,7 @@
 
         class Generator {
           +addScheduler(Scheduler)
-          +SortedSet<ObservedMeasurements> generate(startDate, endDate, propagators)
+          +SortedSet<ObservedMeasurements> generate(startDate, endDate)
         }
 
         enum SignSemantic {
@@ -69,6 +69,7 @@
         class "EventBasedScheduler<T>" as EventBasedScheduler_T_
 
         interface "Scheduler<T>" as Scheduler_T_ {
+          +Propagator getPropagator()
           +SortedSet<T> generate(interpolators)
         }
 
@@ -101,10 +102,13 @@
 
 
     package propagation #DDEBD8 {
+    interface Propagator
       class PropagatorsParallelizer {
         propagate()
       }
       Generator --> PropagatorsParallelizer
+      Scheduler_T_ *--> "1" Propagator
+      Propagator <-- PropagatorsParallelizer
     }
 
     package time #DDEBD8 {

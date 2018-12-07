@@ -16,10 +16,13 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.List;
 import java.util.SortedSet;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Interface for generating {@link ObservedMeasurements measurements} sequences.
@@ -29,10 +32,27 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
  */
 public interface Scheduler<T extends ObservedMeasurement<T>> {
 
+    /** Initialize scheduler at the start of a measurements generation.
+     * <p>
+     * This method is called once at the start of the measurements generation. It
+     * may be used by the scheduler to initialize some internal data
+     * if needed, typically {@link MeasurementBuilder#init(AbsoluteDate, AbsoluteDate)
+     * initializing builders}.
+     * </p>
+     * @param start start of the measurements time span
+     * @param end end of the measurements time span
+     */
+    void init(AbsoluteDate start, AbsoluteDate end);
+
+    /** Get the propagator associated with this scheduler.
+     * @return propagator associated with this scheduler
+     */
+    Propagator getPropagator();
+
     /** Generate a sequence of measurements.
      * @param interpolators interpolators for spacecraft states
      * @return generated measurements
      */
-    SortedSet<T> generate(OrekitStepInterpolator... interpolators);
+    SortedSet<T> generate(List<OrekitStepInterpolator> interpolators);
 
 }

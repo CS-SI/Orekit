@@ -17,6 +17,8 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.Propagator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
 
 
@@ -33,14 +35,50 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
     /** Selector for dates. */
     private final DatesSelector selector;
 
+    /** Propagator associated with this scheduler. */
+    private final Propagator propagator;
+
     /** Simple constructor.
      * @param builder builder for individual measurements
      * @param selector selector for dates
+     * @param propagator propagator associated with this scheduler
      */
     protected AbstractScheduler(final MeasurementBuilder<T> builder,
-                                final DatesSelector selector) {
-        this.builder  = builder;
-        this.selector = selector;
+                                final DatesSelector selector,
+                                final Propagator propagator) {
+        this.builder    = builder;
+        this.selector   = selector;
+        this.propagator = propagator;
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * This implementation initialize the measurement builder.
+     * </p>
+     */
+    @Override
+    public void init(final AbsoluteDate start, final AbsoluteDate end) {
+        builder.init(start, end);
+    }
+
+    /** Get the measurements builder.
+     * @return measurements builder
+     */
+    public MeasurementBuilder<T> getBuilder() {
+        return builder;
+    }
+
+    /** Get the dates selector.
+     * @return dates selector
+     */
+    public DatesSelector getSelector() {
+        return selector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Propagator getPropagator() {
+        return propagator;
     }
 
 }

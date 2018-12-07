@@ -16,12 +16,20 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AdapterDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
+import org.orekit.utils.TimeSpanMap;
 
 
 /** {@link Scheduler} based on {@link EventDetector} for generating measurements sequences.
@@ -51,30 +59,112 @@ import org.orekit.time.DatesSelector;
  */
 public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends AbstractScheduler<T> {
 
-    /** Detector for checking measurements feasibility. */
-    private final EventDetector detector;
-
     /** Semantic of the detector g function sign to use. */
     private final SignSemantic signSemantic;
 
+    /** Feasibility status. */
+    private TimeSpanMap<Boolean> feasibility;
+
+    /** Propagation direction. */
+    private boolean forward;
+
     /** Simple constructor.
+     * <p>
+     * The event detector instance should <em>not</em> be already bound to the propagator.
+     * It will be wrapped in an {@link AdapterDetector adapter} in order to manage time
+     * ranges when measurements are feasible. The wrapping adapter will be automatically
+     * {@link Propagator#addEventDetector(EventDetector) added} to the propagator by this
+     * constructor.
+     * </p>
      * @param builder builder for individual measurements
      * @param selector selector for dates
+     * @param propagator propagator associated with this scheduler
      * @param detector detector for checking measurements feasibility
      * @param signSemantic semantic of the detector g function sign to use
      */
     public EventBasedScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector,
+                               final Propagator propagator,
                                final EventDetector detector, final SignSemantic signSemantic) {
-        super(builder, selector);
-        this.detector     = detector;
+        super(builder, selector, propagator);
         this.signSemantic = signSemantic;
+        this.feasibility  = new TimeSpanMap<Boolean>(Boolean.FALSE);
+        this.forward      = true;
+        propagator.addEventDetector(new FeasibilityAdapter(detector));
     }
 
     /** {@inheritDoc} */
     @Override
-    public SortedSet<T> generate(final OrekitStepInterpolator... interpolators) {
-        // TODO
-        return null;
+    public SortedSet<T> generate(final List<OrekitStepInterpolator> interpolators) {
+
+        // select dates in the current step, using arbitrarily interpolator 0
+        // as all interpolators cover the same range
+        final List<AbsoluteDate> dates = getSelector().selectDates(interpolators.get(0).getPreviousState().getDate(),
+                                                                   interpolators.get(0).getCurrentState().getDate());
+
+        // generate measurements when feasible
+        final SortedSet<T> measurements = new TreeSet<>();
+        for (final AbsoluteDate date : dates) {
+            if (feasibility.get(date)) {
+                // a measurement is feasible at this date
+
+                // interpolate states at measurement date
+                final SpacecraftState[] states = new SpacecraftState[interpolators.size()];
+                for (int i = 0; i < states.length; ++i) {
+                    states[i] = interpolators.get(i).getInterpolatedState(date);
+                }
+
+                // generate measurement
+                measurements.add(getBuilder().build(states));
+
+            }
+        }
+
+        return measurements;
+
+    }
+
+    /** Adapter for managing feasibility status changes. */
+    private class FeasibilityAdapter extends AdapterDetector {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20181206L;
+
+        /** Build an adaptor wrapping an existing detector.
+         * @param detector detector to wrap
+         */
+        FeasibilityAdapter(final EventDetector detector) {
+            super(detector);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            super.init(s0, t);
+            forward     = t.compareTo(s0.getDate()) > 0;
+            feasibility = new TimeSpanMap<Boolean>(signSemantic.measurementIsFeasible(g(s0)));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+
+            // find the feasibility status AFTER the current date
+            final boolean statusAfter = signSemantic.measurementIsFeasible(increasing ? +1 : -1);
+
+            // store either status or its opposite according to propagation direction
+            if (forward) {
+                // forward propagation
+                feasibility.addValidAfter(statusAfter, s.getDate());
+            } else {
+                // backward propagation
+                feasibility.addValidBefore(!statusAfter, s.getDate());
+            }
+
+            // delegate to wrapped detector
+            return super.eventOccurred(s, increasing);
+
+        }
+
     }
 
 }
