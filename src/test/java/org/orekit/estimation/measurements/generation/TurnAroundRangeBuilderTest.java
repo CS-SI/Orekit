@@ -62,19 +62,19 @@ public class TurnAroundRangeBuilderTest {
 
     @Test
     public void testForward() {
-        doTest(0xf50c0ce7c8c1dab2l, 0.0, 1.2, 124, 3.2 * SIGMA);
+        doTest(0xf50c0ce7c8c1dab2l, 0.0, 1.2, 3.2 * SIGMA);
     }
 
     @Test
     public void testBackward() {
-        doTest(0x453a681440d01832l, 0.0, -1.0, 103, 2.6 * SIGMA);
+        doTest(0x453a681440d01832l, 0.0, -1.0, 2.6 * SIGMA);
     }
 
     private Propagator buildPropagator() {
         return EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
     }
 
-    private void doTest(long seed, double startPeriod, double endPeriod, int expectedMeasurements, double tolerance) {
+    private void doTest(long seed, double startPeriod, double endPeriod, double tolerance) {
         Generator generator = new Generator();
         final double step = 60.0;
         final Map.Entry<GroundStation, GroundStation> entry = context.TARstations.entrySet().iterator().next();
@@ -92,7 +92,6 @@ public class TurnAroundRangeBuilderTest {
         AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
         SortedSet<ObservedMeasurement<?>> measurements = generator.generate(t0, t1);
-        Assert.assertEquals(expectedMeasurements, measurements.size());
         Propagator propagator = buildPropagator();
         double maxError = 0;
         AbsoluteDate previous = null;
