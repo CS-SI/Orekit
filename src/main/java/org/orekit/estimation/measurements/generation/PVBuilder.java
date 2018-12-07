@@ -18,8 +18,11 @@ package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 
 /** Builder for {@link PV} measurements.
@@ -48,7 +51,7 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
 
     /** {@inheritDoc} */
     @Override
-    public PV build(final SpacecraftState... states) {
+    public PV build(final SpacecraftState[] states) {
 
         final int propagatorIndex   = getPropagatorsIndices()[0];
         final double[] sigma        = getTheoreticalStandardDeviation();
@@ -58,6 +61,18 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
         // create a dummy measurement
         final PV dummy = new PV(state.getDate(), Vector3D.NaN, Vector3D.NaN,
                                 sigma[0], sigma[1], baseWeight, propagatorIndex);
+        for (final EstimationModifier<PV> modifier : getModifiers()) {
+            dummy.addModifier(modifier);
+        }
+
+        // set a reference date for parameters missing one
+        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                final AbsoluteDate start = getStart();
+                final AbsoluteDate end   = getEnd();
+                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
+            }
+        }
 
         // estimate the perfect value of the measurement
         final double[] pv = dummy.estimate(0, 0, states).getEstimatedValue();
@@ -74,9 +89,13 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
         }
 
         // generate measurement
-        return new PV(state.getDate(),
-                      new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5]),
-                      sigma[0], sigma[1], baseWeight, propagatorIndex);
+        final PV measurement = new PV(state.getDate(),
+                                      new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5]),
+                                      sigma[0], sigma[1], baseWeight, propagatorIndex);
+        for (final EstimationModifier<PV> modifier : getModifiers()) {
+            measurement.addModifier(modifier);
+        }
+        return measurement;
 
     }
 

@@ -24,6 +24,7 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Base class for {@link MeasurementBuilder measurements builders}.
@@ -47,6 +48,12 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
 
     /** Indices of the propagators related to this measurement. */
     private final int[] propagatorsIndices;
+
+    /** Start of the measurements time span. */
+    private AbsoluteDate spanStart;
+
+    /** End of the measurements time span. */
+    private AbsoluteDate spanEnd;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -81,6 +88,17 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         this.propagatorsIndices = propagatorsIndices.clone();
     }
 
+    /** {@inheritDoc}
+     * <p>
+     * This implementation stores the time span of the measurements generation.
+     * </p>
+     */
+    @Override
+    public void init(final AbsoluteDate start, final AbsoluteDate end) {
+        spanStart = start;
+        spanEnd   = end;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void addModifier(final EstimationModifier<T> modifier) {
@@ -91,6 +109,20 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
     @Override
     public List<EstimationModifier<T>> getModifiers() {
         return Collections.unmodifiableList(modifiers);
+    }
+
+    /** Get the start of the measurements time span.
+     * @return start of the measurements time span
+     */
+    protected AbsoluteDate getStart() {
+        return spanStart;
+    }
+
+    /** Get the end of the measurements time span.
+     * @return end of the measurements time span
+     */
+    protected AbsoluteDate getEnd() {
+        return spanEnd;
     }
 
     /** Generate a noise vector.

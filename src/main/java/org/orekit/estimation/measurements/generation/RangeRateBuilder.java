@@ -17,9 +17,12 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 
 /** Builder for {@link RangeRate} measurements.
@@ -53,7 +56,7 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
 
     /** {@inheritDoc} */
     @Override
-    public RangeRate build(final SpacecraftState... states) {
+    public RangeRate build(final SpacecraftState[] states) {
 
         final int propagatorIndex   = getPropagatorsIndices()[0];
         final double sigma          = getTheoreticalStandardDeviation()[0];
@@ -62,6 +65,18 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
 
         // create a dummy measurement
         final RangeRate dummy = new RangeRate(station, state.getDate(), Double.NaN, sigma, baseWeight, twoway, propagatorIndex);
+        for (final EstimationModifier<RangeRate> modifier : getModifiers()) {
+            dummy.addModifier(modifier);
+        }
+
+        // set a reference date for parameters missing one
+        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                final AbsoluteDate start = getStart();
+                final AbsoluteDate end   = getEnd();
+                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
+            }
+        }
 
         // estimate the perfect value of the measurement
         double rangeRate = dummy.estimate(0, 0, states).getEstimatedValue()[0];
@@ -73,7 +88,12 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
         }
 
         // generate measurement
-        return new RangeRate(station, state.getDate(), rangeRate, sigma, baseWeight, twoway, propagatorIndex);
+        final RangeRate measurement = new RangeRate(station, state.getDate(), rangeRate,
+                                                    sigma, baseWeight, twoway, propagatorIndex);
+        for (final EstimationModifier<RangeRate> modifier : getModifiers()) {
+            measurement.addModifier(modifier);
+        }
+        return measurement;
 
     }
 

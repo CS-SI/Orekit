@@ -18,9 +18,12 @@ package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularRaDec;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 
 /** Builder for {@link AngularRaDec} measurements.
@@ -54,7 +57,7 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
 
     /** {@inheritDoc} */
     @Override
-    public AngularRaDec build(final SpacecraftState... states) {
+    public AngularRaDec build(final SpacecraftState[] states) {
 
         final int propagatorIndex   = getPropagatorsIndices()[0];
         final double[] sigma        = getTheoreticalStandardDeviation();
@@ -66,6 +69,18 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
                                                     new double[] {
                                                         Double.NaN, Double.NaN
                                                     }, sigma, baseWeight, propagatorIndex);
+        for (final EstimationModifier<AngularRaDec> modifier : getModifiers()) {
+            dummy.addModifier(modifier);
+        }
+
+        // set a reference date for parameters missing one
+        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                final AbsoluteDate start = getStart();
+                final AbsoluteDate end   = getEnd();
+                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
+            }
+        }
 
         // estimate the perfect value of the measurement
         final double[] angular = dummy.estimate(0, 0, states).getEstimatedValue();
@@ -78,7 +93,12 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
         }
 
         // generate measurement
-        return new AngularRaDec(station, referenceFrame, state.getDate(), angular, sigma, baseWeight, propagatorIndex);
+        final AngularRaDec measurement = new AngularRaDec(station, referenceFrame, state.getDate(),
+                                                          angular, sigma, baseWeight, propagatorIndex);
+        for (final EstimationModifier<AngularRaDec> modifier : getModifiers()) {
+            measurement.addModifier(modifier);
+        }
+        return measurement;
 
     }
 

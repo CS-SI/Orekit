@@ -21,6 +21,7 @@ import java.util.List;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Interface for generating individual {@link ObservedMeasurements measurements}.
@@ -29,6 +30,17 @@ import org.orekit.propagation.SpacecraftState;
  * @since 9.3
  */
 public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
+
+    /** Initialize builder at the start of a measurements generation.
+     * <p>
+     * This method is called once at the start of the measurements generation. It
+     * may be used by the builder to initialize some internal data
+     * if needed, typically setting up parameters reference dates.
+     * </p>
+     * @param start start of the measurements time span
+     * @param end end of the measurements time span
+     */
+    void init(AbsoluteDate start, AbsoluteDate end);
 
     /** Add a modifier.
      * @param modifier modifier to add
@@ -45,6 +57,6 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      * @param states spacecraft states
      * @return generated measurement
      */
-    T build(SpacecraftState... states);
+    T build(SpacecraftState[] states);
 
 }

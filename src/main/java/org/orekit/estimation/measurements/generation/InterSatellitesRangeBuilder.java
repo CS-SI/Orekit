@@ -17,8 +17,11 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 
 /** Builder for {@link InterSatellitesRange} measurements.
@@ -51,7 +54,7 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesRange build(final SpacecraftState... states) {
+    public InterSatellitesRange build(final SpacecraftState[] states) {
 
         final int[] indices         = getPropagatorsIndices();
         final double sigma          = getTheoreticalStandardDeviation()[0];
@@ -61,6 +64,18 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
         // create a dummy measurement
         final InterSatellitesRange dummy = new InterSatellitesRange(indices[0], indices[1], twoway, state.getDate(),
                                                                     Double.NaN, sigma, baseWeight);
+        for (final EstimationModifier<InterSatellitesRange> modifier : getModifiers()) {
+            dummy.addModifier(modifier);
+        }
+
+        // set a reference date for parameters missing one
+        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                final AbsoluteDate start = getStart();
+                final AbsoluteDate end   = getEnd();
+                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
+            }
+        }
 
         // estimate the perfect value of the measurement
         double range = dummy.estimate(0, 0, states).getEstimatedValue()[0];
@@ -72,8 +87,12 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
         }
 
         // generate measurement
-        return new InterSatellitesRange(indices[0], indices[1], twoway, state.getDate(),
-                                        range, sigma, baseWeight);
+        final InterSatellitesRange measurement = new InterSatellitesRange(indices[0], indices[1], twoway, state.getDate(),
+                                                                          range, sigma, baseWeight);
+        for (final EstimationModifier<InterSatellitesRange> modifier : getModifiers()) {
+            measurement.addModifier(modifier);
+        }
+        return measurement;
 
     }
 
