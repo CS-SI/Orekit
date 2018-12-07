@@ -61,7 +61,7 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
         // create a dummy measurement
         final AngularAzEl dummy = new AngularAzEl(station, state.getDate(),
                                                   new double[] {
-                                                      Double.NaN, Double.NaN
+                                                      0.0, 0.0
                                                   }, sigma, baseWeight, propagatorIndex);
         for (final EstimationModifier<AngularAzEl> modifier : getModifiers()) {
             dummy.addModifier(modifier);

@@ -109,7 +109,7 @@ public class Generator {
         @Override
         public void handleStep(final List<OrekitStepInterpolator> interpolators, final boolean isLast) {
             for (final Scheduler<?> scheduler : schedulers) {
-                scheduler.generate(interpolators);
+                measurements.addAll(scheduler.generate(interpolators));
             }
         }
 

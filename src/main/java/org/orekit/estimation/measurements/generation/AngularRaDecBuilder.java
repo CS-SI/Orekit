@@ -67,7 +67,7 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
         // create a dummy measurement
         final AngularRaDec dummy = new AngularRaDec(station, referenceFrame, state.getDate(),
                                                     new double[] {
-                                                        Double.NaN, Double.NaN
+                                                        0.0, 0.0
                                                     }, sigma, baseWeight, propagatorIndex);
         for (final EstimationModifier<AngularRaDec> modifier : getModifiers()) {
             dummy.addModifier(modifier);
