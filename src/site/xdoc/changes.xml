@@ -22,6 +22,10 @@
   <body>
     <release version="TBD" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added adapter for event detectors, allowing to wrap existing detector
+        while changing their behaviour.
+      </action>
+      <action dev="luc" type="add">
         Added ground at night detector.
       </action>
       <action dev="luc" type="add">
