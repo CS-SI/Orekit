@@ -62,12 +62,12 @@ public class TurnAroundRangeBuilderTest {
 
     @Test
     public void testForward() {
-        doTest(0xf50c0ce7c8c1dab2l, 0.0, 1.2, 123, 3.2 * SIGMA);
+        doTest(0xf50c0ce7c8c1dab2l, 0.0, 1.2, 124, 3.2 * SIGMA);
     }
 
     @Test
     public void testBackward() {
-        doTest(0x453a681440d01832l, 0.0, -1.0, 100, 2.6 * SIGMA);
+        doTest(0x453a681440d01832l, 0.0, -1.0, 103, 2.6 * SIGMA);
     }
 
     private Propagator buildPropagator() {
