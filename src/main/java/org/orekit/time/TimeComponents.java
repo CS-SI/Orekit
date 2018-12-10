@@ -235,8 +235,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     }
 
     /** Get the seconds number.
-     * @return second second number from 0.0 to 61.0 (excluded). Note that 60 <= second <
-     * 61 only occurs during a leap second.
+     * @return second second number from 0.0 to 61.0 (excluded). Note that 60 &le; second
+     * &lt; 61 only occurs during a leap second.
      */
     public double getSecond() {
         return second;
