@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="494">
+        Added a measurements generation feature for use with orbit determination.
+        Fixes issue #494
+      </action>
       <action dev="luc" type="add">
         Added adapter for event detectors, allowing to wrap existing detector
         while changing their behaviour.

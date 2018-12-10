@@ -216,6 +216,14 @@
 
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
+    * measurements generation
+
+      * with measurements feasibility triggered by regular event detectors
+        (ground visibility, ground at night, sunlit satellite, inter satellites
+         direct view, boolean combination...)
+      * with measurement scheduling as fixed step streams (optionally aligned with round UTC time)
+      * with measurement scheduling as high rate bursts rest periods (optionally aligned with round UTC time)
+      * possibility to customize measurement scheduling
 
   * GNSS
 

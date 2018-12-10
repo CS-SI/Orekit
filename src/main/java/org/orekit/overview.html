@@ -239,8 +239,19 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>delays</li>
           <li>Antenna Phase Center</li>
         </ul>
+      </li>
       <li>possibility to add custom measurement modifiers (even for predefined events)</li>
       <li>possibility to parse CCSDS Tracking Data Message files</li>
+      <li>measurements generation
+        <ul>
+          <li>with measurements feasibility triggered by regular event detectors
+              (ground visibility, ground at night, sunlit satellite, inter satellites
+               direct view, boolean combination...)</li>
+          <li>with measurement scheduling as fixed step streams (optionally aligned with round UTC time)</li>
+          <li>with measurement scheduling as high rate bursts rest periods (optionally aligned with round UTC time)</li>
+          <li>possibility to customize measurement scheduling</li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li>GNSS
