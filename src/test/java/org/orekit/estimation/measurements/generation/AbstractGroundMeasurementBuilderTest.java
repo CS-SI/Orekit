@@ -94,7 +94,7 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                                  1.0e-6, 60.0, 0.001, Force.POTENTIAL,
+                                                  1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                   Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
     }
 

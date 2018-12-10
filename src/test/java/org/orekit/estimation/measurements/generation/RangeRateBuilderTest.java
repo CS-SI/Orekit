@@ -24,18 +24,27 @@ import org.hipparchus.random.RandomGenerator;
 import org.junit.Test;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.modifiers.Bias;
 
 public class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<RangeRate> {
 
     private static final double SIGMA = 0.01;
+    private static final double BIAS  = 0.002;
 
     protected MeasurementBuilder<RangeRate> getBuilder(final RandomGenerator random,
                                                        final GroundStation groundStation) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
-        return new RangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                1.0e-10,
-                                                                                                new GaussianRandomGenerator(random)),
-                                    groundStation, true, SIGMA, 1.0, 0);
+        MeasurementBuilder<RangeRate> rrb =
+                        new RangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
+                                                                                                         1.0e-10,
+                                                                                                         new GaussianRandomGenerator(random)),
+                                             groundStation, true, SIGMA, 1.0, 0);
+        rrb.addModifier(new Bias<>(new String[] { "bias" },
+                        new double[] { BIAS },
+                        new double[] { 1.0 },
+                        new double[] { Double.NEGATIVE_INFINITY },
+                        new double[] { Double.POSITIVE_INFINITY }));
+        return rrb;
     }
 
     @Test

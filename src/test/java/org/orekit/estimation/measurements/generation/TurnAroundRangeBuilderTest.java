@@ -35,6 +35,7 @@ import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.TurnAroundRange;
+import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -49,15 +50,23 @@ import org.orekit.time.TimeScalesFactory;
 public class TurnAroundRangeBuilderTest {
 
     private static final double SIGMA = 10.0;
+    private static final double BIAS  = -7.0;
 
     private MeasurementBuilder<TurnAroundRange> getBuilder(final RandomGenerator random,
                                                            final GroundStation master,
                                                            final GroundStation slave) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
-        return new TurnAroundRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                      1.0e-10,
-                                                                                                      new GaussianRandomGenerator(random)),
-                                          master, slave, SIGMA, 1.0, 0);
+        MeasurementBuilder<TurnAroundRange> rb =
+                        new TurnAroundRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
+                                                                                                               1.0e-10,
+                                                                                                               new GaussianRandomGenerator(random)),
+                                                   master, slave, SIGMA, 1.0, 0);
+        rb.addModifier(new Bias<>(new String[] { "bias" },
+                        new double[] { BIAS },
+                        new double[] { 1.0 },
+                        new double[] { Double.NEGATIVE_INFINITY },
+                        new double[] { Double.POSITIVE_INFINITY }));
+        return rb;
     }
 
     @Test
@@ -123,7 +132,7 @@ public class TurnAroundRangeBuilderTest {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                                   1.0e-6, 60.0, 0.001, Force.POTENTIAL,
+                                                   1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }
 

@@ -21,21 +21,31 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.util.FastMath;
 import org.junit.Test;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.modifiers.Bias;
 
 public class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularAzEl> {
 
     private static final double SIGMA = 1.0e-3;
+    private static final double BIAS  = 1.0e-4;
 
     protected MeasurementBuilder<AngularAzEl> getBuilder(final RandomGenerator random,
                                                          final GroundStation groundStation) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA, SIGMA * SIGMA });
-        return new AngularAzElBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                  1.0e-10,
-                                                                                                  new GaussianRandomGenerator(random)),
-                                      groundStation, new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 }, 0);
+        MeasurementBuilder<AngularAzEl> ab =
+                        new AngularAzElBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
+                                                                                                           1.0e-10,
+                                                                                                           new GaussianRandomGenerator(random)),
+                                               groundStation, new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 }, 0);
+        ab.addModifier(new Bias<>(new String[] { "aBias", "eBias" },
+                        new double[] { BIAS, BIAS },
+                        new double[] { 1.0, 1.0 },
+                        new double[] { -FastMath.PI, -0.5 * FastMath.PI },
+                        new double[] { +FastMath.PI, +0.5 * FastMath.PI }));
+        return ab;
     }
 
     @Test
