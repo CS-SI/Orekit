@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -390,12 +389,7 @@ public class PropagatorsParallelizer {
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getDate() {
-            try {
-                return interpolator.getCurrentState().getDate();
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
+            return interpolator.getCurrentState().getDate();
         }
 
     }
