@@ -94,6 +94,12 @@ public class FieldCircularOrbitTest {
     }
 
     @Test
+    @Deprecated
+    public void testCircToCart2() {
+        doTestCircularToCartesian2(Decimal64Field.getInstance());
+    }
+
+    @Test
     public void testCircToKepl() {
         doTestCircularToKeplerian(Decimal64Field.getInstance());
     }
@@ -419,6 +425,36 @@ public class FieldCircularOrbitTest {
         Assert.assertEquals(0.809135038364960e+05, vel.getX().getReal(), Utils.epsilonTest * v.getReal());
         Assert.assertEquals(0.538902268252598e+05, vel.getY().getReal(), Utils.epsilonTest * v.getReal());
         Assert.assertEquals(0.158527938296630e+02, vel.getZ().getReal(), Utils.epsilonTest * v.getReal());
+
+    }
+
+    @Deprecated
+    private <T extends RealFieldElement<T>> void doTestCircularToCartesian2(Field<T> field) {
+        T zero =  field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+
+        T ix = zero.add(1.200e-04);
+        T iy = zero.add(-1.16e-04);
+        T i  = ix.multiply(ix).add(iy.multiply(iy)).divide(4).sqrt().asin().multiply(2);
+        T raan = iy.atan2(ix);
+        T cosRaan = raan.cos();
+        T sinRaan = raan.sin();
+        T exTilde = zero.add(-7.900e-6);
+        T eyTilde = zero.add(1.100e-4);
+        T ex = exTilde.multiply(cosRaan).add(eyTilde.multiply(sinRaan));
+        T ey = eyTilde.multiply(cosRaan).subtract(exTilde.multiply(sinRaan));
+
+        FieldCircularOrbit<T> circ=
+            new FieldCircularOrbit<>(zero.add(42166.712), ex, ey, i, raan,
+                                     raan.negate().add(5.300), PositionAngle.MEAN,
+                                     FramesFactory.getEME2000(), date, mu);
+        FieldVector3D<T> ref  = circ.getPVCoordinates().getPosition();
+        FieldVector3D<T> pos  = FieldCircularOrbit.circularToPosition(circ.getA(), 
+                                                                      circ.getCircularEx(), circ.getCircularEy(),
+                                                                      circ.getI(), circ.getRightAscensionOfAscendingNode(),
+                                                                      circ.getAlphaV(),
+                                                                      circ.getMu());
+        Assert.assertEquals(0, FieldVector3D.distance(ref, pos).getReal(), 1.0e-15);
 
     }
 

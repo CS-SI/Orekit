@@ -760,7 +760,11 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @param mu central attraction coefficient (m³/s²)
      * @param <T> type of the fiels elements
      * @return position vector
+     * @deprecated as of 9.3, replaced by {@link #FieldCircularOrbit(RealFieldElement, RealFieldElement,
+     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
+     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
      */
+    @Deprecated
     public static <T extends RealFieldElement<T>> FieldVector3D<T> circularToPosition(final T a, final T ex, final T ey,
                                                                                       final T i, final T raan, final T alphaV,
                                                                                       final double mu) {
