@@ -67,6 +67,7 @@
           +FEASIBLE_MEASUREMENT_WHEN_NEGATIVE
         }
         class "EventBasedScheduler<T>" as EventBasedScheduler_T_
+        class "ContinuousScheduler<T>" as ContinuousScheduler_T_
 
         interface "Scheduler<T>" as Scheduler_T_ {
           +Propagator getPropagator()
@@ -78,6 +79,7 @@
         XXXMeasurementBuilder -up-> RandomVectorGenerator
         SignSemantic "1" <--* EventBasedScheduler_T_
         Scheduler_T_ <|.left. EventBasedScheduler_T_
+        ContinuousScheduler_T_ .right.|> Scheduler_T_
         Scheduler_T_ "*" <--* Generator
   
         EventBasedScheduler_T_ *-right-> "1" EventsDetector
