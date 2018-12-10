@@ -141,6 +141,8 @@
       * spacecraft detection in ground based Field Of View (any shape)
       * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal
+      * inter-satellites direct view
+      * ground at night
       * impulse maneuvers occurrence
 
     * possibility of slightly shifting events in time (for example to switch from
@@ -214,6 +216,14 @@
 
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
+    * measurements generation
+
+      * with measurements feasibility triggered by regular event detectors
+        (ground visibility, ground at night, sunlit satellite, inter satellites
+         direct view, boolean combination...)
+      * with measurement scheduling as fixed step streams (optionally aligned with round UTC time)
+      * with measurement scheduling as high rate bursts rest periods (optionally aligned with round UTC time)
+      * possibility to customize measurement scheduling
 
   * GNSS
 

@@ -24,7 +24,7 @@ support: the library provides the framework with top level interfaces and classi
 implementations (say distance and angular measurements among others). Some hooks are
 also provided for expert users who need to supplement the framework with mission-specific
 features and implementations (say specific delay models for example). The provided objects
-are sufficient for basic orbit determination and can easily be extended to address more
+are sufficient for classical orbit determination and can easily be extended to address more
 operational needs.
 
 Organization
@@ -61,6 +61,35 @@ by two difference ground stations would refer to different sets of ground statio
 
 The classical measurements and modifiers are already provided by Orekit in the same package, but for more advanced
 needs, users are expected to implement their own implementations. This ensures the extensibility of this design.
+
+#### Measurements generation
+
+![measurements generation class diagram](../images/design/measurements-generation-class-diagram.png)
+
+The `measurements.generation` package provides a simulation feature that can generate realistic
+measurements. This is mainly useful in validation phases and in mission analysis (for example
+design of a ground stations network or assessment of achievable accuracy for a mission).
+
+For each type of measurement that must be generated, a `Scheduler` is configured to match the mission
+or ground segment specific measurements schedule and includes a `MeasurementBuilder` for the measurement
+type considered. One particularly important predefined scheduler is the `EventBaseScheduler`. This
+scheduler uses a regular event detector to identify measurements feasibility time spans. Some event
+detectors that may be useful with this scheduler are visibility from ground (`ElevationDetector`),
+ground at night (`GrondAtNightDetector`) for satellite laser ranging, sunlit satellite (`EclipseDetector`)
+for optical tracking, inter satellite direct view (`InterSatDirectViewDetector`) for GNSS, and
+boolean combination of several detector (`BooleanDetector`) for complex settings. This scheduler as
+well as the simpler `ContinuousScheduler` both rely on `DatesSelector` to select individual measurements
+dates within a time range. The `FixedStepSelector` generates a continuous stream of measurements separated
+by a fixed step (for example one measurement every 60s during the allowed time range) while the `BurstSelector`
+generates bursts of high rate measurements separated by rest periods (for example bursts containing
+256 measurements each separated by 100ms, with a new burst generated every 300s). Both selectors can
+ensure the dates are aligned with a time scale (for example the first measurement in each burst being
+at exact UTC minutes 5, 10, 15... in the previous example).
+
+Several schedulers can be configured at the same time, if either different types of measurements are
+available (range, range-rate, optical tracking on stars background...) or several independent schedules
+are used (for example if several ground stations are available). All schedulers are registered to
+a `Generator` which when run will produce simulated measurements in the specified time range.
 
 ### Least Squares
 
