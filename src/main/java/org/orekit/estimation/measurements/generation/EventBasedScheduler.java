@@ -85,7 +85,7 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
     public EventBasedScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector,
                                final Propagator propagator,
                                final EventDetector detector, final SignSemantic signSemantic) {
-        super(builder, selector, propagator);
+        super(builder, selector);
         this.signSemantic = signSemantic;
         this.feasibility  = new TimeSpanMap<Boolean>(Boolean.FALSE);
         this.forward      = true;

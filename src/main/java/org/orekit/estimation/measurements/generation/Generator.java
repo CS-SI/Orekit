@@ -36,13 +36,34 @@ import org.orekit.time.AbsoluteDate;
  */
 public class Generator {
 
+    /** Propagators. */
+    private final List<Propagator> propagators;
+
     /** Sequences generators. */
     private final List<Scheduler<?>> schedulers;
 
     /** Build a generator with no sequences generator.
      */
     public Generator() {
-        this.schedulers = new ArrayList<>();
+        this.propagators = new ArrayList<>();
+        this.schedulers  = new ArrayList<>();
+    }
+
+    /** Add a propagator.
+     * @param propagator to add
+     * @return index of the propagator
+     */
+    public int addPropagator(final Propagator propagator) {
+        propagators.add(propagator);
+        return propagators.size() - 1;
+    }
+
+    /** Get a registered propagator.
+     * @param index index of the propagator, as returned by {@link #addPropagator(Propagator)}
+     * @return propagator at index
+     */
+    public Propagator getPropagator(final int index) {
+        return propagators.get(index);
     }
 
     /** Add a sequences generator for a specific measurement type.
@@ -66,10 +87,6 @@ public class Generator {
         }
 
         // set up parallelized propagators
-        final List<Propagator> propagators = new ArrayList<>(schedulers.size());
-        for (final Scheduler<?> scheduler : schedulers) {
-            propagators.add(scheduler.getPropagator());
-        }
         final GeneratorHandler handler = new GeneratorHandler(schedulers);
         final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, handler);
 

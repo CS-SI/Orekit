@@ -34,14 +34,16 @@ public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTes
     private static final double BIAS  = 1.0e-4;
 
     protected MeasurementBuilder<AngularRaDec> getBuilder(final RandomGenerator random,
-                                                          final GroundStation groundStation) {
+                                                          final GroundStation groundStation,
+                                                          final int propagatorIndex) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA, SIGMA * SIGMA });
         MeasurementBuilder<AngularRaDec> ab =
                         new AngularRaDecBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                             1.0e-10,
                                                                                                             new GaussianRandomGenerator(random)),
                                                 groundStation, FramesFactory.getEME2000(),
-                                                new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 }, 0);
+                                                new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 },
+                                                propagatorIndex);
         ab.addModifier(new Bias<>(new String[] { "aBias", "eBias" },
                         new double[] { BIAS, BIAS },
                         new double[] { 1.0, 1.0 },

@@ -54,13 +54,14 @@ public class TurnAroundRangeBuilderTest {
 
     private MeasurementBuilder<TurnAroundRange> getBuilder(final RandomGenerator random,
                                                            final GroundStation master,
-                                                           final GroundStation slave) {
+                                                           final GroundStation slave,
+                                                           final int propagatorIndex) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<TurnAroundRange> rb =
                         new TurnAroundRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                                1.0e-10,
                                                                                                                new GaussianRandomGenerator(random)),
-                                                   master, slave, SIGMA, 1.0, 0);
+                                                   master, slave, SIGMA, 1.0, propagatorIndex);
         rb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },
@@ -89,9 +90,10 @@ public class TurnAroundRangeBuilderTest {
         final Map.Entry<GroundStation, GroundStation> entry = context.TARstations.entrySet().iterator().next();
         final GroundStation master = entry.getKey();
         final GroundStation slave  = entry.getValue();
-        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), master, slave),
+        final int propagatorIndex = generator.addPropagator(buildPropagator());
+        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), master, slave, propagatorIndex),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
-                                                         buildPropagator(),
+                                                         generator.getPropagator(propagatorIndex),
                                                          BooleanDetector.andCombine(new ElevationDetector(master.getBaseFrame()).
                                                                                     withConstantElevation(FastMath.toRadians(5.0)),
                                                                                     new ElevationDetector(slave.getBaseFrame()).

@@ -33,13 +33,15 @@ public class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest
     private static final double BIAS  = 1.0e-4;
 
     protected MeasurementBuilder<AngularAzEl> getBuilder(final RandomGenerator random,
-                                                         final GroundStation groundStation) {
+                                                         final GroundStation groundStation,
+                                                         final int propagatorIndex) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA, SIGMA * SIGMA });
         MeasurementBuilder<AngularAzEl> ab =
                         new AngularAzElBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                            1.0e-10,
                                                                                                            new GaussianRandomGenerator(random)),
-                                               groundStation, new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 }, 0);
+                                               groundStation, new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 },
+                                               propagatorIndex);
         ab.addModifier(new Bias<>(new String[] { "aBias", "eBias" },
                         new double[] { BIAS, BIAS },
                         new double[] { 1.0, 1.0 },

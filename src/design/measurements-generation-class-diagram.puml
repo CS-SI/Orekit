@@ -58,6 +58,8 @@
         end note
 
         class Generator {
+          +int addPropagator(Propagator)
+          +Propagator getPropagator(index)
           +addScheduler(Scheduler)
           +SortedSet<ObservedMeasurements> generate(startDate, endDate)
         }
@@ -70,7 +72,6 @@
         class "ContinuousScheduler<T>" as ContinuousScheduler_T_
 
         interface "Scheduler<T>" as Scheduler_T_ {
-          +Propagator getPropagator()
           +SortedSet<T> generate(interpolators)
         }
 
@@ -95,7 +96,7 @@
       end note
 
  
-      EstimationModifier_T_  "*" <-left-*          ObservedMeasurement_T_ 
+      EstimationModifier_T_  "*" <-left-*      ObservedMeasurement_T_ 
       ObservedMeasurement_T_     <|..          XXXMeasurement
       XXXMeasurementBuilder       -->          XXXMeasurement
       EstimationModifier_T_ "*" <--* XXXMeasurementBuilder 
@@ -109,8 +110,8 @@
         propagate()
       }
       Generator --> PropagatorsParallelizer
-      Scheduler_T_ *--> "1" Propagator
-      Propagator <-- PropagatorsParallelizer
+      Generator *--> "*" Propagator
+      Propagator <-left- PropagatorsParallelizer
     }
 
     package time #DDEBD8 {

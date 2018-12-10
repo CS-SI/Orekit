@@ -21,7 +21,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -45,11 +44,9 @@ public class ContinuousScheduler<T extends ObservedMeasurement<T>> extends Abstr
     /** Simple constructor.
      * @param builder builder for individual measurements
      * @param selector selector for dates
-     * @param propagator propagator associated with this scheduler
      */
-    public ContinuousScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector,
-                               final Propagator propagator) {
-        super(builder, selector, propagator);
+    public ContinuousScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector) {
+        super(builder, selector);
     }
 
     /** {@inheritDoc} */

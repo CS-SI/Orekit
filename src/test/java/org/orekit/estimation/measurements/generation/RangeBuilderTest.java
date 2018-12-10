@@ -32,13 +32,14 @@ public class RangeBuilderTest extends AbstractGroundMeasurementBuilderTest<Range
     private static final double BIAS  =  3.0;
 
     protected MeasurementBuilder<Range> getBuilder(final RandomGenerator random,
-                                                   final GroundStation groundStation) {
+                                                   final GroundStation groundStation,
+                                                   final int propagatorIndex) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<Range> rb =
                         new RangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                      1.0e-10,
                                                                                                      new GaussianRandomGenerator(random)),
-                                         groundStation, true, SIGMA, 1.0, 0);
+                                         groundStation, true, SIGMA, 1.0, propagatorIndex);
         rb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },

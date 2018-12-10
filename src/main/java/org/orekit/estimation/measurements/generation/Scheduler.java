@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.SortedSet;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -43,11 +42,6 @@ public interface Scheduler<T extends ObservedMeasurement<T>> {
      * @param end end of the measurements time span
      */
     void init(AbsoluteDate start, AbsoluteDate end);
-
-    /** Get the propagator associated with this scheduler.
-     * @return propagator associated with this scheduler
-     */
-    Propagator getPropagator();
 
     /** Generate a sequence of measurements.
      * @param interpolators interpolators for spacecraft states

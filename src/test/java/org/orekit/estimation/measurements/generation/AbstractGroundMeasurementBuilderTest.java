@@ -42,7 +42,8 @@ import org.orekit.time.TimeScalesFactory;
 public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMeasurement<T>> {
 
     protected abstract MeasurementBuilder<T> getBuilder(RandomGenerator random,
-                                                        GroundStation groundStation);
+                                                        GroundStation groundStation,
+                                                        int propagatorIndex);
 
     private Propagator buildPropagator() {
         return EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -51,9 +52,10 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
     protected void doTest(long seed, double startPeriod, double endPeriod, int expectedMeasurements, double tolerance) {
        Generator generator = new Generator();
        final double step = 60.0;
-       generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.get(0)),
+       final int propagatorIndex = generator.addPropagator(buildPropagator());
+       generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.get(0), propagatorIndex),
                                                         new FixedStepSelector(step, TimeScalesFactory.getUTC()),
-                                                        buildPropagator(),
+                                                        generator.getPropagator(propagatorIndex),
                                                         new ElevationDetector(context.stations.get(0).getBaseFrame()).
                                                         withConstantElevation(FastMath.toRadians(5.0)).
                                                         withHandler(new ContinueOnEvent<>()),
