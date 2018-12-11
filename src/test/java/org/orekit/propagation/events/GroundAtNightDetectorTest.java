@@ -114,10 +114,6 @@ public class GroundAtNightDetectorTest {
                                                   withMaxCheck(120.0)));
         p.propagate(o.getDate().shiftedBy(Constants.JULIAN_DAY));
         List<LoggedEvent> events = logger.getLoggedEvents();
-        if (!events.isEmpty()) {
-            System.out.println(events.get(0).getState().getDate() + " " + events.get(1).getState().getDate() +
-                               " " + events.get(1).getState().getDate().durationFrom(events.get(0).getState().getDate()));
-        }
         if (Double.isNaN(expectedDuration)) {
             Assert.assertEquals(0, events.size());
         } else {
