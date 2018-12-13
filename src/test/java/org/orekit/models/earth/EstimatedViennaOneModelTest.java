@@ -34,7 +34,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -141,9 +140,7 @@ public class EstimatedViennaOneModelTest {
 
         // Initial satellite elevation
         final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
-        final FieldTransform<DerivativeStructure> t = dsState.getFrame().getTransformTo(baseFrame, dsDate);
-        final FieldVector3D<DerivativeStructure> extPointTopo = t.transformPosition(position);
-        final DerivativeStructure dsElevation = extPointTopo.getDelta();
+        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
 
         // Set drivers reference date
         for (final ParameterDriver driver : model.getParametersDrivers()) {
@@ -278,9 +275,7 @@ public class EstimatedViennaOneModelTest {
 
         // Initial satellite elevation
         final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
-        final FieldTransform<DerivativeStructure> t = dsState.getFrame().getTransformTo(baseFrame, dsDate);
-        final FieldVector3D<DerivativeStructure> extPointTopo = t.transformPosition(position);
-        final DerivativeStructure dsElevation = extPointTopo.getDelta();
+        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
 
         // Set drivers reference date
         for (final ParameterDriver driver : model.getParametersDrivers()) {
