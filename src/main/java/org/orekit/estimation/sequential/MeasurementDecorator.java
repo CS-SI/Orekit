@@ -28,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 9.2
  */
-class MeasurementDecorator implements Measurement {
+public class MeasurementDecorator implements Measurement {
 
     /** Wrapped observed measurement. */
     private final ObservedMeasurement<?> observedMeasurement;
