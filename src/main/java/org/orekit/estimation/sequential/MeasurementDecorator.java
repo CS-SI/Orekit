@@ -44,8 +44,8 @@ public class MeasurementDecorator implements Measurement {
      * @param covariance measurement covariance
      * @param reference reference date
      */
-    MeasurementDecorator(final ObservedMeasurement<?> observedMeasurement,
-                         final RealMatrix covariance, final AbsoluteDate reference) {
+    public MeasurementDecorator(final ObservedMeasurement<?> observedMeasurement,
+                                final RealMatrix covariance, final AbsoluteDate reference) {
         this.observedMeasurement = observedMeasurement;
         this.covariance          = covariance;
         this.reference           = reference;
