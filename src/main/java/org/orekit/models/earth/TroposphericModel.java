@@ -87,9 +87,7 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
      * @return the path delay due to the troposphere in m
      */
     default <T extends RealFieldElement<T>> T pathDelay(T elevation, T height, T[] parameters, FieldAbsoluteDate<T> date) {
-        final Field<T> field = date.getField();
-        final T zero = field.getZero();
-        return zero.add(pathDelay(elevation, height));
+        return pathDelay(elevation, height);
     }
 
     /** This method allows the  computation of the zenith hydrostatic and
