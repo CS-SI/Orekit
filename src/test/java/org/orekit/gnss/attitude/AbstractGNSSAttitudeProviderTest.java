@@ -42,6 +42,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.gnss.antenna.SatelliteType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -63,12 +64,6 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     public void setUp() {
         Utils.setDataRoot("regular-data:gnss");
     }
-
-    protected abstract GNSSAttitudeProvider createProvider(final AbsoluteDate validityStart,
-                                                           final AbsoluteDate validityEnd,
-                                                           final ExtendedPVCoordinatesProvider sun,
-                                                           final Frame inertialFrame,
-                                                           final int prnNumber);
 
     protected enum CheckAxis {
 
@@ -92,7 +87,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     }
 
-    protected void doTestAxes(final String fileName, final double tolXY, double tolZ) {
+    protected void doTestAxes(final String fileName, final double tolXY, double tolZ, boolean useGenericAttitude) {
 
         if (getClass().getResource("/gnss/attitude/" + fileName) == null) {
             Assert.fail("file not found: " + fileName);
@@ -116,8 +111,10 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).gpsDate.getDate();
             final int          prnNumber     = dataBlock.get(0).prnNumber;
             final ExtendedPVCoordinatesProvider fakedSun = new FakedSun(dataBlock);
-            final GNSSAttitudeProvider attitudeProvider =
-                            createProvider(validityStart, validityEnd, fakedSun, eme2000, prnNumber);
+            final GNSSAttitudeProvider attitudeProvider = useGenericAttitude ?
+                                                          new GenericGNSS(validityStart, validityEnd, fakedSun, eme2000) :
+                                                          dataBlock.get(0).satType.buildAttitudeProvider(validityStart, validityEnd,
+                                                                                                         fakedSun, eme2000, prnNumber);
             Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
             Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
 
@@ -242,17 +239,19 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     private static class ParsedLine {
 
-        final GPSDate  gpsDate;
-        final int      prnNumber;
-        final Orbit    orbit;
-        final Vector3D sunP;
-        final Vector3D eclipsX;
+        final GPSDate       gpsDate;
+        final int           prnNumber;
+        final SatelliteType satType;
+        final Orbit         orbit;
+        final Vector3D      sunP;
+        final Vector3D      eclipsX;
 
         ParsedLine(final String line, final Frame eme2000, final Frame itrf) {
             final String[] fields = line.split("\\s+");
             gpsDate    = new GPSDate(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]));
             final Transform t = itrf.getTransformTo(eme2000, gpsDate.getDate());
             prnNumber  = Integer.parseInt(fields[3].substring(1));
+            satType    = SatelliteType.parseSatelliteType(fields[4].replaceAll("[-_ ]", ""));
             orbit      = new CartesianOrbit(new TimeStampedPVCoordinates(gpsDate.getDate(),
                                                                          t.transformPosition(new Vector3D(Double.parseDouble(fields[ 6]),
                                                                                                           Double.parseDouble(fields[ 7]),

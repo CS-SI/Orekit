@@ -424,7 +424,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param dt time shift in seconds
      * @return a new instance, shifted with respect to instance (which is not changed)
      */
-    FieldTransform<T> shiftedBy(final T dt) {
+    public FieldTransform<T> shiftedBy(final T dt) {
         return new FieldTransform<>(date.shiftedBy(dt), aDate.shiftedBy(dt.getReal()),
                                     cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }

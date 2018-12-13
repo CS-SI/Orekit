@@ -21,6 +21,44 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="pascal" type="fix" issue="495">
+        The MarshallSolarActivityFutureEstimation class implements
+        the NRLMSISE00InputParameters interface.
+      </action>
+      <action dev="evan" type="fix" issue="486">
+        Make FieldTransform.shiftedBy(T) public.
+      </action>
+      <action dev="evan" type="fix" issue="496">
+        Fix JavaDoc for TimeComponents.getSecond().
+      </action>
+      <action dev="evan" type="update" issue="501">
+        Deprecate GFunction in favor of ToDoubleFunction.
+      </action>
+      <action dev="luc" type="add" issue="494">
+        Added a measurements generation feature for use with orbit determination.
+        Fixes issue #494
+      </action>
+      <action dev="luc" type="add">
+        Added adapter for event detectors, allowing to wrap existing detector
+        while changing their behaviour.
+      </action>
+      <action dev="luc" type="add">
+        Added ground at night detector.
+      </action>
+      <action dev="luc" type="add">
+        Added inter-satellites direct view detector.
+      </action>
+      <action dev="luc" type="add">
+        Added constants defined by IAU 2015 resolution B3 for Sun, Earth and Jupiter.
+      </action>
+      <action dev="luc" type="add" issue="500">
+        Added retrieval of full time span (start time, end time and data) containing
+        a specified date in TimeSpanMap.
+        Fixes issue #500
+      </action>
+      <action dev="luc" type="add">
+        Added direct building of attitude provider from GNSS satellite type.
+      </action>
       <action dev="luc" type="add">
         Added parsing of unofficial versions 2.12 and 2.20 of Rinex files
         (used by some spaceborne receivers like IceSat 1).

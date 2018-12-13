@@ -30,6 +30,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.VersionedITRF;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -341,6 +342,8 @@ public class StreamingOemWriter {
             return name.substring(0, name.length() - 9).toUpperCase(STANDARDIZED_LOCALE);
         } else if (frame instanceof CcsdsModifiedFrame) {
             return ((CcsdsModifiedFrame) frame).getCenterName();
+        } else if (frame.getName().equals(Predefined.ICRF.getName())) {
+            return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.toUpperCase(STANDARDIZED_LOCALE);
         } else if (frame.getDepth() == 0 || frame instanceof FactoryManagedFrame) {
             return "EARTH";
         } else {

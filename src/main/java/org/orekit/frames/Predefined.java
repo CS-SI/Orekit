@@ -23,7 +23,7 @@ package org.orekit.frames;
 public enum Predefined {
 
     /** GCRF frame.*/
-    GCRF(Frame.getRoot().getName()),
+    GCRF("GCRF"),
 
     /** ICRF frame.*/
     ICRF("ICRF"),
