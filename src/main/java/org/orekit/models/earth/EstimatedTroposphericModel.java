@@ -45,10 +45,16 @@ import org.orekit.utils.ParameterDriver;
 public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
-    public static final String HYDROSTATIC_ZENITH_DELAY = "hydrostatic zenith delay";
+    public static final String START_HYDROSTATIC_ZENITH_DELAY = "start hydrostatic zenith delay";
+
+    /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
+    public static final String END_HYDROSTATIC_ZENITH_DELAY = "end hydrostatic zenith delay";
 
     /** Name of one of the parameters of this model: the wet zenith delay. */
-    public static final String WET_ZENITH_DELAY = "wet zenith delay";
+    public static final String START_WET_ZENITH_DELAY = "start wet zenith delay";
+
+    /** Name of one of the parameters of this model: the wet zenith delay. */
+    public static final String END_WET_ZENITH_DELAY = "end wet zenith delay";
 
     /** Serializable UID. */
     private static final long serialVersionUID = -2348714833140436533L;
@@ -69,10 +75,6 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     private final ParameterDriver endDateDWZParameterDriver;
 
     /** Build a new instance.
-     * <p>
-     * By definition, init date and end date parameters have the same name.
-     * It is recommended to change the name of the parameters by adding a prefix with the reference date.
-     * </p>
      * @param model mapping function model.
      * @param hydroDelayInitDate initial value for the hydrostatic zenith delay (first date)
      * @param hydroDelayEndDate initial value for the slope hydrostatic zenith delay (end date)
@@ -85,16 +87,16 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
                                       final double wetDelayInitDate,
                                       final double wetDelayEndDate) {
 
-        initDateDHZParameterDriver = new ParameterDriver(EstimatedTroposphericModel.HYDROSTATIC_ZENITH_DELAY,
+        initDateDHZParameterDriver = new ParameterDriver(EstimatedTroposphericModel.START_HYDROSTATIC_ZENITH_DELAY,
                                                  hydroDelayInitDate, FastMath.scalb(1.0, -2), 0.0, 10.0);
 
-        endDateDHZParameterDriver  = new ParameterDriver(EstimatedTroposphericModel.HYDROSTATIC_ZENITH_DELAY,
+        endDateDHZParameterDriver  = new ParameterDriver(EstimatedTroposphericModel.END_HYDROSTATIC_ZENITH_DELAY,
                                                  hydroDelayEndDate, FastMath.scalb(1.0, -2), 0.0, 10.0);
 
-        initDateDWZParameterDriver = new ParameterDriver(EstimatedTroposphericModel.WET_ZENITH_DELAY,
+        initDateDWZParameterDriver = new ParameterDriver(EstimatedTroposphericModel.START_WET_ZENITH_DELAY,
                                                  wetDelayInitDate, FastMath.scalb(1.0, -3), 0.0, 1.0);
 
-        endDateDWZParameterDriver  = new ParameterDriver(EstimatedTroposphericModel.WET_ZENITH_DELAY,
+        endDateDWZParameterDriver  = new ParameterDriver(EstimatedTroposphericModel.END_WET_ZENITH_DELAY,
                                                  wetDelayEndDate, FastMath.scalb(1.0, -3), 0.0, 1.0);
 
         this.model = model;

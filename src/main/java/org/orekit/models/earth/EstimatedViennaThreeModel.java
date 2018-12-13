@@ -56,16 +56,28 @@ import org.orekit.utils.ParameterDriver;
 public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
 
     /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
-    public static final String HYDROSTATIC_ZENITH_DELAY = "hydrostatic zenith delay";
+    public static final String START_HYDROSTATIC_ZENITH_DELAY = "start hydrostatic zenith delay";
+
+    /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
+    public static final String END_HYDROSTATIC_ZENITH_DELAY = "end hydrostatic zenith delay";
 
     /** Name of one of the parameters of this model: the wet zenith delay. */
-    public static final String WET_ZENITH_DELAY = "wet zenith delay";
+    public static final String START_WET_ZENITH_DELAY = "start wet zenith delay";
+
+    /** Name of one of the parameters of this model: the wet zenith delay. */
+    public static final String END_WET_ZENITH_DELAY = "end wet zenith delay";
 
     /** Name of the parameters of this model: the mapping function coefficient a<sub>h</sub>. */
-    public static final String AH_COEFFICIENT = "mapping function coefficient ah";
+    public static final String START_AH_COEFFICIENT = "start mapping function coefficient ah";
+
+    /** Name of the parameters of this model: the mapping function coefficient a<sub>h</sub>. */
+    public static final String END_AH_COEFFICIENT = "end mapping function coefficient ah";
 
     /** Name of the parameters of this model: the mapping function coefficient a<sub>w</sub>. */
-    public static final String AW_COEFFICIENT = "mapping function coefficient aw";
+    public static final String START_AW_COEFFICIENT = "start mapping function coefficient aw";
+
+    /** Name of the parameters of this model: the mapping function coefficient a<sub>w</sub>. */
+    public static final String END_AW_COEFFICIENT = "end mapping function coefficient aw";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 5834518212056083118L;
@@ -123,28 +135,28 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
                                      final double awInitDate, final double awEndDate,
                                      final double latitude, final double longitude) {
 
-        initDateDHZParameterDriver = new ParameterDriver(EstimatedViennaThreeModel.HYDROSTATIC_ZENITH_DELAY,
+        initDateDHZParameterDriver = new ParameterDriver(EstimatedViennaThreeModel.START_HYDROSTATIC_ZENITH_DELAY,
                                                          hydroDelayInitDate, FastMath.scalb(1.0, -2), 0.0, 10.0);
 
-        endDateDHZParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.HYDROSTATIC_ZENITH_DELAY,
+        endDateDHZParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.END_HYDROSTATIC_ZENITH_DELAY,
                                                          hydroDelayEndDate, FastMath.scalb(1.0, -2), 0.0, 10.0);
 
-        initDateDWZParameterDriver = new ParameterDriver(EstimatedViennaThreeModel.WET_ZENITH_DELAY,
+        initDateDWZParameterDriver = new ParameterDriver(EstimatedViennaThreeModel.START_WET_ZENITH_DELAY,
                                                          wetDelayInitDate, FastMath.scalb(1.0, -3), 0.0, 1.0);
 
-        endDateDWZParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.WET_ZENITH_DELAY,
+        endDateDWZParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.END_WET_ZENITH_DELAY,
                                                          wetDelayEndDate, FastMath.scalb(1.0, -3), 0.0, 1.0);
 
-        initDateAHParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.AH_COEFFICIENT,
+        initDateAHParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.START_AH_COEFFICIENT,
                                                          ahInitDate, FastMath.scalb(1.0, -12), 0.0, 0.1);
 
-        endDateAHParameterDriver   = new ParameterDriver(EstimatedViennaThreeModel.AH_COEFFICIENT,
+        endDateAHParameterDriver   = new ParameterDriver(EstimatedViennaThreeModel.END_AH_COEFFICIENT,
                                                          ahEndDate, FastMath.scalb(1.0, -12), 0.0, 0.1);
 
-        initDateAWParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.AW_COEFFICIENT,
+        initDateAWParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.START_AW_COEFFICIENT,
                                                          awInitDate, FastMath.scalb(1.0, -15), 0.0, 0.01);
 
-        enDateAWParameterDriver    = new ParameterDriver(EstimatedViennaThreeModel.AW_COEFFICIENT,
+        enDateAWParameterDriver    = new ParameterDriver(EstimatedViennaThreeModel.END_AW_COEFFICIENT,
                                                          awEndDate, FastMath.scalb(1.0, -15), 0.0, 0.01);
 
         this.latitude      = latitude;
