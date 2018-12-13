@@ -84,7 +84,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, hPa
      * @param rh the humidity at the station, percent (50% -&gt; 0.5)
-     * @param latitude geodetic latitude of the station
+     * @param latitude geodetic latitude of the station, radians
      * @param lambda laser wavelength, µm
      * */
     public MendesPavlisModel(final double t0, final double p0, final double rh,
@@ -104,7 +104,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     * <li>humidity: 50%
     * </ul>
     *
-    * @param latitude site latitude
+    * @param latitude site latitude, radians
     * @param lambda laser wavelength, µm
     *
     * @return a Mendes-Pavlis model with standard environmental values

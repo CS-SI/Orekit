@@ -69,7 +69,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     /** Build a new instance.
      * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
      * @param zenithDelay Values of hydrostatic and wet delays
-     * @param latitude geodetic latitude of the station
+     * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
      */
     public ViennaThreeModel(final double[] coefficientA, final double[] zenithDelay,
