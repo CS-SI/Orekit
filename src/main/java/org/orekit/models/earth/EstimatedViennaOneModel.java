@@ -50,26 +50,14 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
     public static final String HYDROSTATIC_ZENITH_DELAY = "hydrostatic zenith delay";
 
-    /** Name of one of the parameters of this model: the slope hydrostatic zenith delay. */
-    public static final String SLOPE_HYDROSTATIC_ZENITH_DELAY = "slope hydrostatic zenith delay";
-
     /** Name of one of the parameters of this model: the wet zenith delay. */
     public static final String WET_ZENITH_DELAY = "wet zenith delay";
-
-    /** Name of one of the parameters of this model: the slope wet zenith delay. */
-    public static final String SLOPE_WET_ZENITH_DELAY = "slope wet zenith delay";
 
     /** Name of the parameters of this model: the mapping function coefficient a<sub>h</sub>. */
     public static final String AH_COEFFICIENT = "mapping function coefficient ah";
 
-    /** Name of the parameters of this model: the mapping function slope coefficient a<sub>h</sub>. */
-    public static final String AH_SLOPE_COEFFICIENT = "mapping function slope coefficient ah";
-
     /** Name of the parameters of this model: the mapping function coefficient a<sub>w</sub>. */
     public static final String AW_COEFFICIENT = "mapping function coefficient aw";
-
-    /** Name of the parameters of this model: the mapping function slope coefficient a<sub>w</sub>. */
-    public static final String AW_SLOPE_COEFFICIENT = "mapping function slope coefficient aw";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3421856575466386588L;
@@ -78,62 +66,72 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     private final double latitude;
 
     /** Driver for hydrostatic tropospheric delay parameter. */
-    private final ParameterDriver dhzParameterDriver;
+    private final ParameterDriver initDateDHZParameterDriver;
 
-    /** Driver for slope hydrostatic tropospheric delay parameter. */
-    private final ParameterDriver dhzSlopeParameterDriver;
+    /** Driver for hydrostatic tropospheric delay parameter. */
+    private final ParameterDriver endDateDHZParameterDriver;
 
     /** Driver for wet tropospheric delay parameter. */
-    private final ParameterDriver dwzParameterDriver;
+    private final ParameterDriver initDateDWZParameterDriver;
 
-    /** Driver for slope wet tropospheric delay parameter. */
-    private final ParameterDriver dwzSlopeParameterDriver;
+    /** Driver for wet tropospheric delay parameter. */
+    private final ParameterDriver endDateDWZParameterDriver;
 
     /** Driver for hydrostatic coefficient a<sub>h</sub>. */
-    private final ParameterDriver ahParameterDriver;
+    private final ParameterDriver initDateAHParameterDriver;
 
-    /** Driver for slope hydrostatic coefficient a<sub>h</sub>. */
-    private final ParameterDriver ahSlopeParameterDriver;
+    /** Driver for hydrostatic coefficient a<sub>h</sub>. */
+    private final ParameterDriver endDateAHParameterDriver;
 
     /** Driver for wet coefficient a<sub>w</sub>. */
-    private final ParameterDriver awParameterDriver;
+    private final ParameterDriver initDateAWParameterDriver;
 
-    /** Driver for slope wet coefficient a<sub>h</sub>. */
-    private final ParameterDriver awSlopeParameterDriver;
+    /** Driver for wet coefficient a<sub>w</sub>. */
+    private final ParameterDriver enDateAWParameterDriver;
 
     /** Build a new instance.
-     * @param dhz initial value for the hydrostatic zenith delay
-     * @param dwz initial value for the wet zenith delay
-     * @param ah initial value for coefficient a<sub>h</sub>
-     * @param aw initial value for coefficient a<sub>w</sub>
-     * @param latitude geodetic latitude of the station
+     * <p>
+     * By definition, init date and end date parameters have the same name.
+     * It is recommended to change the name of the parameters by adding a prefix with the reference date.
+     * </p>
+     * @param hydroDelayInitDate initial value for the hydrostatic zenith delay (first date)
+     * @param hydroDelayEndDate initial value for the hydrostatic zenith delay (end date)
+     * @param wetDelayInitDate initial value for wet zenith delay (first date)
+     * @param wetDelayEndDate initial value for wet zenith delay (end date)
+     * @param ahInitDate initial value for coefficient a<sub>h</sub> (first date)
+     * @param ahEndDate initial value for coefficient a<sub>h</sub> (end date)
+     * @param awInitDate initial value for coefficient a<sub>w</sub> (first date)
+     * @param awEndDate initial value for coefficient a<sub>w</sub> (end date)
+     * @param latitude geodetic latitude of the station, in radians
      */
-    public EstimatedViennaOneModel(final double dhz, final double dwz,
-                                   final double ah, final double aw,
+    public EstimatedViennaOneModel(final double hydroDelayInitDate, final double hydroDelayEndDate,
+                                   final double wetDelayInitDate, final double wetDelayEndDate,
+                                   final double ahInitDate, final double ahEndDate,
+                                   final double awInitDate, final double awEndDate,
                                    final double latitude) {
-        dhzParameterDriver = new ParameterDriver(EstimatedViennaOneModel.HYDROSTATIC_ZENITH_DELAY,
-                                                 dhz, FastMath.scalb(1.0, -2), 0.0, Double.POSITIVE_INFINITY);
+        initDateDHZParameterDriver = new ParameterDriver(EstimatedViennaOneModel.HYDROSTATIC_ZENITH_DELAY,
+                                                         hydroDelayInitDate, FastMath.scalb(1.0, -2), 0.0, 10.0);
 
-        dhzSlopeParameterDriver = new ParameterDriver(EstimatedViennaOneModel.SLOPE_HYDROSTATIC_ZENITH_DELAY,
-                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        endDateDHZParameterDriver  = new ParameterDriver(EstimatedViennaOneModel.HYDROSTATIC_ZENITH_DELAY,
+                                                         hydroDelayEndDate, FastMath.scalb(1.0, -2), 0.0, 10.0);
 
-        dwzParameterDriver = new ParameterDriver(EstimatedViennaOneModel.WET_ZENITH_DELAY,
-                                                 dwz, FastMath.scalb(1.0, -5), 0.0, Double.POSITIVE_INFINITY);
+        initDateDWZParameterDriver = new ParameterDriver(EstimatedViennaOneModel.WET_ZENITH_DELAY,
+                                                         wetDelayInitDate, FastMath.scalb(1.0, -3), 0.0, 1.0);
 
-        dwzSlopeParameterDriver = new ParameterDriver(EstimatedViennaOneModel.SLOPE_WET_ZENITH_DELAY,
-                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        endDateDWZParameterDriver  = new ParameterDriver(EstimatedViennaOneModel.WET_ZENITH_DELAY,
+                                                         wetDelayEndDate, FastMath.scalb(1.0, -3), 0.0, 1.0);
 
-        ahParameterDriver = new ParameterDriver(EstimatedViennaOneModel.AH_COEFFICIENT,
-                                                 ah, FastMath.scalb(1.0, -12), 0.0, Double.POSITIVE_INFINITY);
+        initDateAHParameterDriver  = new ParameterDriver(EstimatedViennaOneModel.AH_COEFFICIENT,
+                                                         ahInitDate, FastMath.scalb(1.0, -12), 0.0, 0.1);
 
-        ahSlopeParameterDriver = new ParameterDriver(EstimatedViennaOneModel.AH_SLOPE_COEFFICIENT,
-                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        endDateAHParameterDriver   = new ParameterDriver(EstimatedViennaOneModel.AH_COEFFICIENT,
+                                                         ahEndDate, FastMath.scalb(1.0, -12), 0.0, 0.1);
 
-        awParameterDriver = new ParameterDriver(EstimatedViennaOneModel.AW_COEFFICIENT,
-                                                 aw, FastMath.scalb(1.0, -14), 0.0, Double.POSITIVE_INFINITY);
+        initDateAWParameterDriver  = new ParameterDriver(EstimatedViennaOneModel.AW_COEFFICIENT,
+                                                         awInitDate, FastMath.scalb(1.0, -15), 0.0, 0.01);
 
-        awSlopeParameterDriver = new ParameterDriver(EstimatedViennaOneModel.AW_SLOPE_COEFFICIENT,
-                                                 0.0, FastMath.scalb(1.0, -20), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        enDateAWParameterDriver    = new ParameterDriver(EstimatedViennaOneModel.AW_COEFFICIENT,
+                                                         awEndDate, FastMath.scalb(1.0, -15), 0.0, 0.01);
 
         this.latitude  = latitude;
     }
@@ -165,10 +163,24 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
+        // Time intervals
+        final double dt1 = endDateDHZParameterDriver.getReferenceDate().durationFrom(date);
+        final double dt0 = date.durationFrom(initDateDHZParameterDriver.getReferenceDate());
+        final double dt  = dt1 + dt0;
+
+        // Zenith delay
         final double[] delays = new double[2];
-        final double dt = date.durationFrom(getParametersDrivers().get(0).getReferenceDate());
-        delays[0] = parameters[1] * dt + parameters[0];
-        delays[1] = parameters[3] * dt + parameters[2];
+
+        if (FastMath.abs(dt) < 0.001) {
+            // Constant model
+            delays[0] = parameters[0];
+            delays[1] = parameters[2];
+        } else {
+            // Linear model
+            delays[0] = (parameters[0] * dt1 + parameters[1] * dt0) / dt;
+            delays[1] = (parameters[2] * dt1 + parameters[3] * dt0) / dt;
+        }
+
         return delays;
     }
 
@@ -176,11 +188,27 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     @Override
     public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
+        // Field
         final Field<T> field = date.getField();
+
+        // Time intervals
+        final T dt1 = date.durationFrom(endDateDHZParameterDriver.getReferenceDate()).negate();
+        final T dt0 = date.durationFrom(initDateDHZParameterDriver.getReferenceDate());
+        final T dt  = dt1.add(dt0);
+
+        // Zenith delay
         final T[] delays = MathArrays.buildArray(field, 2);
-        final T dt = date.durationFrom(getParametersDrivers().get(0).getReferenceDate());
-        delays[0] = parameters[1].multiply(dt).add(parameters[0]);
-        delays[1] = parameters[3].multiply(dt).add(parameters[2]);
+
+        if (FastMath.abs(dt).getReal() < 0.001) {
+            // Constant model
+            delays[0] = parameters[0];
+            delays[1] = parameters[2];
+        } else {
+            // Linear model
+            delays[0] = (parameters[0].multiply(dt1).add(parameters[1].multiply(dt0))).divide(dt);
+            delays[1] = (parameters[2].multiply(dt1).add(parameters[3].multiply(dt0))).divide(dt);
+        }
+
         return delays;
     }
 
@@ -218,10 +246,25 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
         final double bw = 0.00146;
         final double cw = 0.04391;
 
-        // ah and aw coefficients : linear model
-        final double dt = date.durationFrom(getParametersDrivers().get(4).getReferenceDate());
-        final double ah = parameters[5] * dt + parameters[4];
-        final double aw = parameters[7] * dt + parameters[6];
+        // ah and aw coefficients
+        // Time intervals
+        final double dt1 = endDateAHParameterDriver.getReferenceDate().durationFrom(date);
+        final double dt0 = date.durationFrom(initDateAHParameterDriver.getReferenceDate());
+        final double dt  = dt1 + dt0;
+
+        // Zenith delay
+
+        final double ah;
+        final double aw;
+        if (FastMath.abs(dt) < 0.001) {
+            // Constant model
+            ah = parameters[4];
+            aw = parameters[6];
+        } else {
+            // Linear model
+            ah = (parameters[4] * dt1 + parameters[5] * dt0) / dt;
+            aw = (parameters[6] * dt1 + parameters[7] * dt0) / dt;
+        }
 
         final double[] function = new double[2];
         function[0] = computeFunction(ah, bh, ch, elevation);
@@ -271,10 +314,23 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
         final T bw = zero.add(0.00146);
         final T cw = zero.add(0.04391);
 
-        // ah and aw coefficients : linear model
-        final T dt = date.durationFrom(getParametersDrivers().get(4).getReferenceDate());
-        final T ah = parameters[5].multiply(dt).add(parameters[4]);
-        final T aw = parameters[7].multiply(dt).add(parameters[6]);
+        // ah and aw coefficients
+        // Time intervals
+        final T dt1 = date.durationFrom(endDateAHParameterDriver.getReferenceDate()).negate();
+        final T dt0 = date.durationFrom(initDateAHParameterDriver.getReferenceDate());
+        final T dt  = dt1.add(dt0);
+
+        final T ah;
+        final T aw;
+        if (FastMath.abs(dt).getReal() < 0.001) {
+            // Constant model
+            ah = parameters[4];
+            aw = parameters[6];
+        } else {
+            // Linear model
+            ah = (parameters[4].multiply(dt1).add(parameters[5].multiply(dt0))).divide(dt);
+            aw = (parameters[6].multiply(dt1).add(parameters[7].multiply(dt0))).divide(dt);
+        }
 
         final T[] function = MathArrays.buildArray(field, 2);
         function[0] = computeFunction(ah, bh, ch, elevation);
@@ -291,14 +347,14 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         final List<ParameterDriver> list = new ArrayList<>(8);
-        list.add(0, dhzParameterDriver);
-        list.add(1, dhzSlopeParameterDriver);
-        list.add(2, dwzParameterDriver);
-        list.add(3, dwzSlopeParameterDriver);
-        list.add(4, ahParameterDriver);
-        list.add(5, ahSlopeParameterDriver);
-        list.add(6, awParameterDriver);
-        list.add(7, awSlopeParameterDriver);
+        list.add(0, initDateDHZParameterDriver);
+        list.add(1, endDateDHZParameterDriver);
+        list.add(2, initDateDWZParameterDriver);
+        list.add(3, endDateDWZParameterDriver);
+        list.add(4, initDateAHParameterDriver);
+        list.add(5, endDateAHParameterDriver);
+        list.add(6, initDateAWParameterDriver);
+        list.add(7, enDateAWParameterDriver);
         return Collections.unmodifiableList(list);
     }
 

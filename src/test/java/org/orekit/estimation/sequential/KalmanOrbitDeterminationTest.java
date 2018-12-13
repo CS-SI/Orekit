@@ -107,10 +107,15 @@ import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.RinexLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
+import org.orekit.models.earth.DiscreteTroposphericModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
+import org.orekit.models.earth.EstimatedTroposphericModel;
+import org.orekit.models.earth.GlobalMappingFunctionModel;
 import org.orekit.models.earth.IonosphericModel;
 import org.orekit.models.earth.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.KlobucharIonoModel;
+import org.orekit.models.earth.MappingFunction;
+import org.orekit.models.earth.NiellMappingFunctionModel;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.models.earth.displacement.OceanLoading;
 import org.orekit.models.earth.displacement.OceanLoadingCoefficientsBLQFactory;
@@ -1574,32 +1579,43 @@ public class KalmanOrbitDeterminationTest {
 
         final Map<String, StationData> stations       = new HashMap<String, StationData>();
 
-        final String[]  stationNames                  = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
-        final double[]  stationLatitudes              = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
-        final double[]  stationLongitudes             = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
-        final double[]  stationAltitudes              = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
-        final boolean[] stationPositionEstimated      = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
-        final double[]  stationRangeSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
-        final double[]  stationRangeBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
-        final double[]  stationRangeBiasMin           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);
-        final double[]  stationRangeBiasMax           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MAX);
-        final boolean[] stationRangeBiasEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_BIAS_ESTIMATED);
-        final double[]  stationRangeRateSigma         = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
-        final double[]  stationRangeRateBias          = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
-        final double[]  stationRangeRateBiasMin       = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MIN);
-        final double[]  stationRangeRateBiasMax       = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MAX);
-        final boolean[] stationRangeRateBiasEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
-        final double[]  stationAzimuthSigma           = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
-        final double[]  stationAzimuthBias            = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
-        final double[]  stationAzimuthBiasMin         = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MIN);
-        final double[]  stationAzimuthBiasMax         = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MAX);
-        final double[]  stationElevationSigma         = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
-        final double[]  stationElevationBias          = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
-        final double[]  stationElevationBiasMin       = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MIN);
-        final double[]  stationElevationBiasMax       = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
-        final boolean[] stationAzElBiasesEstimated    = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
-        final boolean[] stationElevationRefraction    = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
-        final boolean[] stationRangeTropospheric      = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
+        final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
+        final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
+        final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
+        final double[]  stationAltitudes                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
+        final boolean[] stationPositionEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
+        final double[]  stationRangeSigma                 = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
+        final double[]  stationRangeBias                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
+        final double[]  stationRangeBiasMin               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);
+        final double[]  stationRangeBiasMax               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MAX);
+        final boolean[] stationRangeBiasEstimated         = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_BIAS_ESTIMATED);
+        final double[]  stationRangeRateSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
+        final double[]  stationRangeRateBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
+        final double[]  stationRangeRateBiasMin           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MIN);
+        final double[]  stationRangeRateBiasMax           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MAX);
+        final boolean[] stationRangeRateBiasEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
+        final double[]  stationAzimuthSigma               = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
+        final double[]  stationAzimuthBias                = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
+        final double[]  stationAzimuthBiasMin             = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MIN);
+        final double[]  stationAzimuthBiasMax             = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MAX);
+        final double[]  stationElevationSigma             = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
+        final double[]  stationElevationBias              = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
+        final double[]  stationElevationBiasMin           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MIN);
+        final double[]  stationElevationBiasMax           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
+        final boolean[] stationAzElBiasesEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
+        final boolean[] stationElevationRefraction        = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
+        final boolean[] stationTroposphericModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
+        final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
+        final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
+        final double[]  stationHydrostaticDelay           = parser.getDoubleArray(ParameterKey.GROUND_STATION_HYDROSTATIC_DELAY_VALUE);
+        final double[]  stationWetDelay                   = parser.getDoubleArray(ParameterKey.GROUND_STATION_WET_DELAY_VALUE);
+        final double[]  stationSlopeHydrostaticDelay      = parser.getDoubleArray(ParameterKey.GROUND_STATION_SLOPE_HYDROSTATIC_DELAY_VALUE);
+        final double[]  stationSlopeWetDelay              = parser.getDoubleArray(ParameterKey.GROUND_STATION_SLOPE_WET_DELAY_VALUE);
+        final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
+        final boolean[] stationHydroDelayEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_HYDROSTATIC_DELAY);
+        final boolean[] stationWetDelayEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_WET_DELAY);
+        final boolean[] stationSlopeHydroDelayEstimated   = parser.getBooleanArray(ParameterKey.GROUND_STATION_SLOPE_HYDROSTATIC_DELAY);
+        final boolean[] stationSlopeWetDelayEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_SLOPE_WET_DELAY);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
         final TidalDisplacement tidalDisplacement;
@@ -1762,7 +1778,35 @@ public class KalmanOrbitDeterminationTest {
             final RangeTroposphericDelayModifier rangeTroposphericCorrection;
             if (stationRangeTropospheric[i]) {
 
-                final SaastamoinenModel troposphericModel = SaastamoinenModel.getStandardModel();
+                MappingFunction mappingModel = null;
+                if (stationGlobalMappingFunction[i]) {
+                    mappingModel = new GlobalMappingFunctionModel(stationLatitudes[i],
+                                                                  stationLongitudes[i]);
+                } else if (stationNiellMappingFunction[i]) {
+                    mappingModel = new NiellMappingFunctionModel(stationLatitudes[i]);
+                }
+
+                final DiscreteTroposphericModel troposphericModel;
+                if (stationTroposphericModelEstimated[i]) {
+                    troposphericModel = new EstimatedTroposphericModel(mappingModel,
+                                                                       stationHydrostaticDelay[i],
+                                                                       stationSlopeHydrostaticDelay[i],
+                                                                       stationWetDelay[i],
+                                                                       stationSlopeWetDelay[i]);
+
+                    for (final ParameterDriver driver : troposphericModel.getParametersDrivers()) {
+                        final String stationPrefix = stationNames[i].substring(0, 4);
+                        driver.setName(stationPrefix + "/" + driver.getName());
+                    }
+
+                    troposphericModel.getParametersDrivers().get(0).setSelected(stationHydroDelayEstimated[i]);
+                    troposphericModel.getParametersDrivers().get(1).setSelected(stationSlopeHydroDelayEstimated[i]);
+                    troposphericModel.getParametersDrivers().get(2).setSelected(stationWetDelayEstimated[i]);
+                    troposphericModel.getParametersDrivers().get(3).setSelected(stationSlopeWetDelayEstimated[i]);
+
+                } else {
+                    troposphericModel = SaastamoinenModel.getStandardModel();
+                }
 
                 rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);
             } else {
@@ -2822,6 +2866,21 @@ public class KalmanOrbitDeterminationTest {
         GROUND_STATION_LONGITUDE,
         GROUND_STATION_ALTITUDE,
         GROUND_STATION_POSITION_ESTIMATED,
+        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA1,
+        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA3,
+        GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED,
+        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA1_ESTIMATED,
+        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA3_ESTIMATED,
+        GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
+        GROUND_STATION_NIELL_MAPPING_FUNCTION,
+        GROUND_STATION_HYDROSTATIC_DELAY_VALUE,
+        GROUND_STATION_WET_DELAY_VALUE,
+        GROUND_STATION_SLOPE_HYDROSTATIC_DELAY_VALUE,
+        GROUND_STATION_SLOPE_WET_DELAY_VALUE,
+        GROUND_STATION_HYDROSTATIC_DELAY,
+        GROUND_STATION_WET_DELAY,
+        GROUND_STATION_SLOPE_HYDROSTATIC_DELAY,
+        GROUND_STATION_SLOPE_WET_DELAY,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
         GROUND_STATION_RANGE_BIAS_MIN,

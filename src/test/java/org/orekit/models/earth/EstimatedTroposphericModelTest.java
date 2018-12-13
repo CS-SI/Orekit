@@ -34,7 +34,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -45,6 +44,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -201,7 +201,7 @@ public class EstimatedTroposphericModelTest {
 
     @Test
     public void testZHDParameterDerivative() {
-        doTestParametersDerivatives(EstimatedTroposphericModel.HYDROSTATIC_ZENITH_DELAY, 2.3e-16);
+        doTestParametersDerivatives(EstimatedTroposphericModel.HYDROSTATIC_ZENITH_DELAY, 4.1e-15);
     }
 
     @Test
@@ -225,7 +225,7 @@ public class EstimatedTroposphericModelTest {
         
         // Tropospheric model
         final MappingFunction gmf = new GlobalMappingFunctionModel(latitude, longitude);
-        final DiscreteTroposphericModel model = new EstimatedTroposphericModel(gmf, 2.0966, 0.2140);
+        final DiscreteTroposphericModel model = new EstimatedTroposphericModel(gmf, 2.0966, 0.0, 0.2140, 0.0);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {
@@ -265,9 +265,7 @@ public class EstimatedTroposphericModelTest {
 
         // Initial satellite elevation
         final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
-        final FieldTransform<DerivativeStructure> t = dsState.getFrame().getTransformTo(baseFrame, dsDate);
-        final FieldVector3D<DerivativeStructure> extPointTopo = t.transformPosition(position);
-        final DerivativeStructure dsElevation = extPointTopo.getDelta();
+        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
 
         // Set drivers reference date
         for (final ParameterDriver driver : model.getParametersDrivers()) {
@@ -291,6 +289,150 @@ public class EstimatedTroposphericModelTest {
 
         // Field -> non-field
         final SpacecraftState state = dsState.toSpacecraftState();
+        final double elevation = dsElevation.getReal();
+
+        // Finite differences for reference values
+        final double[][] refDeriv = new double[1][1];
+        ParameterDriversList bound = new ParameterDriversList();
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            if (driver.getName().equals(parameterName)) {
+                driver.setSelected(true);
+                bound.add(driver);
+            } else {
+                driver.setSelected(false);
+            }
+        }
+        ParameterDriver selected = bound.getDrivers().get(0);
+        double p0 = selected.getReferenceValue();
+        double h  = selected.getScale();
+
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final PositionAngle angleType = PositionAngle.MEAN;
+
+        selected.setValue(p0 - 4 * h);
+        double  delayM4 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        
+        selected.setValue(p0 - 3 * h);
+        double  delayM3 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+        
+        selected.setValue(p0 - 2 * h);
+        double  delayM2 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+
+        selected.setValue(p0 - 1 * h);
+        double  delayM1 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+
+        selected.setValue(p0 + 1 * h);
+        double  delayP1 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+
+        selected.setValue(p0 + 2 * h);
+        double  delayP2 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+
+        selected.setValue(p0 + 3 * h);
+        double  delayP3 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+
+        selected.setValue(p0 + 4 * h);
+        double  delayP4 = model.pathDelay(elevation, height, model.getParameters(), state.getDate());
+            
+        fillJacobianColumn(refDeriv, 0, orbitType, angleType, h,
+                           delayM4, delayM3, delayM2, delayM1,
+                           delayP1, delayP2, delayP3, delayP4);
+
+        Assert.assertEquals(compDeriv[7], refDeriv[0][0], tolerance);
+
+    }
+
+    @Test
+    public void testSlopeZHDParameterDerivative() {
+        doTestSlopeParametersDerivatives(EstimatedTroposphericModel.SLOPE_HYDROSTATIC_ZENITH_DELAY, 7.0e-10);
+    }
+
+    @Test
+    public void testSlopeZWDParameterDerivative() {
+        doTestSlopeParametersDerivatives(EstimatedTroposphericModel.SLOPE_WET_ZENITH_DELAY, 7.0e-10);
+    }
+
+    private void doTestSlopeParametersDerivatives(String parameterName, double tolerance) {
+
+        // Geodetic point
+        final double latitude     = FastMath.toRadians(45.0);
+        final double longitude    = FastMath.toRadians(45.0);
+        final double height       = 0.0;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
+        // Body: earth
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        // Topocentric frame
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+        
+        // Tropospheric model
+        final MappingFunction gmf = new GlobalMappingFunctionModel(latitude, longitude);
+        final DiscreteTroposphericModel model = new EstimatedTroposphericModel(gmf, 2.0966, -2.0e-5, 0.2140, -1.0e-5);
+
+        // Set Parameter Driver
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setValue(driver.getReferenceValue());
+            driver.setSelected(driver.getName().equals(parameterName));
+        }
+
+        // Count the required number of parameters
+        int nbParams = 0;
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            if (driver.isSelected()) {
+                ++nbParams;
+            }
+        }
+
+        // Derivative Structure
+        final DSFactory factory = new DSFactory(6 + nbParams, 1);
+        final DerivativeStructure a0       = factory.variable(0, 24464560.0);
+        final DerivativeStructure e0       = factory.variable(1, 0.05);
+        final DerivativeStructure i0       = factory.variable(2, 0.122138);
+        final DerivativeStructure pa0      = factory.variable(3, 3.10686);
+        final DerivativeStructure raan0    = factory.variable(4, 1.00681);
+        final DerivativeStructure anomaly0 = factory.variable(5, 0.048363);
+        final Field<DerivativeStructure> field = a0.getField();
+        final DerivativeStructure zero = field.getZero();
+
+        // Field Date
+        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, 2018, 11, 19, 18, 0, 0.0,
+                                                                                      TimeScalesFactory.getUTC());
+        // Field Orbit
+        final Frame frame = FramesFactory.getEME2000();
+        final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
+                                                                                  PositionAngle.MEAN, frame,
+                                                                                  dsDate, 3.9860047e14);
+
+        // Propagation
+        final FieldKeplerianPropagator<DerivativeStructure> propagator = new FieldKeplerianPropagator<>(dsOrbit);
+        final FieldSpacecraftState<DerivativeStructure> stateAfterProp = propagator.propagate(dsDate.shiftedBy(zero.add(60.0)));
+
+        // Set drivers reference date
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setReferenceDate(dsDate.toAbsoluteDate());
+        }
+
+        // Satellite elevation
+        final FieldVector3D<DerivativeStructure> position = stateAfterProp.getPVCoordinates().getPosition();
+        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, stateAfterProp.getDate());
+
+        // Add parameter as a variable
+        final List<ParameterDriver> drivers = model.getParametersDrivers();
+        final DerivativeStructure[] parameters = new DerivativeStructure[drivers.size()];
+        int index = 6;
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).isSelected() ?
+                            factory.variable(index++, drivers.get(i).getValue()) :
+                            factory.constant(drivers.get(i).getValue());
+        }
+
+        // Compute delay state derivatives
+        final DerivativeStructure delay = model.pathDelay(dsElevation, zero, parameters, stateAfterProp.getDate());
+
+        final double[] compDeriv = delay.getAllDerivatives(); 
+
+        // Field -> non-field
+        final SpacecraftState state = stateAfterProp.toSpacecraftState();
         final double elevation = dsElevation.getReal();
 
         // Finite differences for reference values
@@ -402,7 +544,7 @@ public class EstimatedTroposphericModelTest {
         final GroundStation station = new GroundStation(baseFrame);
         
         // Tropospheric model
-        final DiscreteTroposphericModel model = new EstimatedTroposphericModel(func, 2.0966, 0.2140);
+        final DiscreteTroposphericModel model = new EstimatedTroposphericModel(func, 2.0966, 0.0, 0.2140, 0.0);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -427,9 +569,7 @@ public class EstimatedTroposphericModelTest {
 
         // Initial satellite elevation
         final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
-        final FieldTransform<DerivativeStructure> t = dsState.getFrame().getTransformTo(baseFrame, dsDate);
-        final FieldVector3D<DerivativeStructure> extPointTopo = t.transformPosition(position);
-        final DerivativeStructure dsElevation = extPointTopo.getDelta();
+        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
 
         // Set drivers reference date
         for (final ParameterDriver driver : model.getParametersDrivers()) {
