@@ -29,10 +29,10 @@ public class OrekitInternalErrorTest {
         OrekitInternalError e = new OrekitInternalError(null);
         Assert.assertEquals(OrekitMessages.INTERNAL_ERROR, e.getSpecifier());
         Assert.assertEquals(1, e.getParts().length);
-        Assert.assertEquals("orekit-developers@orekit.org", e.getParts()[0]);
-        Assert.assertTrue(e.getMessage().contains("orekit-developers@orekit.org"));
+        Assert.assertEquals("https://gitlab.orekit.org/orekit/orekit/issues", e.getParts()[0]);
+        Assert.assertTrue(e.getMessage().contains("https://gitlab.orekit.org/orekit/orekit/issues"));
         Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("erreur interne, contactez la maintenance à orekit-developers@orekit.org",
+        Assert.assertEquals("erreur interne, merci de signaler le problème en ouvrant une fiche d'anomalie sur https://gitlab.orekit.org/orekit/orekit/issues",
                             e.getMessage(Locale.FRENCH));
     }
 
