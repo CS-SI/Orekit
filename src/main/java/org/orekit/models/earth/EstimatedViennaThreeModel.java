@@ -89,75 +89,71 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
     private final double longitude;
 
     /** Driver for hydrostatic tropospheric delay parameter. */
-    private final ParameterDriver initDateDHZParameterDriver;
+    private final ParameterDriver startDHZParameterDriver;
 
     /** Driver for hydrostatic tropospheric delay parameter. */
-    private final ParameterDriver endDateDHZParameterDriver;
+    private final ParameterDriver endDHZParameterDriver;
 
     /** Driver for wet tropospheric delay parameter. */
-    private final ParameterDriver initDateDWZParameterDriver;
+    private final ParameterDriver startDWZParameterDriver;
 
     /** Driver for wet tropospheric delay parameter. */
-    private final ParameterDriver endDateDWZParameterDriver;
+    private final ParameterDriver endDWZParameterDriver;
 
     /** Driver for hydrostatic coefficient a<sub>h</sub>. */
-    private final ParameterDriver initDateAHParameterDriver;
+    private final ParameterDriver startAHParameterDriver;
 
     /** Driver for hydrostatic coefficient a<sub>h</sub>. */
-    private final ParameterDriver endDateAHParameterDriver;
+    private final ParameterDriver endAHParameterDriver;
 
     /** Driver for wet coefficient a<sub>w</sub>. */
-    private final ParameterDriver initDateAWParameterDriver;
+    private final ParameterDriver startAWParameterDriver;
 
     /** Driver for wet coefficient a<sub>w</sub>. */
-    private final ParameterDriver enDateAWParameterDriver;
+    private final ParameterDriver endAWParameterDriver;
 
 
     /** Build a new instance.
-     * <p>
-     * By definition, init date and end date parameters have the same name.
-     * It is recommended to change the name of the parameters by adding a prefix with the reference date.
-     * </p>
-     * @param hydroDelayInitDate initial value for the hydrostatic zenith delay (first date)
-     * @param hydroDelayEndDate initial value for the hydrostatic zenith delay (end date)
-     * @param wetDelayInitDate initial value for wet zenith delay (first date)
-     * @param wetDelayEndDate initial value for wet zenith delay (end date)
-     * @param ahInitDate initial value for coefficient a<sub>h</sub> (first date)
-     * @param ahEndDate initial value for coefficient a<sub>h</sub> (end date)
-     * @param awInitDate initial value for coefficient a<sub>w</sub> (first date)
-     * @param awEndDate initial value for coefficient a<sub>w</sub> (end date)
+     * @param startHydroDelay initial value for the start hydrostatic zenith delay
+     * @param endHydroDelay initial value for the end hydrostatic zenith delay
+     * @param startWetDelay initial value for the start wet zenith delay
+     * @param endWetDelay initial value for the end wet zenith delay
+     * @param startAH initial value for the start coefficient a<sub>h</sub>
+     * @param endAH initial value for the end coefficient a<sub>h</sub>
+     * @param startAW initial value for the start coefficient a<sub>w</sub>
+     * @param endAW initial value for the end coefficient a<sub>w</sub>
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
      */
-    public EstimatedViennaThreeModel(final double hydroDelayInitDate, final double hydroDelayEndDate,
-                                     final double wetDelayInitDate, final double wetDelayEndDate,
-                                     final double ahInitDate, final double ahEndDate,
-                                     final double awInitDate, final double awEndDate,
+    public EstimatedViennaThreeModel(final double startHydroDelay, final double endHydroDelay,
+                                     final double startWetDelay, final double endWetDelay,
+                                     final double startAH, final double endAH,
+                                     final double startAW, final double endAW,
                                      final double latitude, final double longitude) {
 
-        initDateDHZParameterDriver = new ParameterDriver(EstimatedViennaThreeModel.START_HYDROSTATIC_ZENITH_DELAY,
-                                                         hydroDelayInitDate, FastMath.scalb(1.0, -2), 0.0, 10.0);
+        startDHZParameterDriver = new ParameterDriver(EstimatedViennaThreeModel.START_HYDROSTATIC_ZENITH_DELAY,
+                                                      startHydroDelay, FastMath.scalb(1.0, -2), 0.0, 10.0);
 
-        endDateDHZParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.END_HYDROSTATIC_ZENITH_DELAY,
-                                                         hydroDelayEndDate, FastMath.scalb(1.0, -2), 0.0, 10.0);
+        endDHZParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.END_HYDROSTATIC_ZENITH_DELAY,
+                                                      endHydroDelay, FastMath.scalb(1.0, -2), 0.0, 10.0);
 
-        initDateDWZParameterDriver = new ParameterDriver(EstimatedViennaThreeModel.START_WET_ZENITH_DELAY,
-                                                         wetDelayInitDate, FastMath.scalb(1.0, -3), 0.0, 1.0);
+        startDWZParameterDriver = new ParameterDriver(EstimatedViennaThreeModel.START_WET_ZENITH_DELAY,
+                                                      startWetDelay, FastMath.scalb(1.0, -5), 0.0, 1.0);
 
-        endDateDWZParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.END_WET_ZENITH_DELAY,
-                                                         wetDelayEndDate, FastMath.scalb(1.0, -3), 0.0, 1.0);
+        endDWZParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.END_WET_ZENITH_DELAY,
+                                                      endWetDelay, FastMath.scalb(1.0, -5), 0.0, 1.0);
 
-        initDateAHParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.START_AH_COEFFICIENT,
-                                                         ahInitDate, FastMath.scalb(1.0, -12), 0.0, 0.1);
+        startAHParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.START_AH_COEFFICIENT,
+                                                      startAH, FastMath.scalb(1.0, -12), 0.0, 0.1);
 
-        endDateAHParameterDriver   = new ParameterDriver(EstimatedViennaThreeModel.END_AH_COEFFICIENT,
-                                                         ahEndDate, FastMath.scalb(1.0, -12), 0.0, 0.1);
+        endAHParameterDriver   = new ParameterDriver(EstimatedViennaThreeModel.END_AH_COEFFICIENT,
+                                                      endAH, FastMath.scalb(1.0, -12), 0.0, 0.1);
 
-        initDateAWParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.START_AW_COEFFICIENT,
-                                                         awInitDate, FastMath.scalb(1.0, -15), 0.0, 0.01);
+        startAWParameterDriver  = new ParameterDriver(EstimatedViennaThreeModel.START_AW_COEFFICIENT,
+                                                      startAW, FastMath.scalb(1.0, -15), 0.0, 0.01);
 
-        enDateAWParameterDriver    = new ParameterDriver(EstimatedViennaThreeModel.END_AW_COEFFICIENT,
-                                                         awEndDate, FastMath.scalb(1.0, -15), 0.0, 0.01);
+        endAWParameterDriver    = new ParameterDriver(EstimatedViennaThreeModel.END_AW_COEFFICIENT,
+                                                      endAW, FastMath.scalb(1.0, -15), 0.0, 0.01);
 
         this.latitude      = latitude;
         this.longitude     = longitude;
@@ -241,8 +237,8 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
 
         // ah and aw coefficients
         // Time intervals
-        final double dt1 = endDateAHParameterDriver.getReferenceDate().durationFrom(date);
-        final double dt0 = date.durationFrom(initDateAHParameterDriver.getReferenceDate());
+        final double dt1 = endAHParameterDriver.getReferenceDate().durationFrom(date);
+        final double dt0 = date.durationFrom(startAHParameterDriver.getReferenceDate());
         final double dt  = dt1 + dt0;
 
         // Zenith delay
@@ -348,8 +344,8 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
 
         // ah and aw coefficients
         // Time intervals
-        final T dt1 = date.durationFrom(endDateAHParameterDriver.getReferenceDate()).negate();
-        final T dt0 = date.durationFrom(initDateAHParameterDriver.getReferenceDate());
+        final T dt1 = date.durationFrom(endAHParameterDriver.getReferenceDate()).negate();
+        final T dt0 = date.durationFrom(startAHParameterDriver.getReferenceDate());
         final T dt  = dt1.add(dt0);
 
         final T ah;
@@ -400,8 +396,8 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
     @Override
     public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
         // Time intervals
-        final double dt1 = endDateDHZParameterDriver.getReferenceDate().durationFrom(date);
-        final double dt0 = date.durationFrom(initDateDHZParameterDriver.getReferenceDate());
+        final double dt1 = endDHZParameterDriver.getReferenceDate().durationFrom(date);
+        final double dt0 = date.durationFrom(startDHZParameterDriver.getReferenceDate());
         final double dt  = dt1 + dt0;
 
         // Zenith delay
@@ -428,8 +424,8 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
         final Field<T> field = date.getField();
 
         // Time intervals
-        final T dt1 = date.durationFrom(endDateDHZParameterDriver.getReferenceDate()).negate();
-        final T dt0 = date.durationFrom(initDateDHZParameterDriver.getReferenceDate());
+        final T dt1 = date.durationFrom(endDHZParameterDriver.getReferenceDate()).negate();
+        final T dt0 = date.durationFrom(startDHZParameterDriver.getReferenceDate());
         final T dt  = dt1.add(dt0);
 
         // Zenith delay
@@ -452,14 +448,14 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         final List<ParameterDriver> list = new ArrayList<>(8);
-        list.add(0, initDateDHZParameterDriver);
-        list.add(1, endDateDHZParameterDriver);
-        list.add(2, initDateDWZParameterDriver);
-        list.add(3, endDateDWZParameterDriver);
-        list.add(4, initDateAHParameterDriver);
-        list.add(5, endDateAHParameterDriver);
-        list.add(6, initDateAWParameterDriver);
-        list.add(7, enDateAWParameterDriver);
+        list.add(0, startDHZParameterDriver);
+        list.add(1, endDHZParameterDriver);
+        list.add(2, startDWZParameterDriver);
+        list.add(3, endDWZParameterDriver);
+        list.add(4, startAHParameterDriver);
+        list.add(5, endAHParameterDriver);
+        list.add(6, startAWParameterDriver);
+        list.add(7, endAWParameterDriver);
         return Collections.unmodifiableList(list);
     }
 
@@ -474,7 +470,7 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
         final double sinE = FastMath.sin(elevation);
         // Numerator
         final double numMP = 1 + a / (1 + b / (1 + c));
-        // Denominateur
+        // Denominator
         final double denMP = sinE + a / (sinE + b / (sinE + c));
 
         final double felevation = numMP / denMP;
@@ -494,7 +490,7 @@ public class EstimatedViennaThreeModel implements DiscreteTroposphericModel {
         final T sinE = FastMath.sin(elevation);
         // Numerator
         final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
-        // Denominateur
+        // Denominator
         final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
 
         final T felevation = numMP.divide(denMP);

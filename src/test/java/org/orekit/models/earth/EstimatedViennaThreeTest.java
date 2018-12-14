@@ -66,23 +66,43 @@ public class EstimatedViennaThreeTest {
     }
 
     @Test
-    public void testZHDParameterDerivative() {
-        doTestParametersDerivatives(EstimatedViennaThreeModel.HYDROSTATIC_ZENITH_DELAY, 2.3e-16);
+    public void testZHDStartParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaThreeModel.START_HYDROSTATIC_ZENITH_DELAY, 6.7e-16);
     }
 
     @Test
-    public void testZWDParameterDerivative() {
-        doTestParametersDerivatives(EstimatedViennaThreeModel.WET_ZENITH_DELAY, 5.4e-15);
+    public void testZHDEndParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaThreeModel.END_HYDROSTATIC_ZENITH_DELAY, 1.7e-16);
     }
 
     @Test
-    public void testAHParameterDerivative() {
-        doTestParametersDerivatives(EstimatedViennaThreeModel.AH_COEFFICIENT, 3.7e-13);
+    public void testZWDStartParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaThreeModel.START_WET_ZENITH_DELAY, 2.3e-16);
     }
 
     @Test
-    public void testAWParameterDerivative() {
-        doTestParametersDerivatives(EstimatedViennaThreeModel.AW_COEFFICIENT, 2.3e-12);
+    public void testZWDEndParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaThreeModel.END_WET_ZENITH_DELAY, 5.6e-17);
+    }
+
+    @Test
+    public void testAHStartParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaThreeModel.START_AH_COEFFICIENT, 1.3e-14);
+    }
+
+    @Test
+    public void testAHEndParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaThreeModel.END_AH_COEFFICIENT, 1.6e-12);
+    }
+
+    @Test
+    public void testAWStartParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaThreeModel.START_AW_COEFFICIENT, 9.7e-12);
+    }
+
+    @Test
+    public void testAWEndParameterDerivative() {
+        doTestParametersDerivatives(EstimatedViennaThreeModel.END_AW_COEFFICIENT, 8.5e-12);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance) {
@@ -100,7 +120,9 @@ public class EstimatedViennaThreeTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
         
         // Tropospheric model
-        final DiscreteTroposphericModel model = new EstimatedViennaThreeModel(2.0966, 0.2140, 0.00127683, 0.00060955, latitude, longitude);
+        final DiscreteTroposphericModel model = new EstimatedViennaThreeModel(2.0966, 2.0, 0.2140, 0.2,
+                                                                              0.00127683, 0.001, 0.00060955, 0.0006,
+                                                                              latitude, longitude);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {
@@ -135,14 +157,19 @@ public class EstimatedViennaThreeTest {
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
                                                                                   PositionAngle.MEAN, frame,
                                                                                   dsDate, 3.9860047e14);
- 
-        // Set drivers reference date
-        for (final ParameterDriver driver : model.getParametersDrivers()) {
-            driver.setReferenceDate(dsDate.toAbsoluteDate());
-        }
 
         // Field State
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
+
+        // Change drivers reference date
+        model.getParametersDrivers().get(0).setReferenceDate(dsDate.toAbsoluteDate().shiftedBy(-89.0));
+        model.getParametersDrivers().get(1).setReferenceDate(dsDate.toAbsoluteDate().shiftedBy(+438.0));
+        model.getParametersDrivers().get(2).setReferenceDate(dsDate.toAbsoluteDate().shiftedBy(-89.0));
+        model.getParametersDrivers().get(3).setReferenceDate(dsDate.toAbsoluteDate().shiftedBy(+438.0));
+        model.getParametersDrivers().get(4).setReferenceDate(dsDate.toAbsoluteDate().shiftedBy(-89.0));
+        model.getParametersDrivers().get(5).setReferenceDate(dsDate.toAbsoluteDate().shiftedBy(+438.0));
+        model.getParametersDrivers().get(6).setReferenceDate(dsDate.toAbsoluteDate().shiftedBy(-89.0));
+        model.getParametersDrivers().get(7).setReferenceDate(dsDate.toAbsoluteDate().shiftedBy(+438.0));
 
         // Initial satellite elevation
         final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
@@ -250,7 +277,8 @@ public class EstimatedViennaThreeTest {
         final GroundStation station = new GroundStation(baseFrame);
         
         // Tropospheric model
-        final DiscreteTroposphericModel model = new EstimatedViennaThreeModel(2.0966, 0.2140, 0.00127683, 0.00060955,
+        final DiscreteTroposphericModel model = new EstimatedViennaThreeModel(2.0966, 2.0, 0.2140, 0.2,
+                                                                              0.00127683, 0.001, 0.00060955, 0.0006,
                                                                               latitude, longitude);
 
         // Derivative Structure
