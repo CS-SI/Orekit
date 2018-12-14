@@ -258,7 +258,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
         // Numerator
         final double numMP = 1 + a1 / (1 + a2 / (1 + a3));
-        // Denominateur
+        // Denominator
         final double denMP = sinE + a1 / (sinE + a2 / (sinE + a3));
 
         final double factor = numMP / denMP;
@@ -292,7 +292,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
         // Numerator
         final T numMP = a1.divide(a2.divide(a3.add(1.0)).add(1.0)).add(1.0);
-        // Denominateur
+        // Denominator
         final T denMP = a1.divide(a2.divide(a3.add(sinE)).add(sinE)).add(sinE);
 
         final T factor = numMP.divide(denMP);

@@ -222,7 +222,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         final double sinE = FastMath.sin(elevation);
         // Numerator
         final double numMP = 1 + a / (1 + b / (1 + c));
-        // Denominateur
+        // Denominator
         final double denMP = sinE + a / (sinE + b / (sinE + c));
 
         final double felevation = numMP / denMP;
@@ -242,7 +242,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         final T sinE = FastMath.sin(elevation);
         // Numerator
         final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
-        // Denominateur
+        // Denominator
         final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
 
         final T felevation = numMP.divide(denMP);
