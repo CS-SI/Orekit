@@ -1,5 +1,5 @@
-# internal error, contact maintenance at {0}
-INTERNAL_ERROR = errore interno, contattare l''assistenza a {0}
+# internal error, please notify development team by creating an issue at {0}
+INTERNAL_ERROR = <MISSING TRANSLATION>
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = L''altitudine ({0} m) è inferiore alla soglia ammessa di {1} m
