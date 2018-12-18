@@ -27,7 +27,7 @@ be easily adapted if you are using one of the numerous Git graphical
 user interface available or if Git is supported by you integrated
 development environment:
 
-    git clone https://gitlab.orekit.org/orekit/orekit.git
+    git clone -b develop https://gitlab.orekit.org/orekit/orekit.git
 
 ## Released Library versions
 
