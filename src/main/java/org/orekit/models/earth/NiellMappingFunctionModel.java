@@ -162,9 +162,10 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final double cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
-        final double ah = ahAverageFunction.value(latitude) - ahAmplitudeFunction.value(latitude) * cosCoef;
-        final double bh = bhAverageFunction.value(latitude) - bhAmplitudeFunction.value(latitude) * cosCoef;
-        final double ch = chAverageFunction.value(latitude) - chAmplitudeFunction.value(latitude) * cosCoef;
+        final double absLatidude = FastMath.abs(latitude);
+        final double ah = ahAverageFunction.value(absLatidude) - ahAmplitudeFunction.value(absLatidude) * cosCoef;
+        final double bh = bhAverageFunction.value(absLatidude) - bhAmplitudeFunction.value(absLatidude) * cosCoef;
+        final double ch = chAverageFunction.value(absLatidude) - chAmplitudeFunction.value(absLatidude) * cosCoef;
 
         final double[] function = new double[2];
 
@@ -172,7 +173,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
         function[0] = computeFunction(ah, bh, ch, elevation);
 
         // Wet mapping factor
-        function[1] = computeFunction(awFunction.value(latitude), bwFunction.value(latitude), cwFunction.value(latitude), elevation);
+        function[1] = computeFunction(awFunction.value(absLatidude), bwFunction.value(absLatidude), cwFunction.value(absLatidude), elevation);
 
         // Apply height correction
         final double correction = computeHeightCorrection(elevation, height);
@@ -196,9 +197,10 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
-        final T ah = cosCoef.multiply(ahAmplitudeFunction.value(latitude)).negate().add(ahAverageFunction.value(latitude));
-        final T bh = cosCoef.multiply(bhAmplitudeFunction.value(latitude)).negate().add(bhAverageFunction.value(latitude));
-        final T ch = cosCoef.multiply(chAmplitudeFunction.value(latitude)).negate().add(chAverageFunction.value(latitude));
+        final double absLatidude = FastMath.abs(latitude);
+        final T ah = cosCoef.multiply(ahAmplitudeFunction.value(absLatidude)).negate().add(ahAverageFunction.value(absLatidude));
+        final T bh = cosCoef.multiply(bhAmplitudeFunction.value(absLatidude)).negate().add(bhAverageFunction.value(absLatidude));
+        final T ch = cosCoef.multiply(chAmplitudeFunction.value(absLatidude)).negate().add(chAverageFunction.value(absLatidude));
 
         final T[] function = MathArrays.buildArray(field, 2);
 
@@ -206,8 +208,8 @@ public class NiellMappingFunctionModel implements MappingFunction {
         function[0] = computeFunction(ah, bh, ch, elevation);
 
         // Wet mapping factor
-        function[1] = computeFunction(zero.add(awFunction.value(latitude)), zero.add(bwFunction.value(latitude)),
-                                      zero.add(cwFunction.value(latitude)), elevation);
+        function[1] = computeFunction(zero.add(awFunction.value(absLatidude)), zero.add(bwFunction.value(absLatidude)),
+                                      zero.add(cwFunction.value(absLatidude)), elevation);
 
         // Apply height correction
         final T correction = computeHeightCorrection(elevation, height, field);
