@@ -181,22 +181,22 @@ for download. Similar files can be custom made by users with updated data.
 Configuring data loading is explained in the configuration page. For a start,
 the simplest configuration is to download the
 [orekit-data-master.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)
-file from the forge, to unzip it anywhere you want, note the path of the
-`orekit-data-master` folder that will be created and add the following lines
-at the start of your program:
+file from the forge, to unzip it anywhere you want, rename the `orekit-data-master` folder that will be created
+into `orekit-data` and add the following lines at the start of your program:
 
-    File orekitData = new File("/path/to/the/folder/orekit-data-master");
+    File orekitData = new File("/path/to/the/folder/orekit-data");
     DataProvidersManager manager = DataProvidersManager.getInstance();
     manager.addProvider(new DirectoryCrawler(orekitData));
 
-This file contents is:
+This file contains the following data sets. Note that the data is updated only
+from time to time, so users must check by themselves they cover the time range
+needed for their computation.
 
-  * leap seconds data up to end 2017,
+  * leap seconds data,
 
-  * IERS Earth orientation parameters from 1973 to mid 2017
-    with predicted date to fall 2017 for some parameters (both IAU-1980 and IAU-2000),
+  * IERS Earth orientation parameters from 1973 (both IAU-1980 and IAU-2000),
 
-  * Marshall Solar Activity Future Estimation from 1999 to 2017,
+  * Marshall Solar Activity Future Estimation from 1999,
 
   * DE 430 planetary ephemerides from 1990 to 2069,
 

@@ -134,8 +134,7 @@ release branches or bugfix branches branches to it.
 
 For reading ease and consistency, the existing code style should be
 preserved for all new developments. The rules are common ones, inherited
-mainly from the Sun [Code Conventions for the Java
-Programming Language](http://java.sun.com/docs/codeconv/) guide style and
+mainly from the Sun Code Conventions for the Java Programming Language guide style and
 from the default [checkstyle](http://checkstyle.sourceforge.net/) tool
 configuration. A few of these rules are displayed below. The complete
 definition is given by the checkstyle configuration file in the project

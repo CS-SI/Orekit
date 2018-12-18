@@ -18,7 +18,7 @@
 
 In order to get the source for officially released versions, go to the
 [Release notes](https://gitlab.orekit.org/orekit/orekit/tags) in Orekit
-forge and select one of the orekit-x.y-src.zip files. The x.y part in the name
+forge and select one of the orekit-x.y-sources.zip files. The x.y part in the name
 specifies the version. If this is the first time you download the library and
 you have not yet set up your own data set with UTC-TAI history, JPL ephemerides,
 IERS Earth Orientation Parameters ... you may want to also download the
