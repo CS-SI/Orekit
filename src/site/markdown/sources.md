@@ -37,13 +37,13 @@ latest developments are in the develop branch. This is the one you want to retri
 if you need the latest feature before they are published in an official release.
 See [guidelines](./guidelines.html) for the branching workflow used in Orekit.
 
- * you can browse it using the [Repository](https://gitlab.orekit.org/orekit/orekit/tree/master)
+ * you can browse it using the [Repository](https://gitlab.orekit.org/orekit/orekit/tree/develop)
     tab in Orekit forge
 
  * you can clone it anonymously with the command:
 
-        git clone https://gitlab.orekit.org/orekit/orekit.git
+        git clone -b develop https://gitlab.orekit.org/orekit/orekit.git
 
  * if you are a committer, you can clone it using your ssh credentials with the command:
 
-        git clone git@gitlab.orekit.org:orekit/orekit.git
+        git clone -b develop git@gitlab.orekit.org:orekit/orekit.git
