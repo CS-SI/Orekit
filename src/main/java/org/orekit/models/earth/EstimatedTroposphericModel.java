@@ -48,6 +48,12 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public static final String START_HYDROSTATIC_ZENITH_DELAY = "start hydrostatic zenith delay";
 
     /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
+    public static final String HYDROSTATIC_ZENITH_DELAY = "hydrostatic zenith delay";
+
+    /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
+    public static final String WET_ZENITH_DELAY = "wet zenith delay";
+
+    /** Name of one of the parameters of this model: the hydrostatic zenith delay. */
     public static final String END_HYDROSTATIC_ZENITH_DELAY = "end hydrostatic zenith delay";
 
     /** Name of one of the parameters of this model: the wet zenith delay. */
@@ -87,17 +93,18 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
                                       final double startWetDelay,
                                       final double endWetDelay) {
 
-        startDHZParameterDriver = new ParameterDriver(EstimatedTroposphericModel.START_HYDROSTATIC_ZENITH_DELAY,
-                                                 startHydroDelay, FastMath.scalb(1.0, -2), 0.0, 10.0);
+        startDHZParameterDriver = new ParameterDriver(EstimatedTroposphericModel.HYDROSTATIC_ZENITH_DELAY,
+                                                 startHydroDelay, FastMath.scalb(1.0, 0), -10.0, 10.0);
+        //startDHZParameterDriver.addObserver((previous, driver) -> System.out.println(driver.getName() + ' ' + driver.getValue()));;
 
-        endDHZParameterDriver  = new ParameterDriver(EstimatedTroposphericModel.END_HYDROSTATIC_ZENITH_DELAY,
-                                                 endHydroDelay, FastMath.scalb(1.0, -2), 0.0, 10.0);
+        endDHZParameterDriver  = new ParameterDriver(EstimatedTroposphericModel.HYDROSTATIC_ZENITH_DELAY,
+                                                 endHydroDelay, FastMath.scalb(1.0, 0), -10.0, 10.0);
 
-        startDWZParameterDriver = new ParameterDriver(EstimatedTroposphericModel.START_WET_ZENITH_DELAY,
-                                                 startWetDelay, FastMath.scalb(1.0, -5), 0.0, 1.0);
+        startDWZParameterDriver = new ParameterDriver(EstimatedTroposphericModel.WET_ZENITH_DELAY,
+                                                 startWetDelay, FastMath.scalb(1.0, 0), -10.0, 10.0);
 
-        endDWZParameterDriver  = new ParameterDriver(EstimatedTroposphericModel.END_WET_ZENITH_DELAY,
-                                                 endWetDelay, FastMath.scalb(1.0, -5), 0.0, 1.0);
+        endDWZParameterDriver  = new ParameterDriver(EstimatedTroposphericModel.WET_ZENITH_DELAY,
+                                                 endWetDelay, FastMath.scalb(1.0, 0), -10.0, 10.0);
 
         this.model = model;
     }
@@ -144,8 +151,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     @Override
     public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
         // Time intervals
-        final double dt1 = endDHZParameterDriver.getReferenceDate().durationFrom(date);
-        final double dt0 = date.durationFrom(startDHZParameterDriver.getReferenceDate());
+        final double dt1 = endDWZParameterDriver.getReferenceDate().durationFrom(date);
+        final double dt0 = date.durationFrom(startDWZParameterDriver.getReferenceDate());
         final double dt  = dt1 + dt0;
 
         // Zenith delay
@@ -195,7 +202,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        final List<ParameterDriver> list = new ArrayList<ParameterDriver>(4);
+        final List<ParameterDriver> list = new ArrayList<ParameterDriver>();
         list.add(0, startDHZParameterDriver);
         list.add(1, endDHZParameterDriver);
         list.add(2, startDWZParameterDriver);
