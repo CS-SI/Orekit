@@ -158,11 +158,20 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor
-        final double coef    = 2 * FastMath.PI * ((dofyear - 28) / 365.25);
+        double t0 = 28;
+        if (latitude < 0) {
+            // southern hemisphere: t0 = 28 + an integer half of year
+            t0 += 183;
+        }
+        final double coef    = 2 * FastMath.PI * ((dofyear - t0) / 365.25);
         final double cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
-        final double absLatidude = FastMath.abs(latitude);
+        double absLatidude = FastMath.abs(latitude);
+        // there are no data in the model of latitudes lower than 15°
+        absLatidude = FastMath.max(FastMath.toRadians(15.0), absLatidude);
+        // there are no data in the model for latitudes greater than 75°
+        absLatidude = FastMath.min(FastMath.toRadians(75.0), absLatidude);
         final double ah = ahAverageFunction.value(absLatidude) - ahAmplitudeFunction.value(absLatidude) * cosCoef;
         final double bh = bhAverageFunction.value(absLatidude) - bhAmplitudeFunction.value(absLatidude) * cosCoef;
         final double ch = chAverageFunction.value(absLatidude) - chAmplitudeFunction.value(absLatidude) * cosCoef;
@@ -193,11 +202,20 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor
-        final T coef    = zero.add(2 * FastMath.PI * ((dofyear - 28) / 365.25));
+        double t0 = 28;
+        if (latitude < 0) {
+            // southern hemisphere: t0 = 28 + an integer half of year
+            t0 += 183;
+        }
+        final T coef    = zero.add(2 * FastMath.PI * ((dofyear - t0) / 365.25));
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
-        final double absLatidude = FastMath.abs(latitude);
+        double absLatidude = FastMath.abs(latitude);
+        // there are no data in the model of latitudes lower than 15°
+        absLatidude = FastMath.max(FastMath.toRadians(15.0), absLatidude);
+        // there are no data in the model for latitudes greater than 75°
+        absLatidude = FastMath.min(FastMath.toRadians(75.0), absLatidude);
         final T ah = cosCoef.multiply(ahAmplitudeFunction.value(absLatidude)).negate().add(ahAverageFunction.value(absLatidude));
         final T bh = cosCoef.multiply(bhAmplitudeFunction.value(absLatidude)).negate().add(bhAverageFunction.value(absLatidude));
         final T ch = cosCoef.multiply(chAmplitudeFunction.value(absLatidude)).negate().add(chAverageFunction.value(absLatidude));
@@ -269,13 +287,14 @@ public class NiellMappingFunctionModel implements MappingFunction {
      * @return the height correction, in m
      */
     private double computeHeightCorrection(final double elevation, final double height) {
+        final double fixedHeight = FastMath.max(0.0, height);
         final double sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
         final double function = computeFunction(2.53e-5, 5.49e-3, 1.14e-3, elevation);
         // Ref: Eq. 6
         final double dmdh = (1 / sinE) - function;
         // Ref: Eq. 7
-        final double correction = dmdh * (height / 1000.0);
+        final double correction = dmdh * (fixedHeight / 1000.0);
         return correction;
     }
 
@@ -289,13 +308,14 @@ public class NiellMappingFunctionModel implements MappingFunction {
      */
     private <T extends RealFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
         final T zero = field.getZero();
+        final T fixedHeight = FastMath.max(zero, height);
         final T sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
         final T function = computeFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
         // Ref: Eq. 6
         final T dmdh = sinE.reciprocal().subtract(function);
         // Ref: Eq. 7
-        final T correction = dmdh.multiply(height.divide(1000.0));
+        final T correction = dmdh.multiply(fixedHeight.divide(1000.0));
         return correction;
     }
 

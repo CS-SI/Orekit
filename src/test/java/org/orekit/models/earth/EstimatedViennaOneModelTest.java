@@ -67,7 +67,7 @@ public class EstimatedViennaOneModelTest {
 
     @Test
     public void testZHDStartParameterDerivative() {
-        doTestParametersDerivatives(EstimatedViennaOneModel.START_HYDROSTATIC_ZENITH_DELAY, 1.0e-16);
+        doTestParametersDerivatives(EstimatedViennaOneModel.START_HYDROSTATIC_ZENITH_DELAY, 1.0e-14);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class EstimatedViennaOneModelTest {
 
     @Test
     public void testAHStartParameterDerivative() {
-        doTestParametersDerivatives(EstimatedViennaOneModel.START_AH_COEFFICIENT, 7.7e-13);
+        doTestParametersDerivatives(EstimatedViennaOneModel.START_AH_COEFFICIENT, 3.0e-12);
     }
 
     @Test
@@ -373,7 +373,7 @@ public class EstimatedViennaOneModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], 1.8e-11);
+            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], 1.1e-9);
         }
     }
 

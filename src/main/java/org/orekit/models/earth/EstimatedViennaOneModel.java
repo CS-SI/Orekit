@@ -247,7 +247,12 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
         }
 
         // Compute hydrostatique coefficient c
-        final double coef = ((dofyear - 28) / 365) * 2 * FastMath.PI + psi;
+        double t0 = 28;
+        if (latitude < 0) {
+            // southern hemisphere: t0 = 28 + an integer half of year
+            t0 += 183;
+        }
+        final double coef = ((dofyear - t0) / 365) * 2 * FastMath.PI + psi;
         final double ch = c0h + ((FastMath.cos(coef) + 1) * (c11h / 2) + c10h) * (1 - FastMath.cos(latitude));
 
         // General constants | Wet part
@@ -315,7 +320,12 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
         }
 
         // Compute hydrostatique coefficient c
-        final T coef = psi.add(((dofyear - 28) / 365) * 2 * FastMath.PI);
+        double t0 = 28;
+        if (latitude < 0) {
+            // southern hemisphere: t0 = 28 + an integer half of year
+            t0 += 183;
+        }
+        final T coef = psi.add(((dofyear - t0) / 365) * 2 * FastMath.PI);
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(1 - FastMath.cos(latitude)).add(c0h);
 
         // General constants | Wet part
@@ -418,13 +428,14 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
      * @return the height correction, in m
      */
     private double computeHeightCorrection(final double elevation, final double height) {
+        final double fixedHeight = FastMath.max(0.0, height);
         final double sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
         final double function = computeFunction(2.53e-5, 5.49e-3, 1.14e-3, elevation);
         // Ref: Eq. 6
         final double dmdh = (1 / sinE) - function;
         // Ref: Eq. 7
-        final double correction = dmdh * (height / 1000);
+        final double correction = dmdh * (fixedHeight / 1000);
         return correction;
     }
 
@@ -444,13 +455,14 @@ public class EstimatedViennaOneModel implements DiscreteTroposphericModel {
      */
     private <T extends RealFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
         final T zero = field.getZero();
+        final T fixedHeight = FastMath.max(zero, height);
         final T sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
         final T function = computeFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
         // Ref: Eq. 6
         final T dmdh = sinE.reciprocal().subtract(function);
         // Ref: Eq. 7
-        final T correction = dmdh.multiply(height.divide(1000.0));
+        final T correction = dmdh.multiply(fixedHeight.divide(1000.0));
         return correction;
     }
 

@@ -265,7 +265,7 @@ public class FieldViennaOneModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDelay[i + 1], refDeriv[0][i], 1.2e-11);
+            Assert.assertEquals(compDelay[i + 1], refDeriv[0][i], 3.0e-11);
         }
     }
 
