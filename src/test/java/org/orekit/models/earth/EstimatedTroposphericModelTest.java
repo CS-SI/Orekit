@@ -54,7 +54,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class PreciseTroposphericModelTest {
+public class EstimatedTroposphericModelTest {
 
     @BeforeClass
     public static void setUpGlobal() {
@@ -70,7 +70,7 @@ public class PreciseTroposphericModelTest {
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         MappingFunction mapping = new NiellMappingFunctionModel(FastMath.toRadians(45.0));
-        DiscreteTroposphericModel model = new PreciseTroposphericModel(mapping, 2.0);
+        DiscreteTroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -86,7 +86,7 @@ public class PreciseTroposphericModelTest {
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
         MappingFunction mapping = new NiellMappingFunctionModel(FastMath.toRadians(45.0));
-        DiscreteTroposphericModel model = new PreciseTroposphericModel(mapping, 2.0);
+        DiscreteTroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
         final double path = model.pathDelay(FastMath.toRadians(elevation), height, model.getParameters(), date);
         Assert.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
@@ -125,7 +125,7 @@ public class PreciseTroposphericModelTest {
         final GroundStation station = new GroundStation(baseFrame);
         
         // Tropospheric model
-        final DiscreteTroposphericModel model = new PreciseTroposphericModel(func, 2.0);
+        final DiscreteTroposphericModel model = new EstimatedTroposphericModel(func, 2.0);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -225,7 +225,7 @@ public class PreciseTroposphericModelTest {
 
     @Test
     public void testDelayParameterDerivative() {
-        doTestParametersDerivatives(PreciseTroposphericModel.TOTAL_ZENITH_DELAY, 5.0e-15);
+        doTestParametersDerivatives(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY, 5.0e-15);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance) {
@@ -244,7 +244,7 @@ public class PreciseTroposphericModelTest {
         
         // Tropospheric model
         final MappingFunction gmf = new GlobalMappingFunctionModel(latitude, longitude);
-        final DiscreteTroposphericModel model = new PreciseTroposphericModel(gmf, 5.0);
+        final DiscreteTroposphericModel model = new EstimatedTroposphericModel(gmf, 5.0);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {

@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
-/** A precise tropospheric model. The tropospheric delay is computed according to the formula:
+/** An estimated tropospheric model. The tropospheric delay is computed according to the formula:
  * <pre>
  * δ = δ<sub>h</sub> * m<sub>h</sub> + (δ<sub>t</sub> - δ<sub>h</sub>) * m<sub>w</sub>
  * </pre>
@@ -48,7 +48,7 @@ import org.orekit.utils.ParameterDriver;
  * The tropospheric zenith delay δ<sub>h</sub> is computed empirically with a {@link SaastamoinenModel}
  * while the tropospheric total zenith delay δ<sub>t</sub> is estimated as a {@link ParameterDriver}
  */
-public class PreciseTroposphericModel implements DiscreteTroposphericModel {
+public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** Name of the parameter of this model: the total zenith delay. */
     public static final String TOTAL_ZENITH_DELAY = "total zenith delay";
@@ -74,10 +74,10 @@ public class PreciseTroposphericModel implements DiscreteTroposphericModel {
      * @param model mapping function model (NMF or GMF).
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
-    public PreciseTroposphericModel(final double t0, final double p0,
+    public EstimatedTroposphericModel(final double t0, final double p0,
                                     final MappingFunction model, final double totalDelay) {
 
-        totalZenithDelay          = new ParameterDriver(PreciseTroposphericModel.TOTAL_ZENITH_DELAY,
+        totalZenithDelay          = new ParameterDriver(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY,
                                                         totalDelay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
 
         this.t0    = t0;
@@ -93,7 +93,7 @@ public class PreciseTroposphericModel implements DiscreteTroposphericModel {
      * @param model mapping function model (NMF or GMF).l
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
-    public PreciseTroposphericModel(final MappingFunction model, final double totalDelay) {
+    public EstimatedTroposphericModel(final MappingFunction model, final double totalDelay) {
         this(273.15 + 18.0, 1013.25, model, totalDelay);
     }
 
