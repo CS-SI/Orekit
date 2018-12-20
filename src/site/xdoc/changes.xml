@@ -22,6 +22,9 @@
   <body>
     <release version="TBD" date="TBD" description="TBD">
       <action dev="evan" type="add" issue="507">
+        Add Field version of RecordAndContinue.
+      </action>
+      <action dev="evan" type="add" issue="507">
         Add Field version of LatitudeCrossingDetector.
       </action>
       <action dev="pascal" type="fix" issue="495">
