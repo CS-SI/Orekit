@@ -53,7 +53,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     private final double occultedRadius;
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
-    private boolean totalEclipse;
+    private final boolean totalEclipse;
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
