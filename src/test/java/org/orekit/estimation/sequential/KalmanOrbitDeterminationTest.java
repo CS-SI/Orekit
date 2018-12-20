@@ -1605,17 +1605,11 @@ public class KalmanOrbitDeterminationTest {
         final boolean[] stationAzElBiasesEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
         final boolean[] stationElevationRefraction        = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
         final boolean[] stationTroposphericModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
+        final double[]  stationTroposphericZenithDelay    = parser.getDoubleArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY);
+        final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
         final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
         final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
-        final double[]  stationHydrostaticDelay           = parser.getDoubleArray(ParameterKey.GROUND_STATION_HYDROSTATIC_DELAY_VALUE);
-        final double[]  stationWetDelay                   = parser.getDoubleArray(ParameterKey.GROUND_STATION_WET_DELAY_VALUE);
-        final double[]  stationSlopeHydrostaticDelay      = parser.getDoubleArray(ParameterKey.GROUND_STATION_SLOPE_HYDROSTATIC_DELAY_VALUE);
-        final double[]  stationSlopeWetDelay              = parser.getDoubleArray(ParameterKey.GROUND_STATION_SLOPE_WET_DELAY_VALUE);
         final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
-        final boolean[] stationHydroDelayEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_HYDROSTATIC_DELAY);
-        final boolean[] stationWetDelayEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_WET_DELAY);
-        final boolean[] stationSlopeHydroDelayEstimated   = parser.getBooleanArray(ParameterKey.GROUND_STATION_SLOPE_HYDROSTATIC_DELAY);
-        final boolean[] stationSlopeWetDelayEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_SLOPE_WET_DELAY);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
         final TidalDisplacement tidalDisplacement;
@@ -1787,23 +1781,11 @@ public class KalmanOrbitDeterminationTest {
                 }
 
                 final DiscreteTroposphericModel troposphericModel;
-                if (stationTroposphericModelEstimated[i]) {
-                    troposphericModel = new EstimatedTroposphericModel(mappingModel,
-                                                                       stationHydrostaticDelay[i],
-                                                                       stationSlopeHydrostaticDelay[i],
-                                                                       stationWetDelay[i],
-                                                                       stationSlopeWetDelay[i]);
-
-                    for (final ParameterDriver driver : troposphericModel.getParametersDrivers()) {
-                        final String stationPrefix = stationNames[i].substring(0, 4);
-                        driver.setName(stationPrefix + "/" + driver.getName());
-                    }
-
-                    troposphericModel.getParametersDrivers().get(0).setSelected(stationHydroDelayEstimated[i]);
-                    troposphericModel.getParametersDrivers().get(1).setSelected(stationSlopeHydroDelayEstimated[i]);
-                    troposphericModel.getParametersDrivers().get(2).setSelected(stationWetDelayEstimated[i]);
-                    troposphericModel.getParametersDrivers().get(3).setSelected(stationSlopeWetDelayEstimated[i]);
-
+                if (stationTroposphericModelEstimated[i] && mappingModel != null) {
+                    troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);
+                    ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
+                    totalDelay.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
                 } else {
                     troposphericModel = SaastamoinenModel.getStandardModel();
                 }
@@ -2866,21 +2848,11 @@ public class KalmanOrbitDeterminationTest {
         GROUND_STATION_LONGITUDE,
         GROUND_STATION_ALTITUDE,
         GROUND_STATION_POSITION_ESTIMATED,
-        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA1,
-        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA3,
         GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED,
-        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA1_ESTIMATED,
-        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA3_ESTIMATED,
         GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
         GROUND_STATION_NIELL_MAPPING_FUNCTION,
-        GROUND_STATION_HYDROSTATIC_DELAY_VALUE,
-        GROUND_STATION_WET_DELAY_VALUE,
-        GROUND_STATION_SLOPE_HYDROSTATIC_DELAY_VALUE,
-        GROUND_STATION_SLOPE_WET_DELAY_VALUE,
-        GROUND_STATION_HYDROSTATIC_DELAY,
-        GROUND_STATION_WET_DELAY,
-        GROUND_STATION_SLOPE_HYDROSTATIC_DELAY,
-        GROUND_STATION_SLOPE_WET_DELAY,
+        GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY,
+        GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
         GROUND_STATION_RANGE_BIAS_MIN,

@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -228,27 +227,25 @@ public class OrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odGNSS = run(input, true);
+        ResultOD odGNSS = run(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 18.0;
-        final double velocityAccuracy = 1.3e-3;
+        final double distanceAccuracy = 11.2;
+        final double velocityAccuracy = 3.9e-3;
 
         //test on the convergence
-//        final int numberOfIte  = 8;
-//        final int numberOfEval = 9;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 5;
 
-        //Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
-        //Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
+        Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
+        Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
         //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
         final Vector3D estimatedPos = odGNSS.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odGNSS.getEstimatedPV().getVelocity();
         final Vector3D refPos = new Vector3D(-2747606.680868164, 22572091.30648564, 13522761.402325712);
         final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
-        System.out.println(Vector3D.distance(refPos, estimatedPos));
-        System.out.println(Vector3D.distance(refVel, estimatedVel));
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
@@ -257,7 +254,7 @@ public class OrbitDeterminationTest {
         final double[] RefStatRange = { -2.555, 2.830, 0.0, 0.750 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               0.1);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.6);
+        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.1);
         Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
         Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 0.1);
 
@@ -600,6 +597,7 @@ public class OrbitDeterminationTest {
                 }
             });
         }
+
         Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
 
         // compute some statistics
@@ -629,19 +627,6 @@ public class OrbitDeterminationTest {
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
 
-        int length = 0;
-        for (final ParameterDriver parameterDriver : propagatorParameters.getDrivers()) {
-            length = FastMath.max(length, parameterDriver.getName().length());
-        }
-        for (final ParameterDriver parameterDriver : measurementsParameters.getDrivers()) {
-            length = FastMath.max(length, parameterDriver.getName().length());
-        }
-        displayParametersChanges(System.out, "Estimated propagator parameters changes: ",
-                                 true, length, propagatorParameters);
-
-        displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
-                                 true, length, measurementsParameters);
-
         //instation of results
         return new ResultOD(propagatorParameters, measurementsParameters,
                             estimator.getIterationsCount(), estimator.getEvaluationsCount(), estimated.getPVCoordinates(),
@@ -649,51 +634,6 @@ public class OrbitDeterminationTest {
                             azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
                             positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
                             estimator.getPhysicalCovariances(1.0e-10));
-    }
-
-    /** Display parameters changes.
-     * @param stream output stream
-     * @param header header message
-     * @param sort if true, parameters will be sorted lexicographically
-     * @param parameters parameters list
-     */
-    private void displayParametersChanges(final PrintStream out, final String header, final boolean sort,
-                                          final int length, final ParameterDriversList parameters) {
-
-        List<ParameterDriver> list = new ArrayList<ParameterDriver>(parameters.getDrivers());
-        if (sort) {
-            // sort the parameters lexicographically
-            Collections.sort(list, new Comparator<ParameterDriver>() {
-                /** {@inheritDoc} */
-                @Override
-                public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
-                    return pd1.getName().compareTo(pd2.getName());
-                }
-
-            });
-        }
-
-        out.println(header);
-        int index = 0;
-        for (final ParameterDriver parameter : list) {
-            if (parameter.isSelected()) {
-                final double factor;
-                if (parameter.getName().endsWith("/az bias") || parameter.getName().endsWith("/el bias")) {
-                    factor = FastMath.toDegrees(1.0);
-                } else {
-                    factor = 1.0;
-                }
-                final double initial = parameter.getReferenceValue();
-                final double value   = parameter.getValue();
-                out.format(Locale.US, "  %2d %s", ++index, parameter.getName());
-                for (int i = parameter.getName().length(); i < length; ++i) {
-                    out.format(Locale.US, " ");
-                }
-                out.format(Locale.US, "  %+.12f  (final value:  % .12f)%n",
-                           factor * (value - initial), factor * value);
-            }
-        }
-
     }
 
     /** Sort parameters changes.
@@ -1155,17 +1095,11 @@ public class OrbitDeterminationTest {
         final boolean[] stationAzElBiasesEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
         final boolean[] stationElevationRefraction        = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
         final boolean[] stationTroposphericModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
+        final double[]  stationTroposphericZenithDelay    = parser.getDoubleArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY);
+        final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
         final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
         final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
-        final double[]  stationHydrostaticDelay           = parser.getDoubleArray(ParameterKey.GROUND_STATION_HYDROSTATIC_DELAY_VALUE);
-        final double[]  stationWetDelay                   = parser.getDoubleArray(ParameterKey.GROUND_STATION_WET_DELAY_VALUE);
-        final double[]  stationSlopeHydrostaticDelay      = parser.getDoubleArray(ParameterKey.GROUND_STATION_SLOPE_HYDROSTATIC_DELAY_VALUE);
-        final double[]  stationSlopeWetDelay              = parser.getDoubleArray(ParameterKey.GROUND_STATION_SLOPE_WET_DELAY_VALUE);
         final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
-        final boolean[] stationHydroDelayEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_HYDROSTATIC_DELAY);
-        final boolean[] stationWetDelayEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_WET_DELAY);
-        final boolean[] stationSlopeHydroDelayEstimated   = parser.getBooleanArray(ParameterKey.GROUND_STATION_SLOPE_HYDROSTATIC_DELAY);
-        final boolean[] stationSlopeWetDelayEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_SLOPE_WET_DELAY);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
         final TidalDisplacement tidalDisplacement;
@@ -1324,7 +1258,7 @@ public class OrbitDeterminationTest {
             }
 
 
-            //Tropospheric correction
+            //Tropospheric correction 
             final RangeTroposphericDelayModifier rangeTroposphericCorrection;
             if (stationRangeTropospheric[i]) {
 
@@ -1336,39 +1270,20 @@ public class OrbitDeterminationTest {
                     mappingModel = new NiellMappingFunctionModel(stationLatitudes[i]);
                 }
 
-                final DiscreteTroposphericModel troposphericModel;
-                if (stationTroposphericModelEstimated[i]) {
-                    troposphericModel = new EstimatedTroposphericModel(mappingModel,
-                                                                       stationHydrostaticDelay[i],
-                                                                       stationSlopeHydrostaticDelay[i],
-                                                                       stationWetDelay[i],
-                                                                       stationSlopeWetDelay[i]);
-
-                    for (final ParameterDriver driver : troposphericModel.getParametersDrivers()) {
-                        final String stationPrefix = stationNames[i].substring(0, 5);
-                        driver.setName(stationPrefix + driver.getName());
-                    }
-
-//                    troposphericModel.getParametersDrivers().get(0).setSelected(stationHydroDelayEstimated[i]);
-//                    troposphericModel.getParametersDrivers().get(1).setSelected(stationSlopeHydroDelayEstimated[i]);
-//                    troposphericModel.getParametersDrivers().get(2).setSelected(stationWetDelayEstimated[i]);
-//                    troposphericModel.getParametersDrivers().get(3).setSelected(stationSlopeWetDelayEstimated[i]);
-                    
-                    troposphericModel.getParametersDrivers().get(0).setSelected(true);
-                    troposphericModel.getParametersDrivers().get(1).setSelected(true);
-                    troposphericModel.getParametersDrivers().get(2).setSelected(true);
-                    troposphericModel.getParametersDrivers().get(3).setSelected(true);
-
+                DiscreteTroposphericModel troposphericModel;
+                if (stationTroposphericModelEstimated[i] && mappingModel != null) {
+                    troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);
+                    ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
+                    totalDelay.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
                 } else {
                     troposphericModel = SaastamoinenModel.getStandardModel();
                 }
 
                 rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);
-
             } else {
                 rangeTroposphericCorrection = null;
             }
-
 
         stations.put(stationNames[i], new StationData(station,
                                                       rangeSigma,     rangeBias,
@@ -1599,6 +1514,7 @@ public class OrbitDeterminationTest {
                             if (satRangeBias != null) {
                                 range.addModifier(satRangeBias);
                             }
+                            
                             if (stationData.rangeTroposphericCorrection != null) {
                                 range.addModifier(stationData.rangeTroposphericCorrection);
                             }
@@ -2136,6 +2052,7 @@ public class OrbitDeterminationTest {
         /** {@inheritDoc} */
         @Override
         double residual(final EstimatedMeasurement<Range> evaluation) {
+            //System.out.println(evaluation.getObservedMeasurement().getDate() + "" + (evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0]));
             return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
         }
 
@@ -2492,21 +2409,11 @@ public class OrbitDeterminationTest {
         GROUND_STATION_LONGITUDE,
         GROUND_STATION_ALTITUDE,
         GROUND_STATION_POSITION_ESTIMATED,
-        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA1,
-        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA3,
         GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED,
-        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA1_ESTIMATED,
-        GROUND_STATION_TROPOSPHERIC_MODEL_VIENNA3_ESTIMATED,
+        GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY,
+        GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED,
         GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
         GROUND_STATION_NIELL_MAPPING_FUNCTION,
-        GROUND_STATION_HYDROSTATIC_DELAY_VALUE,
-        GROUND_STATION_WET_DELAY_VALUE,
-        GROUND_STATION_SLOPE_HYDROSTATIC_DELAY_VALUE,
-        GROUND_STATION_SLOPE_WET_DELAY_VALUE,
-        GROUND_STATION_HYDROSTATIC_DELAY,
-        GROUND_STATION_WET_DELAY,
-        GROUND_STATION_SLOPE_HYDROSTATIC_DELAY,
-        GROUND_STATION_SLOPE_WET_DELAY,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
         GROUND_STATION_RANGE_BIAS_MIN,
