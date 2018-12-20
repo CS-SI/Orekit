@@ -139,12 +139,16 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
 
         // only consider measures above the horizon
         if (elevation.getReal() > 0) {
-            final T delay = tropoModel.pathDelay(elevation, getStationHeightAMSL(field, station),
-                                                 parameters, state.getDate());
+            // altitude AMSL in meters
+            final T height = getStationHeightAMSL(field, station);
+
+            // delay in meters
+            final T delay = tropoModel.pathDelay(elevation, height, parameters, state.getDate());
+
             return delay;
-        } else {
-            return zero;
         }
+
+        return zero;
     }
 
     /** Compute the Jacobian of the delay term wrt state using
