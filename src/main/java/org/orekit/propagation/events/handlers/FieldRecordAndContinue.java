@@ -100,6 +100,14 @@ public class FieldRecordAndContinue
             return state;
         }
 
+        @Override
+        public String toString() {
+            return "Event{" +
+                    "state=" + state +
+                    ", increasing=" + increasing +
+                    ", detector=" + detector +
+                    '}';
+        }
     }
 
     /** Observed events. */

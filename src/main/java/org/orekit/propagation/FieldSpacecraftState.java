@@ -713,4 +713,14 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         return new SpacecraftState(orbit.toOrbit(), attitude.toAttitude(), mass.getReal(), map);
     }
 
+    @Override
+    public String toString() {
+        return "FieldSpacecraftState{" +
+                "orbit=" + orbit +
+                ", attitude=" + attitude +
+                ", mass=" + mass +
+                ", additional=" + additional +
+                '}';
+    }
+
 }
