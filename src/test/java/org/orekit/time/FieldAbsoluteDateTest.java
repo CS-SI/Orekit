@@ -250,6 +250,11 @@ public class FieldAbsoluteDateTest {
         doTestWrapAtMinuteEnd(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void testIssue508() {
+        doTestIssue508(Decimal64Field.getInstance());
+    }
+
     private <T extends RealFieldElement<T>> void doTestStandardEpoch(final Field<T> field) {
 
         TimeScale tai = TimeScalesFactory.getTAI();
@@ -964,6 +969,13 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
         Assert.assertEquals("2008-02-29T23:59:59.999", beforeMidnight.toString(utc));
         Assert.assertEquals("2008-03-01T00:00:00.000", stillBeforeMidnight.toString(utc));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue508(final Field<T> field) {
+        AbsoluteDate date = new AbsoluteDate(2000, 2, 24, 17, 5, 30.047, TimeScalesFactory.getUTC());
+        FieldAbsoluteDate<T> tA = new FieldAbsoluteDate<>(field, date);
+        FieldAbsoluteDate<T> tB = new FieldAbsoluteDate<>(date, field.getZero());
+        Assert.assertEquals(0.0, tA.durationFrom(tB).getReal(), Precision.SAFE_MIN);
     }
 
 }
