@@ -263,9 +263,9 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         // Denominator
         final double denMP = sinE + a / (sinE + b / (sinE + c));
 
-        final double felevation = numMP / denMP;
+        final double fElevation = numMP / denMP;
 
-        return felevation;
+        return fElevation;
     }
 
     /** Compute the mapping function related to the coefficient values and the elevation.
@@ -283,9 +283,9 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         // Denominator
         final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
 
-        final T felevation = numMP.divide(denMP);
+        final T fElevation = numMP.divide(denMP);
 
-        return felevation;
+        return fElevation;
     }
 
     /** This method computes the height correction for the hydrostatic

@@ -77,8 +77,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     public EstimatedTroposphericModel(final double t0, final double p0,
                                     final MappingFunction model, final double totalDelay) {
 
-        totalZenithDelay          = new ParameterDriver(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY,
-                                                        totalDelay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
+        totalZenithDelay = new ParameterDriver(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY,
+                                               totalDelay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
 
         this.t0    = t0;
         this.p0    = p0;
@@ -90,7 +90,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
      * <li>temperature: 18 degree Celsius
      * <li>pressure: 1013.25 mbar
      * </ul>
-     * @param model mapping function model (NMF or GMF).l
+     * @param model mapping function model (NMF or GMF).
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
     public EstimatedTroposphericModel(final MappingFunction model, final double totalDelay) {
@@ -145,8 +145,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
      * <li>double[1] = D<sub>tz</sub> -&gt zenith total delay
      * </ul>
      * <p>
-     * Others tropospheric models in Orekit compute the zenith wet delay instead of
-     * the total zenith delay.
+     * The user have to be careful because the others tropospheric models in Orekit
+     * compute the zenith wet delay instead of the total zenith delay.
      * </p>
      * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
@@ -176,8 +176,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
      * <li>double[1] = D<sub>tz</sub> -&gt zenith total delay
      * </ul>
      * <p>
-     * Others tropospheric models in Orekit compute the zenith wet delay instead of
-     * the total zenith delay.
+     * The user have to be careful because the others tropospheric models in Orekit
+     * compute the zenith wet delay instead of the total zenith delay.
      * </p>
      * @param <T> type of the elements
      * @param height the height of the station in m above sea level.

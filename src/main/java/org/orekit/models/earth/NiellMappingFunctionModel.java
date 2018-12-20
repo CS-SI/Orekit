@@ -168,7 +168,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
 
         // Compute ah, bh and ch Eq. 5
         double absLatidude = FastMath.abs(latitude);
-        // there are no data in the model of latitudes lower than 15°
+        // there are no data in the model for latitudes lower than 15°
         absLatidude = FastMath.max(FastMath.toRadians(15.0), absLatidude);
         // there are no data in the model for latitudes greater than 75°
         absLatidude = FastMath.min(FastMath.toRadians(75.0), absLatidude);
@@ -212,7 +212,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
 
         // Compute ah, bh and ch Eq. 5
         double absLatidude = FastMath.abs(latitude);
-        // there are no data in the model of latitudes lower than 15°
+        // there are no data in the model for latitudes lower than 15°
         absLatidude = FastMath.max(FastMath.toRadians(15.0), absLatidude);
         // there are no data in the model for latitudes greater than 75°
         absLatidude = FastMath.min(FastMath.toRadians(75.0), absLatidude);

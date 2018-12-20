@@ -63,7 +63,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     /** Carbon dioxyde content (IAG recommendations). */
     private static final double C02 = 0.99995995;
 
-    /** Geodetic site latitude, radians. */
+    /** Geodetic site latitude [rad]. */
     private double latitude;
 
     /** Laser wavelength [µm]. */
@@ -78,7 +78,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     /** Water vapor pressure at the laser site [hPa]. */
     private double e0;
 
-    /** Create a new Marini-Murray model for the troposphere.
+    /** Create a new Mendes-Pavlis model for the troposphere.
      * This initialisation will compute the water vapor pressure
      * thanks to the values of the pressure, the temperature and the humidity
      * @param t0 the temperature at the station, K
@@ -99,7 +99,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     /** Create a new Mendes-Pavlis model using a standard atmosphere model.
     *
     * <ul>
-    * <li>temperature: 20 degree Celsius
+    * <li>temperature: 18 degree Celsius
     * <li>pressure: 1013.25 hPa
     * <li>humidity: 50%
     * </ul>
@@ -110,16 +110,16 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     * @return a Mendes-Pavlis model with standard environmental values
     */
     public static MendesPavlisModel getStandardModel(final double latitude, final double lambda) {
-        return new MendesPavlisModel(273.15 + 20, 1013.25, 0.5, latitude, lambda);
+        return new MendesPavlisModel(273.15 + 18, 1013.25, 0.5, latitude, lambda);
     }
 
     /** {@inheritDoc} */
     @Override
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
-        // zenith delay
+        // Zenith delay
         final double[] zenithDelay = computeZenithDelay(height, parameters, date);
-        // mapping function
+        // Mapping function
         final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return zenithDelay[0] * mappingFunction[0] + zenithDelay[1] * mappingFunction[1];
@@ -129,9 +129,9 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     @Override
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
-        // zenith delay
+        // Zenith delay
         final T[] delays = computeZenithDelay(height, parameters, date);
-        // mapping function
+        // Mapping function
         final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));

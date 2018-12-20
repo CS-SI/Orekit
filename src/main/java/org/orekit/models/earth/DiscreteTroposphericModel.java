@@ -24,13 +24,16 @@ import org.orekit.time.FieldAbsoluteDate;
  * electro-magnetic signals between an orbital satellite and a ground station.
  * <p>
  * Models that implement this interface split the delay into hydrostatic
- * and non-hydrostatic part.
+ * and non-hydrostatic part:
+ * </p>
  * <pre>
  * δ = δ<sub>h</sub> + δ<sub>nh</sub>
- * <li>δ<sub>h</sub>  =  hydrostatic delay
- * <li>δ<sub>nh</sub> =  non-hydrostatic (or wet) delay
  * </pre>
- * </p>
+ * With:
+ * <ul>
+ * <li> δ<sub>h</sub>  =  hydrostatic delay </li>
+ * <li> δ<sub>nh</sub> =  non-hydrostatic (or wet) delay </li>
+ * </ul>
  * @author Bryan Cazabonne
  */
 public interface DiscreteTroposphericModel extends MappingFunction {
@@ -71,18 +74,18 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      */
      double[] computeZenithDelay(double height, double[] parameters, AbsoluteDate date);
 
-     /** This method allows the  computation of the zenith hydrostatic and
-      * zenith wet delay. The resulting element is an array having the following form:
-      * <ul>
-      * <li>T[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-      * <li>T[1] = D<sub>wz</sub> -&gt zenith wet delay
-      * </ul>
-      * @param <T> type of the elements
-      * @param height the height of the station in m above sea level.
+    /** This method allows the  computation of the zenith hydrostatic and
+     * zenith wet delay. The resulting element is an array having the following form:
+     * <ul>
+     * <li>T[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
+     * <li>T[1] = D<sub>wz</sub> -&gt zenith wet delay
+     * </ul>
+     * @param <T> type of the elements
+     * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
      * @param date current date
-      * @return a two components array containing the zenith hydrostatic and wet delays.
-      */
+     * @return a two components array containing the zenith hydrostatic and wet delays.
+     */
     <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, FieldAbsoluteDate<T> date);
 
 }
