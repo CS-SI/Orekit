@@ -795,6 +795,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                     return Action.RESET_STATE;
                 case RESET_DERIVATIVES :
                     return Action.RESET_DERIVATIVES;
+                case RESET_EVENTS:
+                    return Action.RESET_EVENTS;
                 default :
                     return Action.CONTINUE;
             }

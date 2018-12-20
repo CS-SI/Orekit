@@ -69,7 +69,19 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
          * #eventOccurred eventOccurred} method when the propagation should go
          * on after the event ending the current step.</p>
          */
-        CONTINUE;
+        CONTINUE,
+
+        /**
+         * Reset events indicator.
+         *
+         * <p> This value should be used as the return value of the {@code eventOccurred}
+         * method when the integration should go on, but first recheck all event detectors
+         * for occurring events. Use when the {@link FieldEventDetector#eventOccurred(FieldSpacecraftState,
+         * boolean)} method of one event detector has a side effect that changes the
+         * {@link FieldEventDetector#g(FieldSpacecraftState)} function of another event
+         * detector.
+         */
+        RESET_EVENTS;
 
     }
 

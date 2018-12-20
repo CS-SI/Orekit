@@ -67,7 +67,19 @@ public interface EventHandler<T extends EventDetector> {
          * #eventOccurred eventOccurred} method when the propagation should go
          * on after the event ending the current step.</p>
          */
-        CONTINUE;
+        CONTINUE,
+
+        /**
+         * Reset events indicator.
+         *
+         * <p> This value should be used as the return value of the {@code eventOccurred}
+         * method when the integration should go on, but first recheck all event detectors
+         * for occurring events. Use when the {@link EventDetector#eventOccurred(SpacecraftState,
+         * boolean)} method of one event detector has a side effect that changes the
+         * {@link EventDetector#g(SpacecraftState)} function of another event detector.
+         */
+        RESET_EVENTS;
+
 
     }
 
