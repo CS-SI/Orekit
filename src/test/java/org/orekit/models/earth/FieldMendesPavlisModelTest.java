@@ -299,7 +299,7 @@ public class FieldMendesPavlisModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], 1.6e-11);
+            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.0e-11);
         }
     }
 
