@@ -32,8 +32,8 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.models.earth.NiellMappingFunctionModel;
 import org.orekit.models.earth.EstimatedTroposphericModel;
-import org.orekit.models.earth.GlobalMappingFunctionModel;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -167,16 +167,16 @@ public class RangeTest {
     public void testParameterDerivativesWithEstimatedModifier() {
 
         // Print the results ?
-        boolean printResults = true;
+        boolean printResults = false;
 
         if (printResults) {
             System.out.println("\nTest Range Parameter Derivatives with Estimated Modifier - Finite Differences Comparison\n");
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsMedian = 2.7e-9;
-        double refErrorsMean   = 4.0e-9;
-        double refErrorsMax    = 2.7e-8;
+        double refErrorsMedian = 1.2e-9;
+        double refErrorsMean   = 1.9e-9;
+        double refErrorsMax    = 6.6e-9;
         this.genericTestEstimatedParameterDerivatives(isModifier, printResults,
                                                       refErrorsMedian, refErrorsMean, refErrorsMax);
 
@@ -637,15 +637,15 @@ public class RangeTest {
 
                     // Add modifiers if test implies it
                     final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-                    final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel(point.getLatitude(),
-                                                                                                      point.getLongitude());
-                    final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 1.0, 1.4, 0.1, 0.2);
+                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+                    final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
                     
                     final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
                     for (ParameterDriver driver : parameters) {
                         driver.setSelected(true);
                     }
 
+                    parameters.get(0).setName(stationName + "/" + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
@@ -658,27 +658,11 @@ public class RangeTest {
                     // to velocity. If we had chosen the proper state date, the
                     // range would have depended only on the current position but
                     // not on the current velocity.
-                    final AbsoluteDate    date      = measurement.getDate().shiftedBy(600);
-
-                    final AbsoluteDate startDate    = measurement.getDate().shiftedBy(-60);
-                    final AbsoluteDate endDate      = measurement.getDate().shiftedBy(150);
-
-                    parameters.get(0).setReferenceDate(startDate);
-                    parameters.get(1).setReferenceDate(endDate);
-                    parameters.get(2).setReferenceDate(startDate);
-                    parameters.get(3).setReferenceDate(endDate);
-                    
-                    parameters.get(0).setName(stationName + "/" + startDate.toString() + "/" + "hydro");
-                    parameters.get(1).setName(stationName + "/" + endDate.toString() + "/" + "hydro");
-                    parameters.get(2).setName(stationName + "/" + startDate.toString() + "/" + "wet");
-                    parameters.get(3).setName(stationName + "/" + endDate.toString() + "/" + "wet");
-
+                    final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+                    final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        parameters.get(0),
-                        parameters.get(1),
-                        parameters.get(2),
-                        parameters.get(3)
+                        parameters.get(0)
                     };
 
                     if (printResults) {
@@ -686,7 +670,7 @@ public class RangeTest {
                                           stationName, measurement.getDate(), date);
                     }
 
-                    for (int i = 0; i < 4; ++i) {
+                    for (int i = 0; i < 1; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
@@ -728,13 +712,11 @@ public class RangeTest {
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                             "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s%n",
+                            "%10s  %10s  %10s%n ",
                             "Station", "Measurement Date", "State Date",
-                            "ΔdStartDHZ", "rel ΔdStartDHZ",
-                            "ΔdEndDHZ", "rel ΔdEndDHZ",
-                            "ΔdStartDWZ", "rel ΔdStartDWZ",
-                            "ΔdEndDWZ", "rel ΔdEndDWZ");
+                            "ΔdDelay", "rel ΔdDelay",
+                            "ΔdNorthG", "rel ΔdNorthG",
+                            "ΔdEastG", "rel ΔdEastG");
          }
 
         // Propagate to final measurement's date
