@@ -53,7 +53,7 @@ public class TroposphericDSConverter {
      * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed
      */
-    TroposphericDSConverter(final SpacecraftState state, final int freeStateParameters, final AttitudeProvider provider) {
+    public TroposphericDSConverter(final SpacecraftState state, final int freeStateParameters, final AttitudeProvider provider) {
 
         this.freeStateParameters = freeStateParameters;
 
