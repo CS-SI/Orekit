@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 /** Converter for states and parameters arrays.
  * @author Luc Maisonobe
  */
-class TroposphericDSConverter {
+public class TroposphericDSConverter {
 
     /** Dimension of the state. */
     private final int freeStateParameters;
