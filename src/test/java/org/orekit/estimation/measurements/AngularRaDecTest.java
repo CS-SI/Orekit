@@ -254,7 +254,7 @@ public class AngularRaDecTest {
                                         public double value(final ParameterDriver parameterDriver) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[k];
                                         }
-                                    }, drivers[i], 3, 50.0);
+                                    }, 3, 50.0 * drivers[i].getScale());
                     final double ref = dMkdP.value(drivers[i]);
 
                     if (ref > 1.e-12) {

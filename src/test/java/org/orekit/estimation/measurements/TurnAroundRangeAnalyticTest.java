@@ -591,7 +591,7 @@ public class TurnAroundRangeAnalyticTest {
                                         public double value(final ParameterDriver parameterDriver) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                         }
-                                    }, drivers[i], 3, 20.0);
+                                    }, 3, 20.0 * drivers[i].getScale());
                     ref = dMkdP.value(drivers[i]);
                 } else {
                     // Compute a reference value using TurnAroundRange function

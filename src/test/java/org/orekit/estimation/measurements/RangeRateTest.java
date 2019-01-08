@@ -312,7 +312,7 @@ public class RangeRateTest {
                                     public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
-                                }, drivers[i], 3, 20.0);
+                                }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i]);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
@@ -382,7 +382,7 @@ public class RangeRateTest {
                                     public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
-                                }, drivers[i], 3, 20.0);
+                                }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i]);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
@@ -516,7 +516,7 @@ public class RangeRateTest {
                                     public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
-                                }, drivers[i], 3, 20.0);
+                                }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i]);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
