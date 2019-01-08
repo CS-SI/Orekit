@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="hipparchus.version"       value="1.3"                                            />
+  <property name="hipparchus.version"       value="1.4"                                            />
   <property name="hipparchus.core.jar"      value="hipparchus-core-${hipparchus.version}.jar"      />
   <property name="hipparchus.geometry.jar"  value="hipparchus-geometry-${hipparchus.version}.jar"  />
   <property name="hipparchus.ode.jar"       value="hipparchus-ode-${hipparchus.version}.jar"       />
