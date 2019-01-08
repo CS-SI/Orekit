@@ -18,6 +18,7 @@
 
 Most discussions should occur on the public forums [https://forum.orekit.org/](https://forum.orekit.org/).
 The main categories are:
+
 |   category    |                                     URL                                                            |
 |---------------|----------------------------------------------------------------------------------------------------|
 |  announces    | [https://forum.orekit.org/c/orekit-announcements](https://forum.orekit.org/c/orekit-announcements) |
