@@ -139,7 +139,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
             }
         };
 
-        final ParameterFunction rangeErrorDerivative = Differentiation.differentiate(rangeError, driver, 3, 10.0);
+        final ParameterFunction rangeErrorDerivative = Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
 
         return rangeErrorDerivative.value(driver);
 

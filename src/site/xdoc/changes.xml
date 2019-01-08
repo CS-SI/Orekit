@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="509">
+        Fixed scaling error in ParameterFunction differentiation.
+      </action>
       <action dev="luc" type="fix" issue="508">
         Fixed inconsistency leading to inaccuracies in conversions from AbsoluteDate to FieldAbsoluteDate.
       </action>
