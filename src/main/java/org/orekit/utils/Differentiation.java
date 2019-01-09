@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,8 @@ import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -50,41 +47,52 @@ public class Differentiation {
      * @param function function to differentiate
      * @param driver driver for the parameter
      * @param nbPoints number of points used for finite differences
-     * @param step step for finite differences
+     * @param normalizedStep step for finite differences, in <em>normalized</em> units
      * @return scalar function evaluating to the derivative of the original function
+     * @deprecated as of 9.3, replaced by {@link #differentiate(ParameterFunction, int, double)}
+     */
+    @Deprecated
+    public static ParameterFunction differentiate(final ParameterFunction function, final ParameterDriver driver,
+                                                  final int nbPoints, final double normalizedStep) {
+        return differentiate(function, nbPoints, normalizedStep * driver.getScale());
+    }
+
+    /** Differentiate a scalar function using finite differences.
+     * @param function function to differentiate
+     * @param nbPoints number of points used for finite differences
+     * @param step step for finite differences, in <em>physical</em> units
+     * @return scalar function evaluating to the derivative of the original function
+     * @since 9.3
      */
     public static ParameterFunction differentiate(final ParameterFunction function,
-                                                  final ParameterDriver driver,
                                                   final int nbPoints, final double step) {
 
-        final UnivariateFunction uf = new UnivariateFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public double value(final double normalizedValue) {
-                final double saved = driver.getNormalizedValue();
-                driver.setNormalizedValue(normalizedValue);
-                final double functionValue = function.value(driver);
-                driver.setNormalizedValue(saved);
-                return functionValue;
-            }
-        };
-
-        final FiniteDifferencesDifferentiator differentiator  =
-                        new FiniteDifferencesDifferentiator(nbPoints, step);
-        final UnivariateDifferentiableFunction differentiated =
-                        differentiator.differentiate(uf);
-
         return new ParameterFunction() {
+
+            /** Finite differences differentiator to use. */
+            private final FiniteDifferencesDifferentiator differentiator  =
+                            new FiniteDifferencesDifferentiator(nbPoints, step);
+
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) {
-                if (!parameterDriver.getName().equals(driver.getName())) {
-                    throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                              parameterDriver.getName(), driver.getName());
-                }
-                final DerivativeStructure dsParam = FACTORY.variable(0, parameterDriver.getNormalizedValue());
-                final DerivativeStructure dsValue = differentiated.value(dsParam);
+            public double value(final ParameterDriver driver) {
+
+                final UnivariateFunction uf = new UnivariateFunction() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public double value(final double value) {
+                        final double saved = driver.getValue();
+                        driver.setValue(value);
+                        final double functionValue = function.value(driver);
+                        driver.setValue(saved);
+                        return functionValue;
+                    }
+                };
+
+                final DerivativeStructure dsParam = FACTORY.variable(0, driver.getValue());
+                final DerivativeStructure dsValue = differentiator.differentiate(uf).value(dsParam);
                 return dsValue.getPartialDerivative(1);
+
             }
         };
 

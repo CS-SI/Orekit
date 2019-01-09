@@ -24,6 +24,12 @@
       <action dev="bryan" type="add" issue="511">
         Added weather model Global Pressure and Temperature.
       </action>
+      <action dev="luc" type="fix" issue="510">
+        Fixed dropped derivatives in TimeStampedFieldPVCoordinates.shiftedBy(dt).
+      </action>
+      <action dev="luc" type="fix" issue="509">
+        Fixed scaling error in ParameterFunction differentiation.
+      </action>
       <action dev="luc" type="fix" issue="508">
         Fixed inconsistency leading to inaccuracies in conversions from AbsoluteDate to FieldAbsoluteDate.
       </action>
