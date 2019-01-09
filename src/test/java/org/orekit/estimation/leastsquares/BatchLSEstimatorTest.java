@@ -467,7 +467,7 @@ public class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 2.3e-06,
                                      0.0, 6.6e-06,
-                                     0.0, 6.2e-07,
+                                     0.0, 6.4e-07,
                                      0.0, 2.8e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
@@ -644,15 +644,15 @@ public class BatchLSEstimatorTest {
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
-                                                    PositionAngle.TRUE,
-                                                    closeOrbit.getFrame(),
-                                                    closeOrbit.getDate(),
-                                                    closeOrbit.getMu());
+                                                parameters.get( 7).getValue(),
+                                                parameters.get( 8).getValue(),
+                                                parameters.get( 9).getValue(),
+                                                parameters.get(10).getValue(),
+                                                parameters.get(11).getValue(),
+                                                PositionAngle.TRUE,
+                                                closeOrbit.getFrame(),
+                                                closeOrbit.getDate(),
+                                                closeOrbit.getMu());
         Assert.assertEquals(4.7246,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               before.getPVCoordinates().getPosition()),
@@ -661,7 +661,7 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 5,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 6.0e-06,
                                      0.0, 1.7e-05,
                                      0.0, 4.4e-07,

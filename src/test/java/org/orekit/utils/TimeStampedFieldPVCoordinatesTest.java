@@ -357,6 +357,27 @@ public class TimeStampedFieldPVCoordinatesTest {
 
     }
 
+    @Test
+    public void testIssue510() {
+        DSFactory factory = new DSFactory(1, 1);
+        TimeStampedFieldPVCoordinates<DerivativeStructure> pv =
+                        new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(factory.getDerivativeField()),
+                                                            new FieldVector3D<>(factory.constant(10.0),
+                                                                                factory.constant(20.0),
+                                                                                factory.constant(30.0)),
+                                                            new FieldVector3D<>(factory.constant(1.0),
+                                                                                factory.constant(2.0),
+                                                                                factory.constant(3.0)),
+                                                            FieldVector3D.getZero(factory.getDerivativeField()));
+        DerivativeStructure dt = factory.variable(0, 1.0);
+        TimeStampedFieldPVCoordinates<DerivativeStructure> shifted = pv.shiftedBy(dt);
+        Assert.assertEquals(1.0, shifted.getDate().durationFrom(pv.getDate()).getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(pv.getVelocity().getX().getValue(), shifted.getPosition().getX().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(pv.getVelocity().getY().getValue(), shifted.getPosition().getY().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(pv.getVelocity().getZ().getValue(), shifted.getPosition().getZ().getPartialDerivative(1), 1.0e-15);
+        
+    }
+
     private PolynomialFunction randomPolynomial(int degree, Random random) {
         double[] coeff = new double[ 1 + degree];
         for (int j = 0; j < degree; ++j) {
