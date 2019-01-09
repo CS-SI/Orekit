@@ -56,7 +56,8 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             for (final GroundStation station : Arrays.asList(entry.getKey(), entry.getValue())) {
-                for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+                for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                            station.getEastOffsetDriver(),
                                                             station.getNorthOffsetDriver(),
                                                             station.getZenithOffsetDriver(),
                                                             station.getPrimeMeridianOffsetDriver(),

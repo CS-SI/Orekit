@@ -215,7 +215,8 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
         }
         estimated.setStateDerivatives(0, stateDerivatives);
 
-        for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                          station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {

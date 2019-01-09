@@ -352,11 +352,11 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // ------------------------------------------------------------
 
         if (masterGroundStation.getEastOffsetDriver().isSelected()  ||
-                        masterGroundStation.getNorthOffsetDriver().isSelected() ||
-                        masterGroundStation.getZenithOffsetDriver().isSelected()||
-                        slaveGroundStation.getEastOffsetDriver().isSelected()  ||
-                        slaveGroundStation.getNorthOffsetDriver().isSelected() ||
-                        slaveGroundStation.getZenithOffsetDriver().isSelected()) {
+            masterGroundStation.getNorthOffsetDriver().isSelected() ||
+            masterGroundStation.getZenithOffsetDriver().isSelected()||
+            slaveGroundStation.getEastOffsetDriver().isSelected()  ||
+            slaveGroundStation.getNorthOffsetDriver().isSelected() ||
+            slaveGroundStation.getZenithOffsetDriver().isSelected()) {
 
             // tMd derivatives / stations
             // --------------------------
@@ -593,7 +593,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as DerivativeStructures
         // The components of master station's position in offset frame are the 3 third derivative parameters
         final FieldTransform<DerivativeStructure> masterToInert =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDateDS, dsFactory, indices);
+                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDate, dsFactory, indices);
 
         // Master station PV in inertial frame at measurement date
         final FieldVector3D<DerivativeStructure> QMaster = masterToInert.transformPosition(zero);

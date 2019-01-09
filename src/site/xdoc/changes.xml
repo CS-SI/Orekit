@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="513">
+        Added clock offset parameter at ground stations level for orbit determination.
+      </action>
       <action dev="luc" type="fix" issue="510">
         Fixed dropped derivatives in TimeStampedFieldPVCoordinates.shiftedBy(dt).
       </action>

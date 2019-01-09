@@ -98,6 +98,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                            final double sigma, final double baseWeight,
                            final int propagatorIndex) {
         super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(propagatorIndex),
+              masterStation.getClockOffsetDriver(),
               masterStation.getEastOffsetDriver(),
               masterStation.getNorthOffsetDriver(),
               masterStation.getZenithOffsetDriver(),
@@ -107,6 +108,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
               masterStation.getPolarDriftXDriver(),
               masterStation.getPolarOffsetYDriver(),
               masterStation.getPolarDriftYDriver(),
+              // the slave station clock is not used at all, we ignore the corresponding parameter driver
               slaveStation.getEastOffsetDriver(),
               slaveStation.getNorthOffsetDriver(),
               slaveStation.getZenithOffsetDriver(),
@@ -149,7 +151,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         //
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - stations' parameters (stations' offsets, pole, prime meridian...)
+        //  - 6..n - stations' parameters (clock offset, station offsets, pole, prime meridian...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
@@ -188,18 +190,18 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
         // (if state has already been set up to pre-compensate propagation delay,
         // we will have delta = masterTauD + slaveTauU)
-        final AbsoluteDate measurementDate = getDate();
-        final FieldAbsoluteDate<DerivativeStructure> measurementDateDS = new FieldAbsoluteDate<>(field, measurementDate);
-        final double delta = measurementDate.durationFrom(state.getDate());
+        final double delta = getDate().durationFrom(state.getDate());
 
         // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as DerivativeStructures
         final FieldTransform<DerivativeStructure> masterToInert =
-                        masterStation.getOffsetToInertial(state.getFrame(), measurementDateDS, factory, indices);
+                        masterStation.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
+        final FieldAbsoluteDate<DerivativeStructure> measurementDateDS =
+                        masterToInert.getFieldDate();
 
         // Master station PV in inertial frame at measurement date
         final TimeStampedFieldPVCoordinates<DerivativeStructure> masterArrival =
-                        masterToInert.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
-                                                                                          PVCoordinates.ZERO));
+                        masterToInert.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(measurementDateDS,
+                                                                                                 zero, zero, zero));
 
         // Compute propagation times
         final DerivativeStructure masterTauD = signalTimeOfFlight(pvaDS, masterArrival.getPosition(), measurementDateDS);

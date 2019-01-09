@@ -1578,6 +1578,7 @@ public class KalmanOrbitDeterminationTest {
         final double[]  stationLatitudes              = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
         final double[]  stationLongitudes             = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
         final double[]  stationAltitudes              = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
+        final boolean[] stationClockEstimated         = parser.getBooleanArray(ParameterKey.GROUND_STATION_CLOCK_ESTIMATED);
         final boolean[] stationPositionEstimated      = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
         final double[]  stationRangeSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
         final double[]  stationRangeBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
@@ -1661,6 +1662,7 @@ public class KalmanOrbitDeterminationTest {
                                                              stationAltitudes[i]);
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            station.getClockOffsetDriver().setSelected(stationClockEstimated[i]);
             station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
@@ -2821,6 +2823,7 @@ public class KalmanOrbitDeterminationTest {
         GROUND_STATION_LATITUDE,
         GROUND_STATION_LONGITUDE,
         GROUND_STATION_ALTITUDE,
+        GROUND_STATION_CLOCK_ESTIMATED,
         GROUND_STATION_POSITION_ESTIMATED,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
