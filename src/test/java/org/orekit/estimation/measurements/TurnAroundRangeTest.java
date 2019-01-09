@@ -169,8 +169,7 @@ public class TurnAroundRangeTest {
      * Generic test function for values of the TAR
      * @param printResults Print the results ?
      */
-    void genericTestValues(final boolean printResults)
-                    {
+    void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -265,8 +264,7 @@ public class TurnAroundRangeTest {
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
-                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-        {
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -292,15 +290,15 @@ public class TurnAroundRangeTest {
         // Print the results ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s%n",
-                            "Master Station", "Slave Station",
-                            "Measurement Date", "State Date",
-                            "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
-                            "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
-                            "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s%n",
+                              "Master Station", "Slave Station",
+                              "Measurement Date", "State Date",
+                              "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
+                              "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
+                              "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
         }
 
         // Loop on the measurements
@@ -358,15 +356,15 @@ public class TurnAroundRangeTest {
                 String masterStationName = ((TurnAroundRange) measurement).getMasterStation().getBaseFrame().getName();
                 String slaveStationName  = ((TurnAroundRange) measurement).getSlaveStation().getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
-                                "%10.3e  %10.3e  %10.3e  " +
-                                "%10.3e  %10.3e  %10.3e  " +
-                                "%10.3e  %10.3e  %10.3e  " +
-                                "%10.3e  %10.3e  %10.3e%n",
-                                masterStationName, slaveStationName, measurement.getDate(), date,
-                                dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
-                                dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
-                                dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
-                                dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
+                                  "%10.3e  %10.3e  %10.3e  " +
+                                  "%10.3e  %10.3e  %10.3e  " +
+                                  "%10.3e  %10.3e  %10.3e  " +
+                                  "%10.3e  %10.3e  %10.3e%n",
+                                  masterStationName, slaveStationName, measurement.getDate(), date,
+                                  dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
+                                  dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
+                                  dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
+                                  dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
             }
         } // End loop on the measurements
 
@@ -399,8 +397,7 @@ public class TurnAroundRangeTest {
 
     void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
                                          final double refErrorQMMedian, final double refErrorQMMean, final double refErrorQMMax,
-                                         final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax)
-        {
+                                         final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -412,9 +409,11 @@ public class TurnAroundRangeTest {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    masterStation = entry.getKey();
             final GroundStation    slaveStation  = entry.getValue();
+            masterStation.getClockOffsetDriver().setSelected(true);
             masterStation.getEastOffsetDriver().setSelected(true);
             masterStation.getNorthOffsetDriver().setSelected(true);
             masterStation.getZenithOffsetDriver().setSelected(true);
+            slaveStation.getClockOffsetDriver().setSelected(false);
             slaveStation.getEastOffsetDriver().setSelected(true);
             slaveStation.getNorthOffsetDriver().setSelected(true);
             slaveStation.getZenithOffsetDriver().setSelected(true);
@@ -430,18 +429,18 @@ public class TurnAroundRangeTest {
         // Print results on console ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s %-15s %-23s  %-23s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s%n",
-                            "Master Station", "Slave Station",
-                            "Measurement Date", "State Date",
-                            "ΔdQMx", "rel ΔdQMx",
-                            "ΔdQMy", "rel ΔdQMy",
-                            "ΔdQMz", "rel ΔdQMz",
-                            "ΔdQSx", "rel ΔdQSx",
-                            "ΔdQSy", "rel ΔdQSy",
-                            "ΔdQSz", "rel ΔdQSz");
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s%n",
+                              "Master Station", "Slave Station",
+                              "Measurement Date", "State Date",
+                              "ΔdQMx", "rel ΔdQMx",
+                              "ΔdQMy", "rel ΔdQMy",
+                              "ΔdQMz", "rel ΔdQMz",
+                              "ΔdQSx", "rel ΔdQSx",
+                              "ΔdQSy", "rel ΔdQSy",
+                              "ΔdQSz", "rel ΔdQSz");
          }
 
         // List to store the results for master and slave station

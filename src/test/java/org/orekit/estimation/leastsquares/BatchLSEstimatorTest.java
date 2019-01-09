@@ -187,8 +187,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -262,7 +261,7 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -286,8 +285,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -404,8 +402,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -468,7 +465,7 @@ public class BatchLSEstimatorTest {
                                      0.0, 2.3e-06,
                                      0.0, 6.6e-06,
                                      0.0, 6.4e-07,
-                                     0.0, 2.8e-10);
+                                     0.0, 2.9e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -613,8 +610,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -734,7 +730,7 @@ public class BatchLSEstimatorTest {
                                            ParameterDriversList estimatedOrbitalParameters,
                                            ParameterDriversList estimatedPropagatorParameters,
                                            ParameterDriversList estimatedMeasurementsParameters,
-                                           EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) throws DummyException {
+                                           EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 throw new DummyException();
             }
         });

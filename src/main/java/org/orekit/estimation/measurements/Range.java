@@ -131,6 +131,7 @@ public class Range extends AbstractMeasurement<Range> {
                  final double range, final double sigma, final double baseWeight,
                  final int propagatorIndex) {
         super(date, range, sigma, baseWeight, Arrays.asList(propagatorIndex),
+              station.getClockOffsetDriver(),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver(),
@@ -173,7 +174,7 @@ public class Range extends AbstractMeasurement<Range> {
         // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - station parameters (station offsets, pole, prime meridian...)
+        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
@@ -190,11 +191,9 @@ public class Range extends AbstractMeasurement<Range> {
 
         // transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final AbsoluteDate downlinkDate = getDate();
-        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
-                        new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, indices);
+                        station.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
+        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS = offsetToInertialDownlink.getFieldDate();
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -209,7 +208,7 @@ public class Range extends AbstractMeasurement<Range> {
         final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state & Transit state (re)computed with derivative structures
-        final double                delta        = downlinkDate.durationFrom(state.getDate());
+        final DerivativeStructure   delta        = downlinkDateDS.durationFrom(state.getDate());
         final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
         final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pvaDS.shiftedBy(deltaMTauD);

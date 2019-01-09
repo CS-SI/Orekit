@@ -83,6 +83,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final int propagatorIndex) {
         super(date, angular, sigma, baseWeight, Arrays.asList(propagatorIndex),
+              station.getClockOffsetDriver(),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver(),
@@ -124,7 +125,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
         // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - station parameters (station offsets, pole, prime meridian...)
+        //  - 6..n - station parameters (clock offset, station offsets, pole, prime meridian...)
 
         // Get the number of parameters used for derivation
         // Place the selected drivers into a map
@@ -144,11 +145,10 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
 
         // Transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final AbsoluteDate downlinkDate = getDate();
-        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
-                        new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, indices);
+                        station.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
+        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+                        offsetToInertialDownlink.getFieldDate();
 
         // Station position/velocity in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -163,7 +163,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
         final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state
-        final double                delta        = downlinkDate.durationFrom(state.getDate());
+        final DerivativeStructure   delta        = downlinkDateDS.durationFrom(state.getDate());
         final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
         final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
 

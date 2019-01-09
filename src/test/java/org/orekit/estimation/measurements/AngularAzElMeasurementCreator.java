@@ -41,7 +41,8 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
                                                         station.getPrimeMeridianOffsetDriver(),

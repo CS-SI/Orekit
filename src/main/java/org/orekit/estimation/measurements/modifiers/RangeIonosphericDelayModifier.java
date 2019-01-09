@@ -178,7 +178,8 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
         }
         estimated.setStateDerivatives(0, stateDerivatives);
 
-        for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                          station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
