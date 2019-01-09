@@ -617,7 +617,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates<T> shiftedBy(final T dt) {
         final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
-        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt.getReal()),
+        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt),
                                                    spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
     }
 

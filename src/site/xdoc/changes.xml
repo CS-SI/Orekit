@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="510">
+        Fixed dropped derivatives in TimeStampedFieldPVCoordinates.shiftedBy(dt).
+      </action>
       <action dev="luc" type="fix" issue="509">
         Fixed scaling error in ParameterFunction differentiation.
       </action>
