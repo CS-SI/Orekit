@@ -683,7 +683,7 @@ public class RangeTest {
                                             public double value(final ParameterDriver parameterDriver) {
                                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
-                                        }, drivers[i], 3, 0.1);
+                                        }, 3, 0.1 * drivers[i].getScale());
                         final double ref = dMkdP.value(drivers[i]);
 
                         if (printResults) {
