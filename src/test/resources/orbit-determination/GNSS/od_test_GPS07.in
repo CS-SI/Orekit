@@ -149,6 +149,7 @@ ground.station.tropospheric.delay.estimated    [0] = true
 ground.station.global.mapping.function         [0] = false
 ground.station.niell.mapping.function          [0] = true
 ground.station.range.tropospheric.correction   [0] = true
+ground.station.weather.estimated               [0] = true
 
 ground.station.name                            [1] =  SHLD/C2
 ground.station.latitude                        [1] =   41.868362882 
@@ -181,6 +182,7 @@ ground.station.tropospheric.delay.estimated    [1] = true
 ground.station.global.mapping.function         [1] = false
 ground.station.niell.mapping.function          [1] = true
 ground.station.range.tropospheric.correction   [1] = true
+ground.station.weather.estimated               [1] = true
 
 ground.station.name                            [2] =  SHLD/P2
 ground.station.latitude                        [2] =   41.868362882 
@@ -213,6 +215,7 @@ ground.station.tropospheric.delay.estimated    [2] = true
 ground.station.global.mapping.function         [2] = false
 ground.station.niell.mapping.function          [2] = true
 ground.station.range.tropospheric.correction   [2] = true
+ground.station.weather.estimated               [2] = true
 
 ground.station.name                            [3] =  SEAT/C1
 ground.station.latitude                        [3] =   47.653972656
@@ -245,6 +248,7 @@ ground.station.tropospheric.delay.estimated    [3] = true
 ground.station.global.mapping.function         [3] = false
 ground.station.niell.mapping.function          [3] = true
 ground.station.range.tropospheric.correction   [3] = true
+ground.station.weather.estimated               [3] = true
 
 ground.station.name                            [4] =  SEAT/C2
 ground.station.latitude                        [4] =   47.653972656
@@ -277,6 +281,7 @@ ground.station.tropospheric.delay.estimated    [4] = true
 ground.station.global.mapping.function         [4] = false
 ground.station.niell.mapping.function          [4] = true
 ground.station.range.tropospheric.correction   [4] = true
+ground.station.weather.estimated               [4] = true
 
 ground.station.name                            [5] =  SEAT/P2
 ground.station.latitude                        [5] =   47.653972656
@@ -309,6 +314,7 @@ ground.station.tropospheric.delay.estimated    [5] = true
 ground.station.global.mapping.function         [5] = false
 ground.station.niell.mapping.function          [5] = true
 ground.station.range.tropospheric.correction   [5] = true
+ground.station.weather.estimated               [5] = true
 
 ground.station.name                            [6] =  SBCH/C1
 ground.station.latitude                        [6] =  29.868112727
@@ -341,6 +347,7 @@ ground.station.tropospheric.delay.estimated    [6] = true
 ground.station.global.mapping.function         [6] = false
 ground.station.niell.mapping.function          [6] = true
 ground.station.range.tropospheric.correction   [6] = true
+ground.station.weather.estimated               [6] = true
 
 ground.station.name                            [7] =  SBCH/C2
 ground.station.latitude                        [7] =  29.868112727
@@ -373,6 +380,7 @@ ground.station.tropospheric.delay.estimated    [7] = true
 ground.station.global.mapping.function         [7] = false
 ground.station.niell.mapping.function          [7] = true
 ground.station.range.tropospheric.correction   [7] = true
+ground.station.weather.estimated               [7] = true
 
 ground.station.name                            [8] =  SBCH/P2
 ground.station.latitude                        [8] =  29.868112727
@@ -405,6 +413,7 @@ ground.station.tropospheric.delay.estimated    [8] = true
 ground.station.global.mapping.function         [8] = false
 ground.station.niell.mapping.function          [8] = true
 ground.station.range.tropospheric.correction   [8] = true
+ground.station.weather.estimated               [8] = true
 
 ground.station.name                            [9] =  BRIG/C1
 ground.station.latitude                        [9] =  42.520093759
@@ -437,6 +446,7 @@ ground.station.tropospheric.delay.estimated    [9] = true
 ground.station.global.mapping.function         [9] = false
 ground.station.niell.mapping.function          [9] = true
 ground.station.range.tropospheric.correction   [9] = true
+ground.station.weather.estimated               [9] = true
 
 ground.station.name                            [10] =  BRIG/C2
 ground.station.latitude                        [10] =  42.520093759
@@ -469,6 +479,7 @@ ground.station.tropospheric.delay.estimated    [10] = true
 ground.station.global.mapping.function         [10] = false
 ground.station.niell.mapping.function          [10] = true
 ground.station.range.tropospheric.correction   [10] = true
+ground.station.weather.estimated               [10] = true
 
 ground.station.name                            [11] =  BRIG/P2
 ground.station.latitude                        [11] =  42.520093759
@@ -501,6 +512,7 @@ ground.station.tropospheric.delay.estimated    [11] = true
 ground.station.global.mapping.function         [11] = false
 ground.station.niell.mapping.function          [11] = true
 ground.station.range.tropospheric.correction   [11] = true
+ground.station.weather.estimated               [11] = true
 
 ground.station.name                            [12] =  AZBH/C1
 ground.station.latitude                        [12] =   35.107490239
@@ -533,6 +545,7 @@ ground.station.tropospheric.delay.estimated    [12] = true
 ground.station.global.mapping.function         [12] = false
 ground.station.niell.mapping.function          [12] = true
 ground.station.range.tropospheric.correction   [12] = true
+ground.station.weather.estimated               [12] = true
 
 ground.station.name                            [13] =  AZBH/C2
 ground.station.latitude                        [13] =   35.107490239
@@ -565,6 +578,7 @@ ground.station.tropospheric.delay.estimated    [13] = true
 ground.station.global.mapping.function         [13] = false
 ground.station.niell.mapping.function          [13] = true
 ground.station.range.tropospheric.correction   [13] = true
+ground.station.weather.estimated               [13] = true
 
 ground.station.name                            [14] =  AZBH/P2
 ground.station.latitude                        [14] =   35.107490239
@@ -597,6 +611,7 @@ ground.station.tropospheric.delay.estimated    [14] = true
 ground.station.global.mapping.function         [14] = false
 ground.station.niell.mapping.function          [14] = true
 ground.station.range.tropospheric.correction   [14] = true
+ground.station.weather.estimated               [14] = true
 
 ### Measurements parameters
 range.outlier.rejection.multiplier              = 6
