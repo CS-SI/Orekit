@@ -44,6 +44,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
@@ -386,12 +387,13 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         propagator0.addForceModel(hpaRefX1);
         propagator0.addForceModel(hpaRefY1);
         propagator0.addForceModel(hpaRefZ2);
+        ObservableSatellite sat0 = new ObservableSatellite(0);
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         propagator0.setMasterMode(10.0,
                                   (state, isLast) ->
                                   measurements.add(new PV(state.getDate(),
                                                           state.getPVCoordinates().getPosition(), state.getPVCoordinates().getVelocity(),
-                                                          1.0e-3, 1.0e-6, 1.0)));
+                                                          1.0e-3, 1.0e-6, 1.0, sat0)));
         propagator0.propagate(orbit.getDate().shiftedBy(900));
 
         // set up an estimator to retrieve the maneuver as several harmonic accelerations in inertial frame

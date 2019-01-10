@@ -23,6 +23,7 @@ import java.util.List;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.time.AbsoluteDate;
 
@@ -46,8 +47,8 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
     /** Base weight. */
     private final double[] baseWeight;
 
-    /** Indices of the propagators related to this measurement. */
-    private final int[] propagatorsIndices;
+    /** Satellites related to this measurement. */
+    private final ObservableSatellite[] satellites;
 
     /** Start of the measurements time span. */
     private AbsoluteDate spanStart;
@@ -59,33 +60,33 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorsIndices indices of the propagators related to this measurement
+     * @param satellites satellites related to this builder
      */
     protected AbstractMeasurementBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                          final double sigma, final double baseWeight,
-                                         final int... propagatorsIndices) {
+                                         final ObservableSatellite... satellites) {
         this(noiseSource,
              new double[] {
                  sigma
              }, new double[] {
                  baseWeight
-             }, propagatorsIndices);
+             }, satellites);
     }
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorsIndices indices of the propagators related to this measurement
+     * @param satellites satellites related to this builder
      */
     protected AbstractMeasurementBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                          final double[] sigma, final double[] baseWeight,
-                                         final int... propagatorsIndices) {
-        this.noiseSource        = noiseSource;
-        this.modifiers          = new ArrayList<>();
-        this.sigma              = sigma.clone();
-        this.baseWeight         = baseWeight.clone();
-        this.propagatorsIndices = propagatorsIndices.clone();
+                                         final ObservableSatellite... satellites) {
+        this.noiseSource = noiseSource;
+        this.modifiers   = new ArrayList<>();
+        this.sigma       = sigma.clone();
+        this.baseWeight  = baseWeight.clone();
+        this.satellites  = satellites.clone();
     }
 
     /** {@inheritDoc}
@@ -164,19 +165,11 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         return baseWeight.clone();
     }
 
-    /** Get the indices of the {@link org.orekit.propagation.Propagator propagators}
-     * related to this measurement.
-     * <p>
-     * The propagators are indexed starting from 0 and ordered according to
-     * the order of the {@link org.orekit.propagation.conversion.PropagatorBuilder
-     * propagators builders} in the orbit determination engine used.
-     * </p>
-     * @return indices of the {@link org.orekit.propagation.Propagator propagators}
-     * related to this measurement
-     * @since 9.0
+    /** Get the satellites related to this measurement.
+     * @return satellites related to this measurement
      */
-    protected int[] getPropagatorsIndices() {
-        return propagatorsIndices.clone();
+    protected ObservableSatellite[] getSatellites() {
+        return satellites.clone();
     }
 
 }

@@ -78,10 +78,13 @@ public class Range extends AbstractMeasurement<Range> {
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 9.3, replaced by {@link #Range(GroundStation, boolean, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight) {
-        this(station, true, date, range, sigma, baseWeight, 0);
+        this(station, true, date, range, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -96,10 +99,13 @@ public class Range extends AbstractMeasurement<Range> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param twoWay flag indicating whether it is a two-way measurement
+     * @deprecated as of 9.3, replaced by {@link #Range(GroundStation, boolean, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Range(final GroundStation station, final AbsoluteDate date, final double range,
                  final double sigma, final double baseWeight, final boolean twoWay) {
-        this(station, twoWay, date, range, sigma, baseWeight, 0);
+        this(station, twoWay, date, range, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -109,12 +115,14 @@ public class Range extends AbstractMeasurement<Range> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.0
+     * @deprecated as of 9.3, replaced by {@link #Range(GroundStation, boolean, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final int propagatorIndex) {
-        this(station, true, date, range, sigma, baseWeight, 0);
+        this(station, true, date, range, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -126,21 +134,40 @@ public class Range extends AbstractMeasurement<Range> {
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.0
+     * @deprecated as of 9.3, replaced by {@link #Range(GroundStation, boolean, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final int propagatorIndex) {
-        super(date, range, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              station.getClockOffsetDriver(),
-              station.getEastOffsetDriver(),
-              station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver(),
-              station.getPrimeMeridianOffsetDriver(),
-              station.getPrimeMeridianDriftDriver(),
-              station.getPolarOffsetXDriver(),
-              station.getPolarDriftXDriver(),
-              station.getPolarOffsetYDriver(),
-              station.getPolarDriftYDriver());
+        this(station, twoWay, date, range, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param twoWay flag indicating whether it is a two-way measurement
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
+                 final double range, final double sigma, final double baseWeight,
+                 final ObservableSatellite satellite) {
+        super(date, range, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(station.getClockOffsetDriver());
+        addParameterDriver(station.getEastOffsetDriver());
+        addParameterDriver(station.getNorthOffsetDriver());
+        addParameterDriver(station.getZenithOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianDriftDriver());
+        addParameterDriver(station.getPolarOffsetXDriver());
+        addParameterDriver(station.getPolarDriftXDriver());
+        addParameterDriver(station.getPolarOffsetYDriver());
+        addParameterDriver(station.getPolarDriftYDriver());
         this.station = station;
         this.twoway = twoWay;
     }

@@ -113,10 +113,12 @@ public class GroundStationTest {
             final Range range = (Range) measurement;
             final String name = range.getStation().getBaseFrame().getName() + changedSuffix;
                 if (changed.getBaseFrame().getName().equals(name)) {
-                    estimator.addMeasurement(new Range(changed, range.getDate().shiftedBy(-deltaClock),
+                    estimator.addMeasurement(new Range(changed, range.isTwoWay(),
+                                                       range.getDate().shiftedBy(-deltaClock),
                                                        range.getObservedValue()[0],
                                                        range.getTheoreticalStandardDeviation()[0],
-                                                       range.getBaseWeight()[0]));
+                                                       range.getBaseWeight()[0],
+                                                       range.getSatellites().get(0)));
                 } else {
                     estimator.addMeasurement(range);
                 }
@@ -191,10 +193,11 @@ public class GroundStationTest {
             final Range range = (Range) measurement;
             final String name = range.getStation().getBaseFrame().getName() + movedSuffix;
                 if (moved.getBaseFrame().getName().equals(name)) {
-                    estimator.addMeasurement(new Range(moved, range.getDate(),
+                    estimator.addMeasurement(new Range(moved, range.isTwoWay(), range.getDate(),
                                                        range.getObservedValue()[0],
                                                        range.getTheoreticalStandardDeviation()[0],
-                                                       range.getBaseWeight()[0]));
+                                                       range.getBaseWeight()[0],
+                                                       range.getSatellites().get(0)));
                 } else {
                     estimator.addMeasurement(range);
                 }
@@ -333,11 +336,12 @@ public class GroundStationTest {
             Range linearRange = (Range) linearMeasurement;
             for (final GroundStation station : zeroEOPContext.stations) {
                 if (station.getBaseFrame().getName().equals(linearRange.getStation().getBaseFrame().getName())) {
-                    Range zeroRange = new Range(station,
+                    Range zeroRange = new Range(station, linearRange.isTwoWay(),
                                                 linearRange.getDate(),
                                                 linearRange.getObservedValue()[0],
                                                 linearRange.getTheoreticalStandardDeviation()[0],
-                                                linearRange.getBaseWeight()[0]);
+                                                linearRange.getBaseWeight()[0],
+                                                linearRange.getSatellites().get(0));
                     estimator.addMeasurement(zeroRange);
                 }
             }

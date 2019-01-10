@@ -64,10 +64,13 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      * @param angular observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated since 9.3, replaced by {@#AngularRaDec(GroundStation, AbsoluteDate,
+     * double[], double[], double[], ObservableSatellite)}
      */
+    @Deprecated
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
-                       final double[] angular, final double[] sigma, final double[] baseWeight) {
-        this(station, referenceFrame, date, angular, sigma, baseWeight, 0);
+                        final double[] angular, final double[] sigma, final double[] baseWeight) {
+        this(station, referenceFrame, date, angular, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -78,21 +81,41 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
+     * @since 9.0
+     * @deprecated since 9.3, replaced by {@#AngularRaDec(GroundStation, AbsoluteDate,
+     * double[], double[], double[], ObservableSatellite)}
      */
+    @Deprecated
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final int propagatorIndex) {
-        super(date, angular, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              station.getClockOffsetDriver(),
-              station.getEastOffsetDriver(),
-              station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver(),
-              station.getPrimeMeridianOffsetDriver(),
-              station.getPrimeMeridianDriftDriver(),
-              station.getPolarOffsetXDriver(),
-              station.getPolarDriftXDriver(),
-              station.getPolarOffsetYDriver(),
-              station.getPolarDriftYDriver());
+        this(station, referenceFrame, date, angular, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param referenceFrame Reference frame in which the right ascension - declination angles are given
+     * @param date date of the measurement
+     * @param angular observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
+                        final double[] angular, final double[] sigma, final double[] baseWeight,
+                        final ObservableSatellite satellite) {
+        super(date, angular, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(station.getClockOffsetDriver());
+        addParameterDriver(station.getEastOffsetDriver());
+        addParameterDriver(station.getNorthOffsetDriver());
+        addParameterDriver(station.getZenithOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianDriftDriver());
+        addParameterDriver(station.getPolarOffsetXDriver());
+        addParameterDriver(station.getPolarDriftXDriver());
+        addParameterDriver(station.getPolarOffsetYDriver());
+        addParameterDriver(station.getPolarDriftYDriver());
         this.station        = station;
         this.referenceFrame = referenceFrame;
     }

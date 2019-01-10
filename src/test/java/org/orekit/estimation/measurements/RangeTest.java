@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -47,6 +48,33 @@ import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class RangeTest {
+
+    @Test
+    public void testDeprecated() {
+        // temporary test for the base ObservedMeasurement interface default method getSatellites()
+        // this prevents the interface to appear as not tested at all in the coverage report
+        List<ObservableSatellite> satellites = new Dummy().getSatellites();
+        Assert.assertEquals(4, satellites.size());
+        Assert.assertEquals(3, satellites.get(0).getPropagatorIndex());
+        Assert.assertEquals(2, satellites.get(1).getPropagatorIndex());
+        Assert.assertEquals(1, satellites.get(2).getPropagatorIndex());
+        Assert.assertEquals(0, satellites.get(3).getPropagatorIndex());
+    }
+
+    private static class Dummy implements ObservedMeasurement<Dummy> {
+            public double[] getObservedValue() { return null; }
+            public AbsoluteDate getDate() { return null; }
+            public void setEnabled(boolean enabled) {}
+            public boolean isEnabled() { return false; }
+            public int getDimension() { return 0; }
+            public double[] getTheoreticalStandardDeviation() { return null; }
+            public double[] getBaseWeight() { return null; }
+            public void addModifier(EstimationModifier<Dummy> modifier) {}
+            public List<EstimationModifier<Dummy>> getModifiers() { return null; }
+            public List<ParameterDriver> getParametersDrivers() { return null; }
+            public List<Integer> getPropagatorsIndices() { return Arrays.asList(3, 2, 1, 0); }
+            public EstimatedMeasurement<Dummy> estimate(int iteration, int evaluation, SpacecraftState[] states) { return null; }
+    }
 
     /**
      * Test the values of the range comparing the observed values and the estimated values

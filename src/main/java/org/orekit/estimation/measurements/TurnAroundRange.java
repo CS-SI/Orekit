@@ -76,11 +76,14 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
      * @param turnAroundRange observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 9.3, replaced by {@link #TurnAroundRange(GroundStation, GroundStation, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight) {
-        this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, 0);
+        this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -92,32 +95,52 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.0
+     * @deprecated as of 9.3, replaced by {@link #TurnAroundRange(GroundStation, GroundStation, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
                            final int propagatorIndex) {
-        super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              masterStation.getClockOffsetDriver(),
-              masterStation.getEastOffsetDriver(),
-              masterStation.getNorthOffsetDriver(),
-              masterStation.getZenithOffsetDriver(),
-              masterStation.getPrimeMeridianOffsetDriver(),
-              masterStation.getPrimeMeridianDriftDriver(),
-              masterStation.getPolarOffsetXDriver(),
-              masterStation.getPolarDriftXDriver(),
-              masterStation.getPolarOffsetYDriver(),
-              masterStation.getPolarDriftYDriver(),
-              // the slave station clock is not used at all, we ignore the corresponding parameter driver
-              slaveStation.getEastOffsetDriver(),
-              slaveStation.getNorthOffsetDriver(),
-              slaveStation.getZenithOffsetDriver(),
-              slaveStation.getPrimeMeridianOffsetDriver(),
-              slaveStation.getPrimeMeridianDriftDriver(),
-              slaveStation.getPolarOffsetXDriver(),
-              slaveStation.getPolarDriftXDriver(),
-              slaveStation.getPolarOffsetYDriver(),
-              slaveStation.getPolarDriftYDriver());
+        this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param masterStation ground station from which measurement is performed
+     * @param slaveStation ground station reflecting the signal
+     * @param date date of the measurement
+     * @param turnAroundRange observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
+                           final AbsoluteDate date, final double turnAroundRange,
+                           final double sigma, final double baseWeight,
+                           final ObservableSatellite satellite) {
+        super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(masterStation.getClockOffsetDriver());
+        addParameterDriver(masterStation.getEastOffsetDriver());
+        addParameterDriver(masterStation.getNorthOffsetDriver());
+        addParameterDriver(masterStation.getZenithOffsetDriver());
+        addParameterDriver(masterStation.getPrimeMeridianOffsetDriver());
+        addParameterDriver(masterStation.getPrimeMeridianDriftDriver());
+        addParameterDriver(masterStation.getPolarOffsetXDriver());
+        addParameterDriver(masterStation.getPolarDriftXDriver());
+        addParameterDriver(masterStation.getPolarOffsetYDriver());
+        addParameterDriver(masterStation.getPolarDriftYDriver());
+        // the slave station clock is not used at all, we ignore the corresponding parameter driver
+        addParameterDriver(slaveStation.getEastOffsetDriver());
+        addParameterDriver(slaveStation.getNorthOffsetDriver());
+        addParameterDriver(slaveStation.getZenithOffsetDriver());
+        addParameterDriver(slaveStation.getPrimeMeridianOffsetDriver());
+        addParameterDriver(slaveStation.getPrimeMeridianDriftDriver());
+        addParameterDriver(slaveStation.getPolarOffsetXDriver());
+        addParameterDriver(slaveStation.getPolarDriftXDriver());
+        addParameterDriver(slaveStation.getPolarOffsetYDriver());
+        addParameterDriver(slaveStation.getPolarDriftYDriver());
         this.masterStation = masterStation;
         this.slaveStation = slaveStation;
     }

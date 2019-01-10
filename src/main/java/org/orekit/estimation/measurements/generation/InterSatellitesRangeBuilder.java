@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -35,20 +36,17 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param satellite1Index index of satellite 1 propagator
-     * (i.e. the satellite which receives the signal and performs
-     * the measurement)
-     * @param satellite2Index index of satellite 2 propagator
-     * (i.e. the satellite which simply emits the signal in the one-way
-     * case, or reflects the signal in the two-way case)
+     * @param receiver satellite which receives the signal and performs the measurement
+     * @param remote satellite which simply emits the signal in the one-way case,
+     * or reflects the signal in the two-way case
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      */
     public InterSatellitesRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final int satellite1Index, final int satellite2Index,
+                                       final ObservableSatellite receiver, final ObservableSatellite remote,
                                        final boolean twoWay, final double sigma, final double baseWeight) {
-        super(noiseSource, sigma, baseWeight, satellite1Index, satellite2Index);
+        super(noiseSource, sigma, baseWeight, receiver, remote);
         this.twoway  = twoWay;
     }
 
@@ -56,13 +54,13 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
     @Override
     public InterSatellitesRange build(final SpacecraftState[] states) {
 
-        final int[] indices         = getPropagatorsIndices();
-        final double sigma          = getTheoreticalStandardDeviation()[0];
-        final double baseWeight     = getBaseWeight()[0];
-        final SpacecraftState state = states[indices[0]];
+        final ObservableSatellite[] satellites = getSatellites();
+        final double sigma                     = getTheoreticalStandardDeviation()[0];
+        final double baseWeight                = getBaseWeight()[0];
+        final SpacecraftState state            = states[satellites[0].getPropagatorIndex()];
 
         // create a dummy measurement
-        final InterSatellitesRange dummy = new InterSatellitesRange(indices[0], indices[1], twoway, state.getDate(),
+        final InterSatellitesRange dummy = new InterSatellitesRange(satellites[0], satellites[1], twoway, state.getDate(),
                                                                     Double.NaN, sigma, baseWeight);
         for (final EstimationModifier<InterSatellitesRange> modifier : getModifiers()) {
             dummy.addModifier(modifier);
@@ -87,7 +85,7 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
         }
 
         // generate measurement
-        final InterSatellitesRange measurement = new InterSatellitesRange(indices[0], indices[1], twoway, state.getDate(),
+        final InterSatellitesRange measurement = new InterSatellitesRange(satellites[0], satellites[1], twoway, state.getDate(),
                                                                           range, sigma, baseWeight);
         for (final EstimationModifier<InterSatellitesRange> modifier : getModifiers()) {
             measurement.addModifier(modifier);

@@ -233,8 +233,7 @@ public class EstimationTestUtils {
     }
 
     public static Propagator createPropagator(final Orbit initialOrbit,
-                                              final PropagatorBuilder propagatorBuilder)
-        {
+                                              final PropagatorBuilder propagatorBuilder) {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
@@ -250,10 +249,9 @@ public class EstimationTestUtils {
     }
 
     public static List<ObservedMeasurement<?>> createMeasurements(final Propagator propagator,
-                                                          final MeasurementCreator creator,
-                                                          final double startPeriod, final double endPeriod,
-                                                          final double step)
-        {
+                                                                  final MeasurementCreator creator,
+                                                                  final double startPeriod, final double endPeriod,
+                                                                  final double step) {
 
         propagator.setMasterMode(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();

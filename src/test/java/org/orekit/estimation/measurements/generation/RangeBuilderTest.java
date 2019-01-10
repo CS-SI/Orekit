@@ -23,6 +23,7 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.junit.Test;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
 
@@ -33,13 +34,13 @@ public class RangeBuilderTest extends AbstractGroundMeasurementBuilderTest<Range
 
     protected MeasurementBuilder<Range> getBuilder(final RandomGenerator random,
                                                    final GroundStation groundStation,
-                                                   final int propagatorIndex) {
+                                                   final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<Range> rb =
                         new RangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                      1.0e-10,
                                                                                                      new GaussianRandomGenerator(random)),
-                                         groundStation, true, SIGMA, 1.0, propagatorIndex);
+                                         groundStation, true, SIGMA, 1.0, satellite);
         rb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },

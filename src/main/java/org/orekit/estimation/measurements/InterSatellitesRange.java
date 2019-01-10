@@ -36,12 +36,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * For one-way measurements, a signal is emitted by satellite 2 and received
  * by satellite 1. The measurement value is the elapsed time between emission
- * and reception divided by c were c is the speed of light.
+ * and reception multiplied by c were c is the speed of light.
  * </p>
  * <p>
  * For two-way measurements, a signal is emitted by satellite 1, reflected on
  * satellite 2, and received back by satellite 1 again. The measurement value
- * is the elapsed time between emission and reception divided by 2c were c is
+ * is the elapsed time between emission and reception multiplied by c/2 were c is
  * the speed of light.
  * </p>
  * <p>
@@ -69,12 +69,35 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 9.3, replaced by {@link #InterSatellitesRange(ObservableSatellite, ObservableSatellite,
+     * boolean, AbsoluteDate, double, double, double)}
      */
+    @Deprecated
     public InterSatellitesRange(final int satellite1Index, final int satellite2Index,
                                 final boolean twoWay,
                                 final AbsoluteDate date, final double range,
                                 final double sigma, final double baseWeight) {
-        super(date, range, sigma, baseWeight, Arrays.asList(satellite1Index, satellite2Index));
+        this(new ObservableSatellite(satellite1Index), new ObservableSatellite(satellite2Index),
+             twoWay, date, range, sigma, baseWeight);
+    }
+
+    /** Simple constructor.
+     * @param receiver satellite which receives the signal and performs the measurement
+     * @param remote satellite which simply emits the signal in the one-way case,
+     * or reflects the signal in the two-way case
+     * @param twoWay flag indicating whether it is a two-way measurement
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @since 9.3
+     */
+    public InterSatellitesRange(final ObservableSatellite receiver,
+                                final ObservableSatellite remote,
+                                final boolean twoWay,
+                                final AbsoluteDate date, final double range,
+                                final double sigma, final double baseWeight) {
+        super(date, range, sigma, baseWeight, Arrays.asList(receiver, remote));
         this.twoway = twoWay;
     }
 
@@ -100,8 +123,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         //  - 6..8  - Position of the satellite 2 in inertial frame
         //  - 9..11 - Velocity of the satellite 2 in inertial frame
         final int nbParams = 12;
-        final DSFactory                          factory = new DSFactory(nbParams, 1);
-        final Field<DerivativeStructure>         field   = factory.getDerivativeField();
+        final DSFactory                  factory = new DSFactory(nbParams, 1);
+        final Field<DerivativeStructure> field   = factory.getDerivativeField();
 
         // coordinates of both satellites
         final SpacecraftState state1 = states[getPropagatorsIndices().get(0)];

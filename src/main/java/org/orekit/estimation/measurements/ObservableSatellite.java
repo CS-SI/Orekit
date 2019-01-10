@@ -16,25 +16,28 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.orekit.propagation.SpacecraftState;
+/** Class modeling a satellite that can be observed.
+ *
+ * @author Luc Maisonobe
+ * @since 9.3
+ */
+public class ObservableSatellite {
 
-public class PVMeasurementCreator extends MeasurementCreator {
+    /** Index of the propagator related to this satellite. */
+    private final int propagatorIndex;
 
-    private final ObservableSatellite satellite;
-
-    public PVMeasurementCreator() {
-        this.satellite = new ObservableSatellite(0);
+    /** Simple constructor.
+     * @param propagatorIndex index of the propagator related to this satellite
+     */
+    public ObservableSatellite(final int propagatorIndex) {
+        this.propagatorIndex = propagatorIndex;
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
-        final Vector3D p = currentState.getPVCoordinates().getPosition();
-        final Vector3D v = currentState.getPVCoordinates().getVelocity();
-        final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0, satellite);
-        Assert.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);
-        Assert.assertEquals(0.0, Vector3D.distance(v, measurement.getVelocity()), 1.0e-10);
-        addMeasurement(measurement);
+    /** Get the index of the propagator related to this satellite.
+     * @return index of the propagator related to this satellite
+     */
+    public int getPropagatorIndex() {
+        return propagatorIndex;
     }
 
 }
