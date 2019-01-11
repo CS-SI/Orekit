@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+       <action dev="bryan" type="add" issue="512">
+        Added weather model Global Pressure and Temperature 2.
+      </action>
       <action dev="bryan" type="add" issue="511">
         Added weather model Global Pressure and Temperature.
       </action>
