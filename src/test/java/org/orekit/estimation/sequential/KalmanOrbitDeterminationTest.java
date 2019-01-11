@@ -64,6 +64,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
@@ -642,6 +643,7 @@ public class KalmanOrbitDeterminationTest {
 
         final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
+        final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
@@ -658,12 +660,13 @@ public class KalmanOrbitDeterminationTest {
                 // the measurements come from a Rinex file
                 measurements.addAll(readRinex(new File(input.getParentFile(), fileName),
                                               parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
-                                              stations, satRangeBias, satAntennaRangeModifier, weights,
+                                              stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
                                               rangeOutliersManager, rangeRateOutliersManager));
             } else {
                 // the measurements come from an Orekit custom file
                 measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
-                                                     stations, pvData, satRangeBias, satAntennaRangeModifier, weights,
+                                                     stations, pvData, satellite,
+                                                     satRangeBias, satAntennaRangeModifier, weights,
                                                      rangeOutliersManager,
                                                      rangeRateOutliersManager,
                                                      azElOutliersManager,
@@ -1665,6 +1668,7 @@ public class KalmanOrbitDeterminationTest {
                                                              stationAltitudes[i]);
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
             station.getClockOffsetDriver().setMaxValue(stationClockOffsetsMax[i]);
@@ -1887,10 +1891,36 @@ public class KalmanOrbitDeterminationTest {
                           parser.getDouble(ParameterKey.PV_MEASUREMENTS_VELOCITY_SIGMA));
     }
 
+    /** Set up satellite data.
+     * @param parser input file parser
+     * @return satellite data
+     * @throws NoSuchElementException if input parameters are missing
+     */
+    private ObservableSatellite createObservableSatellite(final KeyValueFileParser<ParameterKey> parser)
+        throws NoSuchElementException {
+        ObservableSatellite obsSat = new ObservableSatellite(0);
+        ParameterDriver clockOffsetDriver = obsSat.getClockOffsetDriver();
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
+            clockOffsetDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+            clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN)) {
+            clockOffsetDriver.setMinValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX)) {
+            clockOffsetDriver.setMaxValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED)) {
+            clockOffsetDriver.setSelected(parser.getBoolean(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED));
+        }
+        return obsSat;
+    }
+
     /** Read a RINEX measurements file.
      * @param file measurements file
      * @param satId satellite we are interested in
      * @param stations name to stations data map
+     * @param satellite satellite reference
      * @param satRangeBias range bias due to transponder delay
      * @param satAntennaRangeModifier modifier for on-board antenna offset
      * @param weights base weights for measurements
@@ -1900,6 +1930,7 @@ public class KalmanOrbitDeterminationTest {
      */
     private List<ObservedMeasurement<?>> readRinex(final File file, final String satId,
                                                    final Map<String, StationData> stations,
+                                                   final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
                                                    final OnBoardAntennaRangeModifier satAntennaRangeModifier,
                                                    final Weights weights,
@@ -1936,9 +1967,9 @@ public class KalmanOrbitDeterminationTest {
                                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                           stationName + " not configured");
                             }
-                            Range range = new Range(stationData.station, observationDataSet.getDate(),
+                            Range range = new Range(stationData.station, false, observationDataSet.getDate(),
                                                     od.getValue(), stationData.rangeSigma,
-                                                    weights.rangeBaseWeight, false);
+                                                    weights.rangeBaseWeight, satellite);
                             range.addModifier(iono.getRangeModifier(od.getObservationType().getFrequency(system),
                                                                     observationDataSet.getDate()));
                             if (satAntennaRangeModifier != null) {
@@ -1965,7 +1996,7 @@ public class KalmanOrbitDeterminationTest {
                             }
                             RangeRate rangeRate = new RangeRate(stationData.station, observationDataSet.getDate(),
                                                                 od.getValue(), stationData.rangeRateSigma,
-                                                                weights.rangeRateBaseWeight, false);
+                                                                weights.rangeRateBaseWeight, false, satellite);
                             rangeRate.addModifier(iono.getRangeRateModifier(od.getObservationType().getFrequency(system),
                                                                             observationDataSet.getDate()));
                             if (stationData.rangeRateBias != null) {
@@ -1986,6 +2017,7 @@ public class KalmanOrbitDeterminationTest {
      * @param file measurements file
      * @param stations name to stations data map
      * @param pvData PV measurements data
+     * @param satellite satellite reference
      * @param satRangeBias range bias due to transponder delay
      * @param satAntennaRangeModifier modifier for on-board antenna offset
      * @param weights base weights for measurements
@@ -1998,6 +2030,7 @@ public class KalmanOrbitDeterminationTest {
     private List<ObservedMeasurement<?>> readMeasurements(final File file,
                                                           final Map<String, StationData> stations,
                                                           final PVData pvData,
+                                                          final ObservableSatellite satellite,
                                                           final Bias<Range> satRangeBias,
                                                           final OnBoardAntennaRangeModifier satAntennaRangeModifier,
                                                           final Weights weights,
@@ -2023,7 +2056,7 @@ public class KalmanOrbitDeterminationTest {
                     }
                     switch (fields[1]) {
                         case "RANGE" :
-                            final Range range = new RangeParser().parseFields(fields, stations, pvData,
+                            final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
                                                                               satRangeBias, weights,
                                                                               line, lineNumber, file.getName());
                             if (satAntennaRangeModifier != null) {
@@ -2035,7 +2068,7 @@ public class KalmanOrbitDeterminationTest {
                             addIfNonZeroWeight(range, measurements);
                             break;
                         case "RANGE_RATE" :
-                            final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData,
+                            final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
                                                                                           satRangeBias, weights,
                                                                                           line, lineNumber, file.getName());
                             if (rangeOutliersManager != null) {
@@ -2044,16 +2077,16 @@ public class KalmanOrbitDeterminationTest {
                             addIfNonZeroWeight(rangeRate, measurements);
                             break;
                         case "AZ_EL" :
-                            final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData,
-                                                                                 satRangeBias, weights,
-                                                                                 line, lineNumber, file.getName());
+                            final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData, satellite,
+                                                                                     satRangeBias, weights,
+                                                                                     line, lineNumber, file.getName());
                             if (azElOutliersManager != null) {
                                 angular.addModifier(azElOutliersManager);
                             }
                             addIfNonZeroWeight(angular, measurements);
                             break;
                         case "PV" :
-                            final PV pv = new PVParser().parseFields(fields, stations, pvData,
+                            final PV pv = new PVParser().parseFields(fields, stations, pvData, satellite,
                                                                      satRangeBias, weights,
                                                                      line, lineNumber, file.getName());
                             if (pvOutliersManager != null) {
@@ -2219,6 +2252,7 @@ public class KalmanOrbitDeterminationTest {
          * @param fields measurements line fields
          * @param stations name to stations data map
          * @param pvData PV measurements data
+         * @param satellite satellite reference
          * @param satRangeBias range bias due to transponder delay
          * @param weight base weights for measurements
          * @param line complete line
@@ -2228,10 +2262,9 @@ public class KalmanOrbitDeterminationTest {
          */
         public abstract T parseFields(String[] fields,
                                       Map<String, StationData> stations,
-                                      PVData pvData,
+                                      PVData pvData, ObservableSatellite satellite,
                                       Bias<Range> satRangeBias, Weights weight,
-                                      String line, int lineNumber, String fileName)
-                                                     ;
+                                      String line, int lineNumber, String fileName);
 
         /** Check the number of fields.
          * @param expected expected number of fields
@@ -2301,19 +2334,20 @@ public class KalmanOrbitDeterminationTest {
         public Range parseFields(final String[] fields,
                                  final Map<String, StationData> stations,
                                  final PVData pvData,
+                                 final ObservableSatellite satellite,
                                  final Bias<Range> satRangeBias,
                                  final Weights weights,
                                  final String line,
                                  final int lineNumber,
-                                 final String fileName)
-                                                 {
+                                 final String fileName) {
             checkFields(4, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
-            final Range range = new Range(stationData.station,
+            final Range range = new Range(stationData.station, true,
                                           getDate(fields[0], line, lineNumber, fileName),
                                           Double.parseDouble(fields[3]) * 1000.0,
                                           stationData.rangeSigma,
-                                          weights.rangeBaseWeight);
+                                          weights.rangeBaseWeight,
+                                          satellite);
             if (stationData.rangeBias != null) {
                 range.addModifier(stationData.rangeBias);
             }
@@ -2334,12 +2368,12 @@ public class KalmanOrbitDeterminationTest {
         public RangeRate parseFields(final String[] fields,
                                      final Map<String, StationData> stations,
                                      final PVData pvData,
+                                     final ObservableSatellite satellite,
                                      final Bias<Range> satRangeBias,
                                      final Weights weights,
                                      final String line,
                                      final int lineNumber,
-                                     final String fileName)
-                                                     {
+                                     final String fileName) {
             checkFields(4, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
             final RangeRate rangeRate = new RangeRate(stationData.station,
@@ -2347,7 +2381,7 @@ public class KalmanOrbitDeterminationTest {
                                                       Double.parseDouble(fields[3]) * 1000.0,
                                                       stationData.rangeRateSigma,
                                                       weights.rangeRateBaseWeight,
-                                                      true);
+                                                      true, satellite);
             if (stationData.rangeRateBias != null) {
                 rangeRate.addModifier(stationData.rangeRateBias);
             }
@@ -2362,12 +2396,12 @@ public class KalmanOrbitDeterminationTest {
         public AngularAzEl parseFields(final String[] fields,
                                        final Map<String, StationData> stations,
                                        final PVData pvData,
+                                       final ObservableSatellite satellite,
                                        final Bias<Range> satRangeBias,
                                        final Weights weights,
                                        final String line,
                                        final int lineNumber,
-                                       final String fileName)
-                                                       {
+                                       final String fileName) {
             checkFields(5, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
             final AngularAzEl azEl = new AngularAzEl(stationData.station,
@@ -2377,7 +2411,8 @@ public class KalmanOrbitDeterminationTest {
                                                          FastMath.toRadians(Double.parseDouble(fields[4]))
             },
                                                      stationData.azElSigma,
-                                                     weights.azElBaseWeight);
+                                                     weights.azElBaseWeight,
+                                                     satellite);
             if (stationData.refractionCorrection != null) {
                 azEl.addModifier(stationData.refractionCorrection);
             }
@@ -2395,12 +2430,12 @@ public class KalmanOrbitDeterminationTest {
         public PV parseFields(final String[] fields,
                               final Map<String, StationData> stations,
                               final PVData pvData,
+                              final ObservableSatellite satellite,
                               final Bias<Range> satRangeBias,
                               final Weights weights,
                               final String line,
                               final int lineNumber,
-                              final String fileName)
-                                              {
+                              final String fileName) {
             // field 2, which corresponds to stations in other measurements, is ignored
             // this allows the measurements files to be columns aligned
             // by inserting something like "----" instead of a station name
@@ -2414,7 +2449,8 @@ public class KalmanOrbitDeterminationTest {
                                                                           Double.parseDouble(fields[8]) * 1000.0),
                                                              pvData.positionSigma,
                                                              pvData.velocitySigma,
-                                                             weights.pvBaseWeight);
+                                                             weights.pvBaseWeight,
+                                                             satellite);
         }
     };
 
@@ -2825,6 +2861,10 @@ public class KalmanOrbitDeterminationTest {
         ON_BOARD_ANTENNA_PHASE_CENTER_X,
         ON_BOARD_ANTENNA_PHASE_CENTER_Y,
         ON_BOARD_ANTENNA_PHASE_CENTER_Z,
+        ON_BOARD_CLOCK_OFFSET,
+        ON_BOARD_CLOCK_OFFSET_MIN,
+        ON_BOARD_CLOCK_OFFSET_MAX,
+        ON_BOARD_CLOCK_OFFSET_ESTIMATED,
         GROUND_STATION_NAME,
         GROUND_STATION_LATITUDE,
         GROUND_STATION_LONGITUDE,

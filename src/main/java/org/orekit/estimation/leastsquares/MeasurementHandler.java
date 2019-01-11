@@ -90,8 +90,7 @@ class MeasurementHandler implements MultiSatStepHandler {
             final ObservedMeasurement<?> observed = next.getMeasurement();
 
             // estimate the theoretical measurement
-            final List<Integer>           indices  = observed.getPropagatorsIndices();
-            final SpacecraftState[]       states   = new SpacecraftState[indices.size()];
+            final SpacecraftState[] states = new SpacecraftState[observed.getSatellites().size()];
             for (int i = 0; i < states.length; ++i) {
                 states[i] = interpolators.get(i).getInterpolatedState(next.getDate());
             }

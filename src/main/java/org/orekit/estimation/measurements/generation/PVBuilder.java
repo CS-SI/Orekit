@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -36,31 +37,31 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
      * @param sigmaPosition theoretical standard deviation on position components
      * @param sigmaVelocity theoretical standard deviation on velocity components
      * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
+     * @param satellite satellite related to this builder
      */
     public PVBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                      final double sigmaPosition, final double sigmaVelocity,
-                     final double baseWeight, final int propagatorIndex) {
+                     final double baseWeight, final ObservableSatellite satellite) {
         super(noiseSource,
               new double[] {
                   sigmaPosition, sigmaVelocity
               }, new double[] {
                   baseWeight
-              }, propagatorIndex);
+              }, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
     public PV build(final SpacecraftState[] states) {
 
-        final int propagatorIndex   = getPropagatorsIndices()[0];
-        final double[] sigma        = getTheoreticalStandardDeviation();
-        final double baseWeight     = getBaseWeight()[0];
-        final SpacecraftState state = states[propagatorIndex];
+        final ObservableSatellite satellite = getSatellites()[0];
+        final double[] sigma                = getTheoreticalStandardDeviation();
+        final double baseWeight             = getBaseWeight()[0];
+        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
 
         // create a dummy measurement
         final PV dummy = new PV(state.getDate(), Vector3D.NaN, Vector3D.NaN,
-                                sigma[0], sigma[1], baseWeight, propagatorIndex);
+                                sigma[0], sigma[1], baseWeight, satellite);
         for (final EstimationModifier<PV> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -91,7 +92,7 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
         // generate measurement
         final PV measurement = new PV(state.getDate(),
                                       new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5]),
-                                      sigma[0], sigma[1], baseWeight, propagatorIndex);
+                                      sigma[0], sigma[1], baseWeight, satellite);
         for (final EstimationModifier<PV> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

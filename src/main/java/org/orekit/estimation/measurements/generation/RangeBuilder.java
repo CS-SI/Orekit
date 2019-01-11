@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -43,13 +44,13 @@ public class RangeBuilder extends AbstractMeasurementBuilder<Range> {
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
+     * @param satellite satellite related to this builder
      */
     public RangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                         final GroundStation station, final boolean twoWay,
                         final double sigma, final double baseWeight,
-                        final int propagatorIndex) {
-        super(noiseSource, sigma, baseWeight, propagatorIndex);
+                        final ObservableSatellite satellite) {
+        super(noiseSource, sigma, baseWeight, satellite);
         this.station = station;
         this.twoway  = twoWay;
     }
@@ -58,13 +59,13 @@ public class RangeBuilder extends AbstractMeasurementBuilder<Range> {
     @Override
     public Range build(final SpacecraftState[] states) {
 
-        final int propagatorIndex   = getPropagatorsIndices()[0];
-        final double sigma          = getTheoreticalStandardDeviation()[0];
-        final double baseWeight     = getBaseWeight()[0];
-        final SpacecraftState state = states[propagatorIndex];
+        final ObservableSatellite satellite = getSatellites()[0];
+        final double sigma                  = getTheoreticalStandardDeviation()[0];
+        final double baseWeight             = getBaseWeight()[0];
+        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
 
         // create a dummy measurement
-        final Range dummy = new Range(station, twoway, state.getDate(), Double.NaN, sigma, baseWeight, propagatorIndex);
+        final Range dummy = new Range(station, twoway, state.getDate(), Double.NaN, sigma, baseWeight, satellite);
         for (final EstimationModifier<Range> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -88,7 +89,7 @@ public class RangeBuilder extends AbstractMeasurementBuilder<Range> {
         }
 
         // generate measurement
-        final Range measurement = new Range(station, twoway, state.getDate(), range, sigma, baseWeight, propagatorIndex);
+        final Range measurement = new Range(station, twoway, state.getDate(), range, sigma, baseWeight, satellite);
         for (final EstimationModifier<Range> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

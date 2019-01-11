@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
@@ -60,6 +61,7 @@ public class IodGibbsTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
 
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -69,17 +71,17 @@ public class IodGibbsTest {
         final Vector3D position1 = new Vector3D(measurements.get(0).getObservedValue()[0],
                                                 measurements.get(0).getObservedValue()[1],
                                                 measurements.get(0).getObservedValue()[2]);
-        final PV pv1 = new PV(measurements.get(0).getDate(), position1, Vector3D.ZERO, 0., 0., 1.);
+        final PV pv1 = new PV(measurements.get(0).getDate(), position1, Vector3D.ZERO, 0., 0., 1., satellite);
 
         final Vector3D position2 = new Vector3D(measurements.get(1).getObservedValue()[0],
                                                 measurements.get(1).getObservedValue()[1],
                                                 measurements.get(1).getObservedValue()[2]);
-        final PV pv2 = new PV(measurements.get(1).getDate(), position2, Vector3D.ZERO, 0., 0., 1.);
+        final PV pv2 = new PV(measurements.get(1).getDate(), position2, Vector3D.ZERO, 0., 0., 1., satellite);
 
         final Vector3D position3 = new Vector3D(measurements.get(2).getObservedValue()[0],
                                                 measurements.get(2).getObservedValue()[1],
                                                 measurements.get(2).getObservedValue()[2]);
-        final PV pv3 = new PV(measurements.get(2).getDate(), position3, Vector3D.ZERO, 0., 0., 1.);
+        final PV pv3 = new PV(measurements.get(2).getDate(), position3, Vector3D.ZERO, 0., 0., 1., satellite);
 
         // instantiate the IOD method
         final IodGibbs gibbs = new IodGibbs(mu);

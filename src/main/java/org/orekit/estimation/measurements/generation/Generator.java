@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
@@ -51,19 +52,19 @@ public class Generator {
 
     /** Add a propagator.
      * @param propagator to add
-     * @return index of the propagator
+     * @return satellite satellite propagated by the propagator
      */
-    public int addPropagator(final Propagator propagator) {
+    public ObservableSatellite addPropagator(final Propagator propagator) {
         propagators.add(propagator);
-        return propagators.size() - 1;
+        return new ObservableSatellite(propagators.size() - 1);
     }
 
     /** Get a registered propagator.
-     * @param index index of the propagator, as returned by {@link #addPropagator(Propagator)}
-     * @return propagator at index
+     * @param satellite satellite propagated by the propagator {@link #addPropagator(Propagator)}
+     * @return propagator corresponding to satellite
      */
-    public Propagator getPropagator(final int index) {
-        return propagators.get(index);
+    public Propagator getPropagator(final ObservableSatellite satellite) {
+        return propagators.get(satellite.getPropagatorIndex());
     }
 
     /** Add a sequences generator for a specific measurement type.

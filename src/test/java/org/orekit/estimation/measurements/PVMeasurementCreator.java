@@ -22,10 +22,16 @@ import org.orekit.propagation.SpacecraftState;
 
 public class PVMeasurementCreator extends MeasurementCreator {
 
+    private final ObservableSatellite satellite;
+
+    public PVMeasurementCreator() {
+        this.satellite = new ObservableSatellite(0);
+    }
+
     public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         final Vector3D p = currentState.getPVCoordinates().getPosition();
         final Vector3D v = currentState.getPVCoordinates().getVelocity();
-        final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0);
+        final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0, satellite);
         Assert.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);
         Assert.assertEquals(0.0, Vector3D.distance(v, measurement.getVelocity()), 1.0e-10);
         addMeasurement(measurement);

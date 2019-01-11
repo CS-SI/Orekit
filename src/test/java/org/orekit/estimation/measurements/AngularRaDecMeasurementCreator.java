@@ -35,9 +35,11 @@ import org.orekit.utils.ParameterDriver;
 public class AngularRaDecMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
+    private final ObservableSatellite satellite;
 
     public AngularRaDecMeasurementCreator(final Context context) {
-        this.context = context;
+        this.context   = context;
+        this.satellite = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
@@ -60,8 +62,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         for (final GroundStation station : context.stations) {
 
             final AbsoluteDate     date      = currentState.getDate();
@@ -110,7 +111,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
                 // Declination
                 angular[1] = staSat.getDelta();
 
-                addMeasurement(new AngularRaDec(station, inertialFrame, date, angular, sigma, baseweight));
+                addMeasurement(new AngularRaDec(station, inertialFrame, date, angular, sigma, baseweight, satellite));
             }
 
         }

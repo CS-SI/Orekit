@@ -49,29 +49,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param range observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     */
-    public TurnAroundRangeAnalytic(final GroundStation masterStation, final GroundStation slaveStation,
-                                   final AbsoluteDate date, final double turnAroundRange,
-                                   final double sigma, final double baseWeight)
-        {
-        super(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight);
-    }
-
     /** Constructor from parent TurnAroundRange class
      * @param Range parent class
      */
-    public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange)
-        {
+    public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange) {
         super(turnAroundRange.getMasterStation(), turnAroundRange.getSlaveStation(),
               turnAroundRange.getDate(), turnAroundRange.getObservedValue()[0],
               turnAroundRange.getTheoreticalStandardDeviation()[0],
-              turnAroundRange.getBaseWeight()[0]);
+              turnAroundRange.getBaseWeight()[0],
+              new ObservableSatellite(0));
     }
 
 

@@ -185,8 +185,8 @@
       * orbital parameters estimation (or only a subset if desired)
       * force model parameters estimation (drag coefficients, radiation pressure coefficients,
         central attraction, maneuver thrust or flow rate)
-      * measurements parameters estimation (biases, station clock offset, station position, pole motion and rate,
-        prime meridian correction and rate)
+      * measurements parameters estimation (biases, satellite clock offset, station clock offset,
+        station position, pole motion and rate, prime meridian correction and rate)
 
     * multi-satellites orbit determination
     * ground stations displacements due to solid tides

@@ -66,8 +66,9 @@ import org.orekit.utils.ParameterDriver;
  * </p>
  * <p>
  * Since 9.3, this class also adds a station clock offset parameter, which manages
- * the value that must be added to the observed measurement date to get the real
- * physical date at which the measurement was performed.
+ * the value that must be subtracted from the observed measurement date to get the real
+ * physical date at which the measurement was performed (i.e. the offset is negative
+ * if the ground station clock is slow and positive if it is fast).
  * </p>
  * <ol>
  *   <li>precession/nutation, as theoretical model plus celestial pole EOP parameters</li>
@@ -396,9 +397,9 @@ public class GroundStation {
     public GeodeticPoint getOffsetGeodeticPoint(final AbsoluteDate date) {
 
         // take station offset into account
-        final double    x          = parametricModel(eastOffsetDriver);
-        final double    y          = parametricModel(northOffsetDriver);
-        final double    z          = parametricModel(zenithOffsetDriver);
+        final double    x          = eastOffsetDriver.getValue();
+        final double    y          = northOffsetDriver.getValue();
+        final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
         final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), date);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
@@ -428,16 +429,16 @@ public class GroundStation {
     public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate clockDate) {
 
         // take clock offset into account
-        final double offset = parametricModel(clockOffsetDriver);
-        final AbsoluteDate offsetCompensatedDate = new AbsoluteDate(clockDate, offset);
+        final double offset = clockOffsetDriver.getValue();
+        final AbsoluteDate offsetCompensatedDate = new AbsoluteDate(clockDate, -offset);
 
         // take Earth offsets into account
         final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(offsetCompensatedDate).getInverse();
 
         // take station offsets into account
-        final double    x          = parametricModel(eastOffsetDriver);
-        final double    y          = parametricModel(northOffsetDriver);
-        final double    z          = parametricModel(zenithOffsetDriver);
+        final double    x          = eastOffsetDriver.getValue();
+        final double    y          = northOffsetDriver.getValue();
+        final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
         final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
@@ -480,9 +481,9 @@ public class GroundStation {
                                                                    final DSFactory factory,
                                                                    final Map<String, Integer> indices) {
         // take clock offset into account
-        final DerivativeStructure offset = parametricModel(factory, clockOffsetDriver, indices);
+        final DerivativeStructure offset = clockOffsetDriver.getValue(factory, indices);
         final FieldAbsoluteDate<DerivativeStructure> offsetCompensatedDate =
-                        new FieldAbsoluteDate<DerivativeStructure>(clockDate, offset);
+                        new FieldAbsoluteDate<DerivativeStructure>(clockDate, offset.negate());
 
         return getOffsetToInertial(inertial, offsetCompensatedDate, factory, indices);
     }
@@ -517,9 +518,9 @@ public class GroundStation {
                         estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, factory, indices).getInverse();
 
         // take station offsets into account
-        final DerivativeStructure  x          = parametricModel(factory, eastOffsetDriver,   indices);
-        final DerivativeStructure  y          = parametricModel(factory, northOffsetDriver,  indices);
-        final DerivativeStructure  z          = parametricModel(factory, zenithOffsetDriver, indices);
+        final DerivativeStructure  x          = eastOffsetDriver.getValue(factory, indices);
+        final DerivativeStructure  y          = northOffsetDriver.getValue(factory, indices);
+        final DerivativeStructure  z          = zenithOffsetDriver.getValue(factory, indices);
         final BodyShape            baseShape  = baseFrame.getParentShape();
         final Transform            baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
 
@@ -541,28 +542,6 @@ public class GroundStation {
                                     offsetToIntermediate,
                                     new FieldTransform<>(offsetCompensatedDate, intermediateToBody, bodyToInert));
 
-    }
-
-    /** Evaluate a parametric model.
-     * @param driver driver managing the parameter
-     * @return value of the parametric model
-     */
-    private double parametricModel(final ParameterDriver driver) {
-        return driver.getValue();
-    }
-
-    /** Evaluate a parametric model.
-     * @param factory factory for the derivatives
-     * @param driver driver managing the parameter
-     * @param indices indices of the estimated parameters in derivatives computations
-     * @return value of the parametric model
-     */
-    private DerivativeStructure parametricModel(final DSFactory factory, final ParameterDriver driver,
-                                                final Map<String, Integer> indices) {
-        final Integer index = indices.get(driver.getName());
-        return (index == null) ?
-             factory.constant(driver.getValue()) :
-             factory.variable(index, driver.getValue());
     }
 
 }

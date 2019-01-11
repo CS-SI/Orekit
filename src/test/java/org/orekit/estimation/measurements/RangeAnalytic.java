@@ -46,27 +46,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class RangeAnalytic extends Range {
 
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param range observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     */
-    public RangeAnalytic(final GroundStation station, final AbsoluteDate date,
-                 final double range, final double sigma, final double baseWeight)
-        {
-        super(station, date, range, sigma, baseWeight);
-    }
-
     /** Constructor from parent Range class
      * @param Range parent class
      */
-    public RangeAnalytic(final Range range)
-        {
-        super(range.getStation(), range.getDate(), range.getObservedValue()[0],
+    public RangeAnalytic(final Range range) {
+        super(range.getStation(), true, range.getDate(), range.getObservedValue()[0],
               range.getTheoreticalStandardDeviation()[0],
-              range.getBaseWeight()[0]);
+              range.getBaseWeight()[0],
+              new ObservableSatellite(0));
     }
 
     /**

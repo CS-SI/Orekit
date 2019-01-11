@@ -33,27 +33,43 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modeling a range measurement from a ground station or
- * from a satellite.
- * <p>
- * For two-way measurements, the measurement is considered
- * to be a signal emitted from a ground station, reflected
- * on spacecraft, and received on the same ground station.
- * Its value is the elapsed time between emission and reception
- * divided by 2c were c is the speed of light.
- * </p>
+/** Class modeling a range measurement from a ground station.
  * <p>
  * For one-way measurements, a signal is emitted by the satellite
- * and received by the ground station. The measurement value
- * is the elapsed time between emission and reception divided by
- * the speed of light.
+ * and received by the ground station. The measurement value is the
+ * elapsed time between emission and reception multiplied by c where
+ * c is the speed of light.
  * </p>
  * <p>
- * The motion of both the station and the
- * spacecraft during the signal flight time are taken into
- * account. The date of the measurement corresponds to the
- * reception on ground of the emitted or reflected signal.
+ * For two-way measurements, the measurement is considered to be a signal
+ * emitted from a ground station, reflected on spacecraft, and received
+ * on the same ground station. Its value is the elapsed time between
+ * emission and reception multiplied by c/2 where c is the speed of light.
  * </p>
+ * <p>
+ * The motion of both the station and the spacecraft during the signal
+ * flight time are taken into account. The date of the measurement
+ * corresponds to the reception on ground of the emitted or reflected signal.
+ * </p>
+ * <p>
+ * The clock offsets of both the ground station and the satellite are taken
+ * into account. These offsets correspond to the values that must be subtracted
+ * from station (resp. satellite) reading of time to compute the real physical
+ * date. These offsets have two effects:
+ * </p>
+ * <ul>
+ *   <li>as measurement date is evaluated at reception time, the real physical date
+ *   of the measurement is the observed date to which the receiving ground station
+ *   clock offset is subtracted</li>
+ *   <li>as range is evaluated using the total signal time of flight, for one-way
+ *   measurements the observed range is the real physical signal time of flight to
+ *   which (Δtg - Δts) ⨉ c is added, where Δtg (resp. Δts) is the clock offset for the
+ *   receiving ground station (resp. emitting satellite). A similar effect exists in
+ *   two-way measurements but it is computed as (Δtg - Δtg) ⨉ c / 2 as the same ground
+ *   station clock is used for initial emission and final reception and therefore it evaluates
+ *   to zero.</li>
+ * </ul>
+ * <p>
  * @author Thierry Ceolin
  * @author Luc Maisonobe
  * @author Maxime Journot
@@ -78,10 +94,13 @@ public class Range extends AbstractMeasurement<Range> {
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 9.3, replaced by {@link #Range(GroundStation, boolean, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight) {
-        this(station, true, date, range, sigma, baseWeight, 0);
+        this(station, true, date, range, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -96,10 +115,13 @@ public class Range extends AbstractMeasurement<Range> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param twoWay flag indicating whether it is a two-way measurement
+     * @deprecated as of 9.3, replaced by {@link #Range(GroundStation, boolean, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Range(final GroundStation station, final AbsoluteDate date, final double range,
                  final double sigma, final double baseWeight, final boolean twoWay) {
-        this(station, twoWay, date, range, sigma, baseWeight, 0);
+        this(station, twoWay, date, range, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -109,12 +131,14 @@ public class Range extends AbstractMeasurement<Range> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.0
+     * @deprecated as of 9.3, replaced by {@link #Range(GroundStation, boolean, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final int propagatorIndex) {
-        this(station, true, date, range, sigma, baseWeight, 0);
+        this(station, true, date, range, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -126,21 +150,44 @@ public class Range extends AbstractMeasurement<Range> {
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.0
+     * @deprecated as of 9.3, replaced by {@link #Range(GroundStation, boolean, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final int propagatorIndex) {
-        super(date, range, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              station.getClockOffsetDriver(),
-              station.getEastOffsetDriver(),
-              station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver(),
-              station.getPrimeMeridianOffsetDriver(),
-              station.getPrimeMeridianDriftDriver(),
-              station.getPolarOffsetXDriver(),
-              station.getPolarDriftXDriver(),
-              station.getPolarOffsetYDriver(),
-              station.getPolarDriftYDriver());
+        this(station, twoWay, date, range, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param twoWay flag indicating whether it is a two-way measurement
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
+                 final double range, final double sigma, final double baseWeight,
+                 final ObservableSatellite satellite) {
+        super(date, range, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(station.getClockOffsetDriver());
+        addParameterDriver(station.getEastOffsetDriver());
+        addParameterDriver(station.getNorthOffsetDriver());
+        addParameterDriver(station.getZenithOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianDriftDriver());
+        addParameterDriver(station.getPolarOffsetXDriver());
+        addParameterDriver(station.getPolarDriftXDriver());
+        addParameterDriver(station.getPolarOffsetYDriver());
+        addParameterDriver(station.getPolarDriftYDriver());
+        if (!twoWay) {
+            // for one way measurements, the satellite clock offset affects the measurement
+            addParameterDriver(satellite.getClockOffsetDriver());
+        }
         this.station = station;
         this.twoway = twoWay;
     }
@@ -165,7 +212,8 @@ public class Range extends AbstractMeasurement<Range> {
                                                                 final int evaluation,
                                                                 final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
 
         // Range derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters
@@ -174,7 +222,7 @@ public class Range extends AbstractMeasurement<Range> {
         // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian...)
+        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
@@ -253,8 +301,13 @@ public class Range extends AbstractMeasurement<Range> {
                                 stationDownlink.toTimeStampedPVCoordinates()
                             });
 
+            // Clock offsets
+            final DerivativeStructure dtg = station.getClockOffsetDriver().getValue(factory, indices);
+            final DerivativeStructure dts = satellite.getClockOffsetDriver().getValue(factory, indices);
+
             // Range value
-            range = tauD.multiply(Constants.SPEED_OF_LIGHT);
+            range = tauD.add(dtg).subtract(dts).multiply(Constants.SPEED_OF_LIGHT);
+
         }
 
         estimated.setEstimatedValue(range.getValue());

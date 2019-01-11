@@ -33,9 +33,10 @@ import org.orekit.utils.ParameterDriver;
 
 public class RangeMeasurementCreator extends MeasurementCreator {
 
-    private final Context  context;
-    private final Vector3D antennaPhaseCenter;
-    private final double   clockOffset;
+    private final Context             context;
+    private final Vector3D            antennaPhaseCenter;
+    private final double              clockOffset;
+    private final ObservableSatellite satellite;
 
     public RangeMeasurementCreator(final Context context) {
         this(context, Vector3D.ZERO, 0.0);
@@ -46,6 +47,7 @@ public class RangeMeasurementCreator extends MeasurementCreator {
         this.context            = context;
         this.antennaPhaseCenter = antennaPhaseCenter;
         this.clockOffset        = clockOffset;
+        this.satellite          = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
@@ -100,8 +102,8 @@ public class RangeMeasurementCreator extends MeasurementCreator {
                 final Vector3D stationAtEmission  =
                                 station.getOffsetToInertial(inertial, emissionDate).transformPosition(Vector3D.ZERO);
                 final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
-                addMeasurement(new Range(station, receptionDate.shiftedBy(-clockOffset),
-                                         0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));
+                addMeasurement(new Range(station, true, receptionDate.shiftedBy(-clockOffset),
+                                         0.5 * (downLinkDistance + upLinkDistance), 1.0, 10, satellite));
             }
 
         }
