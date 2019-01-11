@@ -935,6 +935,10 @@ public class OrbitDetermination {
         final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
         final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
         final double[]  stationAltitudes                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
+        final double[]  stationClockOffsets               = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET);
+        final double[]  stationClockOffsetsMin            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MIN);
+        final double[]  stationClockOffsetsMax            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MAX);
+        final boolean[] stationClockOffsetEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_ESTIMATED);
         final boolean[] stationPositionEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
         final double[]  stationRangeSigma                 = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
         final double[]  stationRangeBias                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
@@ -1024,6 +1028,10 @@ public class OrbitDetermination {
                                                              stationAltitudes[i]);
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
+            station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
+            station.getClockOffsetDriver().setMaxValue(stationClockOffsetsMax[i]);
+            station.getClockOffsetDriver().setSelected(stationClockOffsetEstimated[i]);
             station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
@@ -2465,6 +2473,10 @@ public class OrbitDetermination {
         GROUND_STATION_LATITUDE,
         GROUND_STATION_LONGITUDE,
         GROUND_STATION_ALTITUDE,
+        GROUND_STATION_CLOCK_OFFSET,
+        GROUND_STATION_CLOCK_OFFSET_MIN,
+        GROUND_STATION_CLOCK_OFFSET_MAX,
+        GROUND_STATION_CLOCK_OFFSET_ESTIMATED,
         GROUND_STATION_POSITION_ESTIMATED,
         GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED,
         GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY,

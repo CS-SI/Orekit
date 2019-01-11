@@ -295,8 +295,7 @@ public class EstimationTestUtils {
                                 final double expectedRMS,      final double rmsEps,
                                 final double expectedMax,      final double maxEps,
                                 final double expectedDeltaPos, final double posEps,
-                                final double expectedDeltaVel, final double velEps)
-        {
+                                final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();

@@ -251,7 +251,7 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // Add antenna offset to the measurements

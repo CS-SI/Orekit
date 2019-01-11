@@ -21,7 +21,10 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
-       <action dev="bryan" type="add" issue="512">
+      <action dev="luc" type="add" issue="513">
+        Added clock offset parameter at ground stations level for orbit determination.
+      </action>
+      <action dev="bryan" type="add" issue="512">
         Added weather model Global Pressure and Temperature 2.
       </action>
       <action dev="bryan" type="add" issue="511">

@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.FunctionalDetector.GFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
@@ -44,7 +43,7 @@ public class FunctionalDetectorTest {
     @Test @Deprecated
     public void testFunctionalDetectorDeprecated() {
         // setup
-        GFunction g = SpacecraftState::getMass;
+        org.orekit.propagation.events.FunctionalDetector.GFunction g = SpacecraftState::getMass;
         EventHandler<EventDetector> handler = (s, detector, increasing) -> Action.STOP;
 
         // action

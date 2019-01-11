@@ -494,8 +494,7 @@ public class RangeAnalyticTest {
      * @param isFiniteDifferences Finite differences reference calculation if true, Range class otherwise
      * @param printResults Print the results ?
      */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
-                    {
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -505,6 +504,7 @@ public class RangeAnalyticTest {
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(false);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -561,7 +561,7 @@ public class RangeAnalyticTest {
                                           stationName, measurement.getDate(), date);
                     }
 
-                    for (int i = 0; i < 3; ++i) {
+                    for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);

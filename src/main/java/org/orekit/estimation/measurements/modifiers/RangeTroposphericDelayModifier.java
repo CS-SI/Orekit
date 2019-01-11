@@ -289,7 +289,8 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
 
         }
 
-        for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                          station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {

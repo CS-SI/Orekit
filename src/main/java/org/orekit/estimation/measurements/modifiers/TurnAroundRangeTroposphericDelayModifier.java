@@ -306,7 +306,8 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         }
 
         // Update derivatives with respect to master station position
-        for (final ParameterDriver driver : Arrays.asList(masterStation.getEastOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(masterStation.getClockOffsetDriver(),
+                                                          masterStation.getEastOffsetDriver(),
                                                           masterStation.getNorthOffsetDriver(),
                                                           masterStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
