@@ -24,6 +24,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -109,9 +111,12 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         this.coefficientsA  = null;
         this.zenithDelay    = null;
         this.supportedNames = supportedNames;
-        this.latitude       = latitude;
-        this.longitude      = longitude;
         this.type           = type;
+        this.latitude       = latitude;
+
+        // Normalize longitude between 0° and 360°
+        final double lon = MathUtils.normalizeAngle(FastMath.toRadians(longitude), FastMath.PI);
+        this.longitude   = FastMath.toDegrees(lon);
     }
 
     /** Constructor with default supported names.
