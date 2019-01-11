@@ -37,7 +37,11 @@ import org.orekit.utils.PVCoordinatesProvider;
  * using rich force models and by continuous models built after numerical
  * integration has been completed and dense output data as been
  * gathered.</p>
-
+ * <p>Note that propagators are <em>not</em> thread-safe. There configuration
+ * can be changed as there is at least a {@link #resetInitialState(SpacecraftState)}
+ * method, and even propagators that do not support resetting state (like the
+ * {@link org.orekit.propagation.analytical.tle.TLEPropagator TLEPropagator} do
+ * cache some internal data during computation.</p>
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  *
