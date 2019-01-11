@@ -68,7 +68,7 @@ public class GlobalPressureTemperatureModelTest {
 
         final GlobalPressureTemperatureModel model = new GlobalPressureTemperatureModel(latitude, longitude,
                                                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        model.computeTemperatureAndPressure(height, date);
+        model.weatherParameters(height, date);
 
         final double computedTemperature = model.getTemperature() - 273.15;
         final double computedPressure    = model.getPressure();
@@ -116,7 +116,7 @@ public class GlobalPressureTemperatureModelTest {
 
         final GlobalPressureTemperatureModel model = new GlobalPressureTemperatureModel(latitude, longitude,
                                                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        model.computeTemperatureAndPressure(height, date);
+        model.weatherParameters(height, date);
 
         final double computedTemperature = model.getTemperature() - 273.15;
         final double computedPressure    = model.getPressure();

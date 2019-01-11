@@ -1797,8 +1797,8 @@ public class KalmanOrbitDeterminationTest {
                         final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
                                                                                                           stationLongitudes[i],
                                                                                                           body.getBodyFrame());
-                        weather.computeTemperatureAndPressure(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
-                                                                                                  TimeScalesFactory.getUTC()));
+                        weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
+                                                                                      TimeScalesFactory.getUTC()));
                         final double temperature = weather.getTemperature();
                         final double pressure    = weather.getPressure();
                         troposphericModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,

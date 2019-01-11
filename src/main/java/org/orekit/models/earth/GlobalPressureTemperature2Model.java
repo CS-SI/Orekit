@@ -69,7 +69,7 @@ import org.orekit.utils.Constants;
  * @author Bryan Cazabonne
  *
  */
-public class GlobalPressureTemperature2Model implements DataLoader {
+public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "gpt2_5.grd";
@@ -182,12 +182,8 @@ public class GlobalPressureTemperature2Model implements DataLoader {
         return supportedNames;
     }
 
-    /** This method computes the values of the pressure and the temperature
-     * depending the position of the station.
-     * @param stationHeight the height of the station in m
-     * @param currentDate current date
-     */
-    public void computeWeatherParameters(final double stationHeight, final AbsoluteDate currentDate) {
+    @Override
+    public void weatherParameters(final double stationHeight, final AbsoluteDate currentDate) {
         this.date   = currentDate;
         this.height = stationHeight;
         DataProvidersManager.getInstance().feed(supportedNames, this);

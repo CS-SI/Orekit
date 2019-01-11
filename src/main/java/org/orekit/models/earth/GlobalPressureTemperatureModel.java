@@ -41,7 +41,7 @@ import org.orekit.time.TimeScalesFactory;
  * @author Bryan Cazabonne
  *
  */
-public class GlobalPressureTemperatureModel {
+public class GlobalPressureTemperatureModel implements WeatherModel {
 
     /** Temperature gradient (°C/m). */
     private static final double TEMPERATURE_GRADIENT = -6.5e-3;
@@ -94,12 +94,8 @@ public class GlobalPressureTemperatureModel {
         return pressure;
     }
 
-    /** This method computes the values of the pressure and the temperature
-     * depending the position of the station.
-     * @param height the height of the station in m
-     * @param date current date
-     */
-    public void computeTemperatureAndPressure(final double height, final AbsoluteDate date) {
+    @Override
+    public void weatherParameters(final double height, final AbsoluteDate date) {
 
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());

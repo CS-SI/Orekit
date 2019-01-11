@@ -67,7 +67,7 @@ public class GlobalPressureTemperature2ModelTest {
         final GlobalPressureTemperature2Model model = new GlobalPressureTemperature2Model(latitude, longitude, geoid);
 
         Utils.setDataRoot("gpt2-grid");
-        model.computeWeatherParameters(height, date);
+        model.weatherParameters(height, date);
         
         final double a[]         = model.getA();
         final double temperature = model.getTemperature() - 273.15;
@@ -107,8 +107,8 @@ public class GlobalPressureTemperature2ModelTest {
         model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
 
         Utils.setDataRoot("gpt2-grid");
-        model1.computeWeatherParameters(height, date);
-        model2.computeWeatherParameters(height, date);
+        model1.weatherParameters(height, date);
+        model2.weatherParameters(height, date);
 
         Assert.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
         Assert.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
@@ -123,8 +123,8 @@ public class GlobalPressureTemperature2ModelTest {
         model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
         model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
 
-        model1.computeWeatherParameters(height, date);
-        model2.computeWeatherParameters(height, date);
+        model1.weatherParameters(height, date);
+        model2.weatherParameters(height, date);
 
         Assert.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
         Assert.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
@@ -139,8 +139,8 @@ public class GlobalPressureTemperature2ModelTest {
         model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
         model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
 
-        model1.computeWeatherParameters(height, date);
-        model2.computeWeatherParameters(height, date);
+        model1.weatherParameters(height, date);
+        model2.weatherParameters(height, date);
 
         Assert.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
         Assert.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
@@ -168,7 +168,7 @@ public class GlobalPressureTemperature2ModelTest {
         Utils.setDataRoot("gpt2-grid");
                         
         try {
-            model.computeWeatherParameters(height, date);
+            model.weatherParameters(height, date);
             Assert.fail("An exception should have been thrown");
             
         } catch (OrekitException oe) {
