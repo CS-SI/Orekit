@@ -452,7 +452,9 @@ public class PV extends AbstractMeasurement<PV> {
                                                              final SpacecraftState[] states) {
 
         // PV value
-        final TimeStampedPVCoordinates pv = states[getPropagatorsIndices().get(0)].getPVCoordinates();
+        final ObservableSatellite      satellite = getSatellites().get(0);
+        final SpacecraftState          state     = states[satellite.getPropagatorIndex()];
+        final TimeStampedPVCoordinates pv        = state.getPVCoordinates();
 
         // prepare the evaluation
         final EstimatedMeasurement<PV> estimated =

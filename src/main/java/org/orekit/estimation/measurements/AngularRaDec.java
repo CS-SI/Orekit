@@ -139,7 +139,8 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
     protected EstimatedMeasurement<AngularRaDec> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                        final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
 
         // Right Ascension/elevation (in reference frame )derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters

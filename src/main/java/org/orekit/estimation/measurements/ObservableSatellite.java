@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.hipparchus.util.FastMath;
+import org.orekit.utils.ParameterDriver;
+
 /** Class modeling a satellite that can be observed.
  *
  * @author Luc Maisonobe
@@ -23,14 +26,31 @@ package org.orekit.estimation.measurements;
  */
 public class ObservableSatellite {
 
+    /** Prefix for clock offset parameter driver, the propagator index will be appended to it. */
+    public static final String CLOCK_OFFSET_PREFIX = "clock-offset-satellite-";
+
+    /** Clock offset scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double CLOCK_OFFSET_SCALE = FastMath.scalb(1.0, -10);
+
     /** Index of the propagator related to this satellite. */
     private final int propagatorIndex;
+
+    /** Parameter driver for satellite clock offset. */
+    private final ParameterDriver clockOffsetDriver;
 
     /** Simple constructor.
      * @param propagatorIndex index of the propagator related to this satellite
      */
     public ObservableSatellite(final int propagatorIndex) {
-        this.propagatorIndex = propagatorIndex;
+        this.propagatorIndex   = propagatorIndex;
+        this.clockOffsetDriver = new ParameterDriver(CLOCK_OFFSET_PREFIX + propagatorIndex,
+                                                     0.0, CLOCK_OFFSET_SCALE,
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
     /** Get the index of the propagator related to this satellite.
@@ -38,6 +58,18 @@ public class ObservableSatellite {
      */
     public int getPropagatorIndex() {
         return propagatorIndex;
+    }
+
+    /** Get the clock offset parameter driver.
+     * <p>
+     * The offset value is defined as the value in seconds that must be <em>subtracted</em> from
+     * the satellite clock reading of time to compute the real physical date. The offset
+     * is therefore negative if the satellite clock is slow and positive if it is fast.
+     * </p>
+     * @return clock offset parameter driver
+     */
+    public ParameterDriver getClockOffsetDriver() {
+        return clockOffsetDriver;
     }
 
 }

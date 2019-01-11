@@ -31,7 +31,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
     private final BoundedPropagator   ephemeris;
     private final Vector3D            antennaPhaseCenter1;
     private final Vector3D            antennaPhaseCenter2;
-    private final ObservableSatellite reveiver;
+    private final ObservableSatellite local;
     private final ObservableSatellite remote;
     private int count;
 
@@ -45,7 +45,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         this.ephemeris           = ephemeris;
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
-        this.reveiver            = new ObservableSatellite(0);
+        this.local               = new ObservableSatellite(0);
         this.remote              = new ObservableSatellite(1);
     }
 
@@ -91,11 +91,11 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
                 final Vector3D selfAtEmission  =
                                 currentState.shiftedBy(-downLinkDelay - upLinkDelay).toTransform().getInverse().transformPosition(antennaPhaseCenter1);
                 final double upLinkDistance = Vector3D.distance(otherAtTransit, selfAtEmission);
-                addMeasurement(new InterSatellitesRange(reveiver, remote, true, date,
+                addMeasurement(new InterSatellitesRange(local, remote, true, date,
                                                         0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));
             } else {
                 // generate a one-way measurement
-                addMeasurement(new InterSatellitesRange(reveiver, remote, false, date, downLinkDistance, 1.0, 10));
+                addMeasurement(new InterSatellitesRange(local, remote, false, date, downLinkDistance, 1.0, 10));
             }
 
         } catch (OrekitException oe) {

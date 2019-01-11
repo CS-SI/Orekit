@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
@@ -188,8 +191,7 @@ public class ParameterDriver {
      * @since 9.3
      * @param referenceValue the reference value to set.
      */
-    public void setReferenceValue(final double referenceValue)
-    {
+    public void setReferenceValue(final double referenceValue) {
         final double previousReferenceValue = this.referenceValue;
         this.referenceValue = referenceValue;
         for (final ParameterObserver observer : observers) {
@@ -208,8 +210,7 @@ public class ParameterDriver {
      * @since 9.3
      * @param minValue the minimum value to set.
      */
-    public void setMinValue(final double minValue)
-    {
+    public void setMinValue(final double minValue) {
         final double previousMinValue = this.minValue;
         this.minValue = minValue;
         for (final ParameterObserver observer : observers) {
@@ -230,8 +231,7 @@ public class ParameterDriver {
      * @since 9.3
      * @param maxValue the maximum value to set.
      */
-    public void setMaxValue(final double maxValue)
-    {
+    public void setMaxValue(final double maxValue) {
         final double previousMaxValue = this.maxValue;
         this.maxValue = maxValue;
         for (final ParameterObserver observer : observers) {
@@ -252,8 +252,7 @@ public class ParameterDriver {
      * @since 9.3
      * @param scale the scale to set.
      */
-    public void setScale(final double scale)
-    {
+    public void setScale(final double scale) {
         final double previousScale = this.scale;
         this.scale = scale;
         for (final ParameterObserver observer : observers) {
@@ -310,6 +309,17 @@ public class ParameterDriver {
      */
     public double getValue() {
         return value;
+    }
+
+    /** Get the value as a derivative structure.
+     * @param factory factory for the derivatives
+     * @param indices indices of the differentiation parameters in derivatives computations
+     * @return value with derivatives
+     * @since 9.3
+     */
+    public DerivativeStructure getValue(final DSFactory factory, final Map<String, Integer> indices) {
+        final Integer index = indices.get(name);
+        return (index == null) ? factory.constant(value) : factory.variable(index, value);
     }
 
     /** Set parameter value.

@@ -17,33 +17,48 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One-way or two-way range measurements between two satellites.
  * <p>
- * Satellite 1 is always considered to be the satellite that receives the
- * signal and computes the measurement.
+ * For one-way measurements, a signal is emitted by a remote satellite and received
+ * by local satellite. The measurement value is the elapsed time between emission
+ * and reception multiplied by c where c is the speed of light.
  * </p>
  * <p>
- * For one-way measurements, a signal is emitted by satellite 2 and received
- * by satellite 1. The measurement value is the elapsed time between emission
- * and reception multiplied by c were c is the speed of light.
+ * For two-way measurements, a signal is emitted by local satellite, reflected on
+ * remote satellite, and received back by local satellite. The measurement value
+ * is the elapsed time between emission and reception multiplied by c/2 where c
+ * is the speed of light.
  * </p>
  * <p>
- * For two-way measurements, a signal is emitted by satellite 1, reflected on
- * satellite 2, and received back by satellite 1 again. The measurement value
- * is the elapsed time between emission and reception multiplied by c/2 were c is
- * the speed of light.
+ * Since 9.3, this class also uses the clock offsets of both satellites,
+ * which manage the value that must be added to each satellite reading of time to
+ * compute the real physical date. In this measurement, these offsets have two effects:
  * </p>
+ * <ul>
+ *   <li>as measurement date is evaluated at reception time, the real physical date
+ *   of the measurement is the observed date to which the local satellite clock
+ *   offset is subtracted</li>
+ *   <li>as range is evaluated using the total signal time of flight, for one-way
+ *   measurements the observed range is the real physical signal time of flight to
+ *   which (Δtl - Δtr) ⨉ c is added, where Δtl (resp. Δtr) is the clock offset for the
+ *   local satellite (resp. remote satellite). A similar effect exists in
+ *   two-way measurements but it is computed as (Δtl - Δtl) ⨉ c / 2 as the local satellite
+ *   clock is used for both initial emission and final reception and therefore it evaluates
+ *   to zero.</li>
+ * </ul>
  * <p>
  * The motion of both satellites during the signal flight time is
  * taken into account. The date of the measurement corresponds to
@@ -58,10 +73,10 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
     private final boolean twoway;
 
     /** Simple constructor.
-     * @param satellite1Index index of satellite 1 propagator
+     * @param localIndex index of local satellite propagator
      * (i.e. the satellite which receives the signal and performs
      * the measurement)
-     * @param satellite2Index index of satellite 2 propagator
+     * @param remoteIndex index of remote satellite propagator
      * (i.e. the satellite which simply emits the signal in the one-way
      * case, or reflects the signal in the two-way case)
      * @param twoWay flag indicating whether it is a two-way measurement
@@ -73,16 +88,16 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
      * boolean, AbsoluteDate, double, double, double)}
      */
     @Deprecated
-    public InterSatellitesRange(final int satellite1Index, final int satellite2Index,
+    public InterSatellitesRange(final int localIndex, final int remoteIndex,
                                 final boolean twoWay,
                                 final AbsoluteDate date, final double range,
                                 final double sigma, final double baseWeight) {
-        this(new ObservableSatellite(satellite1Index), new ObservableSatellite(satellite2Index),
+        this(new ObservableSatellite(localIndex), new ObservableSatellite(remoteIndex),
              twoWay, date, range, sigma, baseWeight);
     }
 
     /** Simple constructor.
-     * @param receiver satellite which receives the signal and performs the measurement
+     * @param local satellite which receives the signal and performs the measurement
      * @param remote satellite which simply emits the signal in the one-way case,
      * or reflects the signal in the two-way case
      * @param twoWay flag indicating whether it is a two-way measurement
@@ -92,12 +107,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
      * @param baseWeight base weight
      * @since 9.3
      */
-    public InterSatellitesRange(final ObservableSatellite receiver,
+    public InterSatellitesRange(final ObservableSatellite local,
                                 final ObservableSatellite remote,
                                 final boolean twoWay,
                                 final AbsoluteDate date, final double range,
                                 final double sigma, final double baseWeight) {
-        super(date, range, sigma, baseWeight, Arrays.asList(receiver, remote));
+        super(date, range, sigma, baseWeight, Arrays.asList(local, remote));
         this.twoway = twoWay;
     }
 
@@ -118,32 +133,43 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         // ----------------------
         //
         // Parameters:
-        //  - 0..2  - Position of the satellite 1 in inertial frame
-        //  - 3..5  - Velocity of the satellite 1 in inertial frame
-        //  - 6..8  - Position of the satellite 2 in inertial frame
-        //  - 9..11 - Velocity of the satellite 2 in inertial frame
-        final int nbParams = 12;
-        final DSFactory                  factory = new DSFactory(nbParams, 1);
-        final Field<DerivativeStructure> field   = factory.getDerivativeField();
+        //  - 0..2  - Position of the receiver satellite in inertial frame
+        //  - 3..5  - Velocity of the receiver satellite in inertial frame
+        //  - 6..8  - Position of the remote satellite in inertial frame
+        //  - 9..11 - Velocity of the remote satellite in inertial frame
+        //  - 12..  - Measurement parameters: local clock offset, remote clock offset...
+        int nbParams = 12;
+        final Map<String, Integer> indices = new HashMap<>();
+        for (ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected()) {
+                indices.put(driver.getName(), nbParams++);
+            }
+        }
+        final DSFactory factory = new DSFactory(nbParams, 1);
 
         // coordinates of both satellites
-        final SpacecraftState state1 = states[getPropagatorsIndices().get(0)];
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva1 = getCoordinates(state1, 0, factory);
-        final SpacecraftState state2 = states[getPropagatorsIndices().get(1)];
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva2 = getCoordinates(state2, 6, factory);
+        final ObservableSatellite local = getSatellites().get(0);
+        final SpacecraftState stateL = states[local.getPropagatorIndex()];
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaL = getCoordinates(stateL, 0, factory);
+        final ObservableSatellite remote = getSatellites().get(1);
+        final SpacecraftState stateR = states[remote.getPropagatorIndex()];
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaR = getCoordinates(stateR, 6, factory);
 
         // compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have delta == tauD and transitState will be the same as state)
 
         // downlink delay
-        final FieldAbsoluteDate<DerivativeStructure> arrivalDate = new FieldAbsoluteDate<>(field, getDate());
+        final DerivativeStructure dtl = local.getClockOffsetDriver().getValue(factory, indices);
+        final FieldAbsoluteDate<DerivativeStructure> arrivalDate =
+                        new FieldAbsoluteDate<DerivativeStructure>(getDate(), dtl.negate());
+
         final TimeStampedFieldPVCoordinates<DerivativeStructure> s1Downlink =
-                        pva1.shiftedBy(arrivalDate.durationFrom(pva1.getDate()));
-        final DerivativeStructure tauD = signalTimeOfFlight(pva2, s1Downlink.getPosition(), arrivalDate);
+                        pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
+        final DerivativeStructure tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
 
         // Transit state
-        final double              delta      = getDate().durationFrom(state2.getDate());
+        final double              delta      = getDate().durationFrom(stateR.getDate());
         final DerivativeStructure deltaMTauD = tauD.negate().add(delta);
 
         // prepare the evaluation
@@ -152,20 +178,20 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final DerivativeStructure range;
         if (twoway) {
             // Transit state (re)computed with derivative structures
-            final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pva2.shiftedBy(deltaMTauD);
+            final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pvaR.shiftedBy(deltaMTauD);
 
             // uplink delay
-            final DerivativeStructure tauU = signalTimeOfFlight(pva1,
+            final DerivativeStructure tauU = signalTimeOfFlight(pvaL,
                                                                 transitStateDS.getPosition(),
                                                                 transitStateDS.getDate());
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       state1.shiftedBy(deltaMTauD.getValue()),
-                                                       state2.shiftedBy(deltaMTauD.getValue())
+                                                       stateL.shiftedBy(deltaMTauD.getValue()),
+                                                       stateR.shiftedBy(deltaMTauD.getValue())
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       state1.shiftedBy(delta - tauD.getValue() - tauU.getValue()).getPVCoordinates(),
-                                                       state2.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
-                                                       state1.shiftedBy(delta).getPVCoordinates()
+                                                       stateL.shiftedBy(delta - tauD.getValue() - tauU.getValue()).getPVCoordinates(),
+                                                       stateR.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
+                                                       stateL.shiftedBy(delta).getPVCoordinates()
                                                    });
 
             // Range value
@@ -175,15 +201,18 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       state1.shiftedBy(deltaMTauD.getValue()),
-                                                       state2.shiftedBy(deltaMTauD.getValue())
+                                                       stateL.shiftedBy(deltaMTauD.getValue()),
+                                                       stateR.shiftedBy(deltaMTauD.getValue())
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       state2.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
-                                                       state1.shiftedBy(delta).getPVCoordinates()
+                                                       stateR.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
+                                                       stateL.shiftedBy(delta).getPVCoordinates()
                                                    });
 
+            // Clock offsets
+            final DerivativeStructure dtr = remote.getClockOffsetDriver().getValue(factory, indices);
+
             // Range value
-            range  = tauD.multiply(Constants.SPEED_OF_LIGHT);
+            range  = tauD.add(dtl).subtract(dtr).multiply(Constants.SPEED_OF_LIGHT);
 
         }
         estimated.setEstimatedValue(range.getValue());

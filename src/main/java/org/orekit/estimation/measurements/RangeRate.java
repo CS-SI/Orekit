@@ -147,7 +147,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     protected EstimatedMeasurement<RangeRate> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                     final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
 
         // Range-rate derivatives are computed with respect to spacecraft state in inertial frame
         // and station position in station's offset frame

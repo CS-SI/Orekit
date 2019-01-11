@@ -24,6 +24,7 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.analysis.UnivariateVectorFunction;
@@ -99,7 +100,7 @@ public class GroundStationTest {
         // change one station clock
         final TopocentricFrame base  = context.stations.get(0).getBaseFrame();
         final BodyShape parent       = base.getParentShape();
-        final double deltaClock      = -0.00084532;
+        final double deltaClock      = 0.00084532;
         final String changedSuffix   = "-changed";
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix),
@@ -114,7 +115,7 @@ public class GroundStationTest {
             final String name = range.getStation().getBaseFrame().getName() + changedSuffix;
                 if (changed.getBaseFrame().getName().equals(name)) {
                     estimator.addMeasurement(new Range(changed, range.isTwoWay(),
-                                                       range.getDate().shiftedBy(-deltaClock),
+                                                       range.getDate().shiftedBy(deltaClock),
                                                        range.getObservedValue()[0],
                                                        range.getTheoreticalStandardDeviation()[0],
                                                        range.getBaseWeight()[0],
@@ -395,10 +396,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetCartesianDerivativesOctantPxPyPz() {
-        double relativeTolerancePositionValue      =  2.0e-15;
-        double relativeTolerancePositionDerivative =  2.6e-10;
-        double relativeToleranceVelocityValue      =  2.9e-15;
-        double relativeToleranceVelocityDerivative =  2.0e-10;
+        double relativeTolerancePositionValue      =  2.3e-15;
+        double relativeTolerancePositionDerivative =  2.5e-10;
+        double relativeToleranceVelocityValue      =  3.0e-15;
+        double relativeToleranceVelocityDerivative =  1.7e-10;
         doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -407,10 +408,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesOctantPxPyPz() {
-        double toleranceRotationValue            =  1.8e-15;
-        double toleranceRotationDerivative       =  4.7e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-19;
+        double toleranceRotationValue              =  1.9e-15;
+        double toleranceRotationDerivative         =  4.9e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -419,10 +420,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetCartesianDerivativesOctantPxPyMz() {
-        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionValue      =  1.4e-15;
         double relativeTolerancePositionDerivative =  1.7e-10;
-        double relativeToleranceVelocityValue      =  2.3e-15;
-        double relativeToleranceVelocityDerivative =  2.0e-10;
+        double relativeToleranceVelocityValue      =  2.5e-15;
+        double relativeToleranceVelocityDerivative =  1.8e-10;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -431,10 +432,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesOctantPxPyMz() {
-        double toleranceRotationValue            =  1.8e-15;
-        double toleranceRotationDerivative       =  5.0e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-19;
+        double toleranceRotationValue              =  1.7e-15;
+        double toleranceRotationDerivative         =  5.0e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -444,9 +445,9 @@ public class GroundStationTest {
     @Test
     public void testClockOffsetCartesianDerivativesOctantPxMyPz() {
         double relativeTolerancePositionValue      =  1.7e-15;
-        double relativeTolerancePositionDerivative =  2.3e-10;
-        double relativeToleranceVelocityValue      =  2.2e-15;
-        double relativeToleranceVelocityDerivative =  1.9e-10;
+        double relativeTolerancePositionDerivative =  2.6e-10;
+        double relativeToleranceVelocityValue      =  2.8e-15;
+        double relativeToleranceVelocityDerivative =  1.8e-10;
         doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -455,10 +456,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesOctantPxMyPz() {
-        double toleranceRotationValue            =  1.6e-15;
-        double toleranceRotationDerivative       =  4.7e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-19;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  4.9e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -468,9 +469,9 @@ public class GroundStationTest {
     @Test
     public void testClockOffsetCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  1.8e-10;
-        double relativeToleranceVelocityValue      =  2.2e-15;
-        double relativeToleranceVelocityDerivative =  2.0e-10;
+        double relativeTolerancePositionDerivative =  1.6e-10;
+        double relativeToleranceVelocityValue      =  2.3e-15;
+        double relativeToleranceVelocityDerivative =  1.7e-10;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -479,10 +480,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesOctantPxMyMz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  5.1e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-19;
+        double toleranceRotationValue              =  1.5e-15;
+        double toleranceRotationDerivative         =  5.0e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -503,10 +504,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesOctantMxPyPz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  4.8e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-19;
+        double toleranceRotationValue              =  1.4e-15;
+        double toleranceRotationDerivative         =  5.2e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -527,10 +528,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesOctantMxPyMz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  4.8e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-19;
+        double toleranceRotationValue              =  1.4e-15;
+        double toleranceRotationDerivative         =  5.2e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -539,10 +540,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetCartesianDerivativesOctantMxMyPz() {
-        double relativeTolerancePositionValue      =  1.6e-15;
-        double relativeTolerancePositionDerivative =  1.8e-10;
-        double relativeToleranceVelocityValue      =  2.4e-15;
-        double relativeToleranceVelocityDerivative =  2.1e-10;
+        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionDerivative =  1.7e-10;
+        double relativeToleranceVelocityValue      =  2.9e-15;
+        double relativeToleranceVelocityDerivative =  1.9e-10;
         doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -551,10 +552,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesOctantMxMyPz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  4.9e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-18;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  4.9e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -563,10 +564,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetCartesianDerivativesOctantMxMyMz() {
-        double relativeTolerancePositionValue      =  1.6e-15;
-        double relativeTolerancePositionDerivative =  1.8e-10;
-        double relativeToleranceVelocityValue      =  2.4e-15;
-        double relativeToleranceVelocityDerivative =  2.1e-10;
+        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionDerivative =  1.7e-10;
+        double relativeToleranceVelocityValue      =  2.9e-15;
+        double relativeToleranceVelocityDerivative =  1.9e-10;
         doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -575,10 +576,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesOctantMxMyMz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  4.9e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-19;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  4.9e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -587,10 +588,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetCartesianDerivativesNearPole() {
-        double relativeTolerancePositionValue      =  8.8e-16;
-        double relativeTolerancePositionDerivative =  8.9e-05;
-        double relativeToleranceVelocityValue      =  1.2e-13;
-        double relativeToleranceVelocityDerivative =  8.2e-10;
+        double relativeTolerancePositionValue      =  1.2e-15;
+        double relativeTolerancePositionDerivative =  1.6e-04;
+        double relativeToleranceVelocityValue      =  1.0e-13;
+        double relativeToleranceVelocityDerivative =  4.3e-09;
         doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -599,10 +600,10 @@ public class GroundStationTest {
 
     @Test
     public void testClockOffsetAngularDerivativesNearPole() {
-        double toleranceRotationValue            =  1.6e-15;
-        double toleranceRotationDerivative       =  6.4e-15;
-        double toleranceRotationRateValue        =  9.5e-20;
-        double toleranceRotationRateDerivative   =  4.7e-19;
+        double toleranceRotationValue              =  1.5e-15;
+        double toleranceRotationDerivative         =  5.7e-15;
+        double toleranceRotationRateValue          =  1.1e-19;
+        double toleranceRotationRateDerivative     =  6.3e-19;
         doTestAngularDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -611,10 +612,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetCartesianDerivativesOctantPxPyPz() {
-        double relativeTolerancePositionValue      =  2.0e-15;
-        double relativeTolerancePositionDerivative =  1.2e-10;
-        double relativeToleranceVelocityValue      =  3.2e-15;
-        double relativeToleranceVelocityDerivative =  1.3e-10;
+        double relativeTolerancePositionValue      =  2.3e-15;
+        double relativeTolerancePositionDerivative =  1.1e-10;
+        double relativeToleranceVelocityValue      =  3.3e-15;
+        double relativeToleranceVelocityDerivative =  1.2e-10;
         doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -623,10 +624,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetAngularDerivativesOctantPxPyPz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  3.7e-18;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  Precision.SAFE_MIN;
+        double toleranceRotationValue              =  1.9e-15;
+        double toleranceRotationDerivative         =  3.1e-18;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  Precision.SAFE_MIN;
         doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -636,9 +637,9 @@ public class GroundStationTest {
     @Test
     public void testStationOffsetCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  1.4e-15;
-        double relativeTolerancePositionDerivative =  7.0e-11;
-        double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  1.2e-10;
+        double relativeTolerancePositionDerivative =  7.3e-11;
+        double relativeToleranceVelocityValue      =  2.8e-15;
+        double relativeToleranceVelocityDerivative =  1.3e-10;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -659,10 +660,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetCartesianDerivativesOctantPxMyPz() {
-        double relativeTolerancePositionValue      =  1.8e-15;
-        double relativeTolerancePositionDerivative =  8.0e-11;
-        double relativeToleranceVelocityValue      =  2.8e-15;
-        double relativeToleranceVelocityDerivative =  9.5e-11;
+        double relativeTolerancePositionValue      =  1.7e-15;
+        double relativeTolerancePositionDerivative =  9.0e-11;
+        double relativeToleranceVelocityValue      =  2.9e-15;
+        double relativeToleranceVelocityDerivative =  8.8e-11;
         doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -671,10 +672,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetAngularDerivativesOctantPxMyPz() {
-        double toleranceRotationValue            =  1.5e-15;
-        double toleranceRotationDerivative       =  2.8e-18;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  Precision.SAFE_MIN;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  3.6e-18;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  Precision.SAFE_MIN;
         doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -684,9 +685,9 @@ public class GroundStationTest {
     @Test
     public void testStationOffsetCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  4.3e-11;
-        double relativeToleranceVelocityValue      =  2.5e-15;
-        double relativeToleranceVelocityDerivative =  6.9e-11;
+        double relativeTolerancePositionDerivative =  4.2e-11;
+        double relativeToleranceVelocityValue      =  2.7e-15;
+        double relativeToleranceVelocityDerivative =  6.8e-11;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -707,10 +708,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetCartesianDerivativesOctantMxPyPz() {
-        double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  8.5e-11;
+        double relativeTolerancePositionValue      =  1.6e-15;
+        double relativeTolerancePositionDerivative =  9.9e-11;
         double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  1.1e-10;
+        double relativeToleranceVelocityDerivative =  9.5e-11;
         doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -731,10 +732,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetCartesianDerivativesOctantMxPyMz() {
-        double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  8.5e-11;
+        double relativeTolerancePositionValue      =  1.6e-15;
+        double relativeTolerancePositionDerivative =  9.9e-11;
         double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  1.1e-10;
+        double relativeToleranceVelocityDerivative =  9.5e-11;
         doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -755,10 +756,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetCartesianDerivativesOctantMxMyPz() {
-        double relativeTolerancePositionValue      =  1.6e-15;
-        double relativeTolerancePositionDerivative =  6.7e-11;
-        double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  1.3e-10;
+        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionDerivative =  6.2e-11;
+        double relativeToleranceVelocityValue      =  3.2e-15;
+        double relativeToleranceVelocityDerivative =  1.1e-10;
         doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -779,10 +780,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetCartesianDerivativesOctantMxMyMz() {
-        double relativeTolerancePositionValue      =  1.6e-15;
-        double relativeTolerancePositionDerivative =  6.7e-11;
-        double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  1.3e-10;
+        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionDerivative =  6.2e-11;
+        double relativeToleranceVelocityValue      =  3.2e-15;
+        double relativeToleranceVelocityDerivative =  1.1e-10;
         doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -804,7 +805,7 @@ public class GroundStationTest {
     @Test
     public void testStationOffsetCartesianDerivativesNearPole() {
         double relativeTolerancePositionValue      =  2.1e-15;
-        double relativeTolerancePositionDerivative =  8.5e-10;
+        double relativeTolerancePositionDerivative =  9.4e-10;
         double relativeToleranceVelocityValue      =  7.5e-14;
         double relativeToleranceVelocityDerivative =  3.9e-10;
         doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 100.0,
@@ -815,10 +816,10 @@ public class GroundStationTest {
 
     @Test
     public void testStationOffsetAngularDerivativesNearPole() {
-        double toleranceRotationValue            =  3.7e-15;
-        double toleranceRotationDerivative       =  8.0e-02; // near pole, the East and North directions are singular
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  Precision.SAFE_MIN;
+        double toleranceRotationValue              =  3.9e-15;
+        double toleranceRotationDerivative         =  8.0e-02; // near pole, the East and North directions are singular
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  Precision.SAFE_MIN;
         doTestAngularDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 100.0,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -827,10 +828,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionCartesianDerivativesOctantPxPyPz() {
-        double relativeTolerancePositionValue      =  2.0e-15;
-        double relativeTolerancePositionDerivative =  8.8e-09;
-        double relativeToleranceVelocityValue      =  3.2e-15;
-        double relativeToleranceVelocityDerivative =  4.6e-09;
+        double relativeTolerancePositionValue      =  2.3e-15;
+        double relativeTolerancePositionDerivative =  7.3e-09;
+        double relativeToleranceVelocityValue      =  3.3e-15;
+        double relativeToleranceVelocityDerivative =  4.8e-09;
         doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -840,10 +841,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionAngularDerivativesOctantPxPyPz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  6.4e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.2e-13;
+        double toleranceRotationValue              =  1.9e-15;
+        double toleranceRotationDerivative         =  6.6e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.2e-13;
         doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -854,9 +855,9 @@ public class GroundStationTest {
     @Test
     public void testPolarMotionCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  1.4e-15;
-        double relativeTolerancePositionDerivative =  3.9e-09;
-        double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  4.5e-09;
+        double relativeTolerancePositionDerivative =  4.1e-09;
+        double relativeToleranceVelocityValue      =  2.8e-15;
+        double relativeToleranceVelocityDerivative =  4.7e-09;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -866,10 +867,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionAngularDerivativesOctantPxPyMz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  6.4e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.2e-13;
+        double toleranceRotationValue              =  1.7e-15;
+        double toleranceRotationDerivative         =  6.9e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.2e-13;
         doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -879,10 +880,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionCartesianDerivativesOctantPxMyPz() {
-        double relativeTolerancePositionValue      =  1.8e-15;
-        double relativeTolerancePositionDerivative =  7.9e-09;
-        double relativeToleranceVelocityValue      =  2.8e-15;
-        double relativeToleranceVelocityDerivative =  4.7e-09;
+        double relativeTolerancePositionValue      =  1.7e-15;
+        double relativeTolerancePositionDerivative =  7.8e-09;
+        double relativeToleranceVelocityValue      =  2.9e-15;
+        double relativeToleranceVelocityDerivative =  4.4e-09;
         doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -892,10 +893,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionAngularDerivativesOctantPxMyPz() {
-        double toleranceRotationValue            =  1.5e-15;
-        double toleranceRotationDerivative       =  6.4e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.2e-13;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  7.5e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.2e-13;
         doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -906,9 +907,9 @@ public class GroundStationTest {
     @Test
     public void testPolarMotionCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  4.5e-09;
-        double relativeToleranceVelocityValue      =  2.5e-15;
-        double relativeToleranceVelocityDerivative =  4.7e-09;
+        double relativeTolerancePositionDerivative =  4.1e-09;
+        double relativeToleranceVelocityValue      =  2.7e-15;
+        double relativeToleranceVelocityDerivative =  4.4e-09;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -931,10 +932,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionCartesianDerivativesOctantMxPyPz() {
-        double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  1.1e-08;
+        double relativeTolerancePositionValue      =  1.6e-15;
+        double relativeTolerancePositionDerivative =  8.4e-09;
         double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  5.7e-09;
+        double relativeToleranceVelocityDerivative =  5.0e-09;
         doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -944,10 +945,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionAngularDerivativesOctantMxPyPz() {
-        double toleranceRotationValue            =  1.5e-15;
-        double toleranceRotationDerivative       =  6.2e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.2e-13;
+        double toleranceRotationValue              =  1.4e-15;
+        double toleranceRotationDerivative         =  6.3e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.2e-13;
         doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -957,10 +958,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionCartesianDerivativesOctantMxPyMz() {
-        double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  1.1e-08;
+        double relativeTolerancePositionValue      =  1.6e-15;
+        double relativeTolerancePositionDerivative =  8.4e-09;
         double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  5.7e-09;
+        double relativeToleranceVelocityDerivative =  5.0e-09;
         doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -970,10 +971,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionAngularDerivativesOctantMxPyMz() {
-        double toleranceRotationValue            =  1.5e-15;
-        double toleranceRotationDerivative       =  6.2e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.2e-13;
+        double toleranceRotationValue              =  1.4e-15;
+        double toleranceRotationDerivative         =  6.3e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.2e-13;
         doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -983,10 +984,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionCartesianDerivativesOctantMxMyPz() {
-        double relativeTolerancePositionValue      =  1.6e-15;
-        double relativeTolerancePositionDerivative =  5.4e-09;
-        double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  6.8e-09;
+        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionDerivative =  5.0e-09;
+        double relativeToleranceVelocityValue      =  3.2e-15;
+        double relativeToleranceVelocityDerivative =  5.3e-09;
         doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -996,10 +997,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionAngularDerivativesOctantMxMyPz() {
-        double toleranceRotationValue            =  1.6e-15;
-        double toleranceRotationDerivative       =  7.5e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.2e-13;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  7.7e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.2e-13;
         doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1009,10 +1010,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionCartesianDerivativesOctantMxMyMz() {
-        double relativeTolerancePositionValue      =  1.6e-15;
-        double relativeTolerancePositionDerivative =  5.4e-09;
-        double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  6.8e-09;
+        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionDerivative =  5.0e-09;
+        double relativeToleranceVelocityValue      =  3.2e-15;
+        double relativeToleranceVelocityDerivative =  5.3e-09;
         doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -1022,10 +1023,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionAngularDerivativesOctantMxMyMz() {
-        double toleranceRotationValue            =  1.6e-15;
-        double toleranceRotationDerivative       =  7.5e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.2e-13;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  7.7e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.2e-13;
         doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1035,8 +1036,8 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionCartesianDerivativesNearPole() {
-        double relativeTolerancePositionValue      =  8.8e-16;
-        double relativeTolerancePositionDerivative =  6.3e-09;
+        double relativeTolerancePositionValue      =  1.2e-15;
+        double relativeTolerancePositionDerivative =  5.7e-09;
         double relativeToleranceVelocityValue      =  9.4e-13;
         double relativeToleranceVelocityDerivative =  1.2e-09;
         doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 1.0,
@@ -1048,10 +1049,10 @@ public class GroundStationTest {
 
     @Test
     public void testPolarMotionAngularDerivativesNearPole() {
-        double toleranceRotationValue            =  1.5e-15;
-        double toleranceRotationDerivative       =  6.4e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.2e-13;
+        double toleranceRotationValue              =  1.5e-15;
+        double toleranceRotationDerivative         =  6.5e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.2e-13;
         doTestAngularDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1061,10 +1062,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianCartesianDerivativesOctantPxPyPz() {
-        double relativeTolerancePositionValue      =  2.0e-15;
+        double relativeTolerancePositionValue      =  2.3e-15;
         double relativeTolerancePositionDerivative =  5.7e-09;
-        double relativeToleranceVelocityValue      =  3.2e-15;
-        double relativeToleranceVelocityDerivative =  2.8e-09;
+        double relativeToleranceVelocityValue      =  3.3e-15;
+        double relativeToleranceVelocityDerivative =  2.7e-09;
         doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -1073,10 +1074,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianAngularDerivativesOctantPxPyPz() {
-        double toleranceRotationValue            =  1.7e-15;
-        double toleranceRotationDerivative       =  6.4e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.0e-13;
+        double toleranceRotationValue              =  1.9e-15;
+        double toleranceRotationDerivative         =  4.9e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.0e-13;
         doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1086,8 +1087,8 @@ public class GroundStationTest {
     @Test
     public void testPrimeMeridianCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  1.4e-15;
-        double relativeTolerancePositionDerivative =  3.3e-09;
-        double relativeToleranceVelocityValue      =  2.6e-15;
+        double relativeTolerancePositionDerivative =  3.1e-09;
+        double relativeToleranceVelocityValue      =  2.8e-15;
         double relativeToleranceVelocityDerivative =  3.3e-09;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
@@ -1109,10 +1110,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianCartesianDerivativesOctantPxMyPz() {
-        double relativeTolerancePositionValue      =  1.8e-15;
+        double relativeTolerancePositionValue      =  1.7e-15;
         double relativeTolerancePositionDerivative =  5.3e-09;
-        double relativeToleranceVelocityValue      =  2.8e-15;
-        double relativeToleranceVelocityDerivative =  2.8e-09;
+        double relativeToleranceVelocityValue      =  2.9e-15;
+        double relativeToleranceVelocityDerivative =  3.4e-09;
         doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -1121,10 +1122,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianAngularDerivativesOctantPxMyPz() {
-        double toleranceRotationValue            =  1.5e-15;
-        double toleranceRotationDerivative       =  5.5e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.0e-13;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  6.4e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.0e-13;
         doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1134,9 +1135,9 @@ public class GroundStationTest {
     @Test
     public void testPrimeMeridianCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  3.3e-09;
-        double relativeToleranceVelocityValue      =  2.5e-15;
-        double relativeToleranceVelocityDerivative =  2.9e-09;
+        double relativeTolerancePositionDerivative =  3.1e-09;
+        double relativeToleranceVelocityValue      =  2.7e-15;
+        double relativeToleranceVelocityDerivative =  3.0e-09;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -1145,10 +1146,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianAngularDerivativesOctantPxMyMz() {
-        double toleranceRotationValue            =  1.6e-15;
-        double toleranceRotationDerivative       =  5.8e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.0e-13;
+        double toleranceRotationValue              =  1.5e-15;
+        double toleranceRotationDerivative         =  6.3e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.0e-13;
         doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1157,10 +1158,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianCartesianDerivativesOctantMxPyPz() {
-        double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  6.2e-09;
+        double relativeTolerancePositionValue      =  1.6e-15;
+        double relativeTolerancePositionDerivative =  5.5e-09;
         double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  2.6e-09;
+        double relativeToleranceVelocityDerivative =  2.8e-09;
         doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -1181,10 +1182,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianCartesianDerivativesOctantMxPyMz() {
-        double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  6.2e-09;
+        double relativeTolerancePositionValue      =  1.6e-15;
+        double relativeTolerancePositionDerivative =  5.5e-09;
         double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  2.6e-09;
+        double relativeToleranceVelocityDerivative =  2.8e-09;
         doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -1205,10 +1206,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianCartesianDerivativesOctantMxMyPz() {
-        double relativeTolerancePositionValue      =  1.6e-15;
-        double relativeTolerancePositionDerivative =  3.0e-09;
-        double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  3.1e-09;
+        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionDerivative =  3.1e-09;
+        double relativeToleranceVelocityValue      =  3.2e-15;
+        double relativeToleranceVelocityDerivative =  3.2e-09;
         doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -1217,10 +1218,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianAngularDerivativesOctantMxMyPz() {
-        double toleranceRotationValue            =  1.6e-15;
-        double toleranceRotationDerivative       =  5.9e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.0e-13;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  6.2e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.0e-13;
         doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1229,10 +1230,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianCartesianDerivativesOctantMxMyMz() {
-        double relativeTolerancePositionValue      =  1.6e-15;
-        double relativeTolerancePositionDerivative =  3.0e-09;
-        double relativeToleranceVelocityValue      =  2.6e-15;
-        double relativeToleranceVelocityDerivative =  3.1e-09;
+        double relativeTolerancePositionValue      =  1.5e-15;
+        double relativeTolerancePositionDerivative =  3.1e-09;
+        double relativeToleranceVelocityValue      =  3.2e-15;
+        double relativeToleranceVelocityDerivative =  3.2e-09;
         doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -1241,10 +1242,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianAngularDerivativesOctantMxMyMz() {
-        double toleranceRotationValue            =  1.6e-15;
-        double toleranceRotationDerivative       =  5.9e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.0e-13;
+        double toleranceRotationValue              =  1.6e-15;
+        double toleranceRotationDerivative         =  6.2e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.0e-13;
         doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1253,8 +1254,8 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianCartesianDerivativesNearPole() {
-        double relativeTolerancePositionValue      =  8.8e-16;
-        double relativeTolerancePositionDerivative =  1.6e-03; // near pole, the East and North directions are singular
+        double relativeTolerancePositionValue      =  1.2e-15;
+        double relativeTolerancePositionDerivative =  1.6e-03;
         double relativeToleranceVelocityValue      =  5.8e-14;
         double relativeToleranceVelocityDerivative =  2.6e-08;
         doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 1.0,
@@ -1265,10 +1266,10 @@ public class GroundStationTest {
 
     @Test
     public void testPrimeMeridianAngularDerivativesNearPole() {
-        double toleranceRotationValue            =  1.5e-15;
-        double toleranceRotationDerivative       =  6.6e-09;
-        double toleranceRotationRateValue        =  1.5e-19;
-        double toleranceRotationRateDerivative   =  2.0e-13;
+        double toleranceRotationValue              =  1.5e-15;
+        double toleranceRotationDerivative         =  7.3e-09;
+        double toleranceRotationRateValue          =  1.5e-19;
+        double toleranceRotationRateDerivative     =  2.0e-13;
         doTestAngularDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 0.2,
                                  toleranceRotationValue,     toleranceRotationDerivative,
                                  toleranceRotationRateValue, toleranceRotationRateDerivative,
@@ -1413,6 +1414,15 @@ public class GroundStationTest {
 
         }
 
+        if (maxPositionValueRelativeError      > relativeTolerancePositionValue      ||
+            maxPositionDerivativeRelativeError > relativeTolerancePositionDerivative ||
+            maxVelocityValueRelativeError      > relativeToleranceVelocityValue      ||
+            maxVelocityDerivativeRelativeError > relativeToleranceVelocityDerivative) {
+            print("relativeTolerancePositionValue",          maxPositionValueRelativeError);
+            print("relativeTolerancePositionDerivative",     maxPositionDerivativeRelativeError);
+            print("relativeToleranceVelocityValue",      maxVelocityValueRelativeError);
+            print("relativeToleranceVelocityDerivative", maxVelocityDerivativeRelativeError);
+        }
         Assert.assertEquals(0.0, maxPositionValueRelativeError,      relativeTolerancePositionValue);
         Assert.assertEquals(0.0, maxPositionDerivativeRelativeError, relativeTolerancePositionDerivative);
         Assert.assertEquals(0.0, maxVelocityValueRelativeError,      relativeToleranceVelocityValue);
@@ -1514,11 +1524,29 @@ public class GroundStationTest {
 
         }
 
+        if (maxRotationValueError          > toleranceRotationValue          ||
+            maxRotationDerivativeError     > toleranceRotationDerivative     ||
+            maxRotationRateValueError      > toleranceRotationRateValue      ||
+            maxRotationRateDerivativeError > toleranceRotationRateDerivative) {
+            print("toleranceRotationValue",          maxRotationValueError);
+            print("toleranceRotationDerivative",     maxRotationDerivativeError);
+            print("toleranceRotationRateValue",      maxRotationRateValueError);
+            print("toleranceRotationRateDerivative", maxRotationRateDerivativeError);
+        }
         Assert.assertEquals(0.0, maxRotationValueError,           toleranceRotationValue);
         Assert.assertEquals(0.0, maxRotationDerivativeError,      toleranceRotationDerivative);
         Assert.assertEquals(0.0, maxRotationRateValueError,       toleranceRotationRateValue);
         Assert.assertEquals(0.0, maxRotationRateDerivativeError,  toleranceRotationRateDerivative);
 
+    }
+    private void print(String name, double v) {
+        if (v < Precision.SAFE_MIN) {
+            System.out.format(Locale.US, "            double %-35s =  Precision.SAFE_MIN;%n", name);
+        } else {
+            double s = FastMath.pow(10.0, 1 - FastMath.floor(FastMath.log(v) / FastMath.log(10.0)));
+            System.out.format(Locale.US, "            double %-35s = %8.1e;%n",
+                              name, FastMath.ceil(s * v) / s);
+        }
     }
 
     private UnivariateDifferentiableVectorFunction differentiatedStationPV(final GroundStation station,

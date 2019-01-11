@@ -36,7 +36,7 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param receiver satellite which receives the signal and performs the measurement
+     * @param local satellite which receives the signal and performs the measurement
      * @param remote satellite which simply emits the signal in the one-way case,
      * or reflects the signal in the two-way case
      * @param twoWay flag indicating whether it is a two-way measurement
@@ -44,9 +44,9 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
      * @param baseWeight base weight
      */
     public InterSatellitesRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final ObservableSatellite receiver, final ObservableSatellite remote,
+                                       final ObservableSatellite local, final ObservableSatellite remote,
                                        final boolean twoWay, final double sigma, final double baseWeight) {
-        super(noiseSource, sigma, baseWeight, receiver, remote);
+        super(noiseSource, sigma, baseWeight, local, remote);
         this.twoway  = twoWay;
     }
 

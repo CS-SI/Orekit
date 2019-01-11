@@ -643,7 +643,7 @@ public class KalmanOrbitDeterminationTest {
 
         final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
-        final ObservableSatellite         satellite                = new ObservableSatellite(0);
+        final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
@@ -660,7 +660,7 @@ public class KalmanOrbitDeterminationTest {
                 // the measurements come from a Rinex file
                 measurements.addAll(readRinex(new File(input.getParentFile(), fileName),
                                               parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
-                                              stations, satRangeBias, satAntennaRangeModifier, weights,
+                                              stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
                                               rangeOutliersManager, rangeRateOutliersManager));
             } else {
                 // the measurements come from an Orekit custom file
@@ -1668,6 +1668,7 @@ public class KalmanOrbitDeterminationTest {
                                                              stationAltitudes[i]);
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
             station.getClockOffsetDriver().setMaxValue(stationClockOffsetsMax[i]);
@@ -1890,10 +1891,36 @@ public class KalmanOrbitDeterminationTest {
                           parser.getDouble(ParameterKey.PV_MEASUREMENTS_VELOCITY_SIGMA));
     }
 
+    /** Set up satellite data.
+     * @param parser input file parser
+     * @return satellite data
+     * @throws NoSuchElementException if input parameters are missing
+     */
+    private ObservableSatellite createObservableSatellite(final KeyValueFileParser<ParameterKey> parser)
+        throws NoSuchElementException {
+        ObservableSatellite obsSat = new ObservableSatellite(0);
+        ParameterDriver clockOffsetDriver = obsSat.getClockOffsetDriver();
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
+            clockOffsetDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+            clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN)) {
+            clockOffsetDriver.setMinValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX)) {
+            clockOffsetDriver.setMaxValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED)) {
+            clockOffsetDriver.setSelected(parser.getBoolean(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED));
+        }
+        return obsSat;
+    }
+
     /** Read a RINEX measurements file.
      * @param file measurements file
      * @param satId satellite we are interested in
      * @param stations name to stations data map
+     * @param satellite satellite reference
      * @param satRangeBias range bias due to transponder delay
      * @param satAntennaRangeModifier modifier for on-board antenna offset
      * @param weights base weights for measurements
@@ -1903,6 +1930,7 @@ public class KalmanOrbitDeterminationTest {
      */
     private List<ObservedMeasurement<?>> readRinex(final File file, final String satId,
                                                    final Map<String, StationData> stations,
+                                                   final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
                                                    final OnBoardAntennaRangeModifier satAntennaRangeModifier,
                                                    final Weights weights,
@@ -1925,7 +1953,6 @@ public class KalmanOrbitDeterminationTest {
                 prnNumber = -1;
         }
         final Iono iono = new Iono(false);
-        final ObservableSatellite satellite = new ObservableSatellite(0);
         final RinexLoader loader = new RinexLoader(new FileInputStream(file), file.getAbsolutePath());
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
@@ -2834,6 +2861,10 @@ public class KalmanOrbitDeterminationTest {
         ON_BOARD_ANTENNA_PHASE_CENTER_X,
         ON_BOARD_ANTENNA_PHASE_CENTER_Y,
         ON_BOARD_ANTENNA_PHASE_CENTER_Z,
+        ON_BOARD_CLOCK_OFFSET,
+        ON_BOARD_CLOCK_OFFSET_MIN,
+        ON_BOARD_CLOCK_OFFSET_MAX,
+        ON_BOARD_CLOCK_OFFSET_ESTIMATED,
         GROUND_STATION_NAME,
         GROUND_STATION_LATITUDE,
         GROUND_STATION_LONGITUDE,
