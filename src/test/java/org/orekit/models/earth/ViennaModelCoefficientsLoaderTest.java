@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -25,7 +26,7 @@ import org.orekit.time.DateTimeComponents;
 
 public class ViennaModelCoefficientsLoaderTest {
 
-    private static double epsilon = 1.0e-16;
+    private static double epsilon = 5.0e-16;
 
     @Test
     /**
@@ -36,8 +37,8 @@ public class ViennaModelCoefficientsLoaderTest {
 
         Utils.setDataRoot("vmf1-tropospheric-coefficients");
         
-        final double latitude  = 14.0;
-        final double longitude = 67.5;
+        final double latitude  = FastMath.toRadians(14.0);
+        final double longitude = FastMath.toRadians(67.5);
         ViennaModelCoefficientsLoader tropoLoader = new ViennaModelCoefficientsLoader(latitude, longitude, ViennaModelType.VIENNA_ONE);
         DateTimeComponents dateTimeComponents = new DateTimeComponents(2018, 11, 19, 18, 0, 0.0);
         tropoLoader.loadViennaCoefficients(dateTimeComponents);
@@ -61,8 +62,8 @@ public class ViennaModelCoefficientsLoaderTest {
 
         Utils.setDataRoot("vmf3-5x5-tropospheric-coefficients");
         
-        final double latitude  = 77.5;
-        final double longitude = 2.5;
+        final double latitude  = FastMath.toRadians(77.5);
+        final double longitude = FastMath.toRadians(2.5);
         ViennaModelCoefficientsLoader tropoLoader = new ViennaModelCoefficientsLoader(latitude, longitude, ViennaModelType.VIENNA_THREE);
         DateTimeComponents dateTimeComponents = new DateTimeComponents(2018, 11, 25, 0, 0, 0.0);
         tropoLoader.loadViennaCoefficients(dateTimeComponents);
@@ -86,8 +87,8 @@ public class ViennaModelCoefficientsLoaderTest {
 
         Utils.setDataRoot("vmf3-1x1-tropospheric-coefficients");
         
-        final double latitude  = 19.5;
-        final double longitude = 276.5;
+        final double latitude  = FastMath.toRadians(19.5);
+        final double longitude = FastMath.toRadians(276.5);
         ViennaModelCoefficientsLoader tropoLoader = new ViennaModelCoefficientsLoader(latitude, longitude, ViennaModelType.VIENNA_THREE);
         DateTimeComponents dateTimeComponents = new DateTimeComponents(2018, 11, 25, 0, 0, 0.0);
         tropoLoader.loadViennaCoefficients(dateTimeComponents);
@@ -108,7 +109,7 @@ public class ViennaModelCoefficientsLoaderTest {
         // Commons parameters
         Utils.setDataRoot("vmf3-1x1-tropospheric-coefficients");
         DateTimeComponents dateTimeComponents = new DateTimeComponents(2018, 11, 25, 0, 0, 0.0);
-        final double latitude   = 45.0;
+        final double latitude   = FastMath.toRadians(45.0);
         
         double longitude1;
         ViennaModelCoefficientsLoader model1;
@@ -117,8 +118,8 @@ public class ViennaModelCoefficientsLoaderTest {
         ViennaModelCoefficientsLoader model2;
 
         // Test longitude = 181° and longitude = -179°
-        longitude1 = 181.0;
-        longitude2 = -179.0;
+        longitude1 = FastMath.toRadians(181.0);
+        longitude2 = FastMath.toRadians(-179.0);
 
         model1 = new ViennaModelCoefficientsLoader(latitude, longitude1, ViennaModelType.VIENNA_THREE);
         model2 = new ViennaModelCoefficientsLoader(latitude, longitude2, ViennaModelType.VIENNA_THREE);
@@ -132,8 +133,8 @@ public class ViennaModelCoefficientsLoaderTest {
         Assert.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
 
         // Test longitude = 180° and longitude = -180°
-        longitude1 = 180.0;
-        longitude2 = -180.0;
+        longitude1 = FastMath.toRadians(180.0);
+        longitude2 = FastMath.toRadians(-180.0);
 
         model1 = new ViennaModelCoefficientsLoader(latitude, longitude1, ViennaModelType.VIENNA_THREE);
         model2 = new ViennaModelCoefficientsLoader(latitude, longitude2, ViennaModelType.VIENNA_THREE);
@@ -147,8 +148,8 @@ public class ViennaModelCoefficientsLoaderTest {
         Assert.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
 
         // Test longitude = 0° and longitude = 360°
-        longitude1 = 0.0;
-        longitude2 = 360.0;
+        longitude1 = FastMath.toRadians(0.0);
+        longitude2 = FastMath.toRadians(360.0);
 
         model1 = new ViennaModelCoefficientsLoader(latitude, longitude1, ViennaModelType.VIENNA_THREE);
         model2 = new ViennaModelCoefficientsLoader(latitude, longitude2, ViennaModelType.VIENNA_THREE);
@@ -169,8 +170,8 @@ public class ViennaModelCoefficientsLoaderTest {
      */
     public void testCorruptedFileBadData() {
         
-        final double latitude  = 14.0;
-        final double longitude = 67.5;
+        final double latitude  = FastMath.toRadians(14.0);
+        final double longitude = FastMath.toRadians(67.5);
 
         Utils.setDataRoot("vmf1-tropospheric-coefficients");
         final String fileName = "corrupted-bad-data-VMFG_20181119.H18";
@@ -193,8 +194,8 @@ public class ViennaModelCoefficientsLoaderTest {
     public void testAbsentFile() {
         
         Utils.setDataRoot("vmf1-tropospheric-coefficients");
-        final double latitude  = 14.0;
-        final double longitude = 67.5;
+        final double latitude  = FastMath.toRadians(14.0);
+        final double longitude = FastMath.toRadians(67.5);
         ViennaModelCoefficientsLoader tropoLoader = new ViennaModelCoefficientsLoader(latitude, longitude, ViennaModelType.VIENNA_ONE);
         DateTimeComponents dateTimeComponents = new DateTimeComponents(2018, 11, 19, 1, 0, 0);
         
