@@ -228,12 +228,12 @@ public class OrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odGNSS = run(input, true);
+        ResultOD odGNSS = run(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 11.2;
-        final double velocityAccuracy = 3.9e-3;
+        final double distanceAccuracy = 11.5;
+        final double velocityAccuracy = 4.0e-3;
 
         //test on the convergence
         final int numberOfIte  = 3;
@@ -252,7 +252,7 @@ public class OrbitDeterminationTest {
 
         //test on statistic for the range residuals
         final long nbRange = 4009;
-        final double[] RefStatRange = { -2.555, 2.830, 0.0, 0.750 };
+        final double[] RefStatRange = { -2.706, 2.566, 0.0, 0.738 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               0.1);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.1);
