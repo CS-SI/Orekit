@@ -254,7 +254,7 @@ public class OrbitDeterminationTest {
 
         //test on statistic for the range residuals
         final long nbRange = 4009;
-        final double[] RefStatRange = { -2.555, 2.830, 0.0, 0.750 };
+        final double[] RefStatRange = { -2.706, 2.566, 0.0, 0.738 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               0.3);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.3);
@@ -1077,11 +1077,11 @@ public class OrbitDeterminationTest {
         final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
         final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
         final double[]  stationAltitudes                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
+        final boolean[] stationPositionEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
         final double[]  stationClockOffsets               = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET);
         final double[]  stationClockOffsetsMin            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MIN);
         final double[]  stationClockOffsetsMax            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MAX);
         final boolean[] stationClockOffsetEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_ESTIMATED);
-        final boolean[] stationPositionEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
         final double[]  stationRangeSigma                 = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
         final double[]  stationRangeBias                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
         final double[]  stationRangeBiasMin               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);

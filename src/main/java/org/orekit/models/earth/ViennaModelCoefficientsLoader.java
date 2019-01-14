@@ -91,10 +91,10 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
     /** The hydrostatic and wet zenith delays loaded. */
     private double[] zenithDelay;
 
-    /** Geodetic site latitude, degrees.*/
+    /** Geodetic site latitude, radians.*/
     private double latitude;
 
-    /** Geodetic site longitude, degrees.*/
+    /** Geodetic site longitude, radians.*/
     private double longitude;
 
     /** Vienna tropospheric model type.*/
@@ -102,8 +102,8 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
 
     /** Constructor with supported names given by user.
      * @param supportedNames Supported names
-     * @param latitude geodetic latitude of the station, in degrees
-     * @param longitude geodetic latitude of the station, in degrees
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude geodetic latitude of the station, in radians
      * @param type the type of Vienna tropospheric model (one or three)
      */
     public ViennaModelCoefficientsLoader(final String supportedNames, final double latitude,
@@ -114,14 +114,14 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         this.type           = type;
         this.latitude       = latitude;
 
-        // Normalize longitude between 0° and 360°
-        final double lon = MathUtils.normalizeAngle(FastMath.toRadians(longitude), FastMath.PI);
-        this.longitude   = FastMath.toDegrees(lon);
+        // Normalize longitude between 0 and 2π
+        this.longitude = MathUtils.normalizeAngle(longitude, FastMath.PI);
+
     }
 
     /** Constructor with default supported names.
-     * @param latitude geodetic latitude of the station, in degrees
-     * @param longitude geodetic latitude of the station, in degrees
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude geodetic latitude of the station, in radians
      * @param type the type of Vienna tropospheric model (one or three)
      */
     public ViennaModelCoefficientsLoader(final double latitude, final double longitude,
@@ -262,16 +262,16 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
 
                     // Latitudes list
                     for (double lat = Double.valueOf(range_line[2]); lat <= Double.valueOf(range_line[3]); lat = lat + Double.valueOf(range_line[6])) {
-                        latitudes.add(lat);
+                        latitudes.add(FastMath.toRadians(lat));
                     }
 
                     // Longitude list
                     for (double lon = Double.valueOf(range_line[4]); lon <= Double.valueOf(range_line[5]); lon = lon + Double.valueOf(range_line[7])) {
-                        longitudes.add(lon);
+                        longitudes.add(FastMath.toRadians(lon));
                         // For VFM1 files, header specify that longitudes end at 360°
                         // In reality they end at 357.5°. That is why we stop the loop when the longitude
-                        // is equal to 357.5°.
-                        if (type == ViennaModelType.VIENNA_ONE && lon == 357.5) {
+                        // reaches 357.5°.
+                        if (type == ViennaModelType.VIENNA_ONE && lon >= 357.5) {
                             break;
                         }
                     }

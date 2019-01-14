@@ -75,7 +75,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
     public EstimatedTroposphericModel(final double t0, final double p0,
-                                    final MappingFunction model, final double totalDelay) {
+                                      final MappingFunction model, final double totalDelay) {
 
         totalZenithDelay = new ParameterDriver(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY,
                                                totalDelay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
