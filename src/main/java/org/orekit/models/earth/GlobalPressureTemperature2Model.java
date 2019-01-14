@@ -203,9 +203,9 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
         final String splitter = "\\s+";
 
         // Initialize Lists
-        // Latitudes [°]
+        // Latitudes [rad]
         final ArrayList<Double> latitudes    = new ArrayList<>();
-        // Longitudes [°]
+        // Longitudes [rad]
         final ArrayList<Double> longitudes   = new ArrayList<>();
         // Orthometric grid height [m]
         final ArrayList<Double> hS           = new ArrayList<>();
@@ -252,12 +252,12 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
 
         // Latitudes list
         for (double lat = -87.5; lat <= 87.5; lat = lat + 5.0) {
-            latitudes.add(lat);
+            latitudes.add(FastMath.toRadians(lat));
         }
 
         // Longitude list
         for (double lon = 2.5; lon <= 357.5; lon = lon + 5.0) {
-            longitudes.add(lon);
+            longitudes.add(FastMath.toRadians(lon));
         }
 
         final int dimLat = latitudes.size();
@@ -306,34 +306,30 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
         final BilinearInterpolatingFunction functionAH           = new BilinearInterpolatingFunction(xVal, yVal, fvalAH);
         final BilinearInterpolatingFunction functionAW           = new BilinearInterpolatingFunction(xVal, yVal, fvalAW);
 
-        // Convert geodetic coordinates to degrees
-        final double lat = FastMath.toDegrees(latitude);
-        final double lon = FastMath.toDegrees(longitude);
-
         // ah and aw coefficients
         coefficientsA = new double[2];
-        coefficientsA[0] = functionAH.value(lat, lon) * 0.001;
-        coefficientsA[1] = functionAW.value(lat, lon) * 0.001;
+        coefficientsA[0] = functionAH.value(latitude, longitude) * 0.001;
+        coefficientsA[1] = functionAW.value(latitude, longitude) * 0.001;
 
         // Corrected height (can be negative)
-        final double undu = geoid.getUndulation(lat, lon, date);
-        final double correctedheight = height - undu - functionHS.value(lat, lon);
+        final double undu = geoid.getUndulation(latitude, longitude, date);
+        final double correctedheight = height - undu - functionHS.value(latitude, longitude);
 
         // Temperature gradient [K/m]
-        final double dTdH = functiondT.value(lat, lon) * 0.001;
+        final double dTdH = functiondT.value(latitude, longitude) * 0.001;
 
         // Specific humidity
-        final double qv = functionqv0.value(lat, lon) * 0.001;
+        final double qv = functionqv0.value(latitude, longitude) * 0.001;
 
         // For the computation of the temperature and the pressure, we use
         // the standard ICAO atmosphere formulas.
 
         // Temperature [K]
-        final double t0 = functionTemperature0.value(lat, lon);
+        final double t0 = functionTemperature0.value(latitude, longitude);
         this.temperature = t0 + dTdH * correctedheight;
 
         // Pressure [hPa]
-        final double p0 = functionPressure0.value(lat, lon);
+        final double p0 = functionPressure0.value(latitude, longitude);
         final double exponent = G / (dTdH * R);
         this.pressure = p0 * FastMath.pow(1 - (dTdH / t0) * correctedheight, exponent) * 0.01;
 
