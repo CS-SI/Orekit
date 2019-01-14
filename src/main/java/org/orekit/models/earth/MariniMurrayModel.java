@@ -75,7 +75,7 @@ public class MariniMurrayModel implements TroposphericModel {
      * @param latitude site latitude
      * @param lambda laser wavelength (c/f), nm
      *
-     * @return a Saastamoinen model with standard environmental values
+     * @return a Marini-Murray model with standard environmental values
      */
     public static MariniMurrayModel getStandardModel(final double latitude, final double lambda) {
         return new MariniMurrayModel(273.15 + 20, 1013.25, 0.5, latitude, lambda);

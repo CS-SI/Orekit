@@ -16,19 +16,25 @@
  */
 package org.orekit.frames;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -93,6 +99,19 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      */
     public GeodeticPoint getPoint() {
         return point;
+    }
+
+    /** Get the surface point defining the origin of the frame.
+     * @param <T> tyoe of the elements
+     * @param field of the elements
+     * @return surface point defining the origin of the frame
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
+        final T zero = field.getZero();
+        return new FieldGeodeticPoint<>(zero.add(point.getLatitude()),
+                                        zero.add(point.getLongitude()),
+                                        zero.add(point.getAltitude()));
     }
 
     /** Get the zenith direction of topocentric frame, expressed in parent shape frame.
@@ -170,6 +189,27 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         return extPointTopo.getDelta();
     }
 
+    /** Get the elevation of a point with regards to the local point.
+     * <p>The elevation is the angle between the local horizontal and
+     * the direction from local point to given point.</p>
+     * @param <T> type of the elements
+     * @param extPoint point for which elevation shall be computed
+     * @param frame frame in which the point is defined
+     * @param date computation date
+     * @return elevation of the point
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> T getElevation(final FieldVector3D<T> extPoint, final Frame frame,
+                                                          final FieldAbsoluteDate<T> date) {
+
+        // Transform given point from given frame to topocentric frame
+        final FieldTransform<T> t = frame.getTransformTo(this, date);
+        final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
+
+        // Elevation angle is PI/2 - angle between zenith and given point direction
+        return extPointTopo.getDelta();
+    }
+
     /** Get the azimuth of a point with regards to the topocentric frame center point.
      * <p>The azimuth is the angle between the North direction at local point and
      * the projection in local horizontal plane of the direction from local point
@@ -195,6 +235,33 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
     }
 
+    /** Get the azimuth of a point with regards to the topocentric frame center point.
+     * <p>The azimuth is the angle between the North direction at local point and
+     * the projection in local horizontal plane of the direction from local point
+     * to given point. Azimuth angles are counted clockwise, i.e positive towards the East.</p>
+     * @param <T> type of the elements
+     * @param extPoint point for which elevation shall be computed
+     * @param frame frame in which the point is defined
+     * @param date computation date
+     * @return azimuth of the point
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> T getAzimuth(final FieldVector3D<T> extPoint, final Frame frame,
+                                                        final FieldAbsoluteDate<T> date) {
+
+        // Transform given point from given frame to topocentric frame
+        final FieldTransform<T> t = getTransformTo(frame, date).getInverse();
+        final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
+
+        // Compute azimuth
+        T azimuth = FastMath.atan2(extPointTopo.getX(), extPointTopo.getY());
+        if (azimuth.getReal() < 0.) {
+            azimuth = azimuth.add(MathUtils.TWO_PI);
+        }
+        return azimuth;
+
+    }
+
     /** Get the range of a point with regards to the topocentric frame center point.
      * @param extPoint point for which range shall be computed
      * @param frame frame in which the point is defined
@@ -207,6 +274,26 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
         final Vector3D extPointTopo = t.transformPosition(extPoint);
+
+        // Compute range
+        return extPointTopo.getNorm();
+
+    }
+
+    /** Get the range of a point with regards to the topocentric frame center point.
+     * @param <T> type of the elements
+     * @param extPoint point for which range shall be computed
+     * @param frame frame in which the point is defined
+     * @param date computation date
+     * @return range (distance) of the point
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> T getRange(final FieldVector3D<T> extPoint, final Frame frame,
+                                                      final FieldAbsoluteDate<T> date) {
+
+        // Transform given point from given frame to topocentric frame
+        final FieldTransform<T> t = frame.getTransformTo(this, date);
+        final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
 
         // Compute range
         return extPointTopo.getNorm();
@@ -229,6 +316,27 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         // Compute range rate (doppler) : relative rate along the line of sight
         return Vector3D.dotProduct(extPVTopo.getPosition(), extPVTopo.getVelocity()) /
                extPVTopo.getPosition().getNorm();
+
+    }
+
+    /** Get the range rate of a point with regards to the topocentric frame center point.
+     * @param <T> type of the elements
+     * @param extPV point/velocity for which range rate shall be computed
+     * @param frame frame in which the point is defined
+     * @param date computation date
+     * @return range rate of the point (positive if point departs from frame)
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> T getRangeRate(final FieldPVCoordinates<T> extPV, final Frame frame,
+                                                          final FieldAbsoluteDate<T> date) {
+
+        // Transform given point from given frame to topocentric frame
+        final FieldTransform<T> t = frame.getTransformTo(this, date);
+        final FieldPVCoordinates<T> extPVTopo = t.transformPVCoordinates(extPV);
+
+        // Compute range rate (doppler) : relative rate along the line of sight
+        return FieldVector3D.dotProduct(extPVTopo.getPosition(), extPVTopo.getVelocity()).divide(
+               extPVTopo.getPosition().getNorm());
 
     }
 

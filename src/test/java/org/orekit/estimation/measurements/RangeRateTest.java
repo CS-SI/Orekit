@@ -22,9 +22,12 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
+import org.orekit.models.earth.GlobalMappingFunctionModel;
+import org.orekit.models.earth.EstimatedTroposphericModel;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -455,6 +458,76 @@ public class RangeRateTest {
 
     }
 
+    /** Test the values of the state derivatives using a numerical
+     * finite differences calculation as a reference.
+     * One-way measurements with estimated modifiers (tropospheric corrections).
+     */
+    @Test
+    public void testStateDerivativesWithEstimatedModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range rate measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeRateMeasurementCreator(context, false),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+        double maxRelativeError = 0;
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            // parameter corresponding to station position offset
+            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
+
+            // Add modifiers if test implies it
+            final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
+            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel(point.getLatitude(),
+                                                                                              point.getLongitude());
+            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
+
+            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(tropoModel, true);
+            ((RangeRate) measurement).addModifier(modifier);
+
+            //
+            //final AbsoluteDate date = measurement.getDate();
+            final double          meanDelay = 1; // measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+            final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+            final SpacecraftState state = propagator.propagate(date);
+
+            final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
+
+            final double[][] finiteDifferencesJacobian =
+                    Differentiation.differentiate(new StateFunction() {
+                public double[] value(final SpacecraftState state) {
+                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                }
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+
+            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+
+            for (int i = 0; i < jacobian.length; ++i) {
+                for (int j = 0; j < jacobian[i].length; ++j) {
+                    // check the values returned by getStateDerivatives() are correct
+                    maxRelativeError = FastMath.max(maxRelativeError,
+                                                    FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                                                                 finiteDifferencesJacobian[i][j]));
+                }
+            }
+
+        }
+        Assert.assertEquals(0, maxRelativeError, 3.1e-7);
+
+    }
+
     /** Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference.
      * One-way measurements with modifiers (tropospheric corrections).
@@ -526,6 +599,83 @@ public class RangeRateTest {
 
         }
         Assert.assertEquals(0, maxRelativeError, 1.2e-6);
+
+    }
+
+    /** Test the values of the parameters' derivatives using a numerical
+     * finite differences calculation as a reference.
+     * One-way measurements with estimated modifiers (tropospheric corrections).
+     */
+    @Test
+    public void testParameterDerivativesWithEstimatedModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeRateMeasurementCreator(context, false),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+        double maxRelativeError = 0;
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            // parameter corresponding to station position offset
+            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
+
+            // Add modifiers if test implies it
+            final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
+            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel(point.getLatitude(),
+                                                                                              point.getLongitude());
+            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 10.0);
+            
+            final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
+            for (ParameterDriver driver : parameters) {
+                driver.setSelected(true);
+            }
+
+            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(tropoModel, true);
+            ((RangeRate) measurement).addModifier(modifier);
+
+            // We intentionally propagate to a date which is close to the
+            // real spacecraft state but is *not* the accurate date, by
+            // compensating only part of the downlink delay. This is done
+            // in order to validate the partial derivatives with respect
+            // to velocity. If we had chosen the proper state date, the
+            // range would have depended only on the current position but
+            // not on the current velocity.
+            final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+            final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+            final SpacecraftState state     = propagator.propagate(date);
+
+            final ParameterDriver[] drivers = new ParameterDriver[] {
+                parameters.get(0)
+            };
+            for (int i = 0; i < 1; ++i) {
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                Assert.assertEquals(1, measurement.getDimension());
+                Assert.assertEquals(1, gradient.length);
+
+                final ParameterFunction dMkdP =
+                                Differentiation.differentiate(new ParameterFunction() {
+                                    /** {@inheritDoc} */
+                                    @Override
+                                    public double value(final ParameterDriver parameterDriver) {
+                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    }
+                                }, 3, 0.1 * drivers[i].getScale());
+                final double ref = dMkdP.value(drivers[i]);
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
+            }
+
+        }
+        Assert.assertEquals(0, maxRelativeError, 2.2e-7);
 
     }
 

@@ -111,10 +111,15 @@ import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.RinexLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
+import org.orekit.models.earth.DiscreteTroposphericModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
+import org.orekit.models.earth.EstimatedTroposphericModel;
+import org.orekit.models.earth.GlobalMappingFunctionModel;
 import org.orekit.models.earth.IonosphericModel;
 import org.orekit.models.earth.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.KlobucharIonoModel;
+import org.orekit.models.earth.MappingFunction;
+import org.orekit.models.earth.NiellMappingFunctionModel;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.models.earth.displacement.OceanLoading;
 import org.orekit.models.earth.displacement.OceanLoadingCoefficientsBLQFactory;
@@ -223,16 +228,17 @@ public class OrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odGNSS = run(input, true);
+        ResultOD odGNSS = run(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 12.0;
-        final double velocityAccuracy = 5.0e-3;
+        final double distanceAccuracy = 11.5;
+        final double velocityAccuracy = 4.0e-3;
 
         //test on the convergence
         final int numberOfIte  = 3;
         final int numberOfEval = 5;
+
         Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
@@ -246,12 +252,12 @@ public class OrbitDeterminationTest {
 
         //test on statistic for the range residuals
         final long nbRange = 4009;
-        final double[] RefStatRange = { -2.555, 2.830, 0.0, 0.750 };
+        final double[] RefStatRange = { -2.706, 2.566, 0.0, 0.738 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               0.1);
+        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.1);
         Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
+        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 0.1);
 
     }
 
@@ -594,6 +600,7 @@ public class OrbitDeterminationTest {
                 }
             });
         }
+
         Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
 
         // compute some statistics
@@ -1065,36 +1072,41 @@ public class OrbitDeterminationTest {
 
         final Map<String, StationData> stations       = new HashMap<String, StationData>();
 
-        final String[]  stationNames                  = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
-        final double[]  stationLatitudes              = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
-        final double[]  stationLongitudes             = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
-        final double[]  stationAltitudes              = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
-        final double[]  stationClockOffsets           = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET);
-        final double[]  stationClockOffsetsMin        = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MIN);
-        final double[]  stationClockOffsetsMax        = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MAX);
-        final boolean[] stationClockOffsetEstimated   = parser.getBooleanArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_ESTIMATED);
-        final boolean[] stationPositionEstimated      = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
-        final double[]  stationRangeSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
-        final double[]  stationRangeBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
-        final double[]  stationRangeBiasMin           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);
-        final double[]  stationRangeBiasMax           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MAX);
-        final boolean[] stationRangeBiasEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_BIAS_ESTIMATED);
-        final double[]  stationRangeRateSigma         = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
-        final double[]  stationRangeRateBias          = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
-        final double[]  stationRangeRateBiasMin       = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MIN);
-        final double[]  stationRangeRateBiasMax       = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MAX);
-        final boolean[] stationRangeRateBiasEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
-        final double[]  stationAzimuthSigma           = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
-        final double[]  stationAzimuthBias            = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
-        final double[]  stationAzimuthBiasMin         = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MIN);
-        final double[]  stationAzimuthBiasMax         = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MAX);
-        final double[]  stationElevationSigma         = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
-        final double[]  stationElevationBias          = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
-        final double[]  stationElevationBiasMin       = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MIN);
-        final double[]  stationElevationBiasMax       = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
-        final boolean[] stationAzElBiasesEstimated    = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
-        final boolean[] stationElevationRefraction    = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
-        final boolean[] stationRangeTropospheric      = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
+        final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
+        final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
+        final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
+        final double[]  stationAltitudes                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
+        final boolean[] stationPositionEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
+        final double[]  stationClockOffsets               = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET);
+        final double[]  stationClockOffsetsMin            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MIN);
+        final double[]  stationClockOffsetsMax            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MAX);
+        final boolean[] stationClockOffsetEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_ESTIMATED);
+        final double[]  stationRangeSigma                 = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
+        final double[]  stationRangeBias                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
+        final double[]  stationRangeBiasMin               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);
+        final double[]  stationRangeBiasMax               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MAX);
+        final boolean[] stationRangeBiasEstimated         = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_BIAS_ESTIMATED);
+        final double[]  stationRangeRateSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
+        final double[]  stationRangeRateBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
+        final double[]  stationRangeRateBiasMin           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MIN);
+        final double[]  stationRangeRateBiasMax           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MAX);
+        final boolean[] stationRangeRateBiasEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
+        final double[]  stationAzimuthSigma               = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
+        final double[]  stationAzimuthBias                = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
+        final double[]  stationAzimuthBiasMin             = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MIN);
+        final double[]  stationAzimuthBiasMax             = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MAX);
+        final double[]  stationElevationSigma             = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
+        final double[]  stationElevationBias              = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
+        final double[]  stationElevationBiasMin           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MIN);
+        final double[]  stationElevationBiasMax           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
+        final boolean[] stationAzElBiasesEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
+        final boolean[] stationElevationRefraction        = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
+        final boolean[] stationTroposphericModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
+        final double[]  stationTroposphericZenithDelay    = parser.getDoubleArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY);
+        final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
+        final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
+        final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
+        final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
         final TidalDisplacement tidalDisplacement;
@@ -1258,17 +1270,32 @@ public class OrbitDeterminationTest {
             }
 
 
-            //Tropospheric correction
+            //Tropospheric correction 
             final RangeTroposphericDelayModifier rangeTroposphericCorrection;
             if (stationRangeTropospheric[i]) {
 
-                final SaastamoinenModel troposphericModel = SaastamoinenModel.getStandardModel();
+                MappingFunction mappingModel = null;
+                if (stationGlobalMappingFunction[i]) {
+                    mappingModel = new GlobalMappingFunctionModel(stationLatitudes[i],
+                                                                  stationLongitudes[i]);
+                } else if (stationNiellMappingFunction[i]) {
+                    mappingModel = new NiellMappingFunctionModel(stationLatitudes[i]);
+                }
+
+                DiscreteTroposphericModel troposphericModel;
+                if (stationTroposphericModelEstimated[i] && mappingModel != null) {
+                    troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);
+                    ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
+                    totalDelay.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                } else {
+                    troposphericModel = SaastamoinenModel.getStandardModel();
+                }
 
                 rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);
             } else {
                 rangeTroposphericCorrection = null;
             }
-
 
         stations.put(stationNames[i], new StationData(station,
                                                       rangeSigma,     rangeBias,
@@ -1526,6 +1553,7 @@ public class OrbitDeterminationTest {
                             if (satRangeBias != null) {
                                 range.addModifier(satRangeBias);
                             }
+                            
                             if (stationData.rangeTroposphericCorrection != null) {
                                 range.addModifier(stationData.rangeTroposphericCorrection);
                             }
@@ -2065,6 +2093,7 @@ public class OrbitDeterminationTest {
         /** {@inheritDoc} */
         @Override
         double residual(final EstimatedMeasurement<Range> evaluation) {
+            //System.out.println(evaluation.getObservedMeasurement().getDate() + "" + (evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0]));
             return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
         }
 
@@ -2429,6 +2458,11 @@ public class OrbitDeterminationTest {
         GROUND_STATION_CLOCK_OFFSET_MAX,
         GROUND_STATION_CLOCK_OFFSET_ESTIMATED,
         GROUND_STATION_POSITION_ESTIMATED,
+        GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED,
+        GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY,
+        GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED,
+        GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
+        GROUND_STATION_NIELL_MAPPING_FUNCTION,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
         GROUND_STATION_RANGE_BIAS_MIN,

@@ -166,6 +166,11 @@ ground.station.elevation.bias.min              [0] = -0.50
 ground.station.elevation.bias.max              [0] = +0.50
 ground.station.az.el.biases.estimated          [0] = true
 ground.station.elevation.refraction.correction [0] = true
+ground.station.tropospheric.model.estimated    [0] = false
+ground.station.tropospheric.zenith.delay       [0] = 2.0
+ground.station.tropospheric.delay.estimated    [0] = false
+ground.station.global.mapping.function         [0] = false
+ground.station.niell.mapping.function          [0] = false
 ground.station.range.tropospheric.correction   [0] = true
 
 ground.station.name                            [1] =  GODL
@@ -197,8 +202,12 @@ ground.station.elevation.bias.min              [1] = -0.50
 ground.station.elevation.bias.max              [1] = +0.50
 ground.station.az.el.biases.estimated          [1] = false
 ground.station.elevation.refraction.correction [1] = true
+ground.station.tropospheric.model.estimated    [1] = false
+ground.station.tropospheric.zenith.delay       [1] = 2.0
+ground.station.tropospheric.delay.estimated    [1] = false
+ground.station.global.mapping.function         [1] = false
+ground.station.niell.mapping.function          [1] = false
 ground.station.range.tropospheric.correction   [1] = true
-
 
 ground.station.name                            [2] =  HA4T 
 ground.station.latitude                        [2] =  20.706489 
@@ -229,6 +238,11 @@ ground.station.elevation.bias.min              [2] = -0.50
 ground.station.elevation.bias.max              [2] = +0.50
 ground.station.az.el.biases.estimated          [2] = false
 ground.station.elevation.refraction.correction [2] = true
+ground.station.tropospheric.model.estimated    [2] = false
+ground.station.tropospheric.zenith.delay       [2] = 2.0
+ground.station.tropospheric.delay.estimated    [2] = false
+ground.station.global.mapping.function         [2] = false
+ground.station.niell.mapping.function          [2] = false
 ground.station.range.tropospheric.correction   [2] = true
 
 ground.station.name                            [3] =  SISL 
@@ -260,6 +274,11 @@ ground.station.elevation.bias.min              [3] = -0.50
 ground.station.elevation.bias.max              [3] = +0.50
 ground.station.az.el.biases.estimated          [3] = false
 ground.station.elevation.refraction.correction [3] = true
+ground.station.tropospheric.model.estimated    [3] = false
+ground.station.tropospheric.zenith.delay       [3] = 2.0
+ground.station.tropospheric.delay.estimated    [3] = false
+ground.station.global.mapping.function         [3] = false
+ground.station.niell.mapping.function          [3] = false
 ground.station.range.tropospheric.correction   [3] = true
 
 

@@ -186,7 +186,8 @@
       * force model parameters estimation (drag coefficients, radiation pressure coefficients,
         central attraction, maneuver thrust or flow rate)
       * measurements parameters estimation (biases, satellite clock offset, station clock offset,
-        station position, pole motion and rate, prime meridian correction and rate)
+        station position, pole motion and rate, prime meridian correction and rate, total zenith
+        delay in tropospheric correction)
 
     * multi-satellites orbit determination
     * ground stations displacements due to solid tides
@@ -240,7 +241,7 @@
 
   * Earth models
   
-    * tropospheric delay (modified Saastamoinen)
+    * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 2, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)

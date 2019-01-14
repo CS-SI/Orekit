@@ -501,3 +501,12 @@ UNEXPECTED_END_OF_FILE = fine inattesa del file {0}
 
 # file {0} is corrupted
 CORRUPTED_FILE = dati corrotti nel file {0}
+
+# Vienna coefficients ah or aw or zh or zw could not be loaded from {0}
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = <MISSING TRANSLATION>
+
+# Vienna coefficients ah or aw or zh or zw not available for date {0}
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+
+# file {0} does not contain Vienna coefficients ah, aw, zh or zw
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
