@@ -67,13 +67,13 @@ public class MariniMurrayModel implements TroposphericModel {
     /** Create a new Marini-Murray model using a standard atmosphere model.
      *
      * <ul>
-     * <li>temperature: 20 degree Celsius
-     * <li>pressure: 1013.25 mbar
-     * <li>humidity: 50%
+     * <li>temperature: 20 degree Celsius</li>
+     * <li>pressure: 1013.25 mbar</li>
+     * <li>humidity: 50%</li>
      * </ul>
      *
      * @param latitude site latitude
-     * @param lambda laser wavelength, nm
+     * @param lambda laser wavelength (c/f), nm
      *
      * @return a Marini-Murray model with standard environmental values
      */

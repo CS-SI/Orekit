@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -133,8 +133,8 @@ public class Range2Test {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsMedian = 1.1e-8;
-        double refErrorsMean   = 8.2e-8;
+        double refErrorsMedian = 5.8e-9;
+        double refErrorsMean   = 6.4e-8;
         double refErrorsMax    = 5.1e-6;
         this.genericTestParameterDerivatives(isModifier, printResults,
                                              refErrorsMedian, refErrorsMean, refErrorsMax);
@@ -156,9 +156,9 @@ public class Range2Test {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsMedian = 1.1e-8;
-        double refErrorsMean   = 8.2e-8;
-        double refErrorsMax    = 5.1e-6;
+        double refErrorsMedian = 2.9e-8;
+        double refErrorsMean   = 4.9e-7;
+        double refErrorsMax    = 1.5e-5;
         this.genericTestParameterDerivatives(isModifier, printResults,
                                              refErrorsMedian, refErrorsMean, refErrorsMax);
 
@@ -442,8 +442,7 @@ public class Range2Test {
     }
 
     void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
-                                         final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax)
-                    {
+                                         final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -453,6 +452,7 @@ public class Range2Test {
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -498,6 +498,7 @@ public class Range2Test {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
+                        stationParameter.getClockOffsetDriver(),
                         stationParameter.getEastOffsetDriver(),
                         stationParameter.getNorthOffsetDriver(),
                         stationParameter.getZenithOffsetDriver()
@@ -509,7 +510,7 @@ public class Range2Test {
                                           stationName, measurement.getDate(), date);
                     }
 
-                    for (int i = 0; i < 3; ++i) {
+                    for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
@@ -522,7 +523,7 @@ public class Range2Test {
                                             public double value(final ParameterDriver parameterDriver) {
                                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
-                                        }, drivers[i], 3, 20.0);
+                                        }, 3, 20.0 * drivers[i].getScale());
                         final double ref = dMkdP.value(drivers[i]);
 
                         if (printResults) {
@@ -550,12 +551,12 @@ public class Range2Test {
         // Print results ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s%n",
-                            "Station", "Measurement Date", "State Date",
-                            "ΔdQx", "rel ΔdQx",
-                            "ΔdQy", "rel ΔdQy",
-                            "ΔdQz", "rel ΔdQz");
+                              "%10s  %10s  %10s  %10s  %10s  %10s  %10s  %10s%n",
+                              "Station", "Measurement Date", "State Date",
+                              "Δt",   "rel Δt",
+                              "ΔdQx", "rel ΔdQx",
+                              "ΔdQy", "rel ΔdQy",
+                              "ΔdQz", "rel ΔdQz");
          }
 
         // Propagate to final measurement's date

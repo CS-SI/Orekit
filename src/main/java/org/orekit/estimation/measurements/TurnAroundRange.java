@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -76,11 +76,14 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
      * @param turnAroundRange observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated as of 9.3, replaced by {@link #TurnAroundRange(GroundStation, GroundStation, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight) {
-        this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, 0);
+        this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -92,30 +95,52 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.0
+     * @deprecated as of 9.3, replaced by {@link #TurnAroundRange(GroundStation, GroundStation, AbsoluteDate,
+     * double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
                            final int propagatorIndex) {
-        super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              masterStation.getEastOffsetDriver(),
-              masterStation.getNorthOffsetDriver(),
-              masterStation.getZenithOffsetDriver(),
-              masterStation.getPrimeMeridianOffsetDriver(),
-              masterStation.getPrimeMeridianDriftDriver(),
-              masterStation.getPolarOffsetXDriver(),
-              masterStation.getPolarDriftXDriver(),
-              masterStation.getPolarOffsetYDriver(),
-              masterStation.getPolarDriftYDriver(),
-              slaveStation.getEastOffsetDriver(),
-              slaveStation.getNorthOffsetDriver(),
-              slaveStation.getZenithOffsetDriver(),
-              slaveStation.getPrimeMeridianOffsetDriver(),
-              slaveStation.getPrimeMeridianDriftDriver(),
-              slaveStation.getPolarOffsetXDriver(),
-              slaveStation.getPolarDriftXDriver(),
-              slaveStation.getPolarOffsetYDriver(),
-              slaveStation.getPolarDriftYDriver());
+        this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param masterStation ground station from which measurement is performed
+     * @param slaveStation ground station reflecting the signal
+     * @param date date of the measurement
+     * @param turnAroundRange observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
+                           final AbsoluteDate date, final double turnAroundRange,
+                           final double sigma, final double baseWeight,
+                           final ObservableSatellite satellite) {
+        super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(masterStation.getClockOffsetDriver());
+        addParameterDriver(masterStation.getEastOffsetDriver());
+        addParameterDriver(masterStation.getNorthOffsetDriver());
+        addParameterDriver(masterStation.getZenithOffsetDriver());
+        addParameterDriver(masterStation.getPrimeMeridianOffsetDriver());
+        addParameterDriver(masterStation.getPrimeMeridianDriftDriver());
+        addParameterDriver(masterStation.getPolarOffsetXDriver());
+        addParameterDriver(masterStation.getPolarDriftXDriver());
+        addParameterDriver(masterStation.getPolarOffsetYDriver());
+        addParameterDriver(masterStation.getPolarDriftYDriver());
+        // the slave station clock is not used at all, we ignore the corresponding parameter driver
+        addParameterDriver(slaveStation.getEastOffsetDriver());
+        addParameterDriver(slaveStation.getNorthOffsetDriver());
+        addParameterDriver(slaveStation.getZenithOffsetDriver());
+        addParameterDriver(slaveStation.getPrimeMeridianOffsetDriver());
+        addParameterDriver(slaveStation.getPrimeMeridianDriftDriver());
+        addParameterDriver(slaveStation.getPolarOffsetXDriver());
+        addParameterDriver(slaveStation.getPolarDriftXDriver());
+        addParameterDriver(slaveStation.getPolarOffsetYDriver());
+        addParameterDriver(slaveStation.getPolarDriftYDriver());
         this.masterStation = masterStation;
         this.slaveStation = slaveStation;
     }
@@ -139,7 +164,8 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
 
         // Turn around range derivatives are computed with respect to:
         // - Spacecraft state in inertial frame
@@ -149,7 +175,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         //
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - stations' parameters (stations' offsets, pole, prime meridian...)
+        //  - 6..n - stations' parameters (clock offset, station offsets, pole, prime meridian...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
@@ -188,18 +214,18 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
         // (if state has already been set up to pre-compensate propagation delay,
         // we will have delta = masterTauD + slaveTauU)
-        final AbsoluteDate measurementDate = getDate();
-        final FieldAbsoluteDate<DerivativeStructure> measurementDateDS = new FieldAbsoluteDate<>(field, measurementDate);
-        final double delta = measurementDate.durationFrom(state.getDate());
+        final double delta = getDate().durationFrom(state.getDate());
 
         // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as DerivativeStructures
         final FieldTransform<DerivativeStructure> masterToInert =
-                        masterStation.getOffsetToInertial(state.getFrame(), measurementDateDS, factory, indices);
+                        masterStation.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
+        final FieldAbsoluteDate<DerivativeStructure> measurementDateDS =
+                        masterToInert.getFieldDate();
 
         // Master station PV in inertial frame at measurement date
         final TimeStampedFieldPVCoordinates<DerivativeStructure> masterArrival =
-                        masterToInert.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
-                                                                                          PVCoordinates.ZERO));
+                        masterToInert.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(measurementDateDS,
+                                                                                                 zero, zero, zero));
 
         // Compute propagation times
         final DerivativeStructure masterTauD = signalTimeOfFlight(pvaDS, masterArrival.getPosition(), measurementDateDS);

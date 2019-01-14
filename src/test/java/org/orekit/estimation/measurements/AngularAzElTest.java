@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -205,6 +205,7 @@ public class AngularAzElTest {
 
         // create perfect azimuth-elevation measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -254,7 +255,7 @@ public class AngularAzElTest {
                                         public double value(final ParameterDriver parameterDriver) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[k];
                                         }
-                                    }, drivers[i], 3, 50.0);
+                                    }, 3, 50.0 * drivers[i].getScale());
                     final double ref = dMkdP.value(drivers[i]);
 
                     if (ref > 1.e-12) {

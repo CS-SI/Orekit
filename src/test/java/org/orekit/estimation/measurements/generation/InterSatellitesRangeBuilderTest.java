@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.InterSatellitesRange;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.KeplerianOrbit;
@@ -54,14 +55,14 @@ public class InterSatellitesRangeBuilderTest {
     private static final double BIAS  = -0.01;
 
     private MeasurementBuilder<InterSatellitesRange> getBuilder(final RandomGenerator random,
-                                                                final int satellite1Index, final int satellite2Index) {
+                                                                final ObservableSatellite receiver,
+                                                                final ObservableSatellite remote) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<InterSatellitesRange> isrb =
                         new InterSatellitesRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                                     1.0e-10,
                                                                                                                     new GaussianRandomGenerator(random)),
-                                                                       satellite1Index, satellite2Index,
-                                                                       true, SIGMA, 1.0);
+                                                        receiver, remote, true, SIGMA, 1.0);
         isrb.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -86,13 +87,13 @@ public class InterSatellitesRangeBuilderTest {
 
     private void doTest(long seed, double startPeriod, double endPeriod, double tolerance) {
         Generator generator = new Generator();
-        int satellite1Index = generator.addPropagator(buildPropagator());
+        ObservableSatellite receiver = generator.addPropagator(buildPropagator());
         final Orbit o1 = context.initialOrbit;
         // for the second satellite, we simply reverse velocity
         final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPVCoordinates().getPosition(),
                                                               o1.getPVCoordinates().getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
-        int satellite2Index = generator.addPropagator(new KeplerianPropagator(o2));
+        ObservableSatellite remote = generator.addPropagator(new KeplerianPropagator(o2));
         final double step = 60.0;
 
         // beware that in order to avoid deadlocks, the slave PV coordinates provider
@@ -100,9 +101,9 @@ public class InterSatellitesRangeBuilderTest {
         // added to generator above! The reason is the event detector will be bound
         // to the first propagator, so it cannot also refer to the second one at the same time
         // this is the reason why we create a *new* KeplerianPropagator below
-        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), satellite1Index, satellite2Index),
+        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), receiver, remote),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
-                                                         generator.getPropagator(satellite1Index),
+                                                         generator.getPropagator(receiver),
                                                          new InterSatDirectViewDetector(context.earth, new KeplerianPropagator(o2)),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
 

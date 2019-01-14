@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -198,9 +198,11 @@ needed for their computation.
 
   * Marshall Solar Activity Future Estimation from 1999,
 
-  * DE 430 planetary ephemerides from 1990 to 2069,
+  * JPL DE 430 planetary ephemerides from 1990 to 2069,
 
-  * Eigen 06S gravity field.
+  * Eigen 06S gravity field,
+
+  * FES 2004 ocean tides model.
 
 There are no guarantees that this file will be available indefinitely or that its
 content will be updated. It should be considered as a simple configuration example.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.Test;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
 
 public class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularAzEl> {
@@ -34,14 +35,14 @@ public class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest
 
     protected MeasurementBuilder<AngularAzEl> getBuilder(final RandomGenerator random,
                                                          final GroundStation groundStation,
-                                                         final int propagatorIndex) {
+                                                         final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA, SIGMA * SIGMA });
         MeasurementBuilder<AngularAzEl> ab =
                         new AngularAzElBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                            1.0e-10,
                                                                                                            new GaussianRandomGenerator(random)),
                                                groundStation, new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 },
-                                               propagatorIndex);
+                                               satellite);
         ab.addModifier(new Bias<>(new String[] { "aBias", "eBias" },
                         new double[] { BIAS, BIAS },
                         new double[] { 1.0, 1.0 },

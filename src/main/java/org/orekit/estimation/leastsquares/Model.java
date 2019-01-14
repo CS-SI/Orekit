@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -422,7 +422,7 @@ class Model implements MultivariateJacobianFunction {
 
         for (int k = 0; k < evaluationStates.length; ++k) {
 
-            final int p = observedMeasurement.getPropagatorsIndices().get(k);
+            final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];

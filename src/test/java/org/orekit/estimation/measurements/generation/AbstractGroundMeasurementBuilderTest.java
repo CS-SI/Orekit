@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -43,7 +44,7 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
 
     protected abstract MeasurementBuilder<T> getBuilder(RandomGenerator random,
                                                         GroundStation groundStation,
-                                                        int propagatorIndex);
+                                                        ObservableSatellite satellite);
 
     private Propagator buildPropagator() {
         return EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -52,10 +53,10 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
     protected void doTest(long seed, double startPeriod, double endPeriod, int expectedMeasurements, double tolerance) {
        Generator generator = new Generator();
        final double step = 60.0;
-       final int propagatorIndex = generator.addPropagator(buildPropagator());
-       generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.get(0), propagatorIndex),
+       final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+       generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.get(0), satellite),
                                                         new FixedStepSelector(step, TimeScalesFactory.getUTC()),
-                                                        generator.getPropagator(propagatorIndex),
+                                                        generator.getPropagator(satellite),
                                                         new ElevationDetector(context.stations.get(0).getBaseFrame()).
                                                         withConstantElevation(FastMath.toRadians(5.0)).
                                                         withHandler(new ContinueOnEvent<>()),

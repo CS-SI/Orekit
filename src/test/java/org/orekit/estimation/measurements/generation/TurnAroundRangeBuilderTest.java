@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.modifiers.Bias;
@@ -55,13 +56,13 @@ public class TurnAroundRangeBuilderTest {
     private MeasurementBuilder<TurnAroundRange> getBuilder(final RandomGenerator random,
                                                            final GroundStation master,
                                                            final GroundStation slave,
-                                                           final int propagatorIndex) {
+                                                           final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<TurnAroundRange> rb =
                         new TurnAroundRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                                1.0e-10,
                                                                                                                new GaussianRandomGenerator(random)),
-                                                   master, slave, SIGMA, 1.0, propagatorIndex);
+                                                   master, slave, SIGMA, 1.0, satellite);
         rb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },
@@ -90,10 +91,10 @@ public class TurnAroundRangeBuilderTest {
         final Map.Entry<GroundStation, GroundStation> entry = context.TARstations.entrySet().iterator().next();
         final GroundStation master = entry.getKey();
         final GroundStation slave  = entry.getValue();
-        final int propagatorIndex = generator.addPropagator(buildPropagator());
-        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), master, slave, propagatorIndex),
+        final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), master, slave, satellite),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
-                                                         generator.getPropagator(propagatorIndex),
+                                                         generator.getPropagator(satellite),
                                                          BooleanDetector.andCombine(new ElevationDetector(master.getBaseFrame()).
                                                                                     withConstantElevation(FastMath.toRadians(5.0)),
                                                                                     new ElevationDetector(slave.getBaseFrame()).

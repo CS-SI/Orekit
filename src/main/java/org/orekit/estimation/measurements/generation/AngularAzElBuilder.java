@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -39,13 +40,13 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
      * @param station ground station from which measurement is performed
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
+     * @param satellite satellite related to this builder
      */
     public AngularAzElBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                               final GroundStation station,
                               final double[] sigma, final double[] baseWeight,
-                              final int propagatorIndex) {
-        super(noiseSource, sigma, baseWeight, propagatorIndex);
+                              final ObservableSatellite satellite) {
+        super(noiseSource, sigma, baseWeight, satellite);
         this.station = station;
     }
 
@@ -53,16 +54,16 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
     @Override
     public AngularAzEl build(final SpacecraftState[] states) {
 
-        final int propagatorIndex   = getPropagatorsIndices()[0];
-        final double[] sigma        = getTheoreticalStandardDeviation();
-        final double[] baseWeight   = getBaseWeight();
-        final SpacecraftState state = states[propagatorIndex];
+        final ObservableSatellite satellite = getSatellites()[0];
+        final double[] sigma                = getTheoreticalStandardDeviation();
+        final double[] baseWeight           = getBaseWeight();
+        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
 
         // create a dummy measurement
         final AngularAzEl dummy = new AngularAzEl(station, state.getDate(),
                                                   new double[] {
                                                       0.0, 0.0
-                                                  }, sigma, baseWeight, propagatorIndex);
+                                                  }, sigma, baseWeight, satellite);
         for (final EstimationModifier<AngularAzEl> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -88,7 +89,7 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
 
         // generate measurement
         final AngularAzEl measurement = new AngularAzEl(station, state.getDate(), angular,
-                                                        sigma, baseWeight, propagatorIndex);
+                                                        sigma, baseWeight, satellite);
         for (final EstimationModifier<AngularAzEl> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

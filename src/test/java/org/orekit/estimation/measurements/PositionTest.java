@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -172,12 +172,15 @@ public class PositionTest {
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(3).getData();
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Create PV measurements
         final Position[] ps = new Position[2];
-        ps[0] = new Position(date, position, sigmaP, baseWeight);
-        ps[1] = new Position(date, position, sigmaP, baseWeight, propNumRef[1]);
+        ps[0] = new Position(date, position, sigmaP, baseWeight, sats[0]);
+        ps[1] = new Position(date, position, sigmaP, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 1e-20; // tolerance
@@ -187,7 +190,7 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], p.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
             
             // Weights
             for (int i = 0; i < 3; i++) {
@@ -235,12 +238,15 @@ public class PositionTest {
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(3).getData();
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2, 0, 10};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Create PV measurements
         final Position[] ps = new Position[2];
-        ps[0] = new Position(date, position, sigmaP, baseWeight);
-        ps[1] = new Position(date, position, sigmaP, baseWeight, propNumRef[1]);
+        ps[0] = new Position(date, position, sigmaP, baseWeight, sats[0]);
+        ps[1] = new Position(date, position, sigmaP, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 1e-20; // tolerance
@@ -250,7 +256,7 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], p.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
             
             // Weights
             for (int i = 0; i < 3; i++) {
@@ -307,15 +313,18 @@ public class PositionTest {
         }
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Reference standard deviations
         final double[] sigmaP = {10., 20., 30.};
         
         // Create Position measurements
         final Position[] ps = new Position[2];
-        ps[0] = new Position(date, position, positionP,baseWeight);
-        ps[1] = new Position(date, position, positionP, baseWeight, propNumRef[1]);
+        ps[0] = new Position(date, position, positionP, baseWeight, sats[0]);
+        ps[1] = new Position(date, position, positionP, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 6.7e-16; // tolerance
@@ -325,7 +334,7 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], p.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
             
             // Weights
             for (int i = 0; i < 3; i++) {
@@ -363,7 +372,7 @@ public class PositionTest {
         
         // Build with one 3-sized vectors
         try {
-            new Position(date, position, new double[] {1.}, weight);
+            new Position(date, position, new double[] {1.}, weight, new ObservableSatellite(0));
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -371,7 +380,7 @@ public class PositionTest {
         
         // Build with one 3x3 matrix
         try {
-            new Position(date, position, new double[][] {{0., 0.}, {0., 0.}}, weight);
+            new Position(date, position, new double[][] {{0., 0.}, {0., 0.}}, weight, new ObservableSatellite(0));
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here

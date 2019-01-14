@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -210,7 +210,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
         };
 
         final ParameterFunction rangeErrorDerivative =
-                        Differentiation.differentiate(rangeError, driver, 3, 10.0);
+                        Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
 
         return rangeErrorDerivative.value(driver);
 
@@ -289,7 +289,8 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
 
         }
 
-        for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                          station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {

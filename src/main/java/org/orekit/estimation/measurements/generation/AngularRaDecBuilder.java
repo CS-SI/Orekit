@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -44,13 +45,13 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
+     * @param satellite satellite related to this builder
      */
     public AngularRaDecBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                final GroundStation station, final Frame referenceFrame,
                                final double[] sigma, final double[] baseWeight,
-                               final int propagatorIndex) {
-        super(noiseSource, sigma, baseWeight, propagatorIndex);
+                               final ObservableSatellite satellite) {
+        super(noiseSource, sigma, baseWeight, satellite);
         this.station        = station;
         this.referenceFrame = referenceFrame;
     }
@@ -59,16 +60,16 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
     @Override
     public AngularRaDec build(final SpacecraftState[] states) {
 
-        final int propagatorIndex   = getPropagatorsIndices()[0];
-        final double[] sigma        = getTheoreticalStandardDeviation();
-        final double[] baseWeight   = getBaseWeight();
-        final SpacecraftState state = states[propagatorIndex];
+        final ObservableSatellite satellite = getSatellites()[0];
+        final double[] sigma                = getTheoreticalStandardDeviation();
+        final double[] baseWeight           = getBaseWeight();
+        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
 
         // create a dummy measurement
         final AngularRaDec dummy = new AngularRaDec(station, referenceFrame, state.getDate(),
                                                     new double[] {
                                                         0.0, 0.0
-                                                    }, sigma, baseWeight, propagatorIndex);
+                                                    }, sigma, baseWeight, satellite);
         for (final EstimationModifier<AngularRaDec> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -94,7 +95,7 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
 
         // generate measurement
         final AngularRaDec measurement = new AngularRaDec(station, referenceFrame, state.getDate(),
-                                                          angular, sigma, baseWeight, propagatorIndex);
+                                                          angular, sigma, baseWeight, satellite);
         for (final EstimationModifier<AngularRaDec> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

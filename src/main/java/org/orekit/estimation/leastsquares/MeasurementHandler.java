@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -90,8 +90,7 @@ class MeasurementHandler implements MultiSatStepHandler {
             final ObservedMeasurement<?> observed = next.getMeasurement();
 
             // estimate the theoretical measurement
-            final List<Integer>           indices  = observed.getPropagatorsIndices();
-            final SpacecraftState[]       states   = new SpacecraftState[indices.size()];
+            final SpacecraftState[] states = new SpacecraftState[observed.getSatellites().size()];
             for (int i = 0; i < states.length; ++i) {
                 states[i] = interpolators.get(i).getInterpolatedState(next.getDate());
             }

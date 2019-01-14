@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -219,7 +219,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         // take parametric prime meridian shift into account
         final double theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
-        final double thetaDot = parametricModel(primeMeridianDriftDriver);
+        final double thetaDot = primeMeridianDriftDriver.getValue();
         final Transform meridianShift =
                         new Transform(date,
                                       new Rotation(Vector3D.PLUS_K, theta, RotationConvention.FRAME_TRANSFORM),
@@ -228,8 +228,8 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         // take parametric pole shift into account
         final double xpNeg     = -linearModel(date, polarOffsetXDriver, polarDriftXDriver);
         final double ypNeg     = -linearModel(date, polarOffsetYDriver, polarDriftYDriver);
-        final double xpNegDot  = -parametricModel(polarDriftXDriver);
-        final double ypNegDot  = -parametricModel(polarDriftYDriver);
+        final double xpNegDot  = -polarDriftXDriver.getValue();
+        final double ypNegDot  = -polarDriftYDriver.getValue();
         final Transform poleShift =
                         new Transform(date,
                                       new Transform(date,
@@ -251,13 +251,13 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         // prime meridian shift parameters
         final T theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
-        final T thetaDot = zero.add(parametricModel(primeMeridianDriftDriver));
+        final T thetaDot = zero.add(primeMeridianDriftDriver.getValue());
 
         // pole shift parameters
         final T xpNeg    = linearModel(date, polarOffsetXDriver, polarDriftXDriver).negate();
         final T ypNeg    = linearModel(date, polarOffsetYDriver, polarDriftYDriver).negate();
-        final T xpNegDot = zero.subtract(parametricModel(polarDriftXDriver));
-        final T ypNegDot = zero.subtract(parametricModel(polarDriftYDriver));
+        final T xpNegDot = zero.subtract(polarDriftXDriver.getValue());
+        final T ypNegDot = zero.subtract(polarDriftYDriver.getValue());
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
@@ -277,15 +277,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final DerivativeStructure theta    = linearModel(factory, date,
                                                          primeMeridianOffsetDriver, primeMeridianDriftDriver,
                                                          indices);
-        final DerivativeStructure thetaDot = parametricModel(factory, primeMeridianDriftDriver, indices);
+        final DerivativeStructure thetaDot = primeMeridianDriftDriver.getValue(factory, indices);
 
         // pole shift parameters
         final DerivativeStructure xpNeg    = linearModel(factory, date,
                                                          polarOffsetXDriver, polarDriftXDriver, indices).negate();
         final DerivativeStructure ypNeg    = linearModel(factory, date,
                                                          polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final DerivativeStructure xpNegDot = parametricModel(factory, polarDriftXDriver, indices).negate();
-        final DerivativeStructure ypNegDot = parametricModel(factory, polarDriftYDriver, indices).negate();
+        final DerivativeStructure xpNegDot = polarDriftXDriver.getValue(factory, indices).negate();
+        final DerivativeStructure ypNegDot = polarDriftYDriver.getValue(factory, indices).negate();
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
@@ -345,8 +345,8 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                                       offsetDriver.getName());
         }
         final double dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final double offset = parametricModel(offsetDriver);
-        final double drift  = parametricModel(driftDriver);
+        final double offset = offsetDriver.getValue();
+        final double drift  = driftDriver.getValue();
         return dt * drift + offset;
     }
 
@@ -365,8 +365,8 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                                       offsetDriver.getName());
         }
         final T dt          = date.durationFrom(offsetDriver.getReferenceDate());
-        final double offset = parametricModel(offsetDriver);
-        final double drift  = parametricModel(driftDriver);
+        final double offset = offsetDriver.getValue();
+        final double drift  = driftDriver.getValue();
         return dt.multiply(drift).add(offset);
     }
 
@@ -386,31 +386,9 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                                       offsetDriver.getName());
         }
         final DerivativeStructure dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final DerivativeStructure offset = parametricModel(factory, offsetDriver, indices);
-        final DerivativeStructure drift  = parametricModel(factory, driftDriver, indices);
+        final DerivativeStructure offset = offsetDriver.getValue(factory, indices);
+        final DerivativeStructure drift  = driftDriver.getValue(factory, indices);
         return dt.multiply(drift).add(offset);
-    }
-
-    /** Evaluate a parametric model.
-     * @param driver driver managing the parameter
-     * @return value of the parametric model
-     */
-    private double parametricModel(final ParameterDriver driver) {
-        return driver.getValue();
-    }
-
-    /** Evaluate a parametric model.
-     * @param factory factory for the derivatives
-     * @param driver driver managing the parameter
-     * @param indices indices of the estimated parameters in derivatives computations
-     * @return value of the parametric model
-     */
-    private DerivativeStructure parametricModel(final DSFactory factory, final ParameterDriver driver,
-                                                final Map<String, Integer> indices) {
-        final Integer index = indices.get(driver.getName());
-        return (index == null) ?
-               factory.constant(driver.getValue()) :
-               factory.variable(index, driver.getValue());
     }
 
     /** Replace the instance with a data transfer object for serialization.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.junit.Test;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
 
@@ -33,13 +34,13 @@ public class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<R
 
     protected MeasurementBuilder<RangeRate> getBuilder(final RandomGenerator random,
                                                        final GroundStation groundStation,
-                                                       final int propagatorIndex) {
+                                                       final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<RangeRate> rrb =
                         new RangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                          1.0e-10,
                                                                                                          new GaussianRandomGenerator(random)),
-                                             groundStation, true, SIGMA, 1.0, propagatorIndex);
+                                             groundStation, true, SIGMA, 1.0, satellite);
         rrb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },

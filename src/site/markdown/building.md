@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -97,7 +97,7 @@ The simplest way to use Orekit with Eclipse is to follow these steps:
 
   * using your operating system tools, unpack the source distribution directly
     inside your Eclipse workspace. The source distribution file name has a name
-    of the form orekit-x.y-sources.zip where x.y is the version number. Unpacking
+    of the form orekit-x.y-src.zip where x.y is the version number. Unpacking
     this zip file should create a folder of the form orekit-x.y in your workspace.
 
   * using Eclipse, import the project by selecting in the top level "File" menu

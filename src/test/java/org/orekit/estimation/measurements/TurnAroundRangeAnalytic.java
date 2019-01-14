@@ -49,29 +49,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param range observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     */
-    public TurnAroundRangeAnalytic(final GroundStation masterStation, final GroundStation slaveStation,
-                                   final AbsoluteDate date, final double turnAroundRange,
-                                   final double sigma, final double baseWeight)
-        {
-        super(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight);
-    }
-
     /** Constructor from parent TurnAroundRange class
      * @param Range parent class
      */
-    public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange)
-        {
+    public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange) {
         super(turnAroundRange.getMasterStation(), turnAroundRange.getSlaveStation(),
               turnAroundRange.getDate(), turnAroundRange.getObservedValue()[0],
               turnAroundRange.getTheoreticalStandardDeviation()[0],
-              turnAroundRange.getBaseWeight()[0]);
+              turnAroundRange.getBaseWeight()[0],
+              new ObservableSatellite(0));
     }
 
 
@@ -352,11 +338,11 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // ------------------------------------------------------------
 
         if (masterGroundStation.getEastOffsetDriver().isSelected()  ||
-                        masterGroundStation.getNorthOffsetDriver().isSelected() ||
-                        masterGroundStation.getZenithOffsetDriver().isSelected()||
-                        slaveGroundStation.getEastOffsetDriver().isSelected()  ||
-                        slaveGroundStation.getNorthOffsetDriver().isSelected() ||
-                        slaveGroundStation.getZenithOffsetDriver().isSelected()) {
+            masterGroundStation.getNorthOffsetDriver().isSelected() ||
+            masterGroundStation.getZenithOffsetDriver().isSelected()||
+            slaveGroundStation.getEastOffsetDriver().isSelected()  ||
+            slaveGroundStation.getNorthOffsetDriver().isSelected() ||
+            slaveGroundStation.getZenithOffsetDriver().isSelected()) {
 
             // tMd derivatives / stations
             // --------------------------
@@ -593,7 +579,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as DerivativeStructures
         // The components of master station's position in offset frame are the 3 third derivative parameters
         final FieldTransform<DerivativeStructure> masterToInert =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDateDS, dsFactory, indices);
+                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDate, dsFactory, indices);
 
         // Master station PV in inertial frame at measurement date
         final FieldVector3D<DerivativeStructure> QMaster = masterToInert.transformPosition(zero);

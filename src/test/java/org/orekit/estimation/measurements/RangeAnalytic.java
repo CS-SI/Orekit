@@ -46,27 +46,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class RangeAnalytic extends Range {
 
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param range observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     */
-    public RangeAnalytic(final GroundStation station, final AbsoluteDate date,
-                 final double range, final double sigma, final double baseWeight)
-        {
-        super(station, date, range, sigma, baseWeight);
-    }
-
     /** Constructor from parent Range class
      * @param Range parent class
      */
-    public RangeAnalytic(final Range range)
-        {
-        super(range.getStation(), range.getDate(), range.getObservedValue()[0],
+    public RangeAnalytic(final Range range) {
+        super(range.getStation(), true, range.getDate(), range.getObservedValue()[0],
               range.getTheoreticalStandardDeviation()[0],
-              range.getBaseWeight()[0]);
+              range.getBaseWeight()[0],
+              new ObservableSatellite(0));
     }
 
     /**
@@ -188,9 +175,10 @@ public class RangeAnalytic extends Range {
                                                     dRdPx * dt, dRdPy * dt, dRdPz * dt
         });
 
-        if (groundStation.getEastOffsetDriver().isSelected()  ||
-                        groundStation.getNorthOffsetDriver().isSelected() ||
-                        groundStation.getZenithOffsetDriver().isSelected()) {
+        if (groundStation.getClockOffsetDriver().isSelected() ||
+            groundStation.getEastOffsetDriver().isSelected()  ||
+            groundStation.getNorthOffsetDriver().isSelected() ||
+            groundStation.getZenithOffsetDriver().isSelected()) {
 
             // Downlink tme of flight derivatives / station position in topocentric frame
             final AngularCoordinates ac = topoToInertDownlink.getAngular().revert();
@@ -286,10 +274,10 @@ public class RangeAnalytic extends Range {
         // transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
         final AbsoluteDate downlinkDate = getDate();
-        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
-                        new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDateDS, dsFactory, indices);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate, dsFactory, indices);
+        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+                        offsetToInertialDownlink.getFieldDate();
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,15 @@ import org.orekit.propagation.SpacecraftState;
 
 public class PositionMeasurementCreator extends MeasurementCreator {
 
+    private final ObservableSatellite satellite;
+
+    public PositionMeasurementCreator() {
+        this.satellite = new ObservableSatellite(0);
+    }
+
     public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         final Vector3D p = currentState.getPVCoordinates().getPosition();
-        final Position measurement = new Position(currentState.getDate(), p, 1.0, 1.0);
+        final Position measurement = new Position(currentState.getDate(), p, 1.0, 1.0, satellite);
         Assert.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);
         addMeasurement(measurement);
     }

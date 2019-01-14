@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -233,8 +233,7 @@ public class EstimationTestUtils {
     }
 
     public static Propagator createPropagator(final Orbit initialOrbit,
-                                              final PropagatorBuilder propagatorBuilder)
-        {
+                                              final PropagatorBuilder propagatorBuilder) {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
@@ -250,10 +249,9 @@ public class EstimationTestUtils {
     }
 
     public static List<ObservedMeasurement<?>> createMeasurements(final Propagator propagator,
-                                                          final MeasurementCreator creator,
-                                                          final double startPeriod, final double endPeriod,
-                                                          final double step)
-        {
+                                                                  final MeasurementCreator creator,
+                                                                  final double startPeriod, final double endPeriod,
+                                                                  final double step) {
 
         propagator.setMasterMode(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();
@@ -295,8 +293,7 @@ public class EstimationTestUtils {
                                 final double expectedRMS,      final double rmsEps,
                                 final double expectedMax,      final double maxEps,
                                 final double expectedDeltaPos, final double posEps,
-                                final double expectedDeltaVel, final double velEps)
-        {
+                                final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();

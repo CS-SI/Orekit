@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,8 +62,7 @@ public class Context {
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
                                                     final boolean perfectStart,
                                                     final double minStep, final double maxStep, final double dP,
-                                                    final Force... forces)
-        {
+                                                    final Force... forces) {
 
         final Orbit startOrbit;
         if (perfectStart) {
@@ -93,8 +92,7 @@ public class Context {
     }
 
     GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,
-                                double altitude, String name)
-        {
+                                double altitude, String name) {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);

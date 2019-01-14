@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ public class RangeMeasurementCreator2 extends MeasurementCreator {
 
     private final Context context;
     private final Vector3D antennaPhaseCenter;
+    private final ObservableSatellite satellite;
 
     public RangeMeasurementCreator2(final Context context) {
         this(context, Vector3D.ZERO);
@@ -44,11 +45,13 @@ public class RangeMeasurementCreator2 extends MeasurementCreator {
     public RangeMeasurementCreator2(final Context context, final Vector3D antennaPhaseCenter) {
         this.context            = context;
         this.antennaPhaseCenter = antennaPhaseCenter;
+        this.satellite          = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
                                                         station.getPrimeMeridianOffsetDriver(),
@@ -65,8 +68,7 @@ public class RangeMeasurementCreator2 extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         try {
             for (final GroundStation station : context.stations) {
                 final AbsoluteDate     date      = currentState.getDate();
@@ -88,8 +90,8 @@ public class RangeMeasurementCreator2 extends MeasurementCreator {
                                     station.getOffsetToInertial(inertial, receptionDate).transformPosition(Vector3D.ZERO);
                     final double downLinkDistance = Vector3D.distance(position, stationAtReception);
 
-                    addMeasurement(new Range(station, receptionDate, downLinkDistance,
-                                             1.0, 10, false));
+                    addMeasurement(new Range(station, false, receptionDate, downLinkDistance,
+                                             1.0, 10, satellite));
                 }
 
             }

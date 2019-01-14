@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,14 +34,17 @@ import org.orekit.utils.ParameterDriver;
 public class AngularAzElMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
+    private final ObservableSatellite satellite;
 
     public AngularAzElMeasurementCreator(final Context context) {
-        this.context = context;
+        this.context   = context;
+        this.satellite = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
                                                         station.getPrimeMeridianOffsetDriver(),
@@ -58,8 +61,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         for (final GroundStation station : context.stations) {
 
             final AbsoluteDate     date      = currentState.getDate();
@@ -95,7 +97,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
                                                                currentState.getFrame(),
                                                                currentState.getDate());
 
-                addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight));
+                addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight, satellite));
             }
 
         }

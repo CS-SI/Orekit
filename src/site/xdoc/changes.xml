@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2018 CS Systèmes d'Information
+<!-- Copyright 2002-2019 CS Systèmes d'Information
   Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -21,6 +21,18 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="515">
+        Added clock offset parameter at satellites level for orbit determination.
+      </action>
+      <action dev="luc" type="add" issue="513">
+        Added clock offset parameter at ground stations level for orbit determination.
+      </action>
+      <action dev="luc" type="fix" issue="510">
+        Fixed dropped derivatives in TimeStampedFieldPVCoordinates.shiftedBy(dt).
+      </action>
+      <action dev="luc" type="fix" issue="509">
+        Fixed scaling error in ParameterFunction differentiation.
+      </action>
       <action dev="luc" type="fix" issue="508">
         Fixed inconsistency leading to inaccuracies in conversions from AbsoluteDate to FieldAbsoluteDate.
       </action>

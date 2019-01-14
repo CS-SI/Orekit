@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -43,13 +44,13 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
      * @param twoWay flag indicating whether it is a two-way measurement
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
+     * @param satellite satellite related to this builder
      */
     public RangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                             final GroundStation station, final boolean twoWay,
                             final double sigma, final double baseWeight,
-                            final int propagatorIndex) {
-        super(noiseSource, sigma, baseWeight, propagatorIndex);
+                            final ObservableSatellite satellite) {
+        super(noiseSource, sigma, baseWeight, satellite);
         this.station = station;
         this.twoway  = twoWay;
     }
@@ -58,13 +59,13 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
     @Override
     public RangeRate build(final SpacecraftState[] states) {
 
-        final int propagatorIndex   = getPropagatorsIndices()[0];
-        final double sigma          = getTheoreticalStandardDeviation()[0];
-        final double baseWeight     = getBaseWeight()[0];
-        final SpacecraftState state = states[propagatorIndex];
+        final ObservableSatellite satellite = getSatellites()[0];
+        final double sigma                  = getTheoreticalStandardDeviation()[0];
+        final double baseWeight             = getBaseWeight()[0];
+        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
 
         // create a dummy measurement
-        final RangeRate dummy = new RangeRate(station, state.getDate(), Double.NaN, sigma, baseWeight, twoway, propagatorIndex);
+        final RangeRate dummy = new RangeRate(station, state.getDate(), Double.NaN, sigma, baseWeight, twoway, satellite);
         for (final EstimationModifier<RangeRate> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -89,7 +90,7 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
 
         // generate measurement
         final RangeRate measurement = new RangeRate(station, state.getDate(), rangeRate,
-                                                    sigma, baseWeight, twoway, propagatorIndex);
+                                                    sigma, baseWeight, twoway, satellite);
         for (final EstimationModifier<RangeRate> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

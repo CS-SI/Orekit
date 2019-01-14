@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 
 Most discussions should occur on the public forums [https://forum.orekit.org/](https://forum.orekit.org/).
 The main categories are:
+
 |   category    |                                     URL                                                            |
 |---------------|----------------------------------------------------------------------------------------------------|
 |  announces    | [https://forum.orekit.org/c/orekit-announcements](https://forum.orekit.org/c/orekit-announcements) |

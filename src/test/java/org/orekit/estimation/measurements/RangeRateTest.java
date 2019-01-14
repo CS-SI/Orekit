@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -270,6 +270,7 @@ public class RangeRateTest {
 
         // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -315,7 +316,7 @@ public class RangeRateTest {
                                     public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
-                                }, drivers[i], 3, 20.0);
+                                }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i]);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
@@ -340,6 +341,7 @@ public class RangeRateTest {
 
         // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -385,7 +387,7 @@ public class RangeRateTest {
                                     public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
-                                }, drivers[i], 3, 20.0);
+                                }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i]);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
@@ -541,6 +543,7 @@ public class RangeRateTest {
 
         // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -589,7 +592,7 @@ public class RangeRateTest {
                                     public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
-                                }, drivers[i], 3, 20.0);
+                                }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i]);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }

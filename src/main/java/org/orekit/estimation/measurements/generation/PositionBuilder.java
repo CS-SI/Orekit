@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -35,25 +36,25 @@ public class PositionBuilder extends AbstractMeasurementBuilder<Position> {
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
+     * @param satellite satellite related to this builder
      */
     public PositionBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                            final double sigma, final double baseWeight,
-                           final int propagatorIndex) {
-        super(noiseSource, sigma, baseWeight, propagatorIndex);
+                           final ObservableSatellite satellite) {
+        super(noiseSource, sigma, baseWeight, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
     public Position build(final SpacecraftState[] states) {
 
-        final int propagatorIndex   = getPropagatorsIndices()[0];
-        final double sigma          = getTheoreticalStandardDeviation()[0];
-        final double baseWeight     = getBaseWeight()[0];
-        final SpacecraftState state = states[propagatorIndex];
+        final ObservableSatellite satellite = getSatellites()[0];
+        final double sigma                  = getTheoreticalStandardDeviation()[0];
+        final double baseWeight             = getBaseWeight()[0];
+        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
 
         // create a dummy measurement
-        final Position dummy = new Position(state.getDate(), Vector3D.NaN, sigma, baseWeight, propagatorIndex);
+        final Position dummy = new Position(state.getDate(), Vector3D.NaN, sigma, baseWeight, satellite);
         for (final EstimationModifier<Position> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -80,7 +81,7 @@ public class PositionBuilder extends AbstractMeasurementBuilder<Position> {
 
         // generate measurement
         final Position measurement = new Position(state.getDate(), new Vector3D(position),
-                                                  sigma, baseWeight, propagatorIndex);
+                                                  sigma, baseWeight, satellite);
         for (final EstimationModifier<Position> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }
