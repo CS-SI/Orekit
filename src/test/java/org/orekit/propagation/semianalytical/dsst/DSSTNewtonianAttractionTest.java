@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -42,7 +41,7 @@ public class DSSTNewtonianAttractionTest {
     private static final double eps  = 1.0e-19;
 
     @Test
-    public void testGetMeanElementRate() throws IllegalArgumentException, OrekitException {
+    public void testGetMeanElementRate() throws IllegalArgumentException {
         
         final Frame earthFrame = FramesFactory.getEME2000();
         
@@ -84,7 +83,7 @@ public class DSSTNewtonianAttractionTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }
 

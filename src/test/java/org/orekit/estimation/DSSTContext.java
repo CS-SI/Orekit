@@ -24,7 +24,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -61,8 +60,7 @@ public class DSSTContext {
 
     public DSSTPropagatorBuilder createBuilder(final boolean perfectStart,
                                                final double minStep, final double maxStep, final double dP,
-                                               final DSSTForce... forces)
-        throws OrekitException {
+                                               final DSSTForce... forces) {
 
         final EquinoctialOrbit startOrbit;
         if (perfectStart) {
@@ -94,8 +92,7 @@ public class DSSTContext {
     }
 
     GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,
-                                double altitude, String name)
-        throws OrekitException {
+                                double altitude, String name) {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);

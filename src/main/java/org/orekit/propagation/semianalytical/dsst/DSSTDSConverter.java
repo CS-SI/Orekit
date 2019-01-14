@@ -23,7 +23,6 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -52,10 +51,8 @@ class DSSTDSConverter extends AbstractDSConverter {
     /** Simple constructor.
      * @param state regular state
      * @param provider provider to use if attitude needs to be recomputed
-     * @exception OrekitException if attitude cannot be computed
      */
-    DSSTDSConverter(final SpacecraftState state, final AttitudeProvider provider)
-        throws OrekitException {
+    DSSTDSConverter(final SpacecraftState state, final AttitudeProvider provider) {
 
         super(FREE_STATE_PARAMETERS);
 

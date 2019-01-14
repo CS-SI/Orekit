@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -29,13 +28,13 @@ import org.orekit.utils.Constants;
 public enum DSSTForce {
 
     ZONAL() {
-        public DSSTForceModel getForceModel(DSSTContext context) throws OrekitException {
+        public DSSTForceModel getForceModel(DSSTContext context) {
             return new DSSTZonal(context.gravity, 4, 3, 9);
         }
     },
     
     TESSERAL() {
-        public DSSTForceModel getForceModel(DSSTContext context) throws OrekitException {
+        public DSSTForceModel getForceModel(DSSTContext context) {
             return new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, context.gravity, 4, 4, 4, 8, 4, 4, 2);
         }
     },
@@ -65,5 +64,5 @@ public enum DSSTForce {
         }
     };
 
-    public abstract DSSTForceModel getForceModel(DSSTContext context) throws OrekitException;
+    public abstract DSSTForceModel getForceModel(DSSTContext context);
 }

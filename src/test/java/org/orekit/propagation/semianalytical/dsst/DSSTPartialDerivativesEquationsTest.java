@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -73,10 +72,9 @@ public class DSSTPartialDerivativesEquationsTest {
     /**
      * set up {@link #pde} and dependencies.
      *
-     * @throws OrekitException on error
      */
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         propagator = new DSSTPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
         forceModel = new MockForceModel();
@@ -99,10 +97,9 @@ public class DSSTPartialDerivativesEquationsTest {
      * check {@link DSSTPartialDerivativesEquations#computeDerivatives(SpacecraftState,
      * double[])}.
      *
-     * @throws OrekitException on error
      */
     @Test
-    public void testComputeDerivatives() throws OrekitException {
+    public void testComputeDerivatives() {
         //setup
         double[] pdot = new double[36];
 
@@ -143,24 +140,21 @@ public class DSSTPartialDerivativesEquationsTest {
         @Override
         public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
                                                  PropagationType type,
-                                                 double[] parameters)
-            throws OrekitException {
+                                                 double[] parameters) {
             return new ArrayList<ShortPeriodTerms>();
         }
 
         @Override
         public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                          PropagationType type,
-                                                                                         T[] parameters)
-            throws OrekitException {
+                                                                                         T[] parameters) {
             return new ArrayList<FieldShortPeriodTerms<T>>();
         }
         
         @Override
         public double[] getMeanElementRate(SpacecraftState state,
                                            AuxiliaryElements auxiliaryElements,
-                                           double[] parameters)
-            throws OrekitException {
+                                           double[] parameters) {
             return new double[] {state.getA(),
                                  state.getEquinoctialEx(),
                                  state.getEquinoctialEy(),
@@ -172,8 +166,7 @@ public class DSSTPartialDerivativesEquationsTest {
         @Override
         public <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
                                                                       FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                      T[] parameters)
-            throws OrekitException {
+                                                                      T[] parameters) {
             
             final Field<T> field = state.getDate().getField();
             
@@ -211,15 +204,13 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates)
-            throws OrekitException {           
+        public void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates) {           
         }
         
         @Override
         @SuppressWarnings("unchecked")
         public <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters,
-                                                                           FieldSpacecraftState<T>... meanStates)
-            throws OrekitException {
+                                                                           FieldSpacecraftState<T>... meanStates) {
         }
 
         @Override

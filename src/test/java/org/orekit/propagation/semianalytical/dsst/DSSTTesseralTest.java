@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -52,7 +51,7 @@ import org.orekit.utils.Constants;
 public class DSSTTesseralTest {
 
     @Test
-    public void testGetMeanElementRate() throws OrekitException {
+    public void testGetMeanElementRate() {
         
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -110,7 +109,7 @@ public class DSSTTesseralTest {
     }
     
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+    public void testShortPeriodTerms() throws IllegalArgumentException {
         
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
@@ -158,7 +157,7 @@ public class DSSTTesseralTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 }

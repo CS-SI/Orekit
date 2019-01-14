@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -76,14 +75,12 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * (typically set to the expected standard deviation of the position)
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
-     * @exception OrekitException if parameters drivers cannot be scaled
      */
     public DSSTPropagatorBuilder(final Orbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
                                  final double positionScale,
                                  final PropagationType propagationType,
-                                 final PropagationType stateType)
-        throws OrekitException {
+                                 final PropagationType stateType) {
         super(referenceOrbit, PositionAngle.MEAN, positionScale, true);
         this.builder           = builder;
         this.forceModels       = new ArrayList<DSSTForceModel>();
@@ -95,9 +92,8 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** Create a copy of a DSSTPropagatorBuilder object.
      * @return Copied version of the DSSTPropagatorBuilder
-     * @throws OrekitException if parameters drivers cannot be scaled
      */
-    public DSSTPropagatorBuilder copy() throws OrekitException {
+    public DSSTPropagatorBuilder copy() {
         final DSSTPropagatorBuilder copyBuilder =
                         new DSSTPropagatorBuilder((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit()),
                                                   builder,
@@ -166,10 +162,8 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * <p>If this method is not called at all, the integrated orbit will follow
      * a Keplerian evolution only.</p>
      * @param model perturbing {@link DSSTForceModel} to add
-     * @exception OrekitException if model parameters cannot be set
      */
-    public void addForceModel(final DSSTForceModel model)
-        throws OrekitException {
+    public void addForceModel(final DSSTForceModel model) {
         forceModels.add(model);
         for (final ParameterDriver driver : model.getParametersDrivers()) {
             addSupportedParameter(driver);
@@ -177,8 +171,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
-    public DSSTPropagator buildPropagator(final double[] normalizedParameters)
-        throws OrekitException {
+    public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
         final EquinoctialOrbit orbit    = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit());
@@ -199,8 +192,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     public DSSTBatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer)
-        throws OrekitException {
+                                final ModelObserver observer) {
         return new DSSTBatchLSModel(builders,
                                     measurements,
                                     estimatedMeasurementsParameters,

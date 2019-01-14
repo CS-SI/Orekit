@@ -17,7 +17,6 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
 /** This class is a container for the attributes of
@@ -69,10 +68,8 @@ public class AbstractGaussianContributionContext extends ForceModelContext {
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters parameters values of the force model parameters
-     * @throws OrekitException if some specific error occurs
      */
-    public AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    public AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         super(auxiliaryElements);
 

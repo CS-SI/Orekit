@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterDriversList;
  * state transition, measurement, kalman gain matrices etc.
  * @author Maxime Journot
  */
-public class ModelTest {
+public class KalmanModelTest {
 
     /** Orbit type for propagation. */
     private final OrbitType orbitType = OrbitType.CARTESIAN;
@@ -262,7 +262,9 @@ public class ModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final Model model = new Model(Arrays.asList(propagatorBuilder), Arrays.asList(covMatrixProvider), estimatedMeasurementsParameters);
+        final KalmanModel model = new KalmanModel(Arrays.asList(propagatorBuilder),
+                                                  Arrays.asList(covMatrixProvider),
+                                                  estimatedMeasurementsParameters);
 
         // Evaluate at t0
         // --------------

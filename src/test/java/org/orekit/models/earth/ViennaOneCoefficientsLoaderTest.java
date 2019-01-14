@@ -28,7 +28,6 @@ public class ViennaOneCoefficientsLoaderTest {
     @Test
     /**
      * Regular test for 19th of November 2018
-     * @throws OrekitException if file does not exist or data cannot be read properly
      */
     public void testRegularFile() {
 

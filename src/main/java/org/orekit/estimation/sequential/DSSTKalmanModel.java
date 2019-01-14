@@ -565,7 +565,6 @@ public class DSSTKalmanModel implements KalmanODModel {
      * The  STM is an mxm matrix where m is the size of the state vector.
      * m = nbOrb + nbPropag + nbMeas
      * @return the normalized error state transition matrix
-     * @throws OrekitException if Jacobians cannot be computed
      */
     private RealMatrix getErrorStateTransitionMatrix() {
 
@@ -651,7 +650,6 @@ public class DSSTKalmanModel implements KalmanODModel {
      * H contains the partial derivatives of the measurement with respect to the state.
      * H is an nxm matrix where n is the size of the measurement vector and m the size of the state vector.
      * @return the normalized measurement matrix H
-     * @throws OrekitException if Jacobians cannot be computed
      */
     private RealMatrix getMeasurementMatrix() {
 
@@ -754,7 +752,6 @@ public class DSSTKalmanModel implements KalmanODModel {
 
     /** Update the reference trajectories using the propagators as input.
      * @param propagators The new propagators to use
-     * @throws OrekitException if setting up the partial derivatives failed
      */
     private void updateReferenceTrajectories(final DSSTPropagator[] propagators) {
 
@@ -856,7 +853,6 @@ public class DSSTKalmanModel implements KalmanODModel {
      *         - Ppred is the normalized predicted covariance matrix<p>
      *         - R is the normalized measurement noise matrix
      * @param <T> the type of measurement
-     * @throws OrekitException if modifier cannot be applied
      */
     private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
                                                                               final RealMatrix innovationCovarianceMatrix) {
@@ -1028,7 +1024,6 @@ public class DSSTKalmanModel implements KalmanODModel {
      * The predicted/propagated orbit is used to update the state vector
      * @param date prediction date
      * @return predicted state
-     * @throws OrekitException if the propagator builder could not be reset
      */
     private RealVector predictState(final AbsoluteDate date) {
 
@@ -1065,7 +1060,6 @@ public class DSSTKalmanModel implements KalmanODModel {
 
     /** Update the estimated parameters after the correction phase of the filter.
      * The min/max allowed values are handled by the parameter themselves.
-     * @throws OrekitException if setting the normalized values failed
      */
     private void updateParameters() {
         final RealVector correctedState = correctedEstimate.getState();

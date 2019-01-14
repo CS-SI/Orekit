@@ -26,14 +26,13 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 
 public class FieldGHmjTest {
 
     private static final double eps = 1e-10;
  
     @Test
-    public void testGHmsj() throws OrekitException {
+    public void testGHmsj() {
         doTestGHmsj(Decimal64Field.getInstance());
     }
 
@@ -64,7 +63,7 @@ public class FieldGHmjTest {
     }
 
     @Test
-    public void testdGHdk() throws OrekitException {
+    public void testdGHdk() {
         doTestdGHdk(Decimal64Field.getInstance());
     }
 
@@ -94,7 +93,7 @@ public class FieldGHmjTest {
     }
 
     @Test
-    public void testdGHdh() throws OrekitException {
+    public void testdGHdh() {
         doTestdGHdh(Decimal64Field.getInstance());
     }
 
@@ -124,7 +123,7 @@ public class FieldGHmjTest {
     }
 
     @Test
-    public void testdGHdAlpha() throws OrekitException {
+    public void testdGHdAlpha() {
         doTestdGHdAlpha(Decimal64Field.getInstance());
     }
 
@@ -154,7 +153,7 @@ public class FieldGHmjTest {
     }
 
     @Test
-    public void testdGHdBeta() throws OrekitException {
+    public void testdGHdBeta() {
         doTestdGHdBeta(Decimal64Field.getInstance());
     }
 

@@ -81,8 +81,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
                                              final PropagationType type,
-                                             final double[] parameters)
-        throws OrekitException {
+                                             final double[] parameters) {
         return Collections.emptyList();
     }
 
@@ -90,8 +89,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
-                                                                                     final T[] parameters)
-        throws OrekitException {
+                                                                                     final T[] parameters) {
         return Collections.emptyList();
     }
 
@@ -102,10 +100,8 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
      */
-    private DSSTNewtonianAttractionContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    private DSSTNewtonianAttractionContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
         return new DSSTNewtonianAttractionContext(auxiliaryElements, parameters);
     }
 
@@ -117,11 +113,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
      */
     private <T extends RealFieldElement<T>> FieldDSSTNewtonianAttractionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                                  final T[] parameters)
-        throws OrekitException {
+                                                                                                  final T[] parameters) {
         return new FieldDSSTNewtonianAttractionContext<>(auxiliaryElements, parameters);
     }
 
@@ -129,8 +123,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     @Override
     public double[] getMeanElementRate(final SpacecraftState state,
                                        final AuxiliaryElements auxiliaryElements,
-                                       final double[] parameters)
-        throws OrekitException {
+                                       final double[] parameters) {
 
         // Container for attributes
         final DSSTNewtonianAttractionContext context = initializeStep(auxiliaryElements, parameters);
@@ -147,8 +140,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                  final T[] parameters)
-        throws OrekitException {
+                                                                  final T[] parameters) {
 
         // Field for array building
         final Field<T> field = state.getMu().getField();
@@ -183,17 +175,14 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public void updateShortPeriodTerms(final double[] parameters,
-                                       final SpacecraftState... meanStates)
-        throws OrekitException {
-
+                                       final SpacecraftState... meanStates) {
     }
 
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
-                                                                       final FieldSpacecraftState<T>... meanStates)
-        throws OrekitException {
+                                                                       final FieldSpacecraftState<T>... meanStates) {
     }
 
     /** {@inheritDoc} */

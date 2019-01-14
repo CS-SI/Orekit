@@ -238,21 +238,17 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
 
     /** Set the initial state with osculating orbital elements.
      *  @param initialState initial state (defined with osculating elements)
-     *  @throws OrekitException if the initial state cannot be set
      */
-    public void setInitialState(final FieldSpacecraftState<T> initialState)
-        throws OrekitException {
+    public void setInitialState(final FieldSpacecraftState<T> initialState) {
         setInitialState(initialState, PropagationType.OSCULATING);
     }
 
     /** Set the initial state.
      *  @param initialState initial state
      *  @param stateType defined if the orbital state is defined with osculating or mean elements
-     *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final FieldSpacecraftState<T> initialState,
-                                final PropagationType stateType)
-        throws OrekitException {
+                                final PropagationType stateType) {
         switch (stateType) {
             case MEAN:
                 initialIsOsculating = false;
@@ -269,10 +265,9 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
     /** Reset the initial state.
      *
      *  @param state new initial state
-     *  @throws OrekitException if initial state cannot be reset
      */
     @Override
-    public void resetInitialState(final FieldSpacecraftState<T> state) throws OrekitException {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
@@ -453,13 +448,11 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @return osculating state in a DSST sense
-     * @throws OrekitException if computation of short periodics fails
      */
     @SuppressWarnings("unchecked")
     public FieldSpacecraftState<T> computeOsculatingState(final FieldSpacecraftState<T> mean,
                                                           final AttitudeProvider attitudeProvider,
-                                                          final Collection<DSSTForceModel> forces)
-        throws OrekitException {
+                                                          final Collection<DSSTForceModel> forces) {
 
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(mean.getOrbit(), I);
@@ -496,12 +489,10 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModel Forces to take into account
      * @return mean state in a DSST sense
-     * @throws OrekitException if computation of short periodics fails or iteration algorithm does not converge
      */
     public FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
                                                     final AttitudeProvider attitudeProvider,
-                                                    final Collection<DSSTForceModel> forceModel)
-        throws OrekitException {
+                                                    final Collection<DSSTForceModel> forceModel) {
         final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel);
         return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
     }
@@ -543,12 +534,10 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * </p>
      * @param initialState initial state
      * @param tEnd target date at which state should be propagated
-     * @exception OrekitException if hook cannot be run
      */
     @Override
     protected void beforeIntegration(final FieldSpacecraftState<T> initialState,
-                                     final FieldAbsoluteDate<T> tEnd)
-        throws OrekitException {
+                                     final FieldAbsoluteDate<T> tEnd) {
 
         // check if only mean elements must be used
         final PropagationType type = isMeanOrbit();
@@ -583,16 +572,11 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
 
     /** {@inheritDoc} */
     @Override
-    protected void afterIntegration() throws OrekitException {
+    protected void afterIntegration() {
         // remove the special short periodics step handler if added before
         if (isMeanOrbit() ==  PropagationType.OSCULATING) {
             final List<FieldODEStepHandler<T>> preserved = new ArrayList<FieldODEStepHandler<T>>();
             final FieldODEIntegrator<T> integrator = getIntegrator();
-//            for (final FieldODEStepHandler<T> sp : integrator.getStepHandlers()) {
-//                if (!(sp instanceof FieldShortPeriodicsHandler)) {
-//                    preserved.add(sp);
-//                }
-//            }
 
             // clear the list
             integrator.clearStepHandlers();
@@ -615,13 +599,11 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModel force models
      * @return mean state
-     * @throws OrekitException if the underlying computation of short periodic variation fails
      */
     @SuppressWarnings("unchecked")
     private FieldOrbit<T> computeMeanOrbit(final FieldSpacecraftState<T> osculating,
                                            final AttitudeProvider attitudeProvider,
-                                           final Collection<DSSTForceModel> forceModel)
-        throws OrekitException {
+                                           final Collection<DSSTForceModel> forceModel) {
 
         // zero
         final T zero = field.getZero();
@@ -698,11 +680,9 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @param meanState initial mean state
      * @param shortPeriodTerms short period terms
      * @return osculating state
-     * @throws OrekitException if the computation of the short-periodic variation fails
      */
     private FieldEquinoctialOrbit<T> computeOsculatingOrbit(final FieldSpacecraftState<T> meanState,
-                                                            final List<FieldShortPeriodTerms<T>> shortPeriodTerms)
-        throws OrekitException {
+                                                            final List<FieldShortPeriodTerms<T>> shortPeriodTerms) {
 
         final T[] mean = MathArrays.buildArray(field, 6);
         final T[] meanDot = MathArrays.buildArray(field, 6);
@@ -721,7 +701,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> getInitialIntegrationState() throws OrekitException {
+    protected FieldSpacecraftState<T> getInitialIntegrationState() {
         if (initialIsOsculating) {
             // the initial state is an osculating state,
             // it must be converted to mean state
@@ -799,8 +779,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         @Override
         public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date,
                                                        final T[] y, final T[] yDot,
-                                                       final PropagationType type)
-            throws OrekitException {
+                                                       final PropagationType type) {
 
             // add short periodic variations to mean elements to get osculating elements
             // (the loop may not be performed if there are no force models and in the
@@ -846,8 +825,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
 
         /** {@inheritDoc} */
         @Override
-        public void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y, final T[] yDot)
-            throws OrekitException {
+        public void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y, final T[] yDot) {
 
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, y, yDot);
             y[6] = state.getMass();
@@ -939,14 +917,12 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
 
         /** {@inheritDoc} */
         @Override
-        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target)
-            throws OrekitException {
-
+        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         }
 
         /** {@inheritDoc} */
         @Override
-        public T[] computeDerivatives(final FieldSpacecraftState<T> state) throws OrekitException {
+        public T[] computeDerivatives(final FieldSpacecraftState<T> state) {
 
             final T zero = state.getDate().getField().getZero();
             Arrays.fill(yDot, zero);
@@ -972,13 +948,11 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
          *  @param auxiliaryElements auxiliary elements related to the current orbit
          *  @param parameters force model parameters
          *  @return the mean equinoctial elements rates da<sub>i</sub> / dt
-         *  @throws OrekitException if some specific error occurs
          */
         private T[] elementRates(final DSSTForceModel forceModel,
                                  final FieldSpacecraftState<T> state,
                                  final FieldAuxiliaryElements<T> auxiliaryElements,
-                                 final T[] parameters)
-            throws OrekitException {
+                                 final T[] parameters) {
             return forceModel.getMeanElementRate(state, auxiliaryElements, parameters);
         }
 
@@ -1009,13 +983,9 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
-     * @exception OrekitException if Jacobian is singular
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit)
-        throws OrekitException {
-
+    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit) {
         return FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
-
     }
 
     /** Step handler used to compute the parameters for the short periodic contributions.

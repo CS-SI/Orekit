@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -56,21 +55,21 @@ public class DSSTPropagatorBuilderTest {
     private DSSTForceModel moon;
 
     @Test
-    public void testIntegrators01() throws OrekitException {
+    public void testIntegrators01() {
 
         ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
         doTestBuildPropagator(abBuilder);
     }
 
     @Test
-    public void testIntegrators02() throws OrekitException {
+    public void testIntegrators02() {
 
         ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
         doTestBuildPropagator(amBuilder);
     }
 
     @Test
-    public void testIntegrators03() throws OrekitException {
+    public void testIntegrators03() {
 
         final double stepSize = 100.;
 
@@ -79,7 +78,7 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators04() throws OrekitException {
+    public void testIntegrators04() {
 
         final double stepSize = 100.;
 
@@ -88,14 +87,14 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators05() throws OrekitException {
+    public void testIntegrators05() {
 
         ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         doTestBuildPropagator(dp54Builder);
     }
 
     @Test
-    public void testIntegrators06() throws OrekitException {
+    public void testIntegrators06() {
 
         final double stepSize = 100.;
 
@@ -104,7 +103,7 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators07() throws OrekitException {
+    public void testIntegrators07() {
 
         final double stepSize = 100.;
 
@@ -113,21 +112,21 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators08() throws OrekitException {
+    public void testIntegrators08() {
 
         ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
         doTestBuildPropagator(gbsBuilder);
     }
 
     @Test
-    public void testIntegrators09() throws OrekitException {
+    public void testIntegrators09() {
 
         ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
         doTestBuildPropagator(hh54Builder);
     }
 
     @Test
-    public void testIntegrators10() throws OrekitException {
+    public void testIntegrators10() {
 
         final double stepSize = 100.;
 
@@ -136,7 +135,7 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators11() throws OrekitException {
+    public void testIntegrators11() {
 
         final double stepSize = 100.;
 
@@ -144,8 +143,7 @@ public class DSSTPropagatorBuilderTest {
         doTestBuildPropagator(teBuilder);
     }
 
-    private void doTestBuildPropagator(final ODEIntegratorBuilder foiBuilder)
-        throws OrekitException {
+    private void doTestBuildPropagator(final ODEIntegratorBuilder foiBuilder) {
         
         // We propagate using directly the propagator of the set up
         final Orbit orbitWithPropagator = propagator.propagate(initDate.shiftedBy(600)).getOrbit();
@@ -176,7 +174,7 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         
         Utils.setDataRoot("regular-data");
 

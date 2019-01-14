@@ -36,7 +36,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -69,12 +68,11 @@ public class FieldDSSTThirdBodyTest {
     private static final double eps  = 3.5e-25;
 
     @Test
-    public void testGetMeanElementRate() throws IllegalArgumentException, OrekitException {
+    public void testGetMeanElementRate() {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) 
-        throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field)  {
         
         final T zero = field.getZero();
         
@@ -130,13 +128,12 @@ public class FieldDSSTThirdBodyTest {
     }
 
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+    public void testShortPeriodTerms() {
         doTestShortPeriodTerms(Decimal64Field.getInstance());
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field)
-        throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
         final T zero = field.getZero();
  
         final FieldSpacecraftState<T> meanState = getGEOState(field);
@@ -178,7 +175,7 @@ public class FieldDSSTThirdBodyTest {
   
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsStateDerivatives() throws OrekitException {
+    public void testShortPeriodTermsStateDerivatives() {
         
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -298,7 +295,7 @@ public class FieldDSSTThirdBodyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsMuParametersDerivatives() throws OrekitException {
+    public void testShortPeriodTermsMuParametersDerivatives() {
       
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -438,8 +435,7 @@ public class FieldDSSTThirdBodyTest {
       
     }
 
-    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field)
-        throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
                     
         final T zero = field.getZero();
         // No shadow at this date
@@ -459,8 +455,7 @@ public class FieldDSSTThirdBodyTest {
     }
 
     private double[] computeShortPeriodTerms(SpacecraftState state,
-                                             Collection<DSSTForceModel> forces)
-        throws OrekitException {
+                                             Collection<DSSTForceModel> forces) {
         
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
@@ -537,7 +532,7 @@ public class FieldDSSTThirdBodyTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }
 

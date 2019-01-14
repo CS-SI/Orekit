@@ -18,7 +18,6 @@ package org.orekit.estimation.sequential;
 
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 
@@ -31,7 +30,6 @@ public interface KalmanODModel extends KalmanEstimation, NonLinearProcess<Measur
 
     /** Get the propagators estimated with the values set in the propagators builders.
      * @return propagators based on the current values in the builder
-     * @throws OrekitException if propagators cannot be build
      */
     AbstractIntegratedPropagator[] getEstimatedPropagators();
 

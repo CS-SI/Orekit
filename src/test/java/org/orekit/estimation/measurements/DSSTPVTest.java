@@ -41,7 +41,7 @@ import org.orekit.utils.StateFunction;
 public class DSSTPVTest {
     
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -70,7 +70,7 @@ public class DSSTPVTest {
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) throws OrekitException {
+                    public double[] value(final SpacecraftState state) {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
@@ -100,10 +100,9 @@ public class DSSTPVTest {
     }
     
     /** Test the PV constructor with standard deviations for position and velocity given as 2 double. 
-     * @throws OrekitException
      */
     @Test
-    public void testPVWithSingleStandardDeviations() throws OrekitException {
+    public void testPVWithSingleStandardDeviations() {
         
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -168,10 +167,9 @@ public class DSSTPVTest {
     }
     
     /** Test the PV constructor with standard deviations for position and velocity given as a 6-sized vector. 
-     * @throws OrekitException
      */
     @Test
-    public void testPVWithVectorStandardDeviations() throws OrekitException {
+    public void testPVWithVectorStandardDeviations() {
         
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -239,10 +237,9 @@ public class DSSTPVTest {
     }
     
     /** Test the PV constructor with two 3x3 covariance matrix (one for position, the other for velocity) as input. 
-     * @throws OrekitException
      */
     @Test
-    public void testPVWithTwoCovarianceMatrices() throws OrekitException {
+    public void testPVWithTwoCovarianceMatrices() {
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
         
@@ -324,10 +321,9 @@ public class DSSTPVTest {
     }
     
     /** Test the PV constructor with one 6x6 covariance matrix as input. 
-     * @throws OrekitException
      */
     @Test
-    public void testPVWithCovarianceMatrix() throws OrekitException {
+    public void testPVWithCovarianceMatrix() {
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
         
@@ -401,7 +397,7 @@ public class DSSTPVTest {
     
     /** Test exceptions raised if the covariance matrix does not have the proper size. */
     @Test
-    public void testExceptions() throws OrekitException {
+    public void testExceptions() {
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
         

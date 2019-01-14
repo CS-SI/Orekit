@@ -37,7 +37,7 @@ public class MendesPavlisModelTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

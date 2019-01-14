@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
 /** This class is a container for the field attributes of
@@ -31,10 +30,8 @@ public class DSSTNewtonianAttractionContext extends ForceModelContext {
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters values of the force model parameters
-     * @throws OrekitException if some specific error occurs
      */
-    DSSTNewtonianAttractionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    DSSTNewtonianAttractionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         super(auxiliaryElements);
         this.gm = parameters[0];

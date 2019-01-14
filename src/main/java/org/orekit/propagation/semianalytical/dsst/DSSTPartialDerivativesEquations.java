@@ -95,12 +95,10 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * @param name name of the partial derivatives equations
      * @param propagator the propagator that will handle the orbit propagation
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
-     * @throws OrekitException if a set of equations with the same name is already present
      */
     public DSSTPartialDerivativesEquations(final String name,
                                            final DSSTPropagator propagator,
-                                           final PropagationType propagationType)
-        throws OrekitException {
+                                           final PropagationType propagationType) {
         this.name                   = name;
         this.selected               = null;
         this.map                    = null;
@@ -116,12 +114,8 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** Freeze the selected parameters from the force models.
-     * @exception OrekitException if an existing driver for a
-     * parameter throws one when its value is reset using the value
-     * from another driver managing the same parameter
      */
-    private void freezeParametersSelection()
-        throws OrekitException {
+    private void freezeParametersSelection() {
         if (selected == null) {
 
             // first pass: gather all parameters, binding similar names together
@@ -169,13 +163,10 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @param s0 initial state
      * @return state with initial Jacobians added
-     * @exception OrekitException if the partial equation has not been registered in
-     * the propagator or if matrices dimensions are incorrect
      * @see #getSelectedParameters()
      * @since 9.0
      */
-    public SpacecraftState setInitialJacobians(final SpacecraftState s0)
-        throws OrekitException {
+    public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
         final int stateDimension = 6;
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
@@ -203,13 +194,10 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * @param dY1dP Jacobian of current state at time t₁ with respect
      * to parameters (may be null if no parameters are selected)
      * @return state with initial Jacobians added
-     * @exception OrekitException if the partial equation has not been registered in
-     * the propagator or if matrices dimensions are incorrect
      * @see #getSelectedParameters()
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
-                                               final double[][] dY1dY0, final double[][] dY1dP)
-        throws OrekitException {
+                                               final double[][] dY1dY0, final double[][] dY1dP) {
 
         freezeParametersSelection();
 
@@ -243,11 +231,10 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
      * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
      * with the same name as the instance
-     * @exception OrekitException if the initial Jacobians have not been initialized yet
      * @see #setInitialJacobians(SpacecraftState, int)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
-    public DSSTJacobiansMapper getMapper() throws OrekitException {
+    public DSSTJacobiansMapper getMapper() {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
@@ -262,19 +249,14 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @return selected parameters, in Jacobian matrix column order which
      * is lexicographic order
-     * @exception OrekitException if an existing driver for a
-     * parameter throws one when its value is reset using the value
-     * from another driver managing the same parameter
      */
-    public ParameterDriversList getSelectedParameters()
-        throws OrekitException {
+    public ParameterDriversList getSelectedParameters() {
         freezeParametersSelection();
         return selected;
     }
 
     /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot)
-        throws OrekitException {
+    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
 
         // initialize Jacobians to zero
         final int paramDim = selected.getNbParams();

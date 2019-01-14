@@ -164,7 +164,6 @@ public class ViennaOneCoefficientsLoader implements DataLoader {
 
     /** Load the data for a given day.
      * @param dateTimeComponents date and time component.
-     * @throws OrekitException if the coefficients could not be loaded
      */
     public void loadViennaOneCoefficients(final DateTimeComponents dateTimeComponents) {
 

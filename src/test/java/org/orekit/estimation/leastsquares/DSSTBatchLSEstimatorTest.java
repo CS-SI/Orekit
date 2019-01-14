@@ -50,10 +50,9 @@ public class DSSTBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerPV() throws OrekitException {
+    public void testKeplerPV() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -96,7 +95,7 @@ public class DSSTBatchLSEstimatorTest {
 
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testKeplerPVBackward() throws OrekitException {
+    public void testKeplerPVBackward() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -139,10 +138,9 @@ public class DSSTBatchLSEstimatorTest {
 
     /**
      * Perfect range measurements with a biased start
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerRange() throws OrekitException {
+    public void testKeplerRange() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -176,8 +174,7 @@ public class DSSTBatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -234,10 +231,9 @@ public class DSSTBatchLSEstimatorTest {
 
     /**
      * Perfect range measurements with a biased start and an on-board antenna range offset 
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerRangeWithOnBoardAntennaOffset() throws OrekitException {
+    public void testKeplerRangeWithOnBoardAntennaOffset() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -275,8 +271,7 @@ public class DSSTBatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -332,7 +327,7 @@ public class DSSTBatchLSEstimatorTest {
     }
 
     @Test
-    public void testWrappedException() throws OrekitException {
+    public void testWrappedException() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -391,10 +386,9 @@ public class DSSTBatchLSEstimatorTest {
 
     /**
      * Perfect range rate measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerRangeRate() throws OrekitException {
+    public void testKeplerRangeRate() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -431,10 +425,9 @@ public class DSSTBatchLSEstimatorTest {
 
     /**
      * Perfect range and range rate measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerRangeAndRangeRate() throws OrekitException {
+    public void testKeplerRangeAndRangeRate() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

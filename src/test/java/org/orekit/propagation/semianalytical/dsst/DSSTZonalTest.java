@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
@@ -49,7 +48,7 @@ import org.orekit.time.TimeScalesFactory;
 public class DSSTZonalTest {
 
     @Test
-    public void testGetMeanElementRate() throws IllegalArgumentException, OrekitException {
+    public void testGetMeanElementRate() {
         
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -105,7 +104,7 @@ public class DSSTZonalTest {
     }
     
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+    public void testShortPeriodTerms() {
         final SpacecraftState meanState = getGEOState();
         
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
@@ -137,7 +136,7 @@ public class DSSTZonalTest {
         Assert.assertEquals(-1.1607392915997098E-6, y[5], 1.e-21);
     }
 
-    private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
+    private SpacecraftState getGEOState() {
         // No shadow at this date
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
@@ -154,7 +153,7 @@ public class DSSTZonalTest {
     }
     
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

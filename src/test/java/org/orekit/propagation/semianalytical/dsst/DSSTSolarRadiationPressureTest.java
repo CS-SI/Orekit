@@ -35,7 +35,6 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -59,7 +58,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public class DSSTSolarRadiationPressureTest {
     
     @Test
-    public void testGetMeanElementRate() throws IllegalArgumentException, OrekitException {
+    public void testGetMeanElementRate() throws IllegalArgumentException {
         
         final Frame earthFrame = FramesFactory.getGCRF();
         final AbsoluteDate initDate = new AbsoluteDate(2003, 9, 16, 0, 0, 0, TimeScalesFactory.getUTC());
@@ -130,7 +129,7 @@ public class DSSTSolarRadiationPressureTest {
     }
  
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+    public void testShortPeriodTerms() throws IllegalArgumentException {
  
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
 
@@ -191,7 +190,7 @@ public class DSSTSolarRadiationPressureTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 }

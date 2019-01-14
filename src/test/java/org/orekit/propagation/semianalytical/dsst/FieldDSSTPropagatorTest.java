@@ -76,7 +76,6 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.FieldDSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
@@ -97,11 +96,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 public class FieldDSSTPropagatorTest {
 
     @Test
-    public void testIssue363() throws OrekitException {
+    public void testIssue363() {
         doTestIssue363(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue363(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue363(Field<T> field) {
         Utils.setDataRoot("regular-data");
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
@@ -127,11 +126,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue364() throws OrekitException {
+    public void testIssue364() {
         doTestIssue364(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestIssue364(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue364(Field<T> field) {
         Utils.setDataRoot("regular-data");
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
@@ -157,11 +156,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testHighDegreesSetting() throws OrekitException {
+    public void testHighDegreesSetting() {
         doTestHighDegreesSetting(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestHighDegreesSetting(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestHighDegreesSetting(Field<T> field) {
 
         final T zero = field.getZero();
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -194,11 +193,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testEphemerisDates() throws OrekitException {
+    public void testEphemerisDates() {
         doTestEphemerisDates(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestEphemerisDates(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEphemerisDates(Field<T> field) {
         final T zero = field.getZero();
         //setup
         TimeScale tai = TimeScalesFactory.getTAI();
@@ -238,11 +237,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testNoExtrapolation() throws OrekitException {
+    public void testNoExtrapolation() {
         doTestNoExtrapolation(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestNoExtrapolation(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNoExtrapolation(Field<T> field) {
         FieldSpacecraftState<T> state = getLEOState(field);
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
 
@@ -267,11 +266,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testKepler() throws OrekitException {
+    public void testKepler() {
         doTestKepler(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestKepler(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestKepler(Field<T> field) {
         FieldSpacecraftState<T> state = getLEOState(field);
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
 
@@ -291,11 +290,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testEphemeris() throws OrekitException {
+    public void testEphemeris() {
         doTestEphemeris(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestEphemeris(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEphemeris(Field<T> field) {
         FieldSpacecraftState<T> state = getGEOState(field);
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
 
@@ -324,11 +323,11 @@ public class FieldDSSTPropagatorTest {
     }
     
     @Test
-    public void testPropagationWithCentralBody() throws Exception {
+    public void testPropagationWithCentralBody() {
         doTestPropagationWithCentralBody(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestPropagationWithCentralBody(Field<T> field) throws Exception {
+    private <T extends RealFieldElement<T>> void doTestPropagationWithCentralBody(Field<T> field) {
 
         final T zero = field.getZero();
 
@@ -380,11 +379,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testPropagationWithThirdBody() throws OrekitException, IOException {
+    public void testPropagationWithThirdBody() throws IOException {
         doTestPropagationWithThirdBody(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestPropagationWithThirdBody(Field<T> field) throws OrekitException, IOException {
+    private <T extends RealFieldElement<T>> void doTestPropagationWithThirdBody(Field<T> field) throws IOException {
 
         final T zero = field.getZero();
 
@@ -444,26 +443,26 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testTooSmallMaxDegree() throws OrekitException {
+    public void testTooSmallMaxDegree() {
         new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 1, 0, 3);
     }
 
     @Test(expected=OrekitException.class)
-    public void testTooLargeMaxDegree() throws OrekitException {
+    public void testTooLargeMaxDegree() {
         new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 8, 0, 8);
     }
 
     @Test(expected=OrekitException.class)
-    public void testWrongMaxPower() throws OrekitException {
+    public void testWrongMaxPower() {
         new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(8, 8), 4, 4, 4);
     }
 
     @Test
-    public void testPropagationWithDrag() throws OrekitException {
+    public void testPropagationWithDrag() {
         doTestPropagationWithDrag(Decimal64Field.getInstance());
     }
    
-    private <T extends RealFieldElement<T>> void doTestPropagationWithDrag(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestPropagationWithDrag(Field<T> field) {
 
         final T zero = field.getZero();
         // Central Body geopotential 2x0
@@ -533,11 +532,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testPropagationWithSolarRadiationPressure() throws OrekitException {
+    public void testPropagationWithSolarRadiationPressure() {
         doTestPropagationWithSolarRadiationPressure(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestPropagationWithSolarRadiationPressure(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestPropagationWithSolarRadiationPressure(Field<T> field) {
 
         final T zero = field.getZero();
         // Central Body geopotential 2x0
@@ -595,11 +594,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testStopEvent() throws OrekitException {
+    public void testStopEvent() {
         doTestStopEvent(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestStopEvent(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestStopEvent(Field<T> field) {
         FieldSpacecraftState<T> state = getLEOState(field);
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
 
@@ -613,11 +612,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testContinueEvent() throws OrekitException {
+    public void testContinueEvent() {
         doTestContinueEvent(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestContinueEvent(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestContinueEvent(Field<T> field) {
         FieldSpacecraftState<T> state = getLEOState(field);
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
 
@@ -638,11 +637,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue157() throws OrekitException {
+    public void testIssue157() {
         doTestIssue157(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestIssue157(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue157(Field<T> field) {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         final T zero = field.getZero();
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
@@ -689,11 +688,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testEphemerisGeneration() throws OrekitException {
+    public void testEphemerisGeneration() {
         doTestEphemerisGeneration(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestEphemerisGeneration(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEphemerisGeneration(Field<T> field){
         Utils.setDataRoot("regular-data:potential/icgem-format");
         final T zero = field.getZero();
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
@@ -748,11 +747,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testGetInitialOsculatingState() throws IllegalArgumentException, OrekitException {
+    public void testGetInitialOsculatingState() {
         doTestGetInitialOsculatingState(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestGetInitialOsculatingState(Field<T> field) throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> void doTestGetInitialOsculatingState(Field<T> field) {
         final FieldSpacecraftState<T> initialState = getGEOState(field);
 
         final T zero = field.getZero();
@@ -785,10 +784,10 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testMeanToOsculatingState() throws IllegalArgumentException, OrekitException {
+    public void testMeanToOsculatingState() {
         doTestMeanToOsculatingState(Decimal64Field.getInstance());
     }
-    private <T extends RealFieldElement<T>> void doTestMeanToOsculatingState(Field<T> field) throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> void doTestMeanToOsculatingState(Field<T> field) {
         final FieldSpacecraftState<T> meanState = getGEOState(field);
 
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
@@ -811,11 +810,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testOsculatingToMeanState() throws IllegalArgumentException, OrekitException {
+    public void testOsculatingToMeanState() {
         doTestOsculatingToMeanState(Decimal64Field.getInstance());
     }
-    
-    private <T extends RealFieldElement<T>> void doTestOsculatingToMeanState(Field<T> field) throws IllegalArgumentException, OrekitException {
+
+    private <T extends RealFieldElement<T>> void doTestOsculatingToMeanState(Field<T> field) {
         final FieldSpacecraftState<T> meanState = getGEOState(field);
 
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
@@ -844,11 +843,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testShortPeriodCoefficients() throws OrekitException {
+    public void testShortPeriodCoefficients() {
         doTestShortPeriodCoefficients(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestShortPeriodCoefficients(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShortPeriodCoefficients(Field<T> field) {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         final T zero = field.getZero();
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
@@ -903,11 +902,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testIssueMeanInclination() throws OrekitException {
+    public void testIssueMeanInclination() {
         doTestIssueMeanInclination(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestIssueMeanInclination(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssueMeanInclination(Field<T> field) {
 
         final T zero = field.getZero();
         final double earthAe = 6378137.0;
@@ -941,11 +940,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue257() throws OrekitException {
+    public void testIssue257() {
         doTestIssue257(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestIssue257(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue257(Field<T> field) {
         final FieldSpacecraftState<T> meanState = getGEOState(field);
 
         // Third Bodies Force Model (Moon + Sun)
@@ -977,11 +976,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue339() throws OrekitException {
+    public void testIssue339() {
         doTestIssue339(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestIssue339(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue339(Field<T> field) {
 
         final FieldSpacecraftState<T> osculatingState = getLEOState(field);
 
@@ -1024,11 +1023,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue339WithAccelerations() throws OrekitException {
+    public void testIssue339WithAccelerations() {
         doTestIssue339WithAccelerations(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestIssue339WithAccelerations(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue339WithAccelerations(Field<T> field) {
         final FieldSpacecraftState<T> osculatingState = getLEOStatePropagatedBy30Minutes(field);
         final CelestialBody sun = CelestialBodyFactory.getSun();
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
@@ -1046,8 +1045,7 @@ public class FieldDSSTPropagatorTest {
                             5.0e-6);
     }
 
-    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field)
-        throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
         final T zero = field.getZero();
         // No shadow at this date
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -1065,8 +1063,7 @@ public class FieldDSSTPropagatorTest {
         return new FieldSpacecraftState<>(orbit);
     }
 
-    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getLEOState(final Field<T> field)
-        throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getLEOState(final Field<T> field) {
         final T zero = field.getZero();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -1079,8 +1076,7 @@ public class FieldDSSTPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> FieldDSSTPropagator<T> setDSSTProp(Field<T> field,
-                                                                               FieldSpacecraftState<T> initialState)
-        throws OrekitException {
+                                                                               FieldSpacecraftState<T> initialState) {
         final T zero = field.getZero();
         initialState.getDate();
         final T minStep = initialState.getKeplerianPeriod();
@@ -1116,12 +1112,11 @@ public class FieldDSSTPropagatorTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
-    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getLEOStatePropagatedBy30Minutes(Field<T> field)
-        throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getLEOStatePropagatedBy30Minutes(Field<T> field) {
 
         final T zero = field.getZero();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));

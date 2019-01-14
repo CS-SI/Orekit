@@ -29,7 +29,6 @@ import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -45,7 +44,7 @@ import org.orekit.utils.ParameterDriversList;
 public class DSSTBatchLSModelTest {
 
     @Test
-    public void testPerfectValue() throws OrekitException {
+    public void testPerfectValue() {
 
         final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -115,7 +114,7 @@ public class DSSTBatchLSModelTest {
     }
     
     @Test
-    public void testBackwardPropagation() throws OrekitException {
+    public void testBackwardPropagation() {
 
         final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

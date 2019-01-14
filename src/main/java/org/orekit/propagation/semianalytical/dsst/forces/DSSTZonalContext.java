@@ -19,7 +19,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.TreeMap;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -100,12 +99,10 @@ class DSSTZonalContext extends ForceModelContext {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param provider provider for spherical harmonics
      * @param parameters values of the force model parameters
-     * @throws OrekitException if some specific error occurs
      */
     DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
                      final UnnormalizedSphericalHarmonicsProvider provider,
-                     final double[] parameters)
-        throws OrekitException {
+                     final double[] parameters) {
 
         super(auxiliaryElements);
 

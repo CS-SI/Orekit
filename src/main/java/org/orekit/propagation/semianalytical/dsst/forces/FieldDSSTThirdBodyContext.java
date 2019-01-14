@@ -26,7 +26,6 @@ import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
@@ -141,12 +140,10 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param thirdBody body the 3rd body to consider
      * @param parameters values of the force model parameters
-     * @throws OrekitException if some specific error occurs
      */
     public FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                      final CelestialBody thirdBody,
-                                     final T[] parameters)
-        throws OrekitException {
+                                     final T[] parameters) {
 
         super(auxiliaryElements);
 

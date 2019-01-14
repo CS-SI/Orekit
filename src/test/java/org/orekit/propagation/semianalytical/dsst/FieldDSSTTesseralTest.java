@@ -20,7 +20,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -56,12 +55,11 @@ import org.orekit.utils.ParameterDriversList;
 public class FieldDSSTTesseralTest {
 
     @Test
-    public void testGetMeanElementRate() throws OrekitException {
+    public void testGetMeanElementRate(){
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field)
-        throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
         
         final T zero = field.getZero();
         // Central Body geopotential 4x4
@@ -122,13 +120,12 @@ public class FieldDSSTTesseralTest {
     }
     
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+    public void testShortPeriodTerms() {
         doTestShortPeriodTerms(Decimal64Field.getInstance());
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field)
-        throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
         
         final T zero = field.getZero();
         Utils.setDataRoot("regular-data:potential/icgem-format");
@@ -185,7 +182,7 @@ public class FieldDSSTTesseralTest {
     
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsStateDerivatives() throws OrekitException {
+    public void testShortPeriodTermsStateDerivatives() {
         
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -303,7 +300,7 @@ public class FieldDSSTTesseralTest {
     
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsMuParametersDerivatives() throws OrekitException {
+    public void testShortPeriodTermsMuParametersDerivatives() {
       
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -437,8 +434,7 @@ public class FieldDSSTTesseralTest {
     }
 
     private double[] computeShortPeriodTerms(SpacecraftState state,
-                                             DSSTForceModel force)
-        throws OrekitException {
+                                             DSSTForceModel force) {
         
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
@@ -513,7 +509,7 @@ public class FieldDSSTTesseralTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
     

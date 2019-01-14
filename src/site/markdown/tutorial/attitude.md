@@ -138,7 +138,7 @@ the first one indicates if the spacecraft is eclipsed while the second informs
 about the current attitude law.
 
     propagator.setMasterMode(180., new OrekitFixedStepHandler() {
-        public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+        public void handleStep(SpacecraftState currentState, boolean isLast) {
             DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
             angleDegree.setDecimalSeparator('\u00b0');
             DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);

@@ -21,7 +21,6 @@ import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
@@ -41,7 +40,7 @@ import org.orekit.utils.StateFunction;
 public class DSSTRangeRateTest {
 
     @Test
-    public void testStateDerivativesOneWay() throws OrekitException {
+    public void testStateDerivativesOneWay() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -73,7 +72,7 @@ public class DSSTRangeRateTest {
 
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) throws OrekitException {
+                public double[] value(final SpacecraftState state) {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -98,7 +97,7 @@ public class DSSTRangeRateTest {
 
 
     @Test
-    public void testStateDerivativesTwoWays() throws OrekitException {
+    public void testStateDerivativesTwoWays() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -132,7 +131,7 @@ public class DSSTRangeRateTest {
 
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) throws OrekitException {
+                public double[] value(final SpacecraftState state) {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -156,7 +155,7 @@ public class DSSTRangeRateTest {
     }
 
     @Test
-    public void testParameterDerivativesOneWay() throws OrekitException {
+    public void testParameterDerivativesOneWay() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -207,7 +206,7 @@ public class DSSTRangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                    public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
@@ -221,7 +220,7 @@ public class DSSTRangeRateTest {
     }
 
     @Test
-    public void testParameterDerivativesTwoWays() throws OrekitException {
+    public void testParameterDerivativesTwoWays() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -272,7 +271,7 @@ public class DSSTRangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                    public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
@@ -286,7 +285,7 @@ public class DSSTRangeRateTest {
     }
 
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -318,7 +317,7 @@ public class DSSTRangeRateTest {
 
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) throws OrekitException {
+                public double[] value(final SpacecraftState state) {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -343,7 +342,7 @@ public class DSSTRangeRateTest {
 
 
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -397,7 +396,7 @@ public class DSSTRangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                    public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);

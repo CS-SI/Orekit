@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
 import org.orekit.estimation.EstimationTestUtils;
@@ -53,10 +52,9 @@ public class DSSTRangeTest {
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range Values\n");
@@ -68,10 +66,9 @@ public class DSSTRangeTest {
     /**
      * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -93,10 +90,9 @@ public class DSSTRangeTest {
     /**
      * Test the values of the state derivatives with modifier using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -118,10 +114,9 @@ public class DSSTRangeTest {
     /**
      * Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -142,10 +137,9 @@ public class DSSTRangeTest {
     /**
      * Test the values of the parameters' derivatives with modifier, using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -166,10 +160,8 @@ public class DSSTRangeTest {
     /**
      * Generic test function for values of the range
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
-    void genericTestValues(final boolean printResults)
-                    throws OrekitException {
+    void genericTestValues(final boolean printResults) {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -295,8 +287,7 @@ public class DSSTRangeTest {
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
-                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-                    throws OrekitException {
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax) {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -350,7 +341,7 @@ public class DSSTRangeTest {
 
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) throws OrekitException {
+                        public double[] value(final SpacecraftState state) {
                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -440,8 +431,7 @@ public class DSSTRangeTest {
     }
 
     void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
-                                         final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax)
-                    throws OrekitException {
+                                         final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax) {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -516,7 +506,7 @@ public class DSSTRangeTest {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                            public double value(final ParameterDriver parameterDriver) {
                                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
                                         }, drivers[i], 3, 20.0);

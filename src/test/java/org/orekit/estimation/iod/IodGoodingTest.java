@@ -46,8 +46,7 @@ import org.orekit.time.AbsoluteDate;
 public class IodGoodingTest {
 
     @Test
-    public void testGooding() throws OrekitException
-    {
+    public void testGooding() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();

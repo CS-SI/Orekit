@@ -63,7 +63,6 @@ public class DSSTKalmanEstimatorTest {
     /**
      * Perfect PV measurements with a perfect start
      * Keplerian formalism
-     * @throws OrekitException
      */
     @Test
     public void testKeplerianPV() {
@@ -114,9 +113,9 @@ public class DSSTKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.06e-7; // With numerical propagator: 5.80e-8;
+        final double   posEps            = 1.1e-7; // With numerical propagator: 5.80e-8;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 4.2e-11; // With numerical propagator: 2.28e-11;
+        final double   velEps            = 4.3e-11; // With numerical propagator: 2.28e-11;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -126,7 +125,6 @@ public class DSSTKalmanEstimatorTest {
     /**
      * Perfect range measurements with a biased start
      * Keplerian formalism
-     * @throws OrekitException
      */
     @Test
     public void testKeplerianRange() {
@@ -204,7 +202,6 @@ public class DSSTKalmanEstimatorTest {
     /**
      * Perfect range measurements with a biased start and an on-board antenna range offset
      * Keplerian formalism 
-     * @throws OrekitException
      */
     @Test
     public void testKeplerianRangeWithOnBoardAntennaOffset() {
@@ -290,7 +287,6 @@ public class DSSTKalmanEstimatorTest {
     
     /**
      * Perfect range and range rate measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
     public void testKeplerianRangeAndRangeRate() {
@@ -374,7 +370,6 @@ public class DSSTKalmanEstimatorTest {
 
     /**
      * Test of a wrapped exception in a Kalman observer
-     * @throws OrekitException
      */
     @Test
     public void testWrappedException() {

@@ -27,7 +27,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 
 public class FieldGammaMnsFunctionTest {
 
@@ -52,7 +51,7 @@ public class FieldGammaMnsFunctionTest {
 
     @Test
     public void testPrecomputedRatios() 
-        throws OrekitException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         doTestPrecomputedRatios(Decimal64Field.getInstance());
     }
 
@@ -101,7 +100,7 @@ public class FieldGammaMnsFunctionTest {
 
 
     @Test
-    public void testValue() throws OrekitException {
+    public void testValue() {
         doTestValue(Decimal64Field.getInstance());
     }
 

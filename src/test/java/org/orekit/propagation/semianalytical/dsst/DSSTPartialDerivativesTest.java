@@ -66,7 +66,7 @@ import org.orekit.utils.ParameterDriversList;
 public class DSSTPartialDerivativesTest {
 
     @Test
-    public void testDragParametersDerivatives() throws OrekitException, ParseException, IOException {
+    public void testDragParametersDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT,
                                     2.4e-3,
                                     PropagationType.MEAN,
@@ -74,7 +74,7 @@ public class DSSTPartialDerivativesTest {
     }
 
     @Test
-    public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
+    public void testMuParametersDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                     5.e-3,
                                     PropagationType.MEAN,
@@ -83,8 +83,7 @@ public class DSSTPartialDerivativesTest {
 
     private void doTestParametersDerivatives(String parameterName, double tolerance,
                                              PropagationType type,
-                                             OrbitType... orbitTypes)
-        throws OrekitException {
+                                             OrbitType... orbitTypes) {
 
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -230,7 +229,7 @@ public class DSSTPartialDerivativesTest {
     
     private void doTestPropagation(PropagationType type,
                                   double tolerance)
-        throws OrekitException, FileNotFoundException, UnsupportedEncodingException {
+        throws FileNotFoundException, UnsupportedEncodingException {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         
@@ -310,7 +309,7 @@ public class DSSTPartialDerivativesTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNotInitialized() throws OrekitException {
+    public void testNotInitialized() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -324,7 +323,7 @@ public class DSSTPartialDerivativesTest {
      }
     
     @Test(expected=OrekitException.class)
-    public void testTooSmallDimension() throws OrekitException {
+    public void testTooSmallDimension() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -340,7 +339,7 @@ public class DSSTPartialDerivativesTest {
      }
 
     @Test(expected=OrekitException.class)
-    public void testTooLargeDimension() throws OrekitException {
+    public void testTooLargeDimension() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -356,7 +355,7 @@ public class DSSTPartialDerivativesTest {
      }
     
     @Test(expected=OrekitException.class)
-    public void testMismatchedDimensions() throws OrekitException {
+    public void testMismatchedDimensions() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -372,7 +371,7 @@ public class DSSTPartialDerivativesTest {
      }
     
     @Test
-    public void testWrongParametersDimension() throws OrekitException {
+    public void testWrongParametersDimension() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -446,8 +445,7 @@ public class DSSTPartialDerivativesTest {
 
     private DSSTPropagator setUpPropagator(PropagationType type, Orbit orbit, double dP,
                                            OrbitType orbitType,
-                                           DSSTForceModel... models)
-        throws OrekitException {
+                                           DSSTForceModel... models) {
 
         final double minStep = 0.001;
         final double maxStep = 1000;
@@ -486,8 +484,7 @@ public class DSSTPartialDerivativesTest {
         public void init(SpacecraftState s0, AbsoluteDate t) {
         }
 
-        public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-            throws OrekitException {
+        public void handleStep(OrekitStepInterpolator interpolator, boolean isLast) {
             final SpacecraftState interpolated;
             if (pickUpDate == null) {
                 // we want to pick up the Jacobians at the end of last step
@@ -519,7 +516,7 @@ public class DSSTPartialDerivativesTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }

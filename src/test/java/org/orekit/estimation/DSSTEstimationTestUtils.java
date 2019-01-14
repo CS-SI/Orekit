@@ -35,7 +35,6 @@ import org.junit.Assert;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
@@ -73,7 +72,7 @@ import org.orekit.utils.ParameterDriver;
 /** Utility class for orbit determination tests. */
 public class DSSTEstimationTestUtils {
 
-    public static DSSTContext eccentricContext(final String dataRoot) throws OrekitException {
+    public static DSSTContext eccentricContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
         DSSTContext context = new DSSTContext();
@@ -127,7 +126,7 @@ public class DSSTEstimationTestUtils {
 
     }
 
-    public static DSSTContext geoStationnaryContext(final String dataRoot) throws OrekitException {
+    public static DSSTContext geoStationnaryContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
         DSSTContext context = new DSSTContext();
@@ -220,8 +219,7 @@ public class DSSTEstimationTestUtils {
     }
 
     public static Propagator createPropagator(final Orbit initialOrbit,
-                                              final PropagatorBuilder propagatorBuilder)
-        throws OrekitException {
+                                              final PropagatorBuilder propagatorBuilder) {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
@@ -239,8 +237,7 @@ public class DSSTEstimationTestUtils {
     public static List<ObservedMeasurement<?>> createMeasurements(final Propagator propagator,
                                                                   final MeasurementCreator creator,
                                                                   final double startPeriod, final double endPeriod,
-                                                                  final double step)
-        throws OrekitException {
+                                                                  final double step) {
 
         propagator.setMasterMode(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();
@@ -276,15 +273,13 @@ public class DSSTEstimationTestUtils {
      * @param posEps Tolerance on expected position difference
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and initial orbit
      * @param velEps Tolerance on expected velocity difference
-     * @throws OrekitException
      */
     public static void checkFit(final DSSTContext context, final BatchLSEstimator estimator,
                                 final int iterations, final int evaluations,
                                 final double expectedRMS,      final double rmsEps,
                                 final double expectedMax,      final double maxEps,
                                 final double expectedDeltaPos, final double posEps,
-                                final double expectedDeltaVel, final double velEps)
-        throws OrekitException {
+                                final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
@@ -340,14 +335,12 @@ public class DSSTEstimationTestUtils {
      * @param posEps Tolerance on expected position difference
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbit
      * @param velEps Tolerance on expected velocity difference
-     * @throws OrekitException
      */
     public static void checkKalmanFit(final DSSTContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
                                       final Orbit refOrbit, final PositionAngle positionAngle,
                                       final double expectedDeltaPos, final double posEps,
-                                      final double expectedDeltaVel, final double velEps)
-        {
+                                      final double expectedDeltaVel, final double velEps) {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
                        new PositionAngle[] { positionAngle },
@@ -365,14 +358,12 @@ public class DSSTEstimationTestUtils {
      * @param posEps Tolerance on expected position difference
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
      * @param velEps Tolerance on expected velocity difference
-     * @throws OrekitException
      */
     public static void checkKalmanFit(final DSSTContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
                                       final Orbit[] refOrbit, final PositionAngle[] positionAngle,
                                       final double[] expectedDeltaPos, final double[] posEps,
-                                      final double[] expectedDeltaVel, final double []velEps)
-                                                      {
+                                      final double[] expectedDeltaVel, final double []velEps) {
 
         // Add the measurements to the Kalman filter
         AbstractIntegratedPropagator[] estimated = kalman.processMeasurements(measurements);

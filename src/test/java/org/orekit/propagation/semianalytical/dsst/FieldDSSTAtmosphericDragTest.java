@@ -45,7 +45,6 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
@@ -86,11 +85,11 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 public class FieldDSSTAtmosphericDragTest {
     
     @Test
-    public void testGetMeanElementRate() throws IllegalArgumentException, OrekitException {
+    public void testGetMeanElementRate() {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(Field<T> field) throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(Field<T> field) {
         
         final T zero = field.getZero();
         // Central Body geopotential 2x0
@@ -166,13 +165,12 @@ public class FieldDSSTAtmosphericDragTest {
     }
 
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+    public void testShortPeriodTerms() {
         doTestShortPeriodTerms(Decimal64Field.getInstance());
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field)
-        throws IllegalArgumentException, OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
  
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
@@ -239,7 +237,7 @@ public class FieldDSSTAtmosphericDragTest {
     
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsStateDerivatives() throws OrekitException {
+    public void testShortPeriodTermsStateDerivatives() {
         
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -363,18 +361,17 @@ public class FieldDSSTAtmosphericDragTest {
     }
     
     @Test
-    public void testDragParametersDerivatives() throws OrekitException, ParseException, IOException {
+    public void testDragParametersDerivatives() throws ParseException, IOException {
         doTestShortPeriodTermsParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 4.8e-14);
     }
 
     @Test
-    public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
+    public void testMuParametersDerivatives() throws ParseException, IOException {
         doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 3.7e-9);
     }
 
     @SuppressWarnings("unchecked")
-    private void doTestShortPeriodTermsParametersDerivatives(String parameterName, double tolerance)
-        throws OrekitException {
+    private void doTestShortPeriodTermsParametersDerivatives(String parameterName, double tolerance) {
       
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -515,8 +512,7 @@ public class FieldDSSTAtmosphericDragTest {
     }
 
     private double[] computeShortPeriodTerms(SpacecraftState state,
-                                             DSSTForceModel force)
-        throws OrekitException {
+                                             DSSTForceModel force) {
         
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
@@ -591,7 +587,7 @@ public class FieldDSSTAtmosphericDragTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
     

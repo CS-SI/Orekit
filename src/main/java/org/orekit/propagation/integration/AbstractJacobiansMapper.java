@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.integration;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -104,10 +103,9 @@ public abstract class AbstractJacobiansMapper {
      * </p>
      * @param state spacecraft state
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
-     * @exception OrekitException if state does not contain the Jacobian additional state
      * @see #getParametersJacobian(SpacecraftState, double[][])
      */
-    public abstract void getStateJacobian(SpacecraftState state,  double[][] dYdY0) throws OrekitException;
+    public abstract void getStateJacobian(SpacecraftState state,  double[][] dYdY0);
 
     /** Get the Jacobian with respect to parameters from a one-dimensional additional state array.
      * <p>
@@ -120,9 +118,8 @@ public abstract class AbstractJacobiansMapper {
      * </p>
      * @param state spacecraft state
      * @param dYdP placeholder where to put the Jacobian with respect to parameters
-     * @exception OrekitException if state does not contain the Jacobian additional state
      * @see #getStateJacobian(SpacecraftState, double[][])
      */
-    public abstract void getParametersJacobian(SpacecraftState state, double[][] dYdP) throws OrekitException;
+    public abstract void getParametersJacobian(SpacecraftState state, double[][] dYdP);
 
 }

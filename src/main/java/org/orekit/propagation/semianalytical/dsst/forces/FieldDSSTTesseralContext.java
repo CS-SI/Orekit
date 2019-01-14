@@ -24,7 +24,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -136,15 +135,13 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      * @param maxFrequencyShortPeriodics maximum value for j
      * @param bodyPeriod central body rotation period (seconds)
      * @param parameters values of the force model parameters
-     * @throws OrekitException if some specific error occurs
      */
     public FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                     final Frame centralBodyFrame,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final int maxFrequencyShortPeriodics,
                                     final double bodyPeriod,
-                                    final T[] parameters)
-        throws OrekitException {
+                                    final T[] parameters) {
 
         super(auxiliaryElements);
 

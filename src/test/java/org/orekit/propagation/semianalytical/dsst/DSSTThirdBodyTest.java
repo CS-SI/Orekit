@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -51,7 +50,7 @@ public class DSSTThirdBodyTest {
     private static final double eps  = 3.5e-25;
 
     @Test
-    public void testGetMeanElementRate() throws IllegalArgumentException, OrekitException {
+    public void testGetMeanElementRate() throws IllegalArgumentException {
         
         final Frame earthFrame = FramesFactory.getEME2000();
         final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
@@ -104,7 +103,7 @@ public class DSSTThirdBodyTest {
     }
 
     @Test
-    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+    public void testShortPeriodTerms() throws IllegalArgumentException {
         final SpacecraftState meanState = getGEOState();
 
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
@@ -140,7 +139,7 @@ public class DSSTThirdBodyTest {
         Assert.assertEquals(-3.423664701811889E-5,  y[5], 1.e-20);
     }
 
-    private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
+    private SpacecraftState getGEOState() throws IllegalArgumentException {
         // No shadow at this date
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
@@ -157,7 +156,7 @@ public class DSSTThirdBodyTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }
 

@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -38,9 +37,8 @@ public interface FieldShortPeriodTerms <T extends RealFieldElement<T>> extends S
     /** Evaluate the contributions of the short period terms.
      * @param meanOrbit mean orbit to which the short period contribution applies
      * @return short period terms contributions
-     * @exception OrekitException if short period terms cannot be computed
      */
-    T[] value(FieldOrbit<T> meanOrbit) throws OrekitException;
+    T[] value(FieldOrbit<T> meanOrbit);
 
     /** Get the prefix for short period coefficients keys.
      * <p>
@@ -68,9 +66,7 @@ public interface FieldShortPeriodTerms <T extends RealFieldElement<T>> extends S
      * (empty set means all coefficients are selected)
      * @return the selected coefficients of the short periodic variations,
      * in a map where all keys start with {@link #getCoefficientsKeyPrefix()}
-     * @throws OrekitException if some specific error occurs
      */
-    Map<String, T[]> getCoefficients(FieldAbsoluteDate<T> date, Set<String> selected)
-        throws OrekitException;
+    Map<String, T[]> getCoefficients(FieldAbsoluteDate<T> date, Set<String> selected);
 
 }

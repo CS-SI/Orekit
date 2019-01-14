@@ -23,7 +23,6 @@ import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -65,9 +64,7 @@ public class DSSTRangeMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
-        try {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
             for (final GroundStation station : context.stations) {
                 final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
@@ -104,9 +101,6 @@ public class DSSTRangeMeasurementCreator extends MeasurementCreator {
                 }
 
             }
-        } catch (OrekitException oe) {
-            throw new OrekitException(oe);
-        }
     }
 
 }

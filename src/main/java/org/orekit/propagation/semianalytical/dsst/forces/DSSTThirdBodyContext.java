@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
@@ -142,10 +141,8 @@ class DSSTThirdBodyContext extends ForceModelContext {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param thirdBody body the 3rd body to consider
      * @param parameters values of the force model parameters
-     * @throws OrekitException if some specific error occurs
      */
-    DSSTThirdBodyContext(final AuxiliaryElements auxiliaryElements, final CelestialBody thirdBody, final double[] parameters)
-        throws OrekitException {
+    DSSTThirdBodyContext(final AuxiliaryElements auxiliaryElements, final CelestialBody thirdBody, final double[] parameters) {
 
         super(auxiliaryElements);
 

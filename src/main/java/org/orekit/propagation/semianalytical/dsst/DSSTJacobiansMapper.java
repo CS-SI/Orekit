@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -149,8 +148,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0)
-        throws OrekitException {
+    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
 
         // extract additional state
         final double[] p = state.getAdditionalState(name);
@@ -166,8 +164,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
 
     /** {@inheritDoc} */
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
-        throws OrekitException {
+    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
 
         if (parameters.getNbParams() != 0) {
 
@@ -194,11 +191,9 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
     /** Compute the derivatives of the short period terms related to the additional state parameters.
     * @param s Current state information: date, kinematics, attitude, and additional state
-    * @throws OrekitException if some specific error occurs
     */
     @SuppressWarnings("unchecked")
-    public void setShortPeriodJacobians(final SpacecraftState s)
-        throws OrekitException {
+    public void setShortPeriodJacobians(final SpacecraftState s) {
 
         final double[] p = s.getAdditionalState(name);
         if (shortPeriodDerivatives == null) {
