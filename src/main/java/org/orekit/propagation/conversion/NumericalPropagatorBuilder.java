@@ -22,9 +22,11 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.estimation.leastsquares.Model;
+import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -179,11 +181,18 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public Model buildModel(final IntegratedPropagatorBuilder[] builders,
+    public BatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
                             final ModelObserver observer) {
-        return new Model(builders, measurements, estimatedMeasurementsParameters, observer);
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+    }
+
+    /** {@inheritDoc} */
+    public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                  final ParameterDriversList estimatedMeasurementsParameters) {
+        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
     }
 
 }

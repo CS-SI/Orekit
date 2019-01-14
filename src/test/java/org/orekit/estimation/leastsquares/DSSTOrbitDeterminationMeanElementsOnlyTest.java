@@ -474,15 +474,7 @@ public class DSSTOrbitDeterminationMeanElementsOnlyTest {
                                                           final Orbit orbit)
         throws NoSuchElementException, OrekitException {
 
-        // Reference values are given for a numerical orbit determination
-        // The DSST allows to use a bigger computation step
-        final double minStep;
-        if (!parser.containsKey(ParameterKey.PROPAGATOR_MIN_STEP)) {
-            minStep = 0.001;
-        } else {
-            minStep = parser.getDouble(ParameterKey.PROPAGATOR_MIN_STEP);
-        }
-
+        final double minStep = 6000;
         final double maxStep = 86400;
 
         final double dP;
@@ -517,8 +509,10 @@ public class DSSTOrbitDeterminationMeanElementsOnlyTest {
 
         propagatorBuilder.addForceModel(new DSSTTesseral(body.getBodyFrame(),
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField,
-                                                         8, 8, 4, 12, 8, 8, 6));
-        propagatorBuilder.addForceModel(new DSSTZonal(gravityField, 3, 0, 2));
+                                                         gravityField.getMaxDegree(), gravityField.getMaxOrder(), 4, 12,
+                                                         gravityField.getMaxDegree(), gravityField.getMaxOrder(), 4));
+        propagatorBuilder.addForceModel(new DSSTZonal(gravityField, gravityField.getMaxDegree(), 4,
+                                                      2 * gravityField.getMaxDegree() + 1));
         // third body attraction
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) &&
             parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {

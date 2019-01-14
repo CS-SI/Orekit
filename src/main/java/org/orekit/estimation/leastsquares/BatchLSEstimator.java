@@ -381,7 +381,7 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.estimations = newEstimations;
             }
         };
-        final ODModel model = builders[0].buildModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        final BatchLSODModel model = builders[0].buildLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         //final Model model = new Model(builders, measurements, estimatedMeasurementsParameters,
                                       //modelObserver);
         lsBuilder.model(model);
@@ -515,7 +515,7 @@ public class BatchLSEstimator {
         private final LeastSquaresProblem problem;
 
         /** Multivariate function model. */
-        private final ODModel model;
+        private final BatchLSODModel model;
 
         /** Estimated orbital parameters. */
         private final ParameterDriversList estimatedOrbitalParameters;
@@ -534,7 +534,7 @@ public class BatchLSEstimator {
          * @param estimatedMeasurementsParameters estimated measurements parameters
          */
         TappedLSProblem(final LeastSquaresProblem problem,
-                        final ODModel model,
+                        final BatchLSODModel model,
                         final ParameterDriversList estimatedOrbitalParameters,
                         final ParameterDriversList estimatedPropagatorParameters,
                         final ParameterDriversList estimatedMeasurementsParameters) {

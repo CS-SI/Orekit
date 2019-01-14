@@ -42,7 +42,7 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class ModelTest {
+public class BatchLSModelTest {
 
     @Test
     public void testPerfectValue() {
@@ -87,7 +87,7 @@ public class ModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final Model model = new Model(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
         
@@ -149,7 +149,7 @@ public class ModelTest {
                 // Do nothing here 
             }
         };
-        final Model model = new Model(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         // Test forward propagation flag to false
         assertEquals(false, model.isForwardPropagation());
     }
