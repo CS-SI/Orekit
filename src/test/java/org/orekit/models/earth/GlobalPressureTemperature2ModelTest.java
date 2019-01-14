@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,8 +59,8 @@ public class GlobalPressureTemperature2ModelTest {
         // We test the fiability of our implementation by comparing our output values with
         // the ones obtained by the Vienna University.
 
-        final double latitude  = 48.20;
-        final double longitude = 16.37;
+        final double latitude  = FastMath.toRadians(48.20);
+        final double longitude = FastMath.toRadians(16.37);
         final double height    = 156.0;
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
@@ -90,7 +91,7 @@ public class GlobalPressureTemperature2ModelTest {
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
 
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
-        final double latitude   = 45.0;
+        final double latitude   = FastMath.toRadians(45.0);
         final double height     = 0.0;
         
         double longitude1;
@@ -100,8 +101,8 @@ public class GlobalPressureTemperature2ModelTest {
         GlobalPressureTemperature2Model model2;
 
         // Test longitude = 181° and longitude = -179°
-        longitude1 = 181.0;
-        longitude2 = -179.0;
+        longitude1 = FastMath.toRadians(181.0);
+        longitude2 = FastMath.toRadians(-179.0);
 
         model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
         model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
@@ -117,8 +118,8 @@ public class GlobalPressureTemperature2ModelTest {
         Assert.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
 
         // Test longitude = 180° and longitude = -180°
-        longitude1 = 180.0;
-        longitude2 = -180.0;
+        longitude1 = FastMath.toRadians(180.0);
+        longitude2 = FastMath.toRadians(-180.0);
 
         model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
         model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
@@ -133,8 +134,8 @@ public class GlobalPressureTemperature2ModelTest {
         Assert.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
 
         // Test longitude = 0° and longitude = 360°
-        longitude1 = 0.0;
-        longitude2 = 360.0;
+        longitude1 = FastMath.toRadians(0.0);
+        longitude2 = FastMath.toRadians(360.0);
 
         model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
         model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
@@ -153,8 +154,8 @@ public class GlobalPressureTemperature2ModelTest {
     @Test
     public void testCorruptedFileBadData() {
         
-        final double latitude  = 14.0;
-        final double longitude = 67.5;
+        final double latitude  = FastMath.toRadians(14.0);
+        final double longitude = FastMath.toRadians(67.5);
         final double height    = 0.0;
 
         // Date is not used here

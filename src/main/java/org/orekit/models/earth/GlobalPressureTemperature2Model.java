@@ -89,10 +89,10 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
     /** The hydrostatic and wet a coefficients loaded. */
     private double[] coefficientsA;
 
-    /** Geodetic site latitude, degrees.*/
+    /** Geodetic site latitude, radians.*/
     private double latitude;
 
-    /** Geodetic site longitude, degrees.*/
+    /** Geodetic site longitude, radians.*/
     private double longitude;
 
     /** Temperature site, in kelvins. */
@@ -115,8 +115,8 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
 
     /** Constructor with supported names given by user.
      * @param supportedNames supported names
-     * @param latitude geodetic latitude of the station, in degrees
-     * @param longitude longitude geodetic latitude of the station, in degrees
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude longitude geodetic latitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
      */
     public GlobalPressureTemperature2Model(final String supportedNames, final double latitude,
@@ -129,14 +129,13 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
         this.geoid          = geoid;
         this.latitude       = latitude;
 
-        // Normalize longitude between 0° and 360°
-        final double lon = MathUtils.normalizeAngle(FastMath.toRadians(longitude), FastMath.PI);
-        this.longitude   = FastMath.toDegrees(lon);
+        // Normalize longitude between 0 and 2π
+        this.longitude   = MathUtils.normalizeAngle(longitude, FastMath.PI);
     }
 
     /** Constructor with default supported names.
-     * @param latitude geodetic latitude of the station, in degrees
-     * @param longitude geodetic latitude of the station, in degrees
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude geodetic latitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
      */
     public GlobalPressureTemperature2Model(final double latitude, final double longitude, final Geoid geoid) {
@@ -307,30 +306,34 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
         final BilinearInterpolatingFunction functionAH           = new BilinearInterpolatingFunction(xVal, yVal, fvalAH);
         final BilinearInterpolatingFunction functionAW           = new BilinearInterpolatingFunction(xVal, yVal, fvalAW);
 
+        // Convert geodetic coordinates to degrees
+        final double lat = FastMath.toDegrees(latitude);
+        final double lon = FastMath.toDegrees(longitude);
+
         // ah and aw coefficients
         coefficientsA = new double[2];
-        coefficientsA[0] = functionAH.value(latitude, longitude) * 0.001;
-        coefficientsA[1] = functionAW.value(latitude, longitude) * 0.001;
+        coefficientsA[0] = functionAH.value(lat, lon) * 0.001;
+        coefficientsA[1] = functionAW.value(lat, lon) * 0.001;
 
         // Corrected height (can be negative)
-        final double undu = geoid.getUndulation(latitude, longitude, date);
-        final double correctedheight = height - undu - functionHS.value(latitude, longitude);
+        final double undu = geoid.getUndulation(lat, lon, date);
+        final double correctedheight = height - undu - functionHS.value(lat, lon);
 
         // Temperature gradient [K/m]
-        final double dTdH = functiondT.value(latitude, longitude) * 0.001;
+        final double dTdH = functiondT.value(lat, lon) * 0.001;
 
         // Specific humidity
-        final double qv = functionqv0.value(latitude, longitude) * 0.001;
+        final double qv = functionqv0.value(lat, lon) * 0.001;
 
         // For the computation of the temperature and the pressure, we use
         // the standard ICAO atmosphere formulas.
 
         // Temperature [K]
-        final double t0 = functionTemperature0.value(latitude, longitude);
+        final double t0 = functionTemperature0.value(lat, lon);
         this.temperature = t0 + dTdH * correctedheight;
 
         // Pressure [hPa]
-        final double p0 = functionPressure0.value(latitude, longitude);
+        final double p0 = functionPressure0.value(lat, lon);
         final double exponent = G / (dTdH * R);
         this.pressure = p0 * FastMath.pow(1 - (dTdH / t0) * correctedheight, exponent) * 0.01;
 
