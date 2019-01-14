@@ -176,6 +176,12 @@ on.board.antenna.phase.center.x = 0.0
 on.board.antenna.phase.center.y = 0.0
 on.board.antenna.phase.center.z = 0.0
 
+## On-board clock offset (s) [0.0]
+on.board.clock.offset           = 0.0
+on.board.clock.offset.min       = -0.01
+on.board.clock.offset.max       = +0.01
+on.board.clock.offset.estimated = false
+
 ## correction of ground stations displacements (true/false) [false, false, false]
 ## if remove.permanent.deformation if true, the station coordinates are
 ## considered *mean tide* and already include the permanent deformation, hence

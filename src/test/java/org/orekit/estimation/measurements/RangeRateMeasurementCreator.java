@@ -36,10 +36,12 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
     private final boolean twoWay;
+    private final ObservableSatellite satellite;
 
     public RangeRateMeasurementCreator(final Context context, boolean twoWay) {
-        this.context = context;
-        this.twoWay  = twoWay;
+        this.context   = context;
+        this.twoWay    = twoWay;
+        this.satellite = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
@@ -62,8 +64,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         for (final GroundStation station : context.stations) {
 
             final AbsoluteDate     date      = currentState.getDate();
@@ -115,7 +116,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
                                           addMeasurement(new RangeRate(station, receptionDate,
                                                                        rr,
-                                                                       1.0, 10, twoWay));
+                                                                       1.0, 10, twoWay, satellite));
             }
 
         }

@@ -68,11 +68,14 @@ public class Phase extends AbstractMeasurement<Phase> {
      * @param wavelength phase observed value wavelength
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated since 9.3 raplced by {@link #Phase(GroundStation, AbsoluteDate,
+     * double, double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight) {
-        this(station, date, phase, wavelength, sigma, baseWeight, 0);
+        this(station, date, phase, wavelength, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -83,21 +86,40 @@ public class Phase extends AbstractMeasurement<Phase> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
+     * @deprecated since 9.3 raplced by {@link #Phase(GroundStation, AbsoluteDate,
+     * double, double, double, double, ObservableSatellite)}
      */
+    @Deprecated
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final int propagatorIndex) {
-        super(date, phase, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              station.getClockOffsetDriver(),
-              station.getEastOffsetDriver(),
-              station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver(),
-              station.getPrimeMeridianOffsetDriver(),
-              station.getPrimeMeridianDriftDriver(),
-              station.getPolarOffsetXDriver(),
-              station.getPolarDriftXDriver(),
-              station.getPolarOffsetYDriver(),
-              station.getPolarDriftYDriver());
+        this(station, date, phase, wavelength, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param phase observed value
+     * @param wavelength phase observed value wavelength
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public Phase(final GroundStation station, final AbsoluteDate date,
+                 final double phase, final double wavelength, final double sigma,
+                 final double baseWeight, final ObservableSatellite satellite) {
+        super(date, phase, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(station.getClockOffsetDriver());
+        addParameterDriver(station.getEastOffsetDriver());
+        addParameterDriver(station.getNorthOffsetDriver());
+        addParameterDriver(station.getZenithOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianDriftDriver());
+        addParameterDriver(station.getPolarOffsetXDriver());
+        addParameterDriver(station.getPolarDriftXDriver());
+        addParameterDriver(station.getPolarOffsetYDriver());
+        addParameterDriver(station.getPolarDriftYDriver());
         this.station    = station;
         this.wavelength = wavelength;
     }
@@ -115,7 +137,8 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                                 final int evaluation,
                                                                 final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final SpacecraftState state = states[satellite.getPropagatorIndex()];
 
         // Phase derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters

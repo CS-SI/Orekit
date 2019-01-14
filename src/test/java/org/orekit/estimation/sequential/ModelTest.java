@@ -17,6 +17,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
@@ -105,18 +106,20 @@ public class ModelTest {
         // Create propagator builder
         this.propagatorBuilder = context.createBuilder(orbitType, positionAngle, true,
                                                        1.0e-6, 60.0, 10., Force.SOLAR_RADIATION_PRESSURE);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
 
         // Create PV at t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
         this.pv = new PV(date0,
-                             context.initialOrbit.getPVCoordinates().getPosition(),
-                             context.initialOrbit.getPVCoordinates().getVelocity(),
-                             new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.);
+                         context.initialOrbit.getPVCoordinates().getPosition(),
+                         context.initialOrbit.getPVCoordinates().getVelocity(),
+                         new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,
+                         satellite);
         
         // Create one 0m range measurement at t0 + 10s
         final AbsoluteDate date  = date0.shiftedBy(10.);
         final GroundStation station = context.stations.get(0);
-        this.range = new Range(station, date, 18616150., 10., 1.);
+        this.range = new Range(station, true, date, 18616150., 10., 1., satellite);
         // Exact range value is 1.8616150246470984E7 m
 
         // Add sat range bias to PV and select it

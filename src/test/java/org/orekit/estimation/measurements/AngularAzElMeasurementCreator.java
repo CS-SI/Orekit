@@ -34,9 +34,11 @@ import org.orekit.utils.ParameterDriver;
 public class AngularAzElMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
+    private final ObservableSatellite satellite;
 
     public AngularAzElMeasurementCreator(final Context context) {
-        this.context = context;
+        this.context   = context;
+        this.satellite = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
@@ -59,8 +61,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         for (final GroundStation station : context.stations) {
 
             final AbsoluteDate     date      = currentState.getDate();
@@ -96,7 +97,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
                                                                currentState.getFrame(),
                                                                currentState.getDate());
 
-                addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight));
+                addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight, satellite));
             }
 
         }

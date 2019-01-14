@@ -66,9 +66,9 @@ public class GeodeticPoint implements Serializable {
      * Build a new instance. The angular coordinates will be normalized so that
      * the latitude is between ±π/2 and the longitude is between ±π.
      *
-     * @param latitude latitude of the point
-     * @param longitude longitude of the point
-     * @param altitude altitude of the point
+     * @param latitude latitude of the point (rad)
+     * @param longitude longitude of the point (rad)
+     * @param altitude altitude of the point (m)
      */
     public GeodeticPoint(final double latitude, final double longitude,
                          final double altitude) {

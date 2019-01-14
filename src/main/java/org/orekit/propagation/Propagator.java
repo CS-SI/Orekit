@@ -37,7 +37,17 @@ import org.orekit.utils.PVCoordinatesProvider;
  * using rich force models and by continuous models built after numerical
  * integration has been completed and dense output data as been
  * gathered.</p>
-
+ * <p>Note that one single propagator cannot be called from multiple threads.
+ * Its configuration can be changed as there is at least a {@link
+ * #resetInitialState(SpacecraftState)} method, and even propagators that do
+ * not support resetting state (like the {@link
+ * org.orekit.propagation.analytical.tle.TLEPropagator TLEPropagator} do
+ * cache some internal data during computation. However, as long as they
+ * are configured with independent building blocks (mainly event handlers
+ * and step handlers that may preserve some internal state), and as long
+ * as they are called from one thread only, they <em>can</em> be used in
+ * multi-threaded applications. Synchronizing several propagators to run in
+ * parallel is also possible using {@link PropagatorsParallelizer}.</p>
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  *

@@ -57,10 +57,13 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      * @param angular observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @deprecated since 9.3, replaced by {@#AngularAzEl(GroundStation, AbsoluteDate,
+     * double[], double[], double[], ObservableSatellite)}
      */
+    @Deprecated
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight) {
-        this(station, date, angular, sigma, baseWeight, 0);
+        this(station, date, angular, sigma, baseWeight, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -71,21 +74,39 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.0
+     * @deprecated since 9.3, replaced by {@#AngularAzEl(GroundStation, AbsoluteDate,
+     * double[], double[], double[], ObservableSatellite)}
      */
+    @Deprecated
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
                        final int propagatorIndex) {
-        super(date, angular, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              station.getClockOffsetDriver(),
-              station.getEastOffsetDriver(),
-              station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver(),
-              station.getPrimeMeridianOffsetDriver(),
-              station.getPrimeMeridianDriftDriver(),
-              station.getPolarOffsetXDriver(),
-              station.getPolarDriftXDriver(),
-              station.getPolarOffsetYDriver(),
-              station.getPolarDriftYDriver());
+        this(station, date, angular, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param angular observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public AngularAzEl(final GroundStation station, final AbsoluteDate date,
+                       final double[] angular, final double[] sigma, final double[] baseWeight,
+                       final ObservableSatellite satellite) {
+        super(date, angular, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(station.getClockOffsetDriver());
+        addParameterDriver(station.getEastOffsetDriver());
+        addParameterDriver(station.getNorthOffsetDriver());
+        addParameterDriver(station.getZenithOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianDriftDriver());
+        addParameterDriver(station.getPolarOffsetXDriver());
+        addParameterDriver(station.getPolarDriftXDriver());
+        addParameterDriver(station.getPolarOffsetYDriver());
+        addParameterDriver(station.getPolarDriftYDriver());
         this.station = station;
     }
 
@@ -101,7 +122,8 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     protected EstimatedMeasurement<AngularAzEl> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                       final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
 
         // Azimuth/elevation derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters

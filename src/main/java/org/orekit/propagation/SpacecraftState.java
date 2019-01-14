@@ -518,8 +518,8 @@ public class SpacecraftState
         return orbit.getHy();
     }
 
-    /** Get the true latitude argument (as per equinoctial parameters).
-     * @return v + ω + Ω true latitude argument (rad)
+    /** Get the true longitude argument (as per equinoctial parameters).
+     * @return v + ω + Ω true longitude argument (rad)
      * @see #getLE()
      * @see #getLM()
      */
@@ -527,8 +527,8 @@ public class SpacecraftState
         return orbit.getLv();
     }
 
-    /** Get the eccentric latitude argument (as per equinoctial parameters).
-     * @return E + ω + Ω eccentric latitude argument (rad)
+    /** Get the eccentric longitude argument (as per equinoctial parameters).
+     * @return E + ω + Ω eccentric longitude argument (rad)
      * @see #getLv()
      * @see #getLM()
      */
@@ -536,8 +536,8 @@ public class SpacecraftState
         return orbit.getLE();
     }
 
-    /** Get the mean latitude argument (as per equinoctial parameters).
-     * @return M + ω + Ω mean latitude argument (rad)
+    /** Get the mean longitude argument (as per equinoctial parameters).
+     * @return M + ω + Ω mean longitude argument (rad)
      * @see #getLv()
      * @see #getLE()
      */

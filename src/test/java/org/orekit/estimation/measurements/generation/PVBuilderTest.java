@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.modifiers.Bias;
@@ -50,7 +51,7 @@ public class PVBuilderTest {
     private static final double BIAS_P  =  5.0;
     private static final double BIAS_V  = -0.003;
 
-    private MeasurementBuilder<PV> getBuilder(final RandomGenerator random, final int propagatorIndex) {
+    private MeasurementBuilder<PV> getBuilder(final RandomGenerator random, final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] {
             SIGMA_P * SIGMA_P, SIGMA_P * SIGMA_P, SIGMA_P * SIGMA_P,
             SIGMA_V * SIGMA_V, SIGMA_V * SIGMA_V, SIGMA_V * SIGMA_V,
@@ -59,7 +60,7 @@ public class PVBuilderTest {
                         new PVBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                   1.0e-10,
                                                                                                   new GaussianRandomGenerator(random)),
-                                      SIGMA_P, SIGMA_V, 1.0, propagatorIndex);
+                                      SIGMA_P, SIGMA_V, 1.0, satellite);
         pvb.addModifier(new Bias<>(new String[] { "pxBias", "pyBias", "pzBias", "vxBias", "vyBias", "vzBias" },
                         new double[] { BIAS_P, BIAS_P, BIAS_P, BIAS_V, BIAS_V, BIAS_V },
                         new double[] { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
@@ -90,8 +91,8 @@ public class PVBuilderTest {
         final double highRateStep = 5.0;
         final double burstPeriod  = 300.0;
 
-        final int propagatorIndex = generator.addPropagator(buildPropagator());
-        generator.addScheduler(new ContinuousScheduler<>(getBuilder(new Well19937a(seed), propagatorIndex),
+        final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+        generator.addScheduler(new ContinuousScheduler<>(getBuilder(new Well19937a(seed), satellite),
                                                          new BurstSelector(maxBurstSize, highRateStep, burstPeriod,
                                                                            TimeScalesFactory.getUTC())));
         final double period = context.initialOrbit.getKeplerianPeriod();

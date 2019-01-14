@@ -25,6 +25,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.Test;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.FramesFactory;
 
@@ -35,7 +36,7 @@ public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTes
 
     protected MeasurementBuilder<AngularRaDec> getBuilder(final RandomGenerator random,
                                                           final GroundStation groundStation,
-                                                          final int propagatorIndex) {
+                                                          final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA, SIGMA * SIGMA });
         MeasurementBuilder<AngularRaDec> ab =
                         new AngularRaDecBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
@@ -43,7 +44,7 @@ public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTes
                                                                                                             new GaussianRandomGenerator(random)),
                                                 groundStation, FramesFactory.getEME2000(),
                                                 new double[] { SIGMA, SIGMA}, new double[] { 1.0, 1.0 },
-                                                propagatorIndex);
+                                                satellite);
         ab.addModifier(new Bias<>(new String[] { "aBias", "eBias" },
                         new double[] { BIAS, BIAS },
                         new double[] { 1.0, 1.0 },

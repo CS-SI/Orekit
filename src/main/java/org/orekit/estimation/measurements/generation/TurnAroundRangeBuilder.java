@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -43,13 +44,13 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
      * @param slaveStation ground station reflecting the signal
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
+     * @param satellite satellite related to this builder
      */
     public TurnAroundRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                   final GroundStation masterStation, final GroundStation slaveStation,
                                   final double sigma, final double baseWeight,
-                                  final int propagatorIndex) {
-        super(noiseSource, sigma, baseWeight, propagatorIndex);
+                                  final ObservableSatellite satellite) {
+        super(noiseSource, sigma, baseWeight, satellite);
         this.masterStation = masterStation;
         this.slaveStation  = slaveStation;
     }
@@ -58,13 +59,14 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
     @Override
     public TurnAroundRange build(final SpacecraftState[] states) {
 
-        final int propagatorIndex   = getPropagatorsIndices()[0];
-        final double sigma          = getTheoreticalStandardDeviation()[0];
-        final double baseWeight     = getBaseWeight()[0];
-        final SpacecraftState state = states[propagatorIndex];
+        final ObservableSatellite satellite = getSatellites()[0];
+        final double sigma                  = getTheoreticalStandardDeviation()[0];
+        final double baseWeight             = getBaseWeight()[0];
+        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
 
         // create a dummy measurement
-        final TurnAroundRange dummy = new TurnAroundRange(masterStation, slaveStation, state.getDate(), Double.NaN, sigma, baseWeight, propagatorIndex);
+        final TurnAroundRange dummy = new TurnAroundRange(masterStation, slaveStation, state.getDate(),
+                                                          Double.NaN, sigma, baseWeight, satellite);
         for (final EstimationModifier<TurnAroundRange> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -89,7 +91,7 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
 
         // generate measurement
         final TurnAroundRange measurement = new TurnAroundRange(masterStation, slaveStation, state.getDate(),
-                                                                range, sigma, baseWeight, propagatorIndex);
+                                                                range, sigma, baseWeight, satellite);
         for (final EstimationModifier<TurnAroundRange> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }
