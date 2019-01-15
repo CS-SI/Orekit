@@ -245,6 +245,7 @@
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
+    * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
     * displacement of ground points due to tides
