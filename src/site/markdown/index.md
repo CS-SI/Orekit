@@ -241,7 +241,7 @@
 
   * Earth models
   
-    * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 2, estimated, fixed)
+    * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
