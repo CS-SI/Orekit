@@ -35,6 +35,12 @@
       <action dev="luc" type="add" issue="513">
         Added clock offset parameter at ground stations level for orbit determination.
       </action>
+      <action dev="bryan" type="add" issue="512">
+        Added weather model Global Pressure and Temperature 2.
+      </action>
+      <action dev="bryan" type="add" issue="511">
+        Added weather model Global Pressure and Temperature.
+      </action>
       <action dev="luc" type="fix" issue="510">
         Fixed dropped derivatives in TimeStampedFieldPVCoordinates.shiftedBy(dt).
       </action>

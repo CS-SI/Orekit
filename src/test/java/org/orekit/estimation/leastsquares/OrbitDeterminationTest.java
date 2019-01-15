@@ -115,6 +115,7 @@ import org.orekit.models.earth.DiscreteTroposphericModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.EstimatedTroposphericModel;
 import org.orekit.models.earth.GlobalMappingFunctionModel;
+import org.orekit.models.earth.GlobalPressureTemperatureModel;
 import org.orekit.models.earth.IonosphericModel;
 import org.orekit.models.earth.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.KlobucharIonoModel;
@@ -232,6 +233,7 @@ public class OrbitDeterminationTest {
 
         //test
         //definition of the accuracy for the test
+
         final double distanceAccuracy = 11.5;
         final double velocityAccuracy = 4.0e-3;
 
@@ -254,10 +256,10 @@ public class OrbitDeterminationTest {
         final long nbRange = 4009;
         final double[] RefStatRange = { -2.706, 2.566, 0.0, 0.738 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               0.1);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.1);
+        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               0.3);
+        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.3);
         Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 0.1);
+        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 0.3);
 
     }
 
@@ -600,7 +602,6 @@ public class OrbitDeterminationTest {
                 }
             });
         }
-
         Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
 
         // compute some statistics
@@ -1106,6 +1107,7 @@ public class OrbitDeterminationTest {
         final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
         final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
         final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
+        final boolean[] stationWeatherEstimated           = parser.getBooleanArray(ParameterKey.GROUND_STATION_WEATHER_ESTIMATED);
         final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
@@ -1270,7 +1272,7 @@ public class OrbitDeterminationTest {
             }
 
 
-            //Tropospheric correction 
+            //Tropospheric correction
             final RangeTroposphericDelayModifier rangeTroposphericCorrection;
             if (stationRangeTropospheric[i]) {
 
@@ -1284,7 +1286,21 @@ public class OrbitDeterminationTest {
 
                 DiscreteTroposphericModel troposphericModel;
                 if (stationTroposphericModelEstimated[i] && mappingModel != null) {
-                    troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);
+
+                    if(stationWeatherEstimated[i]) {
+                        final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
+                                                                                                          stationLongitudes[i],
+                                                                                                          body.getBodyFrame());
+                        weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
+                                                                                      TimeScalesFactory.getUTC()));
+                        final double temperature = weather.getTemperature();
+                        final double pressure    = weather.getPressure();
+                        troposphericModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                           stationTroposphericZenithDelay[i]);
+                    } else {
+                        troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);   
+                    }
+
                     ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
                     totalDelay.setSelected(stationZenithDelayEstimated[i]);
                     totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
@@ -1553,7 +1569,6 @@ public class OrbitDeterminationTest {
                             if (satRangeBias != null) {
                                 range.addModifier(satRangeBias);
                             }
-                            
                             if (stationData.rangeTroposphericCorrection != null) {
                                 range.addModifier(stationData.rangeTroposphericCorrection);
                             }
@@ -2093,7 +2108,6 @@ public class OrbitDeterminationTest {
         /** {@inheritDoc} */
         @Override
         double residual(final EstimatedMeasurement<Range> evaluation) {
-            //System.out.println(evaluation.getObservedMeasurement().getDate() + "" + (evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0]));
             return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
         }
 
@@ -2463,6 +2477,7 @@ public class OrbitDeterminationTest {
         GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED,
         GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
         GROUND_STATION_NIELL_MAPPING_FUNCTION,
+        GROUND_STATION_WEATHER_ESTIMATED,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
         GROUND_STATION_RANGE_BIAS_MIN,

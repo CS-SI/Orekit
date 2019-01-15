@@ -112,6 +112,7 @@ import org.orekit.models.earth.DiscreteTroposphericModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.EstimatedTroposphericModel;
 import org.orekit.models.earth.GlobalMappingFunctionModel;
+import org.orekit.models.earth.GlobalPressureTemperatureModel;
 import org.orekit.models.earth.IonosphericModel;
 import org.orekit.models.earth.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.KlobucharIonoModel;
@@ -1616,6 +1617,7 @@ public class KalmanOrbitDeterminationTest {
         final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
         final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
         final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
+        final boolean[] stationWeatherEstimated           = parser.getBooleanArray(ParameterKey.GROUND_STATION_WEATHER_ESTIMATED);
         final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
@@ -1794,7 +1796,21 @@ public class KalmanOrbitDeterminationTest {
 
                 final DiscreteTroposphericModel troposphericModel;
                 if (stationTroposphericModelEstimated[i] && mappingModel != null) {
-                    troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);
+
+                    if(stationWeatherEstimated[i]) {
+                        final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
+                                                                                                          stationLongitudes[i],
+                                                                                                          body.getBodyFrame());
+                        weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
+                                                                                      TimeScalesFactory.getUTC()));
+                        final double temperature = weather.getTemperature();
+                        final double pressure    = weather.getPressure();
+                        troposphericModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                           stationTroposphericZenithDelay[i]);
+                    } else {
+                        troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);   
+                    }
+
                     ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
                     totalDelay.setSelected(stationZenithDelayEstimated[i]);
                     totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
@@ -2903,6 +2919,7 @@ public class KalmanOrbitDeterminationTest {
         GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED,
         GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
         GROUND_STATION_NIELL_MAPPING_FUNCTION,
+        GROUND_STATION_WEATHER_ESTIMATED,
         GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY,
         GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED,
         GROUND_STATION_RANGE_SIGMA,

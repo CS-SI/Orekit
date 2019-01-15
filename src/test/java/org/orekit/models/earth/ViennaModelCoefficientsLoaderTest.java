@@ -109,6 +109,7 @@ public class ViennaModelCoefficientsLoaderTest {
         // Commons parameters
         Utils.setDataRoot("vmf3-1x1-tropospheric-coefficients");
         DateTimeComponents dateTimeComponents = new DateTimeComponents(2018, 11, 25, 0, 0, 0.0);
+
         final double latitude   = FastMath.toRadians(45.0);
         
         double longitude1;

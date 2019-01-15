@@ -172,6 +172,7 @@ ground.station.tropospheric.delay.estimated    [0] = false
 ground.station.global.mapping.function         [0] = false
 ground.station.niell.mapping.function          [0] = false
 ground.station.range.tropospheric.correction   [0] = true
+ground.station.weather.estimated               [0] = false
 
 ground.station.name                            [1] =  GODL
 ground.station.latitude                        [1] =  39.020605 
@@ -208,6 +209,7 @@ ground.station.tropospheric.delay.estimated    [1] = false
 ground.station.global.mapping.function         [1] = false
 ground.station.niell.mapping.function          [1] = false
 ground.station.range.tropospheric.correction   [1] = true
+ground.station.weather.estimated               [1] = false
 
 ground.station.name                            [2] =  HA4T 
 ground.station.latitude                        [2] =  20.706489 
@@ -244,6 +246,7 @@ ground.station.tropospheric.delay.estimated    [2] = false
 ground.station.global.mapping.function         [2] = false
 ground.station.niell.mapping.function          [2] = false
 ground.station.range.tropospheric.correction   [2] = true
+ground.station.weather.estimated               [2] = false
 
 ground.station.name                            [3] =  SISL 
 ground.station.latitude                        [3] =  33.577694 
@@ -280,6 +283,7 @@ ground.station.tropospheric.delay.estimated    [3] = false
 ground.station.global.mapping.function         [3] = false
 ground.station.niell.mapping.function          [3] = false
 ground.station.range.tropospheric.correction   [3] = true
+ground.station.weather.estimated               [3] = false
 
 
 
