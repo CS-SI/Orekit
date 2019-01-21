@@ -18,7 +18,6 @@ package org.orekit.models.earth;
 
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -34,14 +33,11 @@ public class GlobalPressureTemperature2ModelTest {
 
     private static double epsilon = 1.0e-12;
 
-    @Before
-    public void setUp() throws OrekitException {
-        Utils.setDataRoot("regular-data:potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-    }
-
     @Test
     public void testWeatherParameters() {
+
+        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // Site Vienna: latitude:  48.20°N
         //              longitude: 16.37°E
@@ -67,7 +63,6 @@ public class GlobalPressureTemperature2ModelTest {
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
         final GlobalPressureTemperature2Model model = new GlobalPressureTemperature2Model(latitude, longitude, geoid);
 
-        Utils.setDataRoot("gpt2-grid");
         model.weatherParameters(height, date);
         
         final double a[]         = model.getA();
@@ -85,6 +80,9 @@ public class GlobalPressureTemperature2ModelTest {
 
     @Test
     public void testEquality() {
+
+        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // Commons parameters
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
@@ -107,7 +105,6 @@ public class GlobalPressureTemperature2ModelTest {
         model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
         model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
 
-        Utils.setDataRoot("gpt2-grid");
         model1.weatherParameters(height, date);
         model2.weatherParameters(height, date);
 
@@ -154,6 +151,9 @@ public class GlobalPressureTemperature2ModelTest {
     @Test
     public void testCorruptedFileBadData() {
         
+        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
         final double latitude  = FastMath.toRadians(14.0);
         final double longitude = FastMath.toRadians(67.5);
         final double height    = 0.0;
@@ -166,14 +166,14 @@ public class GlobalPressureTemperature2ModelTest {
         final String fileName = "corrupted-bad-data-gpt2_5.grd";
         final GlobalPressureTemperature2Model model = new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
 
-        Utils.setDataRoot("gpt2-grid");
-                        
         try {
             model.weatherParameters(height, date);
             Assert.fail("An exception should have been thrown");
             
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 
     }

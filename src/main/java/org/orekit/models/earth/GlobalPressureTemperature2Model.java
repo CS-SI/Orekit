@@ -31,9 +31,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UTCScale;
 import org.orekit.utils.Constants;
 
 /** The Global Pressure and Temperature 2 (GPT2) model.
@@ -80,9 +78,6 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
     /** Ideal gas constant for dry air [J/kg/K]. */
     private static final double R = 287.0;
 
-    /** Time scale factory for day of year computation. */
-    private static final UTCScale TIME_SCALE = TimeScalesFactory.getUTC();
-
     /** Regular expression for supported file name. */
     private String supportedNames;
 
@@ -112,6 +107,9 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
 
     /** Current date. */
     private AbsoluteDate date;
+
+    /** Day of year. */
+    private int dayOfYear;
 
     /** Constructor with supported names given by user.
      * @param supportedNames supported names
@@ -183,8 +181,9 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
 
     @Override
     public void weatherParameters(final double stationHeight, final AbsoluteDate currentDate) {
-        this.date   = currentDate;
-        this.height = stationHeight;
+        this.date      = currentDate;
+        this.dayOfYear = currentDate.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
+        this.height    = stationHeight;
         DataProvidersManager.getInstance().feed(supportedNames, this);
     }
 
@@ -358,10 +357,7 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
         final double b2 = Double.parseDouble(values[indexB2]);
 
         // Temporal factors
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TIME_SCALE);
-        final double dofyear = dtc.getDate().getDayOfYear();
-        final double coef = (dofyear / 365.25) * 2 * FastMath.PI;
+        final double coef = (dayOfYear / 365.25) * 2 * FastMath.PI;
         final double cosCoef  = FastMath.cos(coef);
         final double sinCoef  = FastMath.sin(coef);
         final double cos2Coef = FastMath.cos(coef * 2.0);
