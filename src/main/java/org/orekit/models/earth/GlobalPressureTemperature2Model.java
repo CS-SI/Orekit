@@ -22,10 +22,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -203,23 +205,23 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
 
         // Initialize Lists
         // Latitudes [rad]
-        final ArrayList<Double> latitudes    = new ArrayList<>();
+        final List<Double> latitudes    = new ArrayList<>();
         // Longitudes [rad]
-        final ArrayList<Double> longitudes   = new ArrayList<>();
+        final List<Double> longitudes   = new ArrayList<>();
         // Orthometric grid height [m]
-        final ArrayList<Double> hS           = new ArrayList<>();
+        final List<Double> hS           = new ArrayList<>();
         // Hydrostatic coefficient a
-        final ArrayList<Double> ah           = new ArrayList<>();
+        final List<Double> ah           = new ArrayList<>();
         // Wet coefficient a
-        final ArrayList<Double> aw           = new ArrayList<>();
+        final List<Double> aw           = new ArrayList<>();
         // Temperature [K]
-        final ArrayList<Double> temperature0 = new ArrayList<>();
+        final List<Double> temperature0 = new ArrayList<>();
         // Temperature gradient [K/m]
-        final ArrayList<Double> dT           = new ArrayList<>();
+        final List<Double> dT           = new ArrayList<>();
         // Pressure [Pa]
-        final ArrayList<Double> pressure0    = new ArrayList<>();
+        final List<Double> pressure0    = new ArrayList<>();
         // Specific humidity [kg/kg]
-        final ArrayList<Double> qv0          = new ArrayList<>();
+        final List<Double> qv0          = new ArrayList<>();
 
         for (String line = br.readLine(); line != null; line = br.readLine()) {
             ++lineNumber;
@@ -345,7 +347,7 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
      * @param indexA2 index of coefficient A2 for this parameter
      * @param indexB2 index of coefficient B2 for this parameter
      */
-    private void fillArray(final ArrayList<Double> array, final String[] values,
+    private void fillArray(final List<Double> array, final String[] values,
                            final int indexA0, final int indexA1, final int indexB1,
                            final int indexA2, final int indexB2) {
 
@@ -358,12 +360,10 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
 
         // Temporal factors
         final double coef = (dayOfYear / 365.25) * 2 * FastMath.PI;
-        final double cosCoef  = FastMath.cos(coef);
-        final double sinCoef  = FastMath.sin(coef);
-        final double cos2Coef = FastMath.cos(coef * 2.0);
-        final double sin2Coef = FastMath.sin(coef * 2.0);
+        final SinCos sc1  = FastMath.sinCos(coef);
+        final SinCos sc2  = FastMath.sinCos(2.0 * coef);
 
-        final double value = a0 + a1 * cosCoef + b1 * sinCoef + a2 * cos2Coef + b2 * sin2Coef;
+        final double value = a0 + a1 * sc1.cos() + b1 * sc1.sin() + a2 * sc2.cos() + b2 * sc2.sin();
         array.add(value);
     }
 }
