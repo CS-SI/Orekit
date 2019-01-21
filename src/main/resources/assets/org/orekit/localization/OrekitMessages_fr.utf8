@@ -510,3 +510,6 @@ VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = les coefficients du modèl
 
 # file {0} does not contain Vienna coefficients ah, aw, zh or zw
 NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = {0} ne contiant pas de coefficients du modèle de Vienne ah, aw, zh ou zw
+
+# irregular or incomplete grid in file {0}
+IRREGULAR_OR_INCOMPLETE_GRID = grille incomplète ou irrégulière dans le fichier {0}

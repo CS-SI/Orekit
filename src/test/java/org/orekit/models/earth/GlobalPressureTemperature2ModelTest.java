@@ -61,7 +61,8 @@ public class GlobalPressureTemperature2ModelTest {
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
-        final GlobalPressureTemperature2Model model = new GlobalPressureTemperature2Model(latitude, longitude, geoid);
+        final GlobalPressureTemperature2Model model =
+                        new GlobalPressureTemperature2Model("gpt2_5_extract.grd", latitude, longitude, geoid);
 
         model.weatherParameters(height, date);
         
@@ -156,20 +157,15 @@ public class GlobalPressureTemperature2ModelTest {
 
         final double latitude  = FastMath.toRadians(14.0);
         final double longitude = FastMath.toRadians(67.5);
-        final double height    = 0.0;
 
         // Date is not used here
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
 
         final String fileName = "corrupted-bad-data-gpt2_5.grd";
-        final GlobalPressureTemperature2Model model = new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
-
         try {
-            model.weatherParameters(height, date);
+        new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
             Assert.fail("An exception should have been thrown");
-            
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assert.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
