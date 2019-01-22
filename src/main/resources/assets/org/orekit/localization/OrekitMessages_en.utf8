@@ -510,3 +510,6 @@ VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = Vienna coefficients ah or 
 
 # file {0} does not contain Vienna coefficients ah, aw, zh or zw
 NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = file {0} does not contain Vienna coefficients ah, aw, zh or zw
+
+# irregular or incomplete grid in file {0}
+IRREGULAR_OR_INCOMPLETE_GRID = irregular or incomplete grid in file {0}
