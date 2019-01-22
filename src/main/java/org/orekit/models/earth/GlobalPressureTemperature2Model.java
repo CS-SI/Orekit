@@ -279,9 +279,9 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
         final double[][] fval = new double[][] {
             {
                 gridGetter.applyAsDouble(southWest),
-                gridGetter.applyAsDouble(southEast)
+                gridGetter.applyAsDouble(northWest)
             }, {
-                gridGetter.applyAsDouble(northWest),
+                gridGetter.applyAsDouble(southEast),
                 gridGetter.applyAsDouble(northEast)
             }
         };
