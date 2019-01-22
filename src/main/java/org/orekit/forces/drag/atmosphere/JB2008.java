@@ -39,7 +39,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * It is described in the paper:<br>
  * <a href="http://sol.spacenvironment.net/~JB2008/pubs/AIAA_2008-6438_JB2008_Model.pdf">A
  * New Empirical Thermospheric Density Model JB2008 Using New Solar Indices</a><br>
- * <i>Bruce R. Bowman & al.</i><br>
+ * <i>Bruce R. Bowman &amp; al.</i><br>
  * AIAA 2008-6438<br>
  * </p>
  * <p>
@@ -209,9 +209,9 @@ public class JB2008 implements Atmosphere {
      *        (Tabular time 2.0 days earlier)
      * @param xm10B MG2 81-day ave. centered index<br>
      *        (Tabular time 2.0 days earlier)
-     * @param y10 Solar X-Ray & Lya index scaled to F10<br>
+     * @param y10 Solar X-Ray &amp; Lya index scaled to F10<br>
      *        (Tabular time 5.0 days earlier)
-     * @param y10B Solar X-Ray & Lya 81-day ave. centered index<br>
+     * @param y10B Solar X-Ray &amp; Lya 81-day ave. centered index<br>
      *        (Tabular time 5.0 days earlier)
      * @param dstdtc Temperature change computed from Dst index
      * @return total mass-Density at input position (kg/m³)
@@ -469,9 +469,9 @@ public class JB2008 implements Atmosphere {
      *        (Tabular time 2.0 days earlier)
      * @param xm10B MG2 81-day ave. centered index<br>
      *        (Tabular time 2.0 days earlier)
-     * @param y10 Solar X-Ray & Lya index scaled to F10<br>
+     * @param y10 Solar X-Ray &amp; Lya index scaled to F10<br>
      *        (Tabular time 5.0 days earlier)
-     * @param y10B Solar X-Ray & Lya 81-day ave. centered index<br>
+     * @param y10B Solar X-Ray &amp; Lya 81-day ave. centered index<br>
      *        (Tabular time 5.0 days earlier)
      * @param dstdtc Temperature change computed from Dst index
      * @param <T> type fo the field elements

@@ -24,7 +24,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 
-/** Interface for generating {@link ObservedMeasurements measurements} sequences.
+/** Interface for generating {@link ObservedMeasurement measurements} sequences.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 9.3

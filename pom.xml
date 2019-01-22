@@ -416,6 +416,15 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>${orekit.maven-javadoc-plugin.version}</version>
+        <configuration>
+          <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <links>
+            <link>http://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://www.hipparchus.org/apidocs/</link>
+          </links>
+          <source>${orekit.compiler.source}</source>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
@@ -648,6 +657,7 @@
             <link>http://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
+          <source>${orekit.compiler.source}</source>
         </configuration>
         <reportSets>
           <reportSet>

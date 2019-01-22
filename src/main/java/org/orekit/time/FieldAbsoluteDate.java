@@ -45,7 +45,7 @@ import org.orekit.utils.Constants;
  * in UTC and write it in another file in TAI. This can be done as follows:</p>
  * <pre>
  *   DateTimeComponents utcComponents = readNextDate();
- *   FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(utcComponents, TimeScalesFactory.getUTC());
+ *   FieldAbsoluteDate&lt;T&gt; date = new FieldAbsoluteDate&lt;&gt;(utcComponents, TimeScalesFactory.getUTC());
  *   writeNextDate(date.getComponents(TimeScalesFactory.getTAI()));
  * </pre>
  *
@@ -669,7 +669,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     /** Build an instance corresponding to a Julian Epoch (JE).
      * <p>According to Lieske paper: <a
-     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&defaultprint=YES&filetype=.pdf.">
+     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&amp;defaultprint=YES&amp;filetype=.pdf.">
      * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>, Astronomy and Astrophysics,
      * vol. 73, no. 3, Mar. 1979, p. 282-284, Julian Epoch is related to Julian Ephemeris Date as:</p>
      * <pre>
@@ -691,7 +691,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     /** Build an instance corresponding to a Besselian Epoch (BE).
      * <p>According to Lieske paper: <a
-     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&defaultprint=YES&filetype=.pdf.">
+     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&amp;defaultprint=YES&amp;filetype=.pdf.">
      * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>, Astronomy and Astrophysics,
      * vol. 73, no. 3, Mar. 1979, p. 282-284, Besselian Epoch is related to Julian Ephemeris Date as:</p>
      * <pre>
@@ -814,7 +814,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     /** Get a time-shifted date.
      * <p>
-     * Calling this method is equivalent to call <code>new FieldAbsoluteDate<>(this, dt)</code>.
+     * Calling this method is equivalent to call {@code new FieldAbsoluteDate&lt;&gt;(this, dt)}.
      * </p>
      * @param dt time shift in seconds
      * @return a new date, shifted with respect to instance (which is immutable)

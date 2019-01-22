@@ -18,8 +18,6 @@ package org.orekit.propagation.integration;
 
 import org.hipparchus.RealFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
@@ -45,8 +43,8 @@ import org.orekit.time.FieldAbsoluteDate;
  * the pDot array, which is the time-derivative of the p array. Since the additional parameters
  * p may also have an influence on the equations of motion themselves that should be accumulated
  * to the main state derivatives (for example an equation linked to a complex thrust model may
- * induce an acceleration and a mass change), the {@link #computeDerivatives(FieldSpacecraftState, RealFieldElement[])
- * computeDerivatives} method can return a double array that will be
+ * induce an acceleration and a mass change), the {@link #computeDerivatives(FieldSpacecraftState,
+ * RealFieldElement[]) computeDerivatives} method can return a double array that will be
  * <em>added</em> to the main state derivatives. This means these equations can be used as an
  * additional force model if needed. If the additional parameters have no influence at all on
  * the main spacecraft state, a null reference may be returned.
@@ -73,7 +71,7 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      *
      * <p>
      * This method will be called once at propagation start,
-     * before any calls to {@link #computeDerivatives(SpacecraftState , AbsoluteDate[])}.
+     * before any calls to {@link #computeDerivatives(FieldSpacecraftState , RealFieldElement[])}.
      * </p>
      *
      * <p>

@@ -34,7 +34,7 @@ import org.orekit.propagation.SpacecraftState;
  * The method {@link #getProcessNoiseMatrix} then square the values so that they are consistent with a covariance matrix.
  * <p>
  * The orbital parameters evolutions are provided in LOF frame and Cartesian (PV);
- * then converted in inertial frame and current {@link OrbitType} and {@link PositionAngle}
+ * then converted in inertial frame and current {@link org.orekit.orbits.OrbitType} and {@link PositionAngle}
  * when method {@link #getProcessNoiseMatrix} is called.
  * </p>
  * <p>
