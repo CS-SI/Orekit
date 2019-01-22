@@ -239,7 +239,7 @@
 
   <scm>
     <connection>scm:git:https://gitlab.orekit.org/orekit/orekit.git</connection>
-    <developerConnection>scm:git:ssh://git@gitlab.orekit.org:orekit/orekit.git</developerConnection>
+    <developerConnection>scm:git:ssh://git@gitlab.orekit.org/orekit/orekit.git</developerConnection>
     <url>https://gitlab.orekit.org/orekit/orekit/tree/master</url>
   </scm>
 
