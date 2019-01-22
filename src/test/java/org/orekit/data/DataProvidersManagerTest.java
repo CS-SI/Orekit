@@ -27,12 +27,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class DataProvidersManagerTest {
+
+    @After
+    public void tearDown() {
+        // clear the filters so they don't change other tests
+        DataProvidersManager.getInstance().clearFilters();
+    }
 
     @Test
     public void testDefaultConfiguration() {
