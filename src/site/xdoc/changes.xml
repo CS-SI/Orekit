@@ -20,12 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="9.3" date="2019-01-21" description="Version 9.3 is a minor version of Orekit.
+    <release version="9.3" date="2019-01-25" description="Version 9.3 is a minor version of Orekit.
     It includes both new features and bug fixes. New features introduced in 9.3 are: a new GPSDate class,
     changed OrekitException from checked to unchecked exceptions, parameter drivers scales and reference
     value can be changed, access to Kalman filter internal matrices, position-only measurements in orbit determination,
     support for unofficial versions 2.12 and 2.20 of Rinex files (mainly for spaceborne receivers),
-    direct building of appropriate attitude law with eclipses for all GNSS satellite types, nter-satellites
+    direct building of appropriate attitude law with eclipses for all GNSS satellite types, inter-satellites
     view detector, measurement generation feature, possibility fo use Marshall Solar Activity Future Estimation
     to feed NRL MSISE 2000 atmosphere model, new tropospheric models: Mendes-Pavlis, Vienna 1, Vienna 3, estimated model,
     new mapping functions for tropospheric effect: Global Mapping Function, Niell Mapping Function, Global

@@ -46,7 +46,7 @@ as required.
 |  source  | orekit-9.3-sources.zip (URL to be defined after official release)                                                                     |
 |  binary  | orekit-9.3.jar (URL to be defined after official release)                                                                             |
 |  javadoc | orekit-9.3-javadoc.jar (URL to be defined after official release)                                                                     |
-version 9.3 downloads (release date: 2019-01-21)
+version 9.3 downloads (release date: 2019-01-25)
 
 |  package |                                              link                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------------|
