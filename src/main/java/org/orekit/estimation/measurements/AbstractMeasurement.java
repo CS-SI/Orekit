@@ -229,8 +229,10 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         return baseWeight.clone();
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** {@inheritDoc}
+     * @deprecated as of 9.3, replaced by {@link #getSatellites()}
+     */
+    @Deprecated
     public List<Integer> getPropagatorsIndices() {
         return satellites.stream().map(s -> s.getPropagatorIndex()).collect(Collectors.toList());
     }
