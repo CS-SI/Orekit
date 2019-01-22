@@ -92,9 +92,6 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
     /** Shared lazily loaded grid. */
     private static final AtomicReference<Grid> SHARED_GRID = new AtomicReference<>(null);
 
-    /** Regular expression for supported file name. */
-    private final String supportedNames;
-
     /** South-West grid entry. */
     private final GridEntry southWest;
 
@@ -142,13 +139,12 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
      */
     public GlobalPressureTemperature2Model(final String supportedNames, final double latitude,
                                            final double longitude, final Geoid geoid) {
-        this.coefficientsA  = null;
-        this.temperature    = Double.NaN;
-        this.pressure       = Double.NaN;
-        this.e0             = Double.NaN;
-        this.supportedNames = supportedNames;
-        this.geoid          = geoid;
-        this.latitude       = latitude;
+        this.coefficientsA = null;
+        this.temperature   = Double.NaN;
+        this.pressure      = Double.NaN;
+        this.e0            = Double.NaN;
+        this.geoid         = geoid;
+        this.latitude      = latitude;
 
         // get the lazily loaded shared grid
         Grid grid = SHARED_GRID.get();
@@ -211,13 +207,6 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
      */
     public double getWaterVaporPressure() {
         return e0;
-    }
-
-    /** Returns the supported names of the loader.
-     * @return the supported names
-     */
-    public String getSupportedNames() {
-        return supportedNames;
     }
 
     @Override
@@ -393,23 +382,23 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
                 entries[latitudeIndex][longitudeIndex] = entry;
             }
 
-            // wrap the grid around the Earth in longitude
-            for (int latitudeIndex = 0; latitudeIndex < nA; ++latitudeIndex) {
-                final GridEntry reference = entries[latitudeIndex][0];
-                entries[latitudeIndex][nO - 1] = new GridEntry(reference.latitude, reference.latKey,
-                                                               reference.longitude + 2 * FastMath.PI,
-                                                               reference.lonKey + DEG_TO_MAS * 360,
-                                                               reference.hS, reference.pressure0, reference.temperature0,
-                                                               reference.qv0, reference.dT, reference.ah, reference.aw);
-            }
-
-            // check for missing entries
+            // finalize the grid
             for (final GridEntry[] row : entries) {
-                for (final GridEntry entry : row) {
-                    if (entry == null) {
+
+                // check for missing entries
+                for (int longitudeIndex = 0; longitudeIndex < nO - 1; ++longitudeIndex) {
+                    if (row[longitudeIndex] == null) {
                         throw new OrekitException(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, name);
                     }
                 }
+
+                // wrap the grid around the Earth in longitude
+                row[nO - 1] = new GridEntry(row[0].latitude, row[0].latKey,
+                                            row[0].longitude + 2 * FastMath.PI,
+                                            row[0].lonKey + DEG_TO_MAS * 360,
+                                            row[0].hS, row[0].pressure0, row[0].temperature0,
+                                            row[0].qv0, row[0].dT, row[0].ah, row[0].aw);
+
             }
 
         }

@@ -173,4 +173,29 @@ public class GlobalPressureTemperature2ModelTest {
         }
 
     }
+
+    @Test
+    public void testCorruptedIrregularGrid() {
+        
+        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        final double latitude  = FastMath.toRadians(14.0);
+        final double longitude = FastMath.toRadians(68.5);
+
+        // Date is not used here
+        final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
+                                      ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+
+        final String fileName = "corrupted-irregular-grid-gpt2_5.grd";
+        try {
+        new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
+            Assert.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
+            Assert.assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
+        }
+
+    }
+
 }
