@@ -43,6 +43,13 @@ as required.
 
 |  package |                                              link                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------------|
+|  source  | orekit-9.3-sources.zip (URL to be defined after official release)                                                                     |
+|  binary  | orekit-9.3.jar (URL to be defined after official release)                                                                             |
+|  javadoc | orekit-9.3-javadoc.jar (URL to be defined after official release)                                                                     |
+version 9.3 downloads (release date: 2019-01-25)
+
+|  package |                                              link                                                                                     |
+|----------|---------------------------------------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-9.2-sources.zip](https://gitlab.orekit.org/orekit/orekit/uploads/f73b25ed3aba8d61518c341ee46ce806/orekit-9.2-sources.zip)     |
 |  binary  | [orekit-9.2.jar](https://gitlab.orekit.org/orekit/orekit/uploads/f0777ef490d2ac8c0a3fa193d23205c2/orekit-9.2.jar)                     |
 |  javadoc | [orekit-9.2-javadoc.jar](https://gitlab.orekit.org/orekit/orekit/uploads/6aaa9f009ad4dbb22a67c99a71f9c1bd/orekit-9.2-javadoc.jar)     |

@@ -64,7 +64,7 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
     /** Build a new instance.
      * <p>
      * At the initialization the values of the pressure and the temperature are set to NaN.
-     * The user has to call {@link #computeTemperatureAndPressure} method before using
+     * The user has to call {@link #weatherParameters(double, AbsoluteDate)} method before using
      * the values of the pressure and the temperature.
      * </p>
      * @param latitude geodetic latitude, in radians

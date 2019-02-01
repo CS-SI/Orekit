@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
-import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -56,15 +55,13 @@ public class KalmanEstimatorBuilder {
         this.processNoiseMatricesProviders   = new ArrayList<>();
     }
 
-    /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
+    /** Construct a {@link KalmanEstimator} from the data in this builder.
      * <p>
      * Before this method is called, {@link #addPropagationConfiguration(NumericalPropagatorBuilder,
-     * ProcessNoiseMatrixProvider)addPropagationConfiguration()} must have been called
-     * at least once and {@link #initialCovarianceMatrix(RealMatrix) initialCovarianceMatrix()}
-     * must have been called, otherwise configuration is incomplete and an exception
-     * will be raised.
+     * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
+     * at least once, otherwise configuration is incomplete and an exception will be raised.
      * </p>
-     * @return a new {@link KalmanEstimatorReal}.
+     * @return a new {@link KalmanEstimator}.
      */
     public KalmanEstimator build() {
         final int n = propagatorBuilders.size();
@@ -92,7 +89,7 @@ public class KalmanEstimatorBuilder {
      * </p>
      * <p>
      * The {@code provider} should return a matrix with dimensions and ordering
-     * consistent with the {@link builder} configuration. The first 6 rows/columns
+     * consistent with the {@code builder} configuration. The first 6 rows/columns
      * correspond to the 6 orbital parameters which must all be present, regardless
      * of the fact they are estimated or not. The remaining elements correspond
      * to the subset of propagation parameters that are estimated, in the

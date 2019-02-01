@@ -31,7 +31,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 
-/** Main generator for {@link ObservedMeasurements observed measurements}.
+/** Main generator for {@link ObservedMeasurement observed measurements}.
  * @author Luc Maisonobe
  * @since 9.3
  */

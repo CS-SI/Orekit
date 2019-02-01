@@ -20,20 +20,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.ToDoubleFunction;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UTCScale;
 import org.orekit.utils.Constants;
 
 /** The Global Pressure and Temperature 2 (GPT2) model.
@@ -42,8 +47,9 @@ import org.orekit.utils.Constants;
  * and a<sub>w</sub> coefficients used for the {@link ViennaOneModel Vienna 1} model.
  * <p>
  * The requisite coefficients for the computation of the weather parameters are provided by the
- * Department of Geodesy and Geoinformation of the Vienna University. They are based on a 5° x 5°
- * external grid file "gpt2_5.grd" available at: <a href="http://vmf.geo.tuwien.ac.at/codes/"> link</a>
+ * Department of Geodesy and Geoinformation of the Vienna University. They are based on an
+ * external grid file like "gpt2_1.grd" (1° x 1°) or "gpt2_5.grd" (5° x 5°) available at:
+ * <a href="http://vmf.geo.tuwien.ac.at/codes/"> link</a>
  * </p>
  * <p>
  * A bilinear interpolation is performed in order to obtained the correct values of the weather parameters.
@@ -69,10 +75,10 @@ import org.orekit.utils.Constants;
  * @author Bryan Cazabonne
  *
  */
-public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel {
+public class GlobalPressureTemperature2Model implements WeatherModel {
 
     /** Default supported files name pattern. */
-    public static final String DEFAULT_SUPPORTED_NAMES = "gpt2_5.grd";
+    public static final String DEFAULT_SUPPORTED_NAMES = "gpt2_\\d+.grd";
 
     /** Standard gravity constant [m/s²]. */
     private static final double G = Constants.G0_STANDARD_GRAVITY;
@@ -80,11 +86,23 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
     /** Ideal gas constant for dry air [J/kg/K]. */
     private static final double R = 287.0;
 
-    /** Time scale factory for day of year computation. */
-    private static final UTCScale TIME_SCALE = TimeScalesFactory.getUTC();
+    /** Conversion factor from degrees to mill arcseconds. */
+    private static final int DEG_TO_MAS = 3600000;
 
-    /** Regular expression for supported file name. */
-    private String supportedNames;
+    /** Shared lazily loaded grid. */
+    private static final AtomicReference<Grid> SHARED_GRID = new AtomicReference<>(null);
+
+    /** South-West grid entry. */
+    private final GridEntry southWest;
+
+    /** South-East grid entry. */
+    private final GridEntry southEast;
+
+    /** North-West grid entry. */
+    private final GridEntry northWest;
+
+    /** North-East grid entry. */
+    private final GridEntry northEast;
 
     /** The hydrostatic and wet a coefficients loaded. */
     private double[] coefficientsA;
@@ -116,21 +134,38 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
     /** Constructor with supported names given by user.
      * @param supportedNames supported names
      * @param latitude geodetic latitude of the station, in radians
-     * @param longitude longitude geodetic latitude of the station, in radians
+     * @param longitude longitude geodetic longitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
      */
     public GlobalPressureTemperature2Model(final String supportedNames, final double latitude,
                                            final double longitude, final Geoid geoid) {
-        this.coefficientsA  = null;
-        this.temperature    = Double.NaN;
-        this.pressure       = Double.NaN;
-        this.e0             = Double.NaN;
-        this.supportedNames = supportedNames;
-        this.geoid          = geoid;
-        this.latitude       = latitude;
+        this.coefficientsA = null;
+        this.temperature   = Double.NaN;
+        this.pressure      = Double.NaN;
+        this.e0            = Double.NaN;
+        this.geoid         = geoid;
+        this.latitude      = latitude;
 
-        // Normalize longitude between 0 and 2π
-        this.longitude   = MathUtils.normalizeAngle(longitude, FastMath.PI);
+        // get the lazily loaded shared grid
+        Grid grid = SHARED_GRID.get();
+        if (grid == null) {
+            // this is the first instance we create, we need to load the grid data
+            final Parser parser = new Parser();
+            DataProvidersManager.getInstance().feed(supportedNames, parser);
+            SHARED_GRID.compareAndSet(null, parser.grid);
+            grid = parser.grid;
+        }
+
+        // Normalize longitude according to the grid
+        this.longitude = MathUtils.normalizeAngle(longitude, grid.entries[0][0].longitude + FastMath.PI);
+
+        final int southIndex = grid.getSouthIndex(this.latitude);
+        final int westIndex  = grid.getWestIndex(this.longitude);
+        this.southWest = grid.entries[southIndex    ][westIndex    ];
+        this.southEast = grid.entries[southIndex    ][westIndex + 1];
+        this.northWest = grid.entries[southIndex + 1][westIndex    ];
+        this.northEast = grid.entries[southIndex + 1][westIndex + 1];
+
     }
 
     /** Constructor with default supported names.
@@ -174,200 +209,334 @@ public class GlobalPressureTemperature2Model implements DataLoader, WeatherModel
         return e0;
     }
 
-    /** Returns the supported names of the loader.
-     * @return the supported names
-     */
-    public String getSupportedNames() {
-        return supportedNames;
-    }
-
     @Override
     public void weatherParameters(final double stationHeight, final AbsoluteDate currentDate) {
-        this.date   = currentDate;
-        this.height = stationHeight;
-        DataProvidersManager.getInstance().feed(supportedNames, this);
-    }
 
-    @Override
-    public boolean stillAcceptsData() {
-        return true;
-    }
+        this.date      = currentDate;
+        this.height    = stationHeight;
 
-    @Override
-    public void loadData(final InputStream input, final String name)
-        throws IOException, ParseException {
-
-        // Open stream and parse data
-        final BufferedReader br = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-        int lineNumber = 0;
-        final String splitter = "\\s+";
-
-        // Initialize Lists
-        // Latitudes [rad]
-        final ArrayList<Double> latitudes    = new ArrayList<>();
-        // Longitudes [rad]
-        final ArrayList<Double> longitudes   = new ArrayList<>();
-        // Orthometric grid height [m]
-        final ArrayList<Double> hS           = new ArrayList<>();
-        // Hydrostatic coefficient a
-        final ArrayList<Double> ah           = new ArrayList<>();
-        // Wet coefficient a
-        final ArrayList<Double> aw           = new ArrayList<>();
-        // Temperature [K]
-        final ArrayList<Double> temperature0 = new ArrayList<>();
-        // Temperature gradient [K/m]
-        final ArrayList<Double> dT           = new ArrayList<>();
-        // Pressure [Pa]
-        final ArrayList<Double> pressure0    = new ArrayList<>();
-        // Specific humidity [kg/kg]
-        final ArrayList<Double> qv0          = new ArrayList<>();
-
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            ++lineNumber;
-            line = line.trim();
-
-            try {
-
-                // Fill ah, aw, temp, pres, humidity lists
-                if (line.length() > 0 && !line.startsWith("%")) {
-                    final String[] values_line = line.split(splitter);
-                    hS.add(Double.valueOf(values_line[23]));
-
-                    fillArray(pressure0,    values_line, 2, 3, 4, 5, 6);
-                    fillArray(temperature0, values_line, 7, 8, 9, 10, 11);
-                    fillArray(qv0,          values_line, 12, 13, 14, 15, 16);
-                    fillArray(dT,           values_line, 17, 18, 19, 20, 21);
-                    fillArray(ah,           values_line, 24, 25, 26, 27, 28);
-                    fillArray(aw,           values_line, 29, 30, 31, 32, 33);
-                }
-
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
-            }
-        }
-
-        // Close the stream after reading
-        input.close();
-
-        // Latitudes list
-        for (double lat = -87.5; lat <= 87.5; lat = lat + 5.0) {
-            latitudes.add(FastMath.toRadians(lat));
-        }
-
-        // Longitude list
-        for (double lon = 2.5; lon <= 357.5; lon = lon + 5.0) {
-            longitudes.add(FastMath.toRadians(lon));
-        }
-
-        final int dimLat = latitudes.size();
-        final int dimLon = longitudes.size();
-
-        // Change List to double[]
-        final double[] xVal = new double[dimLat];
-        for (int i = 0; i < dimLat; i++) {
-            xVal[i] = latitudes.get(i);
-        }
-
-        // Change List to double[]
-        final double[] yVal = new double[dimLon];
-        for (int j = 0; j < dimLon; j++) {
-            yVal[j] = longitudes.get(j);
-        }
-
-        final double[][] fvalPressure0    = new double[dimLat][dimLon];
-        final double[][] fvalTemperature0 = new double[dimLat][dimLon];
-        final double[][] fvalqv0          = new double[dimLat][dimLon];
-        final double[][] fvaldT           = new double[dimLat][dimLon];
-        final double[][] fvalHS           = new double[dimLat][dimLon];
-        final double[][] fvalAH           = new double[dimLat][dimLon];
-        final double[][] fvalAW           = new double[dimLat][dimLon];
-
-        int index = dimLon * dimLat;
-        for (int x = 0; x < dimLat; x++) {
-            for (int y = dimLon - 1; y >= 0; y--) {
-                index = index - 1;
-                fvalPressure0[x][y]    = pressure0.get(index);
-                fvalTemperature0[x][y] = temperature0.get(index);
-                fvalqv0[x][y]          = qv0.get(index);
-                fvaldT[x][y]           = dT.get(index);
-                fvalHS[x][y]           = hS.get(index);
-                fvalAH[x][y]           = ah.get(index);
-                fvalAW[x][y]           = aw.get(index);
-            }
-        }
-
-        // Build Bilinear Interpolation Functions
-        final BilinearInterpolatingFunction functionPressure0    = new BilinearInterpolatingFunction(xVal, yVal, fvalPressure0);
-        final BilinearInterpolatingFunction functionTemperature0 = new BilinearInterpolatingFunction(xVal, yVal, fvalTemperature0);
-        final BilinearInterpolatingFunction functionqv0          = new BilinearInterpolatingFunction(xVal, yVal, fvalqv0);
-        final BilinearInterpolatingFunction functiondT           = new BilinearInterpolatingFunction(xVal, yVal, fvaldT);
-        final BilinearInterpolatingFunction functionHS           = new BilinearInterpolatingFunction(xVal, yVal, fvalHS);
-        final BilinearInterpolatingFunction functionAH           = new BilinearInterpolatingFunction(xVal, yVal, fvalAH);
-        final BilinearInterpolatingFunction functionAW           = new BilinearInterpolatingFunction(xVal, yVal, fvalAW);
+        final int dayOfYear = currentDate.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
 
         // ah and aw coefficients
-        coefficientsA = new double[2];
-        coefficientsA[0] = functionAH.value(latitude, longitude) * 0.001;
-        coefficientsA[1] = functionAW.value(latitude, longitude) * 0.001;
+        coefficientsA = new double[] {
+            interpolate(e -> evaluate(dayOfYear, e.ah)) * 0.001,
+            interpolate(e -> evaluate(dayOfYear, e.aw)) * 0.001
+        };
 
         // Corrected height (can be negative)
-        final double undu = geoid.getUndulation(latitude, longitude, date);
-        final double correctedheight = height - undu - functionHS.value(latitude, longitude);
+        final double undu            = geoid.getUndulation(latitude, longitude, date);
+        final double correctedheight = height - undu - interpolate(e -> e.hS);
 
         // Temperature gradient [K/m]
-        final double dTdH = functiondT.value(latitude, longitude) * 0.001;
+        final double dTdH = interpolate(e -> evaluate(dayOfYear, e.dT)) * 0.001;
 
         // Specific humidity
-        final double qv = functionqv0.value(latitude, longitude) * 0.001;
+        final double qv = interpolate(e -> evaluate(dayOfYear, e.qv0)) * 0.001;
 
         // For the computation of the temperature and the pressure, we use
         // the standard ICAO atmosphere formulas.
 
         // Temperature [K]
-        final double t0 = functionTemperature0.value(latitude, longitude);
+        final double t0 = interpolate(e -> evaluate(dayOfYear, e.temperature0));
         this.temperature = t0 + dTdH * correctedheight;
 
         // Pressure [hPa]
-        final double p0 = functionPressure0.value(latitude, longitude);
+        final double p0 = interpolate(e -> evaluate(dayOfYear, e.pressure0));
         final double exponent = G / (dTdH * R);
         this.pressure = p0 * FastMath.pow(1 - (dTdH / t0) * correctedheight, exponent) * 0.01;
 
         // Water vapor pressure [hPa]
         this.e0 = qv * pressure / (0.622 + 0.378 * qv);
+
     }
 
-    /** Fill the arrays containing the weather coefficients.
-     * @param array array to fill
-     * @param values string array containing the values
-     * @param indexA0 index of coefficient A0 for this parameter
-     * @param indexA1 index of coefficient A1 for this parameter
-     * @param indexB1 index of coefficient B1 for this parameter
-     * @param indexA2 index of coefficient A2 for this parameter
-     * @param indexB2 index of coefficient B2 for this parameter
+    /** Interpolate a grid function.
+     * @param gridGetter getter for the grid function
+     * @return interpolated function"
      */
-    private void fillArray(final ArrayList<Double> array, final String[] values,
-                           final int indexA0, final int indexA1, final int indexB1,
-                           final int indexA2, final int indexB2) {
+    private double interpolate(final ToDoubleFunction<GridEntry> gridGetter) {
 
-        // Parse coefficients
-        final double a0 = Double.parseDouble(values[indexA0]);
-        final double a1 = Double.parseDouble(values[indexA1]);
-        final double b1 = Double.parseDouble(values[indexB1]);
-        final double a2 = Double.parseDouble(values[indexA2]);
-        final double b2 = Double.parseDouble(values[indexB2]);
+        // cell surrounding the point
+        final double[] xVal = new double[] {
+            southWest.longitude, southEast.longitude
+        };
+        final double[] yVal = new double[] {
+            southWest.latitude, northWest.latitude
+        };
 
-        // Temporal factors
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TIME_SCALE);
-        final double dofyear = dtc.getDate().getDayOfYear();
-        final double coef = (dofyear / 365.25) * 2 * FastMath.PI;
-        final double cosCoef  = FastMath.cos(coef);
-        final double sinCoef  = FastMath.sin(coef);
-        final double cos2Coef = FastMath.cos(coef * 2.0);
-        final double sin2Coef = FastMath.sin(coef * 2.0);
+        // evaluate grid points at specified day
+        final double[][] fval = new double[][] {
+            {
+                gridGetter.applyAsDouble(southWest),
+                gridGetter.applyAsDouble(northWest)
+            }, {
+                gridGetter.applyAsDouble(southEast),
+                gridGetter.applyAsDouble(northEast)
+            }
+        };
 
-        final double value = a0 + a1 * cosCoef + b1 * sinCoef + a2 * cos2Coef + b2 * sin2Coef;
-        array.add(value);
+        // perform interpolation in the grid
+        return new BilinearInterpolatingFunction(xVal, yVal, fval).value(longitude, latitude);
+
     }
+
+    /** Evaluate a model for some day.
+     * @param dayOfYear day to evaluate
+     * @param model model array
+     * @return model value at specified day
+     */
+    private double evaluate(final int dayOfYear, final double[] model) {
+
+        final double coef = (dayOfYear / 365.25) * 2 * FastMath.PI;
+        final SinCos sc1  = FastMath.sinCos(coef);
+        final SinCos sc2  = FastMath.sinCos(2.0 * coef);
+
+        return model[0] +
+               model[1] * sc1.cos() + model[2] * sc1.sin() +
+               model[3] * sc2.cos() + model[4] * sc2.sin();
+
+    }
+
+    /** Parser for GPT2 grid files. */
+    private static class Parser implements DataLoader {
+
+        /** Grid entries. */
+        private Grid grid;
+
+        @Override
+        public boolean stillAcceptsData() {
+            return grid == null;
+        }
+
+        @Override
+        public void loadData(final InputStream input, final String name)
+            throws IOException, ParseException {
+
+            final SortedSet<Integer> latSample = new TreeSet<>();
+            final SortedSet<Integer> lonSample = new TreeSet<>();
+            final List<GridEntry>    entries   = new ArrayList<>();
+
+            // Open stream and parse data
+            int   lineNumber = 0;
+            String line      = null;
+            try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
+                 BufferedReader    br = new BufferedReader(isr)) {
+                final String splitter = "\\s+";
+
+                for (line = br.readLine(); line != null; line = br.readLine()) {
+                    ++lineNumber;
+                    line = line.trim();
+
+                    // read grid data
+                    if (line.length() > 0 && !line.startsWith("%")) {
+                        final GridEntry entry = new GridEntry(line.split(splitter));
+                        latSample.add(entry.latKey);
+                        lonSample.add(entry.lonKey);
+                        entries.add(entry);
+                    }
+
+                }
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          lineNumber, name, line);
+            }
+
+            // organize entries in a grid that wraps arouns Earth in longitude
+            grid = new Grid(latSample, lonSample, entries, name);
+
+        }
+
+    }
+
+    /** Container for complete grid. */
+    private static class Grid {
+
+        /** Latitude sample. */
+        private final SortedSet<Integer> latitudeSample;
+
+        /** Longitude sample. */
+        private final SortedSet<Integer> longitudeSample;
+
+        /** Grid entries. */
+        private final GridEntry[][] entries;
+
+        /** Simple constructor.
+         * @param latitudeSample latitude sample
+         * @param longitudeSample longitude sample
+         * @param loadedEntries loaded entries, organized as a simple list
+         * @param name file name
+         */
+        Grid(final SortedSet<Integer> latitudeSample, final SortedSet<Integer> longitudeSample,
+             final List<GridEntry> loadedEntries, final String name) {
+
+            final int nA         = latitudeSample.size();
+            final int nO         = longitudeSample.size() + 1; // we add one here for wrapping the grid
+            this.entries         = new GridEntry[nA][nO];
+            this.latitudeSample  = latitudeSample;
+            this.longitudeSample = longitudeSample;
+
+            // organize entries in the regular grid
+            for (final GridEntry entry : loadedEntries) {
+                final int latitudeIndex  = latitudeSample.headSet(entry.latKey + 1).size() - 1;
+                final int longitudeIndex = longitudeSample.headSet(entry.lonKey + 1).size() - 1;
+                entries[latitudeIndex][longitudeIndex] = entry;
+            }
+
+            // finalize the grid
+            for (final GridEntry[] row : entries) {
+
+                // check for missing entries
+                for (int longitudeIndex = 0; longitudeIndex < nO - 1; ++longitudeIndex) {
+                    if (row[longitudeIndex] == null) {
+                        throw new OrekitException(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, name);
+                    }
+                }
+
+                // wrap the grid around the Earth in longitude
+                row[nO - 1] = new GridEntry(row[0].latitude, row[0].latKey,
+                                            row[0].longitude + 2 * FastMath.PI,
+                                            row[0].lonKey + DEG_TO_MAS * 360,
+                                            row[0].hS, row[0].pressure0, row[0].temperature0,
+                                            row[0].qv0, row[0].dT, row[0].ah, row[0].aw);
+
+            }
+
+        }
+
+        /** Get index of South entries in the grid.
+         * @param latitude latitude to locate (radians)
+         * @return index of South entries in the grid
+         */
+        public int getSouthIndex(final double latitude) {
+
+            final int latKey = (int) FastMath.rint(FastMath.toDegrees(latitude) * DEG_TO_MAS);
+            final int index  = latitudeSample.headSet(latKey + 1).size() - 1;
+
+            // make sure we have at least one point remaining on North by clipping to size - 2
+            return FastMath.min(index, latitudeSample.size() - 2);
+
+        }
+
+        /** Get index of West entries in the grid.
+         * @param longitude longitude to locate (radians)
+         * @return index of West entries in the grid
+         */
+        public int getWestIndex(final double longitude) {
+
+            final int lonKey = (int) FastMath.rint(FastMath.toDegrees(longitude) * DEG_TO_MAS);
+            final int index  = longitudeSample.headSet(lonKey + 1).size() - 1;
+
+            // we don't do clipping in longitude because we have added a row to wrap around the Earth
+            return index;
+
+        }
+
+    }
+
+    /** Container for grid entries. */
+    private static class GridEntry {
+
+        /** Latitude (radian). */
+        private final double latitude;
+
+        /** Latitude key (mas). */
+        private final int latKey;
+
+        /** Longitude (radian). */
+        private final double longitude;
+
+        /** Longitude key (mas). */
+        private final int lonKey;
+
+        /** Height correction. */
+        private final double hS;
+
+        /** Pressure model. */
+        private final double[] pressure0;
+
+        /** Temperature model. */
+        private final double[] temperature0;
+
+        /** Specific humidity model. */
+        private final double[] qv0;
+
+        /** Temperature gradient model. */
+        private final double[] dT;
+
+        /** ah coefficient model. */
+        private final double[] ah;
+
+        /** aw coefficient model. */
+        private final double[] aw;
+
+        /** Build an entry from a parsed line.
+         * @param fields line fields
+         */
+        GridEntry(final String[] fields) {
+
+            final double latDegree = Double.parseDouble(fields[0]);
+            final double lonDegree = Double.parseDouble(fields[1]);
+            latitude     = FastMath.toRadians(latDegree);
+            longitude    = FastMath.toRadians(lonDegree);
+            latKey       = (int) FastMath.rint(latDegree * DEG_TO_MAS);
+            lonKey       = (int) FastMath.rint(lonDegree * DEG_TO_MAS);
+
+            hS           = Double.valueOf(fields[23]);
+
+            pressure0    = createModel(fields, 2);
+            temperature0 = createModel(fields, 7);
+            qv0          = createModel(fields, 12);
+            dT           = createModel(fields, 17);
+            ah           = createModel(fields, 24);
+            aw           = createModel(fields, 29);
+
+        }
+
+        /** Build an entry from its components.
+         * @param latitude latitude (radian)
+         * @param latKey latitude key (mas)
+         * @param longitude longitude (radian)
+         * @param lonKey longitude key (mas)
+         * @param hS height correction
+         * @param pressure0 pressure model
+         * @param temperature0 temperature model
+         * @param qv0 specific humidity model
+         * @param dT temperature gradient model
+         * @param ah ah coefficient model
+         * @param aw aw coefficient model
+         */
+        GridEntry(final double latitude, final int latKey, final double longitude, final int lonKey,
+                  final double hS, final double[] pressure0, final double[] temperature0,
+                  final double[] qv0, final double[] dT, final double[] ah, final double[] aw) {
+
+            this.latitude     = latitude;
+            this.latKey       = latKey;
+            this.longitude    = longitude;
+            this.lonKey       = lonKey;
+            this.hS           = hS;
+            this.pressure0    = pressure0.clone();
+            this.temperature0 = temperature0.clone();
+            this.qv0          = qv0.clone();
+            this.dT           = dT.clone();
+            this.ah           = ah.clone();
+            this.aw           = aw.clone();
+        }
+
+        /** Create a time model array.
+         * @param fields line fields
+         * @param first index of the first component of the model
+         * @return time model array
+         */
+        private double[] createModel(final String[] fields, final int first) {
+            return new double[] {
+                Double.parseDouble(fields[first    ]),
+                Double.parseDouble(fields[first + 1]),
+                Double.parseDouble(fields[first + 2]),
+                Double.parseDouble(fields[first + 3]),
+                Double.parseDouble(fields[first + 4])
+            };
+        }
+
+    }
+
 }

@@ -27,9 +27,16 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Before;
 import org.orekit.errors.OrekitException;
 
 public class NetworkCrawlerTest {
+
+    @Before
+    public void setUp() {
+        // Clear any filters that another test may have left
+        DataProvidersManager.getInstance().clearFilters();
+    }
 
     @Test(expected=OrekitException.class)
     public void noElement() throws MalformedURLException {

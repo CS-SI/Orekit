@@ -24,7 +24,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 
-/** Interface for generating individual {@link ObservedMeasurements measurements}.
+/** Interface for generating individual {@link ObservedMeasurement measurements}.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 9.3

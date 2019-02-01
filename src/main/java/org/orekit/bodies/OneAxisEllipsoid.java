@@ -79,7 +79,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** Simple constructor.
      * <p>Standard values for Earth models can be found in the {@link org.orekit.utils.Constants Constants} class:</p>
-     * <table border="1" cellpadding="5" style="background-color:#f5f5dc;">
+     * <table border="1" cellpadding="5" style="background-color:#f5f5dc;" summary="">
      * <caption>Ellipsoid Models</caption>
      * <tr style="background-color:#c9d5c9;"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
      * <tr><td style="background-color:#c9d5c9;">GRS 80</td>
@@ -88,7 +88,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * <tr><td style="background-color:#c9d5c9;">WGS84</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_EQUATORIAL_RADIUS Constants.WGS84_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_FLATTENING Constants.WGS84_EARTH_FLATTENING}</td></tr>
-     * </table summary="">
+     * </table>
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
@@ -215,7 +215,21 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     }
 
-    /** {@inheritDoc} */
+    /** Get the intersection point of a line with the surface of the body.
+     * <p>A line may have several intersection points with a closed
+     * surface (we consider the one point case as a degenerated two
+     * points case). The close parameter is used to select which of
+     * these points should be returned. The selected point is the one
+     * that is closest to the close point.</p>
+     * @param line test line (may intersect the body or not)
+     * @param close point used for intersections selection
+     * @param frame frame in which line is expressed
+     * @param date date of the line in given frame
+     * @param <T> type of the field elements
+     * @return intersection point at altitude zero or null if the line does
+     * not intersect the surface
+     * @since 9.3
+     */
     public <T extends RealFieldElement<T>> FieldVector3D<T> getCartesianIntersectionPoint(final FieldLine<T> line,
                                                                                           final FieldVector3D<T> close,
                                                                                           final Frame frame,
