@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,10 @@ package org.orekit.errors;
  * Commons optimizers, integrators or solvers.</p>
  *
  * @author Luc Maisonobe
-
+ * @deprecated as of 9.3, this class is not used anymore, as {@link OrekitException}
+ * is now an unchecked exception
  */
+@Deprecated
 public class OrekitExceptionWrapper extends RuntimeException {
 
     /** serializable UID. */

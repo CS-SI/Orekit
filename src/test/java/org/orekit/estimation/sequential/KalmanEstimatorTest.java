@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,10 +71,9 @@ public class KalmanEstimatorTest {
     /**
      * Perfect PV measurements with a perfect start
      * Keplerian formalism
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerianPV() throws OrekitException {
+    public void testKeplerianPV() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -142,10 +141,9 @@ public class KalmanEstimatorTest {
     /**
      * Perfect range measurements with a biased start
      * Keplerian formalism
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerianRange() throws OrekitException {
+    public void testKeplerianRange() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -226,10 +224,9 @@ public class KalmanEstimatorTest {
     /**
      * Perfect range measurements with a biased start and an on-board antenna range offset
      * Keplerian formalism 
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerianRangeWithOnBoardAntennaOffset() throws OrekitException {
+    public void testKeplerianRangeWithOnBoardAntennaOffset() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -254,7 +251,7 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // Add antenna offset to the measurements
@@ -320,10 +317,9 @@ public class KalmanEstimatorTest {
     /**
      * Perfect range rate measurements with a perfect start
      * Cartesian formalism
-     * @throws OrekitException
      */
     @Test
-    public void testCartesianRangeRate() throws OrekitException {
+    public void testCartesianRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -384,12 +380,12 @@ public class KalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 9.50e-4;
+        final double   posEps            = 1.5e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 3.49e-7;
-        final double[] expectedSigmasPos = {0.324398, 1.347031, 1.743310};
+        final double   velEps            = 5.1e-10;
+        final double[] expectedSigmasPos = {0.324407, 1.347014, 1.743326};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {2.856883e-4,  5.765844e-4, 5.056186e-4};
+        final double[] expectedSigmasVel = {2.85688e-4,  5.765933e-4, 5.056124e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -402,10 +398,9 @@ public class KalmanEstimatorTest {
     /**
      * Perfect azimuth/elevation measurements with a perfect start
      * Circular formalism
-     * @throws OrekitException
      */
     @Test
-    public void testCircularAzimuthElevation() throws OrekitException {
+    public void testCircularAzimuthElevation() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -483,10 +478,9 @@ public class KalmanEstimatorTest {
     /**
      * Perfect right-ascension/declination measurements with a perfect start
      * Equinoctial formalism
-     * @throws OrekitException
      */
     @Test
-    public void testEquinoctialRightAscensionDeclination() throws OrekitException {
+    public void testEquinoctialRightAscensionDeclination() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -545,12 +539,12 @@ public class KalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.53e-5;
+        final double   posEps            = 4.8e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 5.04e-9;
-        final double[] expectedSigmasPos = {0.356902, 1.297507, 1.798551};
+        final double   velEps            = 1.6e-10;
+        final double[] expectedSigmasPos = {0.356902, 1.297508, 1.798552};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {2.468745e-4, 5.810027e-4, 3.887394e-4};
+        final double[] expectedSigmasVel = {2.468746e-4, 5.810028e-4, 3.887394e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -565,7 +559,7 @@ public class KalmanEstimatorTest {
      *  Keplerian formalism
      */
     @Test
-    public void testKeplerianRangeAzElAndRangeRate() throws OrekitException {
+    public void testKeplerianRangeAzElAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -651,12 +645,12 @@ public class KalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 2.92e-2;
+        final double   posEps            = 2.94e-2;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 5.71e-6;
-        final double[] expectedSigmasPos = {1.747576, 0.666887, 1.696202};
+        final double   velEps            = 5.8e-6;
+        final double[] expectedSigmasPos = {1.747575, 0.666887, 1.696202};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {5.413690e-4, 4.088395e-4, 4.315368e-4};
+        final double[] expectedSigmasVel = {5.413689e-4, 4.088394e-4, 4.315366e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -668,10 +662,9 @@ public class KalmanEstimatorTest {
     
     /**
      * Perfect range and range rate measurements with a perfect start
-     * @throws OrekitException
      */
     @Test
-    public void testKeplerianRangeAndRangeRate() throws OrekitException {
+    public void testKeplerianRangeAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -741,12 +734,12 @@ public class KalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.96e-3;
+        final double   posEps            = 1.2e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.06e-6;
-        final double[] expectedSigmasPos = {0.341538, 8.175380, 4.634436};
+        final double   velEps            = 4.2e-10;
+        final double[] expectedSigmasPos = {0.341528, 8.175341, 4.634528};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {1.167852e-3, 1.036451e-3, 2.834419e-3};
+        final double[] expectedSigmasVel = {1.167859e-3, 1.036492e-3, 2.834413e-3};
         final double   sigmaVelEps       = 1e-9;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -757,7 +750,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testMultiSat() throws OrekitException {
+    public void testMultiSat() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -872,10 +865,9 @@ public class KalmanEstimatorTest {
 
     /**
      * Test of a wrapped exception in a Kalman observer
-     * @throws OrekitException
      */
     @Test
-    public void testWrappedException() throws OrekitException {
+    public void testWrappedException() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");

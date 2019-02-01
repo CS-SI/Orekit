@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -160,9 +159,8 @@ public class FieldNodeDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * This function computes the Z position in the defined frame.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+    public T g(final FieldSpacecraftState<T> s) {
         return s.getPVCoordinates(frame).getPosition().getZ();
     }
 

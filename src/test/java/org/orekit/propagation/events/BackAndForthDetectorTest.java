@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
@@ -43,7 +42,7 @@ import org.orekit.utils.IERSConventions;
 public class BackAndForthDetectorTest {
 
     @Test
-    public void testBackAndForth() throws OrekitException {
+    public void testBackAndForth() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 

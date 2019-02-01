@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,14 +49,14 @@ public class GenericGNSS extends AbstractGNSSAttitudeProvider {
     @Override
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
         // no eclipse/noon turn mode for generic spacecraft
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
     }
 
     /** {@inheritDoc} */
     @Override
     protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
         // no eclipse/noon turn mode for generic spacecraft
-        return context.getNominalYaw();
+        return context.nominalYaw(context.getDate());
     }
 
 }

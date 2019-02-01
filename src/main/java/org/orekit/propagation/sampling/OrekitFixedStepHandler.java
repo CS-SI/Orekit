@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -41,12 +40,10 @@ public interface OrekitFixedStepHandler {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
-     * @exception OrekitException if step handler cannot be initialized
-     * @deprecated as of 9.0, replaced by {@link #init(SpacecraftState, AbsoluteDate, double)}
+          * @deprecated as of 9.0, replaced by {@link #init(SpacecraftState, AbsoluteDate, double)}
      */
     @Deprecated
-    default void init(SpacecraftState s0, AbsoluteDate t)
-        throws OrekitException {
+    default void init(SpacecraftState s0, AbsoluteDate t) {
         // nothing by default
     }
 
@@ -66,11 +63,9 @@ public interface OrekitFixedStepHandler {
      * @param t target time for the integration
      * @param step the duration in seconds of the fixed step. This value is
      *             positive even if propagation is backwards.
-     * @exception OrekitException if step handler cannot be initialized
-     * @since 9.0
+          * @since 9.0
      */
-    default void init(SpacecraftState s0, AbsoluteDate t, double step)
-        throws OrekitException {
+    default void init(SpacecraftState s0, AbsoluteDate t, double step) {
         // as of 9.0, the default implementation calls the DEPRECATED version
         // without a step size, which does nothing by default but may have
         // been overridden by users
@@ -82,9 +77,7 @@ public interface OrekitFixedStepHandler {
     /** Handle the current step.
      * @param currentState current state at step time
      * @param isLast if true, this is the last integration step
-     * @exception OrekitException if step cannot be handled
      */
-    void handleStep(SpacecraftState currentState, boolean isLast)
-        throws OrekitException;
+    void handleStep(SpacecraftState currentState, boolean isLast);
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,6 @@ import java.util.Map;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -153,55 +151,38 @@ public class ShiftingTransformProvider implements TransformProvider {
     }
 
     /** {@inheritDoc} */
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
-        try {
-
-            // retrieve a sample from the thread-safe cache
-            final Transform closest = cache.getNeighbors(date).reduce((t0, t1) ->
-                FastMath.abs(date.durationFrom(t0.getDate())) < FastMath.abs(date.durationFrom(t1.getDate())) ? t0 : t1
-            ).get();
-            return closest.shiftedBy(date.durationFrom(closest.getDate()));
-
-        } catch (OrekitExceptionWrapper oew) {
-            // something went wrong while generating the sample,
-            // we just forward the exception up
-            throw oew.getException();
-        }
+    public Transform getTransform(final AbsoluteDate date) {
+        // retrieve a sample from the thread-safe cache
+        final Transform closest = cache.getNeighbors(date).reduce((t0, t1) ->
+            FastMath.abs(date.durationFrom(t0.getDate())) < FastMath.abs(date.durationFrom(t1.getDate())) ? t0 : t1
+        ).get();
+        return closest.shiftedBy(date.durationFrom(closest.getDate()));
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
-        try {
-
-            @SuppressWarnings("unchecked")
-            GenericTimeStampedCache<FieldTransform<T>> fieldCache =
-                (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
-            if (fieldCache == null) {
-                fieldCache =
-                    new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
-                                                                   cache.getMaxSlots(),
-                                                                   cache.getMaxSpan(),
-                                                                   cache.getNewSlotQuantumGap(),
-                                                                   new FieldTransformGenerator<>(date.getField(),
-                                                                                                 cache.getNeighborsSize(),
-                                                                                                 interpolatingProvider,
-                                                                                                 interpolatingProvider.getStep()));
-                fieldCaches.put(date.getField(), fieldCache);
-            }
-
-            // retrieve a sample from the thread-safe cache
-            final FieldTransform<T> closest = fieldCache.getNeighbors(date.toAbsoluteDate()).reduce((t0, t1) ->
-                date.durationFrom(t0.getDate()).abs().getReal() < date.durationFrom(t1.getDate()).abs().getReal() ?
-                t0 : t1
-            ).get();
-            return closest.shiftedBy(date.durationFrom(closest.getDate()));
-
-        } catch (OrekitExceptionWrapper oew) {
-            // something went wrong while generating the sample,
-            // we just forward the exception up
-            throw oew.getException();
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        @SuppressWarnings("unchecked")
+        GenericTimeStampedCache<FieldTransform<T>> fieldCache =
+            (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
+        if (fieldCache == null) {
+            fieldCache =
+                new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                                                               cache.getMaxSlots(),
+                                                               cache.getMaxSpan(),
+                                                               cache.getNewSlotQuantumGap(),
+                                                               new FieldTransformGenerator<>(date.getField(),
+                                                                                             cache.getNeighborsSize(),
+                                                                                             interpolatingProvider,
+                                                                                             interpolatingProvider.getStep()));
+            fieldCaches.put(date.getField(), fieldCache);
         }
+
+        // retrieve a sample from the thread-safe cache
+        final FieldTransform<T> closest = fieldCache.getNeighbors(date.toAbsoluteDate()).reduce((t0, t1) ->
+            date.durationFrom(t0.getDate()).abs().getReal() < date.durationFrom(t1.getDate()).abs().getReal() ?
+            t0 : t1
+        ).get();
+        return closest.shiftedBy(date.durationFrom(closest.getDate()));
     }
 
     /** Replace the instance with a data transfer object for serialization.

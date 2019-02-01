@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.measurements.modifiers.PhaseAmbiguityModifier;
 import org.orekit.frames.Frame;
@@ -41,24 +40,25 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
     private final double                 wavelength;
     private final PhaseAmbiguityModifier ambiguity;
     private final Vector3D               antennaPhaseCenter;
+    private final ObservableSatellite satellite;
 
-    public PhaseMeasurementCreator(final Context context, final Frequency frequency, final int ambiguity)
-        throws OrekitException {
+    public PhaseMeasurementCreator(final Context context, final Frequency frequency, final int ambiguity) {
         this(context, frequency, ambiguity, Vector3D.ZERO);
     }
 
     public PhaseMeasurementCreator(final Context context, final Frequency frequency,
-                                   final int ambiguity, final Vector3D antennaPhaseCenter)
-        throws OrekitException {
+                                   final int ambiguity, final Vector3D antennaPhaseCenter) {
         this.context            = context;
         this.wavelength         = Constants.SPEED_OF_LIGHT / (1.0e6 * frequency.getMHzFrequency());
         this.ambiguity          = new PhaseAmbiguityModifier(0, ambiguity);
         this.antennaPhaseCenter = antennaPhaseCenter;
+        this.satellite          = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
                                                         station.getPrimeMeridianOffsetDriver(),
@@ -75,8 +75,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         try {
             double n = ambiguity.getParametersDrivers().get(0).getValue();
             for (final GroundStation station : context.stations) {
@@ -88,14 +87,10 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                     final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) throws OrekitExceptionWrapper {
-                            try {
-                                final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
-                                final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                                return d - x * Constants.SPEED_OF_LIGHT;
-                            } catch (OrekitException oe) {
-                                throw new OrekitExceptionWrapper(oe);
-                            }
+                        public double value(final double x) {
+                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                            final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                            return d - x * Constants.SPEED_OF_LIGHT;
                         }
                     }, -1.0, 1.0);
                     final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
@@ -105,14 +100,12 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
 
                     final Phase phase = new Phase(station, receptionDate,
                                                   downLinkDistance / wavelength - n,
-                                                  wavelength, 1.0, 10);
+                                                  wavelength, 1.0, 10, satellite);
                     phase.addModifier(ambiguity);
                     addMeasurement(phase);
                 }
 
             }
-        } catch (OrekitExceptionWrapper oew) {
-            throw new OrekitException(oew.getException());
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
         }

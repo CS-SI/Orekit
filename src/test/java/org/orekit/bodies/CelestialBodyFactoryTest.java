@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class CelestialBodyFactoryTest {
 
     @Test
-    public void getSun() throws OrekitException {
+    public void getSun() {
         Utils.setDataRoot("regular-data");
 
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -55,7 +55,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void clearCache() throws OrekitException {
+    public void clearCache() {
         Utils.setDataRoot("regular-data");
 
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -67,7 +67,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void clearLoaders() throws OrekitException {
+    public void clearLoaders() {
         Utils.setDataRoot("regular-data");
 
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -86,7 +86,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testHorizon() throws OrekitException {
+    public void testHorizon() {
 
         // The following data are an excerpt from a telnet session with JPL Horizon system
         // note that in Horizon we selected Jupiter barycenter rather than Jupiter body center
@@ -181,7 +181,7 @@ public class CelestialBodyFactoryTest {
 
     @Test
     public void testSerialization()
-            throws OrekitException, IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException {
         Utils.setDataRoot("regular-data");
         for (String name : new String[] {
             CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER, CelestialBodyFactory.SUN, CelestialBodyFactory.MERCURY,
@@ -229,12 +229,12 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void multithreadTest() throws OrekitException {
+    public void multithreadTest() {
         Utils.setDataRoot("regular-data");
         checkMultiThread(10, 100);
     }
 
-    private void checkMultiThread(final int threads, final int runs) throws OrekitException {
+    private void checkMultiThread(final int threads, final int runs) {
 
         final AtomicReference<OrekitException> caught = new AtomicReference<OrekitException>();
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
@@ -274,7 +274,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthMoonBarycenter() throws OrekitException {
+    public void testEarthMoonBarycenter() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody mars = CelestialBodyFactory.getMars();
@@ -296,7 +296,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testICRFAndGCRFAlignment() throws OrekitException {
+    public void testICRFAndGCRFAlignment() {
         Utils.setDataRoot("regular-data");
         final CelestialBody earthMoonBarycenter   = CelestialBodyFactory.getEarthMoonBarycenter();
         final CelestialBody solarSystemBarycenter = CelestialBodyFactory.getSolarSystemBarycenter();
@@ -316,7 +316,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthInertialFrameAroundJ2000() throws OrekitException {
+    public void testEarthInertialFrameAroundJ2000() {
         Utils.setDataRoot("regular-data");
         final Frame earthFrame = CelestialBodyFactory.getEarth().getInertiallyOrientedFrame();
         final Frame base       = FramesFactory.getGCRF();
@@ -330,7 +330,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthBodyOrientedFrameAroundJ2000() throws OrekitException {
+    public void testEarthBodyOrientedFrameAroundJ2000() {
         Utils.setDataRoot("regular-data");
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         final Frame base       = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -342,7 +342,7 @@ public class CelestialBodyFactoryTest {
     }
 
     private double bodyDistance(CelestialBody body1, CelestialBody body2, AbsoluteDate date, Frame frame)
-        throws OrekitException {
+        {
         Vector3D body1Position = body1.getPVCoordinates(date, frame).getPosition();
         Vector3D body2Position = body2.getPVCoordinates(date, frame).getPosition();
         Vector3D bodyPositionDifference = body1Position.subtract(body2Position);

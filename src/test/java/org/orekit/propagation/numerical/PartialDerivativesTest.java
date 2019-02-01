@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,12 +70,12 @@ import org.orekit.utils.ParameterDriversList;
 public class PartialDerivativesTest {
 
     @Test
-    public void testDragParametersDerivatives() throws OrekitException, ParseException, IOException {
+    public void testDragParametersDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitType.values());
     }
 
     @Test
-    public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
+    public void testMuParametersDerivatives() throws ParseException, IOException {
         // TODO: for an unknown reason, derivatives with respect to central attraction
         // coefficient currently (June 2016) do not work in non-Cartesian orbits
         // we don't even know if the test is badly written or if the library code is wrong ...
@@ -85,7 +85,7 @@ public class PartialDerivativesTest {
 
     private void doTestParametersDerivatives(String parameterName, double tolerance,
                                              OrbitType... orbitTypes)
-        throws OrekitException {
+        {
 
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -215,7 +215,7 @@ public class PartialDerivativesTest {
     }
 
     @Test
-    public void testPropagationTypesElliptical() throws OrekitException {
+    public void testPropagationTypesElliptical() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
@@ -282,7 +282,7 @@ public class PartialDerivativesTest {
     }
 
     @Test
-    public void testPropagationTypesHyperbolic() throws OrekitException {
+    public void testPropagationTypesHyperbolic() {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
@@ -350,7 +350,7 @@ public class PartialDerivativesTest {
     }
 
     @Test
-    public void testJacobianIssue18() throws OrekitException {
+    public void testJacobianIssue18() {
 
         // Body mu
         final double mu = 3.9860047e14;
@@ -412,7 +412,7 @@ public class PartialDerivativesTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNotInitialized() throws OrekitException {
+    public void testNotInitialized() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -426,7 +426,7 @@ public class PartialDerivativesTest {
 
     @Deprecated
     @Test
-    public void testDeprecatedMethods() throws OrekitException {
+    public void testDeprecatedMethods() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -441,7 +441,7 @@ public class PartialDerivativesTest {
      }
 
     @Test(expected=OrekitException.class)
-    public void testTooSmallDimension() throws OrekitException {
+    public void testTooSmallDimension() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -456,7 +456,7 @@ public class PartialDerivativesTest {
      }
 
     @Test(expected=OrekitException.class)
-    public void testTooLargeDimension() throws OrekitException {
+    public void testTooLargeDimension() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -471,7 +471,7 @@ public class PartialDerivativesTest {
      }
 
     @Test(expected=OrekitException.class)
-    public void testMismatchedDimensions() throws OrekitException {
+    public void testMismatchedDimensions() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -486,7 +486,7 @@ public class PartialDerivativesTest {
      }
 
     @Test
-    public void testWrongParametersDimension() throws OrekitException {
+    public void testWrongParametersDimension() {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -567,7 +567,7 @@ public class PartialDerivativesTest {
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
                                                 OrbitType orbitType, PositionAngle angleType,
                                                 ForceModel... models)
-        throws OrekitException {
+        {
 
         final double minStep = 0.001;
         final double maxStep = 1000;
@@ -609,7 +609,7 @@ public class PartialDerivativesTest {
         }
 
         public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-            throws OrekitException {
+            {
             final SpacecraftState interpolated;
             if (pickUpDate == null) {
                 // we want to pick up the Jacobians at the end of last step
@@ -640,7 +640,7 @@ public class PartialDerivativesTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }

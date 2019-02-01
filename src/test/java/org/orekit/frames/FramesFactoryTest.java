@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -67,12 +66,12 @@ import org.orekit.utils.PVCoordinates;
 public class FramesFactoryTest {
 
     @Test
-    public void testTreeRoot() throws OrekitException {
+    public void testTreeRoot() {
         Assert.assertNull(FramesFactory.getFrame(Predefined.GCRF).getParent());
     }
 
     @Test
-    public void testWrongSupportedFileNames1980() throws OrekitException {
+    public void testWrongSupportedFileNames1980() {
         FramesFactory.addDefaultEOP1980HistoryLoaders("wrong-rapidDataColumns-1980",
                                                       "wrong-rapidDataXML-1980",
                                                       "wrong-eopC04-1980",
@@ -87,7 +86,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testWrongSupportedFileNames2000() throws OrekitException {
+    public void testWrongSupportedFileNames2000() {
         FramesFactory.addDefaultEOP2000HistoryLoaders("wrong-rapidDataColumns-2000",
                                                       "wrong-rapidDataXML-2000",
                                                       "wrong-eopC04-2000",
@@ -102,7 +101,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testWrongConventions() throws OrekitException {
+    public void testWrongConventions() {
         // set up only 1980 conventions
         FramesFactory.addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
         try {
@@ -128,7 +127,7 @@ public class FramesFactoryTest {
             FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
                 @Override
                 public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history)
-                    throws OrekitException {
+                    {
                     // generate exception
                     flags[1] = true;
                     throw new OrekitException(OrekitMessages.NO_DATA_GENERATED, AbsoluteDate.J2000_EPOCH);
@@ -144,7 +143,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testUnwrapInterpolatingTransformProvider() throws OrekitException {
+    public void testUnwrapInterpolatingTransformProvider() {
         TransformProvider raw = new TransformProvider() {
             private static final long serialVersionUID = 1L;
             public Transform getTransform(final AbsoluteDate date) {
@@ -159,6 +158,7 @@ public class FramesFactoryTest {
             }
         };
         Frame parent = FramesFactory.getGCRF();
+        Assert.assertEquals("GCRF", parent.getName());
         Frame frame  = new Frame(parent,
                                  new InterpolatingTransformProvider(raw,
                                                                     CartesianDerivativesFilter.USE_P,
@@ -185,7 +185,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testUnwrapShiftingTransformProvider() throws OrekitException {
+    public void testUnwrapShiftingTransformProvider() {
         TransformProvider raw = new TransformProvider() {
             private static final long serialVersionUID = 1L;
             public Transform getTransform(final AbsoluteDate date) {
@@ -226,8 +226,9 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testTreeICRF() throws OrekitException {
+    public void testTreeICRF() {
         Frame icrf = FramesFactory.getFrame(Predefined.ICRF);
+        Assert.assertEquals("ICRF", icrf.getName());
         Transform t = icrf.getTransformTo(FramesFactory.getGCRF(),
                                           new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
         Assert.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
@@ -236,7 +237,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testTree() throws OrekitException {
+    public void testTree() {
         Predefined[][] reference = new Predefined[][] {
             { Predefined.EME2000,                                Predefined.GCRF },
             { Predefined.ITRF_CIO_CONV_1996_ACCURATE_EOP,        Predefined.TIRF_CONVENTIONS_1996_ACCURATE_EOP },
@@ -294,15 +295,11 @@ public class FramesFactoryTest {
 
     @Test
     public void testSerialization()
-            throws OrekitException, IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException {
         for (Predefined predefined : Predefined.values()) {
 
             Frame original = FramesFactory.getFrame(predefined);
-            if (predefined == Predefined.ICRF) {
-                Assert.assertEquals(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial", original.getName());
-            } else {
-                Assert.assertEquals(predefined.getName(), original.getName());
-            }
+            Assert.assertEquals(predefined.getName(), original.getName());
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream    oos = new ObjectOutputStream(bos);
@@ -326,7 +323,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testEOPConversionSymetry1980() throws OrekitException {
+    public void testEOPConversionSymetry1980() {
         Utils.setDataRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -342,7 +339,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testEOPConversionSymetry2003() throws OrekitException {
+    public void testEOPConversionSymetry2003() {
         Utils.setDataRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -358,16 +355,16 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testCIP2003() throws OrekitException {
+    public void testCIP2003() {
         testCIP(IERSConventions.IERS_2003, 1.2e-11);
     }
 
     @Test
-    public void testCIP2010() throws OrekitException {
+    public void testCIP2010() {
         testCIP(IERSConventions.IERS_2010, 1.2e-11);
     }
 
-    private void testCIP(IERSConventions conventions, double threshold) throws OrekitException {
+    private void testCIP(IERSConventions conventions, double threshold) {
         Utils.setLoaders(conventions, new ArrayList<EOPEntry>());
         Frame cirf = FramesFactory.getCIRF(conventions, false);
         Frame tod  = FramesFactory.getTOD(conventions, false);
@@ -383,7 +380,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testEOPConversion() throws OrekitException {
+    public void testEOPConversion() {
 
         // real data from buletinb-298.txt
 
@@ -433,7 +430,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testEOPConversionUAI2000Package() throws OrekitException {
+    public void testEOPConversionUAI2000Package() {
         // the reference value has been computed using the uai2000.package routines
         // provided by Ch. Bizouard on page http://hpiers.obspm.fr/eop-pc/models/models_fr.html
         // using the following main program
@@ -485,7 +482,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testFieldConsistency() throws OrekitException {
+    public void testFieldConsistency() {
         for (final Predefined predefined : Predefined.values()) {
             final Frame frame = FramesFactory.getFrame(predefined);
             final Frame parent = frame.getParent();
@@ -531,13 +528,13 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testDerivatives2000WithInterpolation() throws OrekitException {
+    public void testDerivatives2000WithInterpolation() {
         doTestDerivatives(AbsoluteDate.J2000_EPOCH, Constants.JULIAN_DAY, 60.0, false,
                           8.0e-5, 2.0e-5, 3.0e-8, 4.0e-11, 7.0e-13, 2.0e-14);
     }
 
     @Test
-    public void testDerivatives2000WithoutInterpolation() throws OrekitException {
+    public void testDerivatives2000WithoutInterpolation() {
         // when we forbid interpolation, the test is really slow (almost two hours
         // runtime on a very old machine for one day time span and one minute rate),
         // we drastically reduce sampling to circumvent this drawback
@@ -546,14 +543,14 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testDerivatives2003WithInterpolation() throws OrekitException {
+    public void testDerivatives2003WithInterpolation() {
         doTestDerivatives(AbsoluteDate.J2000_EPOCH.shiftedBy(3 * Constants.JULIAN_YEAR),
                           Constants.JULIAN_DAY, 60.0, false,
                           8.0e-5, 2.0e-5, 4.0e-8, 8.0e-12, 3.0e-13, 4.0e-15);
     }
 
     @Test
-    public void testDerivatives2003WithoutInterpolation() throws OrekitException {
+    public void testDerivatives2003WithoutInterpolation() {
         // when we forbid interpolation, the test is really slow (almost two hours
         // runtime on a very old machine for one day time span and one minute rate),
         // we drastically reduce sampling to circumvent this drawback
@@ -563,7 +560,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testNoEOPHistoryFound() throws OrekitException {
+    public void testNoEOPHistoryFound() {
         Assert.assertNull(FramesFactory.findEOP(null));
         Assert.assertNull(FramesFactory.findEOP(FramesFactory.getEcliptic(IERSConventions.IERS_2010)));
         Assert.assertNull(FramesFactory.findEOP(FramesFactory.getGCRF()));
@@ -574,7 +571,7 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testEOPHistoryFound() throws OrekitException {
+    public void testEOPHistoryFound() {
         Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getCIRF(IERSConventions.IERS_2010, true)));
         Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getCIRF(IERSConventions.IERS_2010, false)));
         Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
@@ -594,7 +591,7 @@ public class FramesFactoryTest {
                                    double duration, double step, boolean forbidInterpolation,
                                    double cartesianTolerance, double cartesianDotTolerance, double cartesianDotDotTolerance,
                                    double rodriguesTolerance, double rodriguesDotTolerance, double rodriguesDotDotTolerance)
-        throws OrekitException {
+        {
 
         final DSFactory factory = new DSFactory(1, 2);
         final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
@@ -608,13 +605,9 @@ public class FramesFactoryTest {
                 UnivariateDifferentiableVectorFunction dCartesian = differentiator.differentiate(new UnivariateVectorFunction() {
                     @Override
                     public double[] value(double t) {
-                        try {
-                            return forbidInterpolation ?
-                                   FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getTranslation().toArray() :
-                                   parent.getTransformTo(frame, ref.shiftedBy(t)).getTranslation().toArray();
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
+                        return forbidInterpolation ?
+                               FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getTranslation().toArray() :
+                               parent.getTransformTo(frame, ref.shiftedBy(t)).getTranslation().toArray();
                     }
                 });
 
@@ -623,20 +616,16 @@ public class FramesFactoryTest {
                     Rotation previous = Rotation.IDENTITY;
                     @Override
                     public double[] value(double t) {
-                        try {
-                            AngularCoordinates ac = forbidInterpolation ?
-                                                    FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getAngular() :
-                                                    parent.getTransformTo(frame, ref.shiftedBy(t)).getAngular();
-                            final double dot = MathArrays.linearCombination(ac.getRotation().getQ0(), previous.getQ0(),
-                                                                            ac.getRotation().getQ1(), previous.getQ1(),
-                                                                            ac.getRotation().getQ2(), previous.getQ2(),
-                                                                            ac.getRotation().getQ3(), previous.getQ3());
-                            sign = FastMath.copySign(1.0, dot * sign);
-                            previous = ac.getRotation();
-                            return ac.getModifiedRodrigues(sign)[0];
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
+                        AngularCoordinates ac = forbidInterpolation ?
+                                                FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getAngular() :
+                                                parent.getTransformTo(frame, ref.shiftedBy(t)).getAngular();
+                        final double dot = MathArrays.linearCombination(ac.getRotation().getQ0(), previous.getQ0(),
+                                                                        ac.getRotation().getQ1(), previous.getQ1(),
+                                                                        ac.getRotation().getQ2(), previous.getQ2(),
+                                                                        ac.getRotation().getQ3(), previous.getQ3());
+                        sign = FastMath.copySign(1.0, dot * sign);
+                        previous = ac.getRotation();
+                        return ac.getModifiedRodrigues(sign)[0];
                     }
                 });
 

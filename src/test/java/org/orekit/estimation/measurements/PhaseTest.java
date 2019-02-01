@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.gnss.Frequency;
@@ -51,10 +50,9 @@ public class PhaseTest {
     /**
      * Test the values of the phase comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Phase Values\n");
@@ -66,10 +64,9 @@ public class PhaseTest {
     /**
      * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -90,10 +87,9 @@ public class PhaseTest {
     /**
      * Test the values of the state derivatives with modifier using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -114,10 +110,9 @@ public class PhaseTest {
     /**
      * Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -126,8 +121,8 @@ public class PhaseTest {
             System.out.println("\nTest Phase Parameter Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsMedian = 1.1e-8;
-        double refErrorsMean   = 8.2e-8;
+        double refErrorsMedian = 5.9e-9;
+        double refErrorsMean   = 6.4e-8;
         double refErrorsMax    = 5.1e-6;
         this.genericTestParameterDerivatives(printResults,
                                              refErrorsMedian, refErrorsMean, refErrorsMax);
@@ -137,10 +132,8 @@ public class PhaseTest {
     /**
      * Generic test function for values of the phase
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
-    void genericTestValues(final boolean printResults)
-        throws OrekitException {
+    void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -172,8 +165,7 @@ public class PhaseTest {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
                     // compensating only part of the downlink delay. This is done
@@ -265,8 +257,7 @@ public class PhaseTest {
 
     void genericTestStateDerivatives(final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
-                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-                    throws OrekitException {
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -298,8 +289,7 @@ public class PhaseTest {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -318,7 +308,7 @@ public class PhaseTest {
 
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) throws OrekitException {
+                        public double[] value(final SpacecraftState state) {
                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -343,15 +333,15 @@ public class PhaseTest {
                     if (printResults) {
                         String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
-                                        "%10.3e  %10.3e  %10.3e  " +
-                                        "%10.3e  %10.3e  %10.3e  " +
-                                        "%10.3e  %10.3e  %10.3e  " +
-                                        "%10.3e  %10.3e  %10.3e%n",
-                                        stationName, measurement.getDate(), date,
-                                        dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
-                                        dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
-                                        dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
-                                        dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
+                                          "%10.3e  %10.3e  %10.3e  " +
+                                          "%10.3e  %10.3e  %10.3e  " +
+                                          "%10.3e  %10.3e  %10.3e  " +
+                                          "%10.3e  %10.3e  %10.3e%n",
+                                          stationName, measurement.getDate(), date,
+                                          dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
+                                          dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
+                                          dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
+                                          dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
                     }
                 } // End if measurement date between previous and current interpolator step
             } // End for loop on the measurements
@@ -408,8 +398,7 @@ public class PhaseTest {
     }
 
     void genericTestParameterDerivatives(final boolean printResults,
-                                         final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax)
-                    throws OrekitException {
+                                         final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -419,6 +408,7 @@ public class PhaseTest {
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -444,8 +434,7 @@ public class PhaseTest {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
                     // Parameter corresponding to station position offset
                     final GroundStation stationParameter = ((Phase) measurement).getStation();
@@ -461,6 +450,7 @@ public class PhaseTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
+                        stationParameter.getClockOffsetDriver(),
                         stationParameter.getEastOffsetDriver(),
                         stationParameter.getNorthOffsetDriver(),
                         stationParameter.getZenithOffsetDriver()
@@ -472,7 +462,7 @@ public class PhaseTest {
                                           stationName, measurement.getDate(), date);
                     }
 
-                    for (int i = 0; i < 3; ++i) {
+                    for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
@@ -482,10 +472,10 @@ public class PhaseTest {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                            public double value(final ParameterDriver parameterDriver) {
                                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
-                                        }, drivers[i], 3, 20.0);
+                                        }, 3, 20.0 * drivers[i].getScale());
                         final double ref = dMkdP.value(drivers[i]);
 
                         if (printResults) {
@@ -513,12 +503,12 @@ public class PhaseTest {
         // Print results ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s%n",
-                            "Station", "Measurement Date", "State Date",
-                            "ΔdQx", "rel ΔdQx",
-                            "ΔdQy", "rel ΔdQy",
-                            "ΔdQz", "rel ΔdQz");
+                              "%10s  %10s  %10s  %10s  %10s  %10s  %10s  %10s%n",
+                              "Station", "Measurement Date", "State Date",
+                              "Δt",   "rel Δt",
+                              "ΔdQx", "rel ΔdQx",
+                              "ΔdQy", "rel ΔdQy",
+                              "ΔdQz", "rel ΔdQz");
          }
 
         // Propagate to final measurement's date

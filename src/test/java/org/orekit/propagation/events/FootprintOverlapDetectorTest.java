@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,7 +66,7 @@ public class FootprintOverlapDetectorTest {
     private OneAxisEllipsoid earth;
 
     @Test
-    public void testRightForwardView() throws OrekitException, IOException {
+    public void testRightForwardView() throws IOException {
 
         propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                       RotationOrder.XYZ,
@@ -96,16 +96,16 @@ public class FootprintOverlapDetectorTest {
         Assert.assertEquals(8, events.size());
 
         // the first two consecutive close events occur during the same ascending orbit
-        // we first see Corsica, then lose visibility over the see, then see continental France
+        // we first see Corsica, then lose visibility over the sea, then see continental France
 
         // above Mediterranean see, between Illes Balears and Sardigna,
         // pointing to Corsica towards North-East
         checkEventPair(events.get(0),  events.get(1),
-                       639010.0775,  33.9434, 39.2168,  6.5980, 42.0671,  9.0543);
+                       639010.0775,  34.155, 39.2231,  6.5960, 42.0734,  9.0526);
 
         // above Saint-Chamond (Loire), pointing near Saint-Dié-des-Vosges (Vosges) towards North-East
         checkEventPair(events.get(2),  events.get(3),
-                       639111.1399,  40.8032, 45.4637,  4.5075, 48.3487,  7.1733);
+                       639113.5532,  38.3899, 45.5356,  4.4813, 48.4211,  7.1499);
 
         // event is on a descending orbit, so the pointing direction,
         // taking roll and pitch offsets, is towards South-West with respect to spacecraft
@@ -116,15 +116,14 @@ public class FootprintOverlapDetectorTest {
         // event on an ascending orbit
         // above Atlantic ocean, pointing near to île d'Oléron (Charente-Maritime) towards North-East
         checkEventPair(events.get(6),  events.get(7),
-                       727696.1033, 113.8829, 42.9785, -4.0426, 45.8492, -1.4656);
+                       727696.1034, 112.8867, 42.9486, -4.0325, 45.8192, -1.4565);
 
     }
 
     private void checkEventPair(final LoggedEvent start, final LoggedEvent end,
                                 final double expectedStart, final double expectedDuration,
                                 final double spacecraftLatitude, final double spacecraftLongitude,
-                                final double fovCenterLatitude, final double fovCenterLongitude)
-        throws OrekitException {
+                                final double fovCenterLatitude, final double fovCenterLongitude) {
 
         Assert.assertFalse(start.isIncreasing());
         Assert.assertTrue(end.isIncreasing());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,7 +68,7 @@ public class NumericalConverterTest {
     private double crossSection;
 
     @Test
-    public void testOnlyCartesianAllowed() throws OrekitException {
+    public void testOnlyCartesianAllowed() {
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        new LutherIntegratorBuilder(100.0),
@@ -86,32 +86,32 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testConversionWithoutParameters() throws OrekitException, IOException, ParseException {
+    public void testConversionWithoutParameters() throws IOException, ParseException {
         checkFit(orbit, 6000, 300, 1.0e-3, 0.855);
     }
 
     @Test
-    public void testConversionWithFreeParameter() throws OrekitException, IOException, ParseException {
+    public void testConversionWithFreeParameter() throws IOException, ParseException {
         checkFit(orbit, 6000, 300, 1.0e-3, 0.826,
                  DragSensitive.DRAG_COEFFICIENT, NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
     @Test
-    public void testIntegrators01() throws OrekitException {
+    public void testIntegrators01() {
 
         ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
         checkFit(abBuilder);
     }
 
     @Test
-    public void testIntegrators02() throws OrekitException {
+    public void testIntegrators02() {
 
         ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
         checkFit(amBuilder);
     }
 
     @Test
-    public void testIntegrators03() throws OrekitException {
+    public void testIntegrators03() {
 
         final double stepSize = 100.;
 
@@ -120,7 +120,7 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testIntegrators04() throws OrekitException {
+    public void testIntegrators04() {
 
         final double stepSize = 100.;
 
@@ -129,14 +129,14 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testIntegrators05() throws OrekitException {
+    public void testIntegrators05() {
 
         ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         checkFit(dp54Builder);
     }
 
     @Test
-    public void testIntegrators06() throws OrekitException {
+    public void testIntegrators06() {
 
         final double stepSize = 100.;
 
@@ -145,7 +145,7 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testIntegrators07() throws OrekitException {
+    public void testIntegrators07() {
 
         final double stepSize = 100.;
 
@@ -154,21 +154,21 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testIntegrators08() throws OrekitException {
+    public void testIntegrators08() {
 
         ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
         checkFit(gbsBuilder);
     }
 
     @Test
-    public void testIntegrators09() throws OrekitException {
+    public void testIntegrators09() {
 
         ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
         checkFit(hh54Builder);
     }
 
     @Test
-    public void testIntegrators10() throws OrekitException {
+    public void testIntegrators10() {
 
         final double stepSize = 100.;
 
@@ -177,7 +177,7 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testIntegrators11() throws OrekitException {
+    public void testIntegrators11() {
 
         final double stepSize = 100.;
 
@@ -189,7 +189,7 @@ public class NumericalConverterTest {
                             final double stepSize, final double threshold,
                             final double expectedRMS,
                             final String... freeParameters)
-        throws OrekitException, IOException, ParseException {
+        throws IOException, ParseException {
 
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
@@ -261,7 +261,7 @@ public class NumericalConverterTest {
                             0.0005);
     }
 
-    protected void checkFit(final ODEIntegratorBuilder foiBuilder) throws OrekitException {
+    protected void checkFit(final ODEIntegratorBuilder foiBuilder) {
 
         NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
                                                                             foiBuilder,
@@ -304,7 +304,7 @@ public class NumericalConverterTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
 
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class FESCnmSnmReader extends OceanTidesReader {
     /** {@inheritDoc} */
     @Override
     public void loadData(final InputStream input, final String name)
-        throws OrekitException, IOException {
+        throws IOException {
 
         // FES ocean tides models have the following form:
         //    Coefficients to compute variations in normalized Stokes coefficients (unit = 10^-12)

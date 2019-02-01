@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,8 +70,8 @@ public class PropagatorConversion {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }

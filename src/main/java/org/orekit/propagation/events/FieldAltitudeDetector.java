@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.RealFieldElement;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -147,9 +146,8 @@ public class FieldAltitudeDetector<T extends RealFieldElement<T>> extends FieldA
      * and the threshold altitude.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+    public T g(final FieldSpacecraftState<T> s) {
         final Frame bodyFrame              = bodyShape.getBodyFrame();
         final FieldPVCoordinates<T> pvBody = s.getPVCoordinates(bodyFrame);
         final FieldGeodeticPoint<T> point  = bodyShape.transform(pvBody.getPosition(),

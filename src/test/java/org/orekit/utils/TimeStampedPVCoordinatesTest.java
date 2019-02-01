@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 public class TimeStampedPVCoordinatesTest {
@@ -113,7 +112,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector2() throws OrekitException {
+    public void testToDerivativeStructureVector2() {
         FieldVector3D<DerivativeStructure> fv =
                 new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                              new Vector3D( 1,  0.1,  10),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,6 @@ package org.orekit.data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-
-import org.orekit.errors.OrekitException;
 
 /** Interface for loading data files from {@link DataProvider data providers}.
  * @see DataProvider
@@ -46,10 +44,9 @@ public interface DataLoader {
      * @param name name of the file (or zip entry)
      * @exception IOException if data can't be read
      * @exception ParseException if data can't be parsed
-     * @exception OrekitException if some data is missing
      * or if some loader specific error occurs
      */
     void loadData(InputStream input, String name)
-        throws IOException, ParseException, OrekitException;
+        throws IOException, ParseException;
 
 }

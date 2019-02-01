@@ -4,7 +4,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -18,11 +17,9 @@ public class NegateDetectorTest {
 
     /**
      * check {@link NegateDetector#init(SpacecraftState, AbsoluteDate)}.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testInit() throws OrekitException {
+    public void testInit() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         @SuppressWarnings("unchecked")
@@ -42,11 +39,9 @@ public class NegateDetectorTest {
 
     /**
      * check g function is negated.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testG() throws OrekitException {
+    public void testG() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         NegateDetector detector = new NegateDetector(a);

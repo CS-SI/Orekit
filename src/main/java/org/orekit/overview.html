@@ -153,7 +153,9 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>moving target detection in spacecraft sensor Field Of View (any shape, with special case for circular)</li>
           <li>spacecraft detection in ground based Field Of View (any shape)</li>
           <li>sensor Field Of View (any shape) overlapping complex geographic zone</li>
-           <li>complex geographic zone traversal</li>
+          <li>complex geographic zone traversal</li>
+          <li>inter-satellites direct view</li>
+          <li>ground at night</li>
           <li>impulse maneuvers occurrence</li>
         </ul>
       </li>
@@ -181,7 +183,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)</li>
           <li>tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames</li>
           <li>specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF),
-              GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO), (as of release 9.2, this feature is still considered experimental)</li>
+              GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)</li>
         </ul>
       </li>
     </ul>
@@ -198,7 +200,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>Kalman filtering
         <ul>
           <li>customizable process noise matrices providers</li>
-          <li>time-dependent process nous provider (as of release 9.2, this feature is still considered experimental)</li>
+          <li>time-dependent process nous provider</li>
         </ul>
       </li>
       <li>parameters estimation
@@ -206,8 +208,9 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>orbital parameters estimation (or only a subset if desired)</li>
           <li>force model parameters estimation (drag coefficients, radiation pressure coefficients,
               central attraction, maneuver thrust or flow rate)</li>
-          <li>measurements parameters estimation (biases, station position, pole motion and rate,
-              prime meridian correction and rate)</li>
+          <li>measurements parameters estimation (biases, satellite clock offset, station clock offset,
+              station position, pole motion and rate, prime meridian correction and rate, total
+              zenith delay in tropospheric correction)</li>
         </ul>
       </li>
       <li>multi-satellites orbit determination</li>
@@ -221,9 +224,10 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>azimuth/elevation</li>
           <li>right ascension/declination</li>
           <li>position-velocity</li>
+          <li>position</li>
           <li>inter-satellites range (one way and two way)</li>
           <li>GNSS code</li>
-          <li>GNSS phase (as of release 9.2, this feature is still considered experimental)</li>
+          <li>GNSS phase</li>
         </ul>
       </li>
       <li>possibility to add custom measurements</li>
@@ -236,8 +240,19 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>delays</li>
           <li>Antenna Phase Center</li>
         </ul>
+      </li>
       <li>possibility to add custom measurement modifiers (even for predefined events)</li>
       <li>possibility to parse CCSDS Tracking Data Message files</li>
+      <li>measurements generation
+        <ul>
+          <li>with measurements feasibility triggered by regular event detectors
+              (ground visibility, ground at night, sunlit satellite, inter satellites
+               direct view, boolean combination...)</li>
+          <li>with measurement scheduling as fixed step streams (optionally aligned with round UTC time)</li>
+          <li>with measurement scheduling as high rate bursts rest periods (optionally aligned with round UTC time)</li>
+          <li>possibility to customize measurement scheduling</li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li>GNSS
@@ -257,10 +272,11 @@ discrete events. Here is a short list of the features offered by the library:</p
   </li>
   <li>Earth models
     <ul>
-      <li>tropospheric delay (modified Saastamoinen)</li>
+      <li>tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)</li>
       <li>tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)</li>
       <li>tropospheric model for laser ranging (Marini-Murray)</li>
       <li>Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)</li>
+      <li>Global Pression and Temperature models (GPT and GPT2)</li>
       <li>geomagnetic field (WMM, IGRF)</li>
       <li>geoid model from any gravity field</li>
       <li>displacement of ground points due to tides</li>

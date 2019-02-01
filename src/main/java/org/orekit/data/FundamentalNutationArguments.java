@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,12 +126,10 @@ public class FundamentalNutationArguments implements Serializable {
      * (may be null if tide parameter γ = GMST + π is not needed)
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
-     * @exception OrekitException if stream is null or the table cannot be parsed
      */
     public FundamentalNutationArguments(final IERSConventions conventions,
                                         final TimeScale timeScale,
-                                        final InputStream stream, final String name)
-        throws OrekitException {
+                                        final InputStream stream, final String name) {
         this(conventions, timeScale, parseCoefficients(stream, name));
     }
 
@@ -141,12 +139,10 @@ public class FundamentalNutationArguments implements Serializable {
      * (may be null if tide parameter γ = GMST + π is not needed)
      * @param coefficients list of coefficients arrays (all 14 arrays must be provided,
      * the 5 Delaunay first and the 9 planetary afterwards)
-     * @exception OrekitException if GMST function cannot be retrieved
      * @since 6.1
      */
     public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
-                                        final List<double[]> coefficients)
-        throws OrekitException {
+                                        final List<double[]> coefficients) {
         this.conventions        = conventions;
         this.timeScale          = timeScale;
         this.gmstFunction       = (timeScale == null) ? null : conventions.getGMSTFunction(timeScale);
@@ -171,10 +167,8 @@ public class FundamentalNutationArguments implements Serializable {
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
      * @return list of coefficients arrays
-     * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    private static List<double[]> parseCoefficients(final InputStream stream, final String name)
-        throws OrekitException {
+    private static List<double[]> parseCoefficients(final InputStream stream, final String name) {
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
@@ -239,12 +233,10 @@ public class FundamentalNutationArguments implements Serializable {
      * @param polynomials map of the polynomials
      * @param fileName name of the file from which the coefficients have been read
      * @return polynomials coefficients (ordered from high degrees to low degrees)
-     * @exception OrekitException if the argument is not found
      */
     private static double[] getCoefficients(final FundamentalName argument,
                                             final Map<FundamentalName, double[]> polynomials,
-                                            final String fileName)
-        throws OrekitException {
+                                            final String fileName) {
         if (!polynomials.containsKey(argument)) {
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, fileName);
         }

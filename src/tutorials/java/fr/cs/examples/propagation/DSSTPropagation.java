@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -111,8 +111,8 @@ public class DSSTPropagation {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
@@ -414,13 +414,12 @@ public class DSSTPropagation {
      * @param parser input file parser
      * @param scale  time scale
      * @param mu     central attraction coefficient
-     * @throws OrekitException if inertial frame cannot be retrieved
      * @throws NoSuchElementException if input parameters are missing
      * @throws IOException if input parameters are invalid
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
                               final TimeScale scale, final double mu)
-        throws OrekitException, NoSuchElementException, IOException {
+        throws NoSuchElementException, IOException {
 
         final Frame frame;
         if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
@@ -504,7 +503,6 @@ public class DSSTPropagation {
      *  @param shortPeriodCoefficients list of short periodic coefficients
      *  to output (null means no coefficients at all, empty list means all
      *  possible coefficients)
-     *  @throws OrekitException
      */
     private DSSTPropagator createDSSTProp(final Orbit orbit,
                                           final double mass,
@@ -514,8 +512,7 @@ public class DSSTPropagation {
                                           final double minStep,
                                           final double maxStep,
                                           final double dP,
-                                          final List<String> shortPeriodCoefficients)
-        throws OrekitException {
+                                          final List<String> shortPeriodCoefficients) {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
@@ -537,9 +534,8 @@ public class DSSTPropagation {
      *
      *  @param orbit initial orbit
      *  @param mass S/C mass (kg)
-     *  @throws OrekitException
      */
-    private NumericalPropagator createNumProp(final Orbit orbit, final double mass) throws OrekitException {
+    private NumericalPropagator createNumProp(final Orbit orbit, final double mass) {
         final double[][] tol = NumericalPropagator.tolerances(1.0, orbit, orbit.getType());
         final double minStep = 1.e-3;
         final double maxStep = 1.e+3;
@@ -560,12 +556,11 @@ public class DSSTPropagation {
      *  @param rotationRate central body rotation rate (rad/s)
      *  @param dsstProp DSST propagator
      *  @throws IOException
-     *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final UnnormalizedSphericalHarmonicsProvider unnormalized,
                                final Frame earthFrame, final double rotationRate,
-                               final DSSTPropagator dsstProp) throws IOException, OrekitException {
+                               final DSSTPropagator dsstProp) throws IOException {
 
         final double ae = unnormalized.getAe();
 
@@ -624,12 +619,11 @@ public class DSSTPropagation {
      *  @param earthFrame Earth rotating frame
      *  @param numProp numerical propagator
      *  @throws IOException
-     *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final NormalizedSphericalHarmonicsProvider normalized,
                                final Frame earthFrame,
-                               final NumericalPropagator numProp) throws IOException, OrekitException {
+                               final NumericalPropagator numProp) throws IOException {
 
         final double ae = normalized.getAe();
 
@@ -741,7 +735,7 @@ public class DSSTPropagation {
 
         /** {@inheritDoc} */
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step)
-            throws OrekitException {
+            {
             try {
                 nbColumns           = 0;
                 outputStream        = new PrintStream(outputFile, "UTF-8");
@@ -787,7 +781,7 @@ public class DSSTPropagation {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(SpacecraftState s, boolean isLast) throws OrekitException {
+        public void handleStep(SpacecraftState s, boolean isLast) {
             if (isFirst) {
                 if (shortPeriodCoefficients != null) {
                     if (shortPeriodCoefficients.isEmpty()) {

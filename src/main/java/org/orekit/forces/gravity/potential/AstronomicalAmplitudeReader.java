@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -119,7 +119,7 @@ public class AstronomicalAmplitudeReader implements DataLoader {
     /** {@inheritDoc} */
     @Override
     public void loadData(final InputStream input, final String name)
-        throws OrekitException, IOException {
+        throws IOException {
 
         // parse the file
         final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));

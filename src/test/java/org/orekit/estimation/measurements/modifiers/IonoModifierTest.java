@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -77,7 +76,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testRangeIonoModifier() throws OrekitException {
+    public void testRangeIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -87,6 +86,7 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -141,7 +141,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testTurnAroundRangeIonoModifier() throws OrekitException {
+    public void testTurnAroundRangeIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -153,9 +153,11 @@ public class IonoModifierTest {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    masterStation = entry.getKey();
             final GroundStation    slaveStation  = entry.getValue();
+            masterStation.getClockOffsetDriver().setSelected(true);
             masterStation.getEastOffsetDriver().setSelected(true);
             masterStation.getNorthOffsetDriver().setSelected(true);
             masterStation.getZenithOffsetDriver().setSelected(true);
+            slaveStation.getClockOffsetDriver().setSelected(false);
             slaveStation.getEastOffsetDriver().setSelected(true);
             slaveStation.getNorthOffsetDriver().setSelected(true);
             slaveStation.getZenithOffsetDriver().setSelected(true);
@@ -210,7 +212,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testRangeRateIonoModifier() throws OrekitException {
+    public void testRangeRateIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -220,6 +222,7 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -256,7 +259,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testAngularIonoModifier() throws OrekitException {
+    public void testAngularIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -266,6 +269,7 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -303,7 +307,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testKlobucharIonoModel() throws OrekitException {
+    public void testKlobucharIonoModel() {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -312,6 +316,7 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);

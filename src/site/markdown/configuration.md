@@ -1,10 +1,10 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
     http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -114,7 +114,7 @@ in the library itself.
 ## Data handling in Orekit
 
 The following diagram shows data handling in Orekit.
-  
+
 ![data class diagram](./images/design/data-class-diagram.png)
 
 When some data is read in Orekit (say JPL DE405 or DE406 ephemerides which are needed by
@@ -228,21 +228,19 @@ announced above.
 
 ## Quick setup using default data
 
-For convenience, a zip file containing some default data is available for
-download on orekit forge:
-[https://www.orekit.org/forge/projects/orekit/files](https://www.orekit.org/forge/projects/orekit/files).
-For a start, the simplest configuration is to download the orekit-data.zip file from the download page,
-to unzip it anywhere you want, note the path of the orekit-data folder that will be created and add the
-following lines at the start of your program:
+For convenience, the simplest configuration
+is to download the [orekit-data-master.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)
+file from the forge, to unzip it anywhere you want, rename the `orekit-data-master` folder that will be created
+into `orekit-data` and add the following lines at the start of your program:
+
 
     File orekitData = new File("/path/to/the/folder/orekit-data");
     DataProvidersManager manager = DataProvidersManager.getInstance();
     manager.addProvider(new DirectoryCrawler(orekitData));
 
 This zip file contains JPL DE 430 ephemerides from 1990
-to 2069, IERS Earth orientation parameters from 1973
-to June 2016 with predicted date to fall 2016 (both IAU-1980
-and IAU-2000), UTC-TAI history from 1972 to end of 2016,
+to 2069, IERS Earth orientation parameters from 1973 (both IAU-1980
+and IAU-2000), UTC-TAI history from 1972,
 Marshall Solar Activity Futur Estimation from 1999 to mid 2016,
 the Eigen 06S gravity field and the FES 2004 ocean tides model.
 

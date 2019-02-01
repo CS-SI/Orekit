@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,7 +69,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testReplayForward() throws OrekitException {
+    public void testReplayForward() {
         EclipseDetector detector =
                 new EclipseDetector(60., 1.e-3,
                                      CelestialBodyFactory.getSun(), sunRadius,
@@ -99,7 +99,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testReplayBackward() throws OrekitException {
+    public void testReplayBackward() {
         EclipseDetector detector =
                 new EclipseDetector(60., 1.e-3,
                                      CelestialBodyFactory.getSun(), sunRadius,
@@ -122,7 +122,7 @@ public class EventSlopeFilterTest {
 
             @Override
             public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws OrekitException {
+                {
                 // we exceed the events history in the past,
                 // and in this example get stuck with Transformer.MIN
                 // transformer, hence the g function is always negative
@@ -135,7 +135,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testUmbra() throws OrekitException {
+    public void testUmbra() {
         EclipseDetector detector =
                 new EclipseDetector(60., 1.e-3,
                                      CelestialBodyFactory.getSun(), sunRadius,
@@ -165,7 +165,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testPenumbra() throws OrekitException {
+    public void testPenumbra() {
         EclipseDetector detector =
                 new EclipseDetector(60., 1.e-3,
                                     CelestialBodyFactory.getSun(), sunRadius,
@@ -195,7 +195,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardIncreasingStartPos() throws OrekitException {
+    public void testForwardIncreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -207,7 +207,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardIncreasingStartZero() throws OrekitException {
+    public void testForwardIncreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -219,7 +219,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardIncreasingStartNeg() throws OrekitException {
+    public void testForwardIncreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -231,7 +231,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartPos() throws OrekitException {
+    public void testForwardDecreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -242,7 +242,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartZero() throws OrekitException {
+    public void testForwardDecreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -253,7 +253,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartNeg() throws OrekitException {
+    public void testForwardDecreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -264,7 +264,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartPos() throws OrekitException {
+    public void testBackwardIncreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -276,7 +276,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartZero() throws OrekitException {
+    public void testBackwardIncreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -288,7 +288,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartNeg() throws OrekitException {
+    public void testBackwardIncreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -300,7 +300,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartPos() throws OrekitException {
+    public void testBackwardDecreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -311,7 +311,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartZero() throws OrekitException {
+    public void testBackwardDecreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -322,7 +322,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartNeg() throws OrekitException {
+    public void testBackwardDecreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
@@ -333,7 +333,7 @@ public class EventSlopeFilterTest {
     }
 
     private void doTestLatitude(final double dt, final double latitude, final int expected, final FilterType filter)
-        throws OrekitException {
+        {
         final int[] count = new int[2];
         LatitudeCrossingDetector detector =
                 new LatitudeCrossingDetector(earth, latitude).
@@ -345,7 +345,7 @@ public class EventSlopeFilterTest {
                     @Override
                     public Action eventOccurred(SpacecraftState s,
                                                 LatitudeCrossingDetector detector,
-                                                boolean increasing) throws OrekitException {
+                                                boolean increasing) {
                         Assert.assertEquals(filter.getTriggeredIncreasing(), increasing);
                         count[0]++;
                         return Action.RESET_STATE;

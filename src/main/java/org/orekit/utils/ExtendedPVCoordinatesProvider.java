@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.utils;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -44,10 +43,8 @@ public interface ExtendedPVCoordinatesProvider extends PVCoordinatesProvider {
      * @param frame the frame where to define the position
      * @param <T> type for the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
-     * @exception OrekitException if position cannot be computed in given frame
      */
     <T extends RealFieldElement<T>>TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date,
-                                                                                     Frame frame)
-        throws OrekitException;
+                                                                                     Frame frame);
 
 }

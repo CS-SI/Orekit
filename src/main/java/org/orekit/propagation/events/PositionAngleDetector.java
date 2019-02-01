@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,25 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.function.Function;
+
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Detector for in-orbit position angle.
  * <p>
@@ -46,7 +51,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
 public class PositionAngleDetector extends AbstractDetector<PositionAngleDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20150825L;
+    private static final long serialVersionUID = 20180919L;
 
     /** Orbit type defining the angle type. */
     private final OrbitType orbitType;
@@ -57,11 +62,11 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     /** Fixed angle to be crossed. */
     private final double angle;
 
-    /** Sign to apply for angle difference. */
-    private double sign;
+    /** Position angle extraction function. */
+    private final Function<Orbit, Double> positionAngleExtractor;
 
-    /** Previous angle difference. */
-    private double previousDelta;
+    /** Estimators for the offset angle, taking care of 2π wrapping and g function continuity. */
+    private TimeSpanMap<OffsetEstimator> offsetEstimators;
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -114,20 +119,33 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
                                      final OrbitType orbitType, final PositionAngle positionAngle,
                                      final double angle)
         throws OrekitIllegalArgumentException {
+
         super(maxCheck, threshold, maxIter, handler);
-        if (orbitType == OrbitType.CARTESIAN) {
-            final String sep = ", ";
-            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
-                                                     orbitType,
-                                                     OrbitType.KEPLERIAN   + sep +
-                                                     OrbitType.CIRCULAR    + sep +
-                                                     OrbitType.EQUINOCTIAL);
+
+        this.orbitType        = orbitType;
+        this.positionAngle    = positionAngle;
+        this.angle            = angle;
+        this.offsetEstimators = null;
+
+        switch (orbitType) {
+            case KEPLERIAN:
+                positionAngleExtractor = o -> ((KeplerianOrbit) orbitType.convertType(o)).getAnomaly(positionAngle);
+                break;
+            case CIRCULAR:
+                positionAngleExtractor = o -> ((CircularOrbit) orbitType.convertType(o)).getAlpha(positionAngle);
+                break;
+            case EQUINOCTIAL:
+                positionAngleExtractor = o -> ((EquinoctialOrbit) orbitType.convertType(o)).getL(positionAngle);
+                break;
+            default:
+                final String sep = ", ";
+                throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
+                                                         orbitType,
+                                                         OrbitType.KEPLERIAN   + sep +
+                                                         OrbitType.CIRCULAR    + sep +
+                                                         OrbitType.EQUINOCTIAL);
         }
-        this.orbitType     = orbitType;
-        this.positionAngle = positionAngle;
-        this.angle         = angle;
-        this.sign          = +1.0;
-        this.previousDelta = Double.NaN;
+
     }
 
     /** {@inheritDoc} */
@@ -160,6 +178,12 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
         return angle;
     }
 
+    /** {@inheritDoc} */
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        super.init(s0, t);
+        offsetEstimators = new TimeSpanMap<>(new OffsetEstimator(s0.getOrbit(), +1.0));
+    }
+
     /** Compute the value of the detection function.
      * <p>
      * The value is the angle difference between the spacecraft and the fixed
@@ -173,38 +197,117 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * @param s the current state information: date, kinematics, attitude
      * @return angle difference between the spacecraft and the fixed
      * angle, with some sign tweaks to ensure continuity
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
-        // get angle
-        final double currentAngle;
-        switch (orbitType) {
-            case KEPLERIAN:
-                currentAngle = ((KeplerianOrbit) orbitType.convertType(s.getOrbit())).getAnomaly(positionAngle);
-                break;
-            case CIRCULAR:
-                currentAngle = ((CircularOrbit) orbitType.convertType(s.getOrbit())).getAlpha(positionAngle);
-                break;
-            case EQUINOCTIAL:
-                currentAngle = ((EquinoctialOrbit) orbitType.convertType(s.getOrbit())).getL(positionAngle);
-                break;
-            default:
-                // this should never happen as type was checked at construction
-                throw new OrekitInternalError(null);
-        }
+        final Orbit orbit = s.getOrbit();
 
         // angle difference
-        double delta = MathUtils.normalizeAngle(sign * (currentAngle - angle), 0.0);
+        OffsetEstimator estimator = offsetEstimators.get(s.getDate());
+        double          delta     = estimator.delta(orbit);
 
-        // ensure continuity
-        if (FastMath.abs(delta - previousDelta) > FastMath.PI) {
-            sign  = -sign;
-            delta = MathUtils.normalizeAngle(sign * (currentAngle - angle), 0.0);
+        // we use a value greater than π for handover in order to avoid
+        // several switches to be estimated as the calling propagator
+        // and Orbit.shiftedBy have different accuracy. It is sufficient
+        // to have a handover roughly opposite to the detected position angle
+        while (FastMath.abs(delta) >= 3.5) {
+            // we are too far away from the current estimator, we need to set up a new one
+            // ensuring that we do have a crossing event in the current orbit
+            // and we ensure sign continuity with the current estimator
+
+            // find when the previous estimator becomes invalid
+            final AbsoluteDate handover = estimator.dateForOffset(FastMath.copySign(FastMath.PI, delta), orbit);
+
+            // perform handover to a new estimator at this date
+            estimator = new OffsetEstimator(orbit, delta);
+            delta     = estimator.delta(orbit);
+            if (isForward()) {
+                offsetEstimators.addValidAfter(estimator, handover.getDate());
+            } else {
+                offsetEstimators.addValidBefore(estimator, handover.getDate());
+            }
+
         }
-        previousDelta = delta;
 
         return delta;
+
+    }
+
+    /** Local class for estimating offset angle, handling 2π wrap-up and sign continuity. */
+    private class OffsetEstimator {
+
+        /** Target angle. */
+        private final double target;
+
+        /** Sign correction to offset. */
+        private final double sign;
+
+        /** Reference angle. */
+        private final double r0;
+
+        /** Slope of the linearized model. */
+        private final double r1;
+
+        /** Reference date. */
+        private final AbsoluteDate t0;
+
+        /** Simple constructor.
+         * @param orbit current orbit
+         * @param currentSign desired sign of the offset at current orbit time (magnitude is ignored)
+         */
+        OffsetEstimator(final Orbit orbit, final double currentSign) {
+            r0     = positionAngleExtractor.apply(orbit);
+            target = MathUtils.normalizeAngle(angle, r0);
+            sign   = FastMath.copySign(1.0, (r0 - target) * currentSign);
+            r1     = orbit.getKeplerianMeanMotion();
+            t0     = orbit.getDate();
+        }
+
+        /** Compute offset from reference angle.
+         * @param orbit current orbit
+         * @return offset between current angle and reference angle
+         */
+        public double delta(final Orbit orbit) {
+            final double rawAngle        = positionAngleExtractor.apply(orbit);
+            final double linearReference = r0 + r1 * orbit.getDate().durationFrom(t0);
+            final double linearizedAngle = MathUtils.normalizeAngle(rawAngle, linearReference);
+            return sign * (linearizedAngle - target);
+        }
+
+        /** Find date at which offset reaches specified value.
+         * <p>
+         * This computation is an approximation because it relies on
+         * {@link Orbit#shiftedBy(double)} only.
+         * </p>
+         * @param offset target value for offset angle
+         * @param orbit current orbit
+         * @return approximate date at which offset reached specified value
+         */
+        public AbsoluteDate dateForOffset(final double offset, final Orbit orbit) {
+
+            // bracket the search
+            final double period = orbit.getKeplerianPeriod();
+            final double delta0 = delta(orbit);
+            final double searchInf;
+            final double searchSup;
+            if ((delta0 - offset) * sign >= 0) {
+                // the date is before current orbit
+                searchInf = -period;
+                searchSup = 0;
+            } else {
+                // the date is after current orbit
+                searchInf = 0;
+                searchSup = +period;
+            }
+
+            // find the date as an offset from current orbit
+            final BracketingNthOrderBrentSolver solver = new BracketingNthOrderBrentSolver(getThreshold(), 5);
+            final UnivariateFunction            f      = dt -> delta(orbit.shiftedBy(dt)) - offset;
+            final double                        root   = solver.solve(getMaxIterationCount(), f, searchInf, searchSup);
+
+            return orbit.getDate().shiftedBy(root);
+
+        }
 
     }
 

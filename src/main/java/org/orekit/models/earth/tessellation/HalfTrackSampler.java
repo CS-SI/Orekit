@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.util.Pair;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -57,8 +56,7 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
 
     /** {@inheritDoc} */
     @Override
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
 
         // find the sliding ground point below spacecraft
         final TimeStampedPVCoordinates pv       = currentState.getPVCoordinates(ellipsoid.getBodyFrame());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.List;
+
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -46,13 +49,12 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-
-import java.util.List;
 
 public class FieldOfViewDetectorTest {
 
@@ -71,8 +73,11 @@ public class FieldOfViewDetectorTest {
     // Earth center pointing attitude provider
     private BodyCenterPointing earthCenterAttitudeLaw;
 
+    // UTC time scale
+    private TimeScale utc;
+
     @Test
-    public void testDihedralFielOfView() throws OrekitException {
+    public void testDihedralFielOfView() {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -80,18 +85,21 @@ public class FieldOfViewDetectorTest {
         // Extrapolator definition
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, earthCenterAttitudeLaw);
 
-        // Event definition : square field of view, along X axis, aperture 56°
-        final double maxCheck  = 1.;
+        // Event definition : square field of view, along X axis, aperture 68°
+        final double halfAperture = FastMath.toRadians(0.5 * 68.0);
+        final double maxCheck  = 60.;
+        final double threshold = 1.0e-10;
         final PVCoordinatesProvider sunPV = CelestialBodyFactory.getSun();
-        final Vector3D center = Vector3D.MINUS_J;
-        final Vector3D axis1 = Vector3D.PLUS_K;
-        final Vector3D axis2 = Vector3D.PLUS_I;
-        final double aperture1 = FastMath.toRadians(28);
-        final double aperture2 = FastMath.toRadians(28);
+        final Vector3D center = Vector3D.PLUS_I;
+        final Vector3D axis1  = Vector3D.PLUS_K;
+        final Vector3D axis2  = Vector3D.PLUS_J;
+        final double aperture1 = halfAperture;
+        final double aperture2 = halfAperture;
 
         final EventDetector sunVisi =
                 new FieldOfViewDetector(sunPV, new FieldOfView(center, axis1, aperture1, axis2, aperture2, 0.0)).
                 withMaxCheck(maxCheck).
+                withThreshold(threshold).
                 withHandler(new DihedralSunVisiHandler());
 
         Assert.assertSame(sunPV, ((FieldOfViewDetector) sunVisi).getPVTarget());
@@ -103,16 +111,84 @@ public class FieldOfViewDetectorTest {
                             1.0e-15);
 
         // Add event to be detected
-        propagator.addEventDetector(sunVisi);
+        EventsLogger logger = new EventsLogger();
+        propagator.addEventDetector(logger.monitorDetector(sunVisi));
 
         // Extrapolate from the initial to the final date
         propagator.propagate(initDate.shiftedBy(6000.));
 
+        // Sun is in dihedra 1 between tB and tC and in dihedra1 between tA and tD
+        // dihedra 1 is entered and left from same side (dihedra angle increases from < -34° to about -31.6° max
+        // and then decreases again to < -34°)
+        // dihedra 2 is completely crossed (dihedra angle increases from < -34° to > +34°
+        final AbsoluteDate tA = new AbsoluteDate("1969-08-28T00:04:50.540686", utc);
+        final AbsoluteDate tB = new AbsoluteDate("1969-08-28T00:08:08.299196", utc);
+        final AbsoluteDate tC = new AbsoluteDate("1969-08-28T00:29:58.478894", utc);
+        final AbsoluteDate tD = new AbsoluteDate("1969-08-28T00:36:13.390275", utc);
+
+        List<LoggedEvent>  events = logger.getLoggedEvents();
+        final AbsoluteDate t0     = events.get(0).getState().getDate();
+        final AbsoluteDate t1     = events.get(1).getState().getDate();
+        Assert.assertEquals(2, events.size());
+        Assert.assertEquals(0, t0.durationFrom(tB), 1.0e-6);
+        Assert.assertEquals(0, t1.durationFrom(tC), 1.0e-6);
+
+        for (double dt = 0; dt < 3600; dt += 10.0) {
+            AbsoluteDate t = initialOrbit.getDate().shiftedBy(dt);
+            double[] angles = dihedralAngles(center, axis1, axis2,
+                                             sunPV.getPVCoordinates(t, initialOrbit.getFrame()),
+                                             new KeplerianPropagator(initialOrbit, earthCenterAttitudeLaw).propagate(t));
+            if (t.compareTo(tA) < 0) {
+                // before tA, we are outside of both dihedras
+                Assert.assertTrue(angles[0] < -halfAperture);
+                Assert.assertTrue(angles[1] < -halfAperture);
+            } else if (t.compareTo(tB) < 0) {
+                // between tA and tB, we are inside dihedra 2 but still outside of dihedra 1
+                Assert.assertTrue(angles[0] < -halfAperture);
+                Assert.assertTrue(angles[1] > -halfAperture);
+                Assert.assertTrue(angles[1] < +halfAperture);
+            } else if (t.compareTo(tC) < 0) {
+                // between tB and tC, we are inside both dihedra 1 and dihedra 2
+                Assert.assertTrue(angles[0] > -halfAperture);
+                Assert.assertTrue(angles[0] < +halfAperture);
+                Assert.assertTrue(angles[1] > -halfAperture);
+                Assert.assertTrue(angles[1] < +halfAperture);
+            } else if (t.compareTo(tD) < 0) {
+                // between tC and tD, we are inside dihedra 2 but again outside of dihedra 1
+                Assert.assertTrue(angles[0] < -halfAperture);
+                Assert.assertTrue(angles[1] > -halfAperture);
+                Assert.assertTrue(angles[1] < +halfAperture);
+            } else {
+                // after tD, we are outside of both dihedras
+                Assert.assertTrue(angles[0] < -halfAperture);
+                Assert.assertTrue(angles[1] > +halfAperture);
+            }
+        }
+        
+    }
+
+    private double[] dihedralAngles(final Vector3D center, final Vector3D axis1, final Vector3D axis2,
+                                    final PVCoordinates target, final SpacecraftState s) {
+        final Rotation toInert     = s.getAttitude().getOrientation().getRotation().revert();
+        final Vector3D centerInert = toInert.applyTo(center);
+        final Vector3D axis1Inert  = toInert.applyTo(axis1);
+        final Vector3D axis2Inert  = toInert.applyTo(axis2);
+        final Vector3D direction   = target.getPosition().subtract(s.getPVCoordinates().getPosition()).normalize();
+        return new double[] {
+            dihedralAngle(centerInert, axis1Inert, direction),
+            dihedralAngle(centerInert, axis2Inert, direction)
+        };
+    }
+
+    private double dihedralAngle(final Vector3D center, final Vector3D axis, final Vector3D u) {
+        final Vector3D y = Vector3D.crossProduct(axis, center).normalize();
+        final Vector3D x = Vector3D.crossProduct(y, axis).normalize();
+        return FastMath.atan2(Vector3D.dotProduct(u, y), Vector3D.dotProduct(u, x));
     }
 
     /** check the default behavior to stop propagation on FoV exit. */
     @Test
-    public void testStopOnExit() throws OrekitException {
+    public void testStopOnExit() {
         //setup
         double pi = FastMath.PI;
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH; //arbitrary date
@@ -156,13 +232,13 @@ public class FieldOfViewDetectorTest {
 
             Utils.setDataRoot("regular-data");
 
+            utc = TimeScalesFactory.getUTC();
+
             // Computation date
             // Satellite position as circular parameters
             mu = 3.9860047e14;
 
-            initDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
-                                                     TimeComponents.H00,
-                                                     TimeScalesFactory.getUTC());
+            initDate = new AbsoluteDate(new DateComponents(1969, 8, 28), TimeComponents.H00, utc);
 
             Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
             Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
@@ -189,8 +265,7 @@ public class FieldOfViewDetectorTest {
     private static class DihedralSunVisiHandler implements EventHandler<FieldOfViewDetector> {
 
         public Action eventOccurred(final SpacecraftState s, final FieldOfViewDetector detector,
-                                    final boolean increasing)
-            throws OrekitException {
+                                    final boolean increasing) {
             if (increasing) {
                 //System.err.println(" Sun visibility starts " + s.getDate());
                 AbsoluteDate startVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),

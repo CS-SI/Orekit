@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.orekit.SolarInputs97to05;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -40,7 +39,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class DTM2000Test {
 
     @Test
-    public void testWithOriginalTestsCases() throws OrekitException {
+    public void testWithOriginalTestsCases() {
 
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -140,7 +139,7 @@ public class DTM2000Test {
     }
 
     @Test
-    public void testNonEarthRotationAxisAlignedFrame() throws OrekitException {
+    public void testNonEarthRotationAxisAlignedFrame() {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -164,7 +163,7 @@ public class DTM2000Test {
     }
 
     @Test
-    public void testField() throws OrekitException {
+    public void testField() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);

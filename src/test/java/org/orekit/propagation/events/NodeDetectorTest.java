@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -39,7 +38,7 @@ import org.orekit.utils.Constants;
 public class NodeDetectorTest {
 
     @Test
-    public void testIssue138() throws OrekitException {
+    public void testIssue138() {
         double a = 800000 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         double e = 0.0001;
         double i = FastMath.toRadians(98);
@@ -90,7 +89,7 @@ public class NodeDetectorTest {
     }
 
     @Test
-    public void testIssue158() throws OrekitException {
+    public void testIssue158() {
 
         double a          = 3.0e7;
         double e1         =  0.8;

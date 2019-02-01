@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.displacement.TidalDisplacement;
@@ -44,7 +43,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class TidalDisplacementTest {
 
     @Test
-    public void testIERSDisplacementNumbers() throws OrekitException {
+    public void testIERSDisplacementNumbers() {
         for (final IERSConventions conventions : IERSConventions.values()) {
             // as of Orekit 9.0, supported conventions are
             // IERS conventions 1996, IERS conventions 2003 and IERS conventions 2010
@@ -68,7 +67,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantOriginalArgumentsNoRemove() throws OrekitException {
+    public void testDehantOriginalArgumentsNoRemove() {
         // this test intends to reproduce as much as possible the DEHANTTIDEINEL.F test case
         // it does so by replacing the fundamental nutation arguments and frequency correction
         // models used by Orekit (which come from IERS conventions) by the hard-coded models
@@ -80,7 +79,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantOriginalArgumentsRemovePermanentTide() throws OrekitException {
+    public void testDehantOriginalArgumentsRemovePermanentTide() {
         // this test intends to reproduce as much as possible the DEHANTTIDEINEL.F test case
         // with step 3 activated
         // it does so by replacing the fundamental nutation arguments and frequency correction
@@ -93,7 +92,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantIERS1996() throws OrekitException {
+    public void testDehantIERS1996() {
         // this test intends to replay the DEHANTTIDEINEL.F test case but using the
         // fundamental nutation arguments and frequency correction models from IERS
         // conventions.
@@ -104,7 +103,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantIERS2003() throws OrekitException {
+    public void testDehantIERS2003() {
         // this test intends to replay the DEHANTTIDEINEL.F test case but using the
         // fundamental nutation arguments and frequency correction models from IERS
         // conventions.
@@ -115,7 +114,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantIERS2010() throws OrekitException {
+    public void testDehantIERS2010() {
         // this test intends to replay the DEHANTTIDEINEL.F test case but using the
         // fundamental nutation arguments and frequency correction models from IERS
         // conventions.
@@ -132,7 +131,7 @@ public class TidalDisplacementTest {
     private void doTestDehant(final IERSConventions conventions, final boolean removePermanentDeformation, final boolean replaceModels,
                               final double expectedDx, final double expectedDy, final double expectedDz,
                               final double tolerance)
-        throws OrekitException {
+        {
 
         Frame     itrf = FramesFactory.getITRF(conventions, false);
         TimeScale ut1  = TimeScalesFactory.getUT1(conventions, false);

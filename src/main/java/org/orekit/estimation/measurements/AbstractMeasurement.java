@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -26,7 +27,6 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -46,10 +46,10 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     /** List of the supported parameters. */
     private final List<ParameterDriver> supportedParameters;
 
-    /** Indices of the propagators related to this measurement.
-     * @since 9.0
+    /** Satellites related to this measurement.
+     * @since 9.3
      */
-    private final List<Integer> propagatorsIndices;
+    private final List<ObservableSatellite> satellites;
 
     /** Date of the measurement. */
     private final AbsoluteDate date;
@@ -79,14 +79,37 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param baseWeight base weight
      * @param propagatorsIndices indices of the propagators related to this measurement
      * @param supportedParameters supported parameters
-     * @throws OrekitException may be used in classes that extends this one
+     * @deprecated since 9.3, replaced bew {@link #AbstractMeasurement(AbsoluteDate,
+     * double, double, double, List)} followed by {@link #addParameterDriver(ParameterDriver)}
      */
+    @Deprecated
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
                                   final double sigma, final double baseWeight,
                                   final List<Integer> propagatorsIndices,
-                                  final ParameterDriver... supportedParameters) throws OrekitException {
+                                  final ParameterDriver... supportedParameters) {
+        this(date, observed, sigma, baseWeight,
+             propagatorsIndices.stream().map(i -> new ObservableSatellite(i)).collect(Collectors.toList()));
+        for (final ParameterDriver parameterDriver : supportedParameters) {
+            this.supportedParameters.add(parameterDriver);
+        }
+    }
 
-        this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
+    /** Simple constructor for mono-dimensional measurements.
+     * <p>
+     * At construction, a measurement is enabled.
+     * </p>
+     * @param date date of the measurement
+     * @param observed observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellites satellites related to this measurement
+     * @since 9.3
+     */
+    protected AbstractMeasurement(final AbsoluteDate date, final double observed,
+                                  final double sigma, final double baseWeight,
+                                  final List<ObservableSatellite> satellites) {
+
+        this.supportedParameters = new ArrayList<ParameterDriver>();
         for (final ParameterDriver parameterDriver : supportedParameters) {
             this.supportedParameters.add(parameterDriver);
         }
@@ -102,7 +125,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
             baseWeight
         };
 
-        this.propagatorsIndices = propagatorsIndices;
+        this.satellites = satellites;
 
         this.modifiers = new ArrayList<EstimationModifier<T>>();
         setEnabled(true);
@@ -119,27 +142,55 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param baseWeight base weight
      * @param propagatorsIndices indices of the propagators related to this measurement
      * @param supportedParameters supported parameters
-     * @throws OrekitException may be used in classes that extends this one
+     * @deprecated since 9.3, replaced bew {@link #AbstractMeasurement(AbsoluteDate,
+     * double[], double[], double[], List)} followed by {@link #addParameterDriver(ParameterDriver)}
      */
+    @Deprecated
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
                                   final List<Integer> propagatorsIndices,
-                                  final ParameterDriver... supportedParameters) throws OrekitException {
-        this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
+                                  final ParameterDriver... supportedParameters) {
+        this(date, observed, sigma, baseWeight,
+             propagatorsIndices.stream().map(i -> new ObservableSatellite(i)).collect(Collectors.toList()));
         for (final ParameterDriver parameterDriver : supportedParameters) {
             this.supportedParameters.add(parameterDriver);
         }
+    }
+
+    /** Simple constructor, for multi-dimensional measurements.
+     * <p>
+     * At construction, a measurement is enabled.
+     * </p>
+     * @param date date of the measurement
+     * @param observed observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellites satellites related to this measurement
+     * @since 9.3
+     */
+    protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
+                                  final double[] sigma, final double[] baseWeight,
+                                  final List<ObservableSatellite> satellites) {
+        this.supportedParameters = new ArrayList<ParameterDriver>();
 
         this.date       = date;
         this.observed   = observed.clone();
         this.sigma      = sigma.clone();
         this.baseWeight = baseWeight.clone();
 
-        this.propagatorsIndices = propagatorsIndices;
+        this.satellites = satellites;
 
         this.modifiers = new ArrayList<EstimationModifier<T>>();
         setEnabled(true);
 
+    }
+
+    /** Add a parameter driver.
+     * @param driver parameter driver to add
+     * @since 9.3
+     */
+    protected void addParameterDriver(final ParameterDriver driver) {
+        supportedParameters.add(driver);
     }
 
     /** {@inheritDoc} */
@@ -178,10 +229,18 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         return baseWeight.clone();
     }
 
+    /** {@inheritDoc}
+     * @deprecated as of 9.3, replaced by {@link #getSatellites()}
+     */
+    @Deprecated
+    public List<Integer> getPropagatorsIndices() {
+        return satellites.stream().map(s -> s.getPropagatorIndex()).collect(Collectors.toList());
+    }
+
     /** {@inheritDoc} */
     @Override
-    public List<Integer> getPropagatorsIndices() {
-        return propagatorsIndices;
+    public List<ObservableSatellite> getSatellites() {
+        return satellites;
     }
 
     /** Estimate the theoretical value.
@@ -192,16 +251,13 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param evaluation evaluation number
      * @param states orbital states at measurement date
      * @return theoretical value
-     * @exception OrekitException if value cannot be computed
      * @see #estimate(int, int, SpacecraftState[])
      */
-    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states)
-        throws OrekitException;
+    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states);
 
     /** {@inheritDoc} */
     @Override
-    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState[] states)
-        throws OrekitException {
+    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState[] states) {
 
         // compute the theoretical value
         final EstimatedMeasurement<T> estimation = theoreticalEvaluation(iteration, evaluation, states);
@@ -229,8 +285,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public void addModifier(final EstimationModifier<T> modifier)
-        throws OrekitException {
+    public void addModifier(final EstimationModifier<T> modifier) {
 
         // combine the measurement parameters and the modifier parameters
         supportedParameters.addAll(modifier.getParametersDrivers());

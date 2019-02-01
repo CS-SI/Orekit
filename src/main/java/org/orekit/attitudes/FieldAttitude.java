@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
@@ -166,10 +165,8 @@ public class FieldAttitude<T extends RealFieldElement<T>>
      * @param newReferenceFrame desired reference frame for attitude
      * @return an attitude that has the same orientation and motion as the instance,
      * but guaranteed to have the specified reference frame
-     * @exception OrekitException if conversion between reference frames fails
      */
-    public FieldAttitude<T> withReferenceFrame(final Frame newReferenceFrame)
-        throws OrekitException {
+    public FieldAttitude<T> withReferenceFrame(final Frame newReferenceFrame) {
 
         if (newReferenceFrame == referenceFrame) {
             // simple case, the instance is already compliant
@@ -251,11 +248,9 @@ public class FieldAttitude<T extends RealFieldElement<T>>
      * @param interpolationDate interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
      */
     public FieldAttitude<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
-                                        final Stream<FieldAttitude<T>> sample)
-        throws OrekitException {
+                                        final Stream<FieldAttitude<T>> sample) {
         final List<TimeStampedFieldAngularCoordinates<T>> datedPV =
                 sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
         final TimeStampedFieldAngularCoordinates<T> interpolated =

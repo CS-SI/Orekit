@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -71,8 +70,7 @@ public class TabulatedProvider implements AttitudeProvider {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                final AbsoluteDate date, final Frame frame) {
 
         // get attitudes sample on which interpolation will be performed
         final List<TimeStampedAngularCoordinates> sample = table.getNeighbors(date).collect(Collectors.toList());
@@ -89,8 +87,7 @@ public class TabulatedProvider implements AttitudeProvider {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        throws OrekitException {
+                                                                        final Frame frame) {
 
         // get attitudes sample on which interpolation will be performed
         final List<TimeStampedFieldAngularCoordinates<T>> sample =

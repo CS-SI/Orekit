@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -274,10 +274,8 @@ public class HarrisPriester implements Atmosphere {
      * @param sunInEarth position of the Sun in Earth frame (m)
      * @param posInEarth target position in Earth frame (m)
      * @return the local density (kg/m³)
-     * @exception OrekitException if altitude is below the model minimal altitude
      */
-    public double getDensity(final Vector3D sunInEarth, final Vector3D posInEarth)
-        throws OrekitException {
+    public double getDensity(final Vector3D sunInEarth, final Vector3D posInEarth) {
 
         final double posAlt = getHeight(posInEarth);
         // Check for height boundaries
@@ -328,10 +326,8 @@ public class HarrisPriester implements Atmosphere {
      * @param posInEarth target position in Earth frame (m)
      * @return the local density (kg/m³)
      * @param <T> instance of RealFieldElement<T>
-     * @exception OrekitException if altitude is below the model minimal altitude
      */
-    public <T extends RealFieldElement<T>> T getDensity(final Vector3D sunInEarth, final FieldVector3D<T> posInEarth)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> T getDensity(final Vector3D sunInEarth, final FieldVector3D<T> posInEarth) {
         final T zero = posInEarth.getX().getField().getZero();
         final T posAlt = getHeight(posInEarth);
         // Check for height boundaries
@@ -382,11 +378,9 @@ public class HarrisPriester implements Atmosphere {
      * @param position current position
      * @param frame the frame in which is defined the position
      * @return local density (kg/m³)
-     * @exception OrekitException if some frame conversion cannot be performed
-     *            or if altitude is below the model minimal altitude
+          *            or if altitude is below the model minimal altitude
      */
-    public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
-        throws OrekitException {
+    public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame) {
 
         // Sun position in earth frame
         final Vector3D sunInEarth = sun.getPVCoordinates(date, earth.getBodyFrame()).getPosition();
@@ -403,13 +397,11 @@ public class HarrisPriester implements Atmosphere {
      * @param <T> implements a RealFieldElement
      * @param frame the frame in which is defined the position
      * @return local density (kg/m³)
-     * @exception OrekitException if some frame conversion cannot be performed
-     *            or if altitude is below the model minimal altitude
+          *            or if altitude is below the model minimal altitude
      */
     public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
-                                                        final Frame frame)
-            throws OrekitException {
+                                                        final Frame frame) {
         // Sun position in earth frame
         final Vector3D sunInEarth = sun.getPVCoordinates(date.toAbsoluteDate(), earth.getBodyFrame()).getPosition();
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,10 +57,8 @@ class TIRFProvider implements EOPBasedTransformProvider {
 
     /** Simple constructor.
      * @param eopHistory EOP history
-     * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRFProvider(final EOPHistory eopHistory)
-        throws OrekitException {
+    protected TIRFProvider(final EOPHistory eopHistory) {
 
         this.ut1        = TimeScalesFactory.getUT1(eopHistory);
         this.eopHistory = eopHistory;
@@ -76,14 +74,13 @@ class TIRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public TIRFProvider getNonInterpolatingProvider()
-        throws OrekitException {
+    public TIRFProvider getNonInterpolatingProvider() {
         return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // compute proper rotation
         final double correctedERA = era.value(date);
@@ -101,8 +98,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute proper rotation
         final T correctedERA = era.value(date);
@@ -123,9 +119,8 @@ class TIRFProvider implements EOPBasedTransformProvider {
     /** Get the Earth Rotation Angle at the current date.
      * @param  date the date
      * @return Earth Rotation Angle at the current date in radians
-     * @exception OrekitException if nutation model cannot be computed
      */
-    public double getEarthRotationAngle(final AbsoluteDate date) throws OrekitException {
+    public double getEarthRotationAngle(final AbsoluteDate date) {
         return MathUtils.normalizeAngle(era.value(date), 0);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,10 +102,8 @@ public class SEMParser implements DataLoader {
      * <p>This feature is useful when the file selection is already set up by
      * the {@link DataProvidersManager data providers manager} configuration.</p>
      *
-     * @exception OrekitException if some data can't be read, some
-     * file content is corrupted or no GPS almanac is available.
      */
-    public void loadData() throws OrekitException {
+    public void loadData() {
         // load the data from the configured data providers
         DataProvidersManager.getInstance().feed(supportedNames, this);
         if (almanacs.isEmpty()) {

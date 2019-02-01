@@ -50,7 +50,7 @@ import org.orekit.utils.PVCoordinates;
 public class SP3ParserTest {
 
     @Test
-    public void testParseSP3a1() throws OrekitException, IOException, URISyntaxException {
+    public void testParseSP3a1() throws IOException, URISyntaxException {
         // simple test for version sp3-a, only contains position entries
         final String ex = "/sp3/example-a-1.sp3";
 
@@ -94,7 +94,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3a2() throws OrekitException, IOException {
+    public void testParseSP3a2() throws IOException {
         // simple test for version sp3-a, contains p/v entries
         final String ex = "/sp3/example-a-2.sp3";
 
@@ -124,7 +124,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3c1() throws OrekitException, IOException {
+    public void testParseSP3c1() throws IOException {
         // simple test for version sp3-c, contains p entries
         final String ex = "/sp3/example-c-1.sp3";
 
@@ -153,7 +153,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3c2() throws OrekitException, IOException {
+    public void testParseSP3c2() throws IOException {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String ex = "/sp3/example-c-2.sp3";
 
@@ -183,7 +183,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3d1() throws OrekitException, IOException {
+    public void testParseSP3d1() throws IOException {
         // simple test for version sp3-d, contains p entries
         final String ex = "/sp3/example-d-1.sp3";
 
@@ -212,7 +212,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3d2() throws OrekitException, IOException {
+    public void testParseSP3d2() throws IOException {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String ex = "/sp3/example-d-2.sp3";
 
@@ -242,7 +242,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testSP3GFZ() throws OrekitException, IOException {
+    public void testSP3GFZ() throws IOException {
         // simple test for version sp3-c, contains more than 85 satellites
         final String ex = "/sp3/gbm19500_truncated.sp3";
 
@@ -315,7 +315,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testSP3Compressed() throws OrekitException, IOException {
+    public void testSP3Compressed() throws IOException {
         final String ex = "/sp3/gbm18432.sp3.Z";
 
         final SP3Parser parser = new SP3Parser();
@@ -323,6 +323,7 @@ public class SP3ParserTest {
         final SP3File file = parser.parse(new UnixCompressFilter().filter(compressed).getStreamOpener().openStream());
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assert.assertEquals("FIT",file.getOrbitTypeKey());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
         Assert.assertEquals(71, file.getSatelliteCount());
@@ -415,6 +416,45 @@ public class SP3ParserTest {
     }
 
     @Test
+    public void testBHN() throws IOException {
+        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final String      ex           = "/sp3/esaBHN.sp3.Z";
+        final NamedData   compressed   = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final NamedData   uncompressed = new UnixCompressFilter().filter(compressed);
+        final InputStream is           = uncompressed.getStreamOpener().openStream();
+        final SP3File     file         = parser.parse(is);
+        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assert.assertEquals("BHN",file.getOrbitTypeKey());
+    }
+
+    @Test
+    public void testPRO() throws IOException {
+        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final String      ex           = "/sp3/esaPRO.sp3.Z";
+        final NamedData   compressed   = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final NamedData   uncompressed = new UnixCompressFilter().filter(compressed);
+        final InputStream is           = uncompressed.getStreamOpener().openStream();
+        final SP3File     file         = parser.parse(is);
+        Assert.assertEquals(SP3OrbitType.EXT, file.getOrbitType());
+        Assert.assertEquals("PRO",file.getOrbitTypeKey());
+    }
+
+    @Test
+    public void testUnknownType() throws IOException {
+        final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final String      ex           = "/sp3/unknownType.sp3.Z";
+        final NamedData   compressed   = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final NamedData   uncompressed = new UnixCompressFilter().filter(compressed);
+        final InputStream is           = uncompressed.getStreamOpener().openStream();
+        final SP3File     file         = parser.parse(is);
+        Assert.assertEquals(SP3OrbitType.OTHER, file.getOrbitType());
+        Assert.assertEquals("UKN",file.getOrbitTypeKey());
+    }
+
+    @Test
     public void testUnsupportedVersion() throws IOException {
         try {
             final String ex = "/sp3/unsupported-version.sp3";
@@ -450,7 +490,7 @@ public class SP3ParserTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 }

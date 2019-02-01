@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
@@ -61,16 +64,16 @@ public class ParameterDriver {
     private String name;
 
     /** Reference value. */
-    private final double referenceValue;
+    private double referenceValue;
 
     /** Scaling factor. */
-    private final double scale;
+    private double scale;
 
     /** Minimum value. */
-    private final double minValue;
+    private double minValue;
 
     /** Maximum value. */
-    private final double maxValue;
+    private double maxValue;
 
     /** Reference date.
      * @since 9.0
@@ -104,12 +107,10 @@ public class ParameterDriver {
      * parameter), it must be non-zero
      * @param minValue minimum value
      * @param maxValue maximum value
-     * @exception OrekitException if scale is too close to zero
      */
     public ParameterDriver(final String name, final double referenceValue,
                            final double scale, final double minValue,
-                           final double maxValue)
-        throws OrekitException {
+                           final double maxValue) {
         if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
             throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
                                       name, scale);
@@ -133,11 +134,9 @@ public class ParameterDriver {
      * observer is added, and then called at each value change.
      * </p>
      * @param observer observer to add
-     * @exception OrekitException if the observer triggers one
-     * while being updated
+          * while being updated
      */
-    public void addObserver(final ParameterObserver observer)
-        throws OrekitException {
+    public void addObserver(final ParameterObserver observer) {
         observers.add(observer);
         observer.valueChanged(getValue(), this);
     }
@@ -188,11 +187,37 @@ public class ParameterDriver {
         return referenceValue;
     }
 
+    /** Set reference parameter value.
+     * @since 9.3
+     * @param referenceValue the reference value to set.
+     */
+    public void setReferenceValue(final double referenceValue) {
+        final double previousReferenceValue = this.referenceValue;
+        this.referenceValue = referenceValue;
+        for (final ParameterObserver observer : observers) {
+            observer.referenceValueChanged(previousReferenceValue, this);
+        }
+    }
+
     /** Get minimum parameter value.
      * @return minimum parameter value
      */
     public double getMinValue() {
         return minValue;
+    }
+
+    /** Set minimum parameter value.
+     * @since 9.3
+     * @param minValue the minimum value to set.
+     */
+    public void setMinValue(final double minValue) {
+        final double previousMinValue = this.minValue;
+        this.minValue = minValue;
+        for (final ParameterObserver observer : observers) {
+            observer.minValueChanged(previousMinValue, this);
+        }
+        // Check if current value is not out of min/max range
+        setValue(value);
     }
 
     /** Get maximum parameter value.
@@ -202,11 +227,37 @@ public class ParameterDriver {
         return maxValue;
     }
 
+    /** Set maximum parameter value.
+     * @since 9.3
+     * @param maxValue the maximum value to set.
+     */
+    public void setMaxValue(final double maxValue) {
+        final double previousMaxValue = this.maxValue;
+        this.maxValue = maxValue;
+        for (final ParameterObserver observer : observers) {
+            observer.maxValueChanged(previousMaxValue, this);
+        }
+        // Check if current value is not out of min/max range
+        setValue(value);
+    }
+
     /** Get scale.
      * @return scale
      */
     public double getScale() {
         return scale;
+    }
+
+    /** Set scale.
+     * @since 9.3
+     * @param scale the scale to set.
+     */
+    public void setScale(final double scale) {
+        final double previousScale = this.scale;
+        this.scale = scale;
+        for (final ParameterObserver observer : observers) {
+            observer.scaleChanged(previousScale, this);
+        }
     }
 
     /** Get normalized value.
@@ -228,9 +279,8 @@ public class ParameterDriver {
      * process. It is computed as {@code (current - reference)/scale}.
      * </p>
      * @param normalized value
-     * @exception OrekitException if an observer throws one
      */
-    public void setNormalizedValue(final double normalized) throws OrekitException {
+    public void setNormalizedValue(final double normalized) {
         setValue(referenceValue + scale * normalized);
     }
 
@@ -261,6 +311,17 @@ public class ParameterDriver {
         return value;
     }
 
+    /** Get the value as a derivative structure.
+     * @param factory factory for the derivatives
+     * @param indices indices of the differentiation parameters in derivatives computations
+     * @return value with derivatives
+     * @since 9.3
+     */
+    public DerivativeStructure getValue(final DSFactory factory, final Map<String, Integer> indices) {
+        final Integer index = indices.get(name);
+        return (index == null) ? factory.constant(value) : factory.variable(index, value);
+    }
+
     /** Set parameter value.
      * <p>
      * If {@code newValue} is below {@link #getMinValue()}, it will
@@ -269,9 +330,8 @@ public class ParameterDriver {
      * #getMaxValue()}.
      * </p>
      * @param newValue new value
-     * @exception OrekitException if an observer throws one
      */
-    public void setValue(final double newValue) throws OrekitException {
+    public void setValue(final double newValue) {
         final double previousValue = getValue();
         value = FastMath.max(minValue, FastMath.min(maxValue, newValue));
         for (final ParameterObserver observer : observers) {

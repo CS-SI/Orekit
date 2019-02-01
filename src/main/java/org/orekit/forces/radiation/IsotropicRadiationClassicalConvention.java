@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,8 +116,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
-                                      final T[] parameters)
-        throws OrekitException {
+                                      final T[] parameters) {
         final T ca = parameters[0];
         final T cs = parameters[1];
         final T kP = ca.add(cs).negate().add(1).multiply(4.0 / 9.0).add(1).multiply(crossSection);
@@ -129,8 +128,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                             final Rotation rotation, final double mass,
                                                                             final Vector3D flux, final double[] parameters,
-                                                                            final String paramName)
-        throws OrekitException {
+                                                                            final String paramName) {
 
         final DerivativeStructure caDS;
         final DerivativeStructure csDS;

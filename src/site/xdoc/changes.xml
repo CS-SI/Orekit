@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2018 CS Systèmes d'Information
+<!-- Copyright 2002-2019 CS Systèmes d'Information
   Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -20,6 +20,158 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="9.3" date="2019-01-25" description="Version 9.3 is a minor version of Orekit.
+    It includes both new features and bug fixes. New features introduced in 9.3 are: a new GPSDate class,
+    changed OrekitException from checked to unchecked exceptions, parameter drivers scales and reference
+    value can be changed, access to Kalman filter internal matrices, position-only measurements in orbit determination,
+    support for unofficial versions 2.12 and 2.20 of Rinex files (mainly for spaceborne receivers),
+    direct building of appropriate attitude law with eclipses for all GNSS satellite types, inter-satellites
+    view detector, measurement generation feature, possibility fo use Marshall Solar Activity Future Estimation
+    to feed NRL MSISE 2000 atmosphere model, new tropospheric models: Mendes-Pavlis, Vienna 1, Vienna 3, estimated model,
+    new mapping functions for tropospheric effect: Global Mapping Function, Niell Mapping Function, Global
+    Pression Temperature Models GPT and GPT2, possibility to estimate tropospheric zenith delay,
+    clock offset that can be estimated (both for ground station and satellite clocks).">
+      <action dev="luc" type="add" issue="516">
+        Added a way to manage clock corrections from GPSPropagator.
+      </action>
+      <action dev="bryan" type="add" issue="498">
+        Added several tropospheric models: Mendes-Pavlis, Vienna 1, Vienna 3, estimated model
+        where the total zenith delay can be estimated during Orbit Determination.
+      </action>
+      <action dev="bryan" type="add" issue="498">
+        Added Global Mapping Function and Niell Mapping Function to be used with tropospheric
+        models.
+      </action>
+      <action dev="luc" type="add" issue="515">
+        Added clock offset parameter at satellites level for orbit determination.
+      </action>
+      <action dev="luc" type="add" issue="513">
+        Added clock offset parameter at ground stations level for orbit determination.
+      </action>
+      <action dev="bryan" type="add" issue="512">
+        Added weather model Global Pressure and Temperature 2.
+      </action>
+      <action dev="bryan" type="add" issue="511">
+        Added weather model Global Pressure and Temperature.
+      </action>
+      <action dev="luc" type="fix" issue="510">
+        Fixed dropped derivatives in TimeStampedFieldPVCoordinates.shiftedBy(dt).
+      </action>
+      <action dev="luc" type="fix" issue="509">
+        Fixed scaling error in ParameterFunction differentiation.
+      </action>
+      <action dev="luc" type="fix" issue="508">
+        Fixed inconsistency leading to inaccuracies in conversions from AbsoluteDate to FieldAbsoluteDate.
+      </action>
+      <action dev="pascal" type="fix" issue="495">
+        The MarshallSolarActivityFutureEstimation class implements
+        the NRLMSISE00InputParameters interface.
+      </action>
+      <action dev="evan" type="fix" issue="486">
+        Make FieldTransform.shiftedBy(T) public.
+      </action>
+      <action dev="evan" type="fix" issue="496">
+        Fix JavaDoc for TimeComponents.getSecond().
+      </action>
+      <action dev="evan" type="update" issue="501">
+        Deprecate GFunction in favor of ToDoubleFunction.
+      </action>
+      <action dev="luc" type="add" issue="494">
+        Added a measurements generation feature for use with orbit determination.
+        Fixes issue #494
+      </action>
+      <action dev="luc" type="add">
+        Added adapter for event detectors, allowing to wrap existing detector
+        while changing their behaviour.
+      </action>
+      <action dev="luc" type="add">
+        Added ground at night detector.
+      </action>
+      <action dev="luc" type="add">
+        Added inter-satellites direct view detector.
+      </action>
+      <action dev="luc" type="add">
+        Added constants defined by IAU 2015 resolution B3 for Sun, Earth and Jupiter.
+      </action>
+      <action dev="luc" type="add" issue="500">
+        Added retrieval of full time span (start time, end time and data) containing
+        a specified date in TimeSpanMap.
+        Fixes issue #500
+      </action>
+      <action dev="luc" type="add">
+        Added direct building of attitude provider from GNSS satellite type.
+      </action>
+      <action dev="luc" type="add">
+        Added parsing of unofficial versions 2.12 and 2.20 of Rinex files
+        (used by some spaceborne receivers like IceSat 1).
+      </action>
+      <action dev="luc" type="add">
+        Added a way to retrieve Rinex header directly from the observations data set.
+      </action>
+      <action dev="luc" type="add">
+        Added position-only measurements in orbit determination.
+      </action>
+      <action dev="luc" type="fix" issue="491">
+        Allow parsing of SP3 files that use non-predefined orbit types.
+        Fixes issue #491.
+      </action>
+	  <action dev="maxime" type="add" issue="485">
+        Added access to Kalman filter matrices.
+		KalmanEstimation interface now has methods returning the physical values of:
+		state transition matrix phi, measurement matrix H, innovation matrix S and Kalman gain matrix K.
+		The methods are implemented in Model class. A class ModelTest was added to test these values.
+		Fixes issue #485
+      </action>
+      <action dev="luc" type="fix" issue="492" due-to="Lebas">
+        Fixed error message for TLE with incorrect checksum.
+        Fixes issue #492.
+      </action>
+      <action dev="maxime" type="fix" issue="490">
+        Fixed reference value of parameter drivers updating in Kalman filter. 
+        When resetting the orbit in the propagator builder, the reference values
+        of the drivers are now reset too.
+        Fixes issue #490.
+      </action>
+      <action dev="maxime" type="add" issue="489">
+        Made ParameterDriver class fully mutable.
+        By adding setters for attributes scale, reference, minimum and maximum values.
+        Fixes issue #489.
+      </action>
+      <action dev="maxime" type="fix" issue="488">
+        Fixed method unNormalizeStateVector in Model class of Kalman estimator.
+        Previous value did not take into account the reference values of the drivers.
+        Fixes issue #488.
+      </action>
+      <action dev="luc" type="fix" issue="484" due-to="Yannick Jeandroz">
+        Changed OrekitException from checked to unchecked exception.
+        Most functions do throw such exceptions. As they are unchecked, they are
+        not advertised in either `throws` statements in the function signature or
+        in the javadoc. So users must consider that as soon as they use any Orekit
+        feature, an unchecked `OrekitException` may be thrown. In most cases, users
+        will not attempt to recover for this but will only use them to display or
+        log a meaningful error message.
+        Fixes #484.
+      </action>
+      <action dev="luc" type="fix" issue="480">
+        Added GPSDate class to convert back and forth with AbsoluteDate.
+        Fixes #480.
+      </action>
+      <action dev="evan" type="fix" issue="476">
+        Fix generics in EventEnablingPredicateFilter.
+        Fixes #476.
+      </action>
+      <action dev="maxime" type="fix" issue="473">
+        Fixed wrong values of radec generated in AngularRaDecMeasurementCreator.
+        Fixed wrong values of range rate generated in RangeRateMeasurementCreator.
+        Added tests that check the values of measurements for each type of measurement.
+        Upgraded precision in Kalman and batch least-squares OD tests that are using range-rate and radec measurements.
+        Fixes issue #473.
+      </action>
+      <action dev="luc" type="fix">
+        Derivatives with respect to mass are not computed anymore since several versions,
+        some remnants of former computation remained and have now been removed.
+      </action>
+    </release>
     <release version="9.2" date="2018-05-26" description="Version 9.2 is a minor release of Orekit.
     It introduces several new features and bug fixes. New features introduced in version 9.2 are
     Kalman filter for orbit determination, loading of RINEX files, loading of ANTEX files, loading

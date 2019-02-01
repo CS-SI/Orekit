@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * It is described in the paper:<br>
  * <a href="http://sol.spacenvironment.net/~JB2008/pubs/AIAA_2008-6438_JB2008_Model.pdf">A
  * New Empirical Thermospheric Density Model JB2008 Using New Solar Indices</a><br>
- * <i>Bruce R. Bowman & al.</i><br>
+ * <i>Bruce R. Bowman &amp; al.</i><br>
  * AIAA 2008-6438<br>
  * </p>
  * <p>
@@ -209,20 +209,18 @@ public class JB2008 implements Atmosphere {
      *        (Tabular time 2.0 days earlier)
      * @param xm10B MG2 81-day ave. centered index<br>
      *        (Tabular time 2.0 days earlier)
-     * @param y10 Solar X-Ray & Lya index scaled to F10<br>
+     * @param y10 Solar X-Ray &amp; Lya index scaled to F10<br>
      *        (Tabular time 5.0 days earlier)
-     * @param y10B Solar X-Ray & Lya 81-day ave. centered index<br>
+     * @param y10B Solar X-Ray &amp; Lya 81-day ave. centered index<br>
      *        (Tabular time 5.0 days earlier)
      * @param dstdtc Temperature change computed from Dst index
      * @return total mass-Density at input position (kg/m³)
-     * @exception OrekitException if altitude is below 90 km
      */
     public double getDensity(final double dateMJD, final double sunRA, final double sunDecli,
                              final double satLon, final double satLat, final double satAlt,
                              final double f10, final double f10B, final double s10,
                              final double s10B, final double xm10, final double xm10B,
-                             final double y10, final double y10B, final double dstdtc)
-        throws OrekitException {
+                             final double y10, final double y10B, final double dstdtc) {
 
         if (satAlt < ALT_MIN) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, satAlt, ALT_MIN);
@@ -471,21 +469,19 @@ public class JB2008 implements Atmosphere {
      *        (Tabular time 2.0 days earlier)
      * @param xm10B MG2 81-day ave. centered index<br>
      *        (Tabular time 2.0 days earlier)
-     * @param y10 Solar X-Ray & Lya index scaled to F10<br>
+     * @param y10 Solar X-Ray &amp; Lya index scaled to F10<br>
      *        (Tabular time 5.0 days earlier)
-     * @param y10B Solar X-Ray & Lya 81-day ave. centered index<br>
+     * @param y10B Solar X-Ray &amp; Lya 81-day ave. centered index<br>
      *        (Tabular time 5.0 days earlier)
      * @param dstdtc Temperature change computed from Dst index
      * @param <T> type fo the field elements
      * @return total mass-Density at input position (kg/m³)
-     * @exception OrekitException if altitude is below 90 km
      */
     public <T extends RealFieldElement<T>> T getDensity(final T dateMJD, final T sunRA, final T sunDecli,
                                                         final T satLon, final T satLat, final T satAlt,
                                                         final double f10, final double f10B, final double s10,
                                                         final double s10B, final double xm10, final double xm10B,
-                                                        final double y10, final double y10B, final double dstdtc)
-        throws OrekitException {
+                                                        final double y10, final double y10B, final double dstdtc) {
 
         if (satAlt.getReal() < ALT_MIN) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
@@ -1180,11 +1176,9 @@ public class JB2008 implements Atmosphere {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return local density (kg/m³)
-     * @exception OrekitException if date is out of range of solar activity
      */
     public double getDensity(final AbsoluteDate date, final Vector3D position,
-                             final Frame frame)
-        throws OrekitException {
+                             final Frame frame) {
         // check if data are available :
         if (date.compareTo(inputParams.getMaxDate()) > 0 ||
             date.compareTo(inputParams.getMinDate()) < 0) {
@@ -1218,8 +1212,7 @@ public class JB2008 implements Atmosphere {
     @Override
     public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
-                                                        final Frame frame)
-        throws OrekitException {
+                                                        final Frame frame) {
 
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();

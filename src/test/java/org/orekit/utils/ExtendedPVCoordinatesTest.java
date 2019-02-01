@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -33,7 +32,7 @@ import org.orekit.time.FieldAbsoluteDate;
 public class ExtendedPVCoordinatesTest {
 
     @Test
-    public void testConversion() throws OrekitException {
+    public void testConversion() {
         final ExtendedPVCoordinatesProvider provider = new ExtendedPVCoordinatesProvider() {
             
             @Override
@@ -44,7 +43,7 @@ public class ExtendedPVCoordinatesTest {
             @Override
             public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
                 getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-                    throws OrekitException {
+                    {
                 return new TimeStampedFieldPVCoordinates<>(date,
                                                            FieldVector3D.getPlusI(date.getField()),
                                                            FieldVector3D.getPlusJ(date.getField()),

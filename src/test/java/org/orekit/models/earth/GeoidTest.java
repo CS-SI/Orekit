@@ -16,6 +16,17 @@
  */
 package org.orekit.models.earth;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
+import static org.orekit.OrekitMatchers.vectorCloseTo;
+
+import java.util.Arrays;
+
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -26,7 +37,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.EGMFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -34,17 +44,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Arrays;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.orekit.OrekitMatchers.closeTo;
-import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
-import static org.orekit.OrekitMatchers.vectorCloseTo;
 
 /**
  * Unit tests for {@link Geoid}.
@@ -144,14 +143,13 @@ public class GeoidTest {
      * Test several pre-computed points from the Online Geoid Height Evaluation
      * tool, which takes into account terrain.
      *
-     * @throws OrekitException on error
      * @see <a href="http://geographiclib.sourceforge.net/cgi-bin/GeoidEval">Online
      * Geoid Height Evaluation</a>
      * @see <a href="http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/egm96.html">Geoid
      * height for WGS84 and EGM96</a>
      */
     @Test
-    public void testGetUndulation() throws OrekitException {
+    public void testGetUndulation() {
         /*
          * allow 3 meter of error, which is what the approximations would
          * suggest, see the comment for Geoid.
@@ -176,11 +174,9 @@ public class GeoidTest {
     /**
      * check {@link Geoid#getIntersectionPoint(Line, Vector3D, Frame,
      * AbsoluteDate)} with several points.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testGetIntersectionPoint() throws OrekitException {
+    public void testGetIntersectionPoint() {
         // setup
         Geoid geoid = getComponent();
         Frame frame = geoid.getBodyFrame();
@@ -217,11 +213,9 @@ public class GeoidTest {
     /**
      * check {@link Geoid#getIntersectionPoint(Line, Vector3D, Frame,
      * AbsoluteDate)} handles frame transformations correctly
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testGetIntersectionPointFrame() throws OrekitException {
+    public void testGetIntersectionPointFrame() {
         // setup
         Geoid geoid = getComponent();
         Frame frame = new Frame(
@@ -261,11 +255,9 @@ public class GeoidTest {
     /**
      * check {@link Geoid#getIntersectionPoint(Line, Vector3D, Frame,
      * AbsoluteDate)} returns null when there is no intersection
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testGetIntersectionPointNoIntersection() throws OrekitException {
+    public void testGetIntersectionPointNoIntersection() {
         Geoid geoid = getComponent();
         Vector3D closeMiss = new Vector3D(geoid.getEllipsoid()
                 .getEquatorialRadius() + 18, 0, 0);
@@ -282,12 +274,10 @@ public class GeoidTest {
     /**
      * check altitude is referenced to the geoid. h<sub>ellipse</sub> =
      * h<sub>geoid</sub> + N. Where N is the undulation of the geoid.
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testTransformVector3DFrameAbsoluteDate()
-            throws OrekitException {
+            {
         // frame and date are the same
         Frame frame = FramesFactory.getGCRF();
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
@@ -317,11 +307,9 @@ public class GeoidTest {
     /**
      * check that the altitude is referenced to the geoid (includes
      * undulation).
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testTransformGeodeticPoint() throws OrekitException {
+    public void testTransformGeodeticPoint() {
         // geoid
         Geoid geoid = getComponent();
         // ellipsoid
@@ -360,11 +348,9 @@ public class GeoidTest {
 
     /**
      * check {@link Geoid#projectToGround(Vector3D, AbsoluteDate, Frame)}
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testProjectToGround() throws OrekitException {
+    public void testProjectToGround() {
         //setup
         Vector3D p = new Vector3D(7e8, 1e3, 200);
         Geoid geoid = new Geoid(potential, WGS84);

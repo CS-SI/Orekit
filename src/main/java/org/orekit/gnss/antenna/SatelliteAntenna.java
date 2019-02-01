@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,11 @@ public class SatelliteAntenna extends Antenna {
     /** PRN number. */
     private final int prnNumber;
 
+    /** Satellite type.
+     * @since 9.3
+     */
+    private final SatelliteType satelliteType;
+
     /** Satellite code. */
     private final int satelliteCode;
 
@@ -60,15 +65,42 @@ public class SatelliteAntenna extends Antenna {
      * @param cosparID COSPAR ID
      * @param validFrom start of validity
      * @param validUntil end of validity
+     * @deprecated since 9.3 replaced by {@link #SatelliteAntenna(String, String, Map,
+     * SatelliteSystem, int, SatelliteType, int, String, AbsoluteDate, AbsoluteDate)}
      */
+    @Deprecated
     public SatelliteAntenna(final String type, final String sinexCode,
                             final Map<Frequency, FrequencyPattern> patterns,
                             final SatelliteSystem satelliteSystem, final int prnNumber,
                             final int satelliteCode, final String cosparID,
                             final AbsoluteDate validFrom, final AbsoluteDate validUntil) {
+        this(type, sinexCode, patterns, satelliteSystem, prnNumber,
+             SatelliteType.parseSatelliteType(type), satelliteCode, cosparID,
+             validFrom, validUntil);
+    }
+
+    /** Simple constructor.
+     * @param type antenna type
+     * @param sinexCode sinex code
+     * @param patterns frequencies patterns
+     * @param satelliteSystem satellite system
+     * @param prnNumber PRN number
+     * @param satelliteType satellite type
+     * @param satelliteCode satellite code
+     * @param cosparID COSPAR ID
+     * @param validFrom start of validity
+     * @param validUntil end of validity
+     */
+    public SatelliteAntenna(final String type, final String sinexCode,
+                            final Map<Frequency, FrequencyPattern> patterns,
+                            final SatelliteSystem satelliteSystem, final int prnNumber,
+                            final SatelliteType satelliteType, final int satelliteCode,
+                            final String cosparID,
+                            final AbsoluteDate validFrom, final AbsoluteDate validUntil) {
         super(type, sinexCode, patterns);
         this.satelliteSystem = satelliteSystem;
         this.prnNumber       = prnNumber;
+        this.satelliteType   = satelliteType;
         this.satelliteCode   = satelliteCode;
         this.cosparID        = cosparID;
         this.validFrom       = validFrom;
@@ -87,6 +119,14 @@ public class SatelliteAntenna extends Antenna {
      */
     public int getPrnNumber() {
         return prnNumber;
+    }
+
+    /** Get satellite type.
+     * @return satellite type
+     * @since 9.3
+     */
+    public SatelliteType getSatelliteType() {
+        return satelliteType;
     }
 
     /** Get satellite code.

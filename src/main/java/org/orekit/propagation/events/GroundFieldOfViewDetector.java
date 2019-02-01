@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -136,7 +135,7 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      * Of View, a decreasing event is generated, and when the satellite leaves
      * the Field Of View, an increasing event is generated. </p>
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // get line of sight in sensor frame
         final Vector3D los = s.getPVCoordinates(this.frame).getPosition();

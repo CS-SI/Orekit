@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,6 @@
 package org.orekit.data;
 
 import java.util.regex.Pattern;
-
-import org.orekit.errors.OrekitException;
 
 /** Interface for providing data files to {@link DataLoader file loaders}.
  * <p>
@@ -72,10 +70,7 @@ public interface DataProvider {
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @return true if some data has been loaded
-     * @exception OrekitException if the data loader cannot be fed
-     * (read error ...)
      */
-    boolean feed(Pattern supported, DataLoader visitor)
-        throws OrekitException;
+    boolean feed(Pattern supported, DataLoader visitor);
 
 }

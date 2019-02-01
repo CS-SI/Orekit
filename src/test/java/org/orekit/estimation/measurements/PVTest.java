@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -40,8 +41,66 @@ import org.orekit.utils.StateFunction;
 
 public class PVTest {
 
+    /** Compare observed values and estimated values.
+     *  Both are calculated with a different algorithm
+     */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testValues() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create perfect right-ascension/declination measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               1.0, 3.0, 300.0);
+
+        propagator.setSlaveMode();
+
+        // Prepare statistics for PV values difference
+        final StreamingStatistics[] pvDiffStat = new StreamingStatistics[6];
+        for (int i = 0; i < 6; i++) {
+            pvDiffStat[i] = new StreamingStatistics();  
+        }
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            // Propagate to measurement date
+            final AbsoluteDate datemeas  = measurement.getDate();
+            SpacecraftState    state     = propagator.propagate(datemeas);
+            
+            // Estimate the PV value
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            
+            // Store the difference between estimated and observed values in the stats
+            for (int i = 0; i < 6; i++) {
+                pvDiffStat[i].addValue(FastMath.abs(estimated.getEstimatedValue()[i] - measurement.getObservedValue()[i]));    
+            }
+        }
+
+        // Mean and std errors check
+        for (int i = 0; i < 3; i++) {
+            // Check position values
+            Assert.assertEquals(0.0, pvDiffStat[i].getMean(), 3.74e-7);
+            Assert.assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.21e-7);
+            
+            // Check velocity values
+            Assert.assertEquals(0.0, pvDiffStat[i+3].getMean(), 1.29e-10);
+            Assert.assertEquals(0.0, pvDiffStat[i+3].getStandardDeviation(), 7.82e-11);
+        }
+    }
+    
+    /** Test the values of the state derivatives using a numerical.
+     * finite differences calculation as a reference
+     */
+    @Test
+    public void testStateDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -71,7 +130,7 @@ public class PVTest {
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) throws OrekitException {
+                    public double[] value(final SpacecraftState state) {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
@@ -101,10 +160,9 @@ public class PVTest {
     }
     
     /** Test the PV constructor with standard deviations for position and velocity given as 2 double. 
-     * @throws OrekitException
      */
     @Test
-    public void testPVWithSingleStandardDeviations() throws OrekitException {
+    public void testPVWithSingleStandardDeviations() {
         
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -128,12 +186,15 @@ public class PVTest {
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(6).getData();
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Create PV measurements
         final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight);
-        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, propNumRef[1]);
+        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
+        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 1e-20; // tolerance
@@ -143,7 +204,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], pv.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
             
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -169,10 +230,9 @@ public class PVTest {
     }
     
     /** Test the PV constructor with standard deviations for position and velocity given as a 6-sized vector. 
-     * @throws OrekitException
      */
     @Test
-    public void testPVWithVectorStandardDeviations() throws OrekitException {
+    public void testPVWithVectorStandardDeviations() {
         
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -197,14 +257,19 @@ public class PVTest {
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(6).getData();
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2, 0, 10};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2),
+            new ObservableSatellite(0),
+            new ObservableSatellite(10)
+        };
         
         // Create PV measurements
         final PV[] pvs = new PV[4];
-        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight);
-        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, propNumRef[1]);
-        pvs[2] = new PV(date, position, velocity, sigmaPV, baseWeight);
-        pvs[3] = new PV(date, position, velocity, sigmaPV, baseWeight, propNumRef[3]);
+        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
+        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
+        pvs[2] = new PV(date, position, velocity, sigmaPV, baseWeight, sats[2]);
+        pvs[3] = new PV(date, position, velocity, sigmaPV, baseWeight, sats[3]);
         
         // Tolerance
         final double eps = 1e-20; // tolerance
@@ -214,8 +279,8 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], pv.getPropagatorsIndices().get(0), eps);
-            
+            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+                        
             // Weights
             for (int i = 0; i < 6; i++) {
                 assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
@@ -240,10 +305,9 @@ public class PVTest {
     }
     
     /** Test the PV constructor with two 3x3 covariance matrix (one for position, the other for velocity) as input. 
-     * @throws OrekitException
      */
     @Test
-    public void testPVWithTwoCovarianceMatrices() throws OrekitException {
+    public void testPVWithTwoCovarianceMatrices() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         
@@ -279,7 +343,10 @@ public class PVTest {
         }
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Reference standard deviations
         final double[] sigmaP = {10., 20., 30.};
@@ -287,8 +354,8 @@ public class PVTest {
         
         // Create PV measurements
         final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, positionP, velocityP, baseWeight);
-        pvs[1] = new PV(date, position, velocity, positionP, velocityP, baseWeight, propNumRef[1]);
+        pvs[0] = new PV(date, position, velocity, positionP, velocityP, baseWeight, sats[0]);
+        pvs[1] = new PV(date, position, velocity, positionP, velocityP, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 6.7e-16; // tolerance
@@ -298,7 +365,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], pv.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
             
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -325,10 +392,9 @@ public class PVTest {
     }
     
     /** Test the PV constructor with one 6x6 covariance matrix as input. 
-     * @throws OrekitException
      */
     @Test
-    public void testPVWithCovarianceMatrix() throws OrekitException {
+    public void testPVWithCovarianceMatrix() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         
@@ -360,12 +426,15 @@ public class PVTest {
         }
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Create PV measurements
         final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, Pref, baseWeight);
-        pvs[1] = new PV(date, position, velocity, Pref, baseWeight, propNumRef[1]);
+        pvs[0] = new PV(date, position, velocity, Pref, baseWeight, sats[0]);
+        pvs[1] = new PV(date, position, velocity, Pref, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 1.8e-15; // tolerance
@@ -375,7 +444,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], pv.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
             
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -402,7 +471,7 @@ public class PVTest {
     
     /** Test exceptions raised if the covariance matrix does not have the proper size. */
     @Test
-    public void testExceptions() throws OrekitException {
+    public void testExceptions() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         
@@ -414,7 +483,7 @@ public class PVTest {
         
         // Build with two 3-sized vectors
         try {
-            new PV(date, position, velocity, new double[] {0., 0., 0.}, new double[] {1.}, weight);
+            new PV(date, position, velocity, new double[] {0., 0., 0.}, new double[] {1.}, weight, new ObservableSatellite(0));
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -422,7 +491,7 @@ public class PVTest {
         
         // Build with one 6-sized vector
         try {
-            new PV(date, position, velocity, new double[] {0., 0., 0.}, weight);
+            new PV(date, position, velocity, new double[] {0., 0., 0.}, weight, new ObservableSatellite(0));
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -431,7 +500,7 @@ public class PVTest {
         // Build with two 3x3 matrices
         try {
             new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}},
-                   new double[][] {{0., 0.}, {0., 0.}}, weight);
+                   new double[][] {{0., 0.}, {0., 0.}}, weight, new ObservableSatellite(0));
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -439,7 +508,7 @@ public class PVTest {
         
         // Build with one 6x6 matrix
         try {
-            new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}}, weight);
+            new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}}, weight, new ObservableSatellite(0));
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here

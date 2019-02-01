@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -40,7 +40,7 @@ of the library architecture documentation.
     Frame inertialFrame = FramesFactory.getEME2000();
     TimeScale utc = TimeScalesFactory.getUTC();
     AbsoluteDate initialDate =
-        new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
+        new AbsoluteDate(2008, 10, 01, 0, 0, 00.000, utc);
     double mu =  3.986004415e+14;
     Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
     Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
@@ -76,6 +76,7 @@ of the library architecture documentation.
 Finally, we can get the Doppler measurement in a simple propagation loop
  
     AbsoluteDate extrapDate = initialDate;
+    AbsoluteDate finalDate = new AbsoluteDate(initialDate, 6000, utc);
     while (extrapDate.compareTo(finalDate) <= 0)  {
 
         // We can simply get the position and velocity of spacecraft in station frame at any time
@@ -153,10 +154,12 @@ Finally, the GPS antenna frame is always defined from the satellite
 frame by 2 transforms: a translation and a rotation. Let's set some values:
 
     Transform translateGPS = new Transform(new Vector3D(0, 0, 1));
-    Transform rotateGPS    = new Transform(new Rotation(new Vector3D(0, 1, 3),
-                                                        FastMath.toRadians(10)));
+    Transform rotateGPS    = new Transform(date,
+                                           new Rotation(new Vector3D(0, 1, 3),
+                                           FastMath.toRadians(10),
+                                           RotationConvention.VECTOR_OPERATOR));
     Frame gpsFrame         = new Frame(satFrame,
-                                       new Transform(translateGPS, rotateGPS),
+                                       new Transform(date, translateGPS, rotateGPS),
                                        "GPS", false);
 
 Let's consider some measurement date in UTC time scale:
@@ -178,14 +181,15 @@ unknown. We combine the extracted rotation and the measured translation by
 applying the rotation first because the position/velocity vector are given in
 ITRF frame not in GPS antenna frame:
   
-    Transform measuredTranslation = new Transform(position, velocity);
+    Transform measuredTranslation = new Transform(date, position, velocity);
     Transform formerTransform =
         gpsFrame.getTransformTo(FramesFactory.getITRF(IERSConventions.IERS_2010, true), date);
     Transform preservedRotation =
-        new Transform(formerTransform.getRotation(),
+        new Transform(date,
+                      formerTransform.getRotation(),
                       formerTransform.getRotationRate());
     Transform gpsToItrf =
-        new Transform(preservedRotation, measuredTranslation);
+        new Transform(date, preservedRotation, measuredTranslation);
 
 So we can now update the transform from EME2000 to CoG frame.
   
@@ -199,7 +203,7 @@ The frame tree is now in sync. We can compute all position and velocity
 pairs we want:
   
     PVCoordinates origin  = PVCoordinates.ZERO;
-    Transform cogToItrf   = cogFrame.getTransformTo(getITRF(IERSConventions.IERS_2010, true), date);
+    Transform cogToItrf   = cogFrame.getTransformTo(FramesFactory.getITRF(IERSConventions.IERS_2010, true), date);
     PVCoordinates satItrf = cogToItrf.transformPVCoordinates(origin);
 
     Transform cogToEme2000   = cogFrame.getTransformTo(FramesFactory.getEME2000(), date);
@@ -211,8 +215,8 @@ As a result, we can compare the GPS measurements to the computed values:
     GPS antenna velocity in ITRF:     505.8479685  942.7809215 7435.9222310
     Satellite   position in ITRF:    -6142439.167  3492468.238   -25766.717
     Satellite   velocity in ITRF:     505.8480179  942.7809579 7435.9222310
-    Satellite   position in EME2000:  6675017.356 -2317478.626   -31517.554
-    Satellite   velocity in EME2000: -150.5212980 -532.0401625 7436.0739039
+    Satellite   position in EME2000:  6675017.356 -2317478.625   -31517.554
+    Satellite   velocity in EME2000: -150.5212983 -532.0401635 7436.0739037
 
 ### Source code
 

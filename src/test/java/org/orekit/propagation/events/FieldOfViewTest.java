@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,7 +57,7 @@ import org.orekit.utils.PVCoordinates;
 public class FieldOfViewTest {
 
     @Test
-    public void testDihedralFielOfView() throws OrekitException {
+    public void testDihedralFielOfView() {
         double maxError = 0;
         for (double alpha1 = 0; alpha1 < 0.5 * FastMath.PI; alpha1 += 0.1) {
             for (double alpha2 = 0; alpha2 < 0.5 * FastMath.PI; alpha2 += 0.1) {
@@ -76,7 +76,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testTooWideDihedralFielOfView() throws OrekitException {
+    public void testTooWideDihedralFielOfView() {
         double tooLarge = 1.6;
         try {
             new FieldOfView(Vector3D.PLUS_I,
@@ -93,7 +93,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testSquare() throws OrekitException {
+    public void testSquare() {
         FieldOfView square1 = new FieldOfView(Vector3D.PLUS_K,
                                               Vector3D.PLUS_I, 0.25,
                                               Vector3D.MINUS_J, 0.25,
@@ -110,7 +110,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testRegularPolygon() throws OrekitException {
+    public void testRegularPolygon() {
         double delta          = 0.25;
         double margin         = 0.01;
         double maxAreaError   = 0;
@@ -143,7 +143,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testNoFootprintInside() throws OrekitException {
+    public void testNoFootprintInside() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(3.0), 6, 0.0);
@@ -160,7 +160,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testNadirHexagonalFootprint() throws OrekitException {
+    public void testNadirHexagonalFootprint() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(3.0), 6, 0.0);
@@ -206,7 +206,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testRollPitchYawHexagonalFootprint() throws OrekitException {
+    public void testRollPitchYawHexagonalFootprint() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(3.0), 6, 0.0);
@@ -255,7 +255,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testFOVPartiallyTruncatedAtLimb() throws OrekitException {
+    public void testFOVPartiallyTruncatedAtLimb() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(40.0), 6, 0.0);
@@ -301,7 +301,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testFOVLargerThanEarth() throws OrekitException {
+    public void testFOVLargerThanEarth() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(45.0), 6, 0.0);
@@ -347,7 +347,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testFOVAwayFromEarth() throws OrekitException {
+    public void testFOVAwayFromEarth() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.MINUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(3.0), 6, 0.0);

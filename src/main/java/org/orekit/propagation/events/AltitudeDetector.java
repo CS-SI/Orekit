@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -145,9 +144,8 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      * and the threshold altitude.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         final Frame bodyFrame      = bodyShape.getBodyFrame();
         final PVCoordinates pvBody = s.getPVCoordinates(bodyFrame);
         final GeodeticPoint point  = bodyShape.transform(pvBody.getPosition(),

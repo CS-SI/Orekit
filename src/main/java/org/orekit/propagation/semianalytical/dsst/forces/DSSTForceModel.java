@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -63,28 +62,23 @@ public interface DSSTForceModel {
      *  @param meanOnly only mean elements are used during the propagation
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
-     *  @throws OrekitException if some specific error occurs
      */
-    List<ShortPeriodTerms> initialize(AuxiliaryElements aux, boolean meanOnly)
-        throws OrekitException;
+    List<ShortPeriodTerms> initialize(AuxiliaryElements aux, boolean meanOnly);
 
     /** Performs initialization at each integration step for the current force model.
      *  <p>
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
-     *  @throws OrekitException if some specific error occurs
      */
-    void initializeStep(AuxiliaryElements aux)
-        throws OrekitException;
+    void initializeStep(AuxiliaryElements aux);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
      *  @param state current state information: date, kinematics, attitude
      *  @return the mean element rates dai/dt
-     *  @throws OrekitException if some specific error occurs
      */
-    double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
+    double[] getMeanElementRate(SpacecraftState state);
 
     /** Get the discrete events related to the model.
      * @return array of events detectors or null if the model is not
@@ -107,9 +101,7 @@ public interface DSSTForceModel {
      * #initialize(AuxiliaryElements, boolean)}.
      * </p>
      * @param meanStates mean states information: date, kinematics, attitude
-     * @throws OrekitException if some specific error occurs
      */
-    void updateShortPeriodTerms(SpacecraftState... meanStates)
-        throws OrekitException;
+    void updateShortPeriodTerms(SpacecraftState... meanStates);
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,8 +70,8 @@ public class EarthObservation {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
@@ -138,9 +138,7 @@ public class EarthObservation {
             attitudesSequence.registerSwitchEvents(propagator);
 
             propagator.setMasterMode(180.0, new OrekitFixedStepHandler() {
-                public void init(final SpacecraftState s0, final AbsoluteDate t) {
-                }
-                public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+                public void handleStep(SpacecraftState currentState, boolean isLast) {
                     DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
                     angleDegree.setDecimalSeparator('\u00b0');
                     DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 
@@ -37,9 +36,8 @@ public interface ShortPeriodTerms extends Serializable {
     /** Evaluate the contributions of the short period terms.
      * @param meanOrbit mean orbit to which the short period contribution applies
      * @return short period terms contributions
-     * @exception OrekitException if short period terms cannot be computed
      */
-    double[] value(Orbit meanOrbit) throws OrekitException;
+    double[] value(Orbit meanOrbit);
 
     /** Get the prefix for short period coefficients keys.
      * <p>
@@ -67,9 +65,7 @@ public interface ShortPeriodTerms extends Serializable {
      * (empty set means all coefficients are selected)
      * @return the selected coefficients of the short periodic variations,
      * in a map where all keys start with {@link #getCoefficientsKeyPrefix()}
-     * @throws OrekitException if some specific error occurs
      */
-    Map<String, double[]> getCoefficients(AbsoluteDate date, Set<String> selected)
-        throws OrekitException;
+    Map<String, double[]> getCoefficients(AbsoluteDate date, Set<String> selected);
 
 }

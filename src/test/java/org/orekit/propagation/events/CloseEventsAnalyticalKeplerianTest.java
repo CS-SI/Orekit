@@ -17,7 +17,6 @@
  
 package org.orekit.propagation.events;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 
@@ -30,7 +29,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 public class CloseEventsAnalyticalKeplerianTest extends CloseEventsAbstractTest {
 
     @Override
-    public Propagator getPropagator(double stepSize) throws OrekitException {
+    public Propagator getPropagator(double stepSize) {
         return new KeplerianPropagator(initialOrbit);
     }
 

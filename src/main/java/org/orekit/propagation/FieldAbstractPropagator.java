@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -111,7 +111,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /** {@inheritDoc} */
-    public FieldSpacecraftState<T> getInitialState() throws OrekitException {
+    public FieldSpacecraftState<T> getInitialState() {
         return initialState;
     }
 
@@ -126,7 +126,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final FieldSpacecraftState<T> state) throws OrekitException {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
         initialState = state;
         setStartDate(state.getDate());
     }
@@ -160,8 +160,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /** {@inheritDoc} */
-    public void addAdditionalStateProvider(final FieldAdditionalStateProvider<T> additionalStateProvider)
-        throws OrekitException {
+    public void addAdditionalStateProvider(final FieldAdditionalStateProvider<T> additionalStateProvider) {
 
         // check if the name is already used
         if (isAdditionalStateManaged(additionalStateProvider.getName())) {
@@ -183,11 +182,9 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     /** Update state by adding all additional states.
      * @param original original state
      * @return updated state, with all additional states included
-     * @exception OrekitException if one of the providers throws one
-     * @see #addAdditionalStateProvider(FieldAdditionalStateProvider)
+          * @see #addAdditionalStateProvider(FieldAdditionalStateProvider)
      */
-    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original)
-        throws OrekitException {
+    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -264,7 +261,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     public abstract void clearEventsDetectors();
 
     /** {@inheritDoc} */
-    public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> target) throws OrekitException {
+    public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> target) {
         if (startDate == null) {
             startDate = getInitialState().getDate();
         }
@@ -272,8 +269,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 

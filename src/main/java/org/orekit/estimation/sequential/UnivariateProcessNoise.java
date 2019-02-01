@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ import org.orekit.propagation.SpacecraftState;
  * The method {@link #getProcessNoiseMatrix} then square the values so that they are consistent with a covariance matrix.
  * <p>
  * The orbital parameters evolutions are provided in LOF frame and Cartesian (PV);
- * then converted in inertial frame and current {@link OrbitType} and {@link PositionAngle}
+ * then converted in inertial frame and current {@link org.orekit.orbits.OrbitType} and {@link PositionAngle}
  * when method {@link #getProcessNoiseMatrix} is called.
  * </p>
  * <p>
@@ -60,9 +60,6 @@ import org.orekit.propagation.SpacecraftState;
  * <p>
  * This class always provides one initial noise matrix or initial covariance matrix and one process noise matrix.
  * </p>
- * <p>
- * WARNING: as of release 9.2, this feature is still considered experimental
- * </p>
  * @author Luc Maisonobe
  * @author Maxime Journot
  * @since 9.2
@@ -87,14 +84,12 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
      * @param positionAngle the position angle used for the computation of the process noise
      * @param lofCartesianOrbitalParametersEvolution Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian orbit type
      * @param propagationParametersEvolution Array of univariate functions for the propagation parameters process noise evolution
-     * @throws OrekitException if lofOrbitalParametersEvolution array size is different from 6
      */
     public UnivariateProcessNoise(final RealMatrix initialCovarianceMatrix,
                                   final LOFType lofType,
                                   final PositionAngle positionAngle,
                                   final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
-                                  final UnivariateFunction[] propagationParametersEvolution)
-        throws OrekitException {
+                                  final UnivariateFunction[] propagationParametersEvolution) {
         super(initialCovarianceMatrix);
         this.lofType = lofType;
         this.positionAngle = positionAngle;

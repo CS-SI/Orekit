@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
@@ -77,16 +76,14 @@ public class EOPEntry implements TimeStamped, Serializable {
      * @param ddEps correction for nutation in obliquity δΔε
      * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
      * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     * @deprecated as of 9.2 replaced with {@link #EOPEntry(int, double, double,
+          * @deprecated as of 9.2 replaced with {@link #EOPEntry(int, double, double,
      * double, double, double, double, double, double, ITRFVersion)
      */
     @Deprecated
     public EOPEntry(final int mjd, final double dt, final double lod,
                     final double x, final double y,
                     final double ddPsi, final double ddEps,
-                    final double dx, final double dy)
-        throws OrekitException {
+                    final double dx, final double dy) {
         this(mjd, dt, lod, x, y, ddPsi, ddEps, dx, dy, ITRFVersion.ITRF_2014);
     }
 
@@ -101,14 +98,12 @@ public class EOPEntry implements TimeStamped, Serializable {
      * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
      * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
      * @param itrfType ITRF version this entry defines
-     * @exception OrekitException if UTC time scale cannot be retrieved
      */
     public EOPEntry(final int mjd, final double dt, final double lod,
                     final double x, final double y,
                     final double ddPsi, final double ddEps,
                     final double dx, final double dy,
-                    final ITRFVersion itrfType)
-        throws OrekitException {
+                    final ITRFVersion itrfType) {
 
         this.mjd      = mjd;
         this.date     = AbsoluteDate.createMJDDate(mjd, 0.0, TimeScalesFactory.getUTC());

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -141,6 +141,8 @@
       * spacecraft detection in ground based Field Of View (any shape)
       * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal
+      * inter-satellites direct view
+      * ground at night
       * impulse maneuvers occurrence
 
     * possibility of slightly shifting events in time (for example to switch from
@@ -164,7 +166,6 @@
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
       * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
       * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
-        (as of release 9.2, this feature is still considered experimental)
 
   * Orbit determination
   
@@ -177,15 +178,16 @@
     *  Kalman filtering
 
       * customizable process noise matrices providers
-      * time dependent process noise provider (as of release 9.2, this feature is still considered experimental)
+      * time dependent process noise provider
 
     * parameters estimation
 
       * orbital parameters estimation (or only a subset if desired)
       * force model parameters estimation (drag coefficients, radiation pressure coefficients,
         central attraction, maneuver thrust or flow rate)
-      * measurements parameters estimation (biases, station position, pole motion and rate,
-        prime meridian correction and rate)
+      * measurements parameters estimation (biases, satellite clock offset, station clock offset,
+        station position, pole motion and rate, prime meridian correction and rate, total zenith
+        delay in tropospheric correction)
 
     * multi-satellites orbit determination
     * ground stations displacements due to solid tides
@@ -198,9 +200,10 @@
       * azimuth/elevation
       * right ascension/declination
       * position-velocity
+      * position
       * inter-satellites range (one way and two way)
       * GNSS code
-      * GNSS phase (as of release 9.2, this feature is still considered experimental)
+      * GNSS phase
 
     * possibility to add custom measurements
     * several predefined modifiers
@@ -214,6 +217,14 @@
 
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
+    * measurements generation
+
+      * with measurements feasibility triggered by regular event detectors
+        (ground visibility, ground at night, sunlit satellite, inter satellites
+         direct view, boolean combination...)
+      * with measurement scheduling as fixed step streams (optionally aligned with round UTC time)
+      * with measurement scheduling as high rate bursts rest periods (optionally aligned with round UTC time)
+      * possibility to customize measurement scheduling
 
   * GNSS
 
@@ -230,10 +241,11 @@
 
   * Earth models
   
-    * tropospheric delay (modified Saastamoinen)
+    * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
+    * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
     * displacement of ground points due to tides

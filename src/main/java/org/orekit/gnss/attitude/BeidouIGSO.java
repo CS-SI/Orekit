@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,30 +16,23 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.TimeStampedAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for Beidou inclined geosynchronous orbit navigation satellites.
  * <p>
- * WARNING: as of release 9.2, this feature is still considered experimental
+ * This mode is in fact similar to Beidou MEO, hence the class simply inherit
+ * for {@link BeidouMeo} without any change.
  * </p>
- * @author Luc Maisonobe Java translation
+ * @author Luc Maisonobe
  * @since 9.2
  */
-public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
+public class BeidouIGSO extends BeidouMeo {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
-    /** Constant for Beidou turns. */
-    private static final double BETA_0 = FastMath.toRadians(2.0);
+    private static final long serialVersionUID = 20181001L;
 
     /** Simple constructor.
      * @param validityStart start of validity for this provider
@@ -50,36 +43,6 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
     public BeidouIGSO(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
                       final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context)
-        throws OrekitException {
-
-        if (FastMath.abs(context.getBeta()) < 2 * BETA_0) {
-            // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
-            return context.orbitNormalYaw();
-        }
-
-        // in nominal yaw mode
-        return context.getNominalYaw();
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context)
-        throws OrekitException {
-
-        if (FastMath.abs(context.getBeta()).getReal() < 2 * BETA_0) {
-            // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
-            return context.orbitNormalYaw();
-        }
-
-        // in nominal yaw mode
-        return context.getNominalYaw();
-
     }
 
 }

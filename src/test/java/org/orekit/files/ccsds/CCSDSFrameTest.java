@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.utils.IERSConventions;
 public class CCSDSFrameTest {
 
     @Test
-    public void testLOFFramesNotRegularFrames() throws OrekitException {
+    public void testLOFFramesNotRegularFrames() {
         for (final CCSDSFrame frame : CCSDSFrame.values()) {
             if (frame.isLof()) {
                 try {

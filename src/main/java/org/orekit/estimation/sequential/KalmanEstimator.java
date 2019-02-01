@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -92,13 +91,11 @@ public class KalmanEstimator {
      * @param propagatorBuilders propagators builders used to evaluate the orbit.
      * @param processNoiseMatricesProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @throws OrekitException propagation exception.
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
                     final List<NumericalPropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
-                    final ParameterDriversList estimatedMeasurementParameters)
-        throws OrekitException {
+                    final ParameterDriversList estimatedMeasurementParameters) {
 
         this.propagatorBuilders = propagatorBuilders;
         this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
@@ -158,10 +155,8 @@ public class KalmanEstimator {
      * </p>
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return orbital parameters supported by this estimator
-     * @exception OrekitException if different parameters have the same name
      */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly)
-        throws OrekitException {
+    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (int i = 0; i < propagatorBuilders.size(); ++i) {
@@ -183,10 +178,8 @@ public class KalmanEstimator {
     /** Get the propagator parameters supported by this estimator.
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return propagator parameters supported by this estimator
-     * @exception OrekitException if different parameters have the same name
      */
-    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly)
-        throws OrekitException {
+    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (PropagatorBuilder builder : propagatorBuilders) {
@@ -214,10 +207,8 @@ public class KalmanEstimator {
      * </p>
      * @param observedMeasurement the measurement to process
      * @return estimated propagators
-     * @throws OrekitException if an error occurred during the estimation
      */
-    public NumericalPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement)
-        throws OrekitException {
+    public NumericalPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
             final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurement));
             processModel.finalizeEstimation(observedMeasurement, estimate);
@@ -227,18 +218,14 @@ public class KalmanEstimator {
             return processModel.getEstimatedPropagators();
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
         }
     }
 
     /** Process several measurements.
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
      * @return estimated propagators
-     * @throws OrekitException if an error occurred during the estimation
      */
-    public NumericalPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements)
-        throws OrekitException {
+    public NumericalPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
         NumericalPropagator[] propagators = null;
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
             propagators = estimationStep(observedMeasurement);

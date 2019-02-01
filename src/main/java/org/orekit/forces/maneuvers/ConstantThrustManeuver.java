@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -332,8 +332,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
-        throws OrekitException {
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         if (firing) {
 
@@ -351,8 +350,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     @Override
     public <T extends RealFieldElement<T>> void
         addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-        throws OrekitException {
+                        final FieldTimeDerivativesEquations<T> adder) {
         if (firing) {
 
             final T[] parameters = getParameters(s.getDate().getField());
@@ -367,8 +365,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState state, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
         if (firing) {
             final double thrust = parameters[0];
             final Attitude attitude =
@@ -387,8 +384,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
         if (firing) {
             // compute thrust acceleration in inertial frame
             final T thrust = parameters[0];

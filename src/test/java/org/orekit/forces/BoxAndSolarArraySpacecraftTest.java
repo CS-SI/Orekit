@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,7 +62,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class BoxAndSolarArraySpacecraftTest {
 
     @Test
-    public void testParametersDrivers() throws OrekitException {
+    public void testParametersDrivers() {
         
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[] {
@@ -181,7 +181,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testBestPointing() throws OrekitException {
+    public void testBestPointing() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -210,7 +210,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testCorrectFixedRate() throws OrekitException {
+    public void testCorrectFixedRate() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -244,7 +244,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testTooSlowFixedRate() throws OrekitException {
+    public void testTooSlowFixedRate() {
 
             AbsoluteDate initialDate = propagator.getInitialState().getDate();
             CelestialBody sun = CelestialBodyFactory.getSun();
@@ -281,7 +281,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNoLiftWithoutReflection() throws OrekitException {
+    public void testNoLiftWithoutReflection() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -321,7 +321,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testOnlyLiftWithoutReflection() throws OrekitException {
+    public void testOnlyLiftWithoutReflection() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -363,7 +363,7 @@ public class BoxAndSolarArraySpacecraftTest {
 
     @Test
     public void testLiftVsNoLift()
-        throws OrekitException, NoSuchFieldException, SecurityException,
+        throws NoSuchFieldException, SecurityException,
                IllegalArgumentException, IllegalAccessException {
 
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -420,7 +420,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                          final AbsoluteDate date, final Frame frame, final Vector3D position,
                                          final Rotation rotation, final double mass,
                                          final double density, final Vector3D relativeVelocity)
-         throws OrekitException, IllegalArgumentException, IllegalAccessException,
+         throws IllegalArgumentException, IllegalAccessException,
                 NoSuchFieldException, SecurityException {
 
         java.lang.reflect.Field facetsField = BoxAndSolarArraySpacecraft.class.getDeclaredField("facets");
@@ -455,7 +455,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testPlaneSpecularReflection() throws OrekitException {
+    public void testPlaneSpecularReflection() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -489,7 +489,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testPlaneAbsorption() throws OrekitException {
+    public void testPlaneAbsorption() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -524,7 +524,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testWrongParameterDrag() throws OrekitException {
+    public void testWrongParameterDrag() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -545,7 +545,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testMissingParameterLift() throws OrekitException {
+    public void testMissingParameterLift() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -568,7 +568,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testPresentParameterLift() throws OrekitException {
+    public void testPresentParameterLift() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -583,7 +583,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testWrongParameterLift() throws OrekitException {
+    public void testWrongParameterLift() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -607,7 +607,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testWrongParameterRadiation() throws OrekitException {
+    public void testWrongParameterRadiation() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -628,7 +628,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNullIllumination() throws OrekitException {
+    public void testNullIllumination() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -645,7 +645,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testBackwardIllumination() throws OrekitException {
+    public void testBackwardIllumination() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -671,7 +671,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalOptimalRotationDouble() throws OrekitException {
+    public void testNormalOptimalRotationDouble() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -687,7 +687,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalOptimalRotationField() throws OrekitException {
+    public void testNormalOptimalRotationField() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -705,7 +705,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalOptimalRotationDS() throws OrekitException {
+    public void testNormalOptimalRotationDS() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -723,7 +723,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalFixedRateDouble() throws OrekitException {
+    public void testNormalFixedRateDouble() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -741,7 +741,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalFixedRateField() throws OrekitException {
+    public void testNormalFixedRateField() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -761,7 +761,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalFixedRateDS() throws OrekitException {
+    public void testNormalFixedRateDS() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
@@ -781,7 +781,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalSunAlignedDouble() throws OrekitException {
+    public void testNormalSunAlignedDouble() {
         BoxAndSolarArraySpacecraft s =
             new BoxAndSolarArraySpacecraft(0, 0, 0,
                                            (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
@@ -792,7 +792,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalSunAlignedField() throws OrekitException {
+    public void testNormalSunAlignedField() {
         BoxAndSolarArraySpacecraft s =
                         new BoxAndSolarArraySpacecraft(0, 0, 0,
                                                        (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
@@ -806,7 +806,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNormalSunAlignedDS() throws OrekitException {
+    public void testNormalSunAlignedDS() {
         BoxAndSolarArraySpacecraft s =
                         new BoxAndSolarArraySpacecraft(0, 0, 0,
                                                        (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -100,8 +100,8 @@ public class Phasing {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
@@ -281,11 +281,10 @@ public class Phasing {
      * @param ascending if true, crossing latitude is from South to North
      * @param mst desired mean solar time at reference latitude crossing
      * @return an initial guess of Earth phased, Sun synchronous orbit
-     * @exception OrekitException if mean solar time cannot be computed
      */
     private CircularOrbit guessOrbit(AbsoluteDate date, Frame frame, int nbOrbits, int nbDays,
                                      double latitude, boolean ascending, double mst)
-        throws OrekitException {
+        {
 
         double mu = gravityField.getMu();
         NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics harmonics =
@@ -328,11 +327,10 @@ public class Phasing {
      * @param nbDays number of days in the phasing cycle
      * @param propagator propagator to use
      * @return an improved Earth phased orbit
-     * @exception OrekitException if orbit cannot be propagated
      */
     private CircularOrbit improveEarthPhasing(CircularOrbit previous, int nbOrbits, int nbDays,
                                               Propagator propagator)
-        throws OrekitException {
+        {
 
         propagator.resetInitialState(new SpacecraftState(previous));
 
@@ -386,12 +384,11 @@ public class Phasing {
      * @param mst desired mean solar time at reference latitude crossing
      * @param propagator propagator to use
      * @return an improved Earth phased, Sun synchronous orbit
-     * @exception OrekitException if orbit cannot be propagated
      */
     private CircularOrbit improveSunSynchronization(CircularOrbit previous, double duration,
                                                     double latitude, boolean ascending, double mst,
                                                     Propagator propagator)
-        throws OrekitException {
+        {
 
         propagator.resetInitialState(new SpacecraftState(previous));
         AbsoluteDate start = previous.getDate();
@@ -467,11 +464,10 @@ public class Phasing {
      * @param duration sampling duration
      * @param propagator propagator to use
      * @return an improved Earth phased, Sun synchronous orbit with frozen eccentricity
-     * @exception OrekitException if orbit cannot be propagated
      */
     private CircularOrbit improveFrozenEccentricity(CircularOrbit previous, double duration,
                                                     Propagator propagator)
-        throws OrekitException {
+        {
 
         propagator.resetInitialState(new SpacecraftState(previous));
         AbsoluteDate start = previous.getDate();
@@ -532,12 +528,11 @@ public class Phasing {
      * @param orbit phased orbit
      * @param propagator propagator for orbit
      * @param nbOrbits number of orbits in the cycle
-     * @exception OrekitException if orbit cannot be propagated
      */
     private void printGridPoints(final PrintStream out,
                                  final double latitude, final boolean ascending,
                                  final Orbit orbit, final Propagator propagator, int nbOrbits)
-        throws OrekitException {
+        {
 
         propagator.resetInitialState(new SpacecraftState(orbit));
         AbsoluteDate start = orbit.getDate();
@@ -574,10 +569,9 @@ public class Phasing {
     /** Compute the mean solar time.
      * @param orbit current orbit
      * @return mean solar time
-     * @exception OrekitException if state cannot be converted
      */
     private double meanSolarTime(final Orbit orbit)
-        throws OrekitException {
+        {
 
         // compute angle between Sun and spacecraft in the equatorial plane
         final Vector3D position = orbit.getPVCoordinates().getPosition();
@@ -600,12 +594,10 @@ public class Phasing {
      * @param stepSize step size to use
      * @param propagator propagator
      * @return first crossing
-     * @throws OrekitException if state cannot be propagated
      */
     private SpacecraftState findFirstCrossing(final double latitude, final boolean ascending,
                                               final AbsoluteDate searchStart, final AbsoluteDate end,
-                                              final double stepSize, final Propagator propagator)
-        throws OrekitException {
+                                              final double stepSize, final Propagator propagator) {
 
         double previousLatitude = Double.NaN;
         for (AbsoluteDate date = searchStart; date.compareTo(end) < 0; date = date.shiftedBy(stepSize)) {
@@ -634,14 +626,13 @@ public class Phasing {
      * @param maxShift maximum value that the shift value can take
      * @param propagator propagator used
      * @return state at latitude crossing time
-     * @throws OrekitException if state cannot be propagated
      * @throws MathRuntimeException if latitude cannot be bracketed in the search interval
      */
     private SpacecraftState findLatitudeCrossing(final double latitude,
                                                  final AbsoluteDate guessDate, final AbsoluteDate endDate,
                                                  final double shift, final double maxShift,
                                                  final Propagator propagator)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
 
         // function evaluating to 0 at latitude crossings
         final UnivariateFunction latitudeFunction = new UnivariateFunction() {

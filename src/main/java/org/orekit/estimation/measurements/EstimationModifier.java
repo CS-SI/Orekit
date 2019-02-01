@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -50,9 +49,7 @@ public interface EstimationModifier<T extends ObservedMeasurement<T>> {
 
     /** Apply a modifier to an estimated measurement.
      * @param estimated estimated measurement to modify
-     * @exception OrekitException if modifier cannot be applied
      */
-    void modify(EstimatedMeasurement<T> estimated)
-        throws OrekitException;
+    void modify(EstimatedMeasurement<T> estimated);
 
 }

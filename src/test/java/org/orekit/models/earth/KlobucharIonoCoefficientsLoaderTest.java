@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,8 @@ public class KlobucharIonoCoefficientsLoaderTest {
     @Test
     /**
      * Regular test for 1st of January 2017
-     * @throws OrekitException if file does not exist or data cannot be read properly
      */
-    public void testRegularFile() throws OrekitException {
+    public void testRegularFile() {
 
         Utils.setDataRoot("klobuchar-ionospheric-coefficients");
         
@@ -98,7 +97,7 @@ public class KlobucharIonoCoefficientsLoaderTest {
     /**
      * Test for a file that cannot be found
      */
-    public void testAbsentFile() throws OrekitException {
+    public void testAbsentFile() {
         
         Utils.setDataRoot("klobuchar-ionospheric-coefficients");
         KlobucharIonoCoefficientsLoader ionoLoader = new KlobucharIonoCoefficientsLoader();

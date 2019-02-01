@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
@@ -40,11 +39,9 @@ public class OrDetectorTest {
 
     /**
      * check {@link BooleanDetector#g(SpacecraftState)}.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testG() throws OrekitException {
+    public void testG() {
         // test zero cases
         a.g = b.g = 0.0;
         Assert.assertEquals(0.0, or.g(s), 0);
@@ -81,11 +78,9 @@ public class OrDetectorTest {
 
     /**
      * check when there is numeric cancellation between the two g values.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testCancellation() throws OrekitException {
+    public void testCancellation() {
         a.g = -1e-10;
         b.g = -1e10;
         Assert.assertTrue("negative", or.g(s) < 0);
@@ -108,11 +103,9 @@ public class OrDetectorTest {
 
     /**
      * Check wrapped detectors are initialized.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testInit() throws OrekitException {
+    public void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
         EventDetector b = Mockito.mock(EventDetector.class);
@@ -159,7 +152,7 @@ public class OrDetectorTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             return this.g;
         }
 
@@ -179,12 +172,12 @@ public class OrDetectorTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+        public Action eventOccurred(SpacecraftState s, boolean increasing) {
             return null;
         }
 
         @Override
-        public SpacecraftState resetState(SpacecraftState oldState) throws OrekitException {
+        public SpacecraftState resetState(SpacecraftState oldState) {
             return null;
         }
     }

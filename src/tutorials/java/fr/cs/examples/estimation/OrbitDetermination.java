@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,6 +68,7 @@ import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
@@ -105,14 +106,18 @@ import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexHeader;
 import org.orekit.gnss.RinexLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
+import org.orekit.models.earth.DiscreteTroposphericModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
+import org.orekit.models.earth.EstimatedTroposphericModel;
+import org.orekit.models.earth.GlobalMappingFunctionModel;
 import org.orekit.models.earth.IonosphericModel;
 import org.orekit.models.earth.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.KlobucharIonoModel;
+import org.orekit.models.earth.MappingFunction;
+import org.orekit.models.earth.NiellMappingFunctionModel;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.models.earth.displacement.OceanLoading;
 import org.orekit.models.earth.displacement.OceanLoadingCoefficientsBLQFactory;
@@ -157,8 +162,8 @@ public class OrbitDetermination {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
@@ -248,6 +253,7 @@ public class OrbitDetermination {
 
             final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
             final PVData                      pvData                   = createPVData(parser);
+            final ObservableSatellite         satellite                = createObservableSatellite(parser);
             final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
             final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
             final Weights                     weights                  = createWeights(parser);
@@ -264,12 +270,13 @@ public class OrbitDetermination {
                     // the measurements come from a Rinex file
                     measurements.addAll(readRinex(new File(input.getParentFile(), fileName),
                                                   parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
-                                                  stations, satRangeBias, satAntennaRangeModifier, weights,
+                                                  stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
                                                   rangeOutliersManager, rangeRateOutliersManager));
                 } else {
                     // the measurements come from an Orekit custom file
                     measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
-                                                         stations, pvData, satRangeBias, satAntennaRangeModifier, weights,
+                                                         stations, pvData, satellite,
+                                                         satRangeBias, satAntennaRangeModifier, weights,
                                                          rangeOutliersManager,
                                                          rangeRateOutliersManager,
                                                          azElOutliersManager,
@@ -518,14 +525,13 @@ public class OrbitDetermination {
      * @param orbit first orbit estimate
      * @return propagator builder
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private NumericalPropagatorBuilder createPropagatorBuilder(final KeyValueFileParser<ParameterKey> parser,
                                                                final IERSConventions conventions,
                                                                final NormalizedSphericalHarmonicsProvider gravityField,
                                                                final OneAxisEllipsoid body,
                                                                final Orbit orbit)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final double minStep;
         if (!parser.containsKey(ParameterKey.PROPAGATOR_MIN_STEP)) {
@@ -698,10 +704,9 @@ public class OrbitDetermination {
      * @param parser input file parser
      * @return gravity field
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private NormalizedSphericalHarmonicsProvider createGravityField(final KeyValueFileParser<ParameterKey> parser)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
@@ -713,10 +718,9 @@ public class OrbitDetermination {
      * @param parser input file parser
      * @param mu     central attraction coefficient
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if body frame cannot be created
      */
     private OneAxisEllipsoid createBody(final KeyValueFileParser<ParameterKey> parser)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final Frame bodyFrame;
         if (!parser.containsKey(ParameterKey.BODY_FRAME)) {
@@ -747,11 +751,10 @@ public class OrbitDetermination {
      * @param parser input file parser
      * @param mu     central attraction coefficient
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if inertial frame cannot be created
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
                               final double mu)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final Frame frame;
         if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
@@ -840,10 +843,9 @@ public class OrbitDetermination {
     /** Set up range bias due to transponder delay.
      * @param parser input file parser
      * @return range bias (may be null if bias is fixed to zero)
-     * @exception OrekitException if bias initial value cannot be set
      */
     private Bias<Range> createSatRangeBias(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+        {
 
         // transponder delay
         final double transponderDelayBias;
@@ -923,42 +925,50 @@ public class OrbitDetermination {
      * @param conventions IERS conventions to use
      * @param body central body
      * @return name to station data map
-     * @exception OrekitException if some frame transforms cannot be computed
-     * @throws NoSuchElementException if input parameters are missing
+          * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
                                                         final IERSConventions conventions,
                                                         final OneAxisEllipsoid body)
-        throws OrekitException, NoSuchElementException {
+        throws NoSuchElementException {
 
         final Map<String, StationData> stations       = new HashMap<String, StationData>();
 
-        final String[]  stationNames                  = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
-        final double[]  stationLatitudes              = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
-        final double[]  stationLongitudes             = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
-        final double[]  stationAltitudes              = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
-        final boolean[] stationPositionEstimated      = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
-        final double[]  stationRangeSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
-        final double[]  stationRangeBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
-        final double[]  stationRangeBiasMin           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);
-        final double[]  stationRangeBiasMax           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MAX);
-        final boolean[] stationRangeBiasEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_BIAS_ESTIMATED);
-        final double[]  stationRangeRateSigma         = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
-        final double[]  stationRangeRateBias          = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
-        final double[]  stationRangeRateBiasMin       = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MIN);
-        final double[]  stationRangeRateBiasMax       = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MAX);
-        final boolean[] stationRangeRateBiasEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
-        final double[]  stationAzimuthSigma           = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
-        final double[]  stationAzimuthBias            = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
-        final double[]  stationAzimuthBiasMin         = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MIN);
-        final double[]  stationAzimuthBiasMax         = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MAX);
-        final double[]  stationElevationSigma         = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
-        final double[]  stationElevationBias          = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
-        final double[]  stationElevationBiasMin       = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MIN);
-        final double[]  stationElevationBiasMax       = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
-        final boolean[] stationAzElBiasesEstimated    = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
-        final boolean[] stationElevationRefraction    = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
-        final boolean[] stationRangeTropospheric      = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
+        final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
+        final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
+        final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
+        final double[]  stationAltitudes                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
+        final boolean[] stationPositionEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
+        final double[]  stationClockOffsets               = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET);
+        final double[]  stationClockOffsetsMin            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MIN);
+        final double[]  stationClockOffsetsMax            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MAX);
+        final boolean[] stationClockOffsetEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_ESTIMATED);
+        final double[]  stationRangeSigma                 = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
+        final double[]  stationRangeBias                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
+        final double[]  stationRangeBiasMin               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);
+        final double[]  stationRangeBiasMax               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MAX);
+        final boolean[] stationRangeBiasEstimated         = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_BIAS_ESTIMATED);
+        final double[]  stationRangeRateSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
+        final double[]  stationRangeRateBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
+        final double[]  stationRangeRateBiasMin           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MIN);
+        final double[]  stationRangeRateBiasMax           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MAX);
+        final boolean[] stationRangeRateBiasEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
+        final double[]  stationAzimuthSigma               = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
+        final double[]  stationAzimuthBias                = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
+        final double[]  stationAzimuthBiasMin             = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MIN);
+        final double[]  stationAzimuthBiasMax             = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MAX);
+        final double[]  stationElevationSigma             = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
+        final double[]  stationElevationBias              = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
+        final double[]  stationElevationBiasMin           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MIN);
+        final double[]  stationElevationBiasMax           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
+        final boolean[] stationAzElBiasesEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
+        final boolean[] stationElevationRefraction        = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
+        final boolean[] stationTroposphericModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
+        final double[]  stationTroposphericZenithDelay    = parser.getDoubleArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY);
+        final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
+        final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
+        final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
+        final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
         final TidalDisplacement tidalDisplacement;
@@ -1021,6 +1031,11 @@ public class OrbitDetermination {
                                                              stationAltitudes[i]);
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
+            station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
+            station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
+            station.getClockOffsetDriver().setMaxValue(stationClockOffsetsMax[i]);
+            station.getClockOffsetDriver().setSelected(stationClockOffsetEstimated[i]);
             station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
@@ -1118,11 +1133,27 @@ public class OrbitDetermination {
             }
 
 
-            //Tropospheric correction
+            //Tropospheric correction 
             final RangeTroposphericDelayModifier rangeTroposphericCorrection;
             if (stationRangeTropospheric[i]) {
 
-                final SaastamoinenModel troposphericModel = SaastamoinenModel.getStandardModel();
+                MappingFunction mappingModel = null;
+                if (stationGlobalMappingFunction[i]) {
+                    mappingModel = new GlobalMappingFunctionModel(stationLatitudes[i],
+                                                                  stationLongitudes[i]);
+                } else if (stationNiellMappingFunction[i]) {
+                    mappingModel = new NiellMappingFunctionModel(stationLatitudes[i]);
+                }
+
+                DiscreteTroposphericModel troposphericModel;
+                if (stationTroposphericModelEstimated[i] && mappingModel != null) {
+                    troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);
+                    ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
+                    totalDelay.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                } else {
+                    troposphericModel = SaastamoinenModel.getStandardModel();
+                }
 
                 rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);
             } else {
@@ -1159,10 +1190,8 @@ public class OrbitDetermination {
     /** Set up outliers manager for range measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<Range> createRangeOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+    private OutlierFilter<Range> createRangeOutliersManager(final KeyValueFileParser<ParameterKey> parser) {
         if (parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1178,10 +1207,8 @@ public class OrbitDetermination {
     /** Set up outliers manager for range-rate measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<RangeRate> createRangeRateOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+    private OutlierFilter<RangeRate> createRangeRateOutliersManager(final KeyValueFileParser<ParameterKey> parser) {
         if (parser.containsKey(ParameterKey.RANGE_RATE_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.RANGE_RATE_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1197,10 +1224,8 @@ public class OrbitDetermination {
     /** Set up outliers manager for azimuth-elevation measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<AngularAzEl> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+    private OutlierFilter<AngularAzEl> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser) {
         if (parser.containsKey(ParameterKey.AZ_EL_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1216,10 +1241,8 @@ public class OrbitDetermination {
     /** Set up outliers manager for PV measurements.
      * @param parser input file parser
      * @return outliers manager (null if none configured)
-     * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<PV> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+    private OutlierFilter<PV> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser) {
         if (parser.containsKey(ParameterKey.PV_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.PV_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1243,16 +1266,40 @@ public class OrbitDetermination {
                           parser.getDouble(ParameterKey.PV_MEASUREMENTS_VELOCITY_SIGMA));
     }
 
+    /** Set up satellite data.
+     * @param parser input file parser
+     * @return satellite data
+     * @throws NoSuchElementException if input parameters are missing
+     */
+    private ObservableSatellite createObservableSatellite(final KeyValueFileParser<ParameterKey> parser)
+        throws NoSuchElementException {
+        ObservableSatellite obsSat = new ObservableSatellite(0);
+        ParameterDriver clockOffsetDriver = obsSat.getClockOffsetDriver();
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
+            clockOffsetDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+            clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN)) {
+            clockOffsetDriver.setMinValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX)) {
+            clockOffsetDriver.setMaxValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX));
+        }
+        if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED)) {
+            clockOffsetDriver.setSelected(parser.getBoolean(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED));
+        }
+        return obsSat;
+    }
+
     /** Set up estimator.
      * @param parser input file parser
      * @param propagatorBuilder propagator builder
      * @return estimator
      * @throws NoSuchElementException if input parameters are missing
-     * @throws OrekitException if some propagator parameters cannot be retrieved
      */
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
                                              final NumericalPropagatorBuilder propagatorBuilder)
-        throws NoSuchElementException, OrekitException {
+        throws NoSuchElementException {
 
         final boolean optimizerIsLevenbergMarquardt;
         if (! parser.containsKey(ParameterKey.ESTIMATOR_OPTIMIZATION_ENGINE)) {
@@ -1310,6 +1357,7 @@ public class OrbitDetermination {
      * @param file measurements file
      * @param satId satellite we are interested in
      * @param stations name to stations data map
+     * @param satellite satellite reference
      * @param satRangeBias range bias due to transponder delay
      * @param satAntennaRangeModifier modifier for on-board antenna offset
      * @param weights base weights for measurements
@@ -1319,6 +1367,7 @@ public class OrbitDetermination {
      */
     private List<ObservedMeasurement<?>> readRinex(final File file, final String satId,
                                                    final Map<String, StationData> stations,
+                                                   final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
                                                    final OnBoardAntennaRangeModifier satAntennaRangeModifier,
                                                    final Weights weights,
@@ -1342,58 +1391,55 @@ public class OrbitDetermination {
         }
         final Iono iono = new Iono(false);
         final RinexLoader loader = new RinexLoader(new FileInputStream(file), file.getAbsolutePath());
-        for (final Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
-            final RinexHeader header = entry.getKey();
-            for (final ObservationDataSet observationDataSet : entry.getValue()) {
-                if (observationDataSet.getSatelliteSystem() == system    &&
-                    observationDataSet.getPrnNumber()       == prnNumber) {
-                    for (final ObservationData od : observationDataSet.getObservationData()) {
-                        if (!Double.isNaN(od.getValue())) {
-                            if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-                                // this is a measurement we want
-                                final String stationName = header.getMarkerName() + "/" + od.getObservationType();
-                                StationData stationData = stations.get(stationName);
-                                if (stationData == null) {
-                                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                                              stationName + " not configured");
-                                }
-                                Range range = new Range(stationData.station, observationDataSet.getDate(),
-                                                        od.getValue(), stationData.rangeSigma,
-                                                        weights.rangeBaseWeight, false);
-                                range.addModifier(iono.getRangeModifier(od.getObservationType().getFrequency(system),
-                                                                        observationDataSet.getDate()));
-                                if (satAntennaRangeModifier != null) {
-                                    range.addModifier(satAntennaRangeModifier);
-                                }
-                                if (stationData.rangeBias != null) {
-                                    range.addModifier(stationData.rangeBias);
-                                }
-                                if (satRangeBias != null) {
-                                    range.addModifier(satRangeBias);
-                                }
-                                if (stationData.rangeTroposphericCorrection != null) {
-                                    range.addModifier(stationData.rangeTroposphericCorrection);
-                                }
-                                addIfNonZeroWeight(range, measurements);
-
-                            } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
-                                // this is a measurement we want
-                                final String stationName = header.getMarkerName() + "/" + od.getObservationType();
-                                StationData stationData = stations.get(stationName);
-                                if (stationData == null) {
-                                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                                              stationName + " not configured");
-                                }
-                                RangeRate rangeRate = new RangeRate(stationData.station, observationDataSet.getDate(),
-                                                                    od.getValue(), stationData.rangeRateSigma,
-                                                                    weights.rangeRateBaseWeight, false);
-                                rangeRate.addModifier(iono.getRangeRateModifier(od.getObservationType().getFrequency(system),
-                                                                                observationDataSet.getDate()));
-                                if (stationData.rangeRateBias != null) {
-                                    rangeRate.addModifier(stationData.rangeRateBias);
-                                }
-                                addIfNonZeroWeight(rangeRate, measurements);
+        for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
+            if (observationDataSet.getSatelliteSystem() == system    &&
+                observationDataSet.getPrnNumber()       == prnNumber) {
+                for (final ObservationData od : observationDataSet.getObservationData()) {
+                    if (!Double.isNaN(od.getValue())) {
+                        if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+                            // this is a measurement we want
+                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            StationData stationData = stations.get(stationName);
+                            if (stationData == null) {
+                                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                                          stationName + " not configured");
                             }
+                            Range range = new Range(stationData.station, false, observationDataSet.getDate(),
+                                                    od.getValue(), stationData.rangeSigma,
+                                                    weights.rangeBaseWeight, satellite);
+                            range.addModifier(iono.getRangeModifier(od.getObservationType().getFrequency(system),
+                                                                    observationDataSet.getDate()));
+                            if (satAntennaRangeModifier != null) {
+                                range.addModifier(satAntennaRangeModifier);
+                            }
+                            if (stationData.rangeBias != null) {
+                                range.addModifier(stationData.rangeBias);
+                            }
+                            if (satRangeBias != null) {
+                                range.addModifier(satRangeBias);
+                            }
+                            if (stationData.rangeTroposphericCorrection != null) {
+                                range.addModifier(stationData.rangeTroposphericCorrection);
+                            }
+                            addIfNonZeroWeight(range, measurements);
+
+                        } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
+                            // this is a measurement we want
+                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            StationData stationData = stations.get(stationName);
+                            if (stationData == null) {
+                                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                                          stationName + " not configured");
+                            }
+                            RangeRate rangeRate = new RangeRate(stationData.station, observationDataSet.getDate(),
+                                                                od.getValue(), stationData.rangeRateSigma,
+                                                                weights.rangeRateBaseWeight, false, satellite);
+                            rangeRate.addModifier(iono.getRangeRateModifier(od.getObservationType().getFrequency(system),
+                                                                            observationDataSet.getDate()));
+                            if (stationData.rangeRateBias != null) {
+                                rangeRate.addModifier(stationData.rangeRateBias);
+                            }
+                            addIfNonZeroWeight(rangeRate, measurements);
                         }
                     }
                 }
@@ -1408,6 +1454,7 @@ public class OrbitDetermination {
      * @param file measurements file
      * @param stations name to stations data map
      * @param pvData PV measurements data
+     * @param satellite satellite reference
      * @param satRangeBias range bias due to transponder delay
      * @param satAntennaRangeModifier modifier for on-board antenna offset
      * @param weights base weights for measurements
@@ -1420,6 +1467,7 @@ public class OrbitDetermination {
     private List<ObservedMeasurement<?>> readMeasurements(final File file,
                                                           final Map<String, StationData> stations,
                                                           final PVData pvData,
+                                                          final ObservableSatellite satellite,
                                                           final Bias<Range> satRangeBias,
                                                           final OnBoardAntennaRangeModifier satAntennaRangeModifier,
                                                           final Weights weights,
@@ -1445,7 +1493,7 @@ public class OrbitDetermination {
                     }
                     switch (fields[1]) {
                         case "RANGE" :
-                            final Range range = new RangeParser().parseFields(fields, stations, pvData,
+                            final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
                                                                               satRangeBias, weights,
                                                                               line, lineNumber, file.getName());
                             if (satAntennaRangeModifier != null) {
@@ -1457,7 +1505,7 @@ public class OrbitDetermination {
                             addIfNonZeroWeight(range, measurements);
                             break;
                         case "RANGE_RATE" :
-                            final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData,
+                            final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
                                                                                           satRangeBias, weights,
                                                                                           line, lineNumber, file.getName());
                             if (rangeRateOutliersManager != null) {
@@ -1466,16 +1514,16 @@ public class OrbitDetermination {
                             addIfNonZeroWeight(rangeRate, measurements);
                             break;
                         case "AZ_EL" :
-                            final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData,
-                                                                                 satRangeBias, weights,
-                                                                                 line, lineNumber, file.getName());
+                            final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData, satellite,
+                                                                                     satRangeBias, weights,
+                                                                                     line, lineNumber, file.getName());
                             if (azElOutliersManager != null) {
                                 angular.addModifier(azElOutliersManager);
                             }
                             addIfNonZeroWeight(angular, measurements);
                             break;
                         case "PV" :
-                            final PV pv = new PVParser().parseFields(fields, stations, pvData,
+                            final PV pv = new PVParser().parseFields(fields, stations, pvData, satellite,
                                                                      satRangeBias, weights,
                                                                      line, lineNumber, file.getName());
                             if (pvOutliersManager != null) {
@@ -1641,20 +1689,20 @@ public class OrbitDetermination {
          * @param fields measurements line fields
          * @param stations name to stations data map
          * @param pvData PV measurements data
+         * @param satellite satellite reference
          * @param satRangeBias range bias due to transponder delay
          * @param weight base weights for measurements
          * @param line complete line
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-         * @exception OrekitException if the fields do not represent a valid measurements line
          */
         public abstract T parseFields(String[] fields,
                                       Map<String, StationData> stations,
-                                      PVData pvData,
+                                      PVData pvData, ObservableSatellite satellite,
                                       Bias<Range> satRangeBias, Weights weight,
                                       String line, int lineNumber, String fileName)
-            throws OrekitException;
+           ;
 
         /** Check the number of fields.
          * @param expected expected number of fields
@@ -1662,11 +1710,10 @@ public class OrbitDetermination {
          * @param line complete line
          * @param lineNumber line number
          * @param fileName file name
-         * @exception OrekitException if the number of fields does not match the expected number
          */
         protected void checkFields(final int expected, final String[] fields,
                                    final String line, final int lineNumber, final String fileName)
-            throws OrekitException {
+            {
             if (fields.length != expected) {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           lineNumber, fileName, line);
@@ -1679,11 +1726,10 @@ public class OrbitDetermination {
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-         * @exception OrekitException if the date cannot be parsed
          */
         protected AbsoluteDate getDate(final String date,
                                        final String line, final int lineNumber, final String fileName)
-            throws OrekitException {
+            {
             try {
                 return new AbsoluteDate(date, TimeScalesFactory.getUTC());
             } catch (OrekitException oe) {
@@ -1702,12 +1748,11 @@ public class OrbitDetermination {
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-         * @exception OrekitException if the station is not known
          */
         protected StationData getStationData(final String stationName,
                                              final Map<String, StationData> stations,
                                              final String line, final int lineNumber, final String fileName)
-            throws OrekitException {
+            {
             final StationData stationData = stations.get(stationName);
             if (stationData == null) {
                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1727,19 +1772,20 @@ public class OrbitDetermination {
         public Range parseFields(final String[] fields,
                                  final Map<String, StationData> stations,
                                  final PVData pvData,
+                                 final ObservableSatellite satellite,
                                  final Bias<Range> satRangeBias,
                                  final Weights weights,
                                  final String line,
                                  final int lineNumber,
-                                 final String fileName)
-                                                 throws OrekitException {
+                                 final String fileName) {
             checkFields(4, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
-            final Range range = new Range(stationData.station,
+            final Range range = new Range(stationData.station, true,
                                           getDate(fields[0], line, lineNumber, fileName),
                                           Double.parseDouble(fields[3]) * 1000.0,
                                           stationData.rangeSigma,
-                                          weights.rangeBaseWeight);
+                                          weights.rangeBaseWeight,
+                                          satellite);
             if (stationData.rangeBias != null) {
                 range.addModifier(stationData.rangeBias);
             }
@@ -1760,12 +1806,12 @@ public class OrbitDetermination {
         public RangeRate parseFields(final String[] fields,
                                      final Map<String, StationData> stations,
                                      final PVData pvData,
+                                     final ObservableSatellite satellite,
                                      final Bias<Range> satRangeBias,
                                      final Weights weights,
                                      final String line,
                                      final int lineNumber,
-                                     final String fileName)
-                                                     throws OrekitException {
+                                     final String fileName) {
             checkFields(4, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
             final RangeRate rangeRate = new RangeRate(stationData.station,
@@ -1773,7 +1819,7 @@ public class OrbitDetermination {
                                                       Double.parseDouble(fields[3]) * 1000.0,
                                                       stationData.rangeRateSigma,
                                                       weights.rangeRateBaseWeight,
-                                                      true);
+                                                      true, satellite);
             if (stationData.rangeRateBias != null) {
                 rangeRate.addModifier(stationData.rangeRateBias);
             }
@@ -1788,22 +1834,23 @@ public class OrbitDetermination {
         public AngularAzEl parseFields(final String[] fields,
                                    final Map<String, StationData> stations,
                                    final PVData pvData,
+                                   final ObservableSatellite satellite,
                                    final Bias<Range> satRangeBias,
                                    final Weights weights,
                                    final String line,
                                    final int lineNumber,
-                                   final String fileName)
-                                                   throws OrekitException {
+                                   final String fileName) {
             checkFields(5, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
             final AngularAzEl azEl = new AngularAzEl(stationData.station,
-                                             getDate(fields[0], line, lineNumber, fileName),
-                                             new double[] {
+                                                     getDate(fields[0], line, lineNumber, fileName),
+                                                     new double[] {
                                                            FastMath.toRadians(Double.parseDouble(fields[3])),
                                                            FastMath.toRadians(Double.parseDouble(fields[4]))
             },
-                                             stationData.azElSigma,
-                                             weights.azElBaseWeight);
+                                                     stationData.azElSigma,
+                                                     weights.azElBaseWeight,
+                                                     satellite);
             if (stationData.refractionCorrection != null) {
                 azEl.addModifier(stationData.refractionCorrection);
             }
@@ -1821,12 +1868,12 @@ public class OrbitDetermination {
         public PV parseFields(final String[] fields,
                               final Map<String, StationData> stations,
                               final PVData pvData,
+                              final ObservableSatellite satellite,
                               final Bias<Range> satRangeBias,
                               final Weights weights,
                               final String line,
                               final int lineNumber,
-                              final String fileName)
-                                              throws OrekitException {
+                              final String fileName) {
             // field 2, which corresponds to stations in other measurements, is ignored
             // this allows the measurements files to be columns aligned
             // by inserting something like "----" instead of a station name
@@ -1840,7 +1887,8 @@ public class OrbitDetermination {
                                                                           Double.parseDouble(fields[8]) * 1000.0),
                                                              pvData.positionSigma,
                                                              pvData.velocitySigma,
-                                                             weights.pvBaseWeight);
+                                                             weights.pvBaseWeight,
+                                                             satellite);
         }
     };
 
@@ -1940,9 +1988,8 @@ public class OrbitDetermination {
          * <p>
          * The file is deleted if it contains no data.
          * </p>
-         * @exception OrekitException if empty file cannot be deleted
          */
-        public void close() throws OrekitException {
+        public void close() {
             if (stream != null) {
                 stream.close();
                 if (evaluations.isEmpty()) {
@@ -2278,11 +2325,10 @@ public class OrbitDetermination {
          * @param frequency frequency of the signal
          * @param date measurement date
          * @return range modifier
-         * @exception OrekitException if ionospheric model cannot be loaded
          */
         public RangeIonosphericDelayModifier getRangeModifier(final Frequency frequency,
                                                               final AbsoluteDate date)
-            throws OrekitException {
+            {
             final DateComponents dc = date.getComponents(TimeScalesFactory.getUTC()).getDate();
             ensureFrequencyAndDateSupported(frequency, dc);
             return rangeModifiers.get(frequency).get(dc);
@@ -2292,11 +2338,10 @@ public class OrbitDetermination {
          * @param frequency frequency of the signal
          * @param date measurement date
          * @return range-rate modifier
-         * @exception OrekitException if ionospheric model cannot be loaded
          */
         public RangeRateIonosphericDelayModifier getRangeRateModifier(final Frequency frequency,
                                                                       final AbsoluteDate date)
-            throws OrekitException {
+            {
             final DateComponents dc = date.getComponents(TimeScalesFactory.getUTC()).getDate();
             ensureFrequencyAndDateSupported(frequency, dc);
             return rangeRateModifiers.get(frequency).get(dc);
@@ -2305,10 +2350,9 @@ public class OrbitDetermination {
         /** Create modifiers for a frequency and date if needed.
          * @param frequency frequency of the signal
          * @param dc date for which modifiers are required
-         * @exception OrekitException if ionospheric model cannot be loaded
          */
         private void ensureFrequencyAndDateSupported(final Frequency frequency, final DateComponents dc)
-            throws OrekitException {
+            {
 
             if (!rangeModifiers.containsKey(frequency)) {
                 rangeModifiers.put(frequency, new HashMap<>());
@@ -2343,13 +2387,13 @@ public class OrbitDetermination {
     private static enum AttitudeMode {
         NADIR_POINTING_WITH_YAW_COMPENSATION() {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                            throws OrekitException {
+                            {
                 return new YawCompensation(inertialFrame, new NadirPointing(inertialFrame, body));
             }
         },
         CENTER_POINTING_WITH_YAW_STEERING {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                            throws OrekitException {
+                            {
                 return new YawSteering(inertialFrame,
                                        new BodyCenterPointing(inertialFrame, body),
                                        CelestialBodyFactory.getSun(),
@@ -2358,37 +2402,37 @@ public class OrbitDetermination {
         },
         LOF_ALIGNED_LVLH {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                            throws OrekitException {
+                            {
                 return new LofOffset(inertialFrame, LOFType.LVLH);
             }
         },
         LOF_ALIGNED_QSW {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                            throws OrekitException {
+                            {
                 return new LofOffset(inertialFrame, LOFType.QSW);
             }
         },
         LOF_ALIGNED_TNW {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                throws OrekitException {
+                {
                 return new LofOffset(inertialFrame, LOFType.TNW);
             }
         },
         LOF_ALIGNED_VNC {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                throws OrekitException {
+                {
                 return new LofOffset(inertialFrame, LOFType.VNC);
             }
         },
         LOF_ALIGNED_VVLH {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                throws OrekitException {
+                {
                 return new LofOffset(inertialFrame, LOFType.VVLH);
             }
         };
 
         public abstract AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-            throws OrekitException;
+           ;
 
     }
 
@@ -2462,11 +2506,24 @@ public class OrbitDetermination {
         ON_BOARD_ANTENNA_PHASE_CENTER_X,
         ON_BOARD_ANTENNA_PHASE_CENTER_Y,
         ON_BOARD_ANTENNA_PHASE_CENTER_Z,
+        ON_BOARD_CLOCK_OFFSET,
+        ON_BOARD_CLOCK_OFFSET_MIN,
+        ON_BOARD_CLOCK_OFFSET_MAX,
+        ON_BOARD_CLOCK_OFFSET_ESTIMATED,
         GROUND_STATION_NAME,
         GROUND_STATION_LATITUDE,
         GROUND_STATION_LONGITUDE,
         GROUND_STATION_ALTITUDE,
+        GROUND_STATION_CLOCK_OFFSET,
+        GROUND_STATION_CLOCK_OFFSET_MIN,
+        GROUND_STATION_CLOCK_OFFSET_MAX,
+        GROUND_STATION_CLOCK_OFFSET_ESTIMATED,
         GROUND_STATION_POSITION_ESTIMATED,
+        GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED,
+        GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY,
+        GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED,
+        GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
+        GROUND_STATION_NIELL_MAPPING_FUNCTION,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
         GROUND_STATION_RANGE_BIAS_MIN,

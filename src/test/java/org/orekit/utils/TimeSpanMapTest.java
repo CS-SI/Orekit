@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,9 +50,24 @@ public class TimeSpanMapTest {
         }
         Assert.assertEquals(0, map.get(ref.shiftedBy(-1000.0)).intValue());
         Assert.assertEquals(0, map.get(ref.shiftedBy( -100.0)).intValue());
+        TimeSpanMap.Span<Integer> span = map.getSpan(ref.shiftedBy(-1000.0));
+        Assert.assertEquals(0, span.getData().intValue());
+        Assert.assertTrue(span.getStart().durationFrom(AbsoluteDate.J2000_EPOCH) < -Double.MAX_VALUE);
+        Assert.assertEquals(1.0, span.getEnd().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
         for (int i = 0; i < 100; ++i) {
             Assert.assertEquals(i, map.get(ref.shiftedBy(i + 0.1)).intValue());
             Assert.assertEquals(i, map.get(ref.shiftedBy(i + 0.9)).intValue());
+            span = map.getSpan(ref.shiftedBy(i + 0.1));
+            Assert.assertEquals(i, span.getData().intValue());
+            if (i == 0) {
+                Assert.assertTrue(span.getStart().durationFrom(AbsoluteDate.J2000_EPOCH) < -Double.MAX_VALUE);
+            } else {
+                Assert.assertEquals(i, span.getStart().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
+            } if (i == 99) {
+                Assert.assertTrue(span.getEnd().durationFrom(AbsoluteDate.J2000_EPOCH) > Double.MAX_VALUE);
+            } else {
+                Assert.assertEquals(i + 1, span.getEnd().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
+            }
         }
         Assert.assertEquals(99, map.get(ref.shiftedBy(  100.0)).intValue());
         Assert.assertEquals(99, map.get(ref.shiftedBy( 1000.0)).intValue());

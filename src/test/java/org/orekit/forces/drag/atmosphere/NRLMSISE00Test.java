@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,7 +57,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class NRLMSISE00Test {
 
     @Test
-    public void testLegacy() throws OrekitException,
+    public void testLegacy() throws
                                     NoSuchMethodException, SecurityException, InstantiationException,
                                     IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
@@ -188,7 +188,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testDensity() throws OrekitException,
+    public void testDensity() throws
                               InstantiationException, IllegalAccessException,
                               IllegalArgumentException, InvocationTargetException,
                               NoSuchMethodException, SecurityException {
@@ -243,7 +243,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testDensityField() throws OrekitException {
+    public void testDensityField() {
         // Build the input params provider
         final InputParams ip = new InputParams();
         // Get Sun
@@ -279,7 +279,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testDensityGradient() throws OrekitException {
+    public void testDensityGradient() {
         // Build the input params provider
         final InputParams ip = new InputParams();
         // Get Sun
@@ -381,7 +381,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlobe7SwitchesOn() throws OrekitException {
+    public void testGlobe7SwitchesOn() {
         RandomGenerator random = new Well19937a(0xb9d06451353d23cbl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -391,7 +391,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlobe7SwitchesOff() throws OrekitException {
+    public void testGlobe7SwitchesOff() {
         RandomGenerator random = new Well19937a(0x778b486a40464b8fl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -401,7 +401,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlobe7SwitchesRandom() throws OrekitException {
+    public void testGlobe7SwitchesRandom() {
         RandomGenerator random = new Well19937a(0xe20a69235cc9583dl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -411,7 +411,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlob7sSwitchesOn() throws OrekitException {
+    public void testGlob7sSwitchesOn() {
         RandomGenerator random = new Well19937a(0xc7c218fabec5e98cl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -421,7 +421,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlob7sSwitchesOff() throws OrekitException {
+    public void testGlob7sSwitchesOff() {
         RandomGenerator random = new Well19937a(0x141f7aa933299a83l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -431,7 +431,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testGlob7sSwitchesRandom() throws OrekitException {
+    public void testGlob7sSwitchesRandom() {
         RandomGenerator random = new Well19937a(0x3671893ce741fc5cl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -441,7 +441,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgts7SwitchesOn() throws OrekitException {
+    public void testgts7SwitchesOn() {
         RandomGenerator random = new Well19937a(0xb6dcf73ed5e5d985l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -451,7 +451,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgts7SwitchesOff() throws OrekitException {
+    public void testgts7SwitchesOff() {
         RandomGenerator random = new Well19937a(0x0c953641bea0f6d2l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -461,7 +461,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgts7SwitchesRandom() throws OrekitException {
+    public void testgts7SwitchesRandom() {
         RandomGenerator random = new Well19937a(0x7347cacb946cb93bl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -471,7 +471,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7SwitchesOn() throws OrekitException {
+    public void testgtd7SwitchesOn() {
         RandomGenerator random = new Well19937a(0x3439206bdd4dff5dl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -481,7 +481,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7SwitchesOff() throws OrekitException {
+    public void testgtd7SwitchesOff() {
         RandomGenerator random = new Well19937a(0x3dc1f824e1033d1bl);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -491,7 +491,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7SwitchesRandom() throws OrekitException {
+    public void testgtd7SwitchesRandom() {
         RandomGenerator random = new Well19937a(0xa12175ef0b689b04l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -501,7 +501,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7dSwitchesOn() throws OrekitException {
+    public void testgtd7dSwitchesOn() {
         RandomGenerator random = new Well19937a(0x4bbb424422a1b909l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -511,7 +511,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7dSwitchesOff() throws OrekitException {
+    public void testgtd7dSwitchesOff() {
         RandomGenerator random = new Well19937a(0x7f6da37655e30103l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -521,7 +521,7 @@ public class NRLMSISE00Test {
     }
 
     @Test
-    public void testgtd7dSwitchesRandom() throws OrekitException {
+    public void testgtd7dSwitchesRandom() {
         RandomGenerator random = new Well19937a(0x4a75e29ddf23ccd7l);
         NRLMSISE00 atm = new NRLMSISE00(null, null, null);
         for (int i = 1; i <= 23; ++i) {
@@ -532,7 +532,7 @@ public class NRLMSISE00Test {
 
     private void doTestDoubleMethod(NRLMSISE00 atm, RandomGenerator random, String methodName,
                                     double absTolerance, double relTolerance)
-        throws OrekitException {
+        {
         try {
             // Common data for all cases
             final int doy = 172;
@@ -579,7 +579,7 @@ public class NRLMSISE00Test {
 
     private void doTestVoidMethod(NRLMSISE00 atm, RandomGenerator random, String methodName,
                                   double temperatureRelativeTolerance, double densityRelativeTolerance)
-        throws OrekitException {
+        {
         try {
 
             // Common data for all cases
@@ -873,27 +873,27 @@ public class NRLMSISE00Test {
         }
 
         @Override
-        public AbsoluteDate getMinDate() throws OrekitException {
+        public AbsoluteDate getMinDate() {
             return new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC());
         }
 
         @Override
-        public AbsoluteDate getMaxDate() throws OrekitException {
+        public AbsoluteDate getMaxDate() {
             return new AbsoluteDate(2003, 12, 31, TimeScalesFactory.getUTC());
         }
 
         @Override
-        public double getDailyFlux(AbsoluteDate date) throws OrekitException {
+        public double getDailyFlux(AbsoluteDate date) {
             return 150.;
         }
 
         @Override
-        public double getAverageFlux(AbsoluteDate date) throws OrekitException {
+        public double getAverageFlux(AbsoluteDate date) {
             return 150.;
         }
 
         @Override
-        public double[] getAp(AbsoluteDate date) throws OrekitException {
+        public double[] getAp(AbsoluteDate date) {
             return new double[] {4., 100., 100., 100., 100., 100., 100.};
         }
     }

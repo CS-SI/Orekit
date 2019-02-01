@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,8 +116,7 @@ public class IsotropicDrag implements DragSensitive {
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final T density,
                          final FieldVector3D<T> relativeVelocity,
-                         final T[] parameters)
-        throws OrekitException {
+                         final T[] parameters) {
         final T dragCoeff = parameters[0];
         return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff).multiply(crossSection / 2)).divide(mass),
                                    relativeVelocity);
@@ -129,8 +128,7 @@ public class IsotropicDrag implements DragSensitive {
                                                                final Rotation rotation, final double mass,
                                                                final double density, final Vector3D relativeVelocity,
                                                                final double[] parameters,
-                                                               final String paramName)
-        throws OrekitException {
+                                                               final String paramName) {
 
         if (!DRAG_COEFFICIENT.equals(paramName)) {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName, DRAG_COEFFICIENT);

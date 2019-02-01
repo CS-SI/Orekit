@@ -17,7 +17,6 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -86,10 +85,9 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * @param initialState initial state
      * @param target target date for the propagation
      *
-     * @throws  OrekitException if some specific error occurs
      */
     default void init(FieldSpacecraftState<T> initialState,
-                      FieldAbsoluteDate<T> target) throws OrekitException {
+                      FieldAbsoluteDate<T> target) {
         // nothing by default
     }
 
@@ -105,9 +103,8 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return the Action that the calling detector should pass back to the evaluation system
      *
-     * @exception OrekitException if some specific error occurs
      */
-    Action eventOccurred(FieldSpacecraftState<T> s, KK detector, boolean increasing) throws OrekitException;
+    Action eventOccurred(FieldSpacecraftState<T> s, KK detector, boolean increasing);
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
@@ -123,10 +120,8 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param oldState old state
      * @return new state
-     * @exception OrekitException if the state cannot be reseted
      */
-    default FieldSpacecraftState<T> resetState(KK detector, FieldSpacecraftState<T> oldState)
-        throws OrekitException {
+    default FieldSpacecraftState<T> resetState(KK detector, FieldSpacecraftState<T> oldState) {
         return oldState;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -128,7 +127,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
      * It is positive inside the FOV and negative outside.
      * </p>
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // Compute target position/velocity at date in spacecraft frame
         final Vector3D targetPosInert = new Vector3D(1, targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),

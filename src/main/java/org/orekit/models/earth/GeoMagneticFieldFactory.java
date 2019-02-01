@@ -61,11 +61,9 @@ public class GeoMagneticFieldFactory {
      * @param type the field model type
      * @param year the decimal year
      * @return a {@link GeoMagneticField} for the given year and model
-     * @throws OrekitException if the models could not be loaded
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
-    public static GeoMagneticField getField(final FieldModel type, final double year)
-        throws OrekitException {
+    public static GeoMagneticField getField(final FieldModel type, final double year) {
 
         switch (type) {
             case WMM:
@@ -80,11 +78,9 @@ public class GeoMagneticFieldFactory {
     /** Get the IGRF model for the given year.
      * @param year the decimal year
      * @return a {@link GeoMagneticField} for the given year
-     * @throws OrekitException
-     *             if the IGRF models could not be loaded
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
-    public static GeoMagneticField getIGRF(final double year) throws OrekitException {
+    public static GeoMagneticField getIGRF(final double year) {
         synchronized (GeoMagneticFieldFactory.class) {
             if (igrfModels == null) {
                 igrfModels = loadModels("^IGRF\\.COF$");
@@ -96,10 +92,9 @@ public class GeoMagneticFieldFactory {
     /** Get the WMM model for the given year.
      * @param year the decimal year
      * @return a {@link GeoMagneticField} for the given year
-     * @throws OrekitException if the WMM models could not be loaded
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
-    public static GeoMagneticField getWMM(final double year) throws OrekitException {
+    public static GeoMagneticField getWMM(final double year) {
         synchronized (GeoMagneticFieldFactory.class) {
             if (wmmModels == null) {
                 wmmModels = loadModels("^WMM\\.COF$");
@@ -113,10 +108,8 @@ public class GeoMagneticFieldFactory {
      * to retrieve them in a sorted manner.
      * @param supportedNames a regular expression for valid filenames
      * @return a {@link TreeMap} of all loaded models
-     * @throws OrekitException if the models could not be loaded
      */
-    private static TreeMap<Integer, GeoMagneticField> loadModels(final String supportedNames)
-        throws OrekitException {
+    private static TreeMap<Integer, GeoMagneticField> loadModels(final String supportedNames) {
 
         TreeMap<Integer, GeoMagneticField> loadedModels = null;
         final GeoMagneticModelLoader loader = new GeoMagneticModelLoader();
@@ -150,12 +143,10 @@ public class GeoMagneticFieldFactory {
      * @param models all loaded field models, sorted by their epoch
      * @param year the epoch of the resulting field model
      * @return a {@link GeoMagneticField} model for the given year
-     * @throws OrekitException if the specified year is out of range of the available models
      */
     private static GeoMagneticField getModel(final FieldModel type,
                                              final TreeMap<Integer, GeoMagneticField> models,
-                                             final double year)
-        throws OrekitException {
+                                             final double year) {
 
         final int epochKey = (int) (year * 100d);
         final SortedMap<Integer, GeoMagneticField> head = models.headMap(epochKey, true);

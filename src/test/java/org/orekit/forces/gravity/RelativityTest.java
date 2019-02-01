@@ -37,7 +37,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -77,7 +76,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass)
-        throws OrekitException {
+        {
         try {
             double gm = forceModel.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
             //radius
@@ -105,11 +104,9 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
     /**
      * check the acceleration from relativity
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testAcceleration() throws OrekitException {
+    public void testAcceleration() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
         Assert.assertFalse(relativity.dependsOnPositionOnly());
@@ -146,7 +143,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() throws OrekitException {
+    public void testJacobianVs80Implementation() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -165,11 +162,9 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
     /**
      * Check a nearly circular orbit.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testAccelerationCircular() throws OrekitException {
+    public void testAccelerationCircular() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         double re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         Relativity relativity = new Relativity(gm);
@@ -220,7 +215,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() throws OrekitException {
+    public void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -368,7 +363,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         (to test if the ForceModel it's actually
         doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException {
+    public void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 0);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -432,11 +427,9 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * check against example in Tapley, Schutz, and Born, p 65-66. They predict a
      * progression of perigee of 11 arcsec/year. To get the same results we must set the
      * propagation tolerances to 1e-5.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testSmallEffectOnOrbit() throws OrekitException {
+    public void testSmallEffectOnOrbit() {
         //setup
         final double gm = Constants.EIGEN5C_EARTH_MU;
         Orbit orbit =
@@ -473,7 +466,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * Relativity#getParameter(String)}
      */
     @Test
-    public void testGetSetGM() throws OrekitException {
+    public void testGetSetGM() {
         //setup
         Relativity relativity = new Relativity(Constants.EIGEN5C_EARTH_MU);
 

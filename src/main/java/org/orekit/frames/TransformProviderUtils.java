@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@
 package org.orekit.frames;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -44,7 +43,7 @@ public class TransformProviderUtils {
          * </p>
          */
         @Override
-        public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+        public Transform getTransform(final AbsoluteDate date) {
             return Transform.IDENTITY;
         }
 
@@ -54,8 +53,7 @@ public class TransformProviderUtils {
          * </p>
          */
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-            throws OrekitException {
+        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return FieldTransform.getIdentity(date.getField());
         }
 
@@ -82,15 +80,13 @@ public class TransformProviderUtils {
 
             /** {@inheritDoc} */
             @Override
-            public Transform getTransform(final AbsoluteDate date)
-                throws OrekitException {
+            public Transform getTransform(final AbsoluteDate date) {
                 return provider.getTransform(date).getInverse();
             }
 
             /** {@inheritDoc} */
             @Override
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-                throws OrekitException {
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 return provider.getTransform(date).getInverse();
             }
 
@@ -112,15 +108,13 @@ public class TransformProviderUtils {
 
             /** {@inheritDoc} */
             @Override
-            public Transform getTransform(final AbsoluteDate date)
-                throws OrekitException {
+            public Transform getTransform(final AbsoluteDate date) {
                 return new Transform(date, first.getTransform(date), second.getTransform(date));
             }
 
             /** {@inheritDoc} */
             @Override
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-                throws OrekitException {
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 return new FieldTransform<>(date, first.getTransform(date), second.getTransform(date));
             }
 

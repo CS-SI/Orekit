@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,14 +20,13 @@ import java.lang.reflect.Field;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.OceanTidesWave;
 
 public class OceanTidesWaveTest {
 
     @Test
     public void testDelaunayParameters()
-        throws OrekitException, SecurityException, NoSuchFieldException,
+        throws SecurityException, NoSuchFieldException,
                IllegalArgumentException, IllegalAccessException {
 
         Field cGammaField = OceanTidesWave.class.getDeclaredField("cGamma");

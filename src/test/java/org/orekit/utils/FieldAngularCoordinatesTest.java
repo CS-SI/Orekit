@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ import org.orekit.time.AbsoluteDate;
 public class FieldAngularCoordinatesTest {
 
     @Test
-    public void testDerivativesStructuresNeg() throws OrekitException {
+    public void testDerivativesStructuresNeg() {
         try {
             AngularCoordinates.IDENTITY.toDerivativeStructureRotation(-1);
             Assert.fail("an exception should have been thrown");
@@ -57,7 +57,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures3() throws OrekitException {
+    public void testDerivativesStructures3() {
         try {
             AngularCoordinates.IDENTITY.toDerivativeStructureRotation(3);
             Assert.fail("an exception should have been thrown");
@@ -69,7 +69,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures0() throws OrekitException {
+    public void testDerivativesStructures0() {
         RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
 
         FieldRotation<Decimal64> r    = randomRotation64(random);
@@ -83,7 +83,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures1() throws OrekitException {
+    public void testDerivativesStructures1() {
         RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
 
         FieldRotation<Decimal64> r    = randomRotation64(random);
@@ -97,7 +97,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures2() throws OrekitException {
+    public void testDerivativesStructures2() {
         RandomGenerator random = new Well1024a(0x1633878dddac047dl);
 
         FieldRotation<Decimal64> r    = randomRotation64(random);
@@ -111,7 +111,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testZeroRate() throws OrekitException {
+    public void testZeroRate() {
         FieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new FieldAngularCoordinates<>(createRotation(0.48, 0.64, 0.36, 0.48, false),
                                               createVector(0, 0, 0, 4),
@@ -125,7 +125,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testShift() throws OrekitException {
+    public void testShift() {
         double rate = 2 * FastMath.PI / (12 * 60);
         FieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new FieldAngularCoordinates<>(createRotation(1, 0, 0, 0, false),
@@ -162,7 +162,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
         double rate = 2 * FastMath.PI / (12 * 60);
         FieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new FieldAngularCoordinates<>(createRotation(0.48, 0.64, 0.36, 0.48, false),
@@ -259,7 +259,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testResultAngularCoordinates() throws OrekitException{
+    public void testResultAngularCoordinates() {
         Field<Decimal64> field = Decimal64Field.getInstance();
         Decimal64 zero = field.getZero();
         FieldVector3D<Decimal64> pos_B = new FieldVector3D<>(zero.add(-0.23723922134606962    ),
@@ -464,7 +464,7 @@ public class FieldAngularCoordinatesTest {
 
     @Test
     public void testInverseCrossProducts()
-        throws OrekitException {
+        {
         Decimal64Field field = Decimal64Field.getInstance();
         checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), FieldVector3D.getPlusJ(field));
         checkInverse(FieldVector3D.getZero(field),  FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
@@ -489,7 +489,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testRandomInverseCrossProducts() throws OrekitException {
+    public void testRandomInverseCrossProducts() {
         RandomGenerator generator = new Well1024a(0xda0ee5b245efd438l);
         for (int i = 0; i < 10000; ++i) {
             FieldVector3D<DerivativeStructure> omega = randomVector(generator, 10 * generator.nextDouble() + 1.0);
@@ -500,7 +500,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testRandomPVCoordinates() throws OrekitException {
+    public void testRandomPVCoordinates() {
         RandomGenerator generator = new Well1024a(0xf978035a328a565bl);
         for (int i = 0; i < 100; ++i) {
             FieldRotation<DerivativeStructure> r           = randomRotation(generator);
@@ -528,7 +528,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testCancellingDerivatives() throws OrekitException {
+    public void testCancellingDerivatives() {
         PVCoordinates u1 = new PVCoordinates(new Vector3D(-0.4466591282528639,   -0.009657376949231283,  -0.894652087807798),
                                              new Vector3D(-8.897296517803556E-4,  2.7825250920407674E-4,  4.411979658413134E-4),
                                              new Vector3D( 4.753127475302486E-7,  1.0209400376727623E-8,  9.515403756524403E-7));
@@ -549,7 +549,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     private <T extends RealFieldElement<T>> void checkInverse(FieldVector3D<T> omega, FieldVector3D<T> v1, FieldVector3D<T> v2)
-        throws OrekitException {
+        {
         checkInverse(omega,
                      v1, FieldVector3D.crossProduct(omega, v1),
                      v2, FieldVector3D.crossProduct(omega, v2));

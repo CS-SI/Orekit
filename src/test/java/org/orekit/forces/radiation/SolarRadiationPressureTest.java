@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,7 +93,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass)
-        throws OrekitException {
+        {
         try {
             java.lang.reflect.Field kRefField = SolarRadiationPressure.class.getDeclaredField("kRef");
             kRefField.setAccessible(true);
@@ -130,7 +130,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLightingInterplanetary() throws OrekitException, ParseException {
+    public void testLightingInterplanetary() throws ParseException {
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
@@ -158,7 +158,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLighting() throws OrekitException, ParseException {
+    public void testLighting() throws ParseException {
             // Initialization
             AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                                  new TimeComponents(13, 59, 27.816),
@@ -206,7 +206,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeIsotropicSingle() throws OrekitException {
+    public void testParameterDerivativeIsotropicSingle() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -241,7 +241,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeIsotropicClassical() throws OrekitException {
+    public void testParameterDerivativeIsotropicClassical() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -274,7 +274,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeIsotropicCnes() throws OrekitException {
+    public void testParameterDerivativeIsotropicCnes() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -308,7 +308,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianIsotropicSingle()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -340,7 +340,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testLocalJacobianIsotropicClassicalVs80Implementation()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -364,14 +364,14 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight()
-        throws OrekitException {
+        {
         // here, lighting ratio is exactly 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(250.0, 1000.0, 3.0e-8, false);
     }
 
     @Test
     public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesPenumbra()
-        throws OrekitException {
+        {
         // here, lighting ratio is about 0.57,
         // and remains strictly between 0 and 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(275.5, 100.0, 8.0e-7, false);
@@ -379,7 +379,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesEclipse()
-        throws OrekitException {
+        {
         // here, lighting ratio is exactly 0 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(300.0, 1000.0, 1.0e-50, false);
     }
@@ -387,7 +387,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     private void doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(double deltaT, double dP,
                                                                           double checkTolerance,
                                                                           boolean print)
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -410,7 +410,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianIsotropicClassical()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -442,7 +442,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianIsotropicCnes()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -473,7 +473,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeBox() throws OrekitException {
+    public void testParameterDerivativeBox() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -495,7 +495,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianBox()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -596,7 +596,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldIsotropicTest() throws OrekitException {
+    public void RealFieldIsotropicTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -754,7 +754,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException {
+    public void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 0);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -823,11 +823,11 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Deprecated
     @Test
-    public void testDeprecated() throws OrekitException {
+    public void testDeprecated() {
         final CelestialBody sun = CelestialBodyFactory.getSun();
         PVCoordinatesProvider nonFieldProvider = new PVCoordinatesProvider() {
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                throws OrekitException {
+                {
                 return sun.getPVCoordinates(date, frame);
             }
         };

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,12 +54,9 @@ class CIRFProvider implements EOPBasedTransformProvider {
 
     /** Simple constructor.
      * @param eopHistory EOP history
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read.
      * @see Frame
      */
-    CIRFProvider(final EOPHistory eopHistory)
-        throws OrekitException {
+    CIRFProvider(final EOPHistory eopHistory) {
 
         // load the nutation model
         xysPxy2Function = eopHistory.getConventions().getXYSpXY2Function();
@@ -77,14 +74,13 @@ class CIRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public CIRFProvider getNonInterpolatingProvider()
-        throws OrekitException {
+    public CIRFProvider getNonInterpolatingProvider() {
         return new CIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         final double[] xys  = xysPxy2Function.value(date);
         final double[] dxdy = eopHistory.getNonRotatinOriginNutationCorrection(date);
@@ -118,8 +114,7 @@ class CIRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         final T[] xys  = xysPxy2Function.value(date);
         final T[] dxdy = eopHistory.getNonRotatinOriginNutationCorrection(date);

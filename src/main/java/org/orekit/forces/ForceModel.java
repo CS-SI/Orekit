@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -74,11 +73,8 @@ public interface ForceModel {
      *
      * @param initialState spacecraft state at the start of propagation.
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
-     * @throws OrekitException if an implementing class overrides the default behavior and
-     *                         takes some action that throws an {@link OrekitException}.
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target)
-        throws OrekitException {
+    default void init(SpacecraftState initialState, AbsoluteDate target) {
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -89,10 +85,8 @@ public interface ForceModel {
      * </p>
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
-     * @exception OrekitException if some specific error occurs
      */
-    default void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
-        throws OrekitException {
+    default void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters()));
     }
 
@@ -101,10 +95,8 @@ public interface ForceModel {
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
      * @param <T> type of the elements
-     * @exception OrekitException if some specific error occurs
      */
-    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
-        throws OrekitException {
+    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField())));
     }
 
@@ -148,22 +140,18 @@ public interface ForceModel {
      * @param s current state information: date, kinematics, attitude
      * @param parameters values of the force model parameters
      * @return acceleration in same frame as state
-     * @exception OrekitException if some specific error occurs
-     * @since 9.0
+          * @since 9.0
      */
-    Vector3D acceleration(SpacecraftState s, double[] parameters)
-        throws OrekitException;
+    Vector3D acceleration(SpacecraftState s, double[] parameters);
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
      * @param parameters values of the force model parameters
      * @return acceleration in same frame as state
      * @param <T> type of the elements
-     * @exception OrekitException if some specific error occurs
-     * @since 9.0
+          * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters)
-        throws OrekitException;
+    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
 
     /** Get the discrete events related to the model.
      * @return stream of events detectors
@@ -186,10 +174,9 @@ public interface ForceModel {
     /** Get parameter value from its name.
      * @param name parameter name
      * @return parameter value
-     * @exception OrekitException if parameter is not supported
-     * @since 8.0
+          * @since 8.0
      */
-    ParameterDriver getParameterDriver(String name) throws OrekitException;
+    ParameterDriver getParameterDriver(String name);
 
     /** Check if a parameter is supported.
      * <p>Supported parameters are those listed by {@link #getParametersDrivers()}.</p>

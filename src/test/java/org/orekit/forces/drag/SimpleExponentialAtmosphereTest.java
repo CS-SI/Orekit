@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -35,7 +34,7 @@ import org.orekit.utils.IERSConventions;
 public class SimpleExponentialAtmosphereTest {
 
     @Test
-    public void testExpAtmosphere() throws OrekitException {
+    public void testExpAtmosphere() {
         Vector3D posInEME2000 = new Vector3D(10000, Vector3D.PLUS_I);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

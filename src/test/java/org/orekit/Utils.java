@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,16 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.models.earth.GlobalPressureTemperature2Model;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -80,6 +81,7 @@ public class Utils {
                 clearFactoryMaps(c);
             }
         }
+        clearAtomicReference(GlobalPressureTemperature2Model.class);
         FramesFactory.clearEOPHistoryLoaders();
         FramesFactory.setEOPContinuityThreshold(5 * Constants.JULIAN_DAY);
         TimeScalesFactory.clearUTCTAIOffsetsLoaders();
@@ -88,6 +90,7 @@ public class Utils {
         DataProvidersManager.getInstance().clearProviders();
         DataProvidersManager.getInstance().clearFilters();
         DataProvidersManager.getInstance().clearLoadedDataNames();
+        
     }
 
     public static void setDataRoot(String root) {
@@ -126,7 +129,7 @@ public class Utils {
         try {
             for (Field field : factoryClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers()) &&
-                        cachedFieldsClass.isAssignableFrom(field.getType())) {
+                    cachedFieldsClass.isAssignableFrom(field.getType())) {
                     field.setAccessible(true);
                     field.set(null, null);
                 }
@@ -136,8 +139,22 @@ public class Utils {
         }
     }
 
+    private static void clearAtomicReference(Class<?> factoryClass) {
+        try {
+            for (Field field : factoryClass.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers()) &&
+                    AtomicReference.class.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
+                    ((AtomicReference<?>) field.get(null)).set(null);
+                }
+            }
+        } catch (IllegalAccessException iae) {
+            Assert.fail(iae.getMessage());
+        }
+    }
+
     public static List<EOPEntry> buildEOPList(IERSConventions conventions, ITRFVersion version,
-                                              double[][] data) throws OrekitException {
+                                              double[][] data) {
         IERSConventions.NutationCorrectionConverter converter =
                 conventions.getNutationCorrectionConverter();
         final List<EOPEntry> list = new ArrayList<EOPEntry>();

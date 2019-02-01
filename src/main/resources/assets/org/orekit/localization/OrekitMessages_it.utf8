@@ -1,5 +1,5 @@
-# internal error, contact maintenance at {0}
-INTERNAL_ERROR = errore interno, contattare l''assistenza a {0}
+# internal error, please notify development team by creating an issue at {0}
+INTERNAL_ERROR = Errore interno, segnalare il problema creando un''anomalia su {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = L''altitudine ({0} m) è inferiore alla soglia ammessa di {1} m
@@ -501,3 +501,15 @@ UNEXPECTED_END_OF_FILE = fine inattesa del file {0}
 
 # file {0} is corrupted
 CORRUPTED_FILE = dati corrotti nel file {0}
+
+# Vienna coefficients ah or aw or zh or zw could not be loaded from {0}
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = <MISSING TRANSLATION>
+
+# Vienna coefficients ah or aw or zh or zw not available for date {0}
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+
+# file {0} does not contain Vienna coefficients ah, aw, zh or zw
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
+
+# irregular or incomplete grid in file {0}
+IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>

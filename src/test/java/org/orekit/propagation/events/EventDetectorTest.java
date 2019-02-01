@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public class EventDetectorTest {
     private double mu;
 
     @Test
-    public void testEventHandlerInit() throws OrekitException {
+    public void testEventHandlerInit() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -91,7 +91,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testBasicScheduling() throws OrekitException {
+    public void testBasicScheduling() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -156,7 +156,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testIssue108Numerical() throws OrekitException {
+    public void testIssue108Numerical() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -174,7 +174,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testIssue108Analytical() throws OrekitException {
+    public void testIssue108Analytical() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -222,7 +222,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testNoisyGFunction() throws OrekitException {
+    public void testNoisyGFunction() {
 
         // initial conditions
         Frame eme2000 = FramesFactory.getEME2000();
@@ -259,7 +259,7 @@ public class EventDetectorTest {
             this.provider = provider;
         }
 
-        public double g(final SpacecraftState s) throws OrekitException {
+        public double g(final SpacecraftState s) {
             PVCoordinates pv1     = provider.getPVCoordinates(s.getDate(), s.getFrame());
             PVCoordinates pv2     = s.getPVCoordinates();
             Vector3D deltaP       = pv1.getPosition().subtract(pv2.getPosition());
@@ -278,7 +278,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testWrappedException() throws OrekitException {
+    public void testWrappedException() {
         final Throwable dummyCause = new RuntimeException();
         try {
             // initial conditions
@@ -293,7 +293,7 @@ public class EventDetectorTest {
             k.addEventDetector(new DateDetector(initialDate.shiftedBy(Constants.JULIAN_DAY)) {
                 private static final long serialVersionUID = 1L;
                 @Override
-                public double g(final SpacecraftState s) throws OrekitException {
+                public double g(final SpacecraftState s) {
                     final double dt = s.getDate().durationFrom(exceptionDate);
                     if (FastMath.abs(dt) < 1.0) {
                         throw new OrekitException(dummyCause, LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy");
@@ -309,7 +309,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testDefaultMethods() throws OrekitException {
+    public void testDefaultMethods() {
         EventDetector dummyDetector = new EventDetector() {
             private static final long serialVersionUID = 1L;
 

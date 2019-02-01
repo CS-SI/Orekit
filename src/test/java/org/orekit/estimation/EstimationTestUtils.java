@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
@@ -75,7 +74,7 @@ import org.orekit.utils.ParameterDriver;
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
 
-    public static Context eccentricContext(final String dataRoot) throws OrekitException {
+    public static Context eccentricContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
         Context context = new Context();
@@ -134,7 +133,7 @@ public class EstimationTestUtils {
 
     }
 
-    public static Context geoStationnaryContext(final String dataRoot) throws OrekitException {
+    public static Context geoStationnaryContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
         Context context = new Context();
@@ -234,8 +233,7 @@ public class EstimationTestUtils {
     }
 
     public static Propagator createPropagator(final Orbit initialOrbit,
-                                              final PropagatorBuilder propagatorBuilder)
-        throws OrekitException {
+                                              final PropagatorBuilder propagatorBuilder) {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
@@ -251,10 +249,9 @@ public class EstimationTestUtils {
     }
 
     public static List<ObservedMeasurement<?>> createMeasurements(final Propagator propagator,
-                                                          final MeasurementCreator creator,
-                                                          final double startPeriod, final double endPeriod,
-                                                          final double step)
-        throws OrekitException {
+                                                                  final MeasurementCreator creator,
+                                                                  final double startPeriod, final double endPeriod,
+                                                                  final double step) {
 
         propagator.setMasterMode(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();
@@ -290,15 +287,13 @@ public class EstimationTestUtils {
      * @param posEps Tolerance on expected position difference
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and initial orbit
      * @param velEps Tolerance on expected velocity difference
-     * @throws OrekitException
      */
     public static void checkFit(final Context context, final BatchLSEstimator estimator,
                                 final int iterations, final int evaluations,
                                 final double expectedRMS,      final double rmsEps,
                                 final double expectedMax,      final double maxEps,
                                 final double expectedDeltaPos, final double posEps,
-                                final double expectedDeltaVel, final double velEps)
-        throws OrekitException {
+                                final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
@@ -329,17 +324,20 @@ public class EstimationTestUtils {
             }
         }
 
+        final double rms = FastMath.sqrt(sum / k);
+        final double deltaPos = Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+        final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
         Assert.assertEquals(expectedRMS,
-                            FastMath.sqrt(sum / k),
+                            rms,
                             rmsEps);
         Assert.assertEquals(expectedMax,
                             max,
                             maxEps);
         Assert.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
+                            deltaPos,
                             posEps);
         Assert.assertEquals(expectedDeltaVel,
-                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
+                            deltaVel,
                             velEps);
 
     }
@@ -358,7 +356,6 @@ public class EstimationTestUtils {
      * @param sigmaPosEps Tolerance on expected covariance matrix on position
      * @param expectedSigmasVel Expected values for covariance matrix on velocity
      * @param sigmaVelEps Tolerance on expected covariance matrix on velocity
-     * @throws OrekitException
      */
     public static void checkKalmanFit(final Context context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
@@ -367,7 +364,7 @@ public class EstimationTestUtils {
                                       final double expectedDeltaVel, final double velEps,
                                       final double[] expectedSigmasPos,final double sigmaPosEps,
                                       final double[] expectedSigmasVel,final double sigmaVelEps)
-        throws OrekitException {
+        {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
                        new PositionAngle[] { positionAngle },
@@ -391,7 +388,6 @@ public class EstimationTestUtils {
      * @param sigmaPosEps Tolerance on expected covariance matrix on position
      * @param expectedSigmasVel Expected values for covariance matrix on velocity
      * @param sigmaVelEps Tolerance on expected covariance matrix on velocity
-     * @throws OrekitException
      */
     public static void checkKalmanFit(final Context context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
@@ -400,7 +396,7 @@ public class EstimationTestUtils {
                                       final double[] expectedDeltaVel, final double []velEps,
                                       final double[][] expectedSigmasPos,final double[] sigmaPosEps,
                                       final double[][] expectedSigmasVel,final double[] sigmaVelEps)
-                                                      throws OrekitException {
+                                                      {
 
         // Add the measurements to the Kalman filter
         NumericalPropagator[] estimated = kalman.processMeasurements(measurements);
@@ -432,9 +428,9 @@ public class EstimationTestUtils {
             for (int i = 0; i < 6; i++) {
                 sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
             }
-//          // FIXME: debug
-//          final double dPos = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
-//          final double dVel = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
+//          // FIXME: debug print values
+//          final double dPos = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+//          final double dVel = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
 //          System.out.println("Nb Meas = " + kalman.getCurrentMeasurementNumber());
 //          System.out.println("dPos    = " + dPos + " m");
 //          System.out.println("dVel    = " + dVel + " m/s");
@@ -447,12 +443,11 @@ public class EstimationTestUtils {
 //          //debug
 
             // Check the final orbit estimation & PV sigmas
-            Assert.assertEquals(expectedDeltaPos[k],
-                                Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition),
-                                posEps[k]);
-            Assert.assertEquals(expectedDeltaVel[k],
-                                Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity),
-                                velEps[k]);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
+            Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+
             for (int i = 0; i < 3; i++) {
                 Assert.assertEquals(expectedSigmasPos[k][i], sigmas[i],   sigmaPosEps[k]);
                 Assert.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);

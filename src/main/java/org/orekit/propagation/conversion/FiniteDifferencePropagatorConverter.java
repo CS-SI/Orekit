@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinates;
@@ -64,31 +63,27 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
 
         /** {@inheritDoc} */
         public double[] value(final double[] arg)
-            throws IllegalArgumentException, OrekitExceptionWrapper {
-            try {
-                final Propagator propagator = builder.buildPropagator(arg);
-                final double[] eval = new double[getTargetSize()];
-                int k = 0;
-                for (SpacecraftState state : getSample()) {
-                    final PVCoordinates pv = propagator.getPVCoordinates(state.getDate(), getFrame());
-                    if (Double.isNaN(pv.getMomentum().getNorm())) {
-                        propagator.getPVCoordinates(state.getDate(), getFrame());
-                    }
-                    eval[k++] = pv.getPosition().getX();
-                    eval[k++] = pv.getPosition().getY();
-                    eval[k++] = pv.getPosition().getZ();
-                    if (!isOnlyPosition()) {
-                        eval[k++] = pv.getVelocity().getX();
-                        eval[k++] = pv.getVelocity().getY();
-                        eval[k++] = pv.getVelocity().getZ();
-                    }
+            throws IllegalArgumentException, OrekitException {
+            final Propagator propagator = builder.buildPropagator(arg);
+            final double[] eval = new double[getTargetSize()];
+            int k = 0;
+            for (SpacecraftState state : getSample()) {
+                final PVCoordinates pv = propagator.getPVCoordinates(state.getDate(), getFrame());
+                if (Double.isNaN(pv.getMomentum().getNorm())) {
+                    propagator.getPVCoordinates(state.getDate(), getFrame());
                 }
-
-                return eval;
-
-            } catch (OrekitException ex) {
-                throw new OrekitExceptionWrapper(ex);
+                eval[k++] = pv.getPosition().getX();
+                eval[k++] = pv.getPosition().getY();
+                eval[k++] = pv.getPosition().getZ();
+                if (!isOnlyPosition()) {
+                    eval[k++] = pv.getVelocity().getX();
+                    eval[k++] = pv.getVelocity().getY();
+                    eval[k++] = pv.getVelocity().getZ();
+                }
             }
+
+            return eval;
+
         }
     }
 
@@ -97,7 +92,7 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
 
         /** {@inheritDoc} */
         public Pair<RealVector, RealMatrix> value(final RealVector point)
-            throws IllegalArgumentException, OrekitExceptionWrapper {
+            throws IllegalArgumentException, OrekitException {
 
             final double[] arg = point.toArray();
             final MultivariateVectorFunction f = new ObjectiveFunction();

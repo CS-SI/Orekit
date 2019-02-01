@@ -22,15 +22,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hamcrest.core.IsInstanceOf;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -71,9 +70,8 @@ public class EclipticProviderTest {
      *
      * @param start start date of check.
      * @param end   en date of check.
-     * @throws OrekitException on error
      */
-    private void checkAlignment(AbsoluteDate start, AbsoluteDate end) throws OrekitException {
+    private void checkAlignment(AbsoluteDate start, AbsoluteDate end) {
         //setup
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody emb = CelestialBodyFactory.getEarthMoonBarycenter();
@@ -104,11 +102,9 @@ public class EclipticProviderTest {
 
     /**
      * Check frame has the right name.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testGetName() throws OrekitException {
+    public void testGetName() {
         Assert.assertEquals("Ecliptic/1996",
                             FramesFactory.getEcliptic(IERSConventions.IERS_1996).getName());
         Assert.assertEquals("Ecliptic/2003",
@@ -119,11 +115,9 @@ public class EclipticProviderTest {
 
     /**
      * Check the parent frame is MOD.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testGetParent() throws OrekitException {
+    public void testGetParent() {
         //setup
         Frame frame = FramesFactory.getEcliptic(IERSConventions.IERS_2003);
 
@@ -133,7 +127,7 @@ public class EclipticProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         TransformProvider provider = new EclipticProvider(IERSConventions.IERS_2010);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

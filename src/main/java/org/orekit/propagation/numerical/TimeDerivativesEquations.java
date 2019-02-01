@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation.numerical;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 
 /** Interface summing up the contribution of several forces into orbit and mass derivatives.
  *
@@ -47,10 +46,9 @@ public interface TimeDerivativesEquations {
 
     /** Add the contribution of a non-Keplerian acceleration.
      * @param gamma acceleration vector in the same inertial frame the spacecraft state is defined in (m/s²)
-     * @exception OrekitException if frame transforms cannot be computed
-     * @since 9.0
+          * @since 9.0
      */
-    void addNonKeplerianAcceleration(Vector3D gamma) throws OrekitException;
+    void addNonKeplerianAcceleration(Vector3D gamma);
 
     /** Add the contribution of the flow rate (dm/dt).
      * @param q the flow rate, must be negative (dm/dt)

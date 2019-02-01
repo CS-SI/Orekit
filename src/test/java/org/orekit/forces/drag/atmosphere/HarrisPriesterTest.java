@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,7 +60,7 @@ public class HarrisPriesterTest {
     private AbsoluteDate date;
 
     @Test
-    public void testStandard() throws OrekitException {
+    public void testStandard() {
 
         final HarrisPriester hp = new HarrisPriester(sun, earth);
 
@@ -76,7 +76,7 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testParameterN() throws OrekitException {
+    public void testParameterN() {
 
         final HarrisPriester hp = new HarrisPriester(sun, earth);
 
@@ -105,7 +105,7 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testMaxAlt() throws OrekitException {
+    public void testMaxAlt() {
 
         final HarrisPriester hp = new HarrisPriester(sun, earth);
 
@@ -120,7 +120,7 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testUserTab() throws OrekitException {
+    public void testUserTab() {
 
         final double[][] userTab = {
             {100000.,   4.974e+02,  4.974e+02},
@@ -209,7 +209,7 @@ public class HarrisPriesterTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testOutOfRange() throws OrekitException {
+    public void testOutOfRange() {
 
         final HarrisPriester hp = new HarrisPriester(sun, earth);
 
@@ -222,7 +222,7 @@ public class HarrisPriesterTest {
     }
 
     @Test
-    public void testVelocityDerivative() throws OrekitException {
+    public void testVelocityDerivative() {
         final Frame eme2000 = FramesFactory.getEME2000();
         final HarrisPriester hp = new HarrisPriester(sun, earth);
         final Vector3D pos = earth.getBodyFrame().getTransformTo(eme2000, date).
@@ -275,7 +275,7 @@ public class HarrisPriesterTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         sun = CelestialBodyFactory.getSun();
 

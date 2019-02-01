@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.orbits.CartesianOrbit;
@@ -53,10 +52,9 @@ public class InterSatellitesRangeTest {
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest inter-satellites Range Values\n");
@@ -68,10 +66,9 @@ public class InterSatellitesRangeTest {
     /**
      * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesEmitter() throws OrekitException {
+    public void testStateDerivativesEmitter() {
 
         boolean printResults = false;
         if (printResults) {
@@ -92,10 +89,9 @@ public class InterSatellitesRangeTest {
     /**
      * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesTransit() throws OrekitException {
+    public void testStateDerivativesTransit() {
 
         boolean printResults = false;
         if (printResults) {
@@ -116,9 +112,8 @@ public class InterSatellitesRangeTest {
     /**
      * Generic test function for values of the inter-satellites range
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
-    void genericTestValues(final boolean printResults) throws OrekitException {
+    void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -252,7 +247,7 @@ public class InterSatellitesRangeTest {
     void genericTestStateDerivatives(final boolean printResults, final int index,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -313,7 +308,7 @@ public class InterSatellitesRangeTest {
 
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) throws OrekitException {
+                        public double[] value(final SpacecraftState state) {
                             final SpacecraftState[] s = states.clone();
                             s[index] = state;
                             return measurement.estimate(0, 0, s).getEstimatedValue();

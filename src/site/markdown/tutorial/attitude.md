@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -43,11 +43,15 @@ More details on the orbit representation can be found
 in the [orbits section](../architecture/orbits.html)
 of the library architecture documentation.
 
-Let's define a couple of `AttitudeLaw`, built upon `LofOffset` laws for instance.
+We will put all switching events in a set.
 
-    final AttitudeLaw dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
-                                                        RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
-    final AttitudeLaw nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
+    final SortedSet<String> output = new TreeSet<String>();
+
+Let's define a couple of `AttitudeProvider`, built upon `LofOffset` laws for instance.
+
+    final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+                                                             RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
+    final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
 
 Let's also define some `EventDetector`. For this tutorial's requirements,
 two `EclipseDetector`, each one using a customized implementation of `EventHandler`
@@ -98,7 +102,7 @@ acts as a loop. We also define a handler to monitor attitude switches:
 An `AttitudesSequence` needs at least one switching condition to be meaningful,
 but there is no upper limit.
 
-An active `AttitudeLaw` may have several switch events and next law settings,
+An active `AttitudeProvider` may have several switch events and next law settings,
 leading to different activation patterns depending on which event is triggered first.
 
 Don't forget to set the current active law according to the current state:
@@ -134,8 +138,6 @@ the first one indicates if the spacecraft is eclipsed while the second informs
 about the current attitude law.
 
     propagator.setMasterMode(180., new OrekitFixedStepHandler() {
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        }
         public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
             DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
             angleDegree.setDecimalSeparator('\u00b0');
@@ -151,7 +153,7 @@ about the current attitude law.
     
             output.add(currentState.getDate() +
                        " " + ad.format(FastMath.toDegrees(eclipseAngle) +
-                       " " + vFastMath.toDegrees(pointingOffset));
+                       " " + ad.format(FastMath.toDegrees(pointingOffset)));
         }
     });
 
@@ -160,9 +162,25 @@ More details on propagation modes can be found in the
 [propagation section](../architecture/propagation.html)
 of the library architecture documentation.
 
-Finally, the propagator is just asked to propagate for a given duration.
+Finally, the propagator is just asked to propagate for a given duration, and we print
+the results:
 
-    SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate.shiftedBy(12600.)));
+    SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(12600.));
+    for (final String line : output) {
+        System.out.println(line);
+    }
+
+Note that we use an intermediate `SortedSet` to first gather both the switching events
+and the step outputs instead of just letting the event handler and step handler directly
+print their results. The rationale is that as events handlers could truncate a step (if
+their `eventOccurred` method returned `Action.STOP`), the library design is to always
+call `eventOccurred` on the event handler first, and then to call `handleStep` on the
+step handler afterwards, with the `isLast` boolean set up correctly if the event handler
+decided to stop propagation. A side effect is that if both methods print something, then
+the switch from the end of the step would be printed first and the step itself printed
+afterwards, which would lead to out of order output. The `SortedSet` ensures the various
+lines will be sorted in lexicographic order, which is chronological order here, despite
+they will be generated slightly out of order near events occurrences.
 
 As the propagation goes along, events occur switching from one attitude law to another.
 

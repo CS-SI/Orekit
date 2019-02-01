@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,7 @@ public class JB2008Test {
     private static final TimeScale TT = TimeScalesFactory.getTT();
 
     @Test
-    public void testLegacy() throws OrekitException {
+    public void testLegacy() {
         final boolean print = false;
         // Build the model
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -112,7 +112,7 @@ public class JB2008Test {
 
 
     @Test
-    public void testAltitude() throws OrekitException {
+    public void testAltitude() {
         final boolean print = false;
         // Build the iput params provider
         final InputParams ip = new InputParams();
@@ -156,7 +156,7 @@ public class JB2008Test {
    }
 
     @Test
-    public void testException() throws OrekitException, ParseException {
+    public void testException() throws ParseException {
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -177,7 +177,7 @@ public class JB2008Test {
     }
 
     @Test
-    public void testDensityField() throws OrekitException {
+    public void testDensityField() {
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -210,7 +210,7 @@ public class JB2008Test {
     }
 
     @Test
-    public void testDensityGradient() throws OrekitException {
+    public void testDensityGradient() {
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -450,7 +450,7 @@ public class JB2008Test {
 
         @Override
         public double getF10(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return F10[i];
@@ -461,7 +461,7 @@ public class JB2008Test {
 
         @Override
         public double getF10B(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return F10B[i];
@@ -472,7 +472,7 @@ public class JB2008Test {
 
         @Override
         public double getS10(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return S10[i];
@@ -483,7 +483,7 @@ public class JB2008Test {
 
         @Override
         public double getS10B(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return S10B[i];
@@ -494,7 +494,7 @@ public class JB2008Test {
 
         @Override
         public double getXM10(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return XM10[i];
@@ -505,7 +505,7 @@ public class JB2008Test {
 
         @Override
         public double getXM10B(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return XM10B[i];
@@ -516,7 +516,7 @@ public class JB2008Test {
 
         @Override
         public double getY10(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return Y10[i];
@@ -527,7 +527,7 @@ public class JB2008Test {
 
         @Override
         public double getY10B(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return Y10B[i];
@@ -538,7 +538,7 @@ public class JB2008Test {
 
         @Override
         public double getDSTDTC(AbsoluteDate date)
-            throws OrekitException {
+            {
             for (int i = 0; i < TC.length; i++) {
                 if (date.equals(TC[i])) {
                     return DSTDTC[i];

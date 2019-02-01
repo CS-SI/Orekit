@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,6 @@ package org.orekit.time;
 
 import java.util.Collection;
 import java.util.stream.Stream;
-
-import org.orekit.errors.OrekitException;
 
 /** This interface represents objects that can be interpolated in time.
  * @param <T> Type of the object.
@@ -48,10 +46,8 @@ public interface TimeInterpolable<T extends TimeInterpolable<T>> {
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if interpolation cannot be performed
      */
-    default T interpolate(AbsoluteDate date, Collection<T> sample)
-        throws OrekitException {
+    default T interpolate(AbsoluteDate date, Collection<T> sample) {
         return interpolate(date, sample.stream());
     }
 
@@ -76,10 +72,8 @@ public interface TimeInterpolable<T extends TimeInterpolable<T>> {
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if interpolation cannot be performed
-     * @since 9.0
+          * @since 9.0
      */
-    T interpolate(AbsoluteDate date, Stream<T> sample)
-        throws OrekitException;
+    T interpolate(AbsoluteDate date, Stream<T> sample);
 
 }

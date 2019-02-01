@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,7 +102,7 @@ public class EphemerisEventsTest {
         return new Ephemeris(tab, 2);
     }
 
-    private EclipseDetector buildEclipsDetector(final OrbitType type) throws OrekitException {
+    private EclipseDetector buildEclipsDetector(final OrbitType type) {
 
         double sunRadius = 696000000.;
         double earthRadius = 6400000.;
@@ -113,7 +113,7 @@ public class EphemerisEventsTest {
                               withHandler(new EventHandler<EclipseDetector>() {
                                 public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
                                                             boolean increasing)
-                                    throws OrekitException {
+                                    {
                                     Assert.assertEquals(type, s.getOrbit().getType());
                                     if (increasing) {
                                         ++inEclipsecounter;

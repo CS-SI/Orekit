@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,11 +71,9 @@ public abstract class GroundPointing implements AttitudeProvider {
      * Build a new instance with arbitrary default elements.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param bodyFrame the frame that rotates with the body
-     * @exception OrekitException if the first frame specified is not a pseudo-inertial frame
      * @since 7.1
      */
-    protected GroundPointing(final Frame inertialFrame, final Frame bodyFrame)
-        throws OrekitException {
+    protected GroundPointing(final Frame inertialFrame, final Frame bodyFrame) {
         if (!inertialFrame.isPseudoInertial()) {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                       inertialFrame.getName());
@@ -102,12 +100,9 @@ public abstract class GroundPointing implements AttitudeProvider {
      * @param frame frame in which observed ground point should be provided
      * @return observed ground point position (element 0) and velocity (at index 1)
      * in specified frame
-     * @throws OrekitException if some specific error occurs,
-     * such as no target reached
      */
     public abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv,
-                                                         AbsoluteDate date, Frame frame)
-        throws OrekitException;
+                                                         AbsoluteDate date, Frame frame);
 
     /** Compute the target point position/velocity in specified frame.
      * @param pvProv provider for PV coordinates
@@ -116,19 +111,15 @@ public abstract class GroundPointing implements AttitudeProvider {
      * @param <T> type of the fiels elements
      * @return observed ground point position (element 0) and velocity (at index 1)
      * in specified frame
-     * @throws OrekitException if some specific error occurs,
-     * such as no target reached
      * @since 9.0
      */
     public abstract <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv,
                                                                                                  FieldAbsoluteDate<T> date,
-                                                                                                 Frame frame)
-        throws OrekitException;
+                                                                                                 Frame frame);
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
-                                final Frame frame)
-        throws OrekitException {
+                                final Frame frame) {
 
         // satellite-target relative vector
         final PVCoordinates pva  = pvProv.getPVCoordinates(date, inertialFrame);
@@ -169,8 +160,7 @@ public abstract class GroundPointing implements AttitudeProvider {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                        final FieldAbsoluteDate<T> date,
-                                                                       final Frame frame)
-        throws OrekitException {
+                                                                       final Frame frame) {
 
         // satellite-target relative vector
         final FieldPVCoordinates<T> pva  = pvProv.getPVCoordinates(date, inertialFrame);

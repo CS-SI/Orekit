@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -109,9 +108,8 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     /** Get the elevation value.
      * @param s the current state information: date, kinematics, attitude
      * @return spacecraft elevation
-     * @exception OrekitException if some specific error occurs
      */
-    public double getElevation(final SpacecraftState s) throws OrekitException {
+    public double getElevation(final SpacecraftState s) {
         return topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
     }
 
@@ -121,9 +119,8 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return spacecraft elevation first time derivative
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // get position, velocity acceleration of spacecraft in topocentric frame
         final Transform inertToTopo = s.getFrame().getTransformTo(topo, s.getDate());

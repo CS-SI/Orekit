@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -67,16 +66,16 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param twoway if true, this is a two-way measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
+     * @deprecated since 9.3 replaced by {@link #RangeRate(GroundStation, AbsoluteDate,
+     * double, double, double, boolean, ObservableSatellite)}
      */
+    @Deprecated
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate,
                      final double sigma,
                      final double baseWeight,
-                     final boolean twoway)
-        throws OrekitException {
-        this(station, date, rangeRate, sigma, baseWeight, twoway, 0);
+                     final boolean twoway) {
+        this(station, date, rangeRate, sigma, baseWeight, twoway, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -87,27 +86,44 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param baseWeight base weight
      * @param twoway if true, this is a two-way measurement
      * @param propagatorIndex index of the propagator related to this measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      * @since 9.0
+     * @deprecated since 9.3 replaced by {@link #RangeRate(GroundStation, AbsoluteDate,
+     * double, double, double, boolean, ObservableSatellite)}
      */
+    @Deprecated
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate,
                      final double sigma,
                      final double baseWeight,
                      final boolean twoway,
-                     final int propagatorIndex)
-        throws OrekitException {
-        super(date, rangeRate, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              station.getEastOffsetDriver(),
-              station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver(),
-              station.getPrimeMeridianOffsetDriver(),
-              station.getPrimeMeridianDriftDriver(),
-              station.getPolarOffsetXDriver(),
-              station.getPolarDriftXDriver(),
-              station.getPolarOffsetYDriver(),
-              station.getPolarDriftYDriver());
+                     final int propagatorIndex) {
+        this(station, date, rangeRate, sigma, baseWeight, twoway, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param rangeRate observed value, m/s
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param twoway if true, this is a two-way measurement
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public RangeRate(final GroundStation station, final AbsoluteDate date,
+                     final double rangeRate, final double sigma, final double baseWeight,
+                     final boolean twoway, final ObservableSatellite satellite) {
+        super(date, rangeRate, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(station.getClockOffsetDriver());
+        addParameterDriver(station.getEastOffsetDriver());
+        addParameterDriver(station.getNorthOffsetDriver());
+        addParameterDriver(station.getZenithOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianDriftDriver());
+        addParameterDriver(station.getPolarOffsetXDriver());
+        addParameterDriver(station.getPolarDriftXDriver());
+        addParameterDriver(station.getPolarOffsetYDriver());
+        addParameterDriver(station.getPolarDriftYDriver());
         this.station = station;
         this.twoway  = twoway;
     }
@@ -129,10 +145,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<RangeRate> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                    final SpacecraftState[] states)
-        throws OrekitException {
+                                                                    final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
 
         // Range-rate derivatives are computed with respect to spacecraft state in inertial frame
         // and station position in station's offset frame
@@ -141,7 +157,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - station parameters (station offsets, pole, prime meridian...)
+        //  - 6..n - station parameters (clock offset, station offsets, pole, prime meridian...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
@@ -158,11 +174,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
         // transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final AbsoluteDate downlinkDate = getDate();
-        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
-                        new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, indices);
+                        station.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
+        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+                        offsetToInertialDownlink.getFieldDate();
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -177,7 +192,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state
-        final double                delta        = downlinkDate.durationFrom(state.getDate());
+        final DerivativeStructure   delta        = downlinkDateDS.durationFrom(state.getDate());
         final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
         final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
 
@@ -191,10 +206,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final EstimatedMeasurement<RangeRate> estimated;
         if (twoway) {
             // one-way (uplink) light time correction
-            final AbsoluteDate approxUplinkDate = downlinkDate.shiftedBy(-2 * tauD.getValue());
-            final FieldAbsoluteDate<DerivativeStructure> approxUplinkDateDS = new FieldAbsoluteDate<>(field, approxUplinkDate);
             final FieldTransform<DerivativeStructure> offsetToInertialApproxUplink =
-                            station.getOffsetToInertial(state.getFrame(), approxUplinkDateDS, factory, indices);
+                            station.getOffsetToInertial(state.getFrame(),
+                                                        downlinkDateDS.shiftedBy(tauD.multiply(-2)), factory, indices);
+            final FieldAbsoluteDate<DerivativeStructure> approxUplinkDateDS =
+                            offsetToInertialApproxUplink.getFieldDate();
 
             final TimeStampedFieldPVCoordinates<DerivativeStructure> stationApproxUplink =
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxUplinkDateDS,
@@ -258,15 +274,13 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param transitState orbital state at onboard signal transit
      * @param indices indices of the estimated parameters in derivatives computations
      * @return theoretical value
-     * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
     private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationPV,
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV,
                                                                         final SpacecraftState transitState,
-                                                                        final Map<String, Integer> indices)
-        throws OrekitException {
+                                                                        final Map<String, Integer> indices) {
 
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =

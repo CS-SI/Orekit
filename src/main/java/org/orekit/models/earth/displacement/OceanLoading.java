@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.BodiesElements;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 
 /**
@@ -360,8 +359,7 @@ public class OceanLoading implements StationDisplacement {
     /** {@inheritDoc} */
     @Override
     public Vector3D displacement(final BodiesElements elements, final Frame earthFrame,
-                                 final Vector3D referencePoint)
-        throws OrekitException {
+                                 final Vector3D referencePoint) {
 
         // allocate arrays for each species splines
         final UnivariateFunction[] realZSpline      = new UnivariateFunction[mainTides.length];

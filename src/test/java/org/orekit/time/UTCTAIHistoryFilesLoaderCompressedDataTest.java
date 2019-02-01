@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,11 @@ package org.orekit.time;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 
 public class UTCTAIHistoryFilesLoaderCompressedDataTest {
 
     @Test
-    public void testCompressed() throws OrekitException {
+    public void testCompressed() {
         Utils.setDataRoot("compressed-data");
         Assert.assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
     }

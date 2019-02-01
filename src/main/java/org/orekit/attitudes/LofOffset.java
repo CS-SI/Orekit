@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,9 +64,8 @@ public class LofOffset implements AttitudeProvider {
      * </p>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
      * @param type type of Local Orbital Frame
-     * @exception OrekitException if inertialFrame is not a pseudo-inertial frame
      */
-    public LofOffset(final Frame inertialFrame, final LOFType type) throws OrekitException {
+    public LofOffset(final Frame inertialFrame, final LOFType type) {
         this(inertialFrame, type, RotationOrder.XYZ, 0, 0, 0);
     }
 
@@ -103,11 +102,10 @@ public class LofOffset implements AttitudeProvider {
      * @param alpha1 angle of the first elementary rotation
      * @param alpha2 angle of the second elementary rotation
      * @param alpha3 angle of the third elementary rotation
-     * @exception OrekitException if inertialFrame is not a pseudo-inertial frame
      */
     public LofOffset(final Frame inertialFrame, final LOFType type,
                      final RotationOrder order, final double alpha1,
-                     final double alpha2, final double alpha3) throws OrekitException {
+                     final double alpha2, final double alpha3) {
         this.type = type;
         this.offset = new Rotation(order, RotationConvention.VECTOR_OPERATOR, alpha1, alpha2, alpha3).revert();
         if (!inertialFrame.isPseudoInertial()) {
@@ -120,8 +118,7 @@ public class LofOffset implements AttitudeProvider {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                final AbsoluteDate date, final Frame frame) {
 
         // construction of the local orbital frame, using PV from inertial frame
         final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
@@ -142,8 +139,7 @@ public class LofOffset implements AttitudeProvider {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        throws OrekitException {
+                                                                        final Frame frame) {
 
         // construction of the local orbital frame, using PV from inertial frame
         final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);

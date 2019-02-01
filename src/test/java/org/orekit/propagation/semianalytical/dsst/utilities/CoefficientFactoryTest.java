@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,7 +75,7 @@ public class CoefficientFactoryTest {
      * current element
      */
     @Test
-    public void testVmns() throws OrekitException {
+    public void testVmns() {
         Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0), eps0);
         Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1), eps0);
         Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2), eps0);
@@ -94,7 +94,7 @@ public class CoefficientFactoryTest {
 
     /** Error if m > n */
     @Test(expected = OrekitException.class)
-    public void testVmnsError() throws OrekitException {
+    public void testVmnsError() {
         // if m > n
         CoefficientsFactory.getVmns(3, 2, 1);
     }
@@ -146,12 +146,10 @@ public class CoefficientFactoryTest {
 
     /**
      * Direct computation for the Vmns coefficient from equation 2.7.1 - (6)
-     *
-     * @throws OrekitException
      */
     private static double getVmns2(final int m,
                                    final int n,
-                                   final int s) throws OrekitException {
+                                   final int s) {
         double vmsn = 0d;
         if ((n - s) % 2 == 0) {
             final int coef = (s > 0 || s % 2 == 0) ? 1 : -1;

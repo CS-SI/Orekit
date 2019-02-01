@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -123,8 +123,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
 
     /** {@inheritDoc} */
     @Override
-    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws
-            TimeStampedCacheException {
+    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
         return TimeStampedSphericalHarmonics.interpolate(date, cache.getNeighbors(date));
     }
 
@@ -144,8 +143,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         /** {@inheritDoc} */
         @Override
         public List<TimeStampedSphericalHarmonics> generate(final AbsoluteDate existingDate,
-                                                            final AbsoluteDate date)
-            throws TimeStampedCacheException {
+                                                            final AbsoluteDate date) {
             try {
 
                 final List<TimeStampedSphericalHarmonics> generated =
@@ -198,11 +196,9 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         /** Fill coefficients array for one entry.
          * @param raw the un-interpolated spherical harmonics
          * @param cnmsnm arrays to fill in
-         * @exception OrekitException if coefficients cannot be computed at specified date
          */
         private void fillArray(final NormalizedSphericalHarmonics raw,
-                               final double[] cnmsnm)
-            throws OrekitException {
+                               final double[] cnmsnm) {
             int index = 0;
             for (int n = 0; n <= rawProvider.getMaxDegree(); ++n) {
                 for (int m = 0; m <= n; ++m) {
@@ -257,13 +253,13 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedCnm(final int n, final int m) throws OrekitException {
+        public double getNormalizedCnm(final int n, final int m) {
             return cnmsnm[(n * (n + 1)) / 2 + m];
         }
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedSnm(final int n, final int m) throws OrekitException {
+        public double getNormalizedSnm(final int n, final int m) {
             return cnmsnm[(n * (n + 1)) / 2 + m + size];
         }
 

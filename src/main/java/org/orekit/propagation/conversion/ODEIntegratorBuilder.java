@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.AbstractIntegrator;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 
@@ -31,9 +30,7 @@ public interface ODEIntegratorBuilder {
      * @param orbit reference orbit
      * @param orbitType orbit type to use
      * @return a first order integrator ready to use
-     * @exception OrekitException if integrator cannot been built
      */
-    AbstractIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType)
-        throws OrekitException;
+    AbstractIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType);
 
 }

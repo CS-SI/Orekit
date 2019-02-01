@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ public class BiasTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testEstimateBias() throws OrekitException {
+    public void testEstimateBias() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -94,10 +94,12 @@ public class BiasTest {
                 if (range.getStation() == context.stations.get(i)) {
                     double biasedRange = range.getObservedValue()[0] + realStationsBiases[i];
                     final Range m = new Range(range.getStation(),
+                                              range.isTwoWay(),
                                               range.getDate(),
                                               biasedRange,
                                               range.getTheoreticalStandardDeviation()[0],
-                                              range.getBaseWeight()[0]);
+                                              range.getBaseWeight()[0],
+                                              range.getSatellites().get(0));
                     m.addModifier((Bias<Range>) stationsRangeBiases[i]);
                     estimator.addMeasurement(m);
                 }
@@ -129,7 +131,7 @@ public class BiasTest {
     }
 
     @Test
-    public void testTooSmallScale() throws OrekitException {
+    public void testTooSmallScale() {
         try {
             new Bias<Range>(new String[] { "OK", "not-OK" },
                             new double[] { 1000.0,    1000.0 },

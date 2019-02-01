@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
@@ -43,17 +42,17 @@ import org.orekit.utils.IERSConventions;
 public class FieldAttitudeTest {
 
     @Test
-    public void testShift() throws OrekitException {
+    public void testShift() {
         doTestShift(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
         doTestSpin(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolation() {
         doTestInterpolation(Decimal64Field.getInstance());
     }
 
@@ -83,7 +82,7 @@ public class FieldAttitudeTest {
     }
 
 
-    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) {
         T zero = field.getZero();
         T rate = zero.add(2 * FastMath.PI / (12 * 60));
         FieldAttitude<T> attitude = new FieldAttitude<>(new FieldAbsoluteDate<>(field), FramesFactory.getEME2000(),
@@ -118,7 +117,7 @@ public class FieldAttitudeTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestInterpolation(final Field<T> field) {
 
         T zero = field.getZero();
 

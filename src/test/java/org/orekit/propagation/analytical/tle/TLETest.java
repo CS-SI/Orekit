@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ import org.orekit.utils.PVCoordinates;
 public class TLETest {
 
     @Test
-    public void testTLEFormat() throws OrekitException {
+    public void testTLEFormat() {
 
         String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
@@ -84,7 +84,7 @@ public class TLETest {
     }
 
     @Test
-    public void testIssue196() throws OrekitException {
+    public void testIssue196() {
 
         String line1A = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         String line1B = "1 27421U 02021A   02124.48976499  -.0002147  00000-0 -89879-2 0    20";
@@ -112,14 +112,14 @@ public class TLETest {
     }
 
     @Test
-    public void testSymmetry() throws OrekitException {
+    public void testSymmetry() {
         checkSymmetry("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         checkSymmetry("1 31928U 98067BA  08269.84884916  .00114257  17652-4  13615-3 0  4412",
                       "2 31928  51.6257 175.4142 0001703  41.9031 318.2112 16.08175249 68368");
     }
 
-    private void checkSymmetry(String line1, String line2) throws OrekitException {
+    private void checkSymmetry(String line1, String line2) {
         TLE tleRef = new TLE(line1, line2);
         TLE tle = new TLE(tleRef.getSatelliteNumber(), tleRef.getClassification(),
                           tleRef.getLaunchYear(), tleRef.getLaunchNumber(), tleRef.getLaunchPiece(),
@@ -133,19 +133,19 @@ public class TLETest {
     }
 
     @Test
-    public void testBug74() throws OrekitException {
+    public void testBug74() {
         checkSymmetry("1 00001U 00001A   12026.45833333 2.94600864  39565-9  16165-7 1    12",
                       "2 00001 627.0796 454.4522 0000000 624.9662   0.4817  0.00000000    12");
     }
 
     @Test
-    public void testBug77() throws OrekitException {
+    public void testBug77() {
         checkSymmetry("1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
                       "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
     }
 
     @Test
-    public void testDirectConstruction() throws OrekitException {
+    public void testDirectConstruction() {
         TLE tleA = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
                            new AbsoluteDate(new DateComponents(2012, 26),
                                             new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
@@ -172,7 +172,7 @@ public class TLETest {
     }
 
     @Test
-    public void testBug77TooLargeSecondDerivative() throws OrekitException {
+    public void testBug77TooLargeSecondDerivative() {
         try {
             TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
                               new AbsoluteDate(new DateComponents(2012, 26),
@@ -191,7 +191,7 @@ public class TLETest {
     }
 
     @Test
-    public void testBug77TooLargeBStar() throws OrekitException {
+    public void testBug77TooLargeBStar() {
         try {
             TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
                               new AbsoluteDate(new DateComponents(2012, 26),
@@ -210,7 +210,7 @@ public class TLETest {
     }
 
     @Test
-    public void testBug77TooLargeEccentricity() throws OrekitException {
+    public void testBug77TooLargeEccentricity() {
         try {
             TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
                               new AbsoluteDate(new DateComponents(2012, 26),
@@ -229,7 +229,7 @@ public class TLETest {
     }
 
     @Test
-    public void testBug77TooLargeSatelliteNumber1() throws OrekitException {
+    public void testBug77TooLargeSatelliteNumber1() {
         try {
             TLE tle = new TLE(1000000, 'U', 1971, 86, "J", 0, 908,
                               new AbsoluteDate(new DateComponents(2012, 26),
@@ -248,7 +248,7 @@ public class TLETest {
     }
 
     @Test
-    public void testBug77TooLargeSatelliteNumber2() throws OrekitException {
+    public void testBug77TooLargeSatelliteNumber2() {
         try {
             TLE tle = new TLE(1000000, 'U', 1971, 86, "J", 0, 908,
                               new AbsoluteDate(new DateComponents(2012, 26),
@@ -272,27 +272,47 @@ public class TLETest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testDifferentSatNumbers() throws OrekitException {
+    public void testDifferentSatNumbers() {
         new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                 "2 27422  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
     }
 
     @Test
-    public void testChecksumOK() throws OrekitException {
+    public void testChecksumOK() {
         TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                        "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
     }
 
-    @Test(expected=OrekitException.class)
-    public void testWrongChecksum1() throws OrekitException {
-        TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
-                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+    @Test
+    public void testWrongChecksum1() {
+        try {
+            TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
+                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_CHECKSUM_ERROR, oe.getSpecifier());
+            Assert.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("0", oe.getParts()[1]);
+            Assert.assertEquals("1", oe.getParts()[2]);
+            Assert.assertEquals("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
+                                oe.getParts()[3]);
+        }
     }
 
-    @Test(expected=OrekitException.class)
-    public void testWrongChecksum2() throws OrekitException {
-        TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61");
+    @Test
+    public void testWrongChecksum2() {
+        try {
+            TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_CHECKSUM_ERROR, oe.getSpecifier());
+            Assert.assertEquals(2, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("2", oe.getParts()[1]);
+            Assert.assertEquals("1", oe.getParts()[2]);
+            Assert.assertEquals("2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61",
+                                oe.getParts()[3]);
+        }
     }
 
     @Test
@@ -379,7 +399,7 @@ public class TLETest {
     }
 
     @Test
-    public void testZeroInclination() throws OrekitException{
+    public void testZeroInclination() {
         TLE tle = new TLE("1 26451U 00043A   10130.13784012 -.00000276  00000-0  10000-3 0  3866",
                           "2 26451 000.0000 266.1044 0001893 160.7642 152.5985 01.00271160 35865");
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
@@ -389,13 +409,13 @@ public class TLETest {
     }
 
     @Test
-    public void testSymmetryAfterLeapSecondIntroduction() throws OrekitException {
+    public void testSymmetryAfterLeapSecondIntroduction() {
         checkSymmetry("1 34602U 09013A   12187.35117436  .00002472  18981-5  42406-5 0  9995",
                       "2 34602  96.5991 210.0210 0006808 112.8142 247.3865 16.06008103193411");
     }
 
     @Test
-    public void testOldTLE() throws OrekitException {
+    public void testOldTLE() {
         String line1 = "1 15427U          85091.94293084 0.00000051  00000+0  32913-4 0   179";
         String line2 = "2 15427  98.9385  46.0219 0015502 321.4354  38.5705 14.11363211 15580";
         Assert.assertTrue(TLE.isFormatOK(line1, line2));
@@ -407,7 +427,7 @@ public class TLETest {
     }
 
     @Test
-    public void testEqualTLE() throws OrekitException {
+    public void testEqualTLE() {
         TLE tleA = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         TLE tleB = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
@@ -416,7 +436,7 @@ public class TLETest {
     }
 
     @Test
-    public void testNonEqualTLE() throws OrekitException {
+    public void testNonEqualTLE() {
         TLE tleA = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         TLE tleB = new TLE("1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
@@ -425,7 +445,7 @@ public class TLETest {
     }
 
     @Test
-    public void testIssue388() throws OrekitException {
+    public void testIssue388() {
         TLE tleRef = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                              "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         TLE tleOriginal = new TLE(27421, 'U', 2002, 21, "A", TLE.DEFAULT, 2,

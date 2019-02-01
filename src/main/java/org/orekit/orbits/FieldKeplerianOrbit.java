@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -873,7 +873,11 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param mu central attraction coefficient (m³/s²)
      * @param <T> type of the fiels elements
      * @return position vector
+     * @deprecated as of 9.3 replaced with {@link #FieldKeplerianOrbit(RealFieldElement, RealFieldElement,
+     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
+     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
      */
+    @Deprecated
     public static <T extends RealFieldElement<T>> FieldVector3D<T> ellipticKeplerianToPosition(final T a, final T e, final T i,
                                                                                                final T pa, final T raan, final T v,
                                                                                                final double mu) {
@@ -919,7 +923,11 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param mu central attraction coefficient (m³/s²)
      * @param <T> type of the fiels elements
      * @return position vector
+     * @deprecated as of 9.3 replaced with {@link #FieldKeplerianOrbit(RealFieldElement, RealFieldElement,
+     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
+     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
      */
+    @Deprecated
     public static <T extends RealFieldElement<T>> FieldVector3D<T> hyperbolicKeplerianToPosition(final T a, final T e, final T i,
                                                                                                  final T pa, final T raan, final T v,
                                                                                                  final double mu) {

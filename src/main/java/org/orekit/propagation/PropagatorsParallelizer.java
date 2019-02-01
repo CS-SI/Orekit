@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -40,7 +39,7 @@ import org.orekit.time.TimeStamped;
  *
  * <p>
  * Multi-satellites propagation is based on multi-threading. Therefore,
- * care must be taken so that all propagtors can be run in a multi-thread
+ * care must be taken so that all propagators can be run in a multi-thread
  * context. This implies that all propagators are built independently and
  * that they rely on force models that are also built independently. An
  * obvious mistake would be to reuse a maneuver force model, as these models
@@ -65,15 +64,15 @@ import org.orekit.time.TimeStamped;
  * simulation times flows from left to right:
  * </p>
  * <pre>
- *    propagator 1   : -------------[++++current step++++]>
+ *    propagator 1   : -------------[++++current step++++]&gt;
  *                                  |
- *    propagator 2   : ----[++++current step++++]--------->
+ *    propagator 2   : ----[++++current step++++]---------&gt;
  *                                  |           |
  *    ...                           |           |
- *    propagator n   : ---------[++++current step++++]---->
+ *    propagator n   : ---------[++++current step++++]----&gt;
  *                                  |           |
  *                                  V           V
- *    global handler : -------------[global step]--------->
+ *    global handler : -------------[global step]---------&gt;
  * </pre>
  * <p>
  * The previous sketch shows that propagator 1 has already computed states
@@ -133,10 +132,8 @@ public class PropagatorsParallelizer {
      * @param start start date from which orbit state should be propagated
      * @param target target date to which orbit state should be propagated
      * @return propagated states
-     * @exception OrekitException if state cannot be propagated
      */
-    public List<SpacecraftState> propagate(final AbsoluteDate start, final AbsoluteDate target)
-        throws OrekitException {
+    public List<SpacecraftState> propagate(final AbsoluteDate start, final AbsoluteDate target) {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
@@ -246,12 +243,10 @@ public class PropagatorsParallelizer {
      * @param queue queue for transferring parameters
      * @param <T> type of the parameters
      * @return retrieved parameters
-     * @exception OrekitException if tasks stops before parameters are available
      */
     private <T> T getParameters(final int index,
                                 final Future<SpacecraftState> future,
-                                final SynchronousQueue<T> queue)
-        throws OrekitException {
+                                final SynchronousQueue<T> queue) {
         try {
             T params = null;
             while (params == null && !future.isDone()) {
@@ -271,10 +266,8 @@ public class PropagatorsParallelizer {
 
     /** Convert exceptions.
      * @param exception exception caught
-     * @exception OrekitException if the exception caught was unexpected
      */
-    private void manageException(final Exception exception)
-        throws OrekitException {
+    private void manageException(final Exception exception) {
         if (exception.getCause() instanceof PropagatorStoppingException) {
             // this was an expected exception, we deliberately shut down the propagators
             // we therefore explicitly ignore this exception
@@ -319,14 +312,13 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
             globalHandler.init(Collections.singletonList(s0), t);
         }
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-            throws OrekitException {
+        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
             globalHandler.handleStep(Collections.singletonList(interpolator), isLast);
         }
 
@@ -354,7 +346,7 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
             try {
                 initQueue.put(s0);
             } catch (InterruptedException ie) {
@@ -365,8 +357,7 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-                        throws OrekitException {
+        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
             try {
                 shpQueue.put(new StepHandlingParameters(interpolator, isLast));
             } catch (InterruptedException ie) {
@@ -398,12 +389,7 @@ public class PropagatorsParallelizer {
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getDate() {
-            try {
-                return interpolator.getCurrentState().getDate();
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
+            return interpolator.getCurrentState().getDate();
         }
 
     }

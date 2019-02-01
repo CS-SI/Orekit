@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.IERSConventions;
 
@@ -87,7 +86,7 @@ public class TDBScaleTest {
     }
 
     @Test
-    public void testAAS06134() throws OrekitException {
+    public void testAAS06134() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -123,7 +122,7 @@ public class TDBScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTDB();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
@@ -137,7 +136,7 @@ public class TDBScaleTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

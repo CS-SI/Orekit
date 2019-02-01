@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -74,13 +73,13 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
 
     @Override
     public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) throws OrekitException {
+                     final AbsoluteDate t) {
         super.init(s0, t);
         this.original.init(s0, t);
     }
 
     @Override
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         return -this.original.g(s);
     }
 

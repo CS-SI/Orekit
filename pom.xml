@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>9.2</version>
+  <version>9.3</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -20,32 +20,33 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.findbugs-maven-plugin.version>3.0.4</orekit.findbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.7.9</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-assembly-plugin.version>3.0.0</orekit.maven-assembly-plugin.version>
-    <orekit.maven-bundle-plugin.version>3.3.0</orekit.maven-bundle-plugin.version>
+    <orekit.spotbugs-maven-plugin.version>3.1.7</orekit.spotbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.2</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-assembly-plugin.version>3.1.0</orekit.maven-assembly-plugin.version>
+    <orekit.maven-bundle-plugin.version>4.1.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>2.17</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.10</orekit.checkstyle.version>
-    <orekit.maven-clean-plugin.version>3.0.0</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.6.1</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>2.10.4</orekit.maven-javadoc-plugin.version>
-    <orekit.maven-jar-plugin.version>3.0.2</orekit.maven-jar-plugin.version>
-    <orekit.maven-jxr-plugin.version>2.5</orekit.maven-jxr-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>3.0.0</orekit.maven-checkstyle-plugin.version>
+    <orekit.checkstyle.version>8.14</orekit.checkstyle.version>
+    <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.8.0</orekit.maven-compiler-plugin.version>
+    <orekit.maven-javadoc-plugin.version>3.0.1</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-jar-plugin.version>3.1.0</orekit.maven-jar-plugin.version>
+    <orekit.maven-jxr-plugin.version>3.0.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>1.2017.15</orekit.plantuml.version>
-    <orekit.maven-project-info-reports-plugin.version>2.9</orekit.maven-project-info-reports-plugin.version>
-    <orekit.maven-resources-plugin.version>3.0.2</orekit.maven-resources-plugin.version>
-    <orekit.maven-site-plugin.version>3.6</orekit.maven-site-plugin.version>
+    <orekit.plantuml.version>1.2018.12</orekit.plantuml.version>
+    <orekit.maven-project-info-reports-plugin.version>3.0.0</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-resources-plugin.version>3.1.0</orekit.maven-resources-plugin.version>
+    <orekit.maven-site-plugin.version>3.7.1</orekit.maven-site-plugin.version>
     <orekit.maven-source-plugin.version>3.0.1</orekit.maven-source-plugin.version>
-    <orekit.maven-surefire-plugin.version>2.20</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>2.20</orekit.maven-surefire-report-plugin.version>
+    <orekit.maven-surefire-plugin.version>2.22.1</orekit.maven-surefire-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>2.22.1</orekit.maven-surefire-report-plugin.version>
+    <orekit.mockito-core.version>2.23.0</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.0.0</orekit.build-helper-maven-plugin.version>
     <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
-    <orekit.maven-install-plugin.version>2.5.2</orekit.maven-install-plugin.version>
-    <orekit.hipparchus.version>1.3</orekit.hipparchus.version>
+    <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
+    <orekit.hipparchus.version>1.4</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -175,6 +176,9 @@
       <name>Espen Bj&#248;rntvedt</name>
     </contributor>
     <contributor>
+      <name>Bryan Cazabonne</name>
+    </contributor>
+    <contributor>
       <name>Paul Cefola</name>
     </contributor>
     <contributor>
@@ -184,13 +188,16 @@
       <name>&#201;douard Delente</name>
     </contributor>
     <contributor>
+      <name>Christine Fernandez-Martin</name>
+    </contributor>
+    <contributor>
       <name>James Housden</name>
     </contributor>
     <contributor>
-      <name>Fran&#231;ois-Xavier Laffont</name>
+      <name>Yannick Jeandroz</name>
     </contributor>
     <contributor>
-      <name>Christine Fernandez-Martin</name>
+      <name>Fran&#231;ois-Xavier Laffont</name>
     </contributor>
     <contributor>
       <name>Lars N&#230;sbye Christensen</name>
@@ -231,38 +238,15 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://www.orekit.org/git/orekit-main.git</connection>
-    <developerConnection>scm:git:ssh://git@www.orekit.org/orekit-main.git</developerConnection>
-    <url>https://www.orekit.org/forge/projects/orekit/repository</url>
+    <connection>scm:git:https://gitlab.orekit.org/orekit/orekit.git</connection>
+    <developerConnection>scm:git:ssh://git@gitlab.orekit.org/orekit/orekit.git</developerConnection>
+    <url>https://gitlab.orekit.org/orekit/orekit/tree/master</url>
   </scm>
 
   <issueManagement>
-      <system>Redmine</system>
-      <url>https://www.orekit.org/forge/projects/orekit/issues</url>
+      <system>Gitlab</system>
+      <url>https://gitlab.orekit.org/orekit/orekit/issues</url>
   </issueManagement>
-
-  <mailingLists>
-    <mailingList>
-      <name>Orekit announces mailing list</name>
-      <subscribe>https://www.orekit.org/wws/subscribe/orekit-announces</subscribe>
-      <unsubscribe>https://www.orekit.org/wws/signoff/orekit-announces</unsubscribe>
-      <archive>https://www.orekit.org/wws/arc/orekit-announces</archive>
-    </mailingList>
-    <mailingList>
-      <name>Orekit users mailing list</name>
-      <subscribe>https://www.orekit.org/wws/subscribe/orekit-users</subscribe>
-      <unsubscribe>https://www.orekit.org/wws/signoff/orekit-users</unsubscribe>
-      <post>orekit-users@orekit.org</post>
-      <archive>https://www.orekit.org/wws/arc/orekit-users</archive>
-    </mailingList>
-    <mailingList>
-      <name>Orekit developers mailing list</name>
-      <subscribe>https://www.orekit.org/wws/subscribe/orekit-developers</subscribe>
-      <unsubscribe>https://www.orekit.org/wws/signoff/orekit-developers</unsubscribe>
-      <post>orekit-developers@orekit.org</post>
-      <archive>https://www.orekit.org/wws/arc/orekit-developers</archive>
-    </mailingList>
-  </mailingLists>
 
   <dependencies>
     <dependency>
@@ -318,7 +302,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>2.7.0</version>
+      <version>${orekit.mockito-core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -432,6 +416,15 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>${orekit.maven-javadoc-plugin.version}</version>
+        <configuration>
+          <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <links>
+            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://www.hipparchus.org/apidocs/</link>
+          </links>
+          <source>${orekit.compiler.source}</source>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
@@ -593,13 +586,13 @@
         <version>${orekit.maven-project-info-reports-plugin.version}</version>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${orekit.findbugs-maven-plugin.version}</version>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${orekit.spotbugs-maven-plugin.version}</version>
         <configuration>
           <threshold>Normal</threshold>
           <effort>Default</effort>
-          <excludeFilterFile>${basedir}/findbugs-exclude-filter.xml</excludeFilterFile>
+          <excludeFilterFile>${basedir}/spotbugs-exclude-filter.xml</excludeFilterFile>
        </configuration>
       </plugin>
       <plugin>
@@ -661,9 +654,10 @@
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
-            <link>http://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
+          <source>${orekit.compiler.source}</source>
         </configuration>
         <reportSets>
           <reportSet>

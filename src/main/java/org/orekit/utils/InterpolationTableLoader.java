@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.orekit.data.DataLoader;
-import org.orekit.errors.OrekitException;
 
 /** Used to read an interpolation table from a data file.
  * @author Thomas Neidhart
@@ -85,11 +84,9 @@ public class InterpolationTableLoader implements DataLoader {
      * @param name  the name of the input file
      * @exception IOException if data can't be read
      * @exception ParseException if data can't be parsed
-     * @exception OrekitException if some data is missing or unexpected
-     *                            data is encountered
      */
     public void loadData(final InputStream input, final String name)
-        throws IOException, ParseException, OrekitException {
+        throws IOException, ParseException {
 
         final List<Double> xValues = new LinkedList<Double>();
         final List<Double> yValues = new LinkedList<Double>();

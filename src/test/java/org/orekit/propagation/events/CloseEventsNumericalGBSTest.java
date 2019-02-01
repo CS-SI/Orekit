@@ -18,7 +18,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.ode.nonstiff.GraggBulirschStoerIntegrator;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -37,9 +36,8 @@ public class CloseEventsNumericalGBSTest extends CloseEventsAbstractTest {
      *
      * @param stepSize   of integrator.
      * @return a usable propagator.
-     * @throws OrekitException
      */
-    public Propagator getPropagator(double stepSize) throws OrekitException {
+    public Propagator getPropagator(double stepSize) {
         double[][] tol = NumericalPropagator
                 .tolerances(1e-1, initialOrbit, OrbitType.CARTESIAN);
         final NumericalPropagator propagator = new NumericalPropagator(

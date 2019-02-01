@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@ public class NadirPointingTest {
      * the same as earth center pointing
      */
     @Test
-    public void testSphericEarth() throws OrekitException {
+    public void testSphericEarth() {
 
         // Spheric earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
@@ -111,7 +111,7 @@ public class NadirPointingTest {
      *   - different from earth center pointing in any other case
      */
     @Test
-    public void testNonSphericEarth() throws OrekitException {
+    public void testNonSphericEarth() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
@@ -192,7 +192,7 @@ public class NadirPointingTest {
         but that's what is to test.
      */
     @Test
-    public void testVertical() throws OrekitException {
+    public void testVertical() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
@@ -236,7 +236,7 @@ public class NadirPointingTest {
     /** Test the derivatives of the sliding target
      */
     @Test
-    public void testSlidingDerivatives() throws OrekitException {
+    public void testSlidingDerivatives() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
@@ -275,7 +275,7 @@ public class NadirPointingTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
@@ -321,7 +321,7 @@ public class NadirPointingTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
 
         final Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();

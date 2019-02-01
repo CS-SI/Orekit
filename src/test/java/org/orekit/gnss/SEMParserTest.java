@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,13 +28,13 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GPSDate;
 
 
 public class SEMParserTest {
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("gnss");
     }
 
@@ -103,7 +103,7 @@ public class SEMParserTest {
         Assert.assertEquals(0, alm.getURA());
         Assert.assertEquals(11, alm.getSatConfiguration());
         Assert.assertEquals("SEM", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(AbsoluteDate.createGPSDate(862, 319488 * 1000.)) == 0);
+        Assert.assertTrue(alm.getDate().durationFrom(new GPSDate(862, 319488 * 1000.).getDate()) == 0);
         Assert.assertEquals(0., alm.getCic(), 0.);
         Assert.assertEquals(0., alm.getCis(), 0.);
         Assert.assertEquals(0., alm.getCrc(), 0.);
@@ -146,7 +146,7 @@ public class SEMParserTest {
         Assert.assertEquals(0, alm.getURA());
         Assert.assertEquals(11, alm.getSatConfiguration());
         Assert.assertEquals("SEM", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(AbsoluteDate.createGPSDate(862, 319488 * 1000.)) == 0);
+        Assert.assertTrue(alm.getDate().durationFrom(new GPSDate(862, 319488 * 1000.).getDate()) == 0);
         Assert.assertEquals(0., alm.getCic(), 0.);
         Assert.assertEquals(0., alm.getCis(), 0.);
         Assert.assertEquals(0., alm.getCrc(), 0.);

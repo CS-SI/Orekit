@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 /** Simple implementation of {@link RawSphericalHarmonicsProvider} for pulsating gravity fields.
@@ -101,7 +100,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     @Override
-    public RawSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public RawSphericalHarmonics onDate(final AbsoluteDate date) {
         //raw (constant) harmonics
         final RawSphericalHarmonics raw = provider.onDate(date);
         //phase angle, will loose precision for large offsets
@@ -117,8 +116,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawCnm(final int n, final int m)
-                throws OrekitException {
+            public double getRawCnm(final int n, final int m) {
 
                 // retrieve the underlying part of the coefficient
                 double cnm = raw.getRawCnm(n, m);
@@ -132,8 +130,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawSnm(final int n, final int m)
-                throws OrekitException {
+            public double getRawSnm(final int n, final int m) {
 
                 // retrieve the constant part of the coefficient
                 double snm = raw.getRawSnm(n, m);

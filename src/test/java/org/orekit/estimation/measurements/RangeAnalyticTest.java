@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -50,10 +49,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
-     */
+      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range Analytical Values\n");
@@ -65,10 +63,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives computation
      * using Range function as a comparison
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -84,10 +81,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesFiniteDifferences() throws OrekitException {
+    public void testStateDerivativesFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -103,10 +99,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives with modifier computation
      * using Range function as a comparison
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -122,10 +117,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives with modifier computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifierFiniteDifferences() throws OrekitException {
+    public void testStateDerivativesWithModifierFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -141,10 +135,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic parameter derivatives computation
      * using Range function as a comparison
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -159,10 +152,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic parameter derivatives computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesFiniteDifferences() throws OrekitException {
+    public void testParameterDerivativesFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -177,10 +169,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic parameter derivatives with modifier computation
      * using Range function as a comparison
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -195,10 +186,9 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic parameter derivatives with modifier computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifierFiniteDifferences() throws OrekitException {
+    public void testParameterDerivativesWithModifierFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -213,10 +203,9 @@ public class RangeAnalyticTest {
     /**
      * Generic test function for values of the range
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -332,12 +321,11 @@ public class RangeAnalyticTest {
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, Range class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-        throws OrekitException {
+        {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -399,7 +387,7 @@ public class RangeAnalyticTest {
                     if (isFiniteDifferences) {
                         // Compute a reference value using finite differences
                         jacobianRef = Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
+                            public double[] value(final SpacecraftState state) {
                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                             }
                         }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -505,10 +493,8 @@ public class RangeAnalyticTest {
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, Range class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
-                    throws OrekitException {
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -518,6 +504,7 @@ public class RangeAnalyticTest {
 
         // Create perfect range measurements
         for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(false);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -574,7 +561,7 @@ public class RangeAnalyticTest {
                                           stationName, measurement.getDate(), date);
                     }
 
-                    for (int i = 0; i < 3; ++i) {
+                    for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);

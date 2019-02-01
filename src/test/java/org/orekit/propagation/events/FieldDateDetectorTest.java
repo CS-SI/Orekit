@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -53,27 +52,27 @@ public class FieldDateDetectorTest {
     private AbsoluteDate nodeDate;
 
     @Test
-    public void testSimpleTimer() throws OrekitException{
+    public void testSimpleTimer() {
         doTestSimpleTimer(Decimal64Field.getInstance());
     }
     @Test
-    public void testEmbeddedTimer() throws OrekitException{
+    public void testEmbeddedTimer() {
         doTestEmbeddedTimer(Decimal64Field.getInstance());
     }
     @Test
-    public void testAutoEmbeddedTimer() throws OrekitException{
+    public void testAutoEmbeddedTimer() {
         doTestAutoEmbeddedTimer(Decimal64Field.getInstance());
     }
     @Test(expected=IllegalArgumentException.class)
-    public void testExceptionTimer() throws OrekitException{
+    public void testExceptionTimer() {
         doTestExceptionTimer(Decimal64Field.getInstance());
     }
     @Test
-    public void testGenericHandler() throws OrekitException{
+    public void testGenericHandler() {
         doTestGenericHandler(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSimpleTimer(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSimpleTimer(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -104,7 +103,7 @@ public class FieldDateDetectorTest {
     }
 
 
-    private <T extends RealFieldElement<T>> void doTestEmbeddedTimer(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEmbeddedTimer(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -131,7 +130,7 @@ public class FieldDateDetectorTest {
         FieldEventDetector<T> nodeDetector = new FieldNodeDetector<>(iniOrbit, iniOrbit.getFrame()).
                 withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
-                        throws OrekitException {
+                        {
                         if (increasing) {
                             nodeDate = s.getDate().toAbsoluteDate();
                             dateDetector.addEventDate(s.getDate().shiftedBy(dt));
@@ -148,7 +147,7 @@ public class FieldDateDetectorTest {
     }
 
 
-    private <T extends RealFieldElement<T>> void doTestAutoEmbeddedTimer(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestAutoEmbeddedTimer(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -173,7 +172,7 @@ public class FieldDateDetectorTest {
                                                                     toArray(iniDate.shiftedBy(-dt))).
                 withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd,  boolean increasing)
-                            throws OrekitException {
+                            {
                         FieldAbsoluteDate<T> nextDate = s.getDate().shiftedBy(-dt);
                         dd.addEventDate(nextDate);
                         ++evtno;
@@ -186,7 +185,7 @@ public class FieldDateDetectorTest {
         Assert.assertEquals(100, evtno);
     }
 
-    private <T extends RealFieldElement<T>> void doTestExceptionTimer(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestExceptionTimer(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -211,7 +210,7 @@ public class FieldDateDetectorTest {
                                                                     toArray(iniDate.shiftedBy(dt))).
                 withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd, boolean increasing)
-                        throws OrekitException {
+                        {
                         double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
                         FieldAbsoluteDate<T> nextDate = s.getDate().shiftedBy(step);
                         dd.addEventDate(nextDate);
@@ -225,11 +224,9 @@ public class FieldDateDetectorTest {
 
     /**
      * Check that a generic event handler can be used with an event detector.
-     *
-     * @throws OrekitException on error.
      */
 
-    private <T extends RealFieldElement<T>> void doTestGenericHandler(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestGenericHandler(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -259,14 +256,14 @@ public class FieldDateDetectorTest {
             public Action eventOccurred(FieldSpacecraftState<T> s,
                                         FieldEventDetector<T> detector,
                                         boolean increasing)
-                    throws OrekitException {
+                    {
                 return Action.STOP;
             }
 
             @Override
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector,
                                               FieldSpacecraftState<T> oldState)
-                    throws OrekitException {
+                    {
                 throw new RuntimeException("Should not be called");
             }
         };

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -71,7 +70,7 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     private final T rawDetector;
 
     /** Enabling predicate function. */
-    private final transient EnablingPredicate<T> enabler;
+    private final transient EnablingPredicate<? super T> enabler;
 
     /** Transformers of the g function. */
     private final transient Transformer[] transformers;
@@ -92,7 +91,8 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
      * @param rawDetector event detector to wrap
      * @param enabler event enabling predicate function to use
      */
-    public EventEnablingPredicateFilter(final T rawDetector, final EnablingPredicate<T> enabler) {
+    public EventEnablingPredicateFilter(final T rawDetector,
+                                        final EnablingPredicate<? super T> enabler) {
         this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
              rawDetector.getMaxIterationCount(), new LocalHandler<T>(),
              rawDetector, enabler);
@@ -113,7 +113,8 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
      */
     private EventEnablingPredicateFilter(final double maxCheck, final double threshold,
                                          final int maxIter, final EventHandler<? super EventEnablingPredicateFilter<T>> handler,
-                                         final T rawDetector, final EnablingPredicate<T> enabler) {
+                                         final T rawDetector,
+                                         final EnablingPredicate<? super T> enabler) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;
@@ -131,7 +132,7 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
 
     /**  {@inheritDoc} */
     public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) throws OrekitException {
+                     final AbsoluteDate t) {
         super.init(s0, t);
 
         // delegate to raw detector
@@ -147,7 +148,7 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     }
 
     /**  {@inheritDoc} */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         final double  rawG      = rawDetector.g(s);
         final boolean isEnabled = enabler.eventIsEnabled(s, rawDetector, rawG);
@@ -295,16 +296,14 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     private static class LocalHandler<T extends EventDetector> implements EventHandler<EventEnablingPredicateFilter<T>> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventEnablingPredicateFilter<T> ef, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final EventEnablingPredicateFilter<T> ef, final boolean increasing) {
             final Transformer transformer = ef.forward ? ef.transformers[ef.transformers.length - 1] : ef.transformers[0];
             return ef.rawDetector.eventOccurred(s, transformer == Transformer.PLUS ? increasing : !increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventEnablingPredicateFilter<T> ef, final SpacecraftState oldState)
-            throws OrekitException {
+        public SpacecraftState resetState(final EventEnablingPredicateFilter<T> ef, final SpacecraftState oldState) {
             return ef.rawDetector.resetState(oldState);
         }
 

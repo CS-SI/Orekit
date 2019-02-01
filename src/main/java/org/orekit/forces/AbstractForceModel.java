@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,8 +28,7 @@ import org.orekit.utils.ParameterDriver;
 public abstract class AbstractForceModel implements ForceModel {
 
     /** {@inheritDoc} */
-    public ParameterDriver getParameterDriver(final String name)
-        throws OrekitException {
+    public ParameterDriver getParameterDriver(final String name) {
 
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (name.equals(driver.getName())) {
@@ -57,10 +56,8 @@ public abstract class AbstractForceModel implements ForceModel {
 
     /** Complain if a parameter is not supported.
      * @param name name of the parameter
-     * @exception OrekitException if the parameter is not supported
      */
-    protected void complainIfNotSupported(final String name)
-        throws OrekitException {
+    protected void complainIfNotSupported(final String name) {
         if (!isSupported(name)) {
             throw notSupportedException(name);
         }

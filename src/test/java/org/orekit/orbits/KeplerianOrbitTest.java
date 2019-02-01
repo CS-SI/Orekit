@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -568,7 +567,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testOutOfRangeV() throws OrekitException {
+    public void testOutOfRangeV() {
         new KeplerianOrbit(-7000434.460140012, 1.1999785407363386, 1.3962787004479158,
                            1.3962320168955138, 0.3490728321331678, -2.55593407037698,
                            PositionAngle.TRUE, FramesFactory.getEME2000(),
@@ -577,7 +576,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testNumericalIssue25() throws OrekitException {
+    public void testNumericalIssue25() {
         Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
         Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);
         KeplerianOrbit orbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
@@ -589,7 +588,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testPerfectlyEquatorial() throws OrekitException {
+    public void testPerfectlyEquatorial() {
         Vector3D position = new Vector3D(6957904.3624652653594, 766529.11411558074507, 0);
         Vector3D velocity = new Vector3D(-7538.2817012412102845, 342.38751001881413381, 0.);
         KeplerianOrbit orbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
@@ -602,7 +601,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testJacobianReferenceEllipse() throws OrekitException {
+    public void testJacobianReferenceEllipse() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -683,7 +682,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testJacobianFinitedifferencesEllipse() throws OrekitException {
+    public void testJacobianFinitedifferencesEllipse() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -728,7 +727,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testJacobianReferenceHyperbola() throws OrekitException {
+    public void testJacobianReferenceHyperbola() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -813,7 +812,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testJacobianFinitedifferencesHyperbola() throws OrekitException {
+    public void testJacobianFinitedifferencesHyperbola() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -857,7 +856,7 @@ public class KeplerianOrbitTest {
     }
 
     private double[][] finiteDifferencesJacobian(PositionAngle type, KeplerianOrbit orbit, double hP)
-        throws OrekitException {
+        {
         double[][] jacobian = new double[6][6];
         for (int i = 0; i < 6; ++i) {
             fillColumn(type, i, orbit, hP, jacobian);
@@ -948,14 +947,14 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testInterpolationWithDerivatives() throws OrekitException {
+    public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
                             397, 4.01, 4.75e-4, 1.28e-7,
                             2159, 1.05e7, 1.19e-3, 0.773);
     }
 
     @Test
-    public void testInterpolationWithoutDerivatives() throws OrekitException {
+    public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(false,
                             397, 62.0, 4.75e-4, 2.87e-6,
                             2159, 79365, 1.19e-3, 3.89e-3);
@@ -966,7 +965,7 @@ public class KeplerianOrbitTest {
                                      double shiftEccentricityErrorWithin, double interpolationEccentricityErrorWithin,
                                      double shiftPositionErrorSlightlyPast, double interpolationPositionErrorSlightlyPast,
                                      double shiftEccentricityErrorSlightlyPast, double interpolationEccentricityErrorSlightlyPast)
-        throws OrekitException {
+        {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -1053,7 +1052,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testPerfectlyEquatorialConversion() throws OrekitException {
+    public void testPerfectlyEquatorialConversion() {
         KeplerianOrbit initial = new KeplerianOrbit(13378000.0, 0.05, 0.0, 0.0, FastMath.PI,
                                                     0.0, PositionAngle.MEAN,
                                                     FramesFactory.getEME2000(), date,
@@ -1149,7 +1148,7 @@ public class KeplerianOrbitTest {
      }
 
     @Test
-    public void testNonKeplerianEllipticDerivatives() throws OrekitException {
+    public void testNonKeplerianEllipticDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -1217,7 +1216,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testNonKeplerianHyperbolicDerivatives() throws OrekitException {
+    public void testNonKeplerianHyperbolicDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
         final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
@@ -1297,7 +1296,7 @@ public class KeplerianOrbitTest {
      }
 
     @Test
-    public void testPositionAngleDerivatives() throws OrekitException {
+    public void testPositionAngleDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -1340,7 +1339,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testPositionAngleHyperbolicDerivatives() throws OrekitException {
+    public void testPositionAngleHyperbolicDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
         final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
@@ -1483,7 +1482,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() throws OrekitException {
+    public void testDerivativesConversionSymmetry() {
         final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
         Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
@@ -1513,7 +1512,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetryHyperbolic() throws OrekitException {
+    public void testDerivativesConversionSymmetryHyperbolic() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
         final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
@@ -1552,7 +1551,7 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+    public void testCopyNonKeplerianAcceleration() {
 
         final Frame eme2000     = FramesFactory.getEME2000();
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import org.orekit.errors.OrekitException;
-
 /** Observer for {@link KalmanEstimator Kalman filter} estimations.
  * <p>
  * This interface is intended to be implemented by users to monitor
@@ -31,9 +29,7 @@ public interface KalmanObserver {
 
     /** Notification callback after each one of a Kalman filter estimation.
      * @param estimation estimation performed by Kalman estimator
-     * @exception OrekitException if some problem occurs
      */
-    void evaluationPerformed(KalmanEstimation estimation)
-        throws OrekitException;
+    void evaluationPerformed(KalmanEstimation estimation);
 
 }

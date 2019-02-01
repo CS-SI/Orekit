@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,16 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
-import org.orekit.models.earth.TroposphericModel;
+import org.orekit.models.earth.DiscreteTroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -48,13 +46,13 @@ import org.orekit.utils.ParameterDriver;
 public class AngularTroposphericDelayModifier implements EstimationModifier<AngularAzEl> {
 
     /** Tropospheric delay model. */
-    private final TroposphericModel tropoModel;
+    private final DiscreteTroposphericModel tropoModel;
 
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current angular measurement method.
      */
-    public AngularTroposphericDelayModifier(final TroposphericModel model) {
+    public AngularTroposphericDelayModifier(final DiscreteTroposphericModel model) {
         tropoModel = model;
     }
 
@@ -73,11 +71,9 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
      * @param station station
      * @param state spacecraft state
      * @return the measurement error due to Troposphere
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double angularErrorTroposphericModel(final GroundStation station,
-                                                 final SpacecraftState state)
-        throws OrekitException {
+                                                 final SpacecraftState state) {
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -92,7 +88,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
             final double height = getStationHeightAMSL(station);
 
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, height);
+            final double delay = tropoModel.pathDelay(elevation, height, tropoModel.getParameters(), state.getDate());
 
             // one-way measurement.
             return delay;
@@ -104,12 +100,11 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
+        return tropoModel.getParametersDrivers();
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated)
-        throws OrekitException {
+    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,41 +64,41 @@ import org.orekit.utils.PVCoordinates;
 public class FieldSpacecraftStateTest {
 
     @Test
-    public void testFieldVSReal() throws OrekitException {
+    public void testFieldVSReal() {
         doTestFieldVsReal(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testShiftVsEcksteinHechlerError() throws OrekitException {
+    public void testShiftVsEcksteinHechlerError() {
         doTestShiftVsEcksteinHechlerError(Decimal64Field.getInstance());
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testDatesConsistency() throws OrekitException {
+    public void testDatesConsistency() {
         doTestDatesConsistency(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testDateConsistencyClose() throws OrekitException {
+    public void testDateConsistencyClose() {
         doTestDateConsistencyClose(Decimal64Field.getInstance());
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testFramesConsistency() throws OrekitException {
+    public void testFramesConsistency() {
         doTestFramesConsistency(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testTransform() throws OrekitException {
+    public void testTransform() {
         doTestTransform(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testAdditionalStates() throws OrekitException {
+    public void testAdditionalStates() {
         doTestAdditionalStates(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) throws OrekitException{
+    private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
         T zero = field.getZero();
 
         double mu = 3.9860047e14;
@@ -164,7 +164,7 @@ public class FieldSpacecraftStateTest {
     }
 
     private <T extends RealFieldElement<T>>  void doTestShiftVsEcksteinHechlerError(final Field<T> field)
-        throws OrekitException {
+        {
 
         T zero = field.getZero();
         T mass = zero.add(2500.);
@@ -255,7 +255,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestDatesConsistency(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDatesConsistency(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -283,7 +283,7 @@ public class FieldSpacecraftStateTest {
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
      */
-    private <T extends RealFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) {
 
 
         //setup
@@ -324,7 +324,7 @@ public class FieldSpacecraftStateTest {
     }
 
     // (expected=IllegalArgumentException.class)
-    private <T extends RealFieldElement<T>> void doTestFramesConsistency(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestFramesConsistency(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -349,7 +349,7 @@ public class FieldSpacecraftStateTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestTransform(final Field<T> field)
-        throws OrekitException {
+        {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -392,7 +392,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestAdditionalStates(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestAdditionalStates(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());

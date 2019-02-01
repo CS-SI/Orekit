@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -243,11 +242,9 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
      *  @param meanOnly only mean elements will be used for the propagation
-     *  @throws OrekitException if some specific error occurs
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
-        throws OrekitException {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
 
         // Initializes specific parameters.
         initializeStep(aux);
@@ -332,7 +329,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
+    public void initializeStep(final AuxiliaryElements aux) {
 
         // Equinoctial elements
         a = aux.getSma();
@@ -436,8 +433,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = shortPeriods.createSlot(meanStates);
 
@@ -1943,8 +1939,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);

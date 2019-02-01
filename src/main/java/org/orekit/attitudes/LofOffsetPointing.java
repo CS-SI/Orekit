@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,12 +70,10 @@ public class LofOffsetPointing extends GroundPointing {
      * @param shape Body shape
      * @param attLaw Attitude law
      * @param satPointingVector satellite vector defining the pointing direction
-     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
      * @since 7.1
      */
     public LofOffsetPointing(final Frame inertialFrame, final BodyShape shape,
-                             final AttitudeProvider attLaw, final Vector3D satPointingVector)
-        throws OrekitException {
+                             final AttitudeProvider attLaw, final Vector3D satPointingVector) {
         super(inertialFrame, shape.getBodyFrame());
         this.shape = shape;
         this.attitudeLaw = attLaw;
@@ -85,23 +83,20 @@ public class LofOffsetPointing extends GroundPointing {
     /** {@inheritDoc} */
     @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                final AbsoluteDate date, final Frame frame) {
         return attitudeLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
         return attitudeLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                                final AbsoluteDate date, final Frame frame) {
 
         // sample intersection points in current date neighborhood
         final double h  = 0.1;
@@ -139,8 +134,7 @@ public class LofOffsetPointing extends GroundPointing {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame)
-        throws OrekitException {
+                                                                                        final Frame frame) {
 
         // sample intersection points in current date neighborhood
         final double h  = 0.1;
@@ -178,10 +172,8 @@ public class LofOffsetPointing extends GroundPointing {
     /** Compute line of sight intersection with body.
      * @param scToBody transform from spacecraft frame to body frame
      * @return intersection point in body frame (only the position is set!)
-     * @exception OrekitException if line of sight does not intersect body
      */
-    private TimeStampedPVCoordinates losIntersectionWithBody(final Transform scToBody)
-        throws OrekitException {
+    private TimeStampedPVCoordinates losIntersectionWithBody(final Transform scToBody) {
 
         // compute satellite pointing axis and position/velocity in body frame
         final Vector3D pointingBodyFrame = scToBody.transformVector(satPointingVector);
@@ -215,10 +207,8 @@ public class LofOffsetPointing extends GroundPointing {
      * @param scToBody transform from spacecraft frame to body frame
      * @param <T> type of the field elements
      * @return intersection point in body frame (only the position is set!)
-     * @exception OrekitException if line of sight does not intersect body
      */
-    private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldTransform<T> scToBody)
-        throws OrekitException {
+    private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldTransform<T> scToBody) {
 
         // compute satellite pointing axis and position/velocity in body frame
         final FieldVector3D<T> pointingBodyFrame = scToBody.transformVector(satPointingVector);

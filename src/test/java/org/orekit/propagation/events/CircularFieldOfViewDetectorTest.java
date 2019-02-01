@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class CircularFieldOfViewDetectorTest {
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     @Test
-    public void testCircularFielOfView() throws OrekitException {
+    public void testCircularFielOfView() {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -127,7 +127,7 @@ public class CircularFieldOfViewDetectorTest {
 
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing)
-            throws OrekitException {
+            {
             if (increasing) {
                 // System.err.println(" Sun visibility starts " + s.getDate());
                 AbsoluteDate startVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),

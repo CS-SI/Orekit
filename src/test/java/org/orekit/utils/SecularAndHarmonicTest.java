@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,7 +63,7 @@ public class SecularAndHarmonicTest {
     private TimeScalarFunction gmst;
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
 
         Utils.setDataRoot("regular-data:potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
@@ -77,7 +77,7 @@ public class SecularAndHarmonicTest {
     }
 
     @Test
-    public void testSunSynchronization() throws OrekitException {
+    public void testSunSynchronization() {
 
         int nbOrbits = 143;
         double mst = 10.5;
@@ -118,7 +118,7 @@ public class SecularAndHarmonicTest {
     }
 
     @Test
-    public void testReset() throws OrekitException {
+    public void testReset() {
         final double SUN_PULSATION = 4.0 * FastMath.PI / Constants.JULIAN_YEAR; // Period = 6 months
 
         // Generate two random datasets
@@ -157,7 +157,7 @@ public class SecularAndHarmonicTest {
     }
 
     private double[] fitGMST(CircularOrbit orbit, int nbOrbits, double mst)
-        throws OrekitException {
+        {
 
         double period = orbit.getKeplerianPeriod();
         double duration = nbOrbits * period;
@@ -206,7 +206,7 @@ public class SecularAndHarmonicTest {
     }
 
     private NumericalPropagator createPropagator(CircularOrbit orbit)
-        throws OrekitException {
+        {
         OrbitType type = OrbitType.CIRCULAR;
         double[][] tolerances = NumericalPropagator.tolerances(0.1, orbit, type);
         DormandPrince853Integrator integrator =
@@ -224,7 +224,7 @@ public class SecularAndHarmonicTest {
     private SpacecraftState findFirstCrossing(final double latitude, final boolean ascending,
                                               final AbsoluteDate searchStart, final AbsoluteDate end,
                                               final double stepSize, final Propagator propagator)
-        throws OrekitException {
+        {
 
         double previousLatitude = Double.NaN;
         for (AbsoluteDate date = searchStart; date.compareTo(end) < 0; date = date.shiftedBy(stepSize)) {
@@ -247,7 +247,7 @@ public class SecularAndHarmonicTest {
                                                  final AbsoluteDate guessDate, final AbsoluteDate endDate,
                                                  final double shift, final double maxShift,
                                                  final Propagator propagator)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
 
         // function evaluating to 0 at latitude crossings
         final UnivariateFunction latitudeFunction = new UnivariateFunction() {
@@ -297,7 +297,7 @@ public class SecularAndHarmonicTest {
     }
 
     private double meanSolarTime(final Orbit orbit)
-            throws OrekitException {
+            {
 
         // compute angle between Sun and spacecraft in the equatorial plane
         final Vector3D position = orbit.getPVCoordinates().getPosition();

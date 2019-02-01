@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -92,9 +91,8 @@ public class FieldApsideDetector<T extends RealFieldElement<T>> extends FieldAbs
      * This function computes the dot product of the 2 vectors : position.velocity.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+    public T g(final FieldSpacecraftState<T> s) {
         final FieldPVCoordinates<T> pv = s.getPVCoordinates();
         return FieldVector3D.dotProduct(pv.getPosition(), pv.getVelocity());
     }

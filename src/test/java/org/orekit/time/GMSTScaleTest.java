@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -31,7 +30,7 @@ public class GMSTScaleTest {
 
     @Test
     // reference: http://www.astro.umd.edu/~jph/GST_eqn.pdf
-    public void testReference() throws OrekitException {
+    public void testReference() {
         Assert.assertEquals("GMST", gmst.toString());
         AbsoluteDate date = new AbsoluteDate(2001, 10, 3, 6, 30, 0.0,
                                              TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true));
@@ -56,7 +55,7 @@ public class GMSTScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = gmst;
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
@@ -70,7 +69,7 @@ public class GMSTScaleTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         gmst = TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false);
     }

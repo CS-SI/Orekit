@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -162,9 +161,8 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return signed distance to boundary minus the margin
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
         final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.estimation.measurements;
-
-import org.orekit.errors.OrekitException;
 
 
 /** Interface for retrieving estimated measurements during orbit determination.
@@ -42,9 +40,7 @@ public interface EstimationsProvider {
      * and {@link #getNumber() getNumber()} - 1, chronologically
      * sorted
      * @return estimated measurement at specified index
-     * @exception OrekitException if number is out of range
      */
-    EstimatedMeasurement<?> getEstimatedMeasurement(int index)
-        throws OrekitException;
+    EstimatedMeasurement<?> getEstimatedMeasurement(int index);
 
 }

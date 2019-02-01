@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -66,67 +65,73 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test
-    public void testEquinoctialToEquinoctialEll() throws OrekitException {
+    public void testEquinoctialToEquinoctialEll() {
         doTestEquinoctialToEquinoctialEll(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testEquinoctialToEquinoctialCirc() throws OrekitException {
+    public void testEquinoctialToEquinoctialCirc() {
         doTestEquinoctialToEquinoctialCirc(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testEquinoctialToCartesian() throws OrekitException {
+    public void testEquinoctialToCartesian() {
         doTestEquinoctialToCartesian(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testEquinoctialToKeplerian() throws OrekitException {
+    @Deprecated
+    public void testEquinoctialToCartesian2() {
+        doTestEquinoctialToCartesian2(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testEquinoctialToKeplerian() {
         doTestEquinoctialToKeplerian(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testNumericalIssue25() throws OrekitException {
+    public void testNumericalIssue25() {
         doTestNumericalIssue25(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testAnomaly() throws OrekitException {
+    public void testAnomaly() {
         doTestAnomaly(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testPositionVelocityNorms() throws OrekitException {
+    public void testPositionVelocityNorms() {
         doTestPositionVelocityNorms(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testGeometry() throws OrekitException {
+    public void testGeometry() {
         doTestGeometry(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testRadiusOfCurvature() throws OrekitException {
+    public void testRadiusOfCurvature() {
         doTestRadiusOfCurvature(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testSymmetry() throws OrekitException {
+    public void testSymmetry() {
         doTestSymmetry(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testJacobianReference() throws OrekitException {
+    public void testJacobianReference() {
         doTestJacobianReference(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testJacobianFinitedifferences() throws OrekitException {
+    public void testJacobianFinitedifferences() {
         doTestJacobianFinitedifferences(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testInterpolationWithDerivatives() throws OrekitException {
+    public void testInterpolationWithDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), true,
                             397, 1.28e-8,
                             610, 3.95e-6,
@@ -134,7 +139,7 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test
-    public void testInterpolationWithoutDerivatives() throws OrekitException {
+    public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), false,
                             397, 0.0372,
                             610.0, 1.23,
@@ -157,7 +162,7 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() throws OrekitException{
+    public void testDerivativesConversionSymmetry() {
         doTestDerivativesConversionSymmetry(Decimal64Field.getInstance());
     }
 
@@ -172,12 +177,12 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test
-    public void testNonKeplerianDerivatives() throws OrekitException {
+    public void testNonKeplerianDerivatives() {
         doTestNonKeplerianDerivatives(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testPositionAngleDerivatives() throws OrekitException {
+    public void testPositionAngleDerivatives() {
         doTestPositionAngleDerivatives(Decimal64Field.getInstance());
     }
 
@@ -187,7 +192,7 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+    public void testCopyNonKeplerianAcceleration() {
         doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
     }
 
@@ -299,6 +304,30 @@ public class FieldEquinoctialOrbitTest {
                      * FastMath.abs(vit.getZ().getReal()));
     }
 
+    @Deprecated
+    private <T extends RealFieldElement<T>> void doTestEquinoctialToCartesian2(Field<T> field) {
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+
+        T ix = zero.add(1.200e-04);
+        T iy = zero.add(-1.16e-04);
+        T inc = ix.multiply(ix).add(iy.multiply(iy)).divide(4.).sqrt().asin().multiply(2);
+        T hx = inc.divide(2.).tan().multiply(ix).divide(inc.divide(2.).sin().multiply(2));
+        T hy = inc.divide(2.).tan().multiply(iy).divide(inc.divide(2.).sin().multiply(2));
+
+        FieldEquinoctialOrbit<T> equi =
+                        new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(-7.900e-06), zero.add(1.100e-04), hx, hy,
+                                                    zero.add(5.300), PositionAngle.MEAN,
+                                                   FramesFactory.getEME2000(), date, mu);
+        FieldVector3D<T> ref  = equi.getPVCoordinates().getPosition();
+        FieldVector3D<T> pos  = FieldEquinoctialOrbit.equinoctialToPosition(equi.getA(), 
+                                                                            equi.getEquinoctialEx(), equi.getEquinoctialEy(),
+                                                                            equi.getHx(), equi.getHy(),
+                                                                            equi.getLv(),
+                                                                            equi.getMu());
+        Assert.assertEquals(0, FieldVector3D.distance(ref, pos).getReal(), 1.0e-15);
+    }
+
     private <T extends RealFieldElement<T>> void doTestEquinoctialToKeplerian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -406,7 +435,7 @@ public class FieldEquinoctialOrbitTest {
         Assert.assertThat(orbit.getLDot(PositionAngle.MEAN),        relativelyCloseTo(fieldOrbit.getLDot(PositionAngle.MEAN).getReal(),      0));
     }
 
-    private <T extends RealFieldElement<T>> void doTestNumericalIssue25(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNumericalIssue25(Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(3782116.14107698), zero.add(416663.11924914), zero.add(5875541.62103057));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-6349.7848910501), zero.add(288.4061811651), zero.add(4066.9366759691));
@@ -729,7 +758,7 @@ public class FieldEquinoctialOrbitTest {
                                     date, mu);
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianReference(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestJacobianReference(Field<T> field) {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
@@ -841,7 +870,7 @@ public class FieldEquinoctialOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianFinitedifferences(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestJacobianFinitedifferences(Field<T> field) {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<>(field, 2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
@@ -887,7 +916,7 @@ public class FieldEquinoctialOrbitTest {
     }
 
     private <T extends RealFieldElement<T>>  T[][] finiteDifferencesJacobian(PositionAngle type, FieldEquinoctialOrbit<T> orbit, T hP)
-        throws OrekitException {
+        {
         Field<T> field = hP.getField();
         T[][] jacobian = MathArrays.buildArray(field, 6, 6);
         for (int i = 0; i < 6; ++i) {
@@ -982,7 +1011,7 @@ public class FieldEquinoctialOrbitTest {
                                                                      double shiftErrorWithin, double interpolationErrorWithin,
                                                                      double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
                                                                      double shiftErrorFarPast, double interpolationErrorFarPast)
-        throws OrekitException {
+        {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -1063,7 +1092,7 @@ public class FieldEquinoctialOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) {
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final FieldVector3D<T>     position     = new FieldVector3D<>(field.getZero().add(6896874.444705),  field.getZero().add(1956581.072644),  field.getZero().add(-147476.245054));
         final FieldVector3D<T>     velocity     = new FieldVector3D<>(field.getZero().add(166.816407662), field.getZero().add(-1106.783301861), field.getZero().add(-7372.745712770));
@@ -1127,7 +1156,7 @@ public class FieldEquinoctialOrbitTest {
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
      }
 
-    private <T extends RealFieldElement<T>> void doTestPositionAngleDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestPositionAngleDerivatives(final Field<T> field) {
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final FieldVector3D<T>     position     = new FieldVector3D<>(field.getZero().add(6896874.444705),  field.getZero().add(1956581.072644),  field.getZero().add(-147476.245054));
         final FieldVector3D<T>     velocity     = new FieldVector3D<>(field.getZero().add(166.816407662), field.getZero().add(-1106.783301861), field.getZero().add(-7372.745712770));
@@ -1199,7 +1228,7 @@ public class FieldEquinoctialOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) {
         T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         FieldVector3D<T> position     = new FieldVector3D<>(zero.add(6893443.400234382),
@@ -1251,7 +1280,7 @@ public class FieldEquinoctialOrbitTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field)
-        throws OrekitException {
+        {
 
         final Frame eme2000     = FramesFactory.getEME2000();
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -54,7 +53,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     private final double occultedRadius;
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
-    private boolean totalEclipse;
+    private final boolean totalEclipse;
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
@@ -218,9 +217,8 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * and positive when exiting.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         final Vector3D pted = occulted.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
         final Vector3D ping = occulting.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
         final Vector3D psat = s.getPVCoordinates().getPosition();

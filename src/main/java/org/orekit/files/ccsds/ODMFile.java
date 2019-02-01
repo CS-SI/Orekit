@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -139,9 +139,8 @@ public abstract class ODMFile {
      *   <li>the coefficient set by the user with the parser's method setMu,</li>
      *   <li>the coefficient created from the knowledge of the central body.</li>
      * </ol>
-     * @throws OrekitException if no gravitational coefficient can be found
      */
-    protected void setMuUsed() throws OrekitException {
+    protected void setMuUsed() {
         if (!Double.isNaN(muParsed)) {
             muUsed = muParsed;
         } else if (!Double.isNaN(muSet)) {
@@ -155,9 +154,8 @@ public abstract class ODMFile {
 
     /** Get IERS conventions.
      * @return conventions IERS conventions
-     * @exception OrekitException if no IERS conventions have been set
      */
-    public IERSConventions getConventions() throws OrekitException {
+    public IERSConventions getConventions() {
         if (conventions != null) {
             return conventions;
         } else {

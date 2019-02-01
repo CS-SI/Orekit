@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,9 +68,9 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> implements Serial
      * Build a new instance. The angular coordinates will be normalized so that
      * the latitude is between ±π/2 and the longitude is between ±π.
      *
-     * @param latitude latitude of the point
-     * @param longitude longitude of the point
-     * @param altitude altitude of the point
+     * @param latitude latitude of the point (rad)
+     * @param longitude longitude of the point (rad)
+     * @param altitude altitude of the point (m)
      */
     public FieldGeodeticPoint(final T latitude, final T longitude,
                               final T altitude) {

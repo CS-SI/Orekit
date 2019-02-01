@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -38,7 +37,17 @@ import org.orekit.utils.PVCoordinatesProvider;
  * using rich force models and by continuous models built after numerical
  * integration has been completed and dense output data as been
  * gathered.</p>
-
+ * <p>Note that one single propagator cannot be called from multiple threads.
+ * Its configuration can be changed as there is at least a {@link
+ * #resetInitialState(SpacecraftState)} method, and even propagators that do
+ * not support resetting state (like the {@link
+ * org.orekit.propagation.analytical.tle.TLEPropagator TLEPropagator} do
+ * cache some internal data during computation. However, as long as they
+ * are configured with independent building blocks (mainly event handlers
+ * and step handlers that may preserve some internal state), and as long
+ * as they are called from one thread only, they <em>can</em> be used in
+ * multi-threaded applications. Synchronizing several propagators to run in
+ * parallel is also possible using {@link PropagatorsParallelizer}.</p>
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  *
@@ -163,23 +172,18 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** Get the propagator initial state.
      * @return initial state
-     * @exception OrekitException if state cannot be retrieved
      */
-    SpacecraftState getInitialState() throws OrekitException;
+    SpacecraftState getInitialState();
 
     /** Reset the propagator initial state.
      * @param state new initial state to consider
-     * @exception OrekitException if initial state cannot be reset
      */
-    void resetInitialState(SpacecraftState state)
-        throws OrekitException;
+    void resetInitialState(SpacecraftState state);
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
-     * @exception OrekitException if an additional state with the same name is already present
      */
-    void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider)
-        throws OrekitException;
+    void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider);
 
     /** Get an unmodifiable list of providers for additional state.
      * @return providers for the additional states
@@ -267,9 +271,8 @@ public interface Propagator extends PVCoordinatesProvider {
      * target date is only a hint, not a mandatory objective.</p>
      * @param target target date towards which orbit state should be propagated
      * @return propagated state
-     * @exception OrekitException if state cannot be propagated
      */
-    SpacecraftState propagate(AbsoluteDate target) throws OrekitException;
+    SpacecraftState propagate(AbsoluteDate target);
 
     /** Propagate from a start date towards a target date.
      * <p>Those propagators use a start date and a target date to
@@ -280,8 +283,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * @param start start date from which orbit state should be propagated
      * @param target target date to which orbit state should be propagated
      * @return propagated state
-     * @exception OrekitException if state cannot be propagated
      */
-    SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target) throws OrekitException;
+    SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target);
 
 }

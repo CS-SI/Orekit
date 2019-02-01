@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.forces.drag.atmosphere;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -34,49 +33,44 @@ public interface NRLMSISE00InputParameters extends Serializable {
 
     /** Gets the available data range minimum date.
      * @return the minimum date.
-     * @exception OrekitException if data cannot be loaded
      */
-    AbsoluteDate getMinDate() throws OrekitException;
+    AbsoluteDate getMinDate();
 
     /** Gets the available data range maximum date.
      * @return the maximum date.
-     * @exception OrekitException if data cannot be loaded
      */
-    AbsoluteDate getMaxDate() throws OrekitException;
+    AbsoluteDate getMaxDate();
 
     /** Get the value of the daily F10.7 solar flux for previous day.
      * @param date the current date
      * @return the daily F10.7 flux for previous day
-     * @exception OrekitException if the date is out of range of available data
      */
-    double getDailyFlux(AbsoluteDate date) throws OrekitException;
+    double getDailyFlux(AbsoluteDate date);
 
     /** Get the value of the 81 day average of F10.7 solar flux centered on current day.
      * @param date the current date
      * @return the 81 day average of F10.7 solar flux centered on current day
-     * @exception OrekitException if the date is out of range of available data
      */
-    double getAverageFlux(AbsoluteDate date) throws OrekitException;
+    double getAverageFlux(AbsoluteDate date);
 
     /** Get the A<sub>p</sub> geomagnetic indices.
      * <p>
      * A<sub>p</sub> indices are provided as an array such as:
      * <ul>
-     * <li>0 -> daily A<sub>p</sub></li>
-     * <li>1 -> 3 hr A<sub>p</sub> index for current time</li>
-     * <li>2 -> 3 hr A<sub>p</sub> index for 3 hrs before current time</li>
-     * <li>3 -> 3 hr A<sub>p</sub> index for 6 hrs before current time</li>
-     * <li>4 -> 3 hr A<sub>p</sub> index for 9 hrs before current time</li>
-     * <li>5 -> Average of eight 3 hr A<sub>p</sub> indices from 12 to 33 hrs
+     * <li>0 → daily A<sub>p</sub></li>
+     * <li>1 → 3 hr A<sub>p</sub> index for current time</li>
+     * <li>2 → 3 hr A<sub>p</sub> index for 3 hrs before current time</li>
+     * <li>3 → 3 hr A<sub>p</sub> index for 6 hrs before current time</li>
+     * <li>4 → 3 hr A<sub>p</sub> index for 9 hrs before current time</li>
+     * <li>5 → Average of eight 3 hr A<sub>p</sub> indices from 12 to 33 hrs
      *          prior to current time</li>
-     * <li>6 -> Average of eight 3 hr A<sub>p</sub> indices from 36 to 57 hrs
+     * <li>6 → Average of eight 3 hr A<sub>p</sub> indices from 36 to 57 hrs
      *          prior to current time</li>
      * </ul>
      * </p>
      * @param date the current date
      * @return the array of A<sub>p</sub> indices
-     * @exception OrekitException if the date is out of range of available data
      */
-    double[] getAp(AbsoluteDate date) throws OrekitException;
+    double[] getAp(AbsoluteDate date);
 
 }

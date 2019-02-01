@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -107,11 +106,9 @@ public class BatchLSEstimator {
      * </p>
      * @param optimizer solver for least squares problem
      * @param propagatorBuilder builders to use for propagation
-     * @exception OrekitException if some propagator parameter cannot be retrieved
      */
     public BatchLSEstimator(final LeastSquaresOptimizer optimizer,
-                            final NumericalPropagatorBuilder... propagatorBuilder)
-        throws OrekitException {
+                            final NumericalPropagatorBuilder... propagatorBuilder) {
 
         this.builders                       = propagatorBuilder;
         this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
@@ -142,11 +139,8 @@ public class BatchLSEstimator {
 
     /** Add a measurement.
      * @param measurement measurement to add
-     * @exception OrekitException if the measurement has a parameter
-     * that is already used
      */
-    public void addMeasurement(final ObservedMeasurement<?> measurement)
-        throws OrekitException {
+    public void addMeasurement(final ObservedMeasurement<?> measurement) {
         measurements.add(measurement);
     }
 
@@ -198,10 +192,8 @@ public class BatchLSEstimator {
      * </p>
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return orbital parameters supported by this estimator
-     * @exception OrekitException if different parameters have the same name
      */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly)
-        throws OrekitException {
+    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (int i = 0; i < builders.length; ++i) {
@@ -226,10 +218,8 @@ public class BatchLSEstimator {
     /** Get the propagator parameters supported by this estimator.
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return propagator parameters supported by this estimator
-     * @exception OrekitException if different parameters have the same name
      */
-    public ParameterDriversList getPropagatorParametersDrivers(final boolean estimatedOnly)
-        throws OrekitException {
+    public ParameterDriversList getPropagatorParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (PropagatorBuilder builder : builders) {
@@ -248,10 +238,8 @@ public class BatchLSEstimator {
     /** Get the measurements parameters supported by this estimator (including measurements and modifiers).
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return measurements parameters supported by this estimator
-     * @exception OrekitException if different parameters have the same name
      */
-    public ParameterDriversList getMeasurementsParametersDrivers(final boolean estimatedOnly)
-        throws OrekitException {
+    public ParameterDriversList getMeasurementsParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList parameters =  new ParameterDriversList();
         for (final  ObservedMeasurement<?> measurement : measurements) {
@@ -331,10 +319,8 @@ public class BatchLSEstimator {
      * </p>
      * @return propagators configured with estimated orbits as initial states, and all
      * propagators estimated parameters also set
-     * @exception OrekitException if there is a conflict in parameters names
-     * or if orbit cannot be determined
      */
-    public NumericalPropagator[] estimate() throws OrekitException {
+    public NumericalPropagator[] estimate() {
 
         // set reference date for all parameters that lack one (including the not estimated parameters)
         for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
@@ -431,10 +417,7 @@ public class BatchLSEstimator {
 
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
         }
-
     }
 
     /** Get the last estimations performed.
@@ -471,11 +454,9 @@ public class BatchLSEstimator {
      * </p>
      * @param threshold threshold to identify matrix singularity
      * @return covariances matrix in space flight dynamics physical units
-     * @exception OrekitException if the covariance matrix cannot be computed (singular problem).
      * @since 9.1
      */
-    public RealMatrix getPhysicalCovariances(final double threshold)
-        throws OrekitException {
+    public RealMatrix getPhysicalCovariances(final double threshold) {
         final RealMatrix covariances;
         try {
             // get the normalized matrix
@@ -613,18 +594,14 @@ public class BatchLSEstimator {
 
             // notify the observer
             if (observer != null) {
-                try {
-                    observer.evaluationPerformed(iterationsCounter.getCount(),
-                                                 evaluationsCounter.getCount(),
-                                                 orbits,
-                                                 estimatedOrbitalParameters,
-                                                 estimatedPropagatorParameters,
-                                                 estimatedMeasurementsParameters,
-                                                 new Provider(),
-                                                 evaluation);
-                } catch (OrekitException oe) {
-                    throw new OrekitExceptionWrapper(oe);
-                }
+                observer.evaluationPerformed(iterationsCounter.getCount(),
+                                             evaluationsCounter.getCount(),
+                                             orbits,
+                                             estimatedOrbitalParameters,
+                                             estimatedPropagatorParameters,
+                                             estimatedMeasurementsParameters,
+                                             new Provider(),
+                                             evaluation);
             }
 
             return evaluation;
@@ -647,8 +624,7 @@ public class BatchLSEstimator {
 
         /** {@inheritDoc} */
         @Override
-        public EstimatedMeasurement<?> getEstimatedMeasurement(final int index)
-            throws OrekitException {
+        public EstimatedMeasurement<?> getEstimatedMeasurement(final int index) {
 
             // safety checks
             if (index < 0 || index >= estimations.size()) {
@@ -703,31 +679,26 @@ public class BatchLSEstimator {
 
         /** {@inheritDoc} */
         @Override
-        public RealVector validate(final RealVector params)
-            throws OrekitExceptionWrapper {
+        public RealVector validate(final RealVector params) {
 
-            try {
-                int i = 0;
-                for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
-                    // let the parameter handle min/max clipping
-                    driver.setNormalizedValue(params.getEntry(i));
-                    params.setEntry(i++, driver.getNormalizedValue());
-                }
-                for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
-                    // let the parameter handle min/max clipping
-                    driver.setNormalizedValue(params.getEntry(i));
-                    params.setEntry(i++, driver.getNormalizedValue());
-                }
-                for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-                    // let the parameter handle min/max clipping
-                    driver.setNormalizedValue(params.getEntry(i));
-                    params.setEntry(i++, driver.getNormalizedValue());
-                }
-
-                return params;
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            int i = 0;
+            for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
+                // let the parameter handle min/max clipping
+                driver.setNormalizedValue(params.getEntry(i));
+                params.setEntry(i++, driver.getNormalizedValue());
             }
+            for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
+                // let the parameter handle min/max clipping
+                driver.setNormalizedValue(params.getEntry(i));
+                params.setEntry(i++, driver.getNormalizedValue());
+            }
+            for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+                // let the parameter handle min/max clipping
+                driver.setNormalizedValue(params.getEntry(i));
+                params.setEntry(i++, driver.getNormalizedValue());
+            }
+
+            return params;
         }
     }
 

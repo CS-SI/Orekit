@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.FramesFactory;
@@ -53,11 +52,11 @@ public class FieldAdditionalEquationsTest {
     /** Test for issue #401
      *  with a numerical propagator */
     @Test
-    public void testInitNumerical() throws OrekitException {
+    public void testInitNumerical() {
         doTestInitNumerical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestInitNumerical(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestInitNumerical(Field<T> field) {
         // setup
         final double reference = 1.25;
         InitCheckerEquations<T> checker = new InitCheckerEquations<>(reference);
@@ -79,7 +78,7 @@ public class FieldAdditionalEquationsTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
         mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
@@ -111,14 +110,14 @@ public class FieldAdditionalEquationsTest {
 
         @Override
         public void init(FieldSpacecraftState<T> initiaState, FieldAbsoluteDate<T> target)
-            throws OrekitException {
+            {
             Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0].getReal(), 1.0e-15);
             called = true;
         }
 
         @Override
         public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot)
-            throws OrekitException {
+            {
             pDot[0] = s.getDate().getField().getZero().add(1.5);
             return MathArrays.buildArray(s.getDate().getField(), 7);
         }

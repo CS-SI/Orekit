@@ -64,9 +64,8 @@ public class FixedTroposphericDelay implements TroposphericModel {
     /** Creates a new {@link FixedTroposphericDelay} instance, and loads the
      * delay values from the given resource via the {@link DataProvidersManager}.
      * @param supportedName a regular expression for supported resource names
-     * @throws OrekitException if the resource could not be loaded
      */
-    public FixedTroposphericDelay(final String supportedName) throws OrekitException {
+    public FixedTroposphericDelay(final String supportedName) {
 
         final InterpolationTableLoader loader = new InterpolationTableLoader();
         DataProvidersManager.getInstance().feed(supportedName, loader);
@@ -87,9 +86,8 @@ public class FixedTroposphericDelay implements TroposphericModel {
     /** Returns the default model, loading delay values from the file
      * "tropospheric-delay.txt".
      * @return the default model
-     * @throws OrekitException if the file could not be loaded
      */
-    public static FixedTroposphericDelay getDefaultModel() throws OrekitException {
+    public static FixedTroposphericDelay getDefaultModel() {
         synchronized (FixedTroposphericDelay.class) {
             if (defaultModel == null) {
                 defaultModel = new FixedTroposphericDelay("^tropospheric-delay\\.txt$");

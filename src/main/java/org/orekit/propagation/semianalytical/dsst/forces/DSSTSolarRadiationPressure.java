@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
@@ -295,7 +294,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
+    protected double[] getLLimits(final SpacecraftState state) {
         // Default bounds without shadow [-PI, PI]
         final double[] ll = {-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
                              FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};

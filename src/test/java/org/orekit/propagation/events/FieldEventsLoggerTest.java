@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -60,27 +59,27 @@ public class FieldEventsLoggerTest {
 
 
     @Test
-    public void testLogUmbra() throws OrekitException{
+    public void testLogUmbra() {
         doTestLogUmbra(Decimal64Field.getInstance());
     }
     @Test
-    public void testLogPenumbra() throws OrekitException{
+    public void testLogPenumbra() {
         doTestLogPenumbra(Decimal64Field.getInstance());
     }
     @Test
-    public void testLogAll() throws OrekitException{
+    public void testLogAll() {
         doTestLogAll(Decimal64Field.getInstance());
     }
     @Test
-    public void testImmutableList() throws OrekitException{
+    public void testImmutableList() {
         doTestImmutableList(Decimal64Field.getInstance());
     }
     @Test
-    public void testClearLog() throws OrekitException{
+    public void testClearLog() {
         doTestClearLog(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestLogUmbra(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestLogUmbra(Field<T> field) {
 
         T zero = field.getZero();
 
@@ -124,7 +123,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 3, 3, 0, 0, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void doTestLogPenumbra(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestLogPenumbra(final Field<T> field) {
 
 
         T zero = field.getZero();
@@ -161,7 +160,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 0, 0, 2, 3, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void doTestLogAll(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestLogAll(final Field<T> field) {
 
         T zero = field.getZero();
 
@@ -204,7 +203,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 3, 3, 2, 3, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void doTestImmutableList(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestImmutableList(final Field<T> field) {
 
 
         T zero = field.getZero();
@@ -258,7 +257,7 @@ public class FieldEventsLoggerTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void doTestClearLog(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestClearLog(final Field<T> field) {
 
 
 
@@ -334,7 +333,7 @@ public class FieldEventsLoggerTest {
         Assert.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private <T extends RealFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) throws OrekitException {
+    private <T extends RealFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
 
         FieldEclipseDetector<T> detector =
                 new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3), CelestialBodyFactory.getSun(), 696000000,

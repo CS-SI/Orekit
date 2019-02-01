@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,7 +74,7 @@ public class TabulatedProviderTest {
     OneAxisEllipsoid earthShape;
 
     @Test
-    public void testWithoutRate() throws OrekitException {
+    public void testWithoutRate() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -89,7 +89,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testWithRate() throws OrekitException {
+    public void testWithRate() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -104,7 +104,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testWithAcceleration() throws OrekitException {
+    public void testWithAcceleration() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -120,7 +120,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         double             samplingRate      = 60.0;
         double             checkingRate      = 10.0;
         int                n                 = 8;
@@ -147,7 +147,7 @@ public class TabulatedProviderTest {
     }
 
     private List<TimeStampedAngularCoordinates> createSample(double samplingRate, AttitudeProvider referenceProvider)
-        throws OrekitException {
+        {
 
         // reference propagator, using a yaw compensation law
         final KeplerianPropagator referencePropagator = new KeplerianPropagator(circOrbit);
@@ -170,7 +170,7 @@ public class TabulatedProviderTest {
 
     private double checkError(final AbsoluteDate start, AbsoluteDate end, double checkingRate,
                               final AttitudeProvider referenceProvider, TabulatedProvider provider)
-            throws OrekitException {
+            {
 
         // prepare an interpolating provider, using only internal steps
         // (i.e. ignoring interpolation near boundaries)
@@ -185,7 +185,7 @@ public class TabulatedProviderTest {
                 error[0] = 0.0;
             }
 
-            public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+            public void handleStep(SpacecraftState currentState, boolean isLast) {
                 Attitude interpolated = currentState.getAttitude();
                 Attitude reference    = referenceProvider.getAttitude(currentState.getOrbit(),
                                                                       currentState.getDate(),
@@ -205,7 +205,7 @@ public class TabulatedProviderTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
