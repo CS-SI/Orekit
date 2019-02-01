@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -120,9 +120,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * final T          maxStep   = zero.add(500);
  * final T          initStep  = zero.add(60);
  * final double[][] tolerance = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
- * AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tolerance[0], tolerance[1]);
+ * AdaptiveStepsizeFieldIntegrator&lt;T&gt; integrator = new DormandPrince853FieldIntegrator&lt;&gt;(field, minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
- * propagator = new FieldNumericalPropagator<>(field, integrator);
+ * propagator = new FieldNumericalPropagator&lt;&gt;(field, integrator);
  * </pre>
  * <p>By default, at the end of the propagation, the propagator resets the initial state to the final state,
  * thus allowing a new propagation to be started from there without recomputing the part already performed.

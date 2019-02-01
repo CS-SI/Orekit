@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,17 +81,17 @@ public interface JB2008InputParameters extends Serializable {
      */
     double getXM10B(AbsoluteDate date);
 
-    /** Get the Solar X-Ray & Lya index scaled to F10.
+    /** Get the Solar X-Ray &amp; Lya index scaled to F10.
      * <p>Tabular time 5.0 days earlier.</p>
      * @param date the current date
-     * @return the Solar X-Ray & Lya index scaled to F10
+     * @return the Solar X-Ray &amp; Lya index scaled to F10
      */
     double getY10(AbsoluteDate date);
 
-    /** Get the Solar X-Ray & Lya 81-day ave. centered index.
+    /** Get the Solar X-Ray &amp; Lya 81-day ave. centered index.
      * <p>Tabular time 5.0 days earlier.</p>
      * @param date the current date
-     * @return the Solar X-Ray & Lya 81-day ave. centered index
+     * @return the Solar X-Ray &amp; Lya 81-day ave. centered index
      */
     double getY10B(AbsoluteDate date);
 

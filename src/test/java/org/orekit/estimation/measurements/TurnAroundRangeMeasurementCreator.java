@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
     private final Vector3D antennaPhaseCenter;
+    private final ObservableSatellite satellite;
 
     public TurnAroundRangeMeasurementCreator(final Context context) {
         this(context, Vector3D.ZERO);
@@ -51,12 +52,14 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
     public TurnAroundRangeMeasurementCreator(final Context context, final Vector3D antennaPhaseCenter) {
         this.context            = context;
         this.antennaPhaseCenter = antennaPhaseCenter;
+        this.satellite          = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             for (final GroundStation station : Arrays.asList(entry.getKey(), entry.getValue())) {
-                for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+                for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                            station.getEastOffsetDriver(),
                                                             station.getNorthOffsetDriver(),
                                                             station.getZenithOffsetDriver(),
                                                             station.getPrimeMeridianOffsetDriver(),
@@ -97,8 +100,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
      * See TurnAroundRange.java for more
      * Thus the spacecraft date is the date when the 1st leg of the path ends and the 2nd leg begins
      */
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         try {
             for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
 
@@ -198,7 +200,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
                     addMeasurement(new TurnAroundRange(masterStation, slaveStation, masterReceptionDate,
                                              0.5 * (masterUpLinkDistance + slaveDownLinkDistance +
-                                                    slaveUpLinkDistance  + masterDownLinkDistance), 1.0, 10));
+                                                    slaveUpLinkDistance  + masterDownLinkDistance), 1.0, 10, satellite));
                 }
 
             }

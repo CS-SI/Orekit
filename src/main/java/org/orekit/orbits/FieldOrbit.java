@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -272,8 +272,6 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     public abstract T getHy();
 
     /** Get the second component of the inclination vector derivative.
-     * <p>
-     * </p>
      * @return second component of the inclination vector derivative
      */
     public abstract T getHyDot();

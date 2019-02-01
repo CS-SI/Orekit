@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,9 @@ package org.orekit.estimation.measurements;
 import org.orekit.time.TimeStamped;
 
 
-/** Base interface for comparing measurements regardless of thei type.
+/** Base interface for comparing measurements regardless of their type.
  * @author Luc Maisonobe
-     * @since 9.2
+ * @since 9.2
  */
 public interface ComparableMeasurement extends TimeStamped, Comparable<ComparableMeasurement> {
 
@@ -29,7 +29,7 @@ public interface ComparableMeasurement extends TimeStamped, Comparable<Comparabl
      * <p>
      * The observed value is the value that was measured by the instrument.
      * </p>
-     * @return observed value (array of size {@link #getDimension()}
+     * @return observed value
      */
     double[] getObservedValue();
 

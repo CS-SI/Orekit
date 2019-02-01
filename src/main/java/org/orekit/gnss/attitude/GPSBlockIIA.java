@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -79,10 +79,28 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
      * @param sun provider for Sun position
      * @param inertialFrame inertial frame where velocity are computed
      * @param prnNumber number within the GPS constellation (between 1 and 32)
+     * @deprecated as of 9.3 replaced by {@link #GPSBlockIIA(double, double,
+     * AbsoluteDate, AbsoluteDate, ExtendedPVCoordinatesProvider, Frame)}
      */
+    @Deprecated
     public GPSBlockIIA(final double yawRate, final double yawBias,
                        final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
                        final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame, final int prnNumber) {
+        this(yawRate, yawBias, validityStart, validityEnd, sun, inertialFrame);
+    }
+
+    /** Simple constructor.
+     * @param yawRate yaw rate to use in radians per seconds (typically {@link #DEFAULT_YAW_RATES}{@code [prnNumber]})
+     * @param yawBias yaw bias to use (rad) (typicall {@link #DEFAULT_YAW_BIAS})
+     * @param validityStart start of validity for this provider
+     * @param validityEnd end of validity for this provider
+     * @param sun provider for Sun position
+     * @param inertialFrame inertial frame where velocity are computed
+     * @since 9.3
+     */
+    public GPSBlockIIA(final double yawRate, final double yawBias,
+                       final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
+                       final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
         this.yawRate = yawRate;
         this.yawBias = yawBias;

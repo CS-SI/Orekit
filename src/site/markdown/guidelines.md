@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -42,7 +42,7 @@ The second goal, robustness, has some specific implications for a low level
 component like Orekit. In some sense, it can be considered an extension of the
 previous goal as it can also be improved by testing. It can also be improved
 by automatic checking tools that analyze either source code or binary code. The
-[findbugs](http://findbugs.sourceforge.net/) tool is already configured for
+[spotbugs](https://spotbugs.github.io/) tool is already configured for
 automatic checks of the library using a maven plugin.
 
 This is however not sufficient. A library is intended to be used by applications
@@ -134,8 +134,7 @@ release branches or bugfix branches branches to it.
 
 For reading ease and consistency, the existing code style should be
 preserved for all new developments. The rules are common ones, inherited
-mainly from the Sun [Code Conventions for the Java
-Programming Language](http://java.sun.com/docs/codeconv/) guide style and
+mainly from the Sun Code Conventions for the Java Programming Language guide style and
 from the default [checkstyle](http://checkstyle.sourceforge.net/) tool
 configuration. A few of these rules are displayed below. The complete
 definition is given by the checkstyle configuration file in the project
@@ -204,9 +203,9 @@ root directory.
 
   seek for a line test coverage of at least 80% (more is better)
 
-* *findbugs* (robustness)
+* *spotbugs* (robustness)
 
-  fix _all_ errors and warnings found by findbugs
+  fix _all_ errors and warnings found by spotbugs
 
 * *no runtime assumptions* (robustness)
 

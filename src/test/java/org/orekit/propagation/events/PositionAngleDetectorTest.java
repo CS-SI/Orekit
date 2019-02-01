@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -25,20 +27,30 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class PositionAngleDetectorTest {
@@ -57,53 +69,185 @@ public class PositionAngleDetectorTest {
     }
 
     @Test
-    public void testTrueAnomaly() {
-        doTest(OrbitType.KEPLERIAN, PositionAngle.TRUE, FastMath.toRadians(10.0), 15);
+    public void testTrueAnomalyForward() {
+        doTest(OrbitType.KEPLERIAN, PositionAngle.TRUE, FastMath.toRadians(10.0), Constants.JULIAN_DAY, 15);
     }
 
     @Test
-    public void testMeanAnomaly() {
-        doTest(OrbitType.KEPLERIAN, PositionAngle.MEAN, FastMath.toRadians(10.0), 15);
+    public void testTrueAnomalyBackward() {
+        doTest(OrbitType.KEPLERIAN, PositionAngle.TRUE, FastMath.toRadians(10.0), -Constants.JULIAN_DAY, 14);
     }
 
     @Test
-    public void testEccentricAnomaly() {
-        doTest(OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, FastMath.toRadians(10.0), 15);
+    public void testMeanAnomalyForward() {
+        doTest(OrbitType.KEPLERIAN, PositionAngle.MEAN, FastMath.toRadians(10.0), Constants.JULIAN_DAY, 15);
     }
 
     @Test
-    public void testTrueLatitudeArgument() {
-        doTest(OrbitType.CIRCULAR, PositionAngle.TRUE, FastMath.toRadians(730.0), 15);
+    public void testMeanAnomalyBackward() {
+        doTest(OrbitType.KEPLERIAN, PositionAngle.MEAN, FastMath.toRadians(10.0), -Constants.JULIAN_DAY, 14);
     }
 
     @Test
-    public void testMeanLatitudeArgument() {
-        doTest(OrbitType.CIRCULAR, PositionAngle.MEAN, FastMath.toRadians(730.0), 15);
+    public void testEccentricAnomalyForward() {
+        doTest(OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, FastMath.toRadians(10.0), Constants.JULIAN_DAY, 15);
     }
 
     @Test
-    public void testEccentricLatitudeArgument() {
-        doTest(OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, FastMath.toRadians(730.0), 15);
+    public void testEccentricAnomalyBackward() {
+        doTest(OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, FastMath.toRadians(10.0), -Constants.JULIAN_DAY, 14);
     }
 
     @Test
-    public void testTrueLongitudeArgument() {
-        doTest(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, FastMath.toRadians(-45.0), 15);
+    public void testTrueLatitudeArgumentForward() {
+        doTest(OrbitType.CIRCULAR, PositionAngle.TRUE, FastMath.toRadians(730.0), Constants.JULIAN_DAY, 15);
     }
 
     @Test
-    public void testMeanLongitudeArgument() {
-        doTest(OrbitType.EQUINOCTIAL, PositionAngle.MEAN, FastMath.toRadians(-45.0), 15);
+    public void testTrueLatitudeArgumentBackward() {
+        doTest(OrbitType.CIRCULAR, PositionAngle.TRUE, FastMath.toRadians(730.0), -Constants.JULIAN_DAY, 14);
     }
 
     @Test
-    public void testEccentricLongitudeArgument() {
-        doTest(OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, FastMath.toRadians(-45.0), 15);
+    public void testMeanLatitudeArgumentForward() {
+        doTest(OrbitType.CIRCULAR, PositionAngle.MEAN, FastMath.toRadians(730.0), Constants.JULIAN_DAY, 15);
+    }
+
+    @Test
+    public void testMeanLatitudeArgumentBackward() {
+        doTest(OrbitType.CIRCULAR, PositionAngle.MEAN, FastMath.toRadians(730.0), -Constants.JULIAN_DAY, 14);
+    }
+
+    @Test
+    public void testEccentricLatitudeArgumentForward() {
+        doTest(OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, FastMath.toRadians(730.0), Constants.JULIAN_DAY, 15);
+    }
+
+    @Test
+    public void testEccentricLatitudeArgumentBackward() {
+        doTest(OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, FastMath.toRadians(730.0), -Constants.JULIAN_DAY, 14);
+    }
+
+    @Test
+    public void testTrueLongitudeArgumentForward() {
+        doTest(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, FastMath.toRadians(-45.0), Constants.JULIAN_DAY, 15);
+    }
+
+    @Test
+    public void testTrueLongitudeArgumentBackward() {
+        doTest(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, FastMath.toRadians(-45.0), -Constants.JULIAN_DAY, 14);
+    }
+
+    @Test
+    public void testMeanLongitudeArgumentForward() {
+        doTest(OrbitType.EQUINOCTIAL, PositionAngle.MEAN, FastMath.toRadians(-45.0), Constants.JULIAN_DAY, 15);
+    }
+
+    @Test
+    public void testMeanLongitudeArgumentBackward() {
+        doTest(OrbitType.EQUINOCTIAL, PositionAngle.MEAN, FastMath.toRadians(-45.0), -Constants.JULIAN_DAY, 14);
+    }
+
+    @Test
+    public void testEccentricLongitudeArgumentForward() {
+        doTest(OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, FastMath.toRadians(-45.0), Constants.JULIAN_DAY, 15);
+    }
+
+    @Test
+    public void testEccentricLongitudeArgumentBackward() {
+        doTest(OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, FastMath.toRadians(-45.0), -Constants.JULIAN_DAY, 14);
+    }
+
+    @Test
+    public void testIssue493() {
+
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
+        NormalizedSphericalHarmonicsProvider provider =
+                        GravityFieldFactory.getNormalizedProvider(10, 10);
+
+        Frame inertialFrame = FramesFactory.getEME2000();
+
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
+
+        double mu =  provider.getMu();
+
+        double a = 24396159;                 // semi major axis in meters
+        double e = 0.72831215;               // eccentricity
+        double i = FastMath.toRadians(7);        // inclination
+        double omega = FastMath.toRadians(180);  // perigee argument
+        double raan = FastMath.toRadians(261);   // right ascension of ascending node
+        double lM = 0;                       // mean anomaly
+
+        Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
+                                                inertialFrame, initialDate, mu);
+
+        // Initial state definition
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+
+        // Adaptive step integrator
+        // with a minimum step of 0.001 and a maximum step of 1000
+        double minStep = 0.001;
+        double maxstep = 1000.0;
+        double positionTolerance = 10.0;
+        OrbitType propagationType = OrbitType.KEPLERIAN;
+        double[][] tolerances =
+                        NumericalPropagator.tolerances(positionTolerance, initialOrbit, propagationType);
+        AdaptiveStepsizeIntegrator integrator =
+                        new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
+
+        // Propagator in Keplerian mode
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setOrbitType(propagationType);
+
+        // Simple gravity field force model
+        ForceModel holmesFeatherstone =
+                        new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010,true),
+                                                              provider);
+
+        propagator.addForceModel(holmesFeatherstone);
+
+        final double maxCheck  = 600.0;
+        final double threshold = 1.0e-6;
+        PositionAngleDetector detector01 = new PositionAngleDetector(maxCheck,
+                                                                     threshold,
+                                                                     propagationType,
+                                                                     PositionAngle.TRUE,
+                                                                     FastMath.toRadians(01.0)).
+                                           withHandler(new ContinueOnEvent<>());
+        PositionAngleDetector detector90 = new PositionAngleDetector(maxCheck,
+                                                                     threshold,
+                                                                     propagationType,
+                                                                     PositionAngle.TRUE,
+                                                                     FastMath.toRadians(90.0)).
+                                           withHandler(new ContinueOnEvent<>());
+
+        // detect events with numerical propagator (and generate ephemeris)
+        propagator.setEphemerisMode();
+        propagator.setInitialState(initialState);
+        EventsLogger logger1 = new EventsLogger();
+        propagator.addEventDetector(logger1.monitorDetector(detector01));
+        propagator.addEventDetector(logger1.monitorDetector(detector90));
+        final AbsoluteDate finalDate = propagator.propagate(new AbsoluteDate(initialDate, Constants.JULIAN_DAY)).getDate();
+        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        Assert.assertEquals(6, logger1.getLoggedEvents().size());
+
+        // detect events with generated ephemeris
+        EventsLogger logger2 = new EventsLogger();
+        ephemeris.addEventDetector(logger2.monitorDetector(detector01));
+        ephemeris.addEventDetector(logger2.monitorDetector(detector90));
+        ephemeris.propagate(initialDate, finalDate);
+        Assert.assertEquals(logger1.getLoggedEvents().size(), logger2.getLoggedEvents().size());
+        for (int k = 0; k < logger1.getLoggedEvents().size(); ++k) {
+            AbsoluteDate date1 = logger1.getLoggedEvents().get(k).getState().getDate();
+            AbsoluteDate date2 = logger2.getLoggedEvents().get(k).getState().getDate();
+            Assert.assertEquals(0.0, date2.durationFrom(date1), threshold);
+        }
+
     }
 
     private void doTest(final OrbitType orbitType, final PositionAngle positionAngle,
-                        final double angle, final int expectedCrossings)
-        {
+                        final double angle, final double deltaT, final int expectedCrossings) {
 
         PositionAngleDetector d =
                 new PositionAngleDetector(orbitType, positionAngle, angle).
@@ -139,7 +283,7 @@ public class PositionAngleDetectorTest {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(d));
 
-        propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
+        propagator.propagate(date.shiftedBy(deltaT));
 
         double[] array = new double[6];
         for (LoggedEvent e : logger.getLoggedEvents()) {
@@ -147,13 +291,13 @@ public class PositionAngleDetectorTest {
             orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array, null);
             Assert.assertEquals(angle, MathUtils.normalizeAngle(array[5], angle), 1.0e-10);
         }
-        Assert.assertEquals(15, logger.getLoggedEvents().size());
+        Assert.assertEquals(expectedCrossings, logger.getLoggedEvents().size());
 
     }
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data:potential");
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 package org.orekit.models.earth;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -60,7 +63,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     /** Carbon dioxyde content (IAG recommendations). */
     private static final double C02 = 0.99995995;
 
-    /** Geodetic site latitude, radians. */
+    /** Geodetic site latitude [rad]. */
     private double latitude;
 
     /** Laser wavelength [µm]. */
@@ -75,13 +78,13 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     /** Water vapor pressure at the laser site [hPa]. */
     private double e0;
 
-    /** Create a new Marini-Murray model for the troposphere.
+    /** Create a new Mendes-Pavlis model for the troposphere.
      * This initialisation will compute the water vapor pressure
      * thanks to the values of the pressure, the temperature and the humidity
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, hPa
-     * @param rh the humidity at the station, percent (50% -&gt; 0.5)
-     * @param latitude geodetic latitude of the station
+     * @param rh the humidity at the station, percent (50% → 0.5)
+     * @param latitude geodetic latitude of the station, radians
      * @param lambda laser wavelength, µm
      * */
     public MendesPavlisModel(final double t0, final double p0, final double rh,
@@ -96,28 +99,28 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     /** Create a new Mendes-Pavlis model using a standard atmosphere model.
     *
     * <ul>
-    * <li>temperature: 20 degree Celsius
+    * <li>temperature: 18 degree Celsius
     * <li>pressure: 1013.25 hPa
     * <li>humidity: 50%
     * </ul>
     *
-    * @param latitude site latitude
+    * @param latitude site latitude, radians
     * @param lambda laser wavelength, µm
     *
     * @return a Mendes-Pavlis model with standard environmental values
     */
     public static MendesPavlisModel getStandardModel(final double latitude, final double lambda) {
-        return new MendesPavlisModel(273.15 + 20, 1013.25, 0.5, latitude, lambda);
+        return new MendesPavlisModel(273.15 + 18, 1013.25, 0.5, latitude, lambda);
     }
 
     /** {@inheritDoc} */
     @Override
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
-        // zenith delay
-        final double[] zenithDelay = computeZenithDelay(height, parameters);
-        // mapping function
-        final double[] mappingFunction = mappingFactors(height, elevation, date);
+        // Zenith delay
+        final double[] zenithDelay = computeZenithDelay(height, parameters, date);
+        // Mapping function
+        final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return zenithDelay[0] * mappingFunction[0] + zenithDelay[1] * mappingFunction[1];
     }
@@ -126,19 +129,17 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     @Override
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
-        // Field
-        final Field<T> field = date.getField();
-        // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters, field);
-        // mapping function
-        final T[] mappingFunction = mappingFactors(height, elevation, date);
+        // Zenith delay
+        final T[] delays = computeZenithDelay(height, parameters, date);
+        // Mapping function
+        final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] computeZenithDelay(final double height, final double[] parameters) {
+    public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
         final double fsite   = getSiteFunctionValue(height);
 
         // Array for zenith delay
@@ -177,9 +178,9 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height,
-                                                                  final T[] parameters,
-                                                                  final Field<T> field) {
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+                                                                  final FieldAbsoluteDate<T> date) {
+        final Field<T> field = height.getField();
         final T zero = field.getZero();
 
         final T fsite   = getSiteFunctionValue(height);
@@ -224,8 +225,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      * Therefore, the two components of the resulting array are
      * equals.
      * <ul>
-     * <li>double[0] = m(e) -&gt total mapping function
-     * <li>double[1] = m(e) -&gt total mapping function
+     * <li>double[0] = m(e) → total mapping function
+     * <li>double[1] = m(e) → total mapping function
      * </ul>
      * </p><p>
      * The total delay will thus be computed as this:
@@ -238,7 +239,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      * </p>
      * */
     @Override
-    public double[] mappingFactors(final double height, final double elevation, final AbsoluteDate date) {
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
         final double sinE = FastMath.sin(elevation);
 
         final double T2degree = T0 - 273.15;
@@ -256,7 +258,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
         // Numerator
         final double numMP = 1 + a1 / (1 + a2 / (1 + a3));
-        // Denominateur
+        // Denominator
         final double denMP = sinE + a1 / (sinE + a2 / (sinE + a3));
 
         final double factor = numMP / denMP;
@@ -269,8 +271,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
-                                                              final FieldAbsoluteDate<T> date) {
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
 
         final T sinE = FastMath.sin(elevation);
@@ -290,7 +292,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
         // Numerator
         final T numMP = a1.divide(a2.divide(a3.add(1.0)).add(1.0)).add(1.0);
-        // Denominateur
+        // Denominator
         final T denMP = a1.divide(a2.divide(a3.add(sinE)).add(sinE)).add(sinE);
 
         final T factor = numMP.divide(denMP);
@@ -304,8 +306,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[0];
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Get the laser frequency parameter f(lambda).
@@ -363,7 +365,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      *
      * See: Giacomo, P., Equation for the dertermination of the density of moist air, Metrologia, V. 18, 1982
      *
-     * @param rh relative humidity, in percent (50% -&gt; 0.5).
+     * @param rh relative humidity, in percent (50% → 0.5).
      * @return the water vapor, in mbar (1 mbar = 1 hPa).
      */
     private double getWaterVapor(final double rh) {
@@ -381,4 +383,5 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
         final double e = rh * fw * es;
         return e;
     }
+
 }

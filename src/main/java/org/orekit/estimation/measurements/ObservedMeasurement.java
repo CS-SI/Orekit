@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
@@ -129,8 +130,20 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * @return indices of the {@link org.orekit.propagation.Propagator propagators}
      * related to this measurement
      * @since 9.0
+     * @deprecated as of 9.3, replaced by {@link #getSatellites()}
      */
+    @Deprecated
     List<Integer> getPropagatorsIndices();
+
+    /** Get the satellites related to this measurement.
+     * @return satellites related to this measurement
+     * @since 9.3
+     */
+    default List<ObservableSatellite> getSatellites() {
+        // this default implementation is temporary for the 9.3 release,
+        // it will be removed when getPropagatorsIndices() is removed at 10.0
+        return getPropagatorsIndices().stream().map(i -> new ObservableSatellite(i)).collect(Collectors.toList());
+    }
 
     /** Estimate the theoretical value of the measurement.
      * <p>

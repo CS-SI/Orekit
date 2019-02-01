@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.atmosphere.DTM2000InputParameters;
+import org.orekit.forces.drag.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
@@ -41,10 +42,11 @@ import org.orekit.time.Month;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 
 /**
  * This class reads and provides solar activity data needed by
- * atmospheric models: F107 solar flux and Kp indexes.
+ * atmospheric models: F107 solar flux, Ap and Kp indexes.
  * <p>
  * The data are retrieved through the NASA Marshall
  * Solar Activity Future Estimation (MSAFE) as estimates of monthly
@@ -73,8 +75,14 @@ import org.orekit.time.TimeStamped;
  * methods return the same values.
  * </p>
  * <p>
- * Conversion from Ap index values in the MSAFE file to Kp values used by the atmosphere
- * model is done using Jacchia's equation in [1].
+ * Conversion from Ap index values in the MSAFE file to Kp values used by atmosphere
+ * models is done using Jacchia's equation in [1].
+ * </p>
+ * <p>
+ * With these data, the {@link #getAp(AbsoluteDate date)} method returns an array
+ * of seven times the same daily Ap value, i.e. it is suited to be used only with
+ * the {@link org.orekit.forces.drag.atmosphere.NRLMSISE00 NRLMSISE00} atmospheric
+ * model where the switch #9 is set to 1.
  * </p>
  *
  * <h2>References</h2>
@@ -85,8 +93,9 @@ import org.orekit.time.TimeStamped;
  * @author Bruno Revelin
  * @author Luc Maisonobe
  * @author Evan Ward
+ * @author Pascal Parraud
  */
-public class MarshallSolarActivityFutureEstimation implements DTM2000InputParameters, DataLoader {
+public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM2000InputParameters, NRLMSISE00InputParameters {
 
     /** Strength level of activity. */
     public enum StrengthLevel {
@@ -237,7 +246,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
 
     /** {@inheritDoc} */
     public AbsoluteDate getMaxDate() {
-        if (firstDate == null) {
+        if (lastDate == null) {
             DataProvidersManager.getInstance().feed(getSupportedNames(), this);
         }
         return lastDate;
@@ -323,6 +332,51 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      */
     public double get24HoursKp(final AbsoluteDate date) {
 
+        // get the daily Ap
+        final double ap = getDailyAp(date);
+
+        // get the corresponding Kp index from
+        // equation 4 in [1] for Ap to Kp conversion
+        return 1.89 * FastMath.asinh(0.154 * ap);
+    }
+
+    /** {@inheritDoc} */
+    public double getDailyFlux(final AbsoluteDate date) {
+        return getMeanFlux(date.shiftedBy(-Constants.JULIAN_DAY));
+    }
+
+    /** {@inheritDoc} */
+    public double getAverageFlux(final AbsoluteDate date) {
+
+        // Initializes the average flux
+        double average = 0.;
+
+        // Loops over the 81 days centered on the given date
+        for (int i = -40; i < 41; i++) {
+            average += getMeanFlux(date.shiftedBy(i * Constants.JULIAN_DAY));
+        }
+
+        // Returns the 81 day average flux
+        return average / 81;
+    }
+
+    /** {@inheritDoc} */
+    public double[] getAp(final AbsoluteDate date) {
+
+        // Gets the AP for the current date
+        final double ap = getDailyAp(date);
+
+        // Retuns an array of Ap filled in with the daily Ap only
+        return new double[] {ap, ap, ap, ap, ap, ap, ap};
+    }
+
+    /** Gets the daily Ap index.
+     *
+     * @param date the current date
+     * @return the daily Ap index
+     */
+    private double getDailyAp(final AbsoluteDate date) {
+
         // get the neighboring dates
         bracketDate(date);
 
@@ -334,11 +388,9 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
         final double currentAp          = currentParam.getAp();
         final double previousWeight     = currentDate.durationFrom(date)  / dt;
         final double currentWeight      = date.durationFrom(previousDate) / dt;
-        final double ap                 = previousAp * previousWeight + currentAp * currentWeight;
 
-        // calculating Ap index, then corresponding Kp index
-        // equation 4 in [1] for Ap to Kp conversion
-        return 1.89 * FastMath.asinh(0.154 * ap);
+        // returns the daily Ap interpolated at the date
+        return previousAp * previousWeight + currentAp * currentWeight;
     }
 
     /** Container class for Solar activity indexes.  */

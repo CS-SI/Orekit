@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ public class MendesPavlisModelTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
@@ -72,10 +72,12 @@ public class MendesPavlisModelTest {
         
         final double precision = 4.0e-6;
         
+        final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
+
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, latitude, lambda);
         
-        final double[] computedDelay = model.computeZenithDelay(height, model.getParameters());
+        final double[] computedDelay = model.computeZenithDelay(height, model.getParameters(), date);
         
         Assert.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
         Assert.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
@@ -115,7 +117,7 @@ public class MendesPavlisModelTest {
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, latitude, lambda);
         
-        final double[] computedMapping = model.mappingFactors(height, elevation, date);
+        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
 
         Assert.assertEquals(expectedMapping, computedMapping[0], 5.0e-8);
         Assert.assertEquals(expectedMapping, computedMapping[1], 5.0e-8);

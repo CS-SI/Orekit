@@ -1,5 +1,5 @@
-# internal error, contact maintenance at {0}
-INTERNAL_ERROR = eroare internă, contactați suportul tehnic la {0}
+# internal error, please notify development team by creating an issue at {0}
+INTERNAL_ERROR = <MISSING TRANSLATION>
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitudinea ({0} m) este sub limita permisă de {1} m 
@@ -502,11 +502,14 @@ UNEXPECTED_END_OF_FILE = final neașteptat al fișierului {0}
 # file {0} is corrupted
 CORRUPTED_FILE = fișierul {0} este corupt
 
-# Vienna1 coefficients ah or aw or zh or zw could not be loaded from {0}
-VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = <MISSING TRANSLATION>
+# Vienna coefficients ah or aw or zh or zw could not be loaded from {0}
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = <MISSING TRANSLATION>
 
-# Vienna1 coefficients ah or aw or zh or zw not available for date {0}
-VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+# Vienna coefficients ah or aw or zh or zw not available for date {0}
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
 
-# file {0} does not contain Vienna1 coefficients ah, aw, zh or zw
-NO_VIENNA_ONE_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
+# file {0} does not contain Vienna coefficients ah, aw, zh or zw
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
+
+# irregular or incomplete grid in file {0}
+IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>

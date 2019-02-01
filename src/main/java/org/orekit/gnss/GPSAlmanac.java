@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -232,20 +232,12 @@ public class GPSAlmanac implements GPSOrbitalElements {
         return 0;
     }
 
-    /**
-     * Gets the Zeroth Order Clock Correction.
-     *
-     * @return the Zeroth Order Clock Correction (s)
-     */
+    @Override
     public double getAf0() {
         return af0;
     }
 
-    /**
-     * Gets the First Order Clock Correction.
-     *
-     * @return the First Order Clock Correction (s/s)
-     */
+    @Override
     public double getAf1() {
         return af1;
     }

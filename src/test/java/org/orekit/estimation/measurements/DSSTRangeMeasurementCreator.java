@@ -33,21 +33,27 @@ import org.orekit.utils.ParameterDriver;
 
 public class DSSTRangeMeasurementCreator extends MeasurementCreator {
 
-    private final DSSTContext context;
-    private final Vector3D    antennaPhaseCenter;
+    private final DSSTContext         context;
+    private final Vector3D            antennaPhaseCenter;
+    private final double              clockOffset;
+    private final ObservableSatellite satellite;
 
     public DSSTRangeMeasurementCreator(final DSSTContext context) {
-        this(context, Vector3D.ZERO);
+        this(context, Vector3D.ZERO, 0.0);
     }
 
-    public DSSTRangeMeasurementCreator(final DSSTContext context, final Vector3D antennaPhaseCenter) {
+    public DSSTRangeMeasurementCreator(final DSSTContext context, final Vector3D antennaPhaseCenter,
+                                       final double clockOffset) {
         this.context            = context;
         this.antennaPhaseCenter = antennaPhaseCenter;
+        this.clockOffset        = clockOffset;
+        this.satellite          = new ObservableSatellite(0);
     }
     
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
                                                         station.getPrimeMeridianOffsetDriver(),
@@ -96,8 +102,8 @@ public class DSSTRangeMeasurementCreator extends MeasurementCreator {
                     final Vector3D stationAtEmission  =
                                     station.getOffsetToInertial(inertial, emissionDate).transformPosition(Vector3D.ZERO);
                     final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
-                    addMeasurement(new Range(station, receptionDate,
-                                             0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));
+                    addMeasurement(new Range(station, true, receptionDate.shiftedBy(-clockOffset),
+                                             0.5 * (downLinkDistance + upLinkDistance), 1.0, 10, satellite));
                 }
 
             }

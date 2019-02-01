@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -34,21 +33,27 @@ import org.orekit.utils.ParameterDriver;
 
 public class RangeMeasurementCreator extends MeasurementCreator {
 
-    private final Context context;
-    private final Vector3D antennaPhaseCenter;
+    private final Context             context;
+    private final Vector3D            antennaPhaseCenter;
+    private final double              clockOffset;
+    private final ObservableSatellite satellite;
 
     public RangeMeasurementCreator(final Context context) {
-        this(context, Vector3D.ZERO);
+        this(context, Vector3D.ZERO, 0.0);
     }
 
-    public RangeMeasurementCreator(final Context context, final Vector3D antennaPhaseCenter) {
+    public RangeMeasurementCreator(final Context context, final Vector3D antennaPhaseCenter,
+                                   final double clockOffset) {
         this.context            = context;
         this.antennaPhaseCenter = antennaPhaseCenter;
+        this.clockOffset        = clockOffset;
+        this.satellite          = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
                                                         station.getPrimeMeridianOffsetDriver(),
@@ -65,47 +70,42 @@ public class RangeMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
-        try {
-            for (final GroundStation station : context.stations) {
-                final AbsoluteDate     date      = currentState.getDate();
-                final Frame            inertial  = currentState.getFrame();
-                final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+        for (final GroundStation station : context.stations) {
+            final AbsoluteDate     date      = currentState.getDate();
+            final Frame            inertial  = currentState.getFrame();
+            final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
 
-                if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
-                    final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
+            if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+                final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
-                    final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) {
-                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
-                            final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                            return d - x * Constants.SPEED_OF_LIGHT;
-                        }
-                    }, -1.0, 1.0);
-                    final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
-                    final Vector3D stationAtReception =
-                                    station.getOffsetToInertial(inertial, receptionDate).transformPosition(Vector3D.ZERO);
-                    final double downLinkDistance = Vector3D.distance(position, stationAtReception);
+                final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
+                    public double value(final double x) {
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                        final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                        return d - x * Constants.SPEED_OF_LIGHT;
+                    }
+                }, -1.0, 1.0);
+                final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
+                final Vector3D stationAtReception =
+                                station.getOffsetToInertial(inertial, receptionDate).transformPosition(Vector3D.ZERO);
+                final double downLinkDistance = Vector3D.distance(position, stationAtReception);
 
-                    final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) {
-                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x));
-                            final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                            return d - x * Constants.SPEED_OF_LIGHT;
-                        }
-                    }, -1.0, 1.0);
-                    final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
-                    final Vector3D stationAtEmission  =
-                                    station.getOffsetToInertial(inertial, emissionDate).transformPosition(Vector3D.ZERO);
-                    final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
-                    addMeasurement(new Range(station, receptionDate,
-                                             0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));
-                }
-
+                final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
+                    public double value(final double x) {
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x));
+                        final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                        return d - x * Constants.SPEED_OF_LIGHT;
+                    }
+                }, -1.0, 1.0);
+                final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
+                final Vector3D stationAtEmission  =
+                                station.getOffsetToInertial(inertial, emissionDate).transformPosition(Vector3D.ZERO);
+                final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
+                addMeasurement(new Range(station, true, receptionDate.shiftedBy(-clockOffset),
+                                         0.5 * (downLinkDistance + upLinkDistance), 1.0, 10, satellite));
             }
-        } catch (OrekitException oe) {
-            throw new OrekitException(oe);
+
         }
     }
 

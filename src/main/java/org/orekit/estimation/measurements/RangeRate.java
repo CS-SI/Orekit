@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,13 +66,16 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param twoway if true, this is a two-way measurement
+     * @deprecated since 9.3 replaced by {@link #RangeRate(GroundStation, AbsoluteDate,
+     * double, double, double, boolean, ObservableSatellite)}
      */
+    @Deprecated
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate,
                      final double sigma,
                      final double baseWeight,
                      final boolean twoway) {
-        this(station, date, rangeRate, sigma, baseWeight, twoway, 0);
+        this(station, date, rangeRate, sigma, baseWeight, twoway, new ObservableSatellite(0));
     }
 
     /** Simple constructor.
@@ -84,23 +87,43 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param twoway if true, this is a two-way measurement
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.0
+     * @deprecated since 9.3 replaced by {@link #RangeRate(GroundStation, AbsoluteDate,
+     * double, double, double, boolean, ObservableSatellite)}
      */
+    @Deprecated
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate,
                      final double sigma,
                      final double baseWeight,
                      final boolean twoway,
                      final int propagatorIndex) {
-        super(date, rangeRate, sigma, baseWeight, Arrays.asList(propagatorIndex),
-              station.getEastOffsetDriver(),
-              station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver(),
-              station.getPrimeMeridianOffsetDriver(),
-              station.getPrimeMeridianDriftDriver(),
-              station.getPolarOffsetXDriver(),
-              station.getPolarDriftXDriver(),
-              station.getPolarOffsetYDriver(),
-              station.getPolarDriftYDriver());
+        this(station, date, rangeRate, sigma, baseWeight, twoway, new ObservableSatellite(propagatorIndex));
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param rangeRate observed value, m/s
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param twoway if true, this is a two-way measurement
+     * @param satellite satellite related to this measurement
+     * @since 9.3
+     */
+    public RangeRate(final GroundStation station, final AbsoluteDate date,
+                     final double rangeRate, final double sigma, final double baseWeight,
+                     final boolean twoway, final ObservableSatellite satellite) {
+        super(date, rangeRate, sigma, baseWeight, Arrays.asList(satellite));
+        addParameterDriver(station.getClockOffsetDriver());
+        addParameterDriver(station.getEastOffsetDriver());
+        addParameterDriver(station.getNorthOffsetDriver());
+        addParameterDriver(station.getZenithOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianOffsetDriver());
+        addParameterDriver(station.getPrimeMeridianDriftDriver());
+        addParameterDriver(station.getPolarOffsetXDriver());
+        addParameterDriver(station.getPolarDriftXDriver());
+        addParameterDriver(station.getPolarOffsetYDriver());
+        addParameterDriver(station.getPolarDriftYDriver());
         this.station = station;
         this.twoway  = twoway;
     }
@@ -124,7 +147,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     protected EstimatedMeasurement<RangeRate> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                     final SpacecraftState[] states) {
 
-        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
 
         // Range-rate derivatives are computed with respect to spacecraft state in inertial frame
         // and station position in station's offset frame
@@ -133,7 +157,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - station parameters (station offsets, pole, prime meridian...)
+        //  - 6..n - station parameters (clock offset, station offsets, pole, prime meridian...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
@@ -150,11 +174,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
         // transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final AbsoluteDate downlinkDate = getDate();
-        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
-                        new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, indices);
+                        station.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
+        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+                        offsetToInertialDownlink.getFieldDate();
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -169,7 +192,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state
-        final double                delta        = downlinkDate.durationFrom(state.getDate());
+        final DerivativeStructure   delta        = downlinkDateDS.durationFrom(state.getDate());
         final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
         final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
 
@@ -183,10 +206,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final EstimatedMeasurement<RangeRate> estimated;
         if (twoway) {
             // one-way (uplink) light time correction
-            final AbsoluteDate approxUplinkDate = downlinkDate.shiftedBy(-2 * tauD.getValue());
-            final FieldAbsoluteDate<DerivativeStructure> approxUplinkDateDS = new FieldAbsoluteDate<>(field, approxUplinkDate);
             final FieldTransform<DerivativeStructure> offsetToInertialApproxUplink =
-                            station.getOffsetToInertial(state.getFrame(), approxUplinkDateDS, factory, indices);
+                            station.getOffsetToInertial(state.getFrame(),
+                                                        downlinkDateDS.shiftedBy(tauD.multiply(-2)), factory, indices);
+            final FieldAbsoluteDate<DerivativeStructure> approxUplinkDateDS =
+                            offsetToInertialApproxUplink.getFieldDate();
 
             final TimeStampedFieldPVCoordinates<DerivativeStructure> stationApproxUplink =
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxUplinkDateDS,

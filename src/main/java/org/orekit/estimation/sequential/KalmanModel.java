@@ -686,7 +686,7 @@ public class KalmanModel implements KalmanODModel {
 
         // loop over all orbits involved in the measurement
         for (int k = 0; k < evaluationStates.length; ++k) {
-            final int p = observedMeasurement.getPropagatorsIndices().get(k);
+            final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
 
             // Predicted orbit
             final Orbit predictedOrbit = evaluationStates[k].getOrbit();

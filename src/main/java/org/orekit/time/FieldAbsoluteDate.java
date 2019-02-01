@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ import org.orekit.utils.Constants;
  * in UTC and write it in another file in TAI. This can be done as follows:</p>
  * <pre>
  *   DateTimeComponents utcComponents = readNextDate();
- *   FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(utcComponents, TimeScalesFactory.getUTC());
+ *   FieldAbsoluteDate&lt;T&gt; date = new FieldAbsoluteDate&lt;&gt;(utcComponents, TimeScalesFactory.getUTC());
  *   writeNextDate(date.getComponents(TimeScalesFactory.getTAI()));
  * </pre>
  *
@@ -327,27 +327,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * instant, as measured in a regular time scale
      */
     public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final double elapsedDuration) {
-        this.field = since.field;
-        final T sum = since.offset.add(elapsedDuration);
-        if (Double.isInfinite(sum.getReal())) {
-            offset = sum;
-            epoch  = (sum.getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
-        } else {
-            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-            // the following statements must NOT be simplified, they rely on floating point
-            // arithmetic properties (rounding and representable numbers)
-            // at the end, the EXACT result of addition since.offset + elapsedDuration
-            // is sum + residual, where sum is the closest representable number to the exact
-            // result and residual is the missing part that does not fit in the first number
-            final double oPrime   = sum.getReal() - elapsedDuration;
-            final double dPrime   = sum.getReal() - oPrime;
-            final double deltaO   = since.offset.getReal() - oPrime;
-            final double deltaD   = elapsedDuration - dPrime;
-            final double residual = deltaO + deltaD;
-            final long   dl       = (long) FastMath.floor(sum.getReal());
-            offset = sum.subtract(dl).add(residual);
-            epoch  = since.epoch + dl;
-        }
+        this(since.epoch, elapsedDuration, since.offset);
     }
 
 
@@ -359,12 +339,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * instant, as measured in a regular time scale
      */
     public FieldAbsoluteDate(final AbsoluteDate since, final T elapsedDuration) {
-        this.field = elapsedDuration.getField();
-        final double dT = since.durationFrom(AbsoluteDate.J2000_EPOCH);
-        final T deltaT = elapsedDuration.add(dT);
-        final FieldAbsoluteDate<T> j2000 =  getJ2000Epoch(elapsedDuration.getField()).shiftedBy(deltaT);
-        offset = j2000.offset;
-        epoch = j2000.epoch;
+        this(since.getEpoch(), since.getOffset(), elapsedDuration);
     }
 
     /** Build an instance from an apparent clock offset with respect to another
@@ -387,6 +362,36 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     public FieldAbsoluteDate(final FieldAbsoluteDate<T> reference, final double apparentOffset, final TimeScale timeScale) {
         this(reference.field, new DateTimeComponents(reference.getComponents(timeScale), apparentOffset),
              timeScale);
+    }
+
+    /** Build an instance from mixed double and field raw components.
+     * @param epoch reference epoch in seconds from 2000-01-01T12:00:00 TAI
+     * @param tA double part of offset since reference epoch
+     * @param tB field part of offset since reference epoch
+     * @since 9.3
+     */
+    private FieldAbsoluteDate(final long epoch, final double tA, final T tB) {
+        this.field = tB.getField();
+        final T sum = tB.add(tA);
+        if (Double.isInfinite(sum.getReal())) {
+            this.offset = sum;
+            this.epoch  = (sum.getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+        } else {
+            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
+            // the following statements must NOT be simplified, they rely on floating point
+            // arithmetic properties (rounding and representable numbers)
+            // at the end, the EXACT result of addition tA + tB
+            // is sum + residual, where sum is the closest representable number to the exact
+            // result and residual is the missing part that does not fit in the first number
+            final double oPrime   = sum.getReal() - tA;
+            final double dPrime   = sum.getReal() - oPrime;
+            final double deltaO   = tB.getReal() - oPrime;
+            final double deltaD   = tA - dPrime;
+            final double residual = deltaO + deltaD;
+            final long   dl       = (long) FastMath.floor(sum.getReal());
+            this.offset = sum.subtract(dl).add(residual);
+            this.epoch  = epoch + dl;
+        }
     }
 
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
@@ -664,7 +669,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     /** Build an instance corresponding to a Julian Epoch (JE).
      * <p>According to Lieske paper: <a
-     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&defaultprint=YES&filetype=.pdf.">
+     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&amp;defaultprint=YES&amp;filetype=.pdf.">
      * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>, Astronomy and Astrophysics,
      * vol. 73, no. 3, Mar. 1979, p. 282-284, Julian Epoch is related to Julian Ephemeris Date as:</p>
      * <pre>
@@ -686,7 +691,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     /** Build an instance corresponding to a Besselian Epoch (BE).
      * <p>According to Lieske paper: <a
-     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&defaultprint=YES&filetype=.pdf.">
+     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&amp;defaultprint=YES&amp;filetype=.pdf.">
      * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>, Astronomy and Astrophysics,
      * vol. 73, no. 3, Mar. 1979, p. 282-284, Besselian Epoch is related to Julian Ephemeris Date as:</p>
      * <pre>
@@ -809,7 +814,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     /** Get a time-shifted date.
      * <p>
-     * Calling this method is equivalent to call <code>new FieldAbsoluteDate<>(this, dt)</code>.
+     * Calling this method is equivalent to call {@code new FieldAbsoluteDate&lt;&gt;(this, dt)}.
      * </p>
      * @param dt time shift in seconds
      * @return a new date, shifted with respect to instance (which is immutable)

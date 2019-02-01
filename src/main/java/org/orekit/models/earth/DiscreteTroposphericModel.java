@@ -1,5 +1,5 @@
-/* Copyright 2011-2012 Space Applications Services
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2019 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,24 +16,24 @@
  */
 package org.orekit.models.earth;
 
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.util.MathArrays;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
  * <p>
  * Models that implement this interface split the delay into hydrostatic
- * and non-hydrostatic part.
+ * and non-hydrostatic part:
+ * </p>
  * <pre>
  * δ = δ<sub>h</sub> + δ<sub>nh</sub>
- * <li>δ<sub>h</sub>  =  hydrostatic delay
- * <li>δ<sub>nh</sub> =  non-hydrostatic (or wet) delay
  * </pre>
- * </p>
+ * With:
+ * <ul>
+ * <li> δ<sub>h</sub>  =  hydrostatic delay </li>
+ * <li> δ<sub>nh</sub> =  non-hydrostatic (or wet) delay </li>
+ * </ul>
  * @author Bryan Cazabonne
  */
 public interface DiscreteTroposphericModel extends MappingFunction {
@@ -64,58 +64,28 @@ public interface DiscreteTroposphericModel extends MappingFunction {
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
      * <ul>
-     * <li>double[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-     * <li>double[1] = D<sub>wz</sub> -&gt zenith wet delay
+     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>double[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
      * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
+     * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-     double[] computeZenithDelay(double height, double[] parameters);
+     double[] computeZenithDelay(double height, double[] parameters, AbsoluteDate date);
 
-     /** This method allows the  computation of the zenith hydrostatic and
-      * zenith wet delay. The resulting element is an array having the following form:
-      * <ul>
-      * <li>T[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-      * <li>T[1] = D<sub>wz</sub> -&gt zenith wet delay
-      * </ul>
-      * @param <T> type of the elements
-      * @param height the height of the station in m above sea level.
-      * @param parameters tropospheric model parameters.
-      * @param field field to which the elements belong
-      * @return a two components array containing the zenith hydrostatic and wet delays.
-      */
-    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, Field<T> field);
-
-    /** Get the drivers for tropospheric model parameters.
-     * @return drivers for tropospheric model parameters
-     */
-    ParameterDriver[] getParametersDrivers();
-
-    /** Get tropospheric model parameters.
-     * @return tropospheric model parameters
-     */
-    default double[] getParameters() {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.length];
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].getValue();
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters.
-     * @param field field to which the elements belong
+    /** This method allows the  computation of the zenith hydrostatic and
+     * zenith wet delay. The resulting element is an array having the following form:
+     * <ul>
+     * <li>T[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>T[1] = D<sub>wz</sub> → zenith wet delay
+     * </ul>
      * @param <T> type of the elements
-     * @return force model parameters
+     * @param height the height of the station in m above sea level.
+     * @param parameters tropospheric model parameters.
+     * @param date current date
+     * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
-        }
-        return parameters;
-    }
+    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, FieldAbsoluteDate<T> date);
 
 }

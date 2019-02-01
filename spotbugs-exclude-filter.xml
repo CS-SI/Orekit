@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!--
-  This file contains some false positive bugs detected by findbugs. Their
+  This file contains some false positive bugs detected by spotbugs. Their
   false positive nature has been analyzed individually and they have been
-  put here to instruct findbugs it must ignore them.
+  put here to instruct spotbugs it must ignore them.
 -->
 <FindBugsFilter>
 
@@ -54,7 +54,7 @@
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
 
-  <!-- the following are in fact false positives from findbugs -->
+  <!-- the following are in fact false positives from SpotBugs -->
   <!-- their occurrence depends on the java compiler used      -->
   <Match>
     <Class name="~.*\.EcksteinHechlerPropagator$"/>
@@ -128,7 +128,7 @@
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
   
-  <!-- The following is a false positive from findbugs -->
+  <!-- The following is a false positive from SpotBugs -->
   <Match>
     <Class name="~.*\.IntegratedEphemeris\$LocalProvider$"/>
     <Method name="getAdditionalState" />

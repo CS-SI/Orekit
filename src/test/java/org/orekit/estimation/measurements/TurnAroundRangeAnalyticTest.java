@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -130,7 +130,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.2e-9, 1.9e-8, 3.5e-7, 7.3e-5, 3.4e-4, 1.2e-2);
+                                    6.4e-9, 2.8e-8, 7.6e-7, 7.5e-5, 2.6e-4, 0.5e-2);
     }
 
     /**
@@ -489,9 +489,11 @@ public class TurnAroundRangeAnalyticTest {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    masterStation = entry.getKey();
             final GroundStation    slaveStation  = entry.getValue();
+            masterStation.getClockOffsetDriver().setSelected(false);
             masterStation.getEastOffsetDriver().setSelected(true);
             masterStation.getNorthOffsetDriver().setSelected(true);
             masterStation.getZenithOffsetDriver().setSelected(true);
+            slaveStation.getClockOffsetDriver().setSelected(false);
             slaveStation.getEastOffsetDriver().setSelected(true);
             slaveStation.getNorthOffsetDriver().setSelected(true);
             slaveStation.getZenithOffsetDriver().setSelected(true);
@@ -591,7 +593,7 @@ public class TurnAroundRangeAnalyticTest {
                                         public double value(final ParameterDriver parameterDriver) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                         }
-                                    }, drivers[i], 3, 20.0);
+                                    }, 3, 20.0 * drivers[i].getScale());
                     ref = dMkdP.value(drivers[i]);
                 } else {
                     // Compute a reference value using TurnAroundRange function

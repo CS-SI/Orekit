@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.GPSAlmanac;
 import org.orekit.gnss.SEMParser;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -55,6 +57,27 @@ public class GPSPropagatorTest {
         reader.loadData();
         // Gets the first SEM almanac
         almanacs = reader.getAlmanacs();
+    }
+
+    @Test
+    public void testClockCorrections() {
+        final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        propagator.addAdditionalStateProvider(new ClockCorrectionsProvider(almanacs.get(0)));
+        // Propagate at the GPS date and one GPS cycle later
+        final AbsoluteDate date0 = almanacs.get(0).getDate();
+        double dtRelMin = 0;
+        double dtRelMax = 0;
+        for (double dt = 0; dt < 0.5 * Constants.JULIAN_DAY; dt += 1.0) {
+            SpacecraftState state = propagator.propagate(date0.shiftedBy(dt));
+            double[] corrections = state.getAdditionalState(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
+            Assert.assertEquals(3, corrections.length);
+            Assert.assertEquals(1.33514404296875E-05, corrections[0], 1.0e-19);
+            dtRelMin = FastMath.min(dtRelMin, corrections[1]);
+            dtRelMax = FastMath.max(dtRelMax, corrections[1]);
+            Assert.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
+        }
+        Assert.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
+        Assert.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
 
     @Test

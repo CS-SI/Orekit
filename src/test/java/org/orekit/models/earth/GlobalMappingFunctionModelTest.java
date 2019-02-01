@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,13 @@
 package org.orekit.models.earth;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -33,7 +35,7 @@ public class GlobalMappingFunctionModelTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
@@ -64,10 +66,28 @@ public class GlobalMappingFunctionModelTest {
 
         final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
         
-        final double[] computedMapping = model.mappingFactors(height, elevation, date);
+        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
+    }
+
+    @Test
+    public void testFixedHeight() {
+        final AbsoluteDate date = new AbsoluteDate();
+        MappingFunction model = new GlobalMappingFunctionModel(FastMath.toRadians(45.0), FastMath.toRadians(45.0));
+        double[] lastFactors = new double[] {
+            Double.MAX_VALUE,
+            Double.MAX_VALUE
+        };
+        // mapping functions shall decline with increasing elevation angle
+        for (double elev = 10d; elev < 90d; elev += 8d) {
+            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), 350, model.getParameters(), date);
+            Assert.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
+            Assert.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
+            lastFactors[0] = factors[0];
+            lastFactors[1] = factors[1];
+        }
     }
 
 }

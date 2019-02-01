@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -25,6 +28,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.ParameterDriver;
 
 /** The Global Mapping Function  model for radio techniques.
  *  This model is an empirical mapping function. It only needs the
@@ -69,8 +73,8 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double height, final double elevation,
-                                   final AbsoluteDate date) {
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -94,7 +98,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
             psi  = FastMath.PI;
         }
 
-        final double coef = ((dofyear + 1 - 28) / 365.25) * 2 * FastMath.PI + psi;
+        double t0 = 28;
+        if (latitude < 0) {
+            // southern hemisphere: t0 = 28 + an integer half of year
+            t0 += 183;
+        }
+        final double coef = ((dofyear + 1 - t0) / 365.25) * 2 * FastMath.PI + psi;
         final double ch = c0h + ((FastMath.cos(coef) + 1) * (c11h / 2.0) + c10h) * (1.0 - FastMath.cos(latitude));
 
         // bw and cw constants (Boehm, J et al, 2006) | WET PART
@@ -149,8 +158,8 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
-                                                              final FieldAbsoluteDate<T> date) {
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -176,7 +185,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
             psi  = zero.add(FastMath.PI);
         }
 
-        final T coef = psi.add(((dofyear + 1 - 28) / 365.25) * 2 * FastMath.PI);
+        double t0 = 28;
+        if (latitude < 0) {
+            // southern hemisphere: t0 = 28 + an integer half of year
+            t0 += 183;
+        }
+        final T coef = psi.add(((dofyear + 1 - t0) / 365.25) * 2 * FastMath.PI);
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(1 - FastMath.cos(latitude)).add(c0h);
 
         // bw and cw constants (Boehm, J et al, 2006) | WET PART
@@ -229,6 +243,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         return function;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
+    }
+
     /** Compute the mapping function related to the coefficient values and the elevation.
      * @param a a coefficient
      * @param b b coefficient
@@ -240,12 +260,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final double sinE = FastMath.sin(elevation);
         // Numerator
         final double numMP = 1 + a / (1 + b / (1 + c));
-        // Denominateur
+        // Denominator
         final double denMP = sinE + a / (sinE + b / (sinE + c));
 
-        final double felevation = numMP / denMP;
+        final double fElevation = numMP / denMP;
 
-        return felevation;
+        return fElevation;
     }
 
     /** Compute the mapping function related to the coefficient values and the elevation.
@@ -260,12 +280,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final T sinE = FastMath.sin(elevation);
         // Numerator
         final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
-        // Denominateur
+        // Denominator
         final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
 
-        final T felevation = numMP.divide(denMP);
+        final T fElevation = numMP.divide(denMP);
 
-        return felevation;
+        return fElevation;
     }
 
     /** This method computes the height correction for the hydrostatic
@@ -281,13 +301,14 @@ public class GlobalMappingFunctionModel implements MappingFunction {
      * @return the height correction, in m
      */
     private double computeHeightCorrection(final double elevation, final double height) {
+        final double fixedHeight = FastMath.max(0.0, height);
         final double sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
         final double function = computeFunction(2.53e-5, 5.49e-3, 1.14e-3, elevation);
         // Ref: Eq. 6
         final double dmdh = (1 / sinE) - function;
         // Ref: Eq. 7
-        final double correction = dmdh * (height / 1000.0);
+        final double correction = dmdh * (fixedHeight / 1000.0);
         return correction;
     }
 
@@ -307,13 +328,14 @@ public class GlobalMappingFunctionModel implements MappingFunction {
      */
     private <T extends RealFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
         final T zero = field.getZero();
+        final T fixedHeight = FastMath.max(zero, height);
         final T sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
         final T function = computeFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
         // Ref: Eq. 6
         final T dmdh = sinE.reciprocal().subtract(function);
         // Ref: Eq. 7
-        final T correction = dmdh.multiply(height.divide(1000.0));
+        final T correction = dmdh.multiply(fixedHeight.divide(1000.0));
         return correction;
     }
 

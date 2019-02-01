@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,9 @@ import org.orekit.errors.OrekitMessages;
  *
  * @author Luc Maisonobe
  * @since 9.2
+ * @deprecated as of 9.3 replaced by {@link SatelliteType}
  */
+@Deprecated
 public enum SatelliteAntennaCode {
 
     /** BeiDou-2 GEO. */

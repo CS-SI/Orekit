@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,12 +84,15 @@ class JPLCelestialBody implements CelestialBody {
      * @param iauPole IAU pole implementation
      * @param definingFrameAlignedWithICRF frame in which celestial body coordinates are defined,
      * this frame <strong>must</strong> be aligned with ICRF
+     * @param inertialFrameName name to use for inertial frame (if null a default name will be built)
+     * @param bodyOrientedFrameName name to use for body-oriented frame (if null a default name will be built)
      */
     JPLCelestialBody(final String name, final String supportedNames,
                      final JPLEphemeridesLoader.EphemerisType generateType,
                      final JPLEphemeridesLoader.RawPVProvider rawPVProvider,
                      final double gm, final double scale,
-                     final IAUPole iauPole, final Frame definingFrameAlignedWithICRF) {
+                     final IAUPole iauPole, final Frame definingFrameAlignedWithICRF,
+                     final String inertialFrameName, final String bodyOrientedFrameName) {
         this.name           = name;
         this.gm             = gm;
         this.scale          = scale;
@@ -97,8 +100,8 @@ class JPLCelestialBody implements CelestialBody {
         this.generateType   = generateType;
         this.rawPVProvider  = rawPVProvider;
         this.iauPole        = iauPole;
-        this.inertialFrame  = new InertiallyOriented(definingFrameAlignedWithICRF);
-        this.bodyFrame      = new BodyOriented();
+        this.inertialFrame  = new InertiallyOriented(definingFrameAlignedWithICRF, inertialFrameName);
+        this.bodyFrame      = new BodyOriented(bodyOrientedFrameName);
     }
 
     /** {@inheritDoc} */
@@ -179,8 +182,9 @@ class JPLCelestialBody implements CelestialBody {
 
         /** Simple constructor.
          * @param definingFrame frame in which celestial body coordinates are defined
+         * @param frameName name to use (if null a default name will be built)
          */
-        InertiallyOriented(final Frame definingFrame) {
+        InertiallyOriented(final Frame definingFrame, final String frameName) {
             super(definingFrame, new TransformProvider() {
 
                 /** Serializable UID. */
@@ -245,7 +249,7 @@ class JPLCelestialBody implements CelestialBody {
 
                 }
 
-            }, name + INERTIAL_FRAME_SUFFIX, true);
+            }, frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);
         }
 
         /** Replace the instance with a data transfer object for serialization.
@@ -271,8 +275,9 @@ class JPLCelestialBody implements CelestialBody {
         private static final String BODY_FRAME_SUFFIX = "/rotating";
 
         /** Simple constructor.
+         * @param frameName name to use (if null a default name will be built)
          */
-        BodyOriented() {
+        BodyOriented(final String frameName) {
             super(inertialFrame, new TransformProvider() {
 
                 /** Serializable UID. */
@@ -299,7 +304,7 @@ class JPLCelestialBody implements CelestialBody {
                                                 new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
                 }
 
-            }, name + BODY_FRAME_SUFFIX, false);
+            }, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);
         }
 
         /** Replace the instance with a data transfer object for serialization.

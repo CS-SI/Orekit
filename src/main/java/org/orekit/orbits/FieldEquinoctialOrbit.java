@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -634,9 +634,13 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param hy tan(i/2) sin(Ω), second component of inclination vector
      * @param lv  v + ω + Ω true longitude argument (rad)
      * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the fiels elements
+     * @param <T> type of the field elements
      * @return position vector
+     * @deprecated as of 9.3, replaced by {@link #FieldEquinoctialOrbit(RealFieldElement, RealFieldElement,
+     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
+     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
      */
+    @Deprecated
     public static <T extends RealFieldElement<T>> FieldVector3D<T> equinoctialToPosition(final T a, final T ex, final T ey,
                                                                                          final T hx, final T hy, final T lv,
                                                                                          final double mu) {

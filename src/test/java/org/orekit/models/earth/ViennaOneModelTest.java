@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -36,7 +37,7 @@ public class ViennaOneModelTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
@@ -80,7 +81,7 @@ public class ViennaOneModelTest {
         
         final ViennaOneModel model = new ViennaOneModel(a, z, latitude);
         
-        final double[] computedMapping = model.mappingFactors(height, elevation, date);
+        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], 4.1e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);

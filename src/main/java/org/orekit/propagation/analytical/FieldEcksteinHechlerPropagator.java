@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
  *  using the analytical Eckstein-Hechler model.
  * <p>The Eckstein-Hechler model is suited for near circular orbits
- * (e < 0.1, with poor accuracy between 0.005 and 0.1) and inclination
+ * (e &lt; 0.1, with poor accuracy between 0.005 and 0.1) and inclination
  * neither equatorial (direct or retrograde) nor critical (direct or
  * retrograde).</p>
  * @see FieldOrbit

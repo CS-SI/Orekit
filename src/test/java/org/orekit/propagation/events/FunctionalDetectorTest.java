@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.function.ToDoubleFunction;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -23,7 +25,6 @@ import org.junit.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.FunctionalDetector.GFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
@@ -39,10 +40,10 @@ public class FunctionalDetectorTest {
     /**
      * Check {@link FunctionalDetector}.
      */
-    @Test
-    public void testFunctionalDetector() {
+    @Test @Deprecated
+    public void testFunctionalDetectorDeprecated() {
         // setup
-        GFunction g = SpacecraftState::getMass;
+        org.orekit.propagation.events.FunctionalDetector.GFunction g = SpacecraftState::getMass;
         EventHandler<EventDetector> handler = (s, detector, increasing) -> Action.STOP;
 
         // action
@@ -71,6 +72,43 @@ public class FunctionalDetectorTest {
         MatcherAssert.assertThat(detector.g(state), CoreMatchers.is(5.0));
         MatcherAssert.assertThat(detector.eventOccurred(null, false),
                 CoreMatchers.is(Action.STOP));
+    }
+
+    /**
+     * Check {@link FunctionalDetector}.
+     */
+    @Test
+    public void testFunctionalDetector() {
+        // setup
+        ToDoubleFunction<SpacecraftState> g = SpacecraftState::getMass;
+        EventHandler<EventDetector> handler = (s, detector, increasing) -> Action.STOP;
+
+        // action
+        FunctionalDetector detector = new FunctionalDetector()
+                .withMaxIter(1)
+                .withThreshold(2)
+                .withMaxCheck(3)
+                .withHandler(handler)
+                .withFunction(g);
+
+        // verify
+        MatcherAssert.assertThat(detector.getMaxIterationCount(), CoreMatchers.is(1));
+        MatcherAssert.assertThat(detector.getThreshold(), CoreMatchers.is(2.0));
+        MatcherAssert.assertThat(detector.getMaxCheckInterval(), CoreMatchers.is(3.0));
+        MatcherAssert.assertThat(detector.getHandler(), CoreMatchers.is(handler));
+        SpacecraftState state = new SpacecraftState(
+                new CartesianOrbit(
+                        new PVCoordinates(
+                                new Vector3D(1, 2, 3),
+                                new Vector3D(4, 5, 6)),
+                        FramesFactory.getGCRF(),
+                        AbsoluteDate.CCSDS_EPOCH,
+                        4),
+                5);
+        MatcherAssert.assertThat(detector.g(state), CoreMatchers.is(5.0));
+        MatcherAssert.assertThat(detector.eventOccurred(null, false),
+                CoreMatchers.is(Action.STOP));
+        MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));
     }
 
 }

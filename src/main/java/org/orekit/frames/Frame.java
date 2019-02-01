@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -386,7 +386,7 @@ public class Frame implements Serializable {
     private static class LazyRootHolder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE = new Frame("GCRF", true) {
+        private static final Frame INSTANCE = new Frame(Predefined.GCRF.getName(), true) {
 
             /** Serializable UID. */
             private static final long serialVersionUID = -2654403496396721543L;

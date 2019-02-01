@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,10 +94,12 @@ public class BiasTest {
                 if (range.getStation() == context.stations.get(i)) {
                     double biasedRange = range.getObservedValue()[0] + realStationsBiases[i];
                     final Range m = new Range(range.getStation(),
+                                              range.isTwoWay(),
                                               range.getDate(),
                                               biasedRange,
                                               range.getTheoreticalStandardDeviation()[0],
-                                              range.getBaseWeight()[0]);
+                                              range.getBaseWeight()[0],
+                                              range.getSatellites().get(0));
                     m.addModifier((Bias<Range>) stationsRangeBiases[i]);
                     estimator.addMeasurement(m);
                 }

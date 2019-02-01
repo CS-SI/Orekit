@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -303,7 +303,15 @@ public class TDMParser extends DefaultHandler {
             tdmFile.checkTimeSystems();
 
             return tdmFile;
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+        } catch (SAXException se) {
+            final OrekitException oe;
+            if (se.getException() != null && se.getException() instanceof OrekitException) {
+                oe = (OrekitException) se.getException();
+            } else {
+                oe = new OrekitException(se, new DummyLocalizable(se.getMessage()));
+            }
+            throw oe;
+        } catch (ParserConfigurationException | IOException e) {
             // throw caught exception as an OrekitException
             throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }

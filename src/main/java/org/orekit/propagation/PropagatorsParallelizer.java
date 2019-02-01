@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -40,7 +39,7 @@ import org.orekit.time.TimeStamped;
  *
  * <p>
  * Multi-satellites propagation is based on multi-threading. Therefore,
- * care must be taken so that all propagtors can be run in a multi-thread
+ * care must be taken so that all propagators can be run in a multi-thread
  * context. This implies that all propagators are built independently and
  * that they rely on force models that are also built independently. An
  * obvious mistake would be to reuse a maneuver force model, as these models
@@ -65,15 +64,15 @@ import org.orekit.time.TimeStamped;
  * simulation times flows from left to right:
  * </p>
  * <pre>
- *    propagator 1   : -------------[++++current step++++]>
+ *    propagator 1   : -------------[++++current step++++]&gt;
  *                                  |
- *    propagator 2   : ----[++++current step++++]--------->
+ *    propagator 2   : ----[++++current step++++]---------&gt;
  *                                  |           |
  *    ...                           |           |
- *    propagator n   : ---------[++++current step++++]---->
+ *    propagator n   : ---------[++++current step++++]----&gt;
  *                                  |           |
  *                                  V           V
- *    global handler : -------------[global step]--------->
+ *    global handler : -------------[global step]---------&gt;
  * </pre>
  * <p>
  * The previous sketch shows that propagator 1 has already computed states
@@ -390,12 +389,7 @@ public class PropagatorsParallelizer {
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getDate() {
-            try {
-                return interpolator.getCurrentState().getDate();
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
+            return interpolator.getCurrentState().getDate();
         }
 
     }

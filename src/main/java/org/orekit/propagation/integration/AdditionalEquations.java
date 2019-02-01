@@ -72,7 +72,7 @@ public interface AdditionalEquations {
      *
      * <p>
      * This method will be called once at propagation start,
-     * before any calls to {@link #computeDerivatives(SpacecraftState)}.
+     * before any calls to {@link #computeDerivatives(SpacecraftState, double[])}.
      * </p>
      *
      * <p>

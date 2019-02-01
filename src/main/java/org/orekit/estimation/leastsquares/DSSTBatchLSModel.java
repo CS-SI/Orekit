@@ -416,7 +416,7 @@ public class DSSTBatchLSModel implements BatchLSODModel {
 
         for (int k = 0; k < evaluationStates.length; ++k) {
 
-            final int p = observedMeasurement.getPropagatorsIndices().get(k);
+            final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];

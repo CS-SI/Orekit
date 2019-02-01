@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -138,7 +138,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         };
 
         final ParameterFunction rangeErrorDerivative =
-                        Differentiation.differentiate(rangeError, driver, 3, 10.0);
+                        Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
 
         return rangeErrorDerivative.value(driver);
 
@@ -179,7 +179,8 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         estimated.setStateDerivatives(0, stateDerivatives);
 
         // Update derivatives with respect to master station position
-        for (final ParameterDriver driver : Arrays.asList(masterStation.getEastOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(masterStation.getClockOffsetDriver(),
+                                                          masterStation.getEastOffsetDriver(),
                                                           masterStation.getNorthOffsetDriver(),
                                                           masterStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {

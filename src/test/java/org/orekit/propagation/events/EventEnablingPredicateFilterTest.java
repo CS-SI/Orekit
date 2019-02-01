@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -394,8 +394,7 @@ public class EventEnablingPredicateFilterTest {
         EnablingPredicate<EventDetector> predicate = (state, eventDetector, g) -> true;
 
         // action + verify. Just make sure it compiles with generics
-        EventEnablingPredicateFilter<DateDetector> filter =
-                new EventEnablingPredicateFilter<>(detector, predicate);
+        new EventEnablingPredicateFilter<>(detector, predicate);
     }
 
     @Before

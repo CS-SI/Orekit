@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     private final double occultedRadius;
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
-    private boolean totalEclipse;
+    private final boolean totalEclipse;
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default

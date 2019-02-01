@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,7 +57,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
-                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
+                                                               new RangeMeasurementCreator(context, Vector3D.ZERO, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -66,7 +66,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
-                                                               new RangeMeasurementCreator(context, new Vector3D(xOffset, 0, 0)),
+                                                               new RangeMeasurementCreator(context, new Vector3D(xOffset, 0, 0), 0.0),
                                                                1.0, 3.0, 300.0);
 
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
@@ -94,7 +94,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
-                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
+                                                               new RangeMeasurementCreator(context, Vector3D.ZERO, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -103,7 +103,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
-                                                               new RangeMeasurementCreator(context, apc),
+                                                               new RangeMeasurementCreator(context, apc, 0.0),
                                                                1.0, 3.0, 300.0);
 
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 package org.orekit.models.earth;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -58,7 +61,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
     /** Build a new instance.
      * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
      * @param zenithDelay Values of hydrostatic and wet delays
-     * @param latitude geodetic latitude of the station
+     * @param latitude geodetic latitude of the station, in radians
      */
     public ViennaOneModel(final double[] coefficientA, final double[] zenithDelay,
                           final double latitude) {
@@ -72,9 +75,9 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
-        final double[] delays = computeZenithDelay(height, parameters);
+        final double[] delays = computeZenithDelay(height, parameters, date);
         // mapping function
-        final double[] mappingFunction = mappingFactors(height, elevation, date);
+        final double[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return delays[0] * mappingFunction[0] + delays[1] * mappingFunction[1];
     }
@@ -83,27 +86,25 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
     @Override
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
-        // Field
-        final Field<T> field = date.getField();
         // zenith delay
-        final T[] delays = computeZenithDelay(height, parameters, field);
+        final T[] delays = computeZenithDelay(height, parameters, date);
         // mapping function
-        final T[] mappingFunction = mappingFactors(height, elevation, date);
+        final T[] mappingFunction = mappingFactors(elevation, height, parameters, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] computeZenithDelay(final double height, final double[] parameters) {
+    public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
         return zenithDelay;
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height,
-                                                                  final T[] parameters,
-                                                                  final Field<T> field) {
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+                                                                  final FieldAbsoluteDate<T> date) {
+        final Field<T> field = height.getField();
         final T zero = field.getZero();
         final T[] delays = MathArrays.buildArray(field, 2);
         delays[0] = zero.add(zenithDelay[0]);
@@ -113,8 +114,8 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double height, final double elevation,
-                                   final AbsoluteDate date) {
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -137,8 +138,14 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
             psi  = FastMath.PI;
         }
 
+        // Temporal factor
+        double t0 = 28;
+        if (latitude < 0) {
+            // southern hemisphere: t0 = 28 + an integer half of year
+            t0 += 183;
+        }
         // Compute hydrostatique coefficient c
-        final double coef = ((dofyear - 28) / 365) * 2 * FastMath.PI + psi;
+        final double coef = ((dofyear - t0) / 365) * 2 * FastMath.PI + psi;
         final double ch = c0h + ((FastMath.cos(coef) + 1) * (c11h / 2) + c10h) * (1 - FastMath.cos(latitude));
 
         // General constants | Wet part
@@ -158,8 +165,8 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T height, final T elevation,
-                                                              final FieldAbsoluteDate<T> date) {
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 
@@ -186,7 +193,13 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         }
 
         // Compute hydrostatique coefficient c
-        final T coef = psi.add(((dofyear - 28) / 365) * 2 * FastMath.PI);
+        // Temporal factor
+        double t0 = 28;
+        if (latitude < 0) {
+            // southern hemisphere: t0 = 28 + an integer half of year
+            t0 += 183;
+        }
+        final T coef = psi.add(((dofyear - t0) / 365) * 2 * FastMath.PI);
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(1 - FastMath.cos(latitude)).add(c0h);
 
         // General constants | Wet part
@@ -206,8 +219,8 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[0];
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Compute the mapping function related to the coefficient values and the elevation.
@@ -221,7 +234,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         final double sinE = FastMath.sin(elevation);
         // Numerator
         final double numMP = 1 + a / (1 + b / (1 + c));
-        // Denominateur
+        // Denominator
         final double denMP = sinE + a / (sinE + b / (sinE + c));
 
         final double felevation = numMP / denMP;
@@ -241,7 +254,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         final T sinE = FastMath.sin(elevation);
         // Numerator
         final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
-        // Denominateur
+        // Denominator
         final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
 
         final T felevation = numMP.divide(denMP);
@@ -262,13 +275,14 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
      * @return the height correction, in m
      */
     private double computeHeightCorrection(final double elevation, final double height) {
+        final double fixedHeight = FastMath.max(0.0, height);
         final double sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
         final double function = computeFunction(2.53e-5, 5.49e-3, 1.14e-3, elevation);
         // Ref: Eq. 6
         final double dmdh = (1 / sinE) - function;
         // Ref: Eq. 7
-        final double correction = dmdh * (height / 1000);
+        final double correction = dmdh * (fixedHeight / 1000);
         return correction;
     }
 
@@ -288,13 +302,14 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
      */
     private <T extends RealFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
         final T zero = field.getZero();
+        final T fixedHeight = FastMath.max(zero, height);
         final T sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
         final T function = computeFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
         // Ref: Eq. 6
         final T dmdh = sinE.reciprocal().subtract(function);
         // Ref: Eq. 7
-        final T correction = dmdh.multiply(height.divide(1000.0));
+        final T correction = dmdh.multiply(fixedHeight.divide(1000.0));
         return correction;
     }
 

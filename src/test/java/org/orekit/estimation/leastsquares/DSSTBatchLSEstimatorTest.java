@@ -247,7 +247,7 @@ public class DSSTBatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new DSSTRangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator

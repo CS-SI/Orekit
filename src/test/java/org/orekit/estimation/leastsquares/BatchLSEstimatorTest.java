@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -187,8 +187,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -262,7 +261,7 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -286,8 +285,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -404,8 +402,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -467,8 +464,8 @@ public class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 2.3e-06,
                                      0.0, 6.6e-06,
-                                     0.0, 6.2e-07,
-                                     0.0, 2.8e-10);
+                                     0.0, 6.4e-07,
+                                     0.0, 2.9e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -613,8 +610,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -644,15 +640,15 @@ public class BatchLSEstimatorTest {
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
-                                                    PositionAngle.TRUE,
-                                                    closeOrbit.getFrame(),
-                                                    closeOrbit.getDate(),
-                                                    closeOrbit.getMu());
+                                                parameters.get( 7).getValue(),
+                                                parameters.get( 8).getValue(),
+                                                parameters.get( 9).getValue(),
+                                                parameters.get(10).getValue(),
+                                                parameters.get(11).getValue(),
+                                                PositionAngle.TRUE,
+                                                closeOrbit.getFrame(),
+                                                closeOrbit.getDate(),
+                                                closeOrbit.getMu());
         Assert.assertEquals(4.7246,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               before.getPVCoordinates().getPosition()),
@@ -661,7 +657,7 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 5,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 6.0e-06,
                                      0.0, 1.7e-05,
                                      0.0, 4.4e-07,
@@ -734,7 +730,7 @@ public class BatchLSEstimatorTest {
                                            ParameterDriversList estimatedOrbitalParameters,
                                            ParameterDriversList estimatedPropagatorParameters,
                                            ParameterDriversList estimatedMeasurementsParameters,
-                                           EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) throws DummyException {
+                                           EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 throw new DummyException();
             }
         });

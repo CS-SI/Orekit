@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,7 +121,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *  Instances of this class are immutable.
  *  </p>
  *
- *  @author Mike Picone & al (Naval Research Laboratory), 2001: FORTRAN routine
+ *  @author Mike Picone &amp; al (Naval Research Laboratory), 2001: FORTRAN routine
  *  @author Dominik Brodowski, 2004: C routine
  *  @author Pascal Parraud, 2016: Java translation
  *  @since 8.1

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,9 +28,11 @@ import org.orekit.utils.Constants;
 
 public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
 
-    private final BoundedPropagator ephemeris;
-    private final Vector3D          antennaPhaseCenter1;
-    private final Vector3D          antennaPhaseCenter2;
+    private final BoundedPropagator   ephemeris;
+    private final Vector3D            antennaPhaseCenter1;
+    private final Vector3D            antennaPhaseCenter2;
+    private final ObservableSatellite local;
+    private final ObservableSatellite remote;
     private int count;
 
     public InterSatellitesRangeMeasurementCreator(final BoundedPropagator ephemeris) {
@@ -43,14 +45,15 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         this.ephemeris           = ephemeris;
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
+        this.local               = new ObservableSatellite(0);
+        this.remote              = new ObservableSatellite(1);
     }
 
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
         count = 0;
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         try {
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);
@@ -88,11 +91,11 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
                 final Vector3D selfAtEmission  =
                                 currentState.shiftedBy(-downLinkDelay - upLinkDelay).toTransform().getInverse().transformPosition(antennaPhaseCenter1);
                 final double upLinkDistance = Vector3D.distance(otherAtTransit, selfAtEmission);
-                addMeasurement(new InterSatellitesRange(0, 1, true, date,
+                addMeasurement(new InterSatellitesRange(local, remote, true, date,
                                                         0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));
             } else {
                 // generate a one-way measurement
-                addMeasurement(new InterSatellitesRange(0, 1, false, date, downLinkDistance, 1.0, 10));
+                addMeasurement(new InterSatellitesRange(local, remote, false, date, downLinkDistance, 1.0, 10));
             }
 
         } catch (OrekitException oe) {

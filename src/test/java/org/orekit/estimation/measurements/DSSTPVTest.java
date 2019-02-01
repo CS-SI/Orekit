@@ -126,12 +126,15 @@ public class DSSTPVTest {
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(6).getData();
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Create PV measurements
         final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight);
-        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, propNumRef[1]);
+        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
+        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 1e-25; // tolerance
@@ -141,7 +144,7 @@ public class DSSTPVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], pv.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
             
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -194,14 +197,19 @@ public class DSSTPVTest {
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(6).getData();
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2, 0, 10};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2),
+            new ObservableSatellite(0),
+            new ObservableSatellite(10)
+        };
         
         // Create PV measurements
         final PV[] pvs = new PV[4];
-        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight);
-        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, propNumRef[1]);
-        pvs[2] = new PV(date, position, velocity, sigmaPV, baseWeight);
-        pvs[3] = new PV(date, position, velocity, sigmaPV, baseWeight, propNumRef[3]);
+        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
+        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
+        pvs[2] = new PV(date, position, velocity, sigmaPV, baseWeight, sats[2]);
+        pvs[3] = new PV(date, position, velocity, sigmaPV, baseWeight, sats[3]);
         
         // Tolerance
         final double eps = 1e-25; // tolerance
@@ -211,7 +219,7 @@ public class DSSTPVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], pv.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
             
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -275,7 +283,10 @@ public class DSSTPVTest {
         }
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Reference standard deviations
         final double[] sigmaP = {10., 20., 30.};
@@ -283,8 +294,8 @@ public class DSSTPVTest {
         
         // Create PV measurements
         final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, positionP, velocityP, baseWeight);
-        pvs[1] = new PV(date, position, velocity, positionP, velocityP, baseWeight, propNumRef[1]);
+        pvs[0] = new PV(date, position, velocity, positionP, velocityP, baseWeight, sats[0]);
+        pvs[1] = new PV(date, position, velocity, positionP, velocityP, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 6.7e-16; // tolerance
@@ -294,7 +305,7 @@ public class DSSTPVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], pv.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
             
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -355,12 +366,15 @@ public class DSSTPVTest {
         }
         
         // Reference propagator numbers
-        final int[] propNumRef = {0, 2};
+        final ObservableSatellite[] sats = {
+            new ObservableSatellite(0),
+            new ObservableSatellite(2)
+        };
         
         // Create PV measurements
         final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, Pref, baseWeight);
-        pvs[1] = new PV(date, position, velocity, Pref, baseWeight, propNumRef[1]);
+        pvs[0] = new PV(date, position, velocity, Pref, baseWeight, sats[0]);
+        pvs[1] = new PV(date, position, velocity, Pref, baseWeight, sats[1]);
         
         // Tolerance
         final double eps = 1.8e-15; // tolerance
@@ -370,7 +384,7 @@ public class DSSTPVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(propNumRef[k], pv.getPropagatorsIndices().get(0), eps);
+            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
             
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -406,10 +420,11 @@ public class DSSTPVTest {
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
         final double       weight   = 1.;
-        
+        final ObservableSatellite sat = new ObservableSatellite(0);
+
         // Build with two 3-sized vectors
         try {
-            new PV(date, position, velocity, new double[] {0., 0., 0.}, new double[] {1.}, weight);
+            new PV(date, position, velocity, new double[] {0., 0., 0.}, new double[] {1.}, weight, sat);
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -417,7 +432,7 @@ public class DSSTPVTest {
         
         // Build with one 6-sized vector
         try {
-            new PV(date, position, velocity, new double[] {0., 0., 0.}, weight);
+            new PV(date, position, velocity, new double[] {0., 0., 0.}, weight, sat);
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -426,7 +441,7 @@ public class DSSTPVTest {
         // Build with two 3x3 matrices
         try {
             new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}},
-                   new double[][] {{0., 0.}, {0., 0.}}, weight);
+                   new double[][] {{0., 0.}, {0., 0.}}, weight, sat);
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -434,7 +449,7 @@ public class DSSTPVTest {
         
         // Build with one 6x6 matrix
         try {
-            new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}}, weight);
+            new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}}, weight, sat);
             Assert.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
