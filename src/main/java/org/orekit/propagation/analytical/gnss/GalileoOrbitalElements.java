@@ -16,26 +16,27 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link GPSPropagator}.
- *
- * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
- * @author Pascal Parraud
- * @since 8.0
- *
- */
-public interface GPSOrbitalElements extends GNSSOrbitalElements {
+/** This interface provides the minimal set of orbital elements needed by the {@link GalileoPropagator}.
+*
+* @see <a href="https://www.gsc-europa.eu/system/files/galileo_documents/Galileo-OS-SIS-ICD.pdf">
+*         Galileo Interface Control Document</a>
+*
+* @author Bryan Cazabonne
+*
+*/
+public interface GalileoOrbitalElements extends GNSSOrbitalElements {
 
     // Constants
-    /** WGS 84 value of the Earth's universal gravitational parameter for GPS user in m³/s². */
-    double GPS_MU = 3.986005e+14;
+    /** Earth's universal gravitational parameter for Galileo user in m³/s². */
+    double GALILEO_MU = 3.986004418e+14;
 
     /** Value of Pi for conversion from semicircles to radian. */
-    double GPS_PI = 3.1415926535898;
+    double GALILEO_PI = 3.1415926535898;
 
-    /** Duration of the GPS week in seconds. */
-    double GPS_WEEK_IN_SECONDS = 604800.;
+    /** Duration of the Galileo week in seconds. */
+    double GALILEO_WEEK_IN_SECONDS = 604800.;
 
-    /** Number of weeks in the GPS cycle. */
-    int GPS_WEEK_NB = 1024;
+    /** Number of weeks in the Galileo cycle. */
+    int GALILEO_WEEK_NB = 4096;
 
 }
