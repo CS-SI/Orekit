@@ -39,4 +39,32 @@ public interface GalileoOrbitalElements extends GNSSOrbitalElements {
     /** Number of weeks in the Galileo cycle. */
     int GALILEO_WEEK_NB = 4096;
 
+    /**
+     * Gets the Issue Of Data Clock (IODC).
+     *
+     * @return the Issue Of Data Clock (IODC)
+     * @since 9.3
+     */
+    default int getIODNav() {
+        return 0;
+    }
+
+    /**
+     * Gets the E1/E5a broadcast group delay.
+     *
+     * @return the E1/E5a broadcast group delay (s)
+     */
+    default double getBGDE1E5a() {
+        return 0.0;
+    }
+
+    /**
+     * Gets the Broadcast Group Delay E5b/E1.
+     *
+     * @return the Broadcast Group Delay E5b/E1 (s)
+     */
+    default double getBGDE5bE1() {
+        return 0.0;
+    }
+
 }

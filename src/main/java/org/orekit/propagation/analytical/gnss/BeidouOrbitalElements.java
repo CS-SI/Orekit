@@ -37,4 +37,40 @@ public interface BeidouOrbitalElements extends GNSSOrbitalElements {
     /** Number of weeks in the Beidou cycle. */
     int BEIDOU_WEEK_NB = 8192;
 
+    /**
+     * Gets the Age Of Data Clock (AODC).
+     *
+     * @return the Age Of Data Clock (AODC)
+     */
+    default int getAODC() {
+        return 0;
+    }
+
+    /**
+     * Gets the Age Of Data Ephemeris (AODE).
+     *
+     * @return the Age Of Data Ephemeris (AODE)
+     */
+    default int getAODE() {
+        return 0;
+    }
+
+    /**
+     * Gets the estimated group delay differential TGD1 for B1I signal.
+     *
+     * @return the estimated group delay differential TGD1 for B1I signal (s)
+     */
+    default double getTGD1() {
+        return 0.0;
+    }
+
+    /**
+     * Gets the estimated group delay differential TGD for B2I signal.
+     *
+     * @return the estimated group delay differential TGD2 for B2I signal (s)
+     */
+    default double getTGD2() {
+        return 0.0;
+    }
+
 }
