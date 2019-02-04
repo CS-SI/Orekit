@@ -32,9 +32,9 @@ public interface BeidouOrbitalElements extends GNSSOrbitalElements {
     double BEIDOU_PI = 3.1415926535898;
 
     /** Duration of the Beidou week in seconds. */
-    double GALILEO_WEEK_IN_SECONDS = 604800.;
+    double BEIDOU_WEEK_IN_SECONDS = 604800.;
 
     /** Number of weeks in the Beidou cycle. */
-    int GALILEO_WEEK_NB = 8192;
+    int BEIDOU_WEEK_NB = 8192;
 
 }
