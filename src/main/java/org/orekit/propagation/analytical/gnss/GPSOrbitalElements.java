@@ -38,4 +38,34 @@ public interface GPSOrbitalElements extends GNSSOrbitalElements {
     /** Number of weeks in the GPS cycle. */
     int GPS_WEEK_NB = 1024;
 
+    /**
+     * Gets the Issue Of Data Clock (IODC).
+     *
+     * @return the Issue Of Data Clock (IODC)
+     * @since 9.3
+     */
+    default int getIODC() {
+        return 0;
+    }
+
+    /**
+     * Gets the Issue Of Data Ephemeris (IODE).
+     *
+     * @return the Issue Of Data Ephemeris (IODE)
+     * @since 9.3
+     */
+    default int getIODE() {
+        return 0;
+    }
+
+    /**
+     * Gets the estimated group delay differential TGD for L1-L2 correction.
+     *
+     * @return the estimated group delay differential TGD for L1-L2 correction (s)
+     * @since 9.3
+     */
+    default double getTGD() {
+        return 0.0;
+    }
+
 }

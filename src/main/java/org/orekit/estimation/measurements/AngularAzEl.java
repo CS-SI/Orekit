@@ -57,7 +57,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      * @param angular observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @deprecated since 9.3, replaced by {@#AngularAzEl(GroundStation, AbsoluteDate,
+     * @deprecated since 9.3, replaced by {@link #AngularAzEl(GroundStation, AbsoluteDate,
      * double[], double[], double[], ObservableSatellite)}
      */
     @Deprecated
@@ -74,7 +74,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.0
-     * @deprecated since 9.3, replaced by {@#AngularAzEl(GroundStation, AbsoluteDate,
+     * @deprecated since 9.3, replaced by {@link #AngularAzEl(GroundStation, AbsoluteDate,
      * double[], double[], double[], ObservableSatellite)}
      */
     @Deprecated

@@ -93,8 +93,8 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
      * <ul>
-     * <li>double[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-     * <li>double[1] = D<sub>wz</sub> -&gt zenith wet delay
+     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>double[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
      * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
@@ -111,8 +111,8 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
      * <ul>
-     * <li>double[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-     * <li>double[1] = D<sub>wz</sub> -&gt zenith wet delay
+     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>double[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
      * @param <T> type of the elements
      * @param height the height of the station in m above sea level.
@@ -132,8 +132,8 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
      * <ul>
-     * <li>double[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
-     * <li>double[1] = m<sub>w</sub>(e) -&gt wet mapping function
+     * <li>double[0] = m<sub>h</sub>(e) → hydrostatic mapping function
+     * <li>double[1] = m<sub>w</sub>(e) → wet mapping function
      * </ul>
      * @param elevation the elevation of the satellite, in radians.
      * @param height the height of the station in m above sea level.
@@ -151,8 +151,8 @@ public interface TroposphericModel extends DiscreteTroposphericModel {
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
      * <ul>
-     * <li>double[0] = m<sub>h</sub>(e) -&gt hydrostatic mapping function
-     * <li>double[1] = m<sub>w</sub>(e) -&gt wet mapping function
+     * <li>double[0] = m<sub>h</sub>(e) → hydrostatic mapping function
+     * <li>double[1] = m<sub>w</sub>(e) → wet mapping function
      * </ul>
      * @param elevation the elevation of the satellite, in radians.
      * @param height the height of the station in m above sea level.

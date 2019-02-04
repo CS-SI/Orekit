@@ -142,8 +142,8 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
 
     /** Returns the zenith delay array.
      * <ul>
-     * <li>double[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-     * <li>double[1] = D<sub>wz</sub> -&gt zenith wet delay
+     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>double[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
      * @return the zenith delay array
      */

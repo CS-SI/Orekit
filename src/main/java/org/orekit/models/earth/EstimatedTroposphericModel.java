@@ -141,8 +141,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     /** This method allows the computation of the zenith hydrostatic and zenith total delays.
      *  The resulting element is an array having the following form:
      * <ul>
-     * <li>double[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-     * <li>double[1] = D<sub>tz</sub> -&gt zenith total delay
+     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>double[1] = D<sub>tz</sub> → zenith total delay
      * </ul>
      * <p>
      * The user have to be careful because the others tropospheric models in Orekit
@@ -172,8 +172,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     /** This method allows the computation of the zenith hydrostatic and zenith total delays.
      *  The resulting element is an array having the following form:
      * <ul>
-     * <li>double[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-     * <li>double[1] = D<sub>tz</sub> -&gt zenith total delay
+     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>double[1] = D<sub>tz</sub> → zenith total delay
      * </ul>
      * <p>
      * The user have to be careful because the others tropospheric models in Orekit

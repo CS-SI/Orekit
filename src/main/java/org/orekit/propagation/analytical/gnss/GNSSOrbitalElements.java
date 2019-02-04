@@ -151,4 +151,56 @@ public interface GNSSOrbitalElements extends TimeStamped {
      */
     double getCis();
 
+    /**
+     * Gets the Zeroth Order Clock Correction.
+     *
+     * @return the Zeroth Order Clock Correction (s)
+     * @see #getAf1()
+     * @see #getAf2()
+     * @see #getToc()
+     * @since 9.3
+     */
+    default double getAf0() {
+        return 0.0;
+    }
+
+    /**
+     * Gets the First Order Clock Correction.
+     *
+     * @return the First Order Clock Correction (s/s)
+     * @see #getAf0()
+     * @see #getAf2()
+     * @see #getToc()
+     * @since 9.3
+     */
+    default double getAf1() {
+        return 0.0;
+    }
+
+    /**
+     * Gets the Second Order Clock Correction.
+     *
+     * @return the Second Order Clock Correction (s/s²)
+     * @see #getAf0()
+     * @see #getAf1()
+     * @see #getToc()
+     * @since 9.3
+     */
+    default double getAf2() {
+        return 0.0;
+    }
+
+    /**
+     * Gets the clock correction reference time toc.
+     *
+     * @return the clock correction reference time (s)
+     * @see #getAf0()
+     * @see #getAf1()
+     * @see #getAf2()
+     * @since 9.3
+     */
+    default double getToc() {
+        return 0.0;
+    }
+
 }

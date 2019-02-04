@@ -72,7 +72,7 @@ public class SP3File implements EphemerisFile {
         /** fitted after applying a Helmert transformation. */
         HLM,
         /** other type, defined by SP3 file producing agency.
-         * @since 9.4
+         * @since 9.3
          */
         OTHER;
 
@@ -156,7 +156,7 @@ public class SP3File implements EphemerisFile {
     private SP3OrbitType orbitType;
 
     /** Key for orbit type.
-     * @since 9.4
+     * @since 9.3
      */
     private String orbitTypeKey;
 
@@ -400,7 +400,7 @@ public class SP3File implements EphemerisFile {
 
     /** Returns the orbit type key for this SP3 file.
      * @return the orbit type key
-     * @since 9.4
+     * @since 9.3
      */
     public String getOrbitTypeKey() {
         return orbitTypeKey;
@@ -408,7 +408,7 @@ public class SP3File implements EphemerisFile {
 
     /** Set the orbit type key for this SP3 file.
      * @param oTypeKey the orbit type key to be set
-     * @since 9.4
+     * @since 9.3
      */
     void setOrbitTypeKey(final String oTypeKey) {
         this.orbitTypeKey = oTypeKey;

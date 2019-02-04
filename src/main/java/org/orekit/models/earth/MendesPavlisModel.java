@@ -83,7 +83,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      * thanks to the values of the pressure, the temperature and the humidity
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, hPa
-     * @param rh the humidity at the station, percent (50% -&gt; 0.5)
+     * @param rh the humidity at the station, percent (50% → 0.5)
      * @param latitude geodetic latitude of the station, radians
      * @param lambda laser wavelength, µm
      * */
@@ -225,8 +225,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      * Therefore, the two components of the resulting array are
      * equals.
      * <ul>
-     * <li>double[0] = m(e) -&gt total mapping function
-     * <li>double[1] = m(e) -&gt total mapping function
+     * <li>double[0] = m(e) → total mapping function
+     * <li>double[1] = m(e) → total mapping function
      * </ul>
      * </p><p>
      * The total delay will thus be computed as this:
@@ -365,7 +365,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      *
      * See: Giacomo, P., Equation for the dertermination of the density of moist air, Metrologia, V. 18, 1982
      *
-     * @param rh relative humidity, in percent (50% -&gt; 0.5).
+     * @param rh relative humidity, in percent (50% → 0.5).
      * @return the water vapor, in mbar (1 mbar = 1 hPa).
      */
     private double getWaterVapor(final double rh) {

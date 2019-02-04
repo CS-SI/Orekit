@@ -64,15 +64,15 @@ import org.orekit.time.TimeStamped;
  * simulation times flows from left to right:
  * </p>
  * <pre>
- *    propagator 1   : -------------[++++current step++++]>
+ *    propagator 1   : -------------[++++current step++++]&gt;
  *                                  |
- *    propagator 2   : ----[++++current step++++]--------->
+ *    propagator 2   : ----[++++current step++++]---------&gt;
  *                                  |           |
  *    ...                           |           |
- *    propagator n   : ---------[++++current step++++]---->
+ *    propagator n   : ---------[++++current step++++]----&gt;
  *                                  |           |
  *                                  V           V
- *    global handler : -------------[global step]--------->
+ *    global handler : -------------[global step]---------&gt;
  * </pre>
  * <p>
  * The previous sketch shows that propagator 1 has already computed states
