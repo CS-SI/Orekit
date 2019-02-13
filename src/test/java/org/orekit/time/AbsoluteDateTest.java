@@ -38,13 +38,14 @@ public class AbsoluteDateTest {
     public void testStandardEpoch() {
         TimeScale tai = TimeScalesFactory.getTAI();
         TimeScale tt  = TimeScalesFactory.getTT();
-        Assert.assertEquals(-210866760000000l, AbsoluteDate.JULIAN_EPOCH.toDate(tt).getTime());
-        Assert.assertEquals(-3506716800000l,   AbsoluteDate.MODIFIED_JULIAN_EPOCH.toDate(tt).getTime());
-        Assert.assertEquals(-631152000000l,    AbsoluteDate.FIFTIES_EPOCH.toDate(tt).getTime());
-        Assert.assertEquals(-378691200000l,    AbsoluteDate.CCSDS_EPOCH.toDate(tai).getTime());
-        Assert.assertEquals(935280032000l,     AbsoluteDate.GALILEO_EPOCH.toDate(tai).getTime());
-        Assert.assertEquals(315964819000l,     AbsoluteDate.GPS_EPOCH.toDate(tai).getTime());
-        Assert.assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(-210866760000000l,  AbsoluteDate.JULIAN_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(-3506716800000l,    AbsoluteDate.MODIFIED_JULIAN_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(-631152000000l,     AbsoluteDate.FIFTIES_EPOCH.toDate(tt).getTime());
+        Assert.assertEquals(-378691200000l,     AbsoluteDate.CCSDS_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(935280032000l,      AbsoluteDate.GALILEO_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(315964819000l,      AbsoluteDate.GPS_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(1136073633000l,     AbsoluteDate.BEIDOU_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(946728000000l,      AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
 
     @Test
@@ -61,6 +62,8 @@ public class AbsoluteDateTest {
                             AbsoluteDate.GALILEO_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("1980-01-06T00:00:00.000",
                             AbsoluteDate.GPS_EPOCH.toString(TimeScalesFactory.getUTC()));
+        Assert.assertEquals("2006-01-01T00:00:00.000",
+                            AbsoluteDate.BEIDOU_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1970-01-01T00:00:00.000",
