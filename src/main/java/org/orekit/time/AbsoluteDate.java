@@ -79,8 +79,9 @@ import org.orekit.utils.Constants;
  * A few reference epochs which are commonly used in space systems have been defined. These
  * epochs can be used as the basis for offset computation. The supported epochs are:
  * {@link #JULIAN_EPOCH}, {@link #MODIFIED_JULIAN_EPOCH}, {@link #FIFTIES_EPOCH},
- * {@link #CCSDS_EPOCH}, {@link #GALILEO_EPOCH}, {@link #GPS_EPOCH}, {@link #J2000_EPOCH},
- * {@link #JAVA_EPOCH}. There are also two factory methods {@link #createJulianEpoch(double)}
+ * {@link #CCSDS_EPOCH}, {@link #GALILEO_EPOCH}, {@link #GPS_EPOCH}, {@link #QZSS_EPOCH}
+ * {@link #J2000_EPOCH}, {@link #JAVA_EPOCH}.
+ * There are also two factory methods {@link #createJulianEpoch(double)}
  * and {@link #createBesselianEpoch(double)} that can be used to compute other reference
  * epochs like J1900.0 or B1950.0.
  * In addition to these reference epochs, two other constants are defined for convenience:
@@ -130,6 +131,10 @@ public class AbsoluteDate
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =
         new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, TimeScalesFactory.getGPS());
+
+    /** Reference epoch for QZSS weeks: 1980-01-06T00:00:00 QZSS time. */
+    public static final AbsoluteDate QZSS_EPOCH =
+        new AbsoluteDate(DateComponents.QZSS_EPOCH, TimeComponents.H00, TimeScalesFactory.getQZSS());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
      * @see #createJulianEpoch(double)

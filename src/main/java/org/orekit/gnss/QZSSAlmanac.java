@@ -19,7 +19,7 @@ package org.orekit.gnss;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.analytical.gnss.QZSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GPSDate;
+import org.orekit.time.QZSSDate;
 
 /**
  * This class holds a QZSS almanac as read from YUMA files.
@@ -39,7 +39,7 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
     /** Health status. */
     private final int health;
 
-    /** GPS week. */
+    /** QZSS week. */
     private final int week;
 
     /** Time of applicability. */
@@ -77,7 +77,7 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
      *
      * @param source the source of the almanac (SEM, YUMA, user defined)
      * @param prn the PRN number
-     * @param week the GPS week
+     * @param week the QZSS week
      * @param toa the Time of Applicability
      * @param sqa the Square Root of Semi-Major Axis (m^1/2)
      * @param ecc the eccentricity
@@ -225,9 +225,7 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
 
     @Override
     public AbsoluteDate getDate() {
-        // GPS and QZSS time scales are identical
-        // Reference epoch are also identical
-        return new GPSDate(week, toa * 1000.).getDate();
+        return new QZSSDate(week, toa * 1000.).getDate();
     }
 
     /**
