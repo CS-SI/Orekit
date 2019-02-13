@@ -145,17 +145,9 @@ public class GalileoPropagator extends AbstractGNSSPropagator {
     private GalileoPropagator(final Builder builder) {
         super(builder.orbit, builder.attitudeProvider,
               builder.eci, builder.ecef, builder.mass,
-              GALILEO_AV, GALILEO_CYCLE_DURATION, getMU());
+              GALILEO_AV, GALILEO_CYCLE_DURATION, GalileoOrbitalElements.GALILEO_MU);
         // Stores the Galileo orbital elements
         this.galileoOrbit = builder.orbit;
-    }
-
-    /**
-     * Get the Earth gravity coefficient used for Galileo propagation.
-     * @return the Earth gravity coefficient.
-     */
-    public static double getMU() {
-        return GalileoOrbitalElements.GALILEO_MU;
     }
 
     /**

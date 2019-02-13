@@ -146,17 +146,9 @@ public class QZSSPropagator extends AbstractGNSSPropagator {
     private QZSSPropagator(final Builder builder) {
         super(builder.orbit, builder.attitudeProvider,
               builder.eci, builder.ecef, builder.mass,
-              QZSS_AV, QZSS_CYCLE_DURATION, getMU());
+              QZSS_AV, QZSS_CYCLE_DURATION, QZSSOrbitalElements.QZSS_MU);
         // Stores the QZSS orbital elements
         this.qzssOrbit = builder.orbit;
-    }
-
-    /**
-     * Get the Earth gravity coefficient used for QZSS propagation.
-     * @return the Earth gravity coefficient.
-     */
-    public static double getMU() {
-        return QZSSOrbitalElements.QZSS_MU;
     }
 
     /**

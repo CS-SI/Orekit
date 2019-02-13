@@ -294,6 +294,14 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
         return new CartesianOrbit(pvaInECI, eci, date, mu);
     }
 
+    /**
+     * Get the Earth gravity coefficient used for GNSS propagation.
+     * @return the Earth gravity coefficient.
+     */
+    public double getMU() {
+        return mu;
+    }
+
     /** {@inheritDoc} */
     public Frame getFrame() {
         return eci;
