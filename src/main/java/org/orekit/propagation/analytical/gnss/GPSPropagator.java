@@ -144,17 +144,9 @@ public class GPSPropagator extends AbstractGNSSPropagator {
     private GPSPropagator(final Builder builder) {
         super(builder.orbit, builder.attitudeProvider,
               builder.eci, builder.ecef, builder.mass,
-              GPS_AV, GPS_CYCLE_DURATION, getMU());
+              GPS_AV, GPS_CYCLE_DURATION, GPSOrbitalElements.GPS_MU);
         // Stores the GPS orbital elements
         this.gpsOrbit = builder.orbit;
-    }
-
-    /**
-     * Get the Earth gravity coefficient used for GPS propagation.
-     * @return the Earth gravity coefficient.
-     */
-    public static double getMU() {
-        return GPSOrbitalElements.GPS_MU;
     }
 
     /**

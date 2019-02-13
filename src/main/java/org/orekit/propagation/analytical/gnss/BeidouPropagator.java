@@ -145,17 +145,9 @@ public class BeidouPropagator extends AbstractGNSSPropagator {
     private BeidouPropagator(final Builder builder) {
         super(builder.orbit, builder.attitudeProvider,
               builder.eci, builder.ecef, builder.mass,
-              BEIDOU_AV, BEIDOU_CYCLE_DURATION, getMU());
+              BEIDOU_AV, BEIDOU_CYCLE_DURATION, BeidouOrbitalElements.BEIDOU_MU);
         // Stores the Beidou orbital elements
         this.bdsOrbit = builder.orbit;
-    }
-
-    /**
-     * Get the Earth gravity coefficient used for Beidou propagation.
-     * @return the Earth gravity coefficient.
-     */
-    public static double getMU() {
-        return BeidouOrbitalElements.BEIDOU_MU;
     }
 
     /**
