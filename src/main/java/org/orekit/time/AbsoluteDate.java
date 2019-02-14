@@ -25,6 +25,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.utils.Constants;
 
 
@@ -702,11 +703,11 @@ public class AbsoluteDate
      * @param weekNumber week number since {@link #GPS_EPOCH GPS epoch}
      * @param milliInWeek number of milliseconds since week start
      * @return a new instant
-     * @deprecated as of 9.3, replaced by {@link GPSDate#GPSDate(int, double)}.{@link GPSDate#getDate()}
+     * @deprecated as of 9.3, replaced by {@link GNSSDate#GNSSDate(int, double, SatelliteSystem)}.{@link GNSSDate#getDate()}
      */
     @Deprecated
     public static AbsoluteDate createGPSDate(final int weekNumber, final double milliInWeek) {
-        return new GPSDate(weekNumber, milliInWeek).getDate();
+        return new GNSSDate(weekNumber, milliInWeek, SatelliteSystem.GPS).getDate();
     }
 
     /** Build an instance corresponding to a Julian Epoch (JE).

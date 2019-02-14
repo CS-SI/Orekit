@@ -32,7 +32,7 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.GPSDate;
+import org.orekit.time.GNSSDate;
 
 public class QZSSAlmanacTest {
 
@@ -68,7 +68,7 @@ public class QZSSAlmanacTest {
         Assert.assertEquals(0.0, alm.getAf1(), 0.);
         Assert.assertEquals(0, alm.getHealth());
         Assert.assertEquals("YUMA", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(new GPSDate(1015, 262144 * 1000.).getDate()) == 0);
+        Assert.assertTrue(alm.getDate().durationFrom(new GNSSDate(1015, 262144 * 1000., SatelliteSystem.QZSS).getDate()) == 0);
         Assert.assertEquals(0., alm.getCic(), 0.);
         Assert.assertEquals(0., alm.getCis(), 0.);
         Assert.assertEquals(0., alm.getCrc(), 0.);
