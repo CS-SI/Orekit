@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>9.3-SNAPSHOT</version>
+  <version>9.4-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -239,7 +239,7 @@
 
   <scm>
     <connection>scm:git:https://gitlab.orekit.org/orekit/orekit.git</connection>
-    <developerConnection>scm:git:ssh://git@gitlab.orekit.org:orekit/orekit.git</developerConnection>
+    <developerConnection>scm:git:ssh://git@gitlab.orekit.org/orekit/orekit.git</developerConnection>
     <url>https://gitlab.orekit.org/orekit/orekit/tree/master</url>
   </scm>
 
@@ -416,6 +416,15 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>${orekit.maven-javadoc-plugin.version}</version>
+        <configuration>
+          <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <links>
+            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://www.hipparchus.org/apidocs/</link>
+          </links>
+          <source>${orekit.compiler.source}</source>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
@@ -645,9 +654,10 @@
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
-            <link>http://docs.oracle.com/javase/8/docs/api/</link>
+            <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
+          <source>${orekit.compiler.source}</source>
         </configuration>
         <reportSets>
           <reportSet>

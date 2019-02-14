@@ -57,14 +57,14 @@ public interface NRLMSISE00InputParameters extends Serializable {
      * <p>
      * A<sub>p</sub> indices are provided as an array such as:
      * <ul>
-     * <li>0 -> daily A<sub>p</sub></li>
-     * <li>1 -> 3 hr A<sub>p</sub> index for current time</li>
-     * <li>2 -> 3 hr A<sub>p</sub> index for 3 hrs before current time</li>
-     * <li>3 -> 3 hr A<sub>p</sub> index for 6 hrs before current time</li>
-     * <li>4 -> 3 hr A<sub>p</sub> index for 9 hrs before current time</li>
-     * <li>5 -> Average of eight 3 hr A<sub>p</sub> indices from 12 to 33 hrs
+     * <li>0 → daily A<sub>p</sub></li>
+     * <li>1 → 3 hr A<sub>p</sub> index for current time</li>
+     * <li>2 → 3 hr A<sub>p</sub> index for 3 hrs before current time</li>
+     * <li>3 → 3 hr A<sub>p</sub> index for 6 hrs before current time</li>
+     * <li>4 → 3 hr A<sub>p</sub> index for 9 hrs before current time</li>
+     * <li>5 → Average of eight 3 hr A<sub>p</sub> indices from 12 to 33 hrs
      *          prior to current time</li>
-     * <li>6 -> Average of eight 3 hr A<sub>p</sub> indices from 36 to 57 hrs
+     * <li>6 → Average of eight 3 hr A<sub>p</sub> indices from 36 to 57 hrs
      *          prior to current time</li>
      * </ul>
      * </p>

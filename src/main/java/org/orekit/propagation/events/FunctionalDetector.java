@@ -30,7 +30,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
  *
  * <code><pre>
  * FunctionalDetector d = new FunctionalDetector()
- *     .withGFunction((s)-> s.getDate().durationFrom(triggerDate))
+ *     .withGFunction((s) -&gt; s.getDate().durationFrom(triggerDate))
  *     .withMaxCheck(1e10);
  * </pre></code>
  *

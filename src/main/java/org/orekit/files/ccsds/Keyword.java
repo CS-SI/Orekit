@@ -504,7 +504,7 @@ public enum Keyword {
     /** Data: ANGLE_1 in degrees and in [-180, +360[ [deg].<p>
      * The value assigned to the ANGLE_1 keyword represents the azimuth, right ascension, or ‘X’
      * angle of the measurement, depending on the value of the ANGLE_TYPE keyword.<p>
-     * The angle measurement shall be a double precision value as follows: -180.0 <= ANGLE_1 < 360.0<p>
+     * The angle measurement shall be a double precision value as follows: -180.0 &le; ANGLE_1 &lt; 360.0<p>
      * Units shall be degrees.<p>
      * See meta-data keyword ANGLE_TYPE for the definition of the angles.
      */
@@ -512,7 +512,7 @@ public enum Keyword {
     /** Data: ANGLE_2 in degrees and in [-180, +360[ [deg].<p>
      * The value assigned to the ANGLE_2 keyword represents the elevation, declination, or ‘Y’
      * angle of the measurement, depending on the value of the ANGLE_TYPE keyword.<p>
-     * The angle measurement shall be a double precision value as follows: -180.0 <= ANGLE_2 < 360.0.<p>
+     * The angle measurement shall be a double precision value as follows: -180.0 &le; ANGLE_2 &lt; 360.0.<p>
      * Units shall be degrees.<p>
      * See meta-data keyword ANGLE_TYPE for the definition of the angles.
      */

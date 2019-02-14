@@ -221,7 +221,8 @@ public enum OrekitMessages implements Localizable {
     CORRUPTED_FILE("file {0} is corrupted"),
     VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED("Vienna coefficients ah or aw or zh or zw could not be loaded from {0}"),
     VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE("Vienna coefficients ah or aw or zh or zw not available for date {0}"),
-    NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE("file {0} does not contain Vienna coefficients ah, aw, zh or zw");
+    NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE("file {0} does not contain Vienna coefficients ah, aw, zh or zw"),
+    IRREGULAR_OR_INCOMPLETE_GRID("irregular or incomplete grid in file {0}");
 
 
     // CHECKSTYLE: resume JavadocVariable check

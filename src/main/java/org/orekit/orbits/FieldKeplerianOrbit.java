@@ -875,7 +875,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @return position vector
      * @deprecated as of 9.3 replaced with {@link #FieldKeplerianOrbit(RealFieldElement, RealFieldElement,
      * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@#getPVCoordinates()}
+     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
      */
     @Deprecated
     public static <T extends RealFieldElement<T>> FieldVector3D<T> ellipticKeplerianToPosition(final T a, final T e, final T i,
@@ -925,7 +925,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @return position vector
      * @deprecated as of 9.3 replaced with {@link #FieldKeplerianOrbit(RealFieldElement, RealFieldElement,
      * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@#getPVCoordinates()}
+     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
      */
     @Deprecated
     public static <T extends RealFieldElement<T>> FieldVector3D<T> hyperbolicKeplerianToPosition(final T a, final T e, final T i,

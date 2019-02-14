@@ -64,7 +64,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      * @param angular observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @deprecated since 9.3, replaced by {@#AngularRaDec(GroundStation, AbsoluteDate,
+     * @deprecated since 9.3, replaced by {@link #AngularRaDec(GroundStation, Frame, AbsoluteDate,
      * double[], double[], double[], ObservableSatellite)}
      */
     @Deprecated
@@ -82,7 +82,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.0
-     * @deprecated since 9.3, replaced by {@#AngularRaDec(GroundStation, AbsoluteDate,
+     * @deprecated since 9.3, replaced by {@link #AngularRaDec(GroundStation, Frame, AbsoluteDate,
      * double[], double[], double[], ObservableSatellite)}
      */
     @Deprecated

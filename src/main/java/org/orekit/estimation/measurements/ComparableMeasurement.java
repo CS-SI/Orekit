@@ -29,7 +29,7 @@ public interface ComparableMeasurement extends TimeStamped, Comparable<Comparabl
      * <p>
      * The observed value is the value that was measured by the instrument.
      * </p>
-     * @return observed value (array of size {@link #getDimension()}
+     * @return observed value
      */
     double[] getObservedValue();
 

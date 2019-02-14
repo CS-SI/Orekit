@@ -121,7 +121,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *  Instances of this class are immutable.
  *  </p>
  *
- *  @author Mike Picone & al (Naval Research Laboratory), 2001: FORTRAN routine
+ *  @author Mike Picone &amp; al (Naval Research Laboratory), 2001: FORTRAN routine
  *  @author Dominik Brodowski, 2004: C routine
  *  @author Pascal Parraud, 2016: Java translation
  *  @since 8.1

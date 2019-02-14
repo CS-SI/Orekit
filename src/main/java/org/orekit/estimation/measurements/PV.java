@@ -345,7 +345,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @param baseWeight base weight
      * @since 9.2
      * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[][], double, ObservableSatellite))}
+     * double[][], double, ObservableSatellite)}
      */
     @Deprecated
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
@@ -364,7 +364,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @param propagatorIndex index of the propagator related to this measurement
      * @since 9.2
      * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[][], double, ObservableSatellite))}
+     * double[][], double, ObservableSatellite)}
      */
     @Deprecated
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,

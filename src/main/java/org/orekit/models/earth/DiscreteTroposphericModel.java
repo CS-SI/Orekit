@@ -64,8 +64,8 @@ public interface DiscreteTroposphericModel extends MappingFunction {
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
      * <ul>
-     * <li>double[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-     * <li>double[1] = D<sub>wz</sub> -&gt zenith wet delay
+     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>double[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
      * @param height the height of the station in m above sea level.
      * @param parameters tropospheric model parameters.
@@ -77,8 +77,8 @@ public interface DiscreteTroposphericModel extends MappingFunction {
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
      * <ul>
-     * <li>T[0] = D<sub>hz</sub> -&gt zenith hydrostatic delay
-     * <li>T[1] = D<sub>wz</sub> -&gt zenith wet delay
+     * <li>T[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>T[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
      * @param <T> type of the elements
      * @param height the height of the station in m above sea level.
