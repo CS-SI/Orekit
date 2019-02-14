@@ -86,8 +86,8 @@ public class SaastamoinenModelTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(model);
 
-        Assert.assertTrue(bos.size() > 1400);
-        Assert.assertTrue(bos.size() < 1500);
+        Assert.assertTrue(bos.size() > 150);
+        Assert.assertTrue(bos.size() < 160);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
