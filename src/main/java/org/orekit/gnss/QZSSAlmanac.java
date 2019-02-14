@@ -19,7 +19,7 @@ package org.orekit.gnss;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.analytical.gnss.QZSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.QZSSDate;
+import org.orekit.time.GNSSDate;
 
 /**
  * This class holds a QZSS almanac as read from YUMA files.
@@ -225,7 +225,7 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
 
     @Override
     public AbsoluteDate getDate() {
-        return new QZSSDate(week, toa * 1000.).getDate();
+        return new GNSSDate(week, toa * 1000., SatelliteSystem.QZSS).getDate();
     }
 
     /**
