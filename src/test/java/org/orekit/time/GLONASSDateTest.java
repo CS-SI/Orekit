@@ -59,14 +59,6 @@ public class GLONASSDateTest {
     }
 
     @Test
-    public void testReferenceEpoch() {
-        GLONASSDate date = new GLONASSDate(AbsoluteDate.GLONASS_EPOCH);
-        Assert.assertEquals(1,   date.getNa());
-        Assert.assertEquals(1,   date.getN4());
-        Assert.assertEquals(0.0, date.getSecInNa(), 1.0e-15);
-    }
-
-    @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
         GLONASSDate date = new GLONASSDate(251, 5, 7200.0);
 
