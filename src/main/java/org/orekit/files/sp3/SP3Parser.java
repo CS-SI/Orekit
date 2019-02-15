@@ -585,7 +585,7 @@ public class SP3Parser implements EphemerisFileParser {
 
                     // clock (microsec)
                     pi.latestClock =
-                            Double.parseDouble(line.substring(46, 60).trim()) * 1e6;
+                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-6;
 
                     // the additional items are optional and not read yet
 
@@ -668,7 +668,7 @@ public class SP3Parser implements EphemerisFileParser {
 
                     // clock rate in file is 1e-4 us / s
                     final double clockRateChange =
-                            Double.parseDouble(line.substring(46, 60).trim()) * 1e10;
+                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-4;
 
                     // the additional items are optional and not read yet
 
