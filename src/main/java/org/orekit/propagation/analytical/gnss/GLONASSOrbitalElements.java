@@ -84,4 +84,23 @@ public interface GLONASSOrbitalElements extends TimeStamped {
      */
     double getDeltaTDot();
 
+    /**
+     * Get the relative deviation of predicted satellite corrier frequency from nominal value.
+     *
+     * @return the relative deviation of predicted satellite corrier frequency from nominal value
+     */
+    default double getGammaN() {
+        return 0.0;
+    }
+
+    /**
+     * Get the correction to the satellite time relative to GLONASS system time.
+     *
+     * @return the correction to the satellite time relative to GLONASS system time (s)
+     *
+     */
+    default double getTN() {
+        return 0.0;
+    }
+
 }
