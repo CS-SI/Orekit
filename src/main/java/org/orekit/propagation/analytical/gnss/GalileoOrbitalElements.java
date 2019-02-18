@@ -49,6 +49,13 @@ public interface GalileoOrbitalElements extends GNSSOrbitalElements {
         return 0;
     }
 
+    /** Get the estimated broadcast group delay differential.
+     * @return the estimated broadcast group delay differential(s)
+     */
+    default double getBGD() {
+        return 0.0;
+    }
+
     /**
      * Gets the E1/E5a broadcast group delay.
      *
