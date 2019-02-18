@@ -141,6 +141,10 @@ public class AbsoluteDate
     public static final AbsoluteDate BEIDOU_EPOCH =
         new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, TimeScalesFactory.getBDT());
 
+    /** Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00 GLONASS time. */
+    public static final AbsoluteDate GLONASS_EPOCH =
+        new AbsoluteDate(DateComponents.GLONASS_EPOCH, TimeComponents.H00, TimeScalesFactory.getGLONASS());
+
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
      * @see #createJulianEpoch(double)
      * @see #createBesselianEpoch(double)

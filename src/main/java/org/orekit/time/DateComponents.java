@@ -71,6 +71,9 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Reference epoch for BeiDou weeks: 2006-01-01. */
     public static final DateComponents BEIDOU_EPOCH;
 
+    /** Reference epoch for GLONASS four-year interval number: 1996-01-01. */
+    public static final DateComponents GLONASS_EPOCH;
+
     /** J2000.0 Reference epoch: 2000-01-01. */
     public static final DateComponents J2000_EPOCH;
 
@@ -142,6 +145,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         GPS_EPOCH             = new DateComponents(1980, 1, 6);
         QZSS_EPOCH            = new DateComponents(1980, 1, 6);
         BEIDOU_EPOCH          = new DateComponents(2006, 1, 1);
+        GLONASS_EPOCH         = new DateComponents(1996, 1, 1);
         J2000_EPOCH           = new DateComponents(2000, 1, 1);
         JAVA_EPOCH            = new DateComponents(1970, 1, 1);
         MAX_EPOCH             = new DateComponents(Integer.MAX_VALUE);
