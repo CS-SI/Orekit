@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+       <action dev="bryan" type="add" issue="519">
+        Added analytical GLONASS orbit propagator.
+      </action>
     </release>
     <release version="9.3" date="2019-01-25" description="Version 9.3 is a minor version of Orekit.
     It includes both new features and bug fixes. New features introduced in 9.3 are: a new GPSDate class,
