@@ -45,7 +45,7 @@ import org.orekit.utils.PVCoordinates;
  *
  * @author Bryan Cazabonne
  */
-public class GLONASSPropagator extends AbstractAnalyticalPropagator {
+public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
 
     // Constants
     /** Constant 7.0 / 3.0. */
@@ -195,8 +195,8 @@ public class GLONASSPropagator extends AbstractAnalyticalPropagator {
          *
          * @return the built GLONASSPropagator
          */
-        public GLONASSPropagator build() {
-            return new GLONASSPropagator(this);
+        public GLONASSAnalyticalPropagator build() {
+            return new GLONASSAnalyticalPropagator(this);
         }
 
     }
@@ -205,7 +205,7 @@ public class GLONASSPropagator extends AbstractAnalyticalPropagator {
      * Private constructor.
      * @param builder the builder
      */
-    private GLONASSPropagator(final Builder builder) {
+    private GLONASSAnalyticalPropagator(final Builder builder) {
         super(builder.attitudeProvider);
         // Stores the GLONASS orbital elements
         this.glonassOrbit = builder.orbit;

@@ -28,7 +28,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
-public class GLONASSPropagatorTest {
+public class GLONASSAnalyticalPropagatorTest {
 
     private static GLONASSAlmanac almanac;
 
@@ -49,7 +49,7 @@ public class GLONASSPropagatorTest {
 
     @Test
     public void testPerfectValues() {
-        final GLONASSPropagator propagator = new GLONASSPropagator.Builder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagator.Builder(almanac).build();
         final AbsoluteDate target = new AbsoluteDate(new DateComponents(2007, 12, 23),
                                                      new TimeComponents(51300),
                                                      TimeScalesFactory.getGLONASS());
