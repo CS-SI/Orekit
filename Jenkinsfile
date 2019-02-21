@@ -40,11 +40,9 @@ pipeline {
                     archiveArtifacts artifacts: 'target/*.zip', fingerprint: true
                 }
             }
-            junit testResults: '**/target/surefire-reports/*.xml'
+            checkstyle pattern: 'target/checkstyle-result.xml'
+            junit 'target/surefire-reports/*.xml'
             jacoco execPattern:'target/**.exec', classPattern: '**/classes', sourcePattern: '**/src/main/java'
-            recordIssues enabledForFailure: true, tools: [mavenConsole(), java(), javaDoc()]
-            recordIssues enabledForFailure: true, tools: checkStyle()
-            recordIssues enabledForFailure: true, tool:  spotBugs()
         }
     }
 }
