@@ -16,7 +16,6 @@
  */
 package org.orekit.models.earth;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.hipparchus.Field;
@@ -29,7 +28,7 @@ import org.orekit.utils.ParameterDriver;
 /** Interface for mapping functions used in the tropospheric delay computation.
  * @author Bryan Cazabonne
  */
-public interface MappingFunction extends Serializable {
+public interface MappingFunction {
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:

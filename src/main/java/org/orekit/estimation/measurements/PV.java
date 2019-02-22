@@ -167,7 +167,7 @@ public class PV extends AbstractMeasurement<PV> {
                   baseWeight, baseWeight, baseWeight,
                   baseWeight, baseWeight, baseWeight
               }, Arrays.asList(satellite));
-        this.covarianceMatrix = covarianceMatrix;
+        this.covarianceMatrix = covarianceMatrix.clone();
     }
 
     /** Get the position.
@@ -190,7 +190,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @return the covariance matrix
      */
     public double[][] getCovarianceMatrix() {
-        return covarianceMatrix;
+        return covarianceMatrix.clone();
     }
 
     /** Get the correlation coefficients matrix.

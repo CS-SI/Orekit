@@ -66,7 +66,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     private final Function<Orbit, Double> positionAngleExtractor;
 
     /** Estimators for the offset angle, taking care of 2π wrapping and g function continuity. */
-    private TimeSpanMap<OffsetEstimator> offsetEstimators;
+    private transient TimeSpanMap<OffsetEstimator> offsetEstimators;
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval

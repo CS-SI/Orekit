@@ -53,9 +53,6 @@ import org.orekit.utils.ParameterDriver;
  */
 public class GlobalMappingFunctionModel implements MappingFunction {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -9007141744989481150L;
-
     /** Geodetic site latitude, radians.*/
     private final double latitude;
 

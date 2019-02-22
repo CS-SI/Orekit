@@ -108,7 +108,7 @@ public class Position extends AbstractMeasurement<Position> {
               new double[] {
                   baseWeight, baseWeight, baseWeight
               }, Arrays.asList(satellite));
-        this.covarianceMatrix = covarianceMatrix;
+        this.covarianceMatrix = covarianceMatrix.clone();
     }
 
     /** Get the position.
@@ -123,7 +123,7 @@ public class Position extends AbstractMeasurement<Position> {
      * @return the covariance matrix
      */
     public double[][] getCovarianceMatrix() {
-        return covarianceMatrix;
+        return covarianceMatrix.clone();
     }
 
     /** Get the correlation coefficients matrix.

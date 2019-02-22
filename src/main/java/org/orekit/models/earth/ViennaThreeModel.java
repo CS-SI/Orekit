@@ -51,9 +51,6 @@ import org.orekit.utils.ParameterDriver;
  */
 public class ViennaThreeModel implements DiscreteTroposphericModel {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -7036859378575760764L;
-
     /** The a coefficient for the computation of the wet and hydrostatic mapping functions.*/
     private final double[] coefficientsA;
 
@@ -278,7 +275,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public double[] computeZenithDelay(final double height, final double[] parameters, final AbsoluteDate date) {
-        return zenithDelay;
+        return zenithDelay.clone();
     }
 
     /** {@inheritDoc} */

@@ -17,7 +17,6 @@
 package org.orekit.gnss;
 
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;

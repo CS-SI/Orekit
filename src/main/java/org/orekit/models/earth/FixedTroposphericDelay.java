@@ -31,9 +31,6 @@ import org.orekit.utils.InterpolationTableLoader;
  */
 public class FixedTroposphericDelay implements TroposphericModel {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -92320711761929077L;
-
     /** Singleton object for the default model. */
     private static FixedTroposphericDelay defaultModel;
 

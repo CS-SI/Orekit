@@ -40,9 +40,6 @@ import org.orekit.utils.ParameterDriver;
 */
 public class MendesPavlisModel implements DiscreteTroposphericModel {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6433588032679366305L;
-
     /** Coefficients for the dispertion equation for the hydrostatic component [µm<sup>-2</sup>]. */
     private static final double[] K_COEFFICIENTS = {
         238.0185, 19990.975, 57.362, 579.55174

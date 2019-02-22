@@ -59,9 +59,6 @@ public class SaastamoinenModel implements TroposphericModel {
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160126L;
-
     /** X values for the B function. */
     private static final double[] X_VALUES_FOR_B = {
         0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0

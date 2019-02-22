@@ -42,7 +42,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;

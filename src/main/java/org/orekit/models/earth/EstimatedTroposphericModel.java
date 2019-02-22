@@ -53,9 +53,6 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     /** Name of the parameter of this model: the total zenith delay. */
     public static final String TOTAL_ZENITH_DELAY = "total zenith delay";
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 3550108249909528948L;
-
     /** Mapping Function model. */
     private final MappingFunction model;
 

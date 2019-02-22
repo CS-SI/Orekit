@@ -47,9 +47,6 @@ import org.orekit.utils.ParameterDriver;
  */
 public class NiellMappingFunctionModel implements MappingFunction {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7990311232335034375L;
-
     /** Values for the ah average function. */
     private static final double[] VALUES_FOR_AH_AVERAGE = {
         1.2769934e-3, 1.2683230e-3, 1.2465397e-3, 1.2196049e-3, 1.2045996e-3

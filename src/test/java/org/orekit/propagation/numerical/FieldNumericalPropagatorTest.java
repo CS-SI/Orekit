@@ -46,7 +46,6 @@ import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.DTM2000;
 import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.Relativity;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;

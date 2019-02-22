@@ -86,7 +86,7 @@ public class AttitudesSequence implements AttitudeProvider {
     private static final long serialVersionUID = 20180326L;
 
     /** Providers that have been activated. */
-    private TimeSpanMap<AttitudeProvider> activated;
+    private transient TimeSpanMap<AttitudeProvider> activated;
 
     /** Switching events list. */
     private final List<Switch<?>> switches;

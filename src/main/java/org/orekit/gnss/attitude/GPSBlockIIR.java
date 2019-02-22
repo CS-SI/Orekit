@@ -47,7 +47,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
     private static final long serialVersionUID = 20171114L;
 
     /** Margin on turn end. */
-    private final double END_MARGIN = 1800.0;
+    private static final double END_MARGIN = 1800.0;
 
     /** Yaw rate. */
     private final double yawRate;
