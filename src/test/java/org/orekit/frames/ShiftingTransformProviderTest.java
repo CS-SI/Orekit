@@ -41,40 +41,6 @@ import org.orekit.utils.CartesianDerivativesFilter;
 public class ShiftingTransformProviderTest {
 
     @Test
-    @Deprecated
-    public void testDeprecatedConstructor() {
-
-        AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
-        CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
-        ShiftingTransformProvider shiftingProvider =
-                new ShiftingTransformProvider(rawProvider,
-                                              CartesianDerivativesFilter.USE_PVA,
-                                              AngularDerivativesFilter.USE_RRA,
-                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                              5, 0.8, 10, 60.0, 60.0);
-        Assert.assertEquals(5,   shiftingProvider.getGridPoints());
-        Assert.assertEquals(0.8, shiftingProvider.getStep(), 1.0e-15);
-
-        for (double dt = 0.8; dt <= 1.0; dt += 0.001) {
-            Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
-            Transform interpolated = shiftingProvider.getTransform(t0.shiftedBy(dt));
-            Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
-
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           1.1e-5);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           1.6e-4);
-            Assert.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       1.6e-3);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            4.2e-16);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         1.2e-16);
-            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 7.1e-30);
-
-        }
-        Assert.assertEquals(8,   rawProvider.getCount());
-        Assert.assertEquals(200, referenceProvider.getCount());
-
-    }
-
-    @Test
     public void testCacheHitForward() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;

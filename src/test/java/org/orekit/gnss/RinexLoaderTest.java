@@ -533,20 +533,6 @@ public class RinexLoaderTest {
         }
     }
 
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        RinexLoader  loader = new RinexLoader("^aaaa0000\\.00o$");
-        Map<RinexHeader, List<ObservationDataSet>> map = loader.getObservations();
-        for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
-            boolean found = false;
-            for (final ObservationDataSet other : map.get(dataSet.getHeader())) {
-                found |= other == dataSet;
-            }
-            Assert.assertTrue(found);
-        }
-    }
-
     private void checkObservation(final ObservationDataSet obser,
                                   final int year, final int month, final int day,
                                   final int hour, final int minute, final double second,

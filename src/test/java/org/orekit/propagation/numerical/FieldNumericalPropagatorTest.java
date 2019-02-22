@@ -118,23 +118,6 @@ public class FieldNumericalPropagatorTest {
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
     }
 
-    @Deprecated
-    @Test
-    public void testDeprecatedMethods() {
-        doTestDeprecatedMethods(Decimal64Field.getInstance());
-    }
-
-    @Deprecated
-    private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestDeprecatedMethods(Field<T> field)
-        {
-        FieldNumericalPropagator<T>  propagator = createPropagator(field);
-        propagator.addForceModel(new Relativity(mu));
-        Assert.assertEquals(2, propagator.getAllForceModels().size());
-        Assert.assertEquals(1, propagator.getForceModels().size());
-        Assert.assertSame(propagator.getAllForceModels().get(0), propagator.getForceModels().get(0));
-        Assert.assertSame(propagator.getAllForceModels().get(1), propagator.getNewtonianAttractionForceModel());
-    }
-
     @Test
     public void testEventAtEndOfEphemeris() {
         doTestEventAtEndOfEphemeris(Decimal64Field.getInstance());

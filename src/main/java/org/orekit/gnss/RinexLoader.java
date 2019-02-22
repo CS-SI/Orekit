@@ -135,25 +135,6 @@ public class RinexLoader {
         }
     }
 
-    /** Get parsed rinex observations.
-     * @return unmodifiable view of parsed rinex observations
-     * @deprecated as of 9.3 replaced by {@link #getObservationDataSets()}
-     */
-    @Deprecated
-    public Map<RinexHeader, List<ObservationDataSet>> getObservations() {
-        final Map<RinexHeader, List<ObservationDataSet>> map = new HashMap<>();
-        for (final ObservationDataSet dataSet : observationDataSets) {
-            List<ObservationDataSet> l = map.get(dataSet.getHeader());
-            if (l == null) {
-                // first time we see this header
-                l = new ArrayList<>();
-                map.put(dataSet.getHeader(), l);
-            }
-            l.add(dataSet);
-        }
-        return map;
-    }
-
     /** Get parsed rinex observations data sets.
      * @return unmodifiable view of parsed rinex observations
      * @since 9.3

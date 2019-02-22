@@ -686,20 +686,6 @@ public class AbsoluteDate
     }
 
 
-    /** Build an instance corresponding to a GPS date.
-     * <p>GPS dates are provided as a week number starting at
-     * {@link #GPS_EPOCH GPS epoch} and as a number of milliseconds
-     * since week start.</p>
-     * @param weekNumber week number since {@link #GPS_EPOCH GPS epoch}
-     * @param milliInWeek number of milliseconds since week start
-     * @return a new instant
-     * @deprecated as of 9.3, replaced by {@link GPSDate#GPSDate(int, double)}.{@link GPSDate#getDate()}
-     */
-    @Deprecated
-    public static AbsoluteDate createGPSDate(final int weekNumber, final double milliInWeek) {
-        return new GPSDate(weekNumber, milliInWeek).getDate();
-    }
-
     /** Build an instance corresponding to a Julian Epoch (JE).
      * <p>According to Lieske paper: <a
      * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&amp;defaultprint=YES&amp;filetype=.pdf.">

@@ -821,45 +821,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
 
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        final CelestialBody sun = CelestialBodyFactory.getSun();
-        PVCoordinatesProvider nonFieldProvider = new PVCoordinatesProvider() {
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                {
-                return sun.getPVCoordinates(date, frame);
-            }
-        };
-        SolarRadiationPressure srp = new SolarRadiationPressure(nonFieldProvider,
-                                                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
-        DSFactory factory = new DSFactory(6, 0);
-        DerivativeStructure a_0 = factory.variable(0, 7e7);
-        DerivativeStructure e_0 = factory.variable(1, 0.4);
-        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
-        DerivativeStructure R_0 = factory.variable(3, 0.7);
-        DerivativeStructure O_0 = factory.variable(4, 0.5);
-        DerivativeStructure n_0 = factory.variable(5, 0.1);
-
-        Field<DerivativeStructure> field = a_0.getField();
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
-        Frame EME = FramesFactory.getEME2000();
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
-                                                                                 EME,
-                                                                                 J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
-        FieldSpacecraftState<DerivativeStructure> s = new FieldSpacecraftState<>(FKO);
-
-        try {
-            srp.acceleration(s, srp.getParameters(field));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(LocalizedCoreFormats.UNSUPPORTED_OPERATION, oiae.getSpecifier());
-        }
-    }
-
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

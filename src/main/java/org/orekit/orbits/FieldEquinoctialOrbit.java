@@ -626,66 +626,6 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         return lE.subtract(ex.multiply(lE.sin())).add(ey.multiply(lE.cos()));
     }
 
-    /** Compute position from equinoctial parameters.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω + Ω), first component of eccentricity vector
-     * @param ey e sin(ω + Ω), second component of eccentricity vector
-     * @param hx tan(i/2) cos(Ω), first component of inclination vector
-     * @param hy tan(i/2) sin(Ω), second component of inclination vector
-     * @param lv  v + ω + Ω true longitude argument (rad)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the field elements
-     * @return position vector
-     * @deprecated as of 9.3, replaced by {@link #FieldEquinoctialOrbit(RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> equinoctialToPosition(final T a, final T ex, final T ey,
-                                                                                         final T hx, final T hy, final T lv,
-                                                                                         final double mu) {
-
-        final T one  = a.getField().getOne();
-
-        // eccentric longitude argument
-        final T lE = trueToEccentric(lv, ex, ey);
-
-        // inclination-related intermediate parameters
-        final T hx2   = hx.multiply(hx);
-        final T hy2   = hy.multiply(hy);
-        final T factH = one.divide(hx2.add(1.0).add(hy2));
-
-        // reference axes defining the orbital plane
-        final T ux = hx2.add(1.0).subtract(hy2).multiply(factH);
-        final T uy = hx.multiply(hy).multiply(factH).multiply(2);
-        final T uz = hy.multiply(-2).multiply(factH);
-
-        final T vx = uy;
-        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
-        final T vz =  hx.multiply(factH).multiply(2);
-
-        // eccentricity-related intermediate parameters
-        final T ex2  = ex.multiply(ex);
-        final T exey = ex.multiply(ey);
-        final T ey2  = ey.multiply(ey);
-        final T e2   = ex2.add(ey2);
-        final T eta  = one.subtract(e2).sqrt().add(1);
-        final T beta = one.divide(eta);
-
-        // eccentric longitude argument
-        final T cLe    = lE.cos();
-        final T sLe    = lE.sin();
-
-        // coordinates of position and velocity in the orbital plane
-        final T x      = a.multiply(one.subtract(beta.multiply(ey2)).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(ex));
-        final T y      = a.multiply(one.subtract(beta.multiply(ex2)).multiply(sLe).add(beta .multiply(exey).multiply(cLe)).subtract(ey));
-
-        return new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
-                                   x.multiply(uy).add(y.multiply(vy)),
-                                   x.multiply(uz).add(y.multiply(vz)));
-
-    }
-
     /** {@inheritDoc} */
     public T getE() {
         return ex.multiply(ex).add(ey.multiply(ey)).sqrt();

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Removed classes and methods deprecated in the 9.X series.
+      </action>
       <action dev="luc" type="fix" issue="528" due-to="Gowtham Sivaraman">
         Fixed parsing of clock in SP3 files.
       </action>

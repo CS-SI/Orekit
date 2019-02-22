@@ -100,33 +100,6 @@ public class InterpolatingTransformProvider implements TransformProvider {
         this.fieldCaches = new HashMap<>();
     }
 
-    /** Simple constructor.
-     * @param rawProvider provider for raw (non-interpolated) transforms
-     * @param cFilter filter for derivatives from the sample to use in interpolation
-     * @param aFilter filter for derivatives from the sample to use in interpolation
-     * @param earliest was earliest supported date, but is ignored now and can safely be null
-     * @param latest was latest supported date, but is ignored now and can safely be null
-     * @param gridPoints number of interpolation grid points
-     * @param step grid points time step
-     * @param maxSlots maximum number of independent cached time slots
-     * in the {@link GenericTimeStampedCache time-stamped cache}
-     * @param maxSpan maximum duration span in seconds of one slot
-     * in the {@link GenericTimeStampedCache time-stamped cache}
-     * @param newSlotInterval time interval above which a new slot is created
-     * in the {@link GenericTimeStampedCache time-stamped cache}
-     * @deprecated as of 9.1, replaced by {@link #InterpolatingTransformProvider(TransformProvider,
-     * CartesianDerivativesFilter, AngularDerivativesFilter, int, double, int, double, double)}
-     */
-    @Deprecated
-    public InterpolatingTransformProvider(final TransformProvider rawProvider,
-                                          final CartesianDerivativesFilter cFilter,
-                                          final AngularDerivativesFilter aFilter,
-                                          final AbsoluteDate earliest, final AbsoluteDate latest,
-                                          final int gridPoints, final double step,
-                                          final int maxSlots, final double maxSpan, final double newSlotInterval) {
-        this(rawProvider, cFilter, aFilter, gridPoints, step, maxSlots, maxSpan, newSlotInterval);
-    }
-
     /** Get the underlying provider for raw (non-interpolated) transforms.
      * @return provider for raw (non-interpolated) transforms
      */

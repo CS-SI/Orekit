@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -77,31 +76,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param observed observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @param propagatorsIndices indices of the propagators related to this measurement
-     * @param supportedParameters supported parameters
-     * @deprecated since 9.3, replaced bew {@link #AbstractMeasurement(AbsoluteDate,
-     * double, double, double, List)} followed by {@link #addParameterDriver(ParameterDriver)}
-     */
-    @Deprecated
-    protected AbstractMeasurement(final AbsoluteDate date, final double observed,
-                                  final double sigma, final double baseWeight,
-                                  final List<Integer> propagatorsIndices,
-                                  final ParameterDriver... supportedParameters) {
-        this(date, observed, sigma, baseWeight,
-             propagatorsIndices.stream().map(i -> new ObservableSatellite(i)).collect(Collectors.toList()));
-        for (final ParameterDriver parameterDriver : supportedParameters) {
-            this.supportedParameters.add(parameterDriver);
-        }
-    }
-
-    /** Simple constructor for mono-dimensional measurements.
-     * <p>
-     * At construction, a measurement is enabled.
-     * </p>
-     * @param date date of the measurement
-     * @param observed observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
      * @param satellites satellites related to this measurement
      * @since 9.3
      */
@@ -130,31 +104,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         this.modifiers = new ArrayList<EstimationModifier<T>>();
         setEnabled(true);
 
-    }
-
-    /** Simple constructor, for multi-dimensional measurements.
-     * <p>
-     * At construction, a measurement is enabled.
-     * </p>
-     * @param date date of the measurement
-     * @param observed observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param propagatorsIndices indices of the propagators related to this measurement
-     * @param supportedParameters supported parameters
-     * @deprecated since 9.3, replaced bew {@link #AbstractMeasurement(AbsoluteDate,
-     * double[], double[], double[], List)} followed by {@link #addParameterDriver(ParameterDriver)}
-     */
-    @Deprecated
-    protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
-                                  final double[] sigma, final double[] baseWeight,
-                                  final List<Integer> propagatorsIndices,
-                                  final ParameterDriver... supportedParameters) {
-        this(date, observed, sigma, baseWeight,
-             propagatorsIndices.stream().map(i -> new ObservableSatellite(i)).collect(Collectors.toList()));
-        for (final ParameterDriver parameterDriver : supportedParameters) {
-            this.supportedParameters.add(parameterDriver);
-        }
     }
 
     /** Simple constructor, for multi-dimensional measurements.
@@ -227,14 +176,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     @Override
     public double[] getBaseWeight() {
         return baseWeight.clone();
-    }
-
-    /** {@inheritDoc}
-     * @deprecated as of 9.3, replaced by {@link #getSatellites()}
-     */
-    @Deprecated
-    public List<Integer> getPropagatorsIndices() {
-        return satellites.stream().map(s -> s.getPropagatorIndex()).collect(Collectors.toList());
     }
 
     /** {@inheritDoc} */
