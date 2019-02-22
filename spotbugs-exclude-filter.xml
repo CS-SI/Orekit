@@ -132,7 +132,7 @@
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
   <Match>
-    <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier.$"/>
+    <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$"/>
     <Method name="modify" />
     <Or>
       <Local name="masterDjac" />
@@ -192,7 +192,7 @@
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
-    <Class name="org.orekit.gnss..RinexLoader$Parser$PhaseShiftCorrection"/>
+    <Class name="org.orekit.gnss.RinexLoader$Parser$PhaseShiftCorrection"/>
       <Method name="getSatsCorrected" params="" returns="String[]" />
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>

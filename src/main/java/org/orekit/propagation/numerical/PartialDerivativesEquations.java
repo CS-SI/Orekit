@@ -234,7 +234,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
      * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
      * with the same name as the instance
-          * @see #setInitialJacobians(SpacecraftState, int)
+     * @see #setInitialJacobians(SpacecraftState)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
     public JacobiansMapper getMapper() {

@@ -16,7 +16,6 @@
  */
 package org.orekit.models.earth;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 import org.hipparchus.analysis.BivariateFunction;
@@ -257,59 +256,6 @@ public class SaastamoinenModel implements TroposphericModel {
 
         // the actual delta R is interpolated using a a bilinear interpolator
         return new BilinearInterpolatingFunction(xValForR, yValForR, fval);
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(this);
-    }
-
-    /** Specialization of the data transfer object for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160126L;
-
-        /** The temperature at the station [K]. */
-        private double t0;
-
-        /** The atmospheric pressure [mbar]. */
-        private double p0;
-
-        /** The humidity [percent]. */
-        private double r0;
-
-        /** Samples x-coordinates. */
-        private final double[] xval;
-
-        /** Samples y-coordinates. */
-        private final double[] yval;
-
-        /** Set of cubic splines patching the whole data grid. */
-        private final double[][] fval;
-
-        /** Simple constructor.
-         * @param model model to serialize
-         */
-        DataTransferObject(final SaastamoinenModel model) {
-            this.t0 = model.t0;
-            this.p0 = model.p0;
-            this.r0 = model.r0;
-            this.xval = model.deltaRFunction.xval.clone();
-            this.yval = model.deltaRFunction.yval.clone();
-            this.fval = model.deltaRFunction.fval.clone();
-        }
-
-        /** Replace the deserialized data transfer object with a {@link SaastamoinenModel}.
-         * @return replacement {@link SaastamoinenModel}
-         */
-        private Object readResolve() {
-            return new SaastamoinenModel(t0, p0, r0,
-                                         new BilinearInterpolatingFunction(xval, yval, fval));
-        }
 
     }
 

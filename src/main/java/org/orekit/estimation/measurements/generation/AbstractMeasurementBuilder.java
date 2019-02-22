@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -159,7 +158,6 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
      * </p>
      * @return base weight
      * @see #getTheoreticalStandardDeviation()
-     * @see EstimatedMeasurement#getCurrentWeight()
      */
     protected double[] getBaseWeight() {
         return baseWeight.clone();

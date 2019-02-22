@@ -94,7 +94,6 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * </p>
      * @return base weight
      * @see #getTheoreticalStandardDeviation()
-     * @see EstimatedMeasurement#getCurrentWeight()
      */
     double[] getBaseWeight();
 
