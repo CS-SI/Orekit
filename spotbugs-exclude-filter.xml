@@ -192,11 +192,6 @@
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
-    <Class name="org.orekit.gnss.RinexLoader$Parser$PhaseShiftCorrection"/>
-      <Method name="getSatsCorrected" params="" returns="String[]" />
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
     <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
     <Or>  
       <Method name="getGradient" params="" returns="double[]" />

@@ -1153,7 +1153,7 @@ public class RinexLoader {
              */
             public String[] getSatsCorrected() {
                 //If empty, all the satellites of this constellation are affected for this Observation type
-                return satsPhaseShift;
+                return satsPhaseShift == null ? null : satsPhaseShift.clone();
             }
         }
 
