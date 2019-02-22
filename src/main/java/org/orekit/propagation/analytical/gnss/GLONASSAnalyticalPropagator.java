@@ -295,9 +295,17 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final DerivativeStructure iCorr      = i.add(d2[4]).subtract(d1[4]);
         final DerivativeStructure mCorr      = m.add(d2[5]).subtract(d1[5]);
         final DerivativeStructure eCorr      = FastMath.sqrt(hCorr.multiply(hCorr).add(lCorr.multiply(lCorr)));
-        DerivativeStructure paCorr     = FastMath.atan(hCorr.divide(lCorr));
-        if (paCorr.getValue() < 0) {
-            paCorr = paCorr.add(GPSOrbitalElements.GPS_PI);
+        final DerivativeStructure paCorr;
+        if (eCorr.getValue() == 0.) {
+            paCorr = zero;
+        } else {
+            if (lCorr.getValue() == eCorr.getValue()) {
+                paCorr = zero.add(0.5 * GLONASSOrbitalElements.GLONASS_PI);
+            } else if (lCorr.getValue() == -eCorr.getValue()) {
+                paCorr = zero.add(-0.5 * GLONASSOrbitalElements.GLONASS_PI);
+            } else {
+                paCorr = FastMath.atan2(hCorr, lCorr);
+            }
         }
 
         // Eccentric Anomaly
