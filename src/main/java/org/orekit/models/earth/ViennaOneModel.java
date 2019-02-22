@@ -36,11 +36,11 @@ import org.orekit.utils.ParameterDriver;
  * This version considered the height correction for the hydrostatic part
  * developed by Niell, 1996.
  *
- * @see Boehm, J., Werl, B., and Schuh, H., (2006),
- *      "Troposhere mapping functions for GPS and very long baseline
- *      interferometry from European Centre for Medium-Range Weather
- *      Forecasts operational analysis data," J. Geophy. Res., Vol. 111,
- *      B02406, doi:10.1029/2005JB003629
+ * @see "Boehm, J., Werl, B., and Schuh, H., (2006),
+ *       Troposhere mapping functions for GPS and very long baseline
+ *       interferometry from European Centre for Medium-Range Weather
+ *       Forecasts operational analysis data, J. Geophy. Res., Vol. 111,
+ *       B02406, doi:10.1029/2005JB003629"
  *
  * @author Bryan Cazabonne
  */

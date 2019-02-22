@@ -40,13 +40,13 @@ import org.orekit.utils.ParameterDriver;
  *  with the {@link ViennaOneModel Vienna1} mapping function model.
  *  </p>
  *
- *  @see Boehm, J., A.E. Niell, P. Tregoning, H. Schuh (2006),
+ *  @see "Boehm, J., A.E. Niell, P. Tregoning, H. Schuh (2006),
  *       Global Mapping Functions (GMF): A new empirical mapping function based
  *       on numerical weather model data, Geoph. Res. Letters, Vol. 33, L07304,
- *       doi:10.1029/2005GL025545.
+ *       doi:10.1029/2005GL025545."
  *
- *  @see <p>Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
- *       IERS Technical Note No. 36, BKG (2010)</p>
+ *  @see "Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
+ *       IERS Technical Note No. 36, BKG (2010)"
  *
  *  @author Bryan Cazabonne
  *

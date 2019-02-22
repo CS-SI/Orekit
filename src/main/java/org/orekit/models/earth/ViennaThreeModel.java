@@ -39,13 +39,13 @@ import org.orekit.utils.ParameterDriver;
  *  {@link ViennaOneModel VMF1} model.
  *  </p>
  *
- * @see Landskron, D. & Böhm, J. J Geod (2018)
+ * @see "Landskron, D. & Böhm, J. J Geod (2018)
  *      VMF3/GPT3: refined discrete and empirical troposphere mapping functions
- *      92: 349. https://doi.org/10.1007/s00190-017-1066-2
+ *      92: 349. https://doi.org/10.1007/s00190-017-1066-2"
  *
- * @see <p> Landskron D (2017) Modeling tropospheric delays for space geodetic
+ * @see "Landskron D (2017) Modeling tropospheric delays for space geodetic
  *      techniques. Dissertation, Department of Geodesy and Geoinformation, TU Wien, Supervisor: J. Böhm.
- *      http://repositum.tuwien.ac.at/urn:nbn:at:at-ubtuw:1-100249 </p>
+ *      http://repositum.tuwien.ac.at/urn:nbn:at:at-ubtuw:1-100249"
  *
  * @author Bryan Cazabonne
  */
