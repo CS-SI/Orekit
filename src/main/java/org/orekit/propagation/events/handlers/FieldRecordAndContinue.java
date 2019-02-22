@@ -16,33 +16,39 @@
  */
 package org.orekit.propagation.events.handlers;
 
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+
 /**
  * Handler that will record every time an event occurs and always return {@link
- * EventHandler.Action#CONTINUE}.
+ * Action#CONTINUE}.
  *
  * <p> As this handler stores all observed events it may consume large amounts
- * of memory depending on the duration of propagation and the frequency of
- * events.
+ * of memory depending on the duration of propagation and the frequency of events.
  *
- * @param <T> the type of {@link EventDetector} that this event handler will
- *            handle events for.
+ * @param <T> the type of {@link EventDetector} that this event handler will handle events
+ *            for.
+ * @param <E> the type of {@link RealFieldElement} to use instead of {@code double}.
  * @author Evan Ward
+ * @see RecordAndContinue
+ * @since 9.3
  */
-public class RecordAndContinue<T extends EventDetector>
-        implements EventHandler<T> {
+public class FieldRecordAndContinue
+        <T extends FieldEventDetector<E>, E extends RealFieldElement<E>>
+        implements FieldEventHandler<T, E> {
 
     /** A single event detected during propagation. */
-    public static class Event<T> {
+    public static class Event<T, F extends RealFieldElement<F>> {
 
         /** The observed state. */
-        private final SpacecraftState state;
+        private final FieldSpacecraftState<F> state;
         /** The detector. */
         private final T detector;
         /** The sign of the derivative of the g function. */
@@ -56,7 +62,7 @@ public class RecordAndContinue<T extends EventDetector>
          * @param increasing if the g function is increasing.
          */
         private Event(final T detector,
-                      final SpacecraftState state,
+                      final FieldSpacecraftState<F> state,
                       final boolean increasing) {
             this.detector = detector;
             this.state = state;
@@ -67,8 +73,7 @@ public class RecordAndContinue<T extends EventDetector>
          * Get the detector.
          *
          * @return the detector that found the event.
-         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector,
-         * boolean)
+         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public T getDetector() {
             return detector;
@@ -77,10 +82,9 @@ public class RecordAndContinue<T extends EventDetector>
         /**
          * Is the g() function increasing?
          *
-         * @return if the sign of the derivative of the g function is positive
-         * (true) or negative (false).
-         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector,
-         * boolean)
+         * @return if the sign of the derivative of the g function is positive (true) or
+         * negative (false).
+         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public boolean isIncreasing() {
             return increasing;
@@ -90,10 +94,9 @@ public class RecordAndContinue<T extends EventDetector>
          * Get the spacecraft's state at the event.
          *
          * @return the satellite's state when the event was triggered.
-         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector,
-         * boolean)
+         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
-        public SpacecraftState getState() {
+        public FieldSpacecraftState<F> getState() {
             return state;
         }
 
@@ -108,10 +111,10 @@ public class RecordAndContinue<T extends EventDetector>
     }
 
     /** Observed events. */
-    private final List<Event<T>> events;
+    private final List<Event<T, E>> events;
 
     /** Create a new handler using an {@link ArrayList} to store events. */
-    public RecordAndContinue() {
+    public FieldRecordAndContinue() {
         this(new ArrayList<>());
     }
 
@@ -120,7 +123,7 @@ public class RecordAndContinue<T extends EventDetector>
      *
      * @param events collection.
      */
-    public RecordAndContinue(final List<Event<T>> events) {
+    public FieldRecordAndContinue(final List<Event<T, E>> events) {
         this.events = events;
     }
 
@@ -128,19 +131,17 @@ public class RecordAndContinue<T extends EventDetector>
      * Get the events passed to this handler.
      *
      * <p> Note the returned list of events is in the order the events were
-     * passed to this handler by calling {@link #eventOccurred(SpacecraftState,
-     * EventDetector, boolean)}. This may or may not be chronological order.
+     * passed to this handler by calling {@link #eventOccurred(FieldSpacecraftState,
+     * FieldEventDetector, boolean)}. This may or may not be chronological order.
      *
      * <p> Also not that this method returns a view of the internal collection
-     * used to store events and calling any of this handler's methods may modify
-     * both the underlying collection and the returned view. If a snapshot of
-     * the events up to a certain point is needed create a copy of the returned
-     * collection.
+     * used to store events and calling any of this handler's methods may modify both the
+     * underlying collection and the returned view. If a snapshot of the events up to a
+     * certain point is needed create a copy of the returned collection.
      *
-     * @return the events observed by the handler in the order they were
-     * observed.
+     * @return the events observed by the handler in the order they were observed.
      */
-    public List<Event<T>> getEvents() {
+    public List<Event<T, E>> getEvents() {
         return Collections.unmodifiableList(this.events);
     }
 
@@ -150,16 +151,16 @@ public class RecordAndContinue<T extends EventDetector>
     }
 
     @Override
-    public Action eventOccurred(final SpacecraftState s,
+    public Action eventOccurred(final FieldSpacecraftState<E> s,
                                 final T detector,
                                 final boolean increasing) {
-        events.add(new Event<T>(detector, s, increasing));
+        events.add(new Event<>(detector, s, increasing));
         return Action.CONTINUE;
     }
 
     @Override
-    public SpacecraftState resetState(final T detector,
-                                      final SpacecraftState oldState) {
+    public FieldSpacecraftState<E> resetState(final T detector,
+                                              final FieldSpacecraftState<E> oldState) {
         return null;
     }
 

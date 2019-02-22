@@ -21,6 +21,24 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="evan" type="add" issue="507">
+        Add Action.RESET_EVENTS to check all detectors for events without recomputing the
+        propagation step.
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add Action.RESET_EVENTS to check all detectors for events without recomputing the
+        propagation step.
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add toString() implementations to SpacecraftState, RecordAndContinue.Event and
+        Field versions.
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add Field version of RecordAndContinue.
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add Field version of LatitudeCrossingDetector.
+      </action>
       <action dev="luc" type="update">
         Removed classes and methods deprecated in the 9.X series.
       </action>
