@@ -18,6 +18,9 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
+import org.orekit.utils.Constants;
+
 /** Container for date in GLONASS form.
  * @author Bryan Cazabonne
  * @see AbsoluteDate
@@ -42,6 +45,12 @@ public class GLONASSDate implements Serializable, TimeStamped {
     /** Number of seconds since N<sub>a</sub>. */
     private final double secInNa;
 
+    /** Current Julian date JD0. */
+    private double jd0;
+
+    /** Greenwich Mean Sidereal Time (rad). */
+    private double gmst;
+
     /** Corresponding date. */
     private final transient AbsoluteDate date;
 
@@ -54,7 +63,11 @@ public class GLONASSDate implements Serializable, TimeStamped {
         this.na      = na;
         this.n4      = n4;
         this.secInNa = secInNa;
-        this.date    = computeDate();
+        // Compute JD0
+        this.jd0  = 1461 * (n4 - 1) + na + 2450082.5 - ((na - 3) / (25 + C1 + C2));
+        // GMST
+        this.gmst = computeGMST();
+        this.date = computeDate();
     }
 
     /** Build an instance from an absolute date.
@@ -62,16 +75,19 @@ public class GLONASSDate implements Serializable, TimeStamped {
      */
     public GLONASSDate(final AbsoluteDate date) {
         final DateTimeComponents dateTime = date.getComponents(TimeScalesFactory.getGLONASS());
-
+        // N4
         final int year = dateTime.getDate().getYear();
         this.n4   = ((int) (year - 1996) / 4) + 1;
-
+        // Na
         final int start = 1996 + 4 * (n4 - 1);
         final double duration = date.durationFrom(new AbsoluteDate(start, 1, 1, TimeScalesFactory.getGLONASS()));
         this.na = (int) (duration / 86400) + 1;
-
         this.secInNa = dateTime.getTime().getSecondsInLocalDay();
-        this.date    = date;
+        // Compute JD0
+        this.jd0 = 1461 * (n4 - 1) + na + 2450082.5 - ((na - 3) / (25 + C1 + C2));
+        // GMST
+        this.gmst = computeGMST();
+        this.date = date;
     }
 
     @Override
@@ -100,13 +116,47 @@ public class GLONASSDate implements Serializable, TimeStamped {
         return n4;
     }
 
+    /** Get the current Julian date JD0.
+     * @return the current date JD0
+     */
+    public double getJD0() {
+        return jd0;
+    }
+
+    /** Get the Greenwich Mean Sidereal Time.
+     * @return the Greenwich Mean Sidereal Time (rad)
+     */
+    public double getGMST() {
+        return gmst;
+    }
+
+    /** Compute the Greenwich Mean Sidereal Time
+     * using the current Julian date JD0.
+     * @return the Greenwich Mean Sidereal Time (rad)
+     */
+    private double computeGMST() {
+        final double ref = 2451545.0;
+        // Earth's rotation angle in radians
+        final double era = 2. * GLONASSOrbitalElements.GLONASS_PI *
+                        (0.7790572732640 + 1.00273781191135448 * (jd0 - ref));
+        // Time from Epoch 2000 (1st January, 00:00 UTC) till current Epoch in Julian centuries
+        final double time = (jd0 - ref) / Constants.JULIAN_CENTURY;
+        // Time to the power n
+        final double time2 = time * time;
+        final double time3 = time2 * time;
+        final double time4 = time2 * time2;
+        final double time5 = time2 * time3;
+        // GMST computation
+        final double gTime = era + 7.03270726e-8 + time * 2.23603658710194e-2 +
+                        time2 * 6.7465784654e-6 - time3 * 2.1332e-12 - time4 * 1.452308e-10 - time5 * 1.784e-13;
+        return gTime;
+    }
+
     /** Computes the GLONASS date.
      * Ref: GLONASS Interface Control Document v1.0, 2016, Appendix K
      * @return the date
      */
     private AbsoluteDate computeDate() {
-        // Compute JD0
-        final double jd0 = 1461 * (n4 - 1) + na + 2450082.5 - ((na - 3) / (25 + C1 + C2));
         // Compute the number of Julian day for the current date
         final double jdn = jd0 + 0.5;
         // Coefficients

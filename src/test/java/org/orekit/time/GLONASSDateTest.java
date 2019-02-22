@@ -45,6 +45,8 @@ public class GLONASSDateTest {
                                              glo);
         Assert.assertEquals(251, date.getNa());
         Assert.assertEquals(5,   date.getN4());
+        Assert.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
+        Assert.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
         Assert.assertEquals(0,   date.getDate().durationFrom(ref), 1.0e-15);
     }
 
@@ -55,6 +57,8 @@ public class GLONASSDateTest {
                                                             glo));
         Assert.assertEquals(251,    date.getNa());
         Assert.assertEquals(5,      date.getN4());
+        Assert.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
+        Assert.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
         Assert.assertEquals(7200.0, date.getSecInNa(), 1.0e-15);
     }
 
@@ -77,6 +81,8 @@ public class GLONASSDateTest {
                                              glo);
         Assert.assertEquals(251, deserialized.getNa());
         Assert.assertEquals(5, deserialized.getN4());
+        Assert.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
+        Assert.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
         Assert.assertEquals(0, deserialized.getDate().durationFrom(ref), 1.0e-15);
 
     }

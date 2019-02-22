@@ -16,16 +16,25 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.TimeStamped;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link GLONASSPropagator}.
-*
-* @see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
-*       GLONASS Interface Control Document</a>
-*
-* @author Bryan Cazabonne
-*
-*/
+/** This interface provides the minimal set of orbital elements needed by the {@link GLONASSAnalyticalPropagator} and
+ * the {@link GLONASSNumericalPropagator}.
+ * <p>
+ * Because input data are different between numerical and analytical GLONASS propagators the
+ * methods present in this interface are implemented by default.
+ * Depending if the user wants to use a {@link GLONASSNumericalPropagator} or a {@link GLONASSAnalyticalPropagator}
+ * he shall implements this interface and overrides the needed methods to build a new set of
+ * GLONASS orbital elements.
+ * </p>
+ *
+ * @see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
+ *       GLONASS Interface Control Document</a>
+ *
+ * @author Bryan Cazabonne
+ *
+ */
 public interface GLONASSOrbitalElements extends TimeStamped {
 
     // Constants
@@ -36,58 +45,72 @@ public interface GLONASSOrbitalElements extends TimeStamped {
     double GLONASS_PI = 3.14159265358979;
 
     /**
-     * Get the Reference Time of the almanac.
+     * Get the Reference Time.
      *
-     * @return the Reference Time of the almanac (s)
+     * @return the Reference Time (s)
      */
-    double getTime();
+    default double getTime() {
+        return 0.0;
+    }
 
     /**
      * Get the longitude of ascending node of orbit.
      *
      * @return the longitude of ascending node of orbit (rad)
      */
-    double getLambda();
+    default double getLambda() {
+        return 0.0;
+    }
 
     /**
      * Get the Eccentricity.
      *
      * @return the Eccentricity
      */
-    double getE();
+    default double getE() {
+        return 0.0;
+    }
 
     /**
      * Get the Argument of Perigee.
      *
      * @return the Argument of Perigee (rad)
      */
-    double getPa();
+    default double getPa() {
+        return 0.0;
+    }
 
     /**
      * Get the correction to the mean value of inlination.
      *
      * @return the correction to the mean value of inlination (rad)
      */
-    double getDeltaI();
+    default double getDeltaI() {
+        return 0.0;
+    }
 
     /**
      * Get the correction to the mean value of Draconian period.
      *
      * @return the correction to the mean value of Draconian period (s)
      */
-    double getDeltaT();
+    default double getDeltaT() {
+        return 0.0;
+    }
 
     /**
      * Get the rate of change of Draconian period.
      *
      * @return the rate of change of Draconian period
      */
-    double getDeltaTDot();
+    default double getDeltaTDot() {
+        return 0.0;
+    }
 
     /**
-     * Get the relative deviation of predicted satellite corrier frequency from nominal value.
+     * Get the relative deviation of predicted satellite carrier frequency from nominal value.
      *
-     * @return the relative deviation of predicted satellite corrier frequency from nominal value
+     * @return the relative deviation of predicted satellite carrier frequency from nominal value
      */
     default double getGammaN() {
         return 0.0;
@@ -100,6 +123,87 @@ public interface GLONASSOrbitalElements extends TimeStamped {
      *
      */
     default double getTN() {
+        return 0.0;
+    }
+
+    /**
+     * Get the ECEF-X component of satellite velocity vector in PZ-90 datum.
+     *
+     * @return the the ECEF-X component of satellite velocity vector in PZ-90 datum (m/s)
+     */
+    default double getXDot() {
+        return 0.0;
+    }
+
+    /**
+     * Get the ECEF-X component of satellite coordinates in PZ-90 datum.
+     *
+     * @return the ECEF-X component of satellite coordinates in PZ-90 datum (m)
+     */
+    default double getX() {
+        return 0.0;
+    }
+
+    /**
+     * Get the GLONASS ECEF-X component of satellite acceleration vector in PZ-90 datum.
+     *
+     * @return the GLONASS ECEF-X component of satellite acceleration vector in PZ-90 datum (m/s²)
+     */
+    default double getXDotDot() {
+        return 0.0;
+    }
+
+    /**
+     * Get the ECEF-Y component of satellite velocity vector in PZ-90 datum.
+     *
+     * @return the ECEF-Y component of satellite velocity vector in PZ-90 datum (m/s)
+     */
+    default double getYDot() {
+        return 0.0;
+    }
+
+    /**
+     * Get the ECEF-Y component of satellite coordinates in PZ-90 datum.
+     *
+     * @return the ECEF-Y component of satellite coordinates in PZ-90 datum (m)
+     */
+    default double getY() {
+        return 0.0;
+    }
+
+    /**
+     * Get the GLONASS ECEF-Y component of satellite acceleration vector in PZ-90 datum.
+     *
+     * @return the GLONASS ECEF-Y component of satellite acceleration vector in PZ-90 datum (m/s²)
+     */
+    default double getYDotDot() {
+        return 0.0;
+    }
+
+    /**
+     * Get the ECEF-Z component of satellite velocity vector in PZ-90 datum.
+     *
+     * @return the the ECEF-Z component of satellite velocity vector in PZ-90 datum (m/s)
+     */
+    default double getZDot() {
+        return 0.0;
+    }
+
+    /**
+     * Get the ECEF-Z component of satellite coordinates in PZ-90 datum.
+     *
+     * @return the ECEF-Z component of satellite coordinates in PZ-90 datum (m)
+     */
+    default double getZ() {
+        return 0.0;
+    }
+
+    /**
+     * Get the GLONASS ECEF-Z component of satellite acceleration vector in PZ-90 datum.
+     *
+     * @return the GLONASS ECEF-Z component of satellite acceleration vector in PZ-90 datum (m/s²)
+     */
+    default double getZDotDot() {
         return 0.0;
     }
 
