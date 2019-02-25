@@ -98,31 +98,31 @@ public class NiellMappingFunctionModel implements MappingFunction {
     };
 
     /** Interpolation function for the ah (average) term. */
-    private final transient UnivariateFunction ahAverageFunction;
+    private final UnivariateFunction ahAverageFunction;
 
     /** Interpolation function for the bh (average) term. */
-    private final transient UnivariateFunction bhAverageFunction;
+    private final UnivariateFunction bhAverageFunction;
 
     /** Interpolation function for the ch (average) term. */
-    private final transient UnivariateFunction chAverageFunction;
+    private final UnivariateFunction chAverageFunction;
 
     /** Interpolation function for the ah (amplitude) term. */
-    private final transient UnivariateFunction ahAmplitudeFunction;
+    private final UnivariateFunction ahAmplitudeFunction;
 
     /** Interpolation function for the bh (amplitude) term. */
-    private final transient UnivariateFunction bhAmplitudeFunction;
+    private final UnivariateFunction bhAmplitudeFunction;
 
     /** Interpolation function for the ch (amplitude) term. */
-    private final transient UnivariateFunction chAmplitudeFunction;
+    private final UnivariateFunction chAmplitudeFunction;
 
     /** Interpolation function for the aw term. */
-    private final transient UnivariateFunction awFunction;
+    private final UnivariateFunction awFunction;
 
     /** Interpolation function for the bw term. */
-    private final transient UnivariateFunction bwFunction;
+    private final UnivariateFunction bwFunction;
 
     /** Interpolation function for the cw term. */
-    private final transient UnivariateFunction cwFunction;
+    private final UnivariateFunction cwFunction;
 
     /** Geodetic site latitude, radians.*/
     private final double latitude;

@@ -74,13 +74,13 @@ public class SaastamoinenModel implements TroposphericModel {
     };
 
     /** Interpolation function for the B correction term. */
-    private final transient UnivariateFunction bFunction;
+    private final UnivariateFunction bFunction;
 
     /** Polynomial function for the e term. */
-    private final transient PolynomialFunction eFunction;
+    private final PolynomialFunction eFunction;
 
     /** Interpolation function for the delta R correction term. */
-    private final transient BilinearInterpolatingFunction deltaRFunction;
+    private final BilinearInterpolatingFunction deltaRFunction;
 
     /** The temperature at the station [K]. */
     private double t0;
