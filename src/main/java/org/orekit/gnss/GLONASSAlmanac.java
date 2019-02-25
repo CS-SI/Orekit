@@ -205,21 +205,13 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
         return tGlo;
     }
 
-    /**
-     * Get the number of the current day in a four year interval.
-     *
-     * @return the number of the current day in a four year interval
-     */
+    @Override
     public int getNa() {
         final GLONASSDate gloDate = new GLONASSDate(getDate());
         return gloDate.getNa();
     }
 
-    /**
-     * Get the number of the current four year interval.
-     *
-     * @return the number of the current four year interval
-     */
+    @Override
     public int getN4() {
         final GLONASSDate gloDate = new GLONASSDate(getDate());
         return gloDate.getN4();

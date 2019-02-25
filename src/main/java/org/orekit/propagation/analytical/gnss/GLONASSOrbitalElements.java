@@ -45,6 +45,24 @@ public interface GLONASSOrbitalElements extends TimeStamped {
     double GLONASS_PI = 3.14159265358979;
 
     /**
+     * Get the number of the current day in a four year interval.
+     *
+     * @return the number of the current day in a four year interval
+     */
+    default int getNa() {
+        return 0;
+    }
+
+    /**
+     * Get the number of the current four year interval.
+     *
+     * @return the number of the current four year interval
+     */
+    default int getN4() {
+        return 0;
+    }
+
+    /**
      * Get the Reference Time.
      *
      * @return the Reference Time (s)
