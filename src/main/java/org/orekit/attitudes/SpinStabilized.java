@@ -42,9 +42,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class SpinStabilized implements AttitudeProviderModifier {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -7025790361794748354L;
-
     /** Underlying non-rotating attitude provider.  */
     private final AttitudeProvider nonRotatingLaw;
 

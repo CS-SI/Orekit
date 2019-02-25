@@ -45,9 +45,6 @@ import org.orekit.time.TimeStamped;
  */
 public class DateDetector extends AbstractDetector<DateDetector> implements TimeStamped {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Last date for g computation. */
     private AbsoluteDate gDate;
 

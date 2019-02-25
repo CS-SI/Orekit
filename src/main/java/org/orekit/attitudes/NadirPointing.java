@@ -50,9 +50,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class NadirPointing extends GroundPointing {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150529L;
-
     /** Body shape.  */
     private final BodyShape shape;
 

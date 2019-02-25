@@ -16,11 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -51,7 +46,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class EphemerisTest {
 
@@ -112,45 +106,6 @@ public class EphemerisTest {
             Assert.assertEquals("QSW Unmatched Position at: " + currentDate, 0.0, positionDelta, positionTolerance);
             Assert.assertEquals("QSW Unmatched Velocity at: " + currentDate, 0.0, velocityDelta, velocityTolerance);
             Assert.assertEquals("QSW Unmatched Attitude at: " + currentDate, 0.0, attitudeDelta, attitudeTolerance);
-        }
-
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-
-        propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
-        int numberOfIntervals = 150;
-        double deltaT = finalDate.durationFrom(initDate) / numberOfIntervals;
-
-        List<SpacecraftState> states = new ArrayList<SpacecraftState>(numberOfIntervals + 1);
-        for (int j = 0; j<= numberOfIntervals; j++) {
-            states.add(propagator.propagate(initDate.shiftedBy((j * deltaT))));
-        }
-
-        int numInterpolationPoints = 2;
-        Ephemeris ephemPropagator = new Ephemeris(states, numInterpolationPoints, 1.25);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(ephemPropagator);
-
-        Assert.assertTrue(bos.size() > 30000);
-        Assert.assertTrue(bos.size() < 31000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        Ephemeris deserialized  = (Ephemeris) ois.readObject();
-        Assert.assertEquals(deserialized.getMinDate(), ephemPropagator.getMinDate());
-        Assert.assertEquals(deserialized.getMaxDate(), ephemPropagator.getMaxDate());
-        Assert.assertEquals(deserialized.getExtrapolationThreshold(), ephemPropagator.getExtrapolationThreshold(), 1.0e-15);
-        for (double dt = 0; dt < finalDate.durationFrom(initDate); dt += 10.0) {
-            AbsoluteDate date = initDate.shiftedBy(dt);
-            TimeStampedPVCoordinates pvRef = ephemPropagator.getPVCoordinates(date, inertialFrame);
-            TimeStampedPVCoordinates pv    = deserialized.getPVCoordinates(date, inertialFrame);
-            Assert.assertEquals(0.0, Vector3D.distance(pvRef.getPosition(),     pv.getPosition()),     1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(pvRef.getVelocity(),     pv.getVelocity()),     1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(pvRef.getAcceleration(), pv.getAcceleration()), 1.0e-15);
         }
 
     }

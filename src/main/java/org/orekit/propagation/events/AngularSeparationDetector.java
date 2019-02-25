@@ -39,9 +39,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class AngularSeparationDetector extends AbstractDetector<AngularSeparationDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160519L;
-
     /** Beacon at the center of the proximity zone. */
     private final PVCoordinatesProvider beacon;
 

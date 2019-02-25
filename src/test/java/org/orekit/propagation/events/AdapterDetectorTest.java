@@ -63,8 +63,6 @@ public class AdapterDetectorTest {
         AtomicInteger count = new AtomicInteger(0);
         DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
         AdapterDetector adapter = new AdapterDetector(dateDetector) {
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20181206L;
             /** {@inheritDoc} */
             @Override
             public Action eventOccurred(final SpacecraftState s, final boolean increasing) {

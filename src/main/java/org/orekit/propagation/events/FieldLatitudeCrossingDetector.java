@@ -34,9 +34,6 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
 public class FieldLatitudeCrossingDetector <T extends RealFieldElement<T>>
         extends FieldAbstractDetector<FieldLatitudeCrossingDetector<T>, T> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20181219L;
-
     /** Body on which the latitude is defined. */
     private OneAxisEllipsoid body;
 

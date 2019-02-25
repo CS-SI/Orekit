@@ -43,9 +43,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremumDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150909L;
-
     /** Topocentric frame in which elevation should be evaluated. */
     private final TopocentricFrame topo;
 

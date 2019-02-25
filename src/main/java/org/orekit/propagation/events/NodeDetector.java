@@ -47,9 +47,6 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  */
 public class NodeDetector extends AbstractDetector<NodeDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Frame in which the equator is defined. */
     private final Frame frame;
 

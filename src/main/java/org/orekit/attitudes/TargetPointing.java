@@ -49,9 +49,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class TargetPointing extends GroundPointing {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150529L;
-
     /** Target in body frame. */
     private final Vector3D target;
 

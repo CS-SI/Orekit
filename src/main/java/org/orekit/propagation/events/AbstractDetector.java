@@ -35,9 +35,6 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
     /** Default cmaximum number of iterations in the event time search. */
     public static final int DEFAULT_MAX_ITER = 100;
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131202l;
-
     /** Max check interval. */
     private final double maxCheck;
 

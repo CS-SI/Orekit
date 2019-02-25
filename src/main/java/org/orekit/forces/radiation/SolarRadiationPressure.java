@@ -381,9 +381,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** This class defines the umbra entry/exit detector. */
     private class UmbraDetector extends AbstractDetector<UmbraDetector> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20141228L;
-
         /** Build a new instance. */
         UmbraDetector() {
             super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
@@ -436,9 +433,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** This class defines the penumbra entry/exit detector. */
     private class PenumbraDetector extends AbstractDetector<PenumbraDetector> {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20141228L;
 
         /** Build a new instance. */
         PenumbraDetector() {

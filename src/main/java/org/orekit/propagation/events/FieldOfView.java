@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +40,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.utils.SphericalPolygonsSetTransferObject;
 
 /** Class representing a spacecraft sensor Field Of View.
  * <p>Fields Of View are zones defined on the unit sphere centered on the
@@ -51,19 +49,16 @@ import org.orekit.utils.SphericalPolygonsSetTransferObject;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class FieldOfView implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150113L;
+public class FieldOfView {
 
     /** Spherical zone. */
-    private final transient SphericalPolygonsSet zone;
+    private final SphericalPolygonsSet zone;
 
     /** Margin to apply to the zone. */
     private final double margin;
 
     /** Spherical cap surrounding the zone. */
-    private final transient EnclosingBall<Sphere2D, S2Point> cap;
+    private final EnclosingBall<Sphere2D, S2Point> cap;
 
     /** Build a new instance.
      * @param zone interior of the Field Of View, in spacecraft frame
@@ -380,42 +375,6 @@ public class FieldOfView implements Serializable {
         }
 
         return footprint;
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20150113L;
-
-        /** Proxy for interior zone. */
-        private final SphericalPolygonsSetTransferObject zone;
-
-        /** Angular margin. */
-        private final double margin;
-
-        /** Simple constructor.
-         * @param fov instance to serialize
-         */
-        private DTO(final FieldOfView fov) {
-            this.zone   = new SphericalPolygonsSetTransferObject(fov.zone);
-            this.margin = fov.margin;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link FieldOfView}.
-         * @return replacement {@link FieldOfView}
-         */
-        private Object readResolve() {
-            return new FieldOfView(zone.rebuildZone(), margin);
-        }
 
     }
 

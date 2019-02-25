@@ -50,9 +50,6 @@ import org.orekit.utils.TimeSpanMap;
  */
 public class PositionAngleDetector extends AbstractDetector<PositionAngleDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20180919L;
-
     /** Orbit type defining the angle type. */
     private final OrbitType orbitType;
 
@@ -66,7 +63,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     private final Function<Orbit, Double> positionAngleExtractor;
 
     /** Estimators for the offset angle, taking care of 2π wrapping and g function continuity. */
-    private transient TimeSpanMap<OffsetEstimator> offsetEstimators;
+    private TimeSpanMap<OffsetEstimator> offsetEstimators;
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval

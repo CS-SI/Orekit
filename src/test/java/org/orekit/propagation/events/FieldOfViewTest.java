@@ -16,18 +16,11 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.spherical.twod.S2Point;
-import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.random.UnitSphereRandomVectorGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.FastMath;
@@ -367,33 +360,6 @@ public class FieldOfViewTest {
                                               inertToBody);
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(1.0));
         Assert.assertEquals(0, footprint.size());
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        FieldOfView fov = new FieldOfView(new SphericalPolygonsSet(1.0e-12,
-                                                                   new S2Point(Vector3D.PLUS_I),
-                                                                   new S2Point(Vector3D.PLUS_J),
-                                                                   new S2Point(Vector3D.PLUS_K)),
-                                          0.001);
-        Assert.assertEquals(0.5 * FastMath.PI, fov.getZone().getSize(),         1.0e-15);
-        Assert.assertEquals(1.5 * FastMath.PI, fov.getZone().getBoundarySize(), 1.0e-15);
-        Assert.assertEquals(0.001,  fov.getMargin(), 1.0e-15);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(fov);
-
-
-        Assert.assertTrue(bos.size() > 400);
-        Assert.assertTrue(bos.size() < 450);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        FieldOfView deserialized  = (FieldOfView) ois.readObject();
-        Assert.assertEquals(0.5 * FastMath.PI, deserialized.getZone().getSize(),         1.0e-15);
-        Assert.assertEquals(1.5 * FastMath.PI, deserialized.getZone().getBoundarySize(), 1.0e-15);
-        Assert.assertEquals(0.001,  deserialized.getMargin(), 1.0e-15);
-
     }
 
 }

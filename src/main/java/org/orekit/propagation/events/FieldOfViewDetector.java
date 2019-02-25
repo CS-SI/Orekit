@@ -38,9 +38,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160114L;
-
     /** Position/velocity provider of the considered target. */
     private final PVCoordinatesProvider targetPVProvider;
 
