@@ -82,7 +82,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     private final double g2;
 
     /** Coordinates provider for the slave satellite. */
-    private final transient PVCoordinatesProvider slave;
+    private final PVCoordinatesProvider slave;
 
     /** simple constructor.
      *

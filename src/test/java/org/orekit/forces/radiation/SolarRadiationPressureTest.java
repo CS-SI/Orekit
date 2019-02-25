@@ -24,7 +24,6 @@ import java.text.ParseException;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -43,11 +42,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
@@ -81,7 +78,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
@@ -819,45 +815,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        final CelestialBody sun = CelestialBodyFactory.getSun();
-        PVCoordinatesProvider nonFieldProvider = new PVCoordinatesProvider() {
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                {
-                return sun.getPVCoordinates(date, frame);
-            }
-        };
-        SolarRadiationPressure srp = new SolarRadiationPressure(nonFieldProvider,
-                                                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
-        DSFactory factory = new DSFactory(6, 0);
-        DerivativeStructure a_0 = factory.variable(0, 7e7);
-        DerivativeStructure e_0 = factory.variable(1, 0.4);
-        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
-        DerivativeStructure R_0 = factory.variable(3, 0.7);
-        DerivativeStructure O_0 = factory.variable(4, 0.5);
-        DerivativeStructure n_0 = factory.variable(5, 0.1);
-
-        Field<DerivativeStructure> field = a_0.getField();
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
-        Frame EME = FramesFactory.getEME2000();
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
-                                                                                 EME,
-                                                                                 J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
-        FieldSpacecraftState<DerivativeStructure> s = new FieldSpacecraftState<>(FKO);
-
-        try {
-            srp.acceleration(s, srp.getParameters(field));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(LocalizedCoreFormats.UNSUPPORTED_OPERATION, oiae.getSpecifier());
-        }
     }
 
     @Before

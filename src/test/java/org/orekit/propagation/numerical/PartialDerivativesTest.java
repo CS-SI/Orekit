@@ -424,22 +424,6 @@ public class PartialDerivativesTest {
         new PartialDerivativesEquations("partials", propagator).getMapper();
      }
 
-    @Deprecated
-    @Test
-    public void testDeprecatedMethods() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-
-        double dP = 0.001;
-        NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
-        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
-        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
-        Assert.assertEquals(6, partials.getMapper().getStateDimension());
-     }
-
     @Test(expected=OrekitException.class)
     public void testTooSmallDimension() {
         Orbit initialOrbit =

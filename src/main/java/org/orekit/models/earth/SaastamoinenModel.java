@@ -16,8 +16,6 @@
  */
 package org.orekit.models.earth;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
@@ -55,9 +53,6 @@ public class SaastamoinenModel implements TroposphericModel {
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160126L;
-
     /** X values for the B function. */
     private static final double[] X_VALUES_FOR_B = {
         0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0
@@ -91,9 +86,6 @@ public class SaastamoinenModel implements TroposphericModel {
     /** The humidity [percent]. */
     private double r0;
 
-    /** Regular expression for filename containing δR correction term table. */
-    private String fileName;
-
     /** Create a new Saastamoinen model for the troposphere using the given
      * environmental conditions.
      * @param t0 the temperature at the station [K]
@@ -108,7 +100,6 @@ public class SaastamoinenModel implements TroposphericModel {
                              final String deltaRFileName) {
         this(t0, p0, r0,
              deltaRFileName == null ? defaultDeltaR() : loadDeltaR(deltaRFileName));
-        this.fileName = deltaRFileName;
     }
 
     /** Create a new Saastamoinen model.
@@ -260,50 +251,6 @@ public class SaastamoinenModel implements TroposphericModel {
 
         // the actual delta R is interpolated using a a bilinear interpolator
         return new BilinearInterpolatingFunction(xValForR, yValForR, fval);
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(this);
-    }
-
-    /** Specialization of the data transfer object for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160126L;
-
-        /** The temperature at the station [K]. */
-        private double t0;
-
-        /** The atmospheric pressure [mbar]. */
-        private double p0;
-
-        /** The humidity [percent]. */
-        private double r0;
-
-        /** Regular expression for filename containing δR correction term table. */
-        private String fileName;
-
-        /** Simple constructor.
-         * @param model model to serialize
-         */
-        DataTransferObject(final SaastamoinenModel model) {
-            this.t0 = model.t0;
-            this.p0 = model.p0;
-            this.r0 = model.r0;
-            this.fileName = model.fileName;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link SaastamoinenModel}.
-         * @return replacement {@link SaastamoinenModel}
-         */
-        private Object readResolve() {
-            return new SaastamoinenModel(t0, p0, r0, fileName);
-        }
 
     }
 

@@ -29,7 +29,6 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeSpanMap.Transition;
 
 
 public class AntexLoaderTest {
@@ -226,52 +225,6 @@ public class AntexLoaderTest {
             Assert.assertEquals(17, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertEquals("THIS IS NOT AN ANTEX LABEL", ((String) oe.getParts()[2]).substring(60).trim());
         }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecated() {
-        AntexLoader  loader = new AntexLoader("^igs14-small\\.atx$");
-        for (TimeSpanMap<SatelliteAntenna> map : loader.getSatellitesAntennas()) {
-            boolean first = true;
-            for (final Transition<SatelliteAntenna> transition : map.getTransitions()) {
-                if (first) {
-                    checkDeprecated(transition.getBefore());
-                }
-                checkDeprecated(transition.getAfter());
-                first = false;
-            }
-        }
-    }
-
-    @Deprecated
-    private void checkDeprecated(final SatelliteAntenna satelliteAntenna) {
-        final SatelliteAntenna other = new SatelliteAntenna(satelliteAntenna.getType(),
-                                                            satelliteAntenna.getSinexCode(),
-                                                            null,
-                                                            satelliteAntenna.getSatelliteSystem(),
-                                                            satelliteAntenna.getPrnNumber(),
-                                                            satelliteAntenna.getSatelliteCode(),
-                                                            satelliteAntenna.getCosparID(),
-                                                            satelliteAntenna.getValidFrom(),
-                                                            satelliteAntenna.getValidFUntil());
-        Assert.assertEquals(satelliteAntenna.getType(),            other.getType());
-        Assert.assertEquals(satelliteAntenna.getSinexCode(),       other.getSinexCode());
-        Assert.assertEquals(satelliteAntenna.getSatelliteSystem(), other.getSatelliteSystem());
-        Assert.assertEquals(satelliteAntenna.getPrnNumber(),       other.getPrnNumber());
-        Assert.assertEquals(satelliteAntenna.getSatelliteCode(),   other.getSatelliteCode());
-        Assert.assertEquals(satelliteAntenna.getCosparID(),        other.getCosparID());
-        Assert.assertEquals(satelliteAntenna.getType(),            other.getType());
-        Assert.assertEquals(satelliteAntenna.getValidFrom(),       other.getValidFrom());
-        Assert.assertEquals(satelliteAntenna.getValidFUntil(),     other.getValidFUntil());
-
-        // check the satellite type deduced from the antenna type is equal to the one set by the antex file loader
-        Assert.assertEquals(satelliteAntenna.getSatelliteType(), other.getSatelliteType());
-
-        // check the old and new enums have the same values
-        Assert.assertEquals(satelliteAntenna.getSatelliteType().toString(),
-                            SatelliteAntennaCode.parseSatelliteAntennaCode(satelliteAntenna.getType()).toString());
-
     }
 
     private void checkSatellite(final TimeSpanMap<SatelliteAntenna> tsm,

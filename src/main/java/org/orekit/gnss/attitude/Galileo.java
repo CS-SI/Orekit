@@ -58,7 +58,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     private static final double COS_NIGHT = -COS_NOON;
 
     /** No margin on turn end for Galileo. */
-    private final double END_MARGIN = 0.0;
+    private static final double END_MARGIN = 0.0;
 
     /** Yaw rate. */
     private final double yawRate;

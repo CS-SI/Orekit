@@ -57,46 +57,6 @@ public class Phase extends AbstractMeasurement<Phase> {
     private final double wavelength;
 
     /** Simple constructor.
-     * <p>
-     * This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.
-     * </p>
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param phase observed value
-     * @param wavelength phase observed value wavelength
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @deprecated since 9.3 raplced by {@link #Phase(GroundStation, AbsoluteDate,
-     * double, double, double, double, ObservableSatellite)}
-     */
-    @Deprecated
-    public Phase(final GroundStation station, final AbsoluteDate date,
-                 final double phase, final double wavelength, final double sigma,
-                 final double baseWeight) {
-        this(station, date, phase, wavelength, sigma, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param phase observed value
-     * @param wavelength phase observed value wavelength
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @deprecated since 9.3 raplced by {@link #Phase(GroundStation, AbsoluteDate,
-     * double, double, double, double, ObservableSatellite)}
-     */
-    @Deprecated
-    public Phase(final GroundStation station, final AbsoluteDate date,
-                 final double phase, final double wavelength, final double sigma,
-                 final double baseWeight, final int propagatorIndex) {
-        this(station, date, phase, wavelength, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
-    }
-
-    /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param phase observed value

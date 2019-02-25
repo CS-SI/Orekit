@@ -144,11 +144,6 @@ public class EventDetectorTest {
             return outOfOrderCallDetected;
         }
 
-        @Deprecated
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target) {
-        }
-
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }

@@ -18,12 +18,10 @@ package org.orekit.estimation.sequential;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.LOFType;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 
@@ -93,8 +91,8 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         super(initialCovarianceMatrix);
         this.lofType = lofType;
         this.positionAngle = positionAngle;
-        this.lofCartesianOrbitalParametersEvolution  = lofCartesianOrbitalParametersEvolution;
-        this.propagationParametersEvolution = propagationParametersEvolution;
+        this.lofCartesianOrbitalParametersEvolution  = lofCartesianOrbitalParametersEvolution.clone();
+        this.propagationParametersEvolution = propagationParametersEvolution.clone();
 
         // Ensure that the orbital evolution array size is 6
         if (lofCartesianOrbitalParametersEvolution.length != 6) {
@@ -121,14 +119,14 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
      * @return the lofCartesianOrbitalParametersEvolution
      */
     public UnivariateFunction[] getLofCartesianOrbitalParametersEvolution() {
-        return lofCartesianOrbitalParametersEvolution;
+        return lofCartesianOrbitalParametersEvolution.clone();
     }
 
     /** Getter for the propagationParametersEvolution.
      * @return the propagationParametersEvolution
      */
     public UnivariateFunction[] getPropagationParametersEvolution() {
-        return propagationParametersEvolution;
+        return propagationParametersEvolution.clone();
     }
 
     /** {@inheritDoc} */
@@ -196,15 +194,15 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         jacLofToInertial.setSubMatrix(lofToInertialRotation, 3, 3);
 
         // FIXME: Trying to fix the transform from LOF to inertial
-        final Transform lofToInertial = lofType.transformFromInertial(current.getDate(), current.getPVCoordinates()).getInverse();
-        final Vector3D OM = lofToInertial.getRotationRate().negate();
-        final double[][] MOM = new double[3][3];
-        MOM[0][1] = -OM.getZ();
-        MOM[0][2] = OM.getY();
-        MOM[1][0] = OM.getZ();
-        MOM[1][2] = -OM.getX();
-        MOM[2][0] = -OM.getY();
-        MOM[2][1] = OM.getX();
+        //final Transform lofToInertial = lofType.transformFromInertial(current.getDate(), current.getPVCoordinates()).getInverse();
+        //final Vector3D OM = lofToInertial.getRotationRate().negate();
+        //final double[][] MOM = new double[3][3];
+        //MOM[0][1] = -OM.getZ();
+        //MOM[0][2] = OM.getY();
+        //MOM[1][0] = OM.getZ();
+        //MOM[1][2] = -OM.getX();
+        //MOM[2][0] = -OM.getY();
+        //MOM[2][1] = OM.getX();
         //jacLofToInertial.setSubMatrix(MOM, 3, 0);
         //debug
 

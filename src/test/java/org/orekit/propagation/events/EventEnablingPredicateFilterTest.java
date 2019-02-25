@@ -394,8 +394,7 @@ public class EventEnablingPredicateFilterTest {
         EnablingPredicate<EventDetector> predicate = (state, eventDetector, g) -> true;
 
         // action + verify. Just make sure it compiles with generics
-        EventEnablingPredicateFilter<DateDetector> filter =
-                new EventEnablingPredicateFilter<>(detector, predicate);
+        new EventEnablingPredicateFilter<>(detector, predicate);
     }
 
     @Before

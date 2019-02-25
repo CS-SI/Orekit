@@ -139,11 +139,6 @@ public class ElevationDetectorTest {
         public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }
 
-        @Deprecated
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target) {
-        }
-
     }
 
     @Test

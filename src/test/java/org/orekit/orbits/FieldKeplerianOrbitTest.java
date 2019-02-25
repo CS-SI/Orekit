@@ -67,12 +67,6 @@ public class FieldKeplerianOrbitTest {
     }
 
     @Test
-    @Deprecated
-    public void testKepToCart2() {
-          doTestKeplerianToCartesian2(Decimal64Field.getInstance());
-    }
-
-    @Test
     public void testKepToEquin() {
           doTestKeplerianToEquinoctial(Decimal64Field.getInstance());
     }
@@ -115,12 +109,6 @@ public class FieldKeplerianOrbitTest {
     @Test
     public void testHyperbola2() {
         doTestHyperbola2(Decimal64Field.getInstance());
-    }
-
-    @Test
-    @Deprecated
-    public void testHyperbola3() {
-        doTestHyperbola3(Decimal64Field.getInstance());
     }
 
     @Test
@@ -367,32 +355,6 @@ public class FieldKeplerianOrbitTest {
         Assert.assertEquals( 0.935685775154103e+04, vit.getX().getReal(), Utils.epsilonTest * FastMath.abs(vit.getX().getReal()));
         Assert.assertEquals(-0.331234775037644e+04, vit.getY().getReal(), Utils.epsilonTest * FastMath.abs(vit.getY().getReal()));
         Assert.assertEquals(-0.118801577532701e+04, vit.getZ().getReal(), Utils.epsilonTest * FastMath.abs(vit.getZ().getReal()));
-    }
-
-    @Deprecated
-    private <T extends RealFieldElement<T>> void doTestKeplerianToCartesian2(final Field<T> field) {
-
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-
-        T a=        field.getZero().add(24464560.0);
-        T e=        field.getZero().add(0.7311);
-        T i=        field.getZero().add(0.122138);
-        T pa=       field.getZero().add(3.10686);
-        T raan=     field.getZero().add(1.00681);
-        T anomaly=  field.getZero().add(0.048363);
-
-        // elliptic orbit
-        FieldKeplerianOrbit<T> kep =
-            new FieldKeplerianOrbit<>(a, e, i, pa, raan, anomaly, PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, mu);
-
-        FieldVector3D<T> ref = kep.getPVCoordinates().getPosition();
-        FieldVector3D<T> pos  = FieldKeplerianOrbit.ellipticKeplerianToPosition(kep.getA(), kep.getE(), kep.getI(),
-                                                                                kep.getPerigeeArgument(),
-                                                                                kep.getRightAscensionOfAscendingNode(),
-                                                                                kep.getTrueAnomaly(),
-                                                                                kep.getMu());
-        Assert.assertEquals(0, FieldVector3D.distance(ref, pos).getReal(), 1.0e-15);
     }
 
     private <T extends RealFieldElement<T>> void doTestKeplerianToEquinoctial(final Field<T> field) {
@@ -776,23 +738,6 @@ public class FieldKeplerianOrbitTest {
             Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
             Assert.assertEquals(1.2, rebuilt.getE().getReal(), 1.0e-13);
         }
-    }
-
-    @Deprecated
-    private <T extends RealFieldElement<T>> void doTestHyperbola3(final Field<T> field) {
-        T zero = field.getZero();
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(1.2), zero.add(0.3),
-                                                                 zero, zero, zero.add(-1.75),
-                                                                 PositionAngle.MEAN,
-                                                                 FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
-                                                                 mu);
-        FieldVector3D<T> ref  = orbit.getPVCoordinates().getPosition();
-        FieldVector3D<T> pos  = FieldKeplerianOrbit.hyperbolicKeplerianToPosition(orbit.getA(), orbit.getE(), orbit.getI(),
-                                                                                  orbit.getPerigeeArgument(),
-                                                                                  orbit.getRightAscensionOfAscendingNode(),
-                                                                                  orbit.getTrueAnomaly(),
-                                                                                  orbit.getMu());
-        Assert.assertEquals(0, FieldVector3D.distance(ref, pos).getReal(), 1.0e-15);
     }
 
     private <T extends RealFieldElement<T>> void doTestToOrbitWithoutDerivatives(Field<T> field) {

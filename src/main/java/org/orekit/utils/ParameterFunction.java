@@ -17,7 +17,7 @@
 package org.orekit.utils;
 
 /** Interface representing a scalar function depending on a {@link ParameterDriver}.
- * @see Differentiation#differentiate(ParameterFunction, ParameterDriver, int, double)
+ * @see Differentiation#differentiate(ParameterFunction, int, double)
  * @author Luc Maisonobe
  * @since 8.0
  */
