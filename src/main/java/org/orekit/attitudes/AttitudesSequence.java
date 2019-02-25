@@ -318,9 +318,6 @@ public class AttitudesSequence implements AttitudeProvider {
      */
     private class Switch<T extends EventDetector> implements EventDetector {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20150604L;
-
         /** Event. */
         private final T event;
 

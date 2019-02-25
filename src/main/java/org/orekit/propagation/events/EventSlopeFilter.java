@@ -62,9 +62,6 @@ import org.orekit.time.AbsoluteDate;
 
 public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<EventSlopeFilter<T>> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130409L;
-
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
 

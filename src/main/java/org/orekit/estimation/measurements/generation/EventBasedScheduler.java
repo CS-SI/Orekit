@@ -126,9 +126,6 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
     /** Adapter for managing feasibility status changes. */
     private class FeasibilityAdapter extends AdapterDetector {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20181206L;
-
         /** Build an adaptor wrapping an existing detector.
          * @param detector detector to wrap
          */

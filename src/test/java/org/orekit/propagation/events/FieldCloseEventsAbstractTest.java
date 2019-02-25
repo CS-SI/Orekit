@@ -671,8 +671,6 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
                 (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
 
-            private static final long serialVersionUID = 1L;
-
             @Override
             public T g(FieldSpacecraftState<T> s) {
                 if (swap[0]) {
@@ -961,8 +959,6 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         // never zero so there is no easy way out
         FieldEventDetector<T> detectorA = new FieldAbstractDetector<FieldEventDetector<T>, T>
                 (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            private static final long serialVersionUID = 1L;
 
             @Override
             public T g(FieldSpacecraftState<T> state) {
@@ -1630,8 +1626,6 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
                 (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
 
-            private static final long serialVersionUID = 1L;
-
             @Override
             public T g(FieldSpacecraftState<T> state) {
                 if (swap[0]) {
@@ -1922,8 +1916,6 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         FieldEventDetector<T> detectorA = new FieldAbstractDetector<FieldEventDetector<T>, T>
                 (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
 
-            private static final long serialVersionUID = 1L;
-
             @Override
             public T g(FieldSpacecraftState<T> state) {
                 final FieldAbsoluteDate<T> t = state.getDate();
@@ -2036,8 +2028,6 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
     /** Trigger an event at a particular time. */
     private class TimeDetector extends FieldAbstractDetector<TimeDetector, T> {
 
-        private static final long serialVersionUID = 1L;
-
         /** time of the event to trigger. */
         private final List<FieldAbsoluteDate<T>> eventTs;
 
@@ -2056,6 +2046,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
          *
          * @param eventTs event times past epoch.
          */
+        @SafeVarargs
         public TimeDetector(FieldAbsoluteDate<T>... eventTs) {
             this(v(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), Arrays.asList(eventTs));
@@ -2103,8 +2094,6 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
      */
     private class FlatDetector extends FieldAbstractDetector<FlatDetector, T> {
 
-        private static final long serialVersionUID = 1L;
-
         private final FieldEventDetector<T> g;
 
         public FlatDetector(double... eventTs) {
@@ -2112,6 +2101,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
                     new FieldStopOnEvent<>(), new TimeDetector(eventTs));
         }
 
+        @SafeVarargs
         public FlatDetector(FieldAbsoluteDate<T>... eventTs) {
             this(v(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), new TimeDetector(eventTs));
@@ -2143,8 +2133,6 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
 
     /** quadratic. */
     private class ContinuousDetector extends FieldAbstractDetector<ContinuousDetector, T> {
-
-        private static final long serialVersionUID = 1L;
 
         /** time of the event to trigger. */
         private final List<FieldAbsoluteDate<T>> eventTs;

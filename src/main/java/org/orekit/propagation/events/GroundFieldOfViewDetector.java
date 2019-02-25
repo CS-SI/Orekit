@@ -43,9 +43,6 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  */
 public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfViewDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160114L;
-
     /** the reference frame attached to the sensor. */
     private final Frame frame;
 

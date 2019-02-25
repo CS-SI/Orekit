@@ -37,9 +37,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class EclipseDetector extends AbstractDetector<EclipseDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Occulting body. */
     private final PVCoordinatesProvider occulting;
 

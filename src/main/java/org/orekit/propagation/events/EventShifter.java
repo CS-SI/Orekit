@@ -38,9 +38,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class EventShifter<T extends EventDetector> extends AbstractDetector<EventShifter<T>> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Event detector for the raw unshifted event. */
     private final T detector;
 
