@@ -70,9 +70,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class YawSteering extends GroundPointing implements AttitudeProviderModifier {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150529L;
-
     /** Pointing axis. */
     private static final PVCoordinates PLUS_Z =
             new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);

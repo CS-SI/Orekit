@@ -44,9 +44,6 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
     /** Start of validity for this provider. */
     private final AbsoluteDate validityStart;
 

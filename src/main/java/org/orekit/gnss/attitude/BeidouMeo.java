@@ -33,9 +33,6 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class BeidouMeo extends AbstractGNSSAttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20181001L;
-
     /** Limit for the Yaw Steering to Orbit Normal switch. */
     private static final double BETA_YS_ON = FastMath.toRadians(4.1);
 

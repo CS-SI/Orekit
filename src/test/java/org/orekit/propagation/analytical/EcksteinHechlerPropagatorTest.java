@@ -517,7 +517,6 @@ public class EcksteinHechlerPropagatorTest {
             new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         AttitudeProvider wrongLaw = new AttitudeProvider() {
-            private static final long serialVersionUID = 5918362126173997016L;
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }

@@ -82,9 +82,6 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class AttitudesSequence implements AttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20180326L;
-
     /** Providers that have been activated. */
     private transient TimeSpanMap<AttitudeProvider> activated;
 
@@ -482,9 +479,6 @@ public class AttitudesSequence implements AttitudeProvider {
          * @since 9.2
          */
         private class TransitionProvider implements AttitudeProvider {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20180326L;
 
             /** Attitude at preceding transition. */
             private final Attitude transitionPreceding;
