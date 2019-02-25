@@ -268,6 +268,15 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /**
+     * Gets the underlying GLONASS orbital elements.
+     *
+     * @return the underlying GLONASS orbital elements
+     */
+    public GLONASSOrbitalElements getGLONASSOrbitalElements() {
+        return glonassOrbit;
+    }
+
+    /**
      * Set the initial state.
      * <p>
      * The initial conditions on position and velocity are in the ECEF coordinate system PZ-90.
