@@ -174,6 +174,24 @@ public class AntexLoaderTest {
         Assert.assertEquals("",                      loader.getReceiversAntennas().get(1).getSerialNumber());
         Assert.assertEquals("AERAT1675_120   SPKE",  loader.getReceiversAntennas().get(2).getType());
         Assert.assertEquals("",                      loader.getReceiversAntennas().get(2).getSerialNumber());
+        Assert.assertEquals(1, loader.getReceiversAntennas().get(2).getFrequencies().size());
+        Assert.assertEquals(Frequency.G01, loader.getReceiversAntennas().get(2).getFrequencies().get(0));
+        try {
+            loader.getReceiversAntennas().get(2).getEccentricities(Frequency.E06);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FREQUENCY_FOR_ANTENNA, oe.getSpecifier());
+            Assert.assertSame(Frequency.E06, oe.getParts()[0]);
+            Assert.assertEquals("AERAT1675_120   SPKE", oe.getParts()[1]);
+        }
+        Assert.assertEquals(-0.00001, loader.getReceiversAntennas().get(2).getEccentricities(Frequency.G01).getX(), 1.0e-15);
+        Assert.assertEquals(+0.00057, loader.getReceiversAntennas().get(2).getEccentricities(Frequency.G01).getY(), 1.0e-15);
+        Assert.assertEquals(+0.08051, loader.getReceiversAntennas().get(2).getEccentricities(Frequency.G01).getZ(), 1.0e-15);
+        Assert.assertEquals(-0.00249,
+                            loader.getReceiversAntennas().get(2).getPhaseCenterVariation(Frequency.G01,
+                                                                                         new Vector3D(FastMath.toRadians(60.0),
+                                                                                                      FastMath.toRadians(55.0))),
+                            1.0e-15);
 
     }
 
