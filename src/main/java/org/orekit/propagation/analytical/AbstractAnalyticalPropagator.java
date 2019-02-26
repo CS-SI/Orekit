@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -399,12 +397,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     }
 
     /** {@link BoundedPropagator} view of the instance. */
-    private class BoundedPropagatorView
-        extends AbstractAnalyticalPropagator
-        implements BoundedPropagator, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151117L;
+    private class BoundedPropagatorView extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
         /** Min date. */
         private final AbsoluteDate minDate;
@@ -482,53 +475,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public Frame getFrame() {
             return AbstractAnalyticalPropagator.this.getFrame();
-        }
-
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if attitude provider or additional
-         * state provider is not serializable
-         */
-        private Object writeReplace() throws NotSerializableException {
-            return new DataTransferObject(minDate, maxDate, AbstractAnalyticalPropagator.this);
-        }
-
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151117L;
-
-        /** Min date. */
-        private final AbsoluteDate minDate;
-
-        /** Max date. */
-        private final AbsoluteDate maxDate;
-
-        /** Underlying propagator. */
-        private final AbstractAnalyticalPropagator propagator;
-
-        /** Simple constructor.
-         * @param minDate min date
-         * @param maxDate max date
-         * @param propagator underlying propagator
-         */
-        DataTransferObject(final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                           final AbstractAnalyticalPropagator propagator) {
-            this.minDate    = minDate;
-            this.maxDate    = maxDate;
-            this.propagator = propagator;
-        }
-
-        /** Replace the deserialized data transfer object with an {@link BoundedPropagatorView}.
-         * @return replacement {@link BoundedPropagatorView}
-         */
-        private Object readResolve() {
-            propagator.lastPropagationStart = minDate;
-            propagator.lastPropagationEnd   = maxDate;
-            return propagator.getGeneratedEphemeris();
         }
 
     }
