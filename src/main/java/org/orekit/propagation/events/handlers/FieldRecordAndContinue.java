@@ -28,7 +28,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 
 /**
  * Handler that will record every time an event occurs and always return {@link
- * Action#CONTINUE}.
+ * FieldEventHandler.Action#CONTINUE}.
  *
  * <p> As this handler stores all observed events it may consume large amounts
  * of memory depending on the duration of propagation and the frequency of events.
