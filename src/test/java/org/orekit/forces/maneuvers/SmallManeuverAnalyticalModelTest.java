@@ -160,9 +160,13 @@ public class SmallManeuverAnalyticalModelTest {
         double isp      = 315.0;
         BoundedPropagator withoutManeuver = getEphemeris(heo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(heo, mass, t0, dV, f, isp);
-        SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
+        SpacecraftState s0 = withoutManeuver.propagate(t0);
+        SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(s0, dV, isp);
         Assert.assertEquals(t0, model.getDate());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(dV, s0.getAttitude().getRotation().applyTo(model.getInertialDV())),
+                            1.0e-15);
+        Assert.assertSame(FramesFactory.getEME2000(), model.getInertialFrame());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
