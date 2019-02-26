@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="evan" type="fix">
+        OrekitException preserves the stack trace when formatting the message throws
+        another exception.
+      </action>
       <action dev="luc" type="remove" issue="530">
         Event detectors, field of view and attitude providers are not serializable anymore.
       </action>
