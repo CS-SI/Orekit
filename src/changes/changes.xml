@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="luc" type="remove" issue="530">
+        Event detectors, field of view and attitude providers are not serializable anymore.
+      </action>
       <action dev="bryan" type="update" issue="526">
         Replaced private class BilinearInterpolatingFunction of Saastamoinen model
         by the one of Hipparchus

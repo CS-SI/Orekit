@@ -43,9 +43,6 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
     /** Default yaw rates for all spacecrafts in radians per seconds. */
     public static final double DEFAULT_YAW_RATE = FastMath.toRadians(0.2);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
     /** Margin on turn end. */
     private static final double END_MARGIN = 1800.0;
 

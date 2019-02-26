@@ -17,11 +17,6 @@
 package org.orekit.attitudes;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,7 +46,6 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -165,54 +159,6 @@ public class TabulatedLofOffsetTest {
             }
         });
         rebuildingPropagator.propagate(orbit.getDate().shiftedBy(50), orbit.getDate().shiftedBy(1950));
-
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-
-        // create a sample from Yaw compensation law
-        final LOFType type = LOFType.VNC;
-        final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
-        final AttitudeProvider yawCompensLaw =
-                new YawCompensation(orbit.getFrame(), new NadirPointing(orbit.getFrame(), earth));
-        final Propagator originalPropagator = new KeplerianPropagator(orbit);
-        originalPropagator.setAttitudeProvider(yawCompensLaw);
-        originalPropagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-            public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                {
-                Rotation  offsetAtt    = currentState.getAttitude().getRotation();
-                LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
-                Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
-                                                             currentState.getFrame()).getRotation();
-                Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
-                sample.add(new TimeStampedAngularCoordinates(currentState.getDate(),
-                                                             offsetProper, Vector3D.ZERO, Vector3D.ZERO));
-            }
-        });
-        originalPropagator.propagate(orbit.getDate().shiftedBy(2000));
-        originalPropagator.setSlaveMode();
-
-        // use the sample and generate an ephemeris
-        final AttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(), type, sample,
-                                                                  6, AngularDerivativesFilter.USE_RR);
-        final Propagator rebuildingPropagator = new KeplerianPropagator(orbit);
-        rebuildingPropagator.setAttitudeProvider(tabulated);
-        rebuildingPropagator.setEphemerisMode();
-        rebuildingPropagator.propagate(orbit.getDate().shiftedBy(5));
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(rebuildingPropagator.getGeneratedEphemeris());
-
-        // even despite we propagated only 5 seconds, the attitude sample is huge
-        Assert.assertTrue(bos.size() > 17000);
-        Assert.assertTrue(bos.size() < 18000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        TabulatedLofOffset deserialized = (TabulatedLofOffset) ((BoundedPropagator) ois.readObject()).getAttitudeProvider();
-        Assert.assertEquals(sample.size(), deserialized.getTable().size());
 
     }
 

@@ -650,8 +650,6 @@ public abstract class CloseEventsAbstractTest {
         EventDetector detectorC = new AbstractDetector<EventDetector>
                 (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
 
-            private static final long serialVersionUID = 1L;
-
             @Override
             public double g(SpacecraftState s) {
                 if (swap[0]) {
@@ -940,8 +938,6 @@ public abstract class CloseEventsAbstractTest {
         // never zero so there is no easy way out
         EventDetector detectorA = new AbstractDetector<EventDetector>
                 (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            private static final long serialVersionUID = 1L;
 
             @Override
             public double g(SpacecraftState state) {
@@ -1609,8 +1605,6 @@ public abstract class CloseEventsAbstractTest {
         EventDetector detectorC = new AbstractDetector<EventDetector>
                 (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
 
-            private static final long serialVersionUID = 1L;
-
             @Override
             public double g(SpacecraftState state) {
                 if (swap[0]) {
@@ -1900,8 +1894,6 @@ public abstract class CloseEventsAbstractTest {
         EventDetector detectorA = new AbstractDetector<EventDetector>
                 (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
 
-            private static final long serialVersionUID = 1L;
-
             @Override
             public double g(SpacecraftState state) {
                 final AbsoluteDate t = state.getDate();
@@ -2005,8 +1997,6 @@ public abstract class CloseEventsAbstractTest {
     /** Trigger an event at a particular time. */
     private static class TimeDetector extends AbstractDetector<TimeDetector> {
 
-        private static final long serialVersionUID = 1L;
-
         /** time of the event to trigger. */
         private final List<AbsoluteDate> eventTs;
 
@@ -2072,8 +2062,6 @@ public abstract class CloseEventsAbstractTest {
      */
     private static class FlatDetector extends AbstractDetector<FlatDetector> {
 
-        private static final long serialVersionUID = 1L;
-
         private final EventDetector g;
 
         public FlatDetector(double... eventTs) {
@@ -2112,8 +2100,6 @@ public abstract class CloseEventsAbstractTest {
 
     /** quadratic. */
     private static class ContinuousDetector extends AbstractDetector<ContinuousDetector> {
-
-        private static final long serialVersionUID = 1L;
 
         /** time of the event to trigger. */
         private final List<AbsoluteDate> eventTs;

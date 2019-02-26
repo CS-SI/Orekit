@@ -41,9 +41,6 @@ import org.orekit.utils.PVCoordinates;
  */
 public class ApsideDetector extends AbstractDetector<ApsideDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the
      * max check interval to period/3 and to set the convergence

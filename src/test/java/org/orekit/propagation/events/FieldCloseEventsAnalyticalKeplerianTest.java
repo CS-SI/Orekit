@@ -17,11 +17,9 @@
  
 package org.orekit.propagation.events;
 
-import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.orekit.propagation.FieldPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 

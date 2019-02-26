@@ -38,9 +38,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Body to align. */
     private final PVCoordinatesProvider body;
 

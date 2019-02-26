@@ -16,8 +16,6 @@
  */
 package org.orekit.attitudes;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,10 +39,6 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @since 6.1
  */
 public class TabulatedProvider implements AttitudeProvider {
-
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140723L;
 
     /** Reference frame for tabulated attitudes. */
     private final Frame referenceFrame;
@@ -102,55 +96,6 @@ public class TabulatedProvider implements AttitudeProvider {
 
         // build the attitude
         return new FieldAttitude<>(referenceFrame, interpolated);
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
-     */
-    private Object writeReplace() throws NotSerializableException {
-        return new DataTransferObject(referenceFrame, table.getAll(), table.getNeighborsSize(), filter);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20140723L;
-
-        /** Reference frame for tabulated attitudes. */
-        private final Frame referenceFrame;
-
-        /** Cached attitude table. */
-        private final List<TimeStampedAngularCoordinates> list;
-
-        /** Number of attitude to use for interpolation. */
-        private final int n;
-
-        /** Filter for derivatives from the sample to use in interpolation. */
-        private final AngularDerivativesFilter filter;
-
-        /** Simple constructor.
-         * @param referenceFrame reference frame for tabulated attitudes
-         * @param list tabulated attitudes
-         * @param n number of attitude to use for interpolation
-         * @param filter filter for derivatives from the sample to use in interpolation
-         */
-        DataTransferObject(final Frame referenceFrame, final List<TimeStampedAngularCoordinates> list,
-                                  final int n, final AngularDerivativesFilter filter) {
-            this.referenceFrame  = referenceFrame;
-            this.list            = list;
-            this.n               = n;
-            this.filter          = filter;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link TabulatedProvider}.
-         * @return replacement {@link TabulatedProvider}
-         */
-        private Object readResolve() {
-            return new TabulatedProvider(referenceFrame, list, n, filter);
-        }
 
     }
 

@@ -32,9 +32,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class AdapterDetector implements EventDetector {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20181206L;
-
     /** Wrapped detector. */
     private final EventDetector detector;
 

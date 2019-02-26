@@ -191,7 +191,6 @@ public class EventDetectorTest {
 
     private static class GCallsCounter extends AbstractDetector<GCallsCounter> {
 
-        private static final long serialVersionUID = 1L;
         private int count;
 
         public GCallsCounter(final double maxCheck, final double threshold,
@@ -244,7 +243,6 @@ public class EventDetectorTest {
 
     private static class CloseApproachDetector extends AbstractDetector<CloseApproachDetector> {
 
-        private static final long serialVersionUID = 1L;
         private final PVCoordinatesProvider provider;
 
         public CloseApproachDetector(double maxCheck, double threshold,
@@ -286,7 +284,6 @@ public class EventDetectorTest {
                                                                                    new Vector3D(-5012.9298276860990, 1920.3567095973078, -5172.7403501801580)),
                                                                  eme2000, initialDate, Constants.WGS84_EARTH_MU));
             k.addEventDetector(new DateDetector(initialDate.shiftedBy(Constants.JULIAN_DAY)) {
-                private static final long serialVersionUID = 1L;
                 @Override
                 public double g(final SpacecraftState s) {
                     final double dt = s.getDate().durationFrom(exceptionDate);
@@ -306,7 +303,6 @@ public class EventDetectorTest {
     @Test
     public void testDefaultMethods() {
         EventDetector dummyDetector = new EventDetector() {
-            private static final long serialVersionUID = 1L;
 
             @Override
             public double getThreshold() {

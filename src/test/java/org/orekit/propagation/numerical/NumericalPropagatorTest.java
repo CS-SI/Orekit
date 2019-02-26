@@ -723,8 +723,6 @@ public class NumericalPropagatorTest {
 
     private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
 
-        private static final long serialVersionUID = 1L;
-
         public AdditionalStateLinearDetector(double maxCheck, double threshold) {
             this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<AdditionalStateLinearDetector>());
         }

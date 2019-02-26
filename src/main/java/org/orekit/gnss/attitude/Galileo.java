@@ -45,9 +45,6 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     /** Default yaw rates for all spacecrafts in radians per seconds. */
     public static final double DEFAULT_YAW_RATE = FastMath.toRadians(0.203);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
     /** Constants for Galileo turns. */
     private static final double BETA_X = FastMath.toRadians(15.0);
 

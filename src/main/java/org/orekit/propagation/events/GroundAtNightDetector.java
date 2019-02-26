@@ -52,9 +52,6 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
     /** Sun elevation at astronomical dawn/dusk (18° below horizon). */
     public static final double ASTRONOMICAL_DAWN_DUSK_ELEVATION = FastMath.toRadians(-18.0);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20181130L;
-
     /** Ground location to check. */
     private final TopocentricFrame groundLocation;
 
