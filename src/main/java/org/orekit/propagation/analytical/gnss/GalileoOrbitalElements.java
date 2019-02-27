@@ -40,9 +40,9 @@ public interface GalileoOrbitalElements extends GNSSOrbitalElements {
     int GALILEO_WEEK_NB = 4096;
 
     /**
-     * Gets the Issue Of Data Clock (IODC).
+     * Gets the Issue Of Data (IOD).
      *
-     * @return the Issue Of Data Clock (IODC)
+     * @return the Issue Of Data (IOD)
      * @since 9.3
      */
     default int getIODNav() {
