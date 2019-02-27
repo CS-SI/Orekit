@@ -129,7 +129,7 @@ public class SatelliteAntenna extends Antenna {
     /** Get end of validity.
      * @return end of validity
      */
-    public AbsoluteDate getValidFUntil() {
+    public AbsoluteDate getValidUntil() {
         return validUntil;
     }
 

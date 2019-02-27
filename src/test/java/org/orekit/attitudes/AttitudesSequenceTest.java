@@ -103,7 +103,6 @@ public class AttitudesSequenceTest {
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
-                    private static final long serialVersionUID = 1L;
                     public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
                         return EventHandler.Action.RESET_STATE;
@@ -211,7 +210,6 @@ public class AttitudesSequenceTest {
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
-                    private static final long serialVersionUID = 1L;
                     int count = 0;
                     public EventHandler.Action eventOccurred(final SpacecraftState s,
                                                              final EclipseDetector d,

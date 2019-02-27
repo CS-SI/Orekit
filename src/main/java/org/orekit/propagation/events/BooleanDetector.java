@@ -247,7 +247,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
         }
     }
 
-    /** Local, serializable class for operator. */
+    /** Local class for operator. */
     private enum Operator {
 
         /** And operator. */

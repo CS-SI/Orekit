@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -197,10 +196,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     }
 
     /** Event date specification. */
-    private static class EventDate implements Serializable, TimeStamped {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -7641032576122527149L;
+    private static class EventDate implements TimeStamped {
 
         /** Event date. */
         private final AbsoluteDate eventDate;

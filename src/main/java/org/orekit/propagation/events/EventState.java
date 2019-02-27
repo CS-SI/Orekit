@@ -29,8 +29,6 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
-import java.io.Serializable;
-
 /** This class handles the state for one {@link EventDetector
  * event detector} during integration steps.
  *
@@ -48,10 +46,7 @@ import java.io.Serializable;
  * @author Luc Maisonobe
  * @param <T> class type for the generic version
  */
-public class EventState<T extends EventDetector> implements Serializable {
-
-    /** Serializable version identifier. */
-    private static final long serialVersionUID = 4489391420715269318L;
+public class EventState<T extends EventDetector> {
 
     /** Event detector. */
     private T detector;
