@@ -16,8 +16,6 @@
  */
 package org.orekit.attitudes;
 
-import java.io.Serializable;
-
 import org.hipparchus.RealFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -31,7 +29,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * from an date and position-velocity local provider.</p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface AttitudeProvider extends Serializable {
+public interface AttitudeProvider {
 
     /** Compute the attitude corresponding to an orbital state.
      * @param pvProv local position-velocity provider around current date

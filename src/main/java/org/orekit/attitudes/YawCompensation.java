@@ -64,9 +64,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class YawCompensation extends GroundPointing implements AttitudeProviderModifier {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150529L;
-
     /** J axis. */
     private static final PVCoordinates PLUS_J =
             new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);

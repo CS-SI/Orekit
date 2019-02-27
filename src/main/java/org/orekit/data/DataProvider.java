@@ -40,12 +40,6 @@ import java.util.regex.Pattern;
  */
 public interface DataProvider {
 
-    /** Pattern for name of gzip files.
-     * @deprecated as of 9.2, replaced with {@link GzipFilter}
-     */
-    @Deprecated
-    Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
-
     /** Pattern for name of zip/jar archives. */
     Pattern ZIP_ARCHIVE_PATTERN = Pattern.compile("(.*)(?:(?:\\.zip)|(?:\\.jar))$");
 

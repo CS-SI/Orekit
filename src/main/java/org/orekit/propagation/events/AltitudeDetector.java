@@ -38,9 +38,6 @@ import org.orekit.utils.PVCoordinates;
  */
 public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Threshold altitude value (m). */
     private final double altitude;
 

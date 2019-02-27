@@ -50,6 +50,8 @@
       <Class name="~.*\.TIRFProvider$" />
       <Class name="~.*\.CartesianOrbit$" />
       <Class name="~.*\.EstimatedEarthFrameProvider$" />
+      <Class name="~.*\.GPSDate$" />
+      <Class name="~.*\.PositionAngleDetector$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
@@ -117,6 +119,27 @@
     <Local name="epsPhi" />
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
+  <Match>
+    <Class name="~.*\.RangeTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Local name="djac" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.RangeRateTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Local name="djac" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Or>
+      <Local name="masterDjac" />
+      <Local name="slaveDjac" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
 
   <!-- the approximate constants do belong to the models -->
   <Match>
@@ -147,6 +170,11 @@
       <Method name ="eMeSinE" params="double,double" returns="double" />
       <Method name ="eMeSinE" params="org.hipparchus.analysis.differentiation.DerivativeStructure,org.hipparchus.analysis.differentiation.DerivativeStructure" returns="org.hipparchus.analysis.differentiation.DerivativeStructure" />
     </Or>
+    <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.analytical.tle.TLE" />
+    <Method name="equals" params="java.lang.Object" returns="boolean" />
     <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
   </Match>
 

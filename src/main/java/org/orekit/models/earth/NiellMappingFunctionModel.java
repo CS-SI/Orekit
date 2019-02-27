@@ -39,16 +39,13 @@ import org.orekit.utils.ParameterDriver;
  *  whereas the wet mapping function is only latitude dependent.
  *  </p>
  *
- * @see A. E. Niell(1996), "Global mapping functions for the atmosphere delay of radio wavelengths,”
- *      J. Geophys. Res., 101(B2), pp.  3227–3246, doi:  10.1029/95JB03048.
+ * @see "A. E. Niell(1996), Global mapping functions for the atmosphere delay of radio wavelengths,
+ *      J. Geophys. Res., 101(B2), pp.  3227–3246, doi:  10.1029/95JB03048."
  *
  * @author Bryan Cazabonne
  *
  */
 public class NiellMappingFunctionModel implements MappingFunction {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7990311232335034375L;
 
     /** Values for the ah average function. */
     private static final double[] VALUES_FOR_AH_AVERAGE = {
@@ -101,31 +98,31 @@ public class NiellMappingFunctionModel implements MappingFunction {
     };
 
     /** Interpolation function for the ah (average) term. */
-    private final transient UnivariateFunction ahAverageFunction;
+    private final UnivariateFunction ahAverageFunction;
 
     /** Interpolation function for the bh (average) term. */
-    private final transient UnivariateFunction bhAverageFunction;
+    private final UnivariateFunction bhAverageFunction;
 
     /** Interpolation function for the ch (average) term. */
-    private final transient UnivariateFunction chAverageFunction;
+    private final UnivariateFunction chAverageFunction;
 
     /** Interpolation function for the ah (amplitude) term. */
-    private final transient UnivariateFunction ahAmplitudeFunction;
+    private final UnivariateFunction ahAmplitudeFunction;
 
     /** Interpolation function for the bh (amplitude) term. */
-    private final transient UnivariateFunction bhAmplitudeFunction;
+    private final UnivariateFunction bhAmplitudeFunction;
 
     /** Interpolation function for the ch (amplitude) term. */
-    private final transient UnivariateFunction chAmplitudeFunction;
+    private final UnivariateFunction chAmplitudeFunction;
 
     /** Interpolation function for the aw term. */
-    private final transient UnivariateFunction awFunction;
+    private final UnivariateFunction awFunction;
 
     /** Interpolation function for the bw term. */
-    private final transient UnivariateFunction bwFunction;
+    private final UnivariateFunction bwFunction;
 
     /** Interpolation function for the cw term. */
-    private final transient UnivariateFunction cwFunction;
+    private final UnivariateFunction cwFunction;
 
     /** Geodetic site latitude, radians.*/
     private final double latitude;

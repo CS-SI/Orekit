@@ -42,7 +42,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -69,16 +68,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
 public class GroundStationTest {
-
-    @Deprecated
-    @Test
-    public void testDeprecatedMethod() {
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        for (final GroundStation station : context.stations) {
-            Assert.assertThat(station.getOffsetGeodeticPoint(),
-                              OrekitMatchers.geodeticPointCloseTo(station.getOffsetGeodeticPoint(null), 1.0e-15));
-        }
-    }
 
     @Test
     public void testEstimateClockOffset() throws IOException, ClassNotFoundException {

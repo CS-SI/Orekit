@@ -39,6 +39,7 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -97,6 +98,16 @@ public class OrekitEphemerisFileTest {
         OrekitEphemerisFile ephemerisFile = new OrekitEphemerisFile();
         OrekitSatelliteEphemeris satellite = ephemerisFile.addSatellite(satId);
         satellite.addNewSegment(states);
+        assertEquals(satId, satellite.getId());
+        assertEquals(body.getGM(), satellite.getMu(), muTolerance);
+        assertEquals(0.0, states.get(0).getDate().durationFrom(satellite.getStart()), 1.0e-15);
+        assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
+        assertEquals(CartesianDerivativesFilter.USE_PV,
+                     satellite.getSegments().get(0).getAvailableDerivatives());
+        assertEquals("GCRF",
+                     satellite.getSegments().get(0).getFrame().getName());
+        assertEquals(body.getGM(),
+                     satellite.getSegments().get(0).getMu(), muTolerance);
 
         String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
         new OEMWriter().write(tempOemFile, ephemerisFile);
@@ -111,6 +122,8 @@ public class OrekitEphemerisFileTest {
         assertEquals(frame, segment.getFrame());
         assertEquals(body.getName().toUpperCase(), segment.getFrameCenterString());
         assertEquals(body.getGM(), segment.getMu(), muTolerance);
+        assertEquals(CartesianDerivativesFilter.USE_PV, segment.getAvailableDerivatives());
+        assertEquals("GCRF", segment.getFrame().getName());
         for (int i = 0; i < states.size(); i++) {
             TimeStampedPVCoordinates expected = states.get(i).getPVCoordinates();
             TimeStampedPVCoordinates actual = segment.getCoordinates().get(i);

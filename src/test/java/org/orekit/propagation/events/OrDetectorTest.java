@@ -140,9 +140,6 @@ public class OrDetectorTest {
     /** Mock detector to set the g function to arbitrary values. */
     private static class MockDetector implements EventDetector {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 1L;
-
         /** value to return from {@link #g(SpacecraftState)}. */
         public double g = 0;
 

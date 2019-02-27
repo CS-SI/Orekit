@@ -27,9 +27,6 @@ import org.hipparchus.util.FastMath;
  */
 public class MariniMurrayModel implements TroposphericModel {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 8442906721207317886L;
-
     /** The temperature at the station, K. */
     private double T0;
 

@@ -63,9 +63,6 @@ import org.orekit.utils.PVCoordinates;
  */
 public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<ImpulseManeuver<T>> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** The attitude to override during the maneuver, if set. */
     private final AttitudeProvider attitudeOverride;
 

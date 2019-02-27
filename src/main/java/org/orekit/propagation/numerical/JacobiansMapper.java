@@ -85,15 +85,6 @@ public class JacobiansMapper {
         return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
     }
 
-    /** Get the state vector dimension.
-     * @return state vector dimension
-     * @deprecated as of 9.0, replaced with {@link #STATE_DIMENSION}
-     */
-    @Deprecated
-    public int getStateDimension() {
-        return STATE_DIMENSION;
-    }
-
     /** Get the number of parameters.
      * @return number of parameters
      */

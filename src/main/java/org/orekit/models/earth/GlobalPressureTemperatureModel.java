@@ -34,9 +34,9 @@ import org.orekit.time.TimeScalesFactory;
  * small near the equator (Böhm, 2007)
  * </p>
  *
- * @see J. Böhm, R. Heinkelmann, and H. Schuh (2007),
+ * @see "J. Böhm, R. Heinkelmann, and H. Schuh (2007),
  * Short Note: A global model of pressure and temperature for geodetic applications. J Geod,
- * doi:10.1007/s00190-007-0135-3.
+ * doi:10.1007/s00190-007-0135-3."
  *
  * @author Bryan Cazabonne
  *

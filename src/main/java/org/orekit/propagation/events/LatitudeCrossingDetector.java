@@ -30,9 +30,6 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  */
 public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150824L;
-
     /** Body on which the latitude is defined. */
     private OneAxisEllipsoid body;
 

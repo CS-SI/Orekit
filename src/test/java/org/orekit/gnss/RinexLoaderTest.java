@@ -17,7 +17,6 @@
 package org.orekit.gnss;
 
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -530,20 +529,6 @@ public class RinexLoaderTest {
                 Assert.assertEquals(rawData.getObservationType(), scaledData.getObservationType());
                 Assert.assertEquals(rawData.getValue(), scaledData.getValue(), FastMath.ulp(rawData.getValue()));
             }
-        }
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        RinexLoader  loader = new RinexLoader("^aaaa0000\\.00o$");
-        Map<RinexHeader, List<ObservationDataSet>> map = loader.getObservations();
-        for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
-            boolean found = false;
-            for (final ObservationDataSet other : map.get(dataSet.getHeader())) {
-                found |= other == dataSet;
-            }
-            Assert.assertTrue(found);
         }
     }
 
