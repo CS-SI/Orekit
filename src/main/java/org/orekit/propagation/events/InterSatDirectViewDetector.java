@@ -69,9 +69,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectViewDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20181130L;
-
     /** Central body. */
     private final OneAxisEllipsoid body;
 
@@ -82,7 +79,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     private final double g2;
 
     /** Coordinates provider for the slave satellite. */
-    private final transient PVCoordinatesProvider slave;
+    private final PVCoordinatesProvider slave;
 
     /** simple constructor.
      *

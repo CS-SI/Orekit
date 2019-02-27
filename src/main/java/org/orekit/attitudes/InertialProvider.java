@@ -40,9 +40,6 @@ public class InertialProvider implements AttitudeProvider {
     public static final InertialProvider EME2000_ALIGNED =
         new InertialProvider(Rotation.IDENTITY);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -818658655669855332L;
-
     /** Fixed satellite frame. */
     private final Frame satelliteFrame;
 

@@ -50,9 +50,6 @@ import org.orekit.utils.TimeSpanMap;
  */
 public class PositionAngleDetector extends AbstractDetector<PositionAngleDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20180919L;
-
     /** Orbit type defining the angle type. */
     private final OrbitType orbitType;
 

@@ -46,14 +46,11 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
     /** Default yaw bias (rad). */
     public static final double DEFAULT_YAW_BIAS = FastMath.toRadians(-0.7);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
     /** Satellite-Sun angle limit for a midnight turn maneuver. */
     private static final double NIGHT_TURN_LIMIT = FastMath.toRadians(180.0 - 13.25);
 
     /** Margin on turn end. */
-    private final double END_MARGIN = 1800.0;
+    private static final double END_MARGIN = 1800.0;
 
     /** Yaw rate. */
     private final double yawRate;

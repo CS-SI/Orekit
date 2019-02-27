@@ -41,36 +41,6 @@ import org.orekit.utils.CartesianDerivativesFilter;
 public class InterpolatingTransformProviderTest {
 
     @Test
-    @Deprecated
-    public void testDeprecatedConstructor() {
-
-        AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
-        CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
-        InterpolatingTransformProvider interpolatingProvider =
-                new InterpolatingTransformProvider(rawProvider,
-                                                   CartesianDerivativesFilter.USE_PVA,
-                                                   AngularDerivativesFilter.USE_RR,
-                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                   5, 0.8, 10, 60.0, 60.0);
-
-        for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
-            Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
-            Transform interpolated = interpolatingProvider.getTransform(t0.shiftedBy(dt));
-            Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           7.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           3.0e-14);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            1.3e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         2.2e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 1.2e-14);
-
-        }
-        Assert.assertEquals(10,   rawProvider.getCount());
-        Assert.assertEquals(3001, referenceProvider.getCount());
-
-    }
-
-    @Test
     public void testCacheHitWithDerivatives() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;

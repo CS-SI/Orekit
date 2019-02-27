@@ -80,12 +80,6 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test
-    @Deprecated
-    public void testEquinoctialToCartesian2() {
-        doTestEquinoctialToCartesian2(Decimal64Field.getInstance());
-    }
-
-    @Test
     public void testEquinoctialToKeplerian() {
         doTestEquinoctialToKeplerian(Decimal64Field.getInstance());
     }
@@ -302,30 +296,6 @@ public class FieldEquinoctialOrbitTest {
                      * FastMath.abs(vit.getY().getReal()));
         Assert.assertEquals(0.158527938296630e+02, vit.getZ().getReal(), Utils.epsilonTest
                      * FastMath.abs(vit.getZ().getReal()));
-    }
-
-    @Deprecated
-    private <T extends RealFieldElement<T>> void doTestEquinoctialToCartesian2(Field<T> field) {
-        T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-
-        T ix = zero.add(1.200e-04);
-        T iy = zero.add(-1.16e-04);
-        T inc = ix.multiply(ix).add(iy.multiply(iy)).divide(4.).sqrt().asin().multiply(2);
-        T hx = inc.divide(2.).tan().multiply(ix).divide(inc.divide(2.).sin().multiply(2));
-        T hy = inc.divide(2.).tan().multiply(iy).divide(inc.divide(2.).sin().multiply(2));
-
-        FieldEquinoctialOrbit<T> equi =
-                        new FieldEquinoctialOrbit<>(zero.add(42166.712), zero.add(-7.900e-06), zero.add(1.100e-04), hx, hy,
-                                                    zero.add(5.300), PositionAngle.MEAN,
-                                                   FramesFactory.getEME2000(), date, mu);
-        FieldVector3D<T> ref  = equi.getPVCoordinates().getPosition();
-        FieldVector3D<T> pos  = FieldEquinoctialOrbit.equinoctialToPosition(equi.getA(), 
-                                                                            equi.getEquinoctialEx(), equi.getEquinoctialEy(),
-                                                                            equi.getHx(), equi.getHy(),
-                                                                            equi.getLv(),
-                                                                            equi.getMu());
-        Assert.assertEquals(0, FieldVector3D.distance(ref, pos).getReal(), 1.0e-15);
     }
 
     private <T extends RealFieldElement<T>> void doTestEquinoctialToKeplerian(Field<T> field) {

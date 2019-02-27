@@ -29,9 +29,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class NegateDetector extends AbstractDetector<NegateDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170410L;
-
     /** the delegate event detector. */
     private final EventDetector original;
 

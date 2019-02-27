@@ -390,14 +390,6 @@ public class SP3File implements EphemerisFile {
         return orbitType;
     }
 
-    /** Set the {@link SP3OrbitType} for this SP3 file.
-     * @param oType the orbit type to be set
-     * @deprecated as of 9.4, replaced by {@link #setOrbitTypeKey(String)}
-     */
-    void setOrbitType(final SP3OrbitType oType) {
-        this.orbitType = oType;
-    }
-
     /** Returns the orbit type key for this SP3 file.
      * @return the orbit type key
      * @since 9.3

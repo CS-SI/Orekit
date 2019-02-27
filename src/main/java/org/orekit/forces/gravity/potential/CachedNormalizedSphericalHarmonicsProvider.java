@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -219,10 +218,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
      * {@link #interpolate(AbsoluteDate, Collection)}
      */
     private static class TimeStampedSphericalHarmonics
-            implements TimeStamped, Serializable, NormalizedSphericalHarmonics {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131029l;
+            implements TimeStamped, NormalizedSphericalHarmonics {
 
         /** Current date. */
         private final AbsoluteDate date;

@@ -68,9 +68,9 @@ import org.orekit.utils.Constants;
  *   ...
  * </pre>
  *
- * @see K. Lagler, M. Schindelegger, J. Böhm, H. Krasna, T. Nilsson (2013),
+ * @see "K. Lagler, M. Schindelegger, J. Böhm, H. Krasna, T. Nilsson (2013),
  * GPT2: empirical slant delay model for radio space geodetic techniques. Geophys
- * Res Lett 40(6):1069–1073. doi:10.1002/grl.50288
+ * Res Lett 40(6):1069–1073. doi:10.1002/grl.50288"
  *
  * @author Bryan Cazabonne
  *

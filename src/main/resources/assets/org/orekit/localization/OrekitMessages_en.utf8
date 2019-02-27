@@ -463,6 +463,9 @@ UNKNOWN_SATELLITE_SYSTEM = unknown satellite system {0}
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = unknown satellite antenna code {0}
 
+# frequency {0} is not supported by antenna {1}
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frequency {0} is not supported by antenna {1}
+
 # cannot find satellite {0} in satellite system {1}
 CANNOT_FIND_SATELLITE_IN_SYSTEM = cannot find satellite {0} in satellite system {1}
 

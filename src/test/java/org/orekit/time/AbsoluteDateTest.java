@@ -304,16 +304,6 @@ public class AbsoluteDateTest {
     }
 
     @Test
-    @Deprecated
-    public void testGpsDate() {
-        AbsoluteDate date = AbsoluteDate.createGPSDate(1387, 318677000.0);
-        AbsoluteDate ref  = new AbsoluteDate(new DateComponents(2006, 8, 9),
-                                             new TimeComponents(16, 31, 03),
-                                             utc);
-        Assert.assertEquals(0, date.durationFrom(ref), 1.0e-15);
-    }
-
-    @Test
     public void testMJDDate() {
         AbsoluteDate dateA = AbsoluteDate.createMJDDate(51544, 0.5 * Constants.JULIAN_DAY,
                                                              TimeScalesFactory.getTT());

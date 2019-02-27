@@ -16,8 +16,6 @@
  */
 package org.orekit.gnss.attitude;
 
-import java.io.Serializable;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -33,10 +31,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 9.3
  */
-class TurnSpan implements Serializable, TimeStamped {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20180626L;
+class TurnSpan implements TimeStamped {
 
     /** Margin in seconds after turn end. */
     private final double endMargin;

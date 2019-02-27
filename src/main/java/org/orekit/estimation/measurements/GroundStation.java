@@ -360,15 +360,6 @@ public class GroundStation {
         return estimatedEarthFrameProvider.getEstimatedUT1();
     }
 
-    /** Get the geodetic point at the center of the offset frame.
-     * @return geodetic point at the center of the offset frame
-     * @deprecated as of 9.1, replaced by {@link #getOffsetGeodeticPoint(AbsoluteDate)}
-     */
-    @Deprecated
-    public GeodeticPoint getOffsetGeodeticPoint() {
-        return getOffsetGeodeticPoint(null);
-    }
-
     /** Get the station displacement.
      * @param date current date
      * @param position raw position of the station in Earth frame

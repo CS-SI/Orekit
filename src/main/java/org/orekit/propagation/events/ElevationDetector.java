@@ -40,9 +40,6 @@ import org.orekit.utils.ElevationMask;
  */
 public class ElevationDetector extends AbstractDetector<ElevationDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Elevation mask used for calculations, if defined. */
     private final ElevationMask elevationMask;
 

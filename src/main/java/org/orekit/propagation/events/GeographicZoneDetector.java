@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
-
 import org.hipparchus.geometry.enclosing.EnclosingBall;
 import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
@@ -28,7 +26,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
-import org.orekit.utils.SphericalPolygonsSetTransferObject;
 
 /** Detector for entry/exit of a zone defined by geographic boundaries.
  * <p>This detector identifies when a spacecraft crosses boundaries of
@@ -45,17 +42,14 @@ import org.orekit.utils.SphericalPolygonsSetTransferObject;
  */
 public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140619L;
-
     /** Body on which the geographic zone is defined. */
     private BodyShape body;
 
     /** Zone definition. */
-    private final transient SphericalPolygonsSet zone;
+    private final SphericalPolygonsSet zone;
 
     /** Spherical cap surrounding the zone. */
-    private final transient EnclosingBall<Sphere2D, S2Point> cap;
+    private final EnclosingBall<Sphere2D, S2Point> cap;
 
     /** Margin to apply to the zone. */
     private final double margin;
@@ -183,62 +177,6 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
         // we are close, we need to compute carefully the exact offset
         // project the point to the closest zone boundary
         return zone.projectToBoundary(s2p).getOffset() - margin;
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20140619L;
-
-        /** Max check interval. */
-        private final double maxCheck;
-
-        /** Convergence threshold. */
-        private final double threshold;
-
-        /** Maximum number of iterations in the event time search. */
-        private final int maxIter;
-
-        /** Body on which the geographic zone is defined. */
-        private final BodyShape body;
-
-        /** Margin to apply to the zone. */
-        private final double margin;
-
-        /** Proxy for spherical polygons set. */
-        private final SphericalPolygonsSetTransferObject zone;
-
-        /** Simple constructor.
-         * @param detector instance to serialize
-         */
-        private DTO(final GeographicZoneDetector detector) {
-
-            this.maxCheck  = detector.getMaxCheckInterval();
-            this.threshold = detector.getThreshold();
-            this.maxIter   = detector.getMaxIterationCount();
-            this.body      = detector.body;
-            this.margin    = detector.margin;
-            this.zone      = new SphericalPolygonsSetTransferObject(detector.zone);
-        }
-
-        /** Replace the deserialized data transfer object with a {@link GeographicZoneDetector}.
-         * @return replacement {@link GeographicZoneDetector}
-         */
-        private Object readResolve() {
-            return new GeographicZoneDetector(body, zone.rebuildZone(), margin).
-                            withMaxCheck(maxCheck).
-                            withThreshold(threshold).
-                            withMaxIter(maxIter);
-        }
 
     }
 

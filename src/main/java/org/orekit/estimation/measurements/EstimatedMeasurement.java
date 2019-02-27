@@ -52,13 +52,6 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
     /** Estimated value. */
     private double[] estimatedValue;
 
-    /** Current weight.
-     * @deprecated as of 9.2, weight should not be changed anymore,
-     * rejected measurements are identified by their {@link #getStatus() status}
-     */
-    @Deprecated
-    private double[] currentWeight;
-
     /** Measurement status. */
     private Status status;
 
@@ -164,30 +157,6 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
      */
     public void setEstimatedValue(final double... estimatedValue) {
         this.estimatedValue = estimatedValue.clone();
-    }
-
-    /** Get the current weight.
-     * <p>
-     * By default, the current weight is measurement {@link
-     * ObservedMeasurement#getBaseWeight() base weight}.
-     * </p>
-     * @return current weight
-     * @deprecated as of 9.2, weight should not be changed anymore,
-     * rejected measurements are identified by their {@link #getStatus() status}
-     */
-    @Deprecated
-    public double[] getCurrentWeight() {
-        return currentWeight == null ? observedMeasurement.getBaseWeight() : currentWeight.clone();
-    }
-
-    /** Set the current weight.
-     * @param currentWeight current weight
-     * @deprecated as of 9.2, weight should not be changed anymore,
-     * rejected measurements are identified by their {@link #getStatus() status}
-     */
-    @Deprecated
-    public void setCurrentWeight(final double... currentWeight) {
-        this.currentWeight = currentWeight.clone();
     }
 
     /** Get the status.

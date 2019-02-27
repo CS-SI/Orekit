@@ -46,7 +46,6 @@ import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.DTM2000;
 import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.Relativity;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -116,23 +115,6 @@ public class FieldNumericalPropagatorTest {
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add((10.0))));
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedMethods() {
-        doTestDeprecatedMethods(Decimal64Field.getInstance());
-    }
-
-    @Deprecated
-    private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestDeprecatedMethods(Field<T> field)
-        {
-        FieldNumericalPropagator<T>  propagator = createPropagator(field);
-        propagator.addForceModel(new Relativity(mu));
-        Assert.assertEquals(2, propagator.getAllForceModels().size());
-        Assert.assertEquals(1, propagator.getForceModels().size());
-        Assert.assertSame(propagator.getAllForceModels().get(0), propagator.getForceModels().get(0));
-        Assert.assertSame(propagator.getAllForceModels().get(1), propagator.getNewtonianAttractionForceModel());
     }
 
     @Test

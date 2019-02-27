@@ -265,32 +265,6 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         return Collections.unmodifiableList(forceModels);
     }
 
-    /** Get perturbing force models list.
-     * @return list of perturbing force models
-     * @deprecated as of 9.1, this method is deprecated, the perturbing
-     * force models are retrieved together with the Newtonian attraction
-     * by calling {@link #getAllForceModels()}
-     */
-    @Deprecated
-    public List<ForceModel> getForceModels() {
-        return hasNewtonianAttraction() ? forceModels.subList(0, forceModels.size() - 1) : forceModels;
-    }
-
-    /** Get the Newtonian attraction from the central body force model.
-     * @return Newtonian attraction force model
-     * @deprecated as of 9.1, this method is deprecated, the Newtonian
-     * attraction force model (if any) is the last in the {@link #getAllForceModels()}
-     */
-    @Deprecated
-    public NewtonianAttraction getNewtonianAttractionForceModel() {
-        final int last = forceModels.size() - 1;
-        if (last >= 0 && forceModels.get(last) instanceof NewtonianAttraction) {
-            return (NewtonianAttraction) forceModels.get(last);
-        } else {
-            return null;
-        }
-    }
-
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
