@@ -17,6 +17,9 @@
 package org.orekit.models.earth;
 
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
@@ -24,12 +27,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 public class MariniMurrayModelTest {
 
     private static double epsilon = 1e-6;
 
-    private TroposphericModel model;
+    private DiscreteTroposphericModel model;
 
     @BeforeClass
     public static void setUpGlobal() {
@@ -47,10 +52,26 @@ public class MariniMurrayModelTest {
         final double elevation = 10d;
         final double height = 100d;
 
-        final double path = model.pathDelay(FastMath.toRadians(elevation), height);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), height, null, AbsoluteDate.J2000_EPOCH);
 
         Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+    }
+
+    @Test
+    public void testFieldDelay() {
+        doTestFieldDelay(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
+        final T zero = field.getZero();
+        final T elevation = zero.add(FastMath.toRadians(10d));
+        final T height = zero.add(100d);
+
+        final T path = model.pathDelay(elevation, height, null, FieldAbsoluteDate.getJ2000Epoch(field));
+
+        Assert.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
+        Assert.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
     }
 
     @Test
@@ -58,8 +79,24 @@ public class MariniMurrayModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), 350);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), 350, null, AbsoluteDate.J2000_EPOCH);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            lastDelay = delay;
+        }
+    }
+
+    @Test
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
+        final T zero = field.getZero();
+        T lastDelay  = zero.add(Double.MAX_VALUE);
+        // delay shall decline with increasing elevation angle
+        for (double elev = 10d; elev < 90d; elev += 8d) {
+            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), zero.add(350), null, FieldAbsoluteDate.getJ2000Epoch(field));
+            Assert.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
@@ -70,8 +107,25 @@ public class MariniMurrayModelTest {
         double height = 0;
         double elevation = 10;
         double expectedValue = 13.26069;
-        double actualValue = model.pathDelay(FastMath.toRadians(elevation), height);
+        double actualValue = model.pathDelay(FastMath.toRadians(elevation), height, null, AbsoluteDate.J2000_EPOCH);
 
         Assert.assertEquals(expectedValue, actualValue, 1.0e-5);
     }
+
+    @Test
+    public void compareFieldExpectedValue() {
+        doCompareFieldExpectedValues(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
+
+        T zero = field.getZero();
+        T height = zero;
+        T elevation = zero.add(FastMath.toRadians(10));
+        double expectedValue = 13.26069;
+        T actualValue = model.pathDelay(elevation, height, null, FieldAbsoluteDate.getJ2000Epoch(field));
+
+        Assert.assertEquals(expectedValue, actualValue.getReal(), 1.0e-5);
+    }
+
 }

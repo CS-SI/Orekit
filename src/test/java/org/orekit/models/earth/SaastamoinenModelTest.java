@@ -19,18 +19,30 @@ package org.orekit.models.earth;
 
 import static org.junit.Assert.assertEquals;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 
 public class SaastamoinenModelTest {
 
     private static double epsilon = 1e-6;
+
+    private double[][] expectedValues;
+
+    private double[] elevations;
+
+    private double[] heights;
 
     @Test
     public void testFixedElevation() {
@@ -39,8 +51,26 @@ public class SaastamoinenModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
-            final double delay = model.pathDelay(FastMath.toRadians(5), height);
+            final double delay = model.pathDelay(FastMath.toRadians(5), height, null, AbsoluteDate.J2000_EPOCH);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            lastDelay = delay;
+        }
+    }
+
+    @Test
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFieldFixedElevation(final Field<T> field) {
+        final T zero = field.getZero();
+        Utils.setDataRoot("atmosphere");
+        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        T lastDelay = zero.add(Double.MAX_VALUE);
+        // delay shall decline with increasing height of the station
+        for (double height = 0; height < 5000; height += 100) {
+            final T delay = model.pathDelay(zero.add(FastMath.toRadians(5)), zero.add(height), null, FieldAbsoluteDate.getJ2000Epoch(field));
+            Assert.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
@@ -52,8 +82,26 @@ public class SaastamoinenModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), 350);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), 350, null, AbsoluteDate.J2000_EPOCH);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            lastDelay = delay;
+        }
+    }
+
+    @Test
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
+        final T zero = field.getZero();
+        Utils.setDataRoot("atmosphere");
+        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        T lastDelay = zero.add(Double.MAX_VALUE);
+        // delay shall decline with increasing elevation angle
+        for (double elev = 10d; elev < 90d; elev += 8d) {
+            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), zero.add(350), null, FieldAbsoluteDate.getJ2000Epoch(field));
+            Assert.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
@@ -91,8 +139,8 @@ public class SaastamoinenModelTest {
             for (int e = 0; e < elevations.length; e++) {
                 double height = heights[h];
                 double elevation = elevations[e];
-                double expectedValue = defaultModel.pathDelay(elevation, height);
-                double actualValue = loadedModel.pathDelay(elevation, height);
+                double expectedValue = defaultModel.pathDelay(elevation, height, null, AbsoluteDate.J2000_EPOCH);
+                double actualValue = loadedModel.pathDelay(elevation, height, null, AbsoluteDate.J2000_EPOCH);
                 assertEquals("For height=" + height + " elevation = " +
                              FastMath.toDegrees(elevation) + " precision not met",
                              expectedValue, actualValue, epsilon);
@@ -106,7 +154,24 @@ public class SaastamoinenModelTest {
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
         final double height = -500.0;
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
-            Assert.assertEquals(model.pathDelay(elevation, 0.0), model.pathDelay(elevation, height), 1.e-10);
+            Assert.assertEquals(model.pathDelay(elevation, 0.0, null, AbsoluteDate.J2000_EPOCH), model.pathDelay(elevation, height, null, AbsoluteDate.J2000_EPOCH), 1.e-10);
+        }
+    }
+
+    @Test
+    public void testFieldNegativeHeight() {
+        doTestFieldNegativeHeight(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFieldNegativeHeight(final Field<T> field) {
+        final T zero = field.getZero();
+        Utils.setDataRoot("atmosphere");
+        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        final T height = zero.subtract(500.0);
+        for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
+            Assert.assertEquals(model.pathDelay(zero.add(elevation), zero, null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
+                                model.pathDelay(zero.add(elevation), height, null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
+                                1.e-10);
         }
     }
 
@@ -114,11 +179,51 @@ public class SaastamoinenModelTest {
     public void compareExpectedValues() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
-        double[] heights = new double[] {
+ 
+        for (int h = 0; h < heights.length; h++) {
+            for (int e = 0; e < elevations.length; e++) {
+                double height = heights[h];
+                double elevation = elevations[e];
+                double expectedValue = expectedValues[h][e];
+                double actualValue = model.pathDelay(elevation, height, null, AbsoluteDate.J2000_EPOCH);
+                assertEquals("For height=" + height + " elevation = " +
+                             FastMath.toDegrees(elevation) + " precision not met",
+                             expectedValue, actualValue, epsilon);
+            }
+        }
+    }
+
+    @Test
+    public void compareFieldExpectedValues() {
+        doCompareFieldExpectedValues(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
+        final T zero = field.getZero();
+        Utils.setDataRoot("atmosphere");
+        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+ 
+        for (int h = 0; h < heights.length; h++) {
+            for (int e = 0; e < elevations.length; e++) {
+                T height = zero.add(heights[h]);
+                T elevation = zero.add(elevations[e]);
+                double expectedValue = expectedValues[h][e];
+                T actualValue = model.pathDelay(elevation, height, null, FieldAbsoluteDate.getJ2000Epoch(field));
+                assertEquals("For height=" + height + " elevation = " +
+                             FastMath.toDegrees(elevation.getReal()) + " precision not met",
+                             expectedValue, actualValue.getReal(), epsilon);
+            }
+        }
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        heights = new double[] {
             0.0, 250.0, 500.0, 750.0, 1000.0, 1250.0, 1500.0, 1750.0, 2000.0, 2250.0, 2500.0, 2750.0, 3000.0, 3250.0,
             3500.0, 3750.0, 4000.0, 4250.0, 4500.0, 4750.0, 5000.0
         };
-        double[] elevations = new double[] {
+
+        elevations = new double[] {
             FastMath.toRadians(10.0), FastMath.toRadians(15.0), FastMath.toRadians(20.0),
             FastMath.toRadians(25.0), FastMath.toRadians(30.0), FastMath.toRadians(35.0),
             FastMath.toRadians(40.0), FastMath.toRadians(45.0), FastMath.toRadians(50.0),
@@ -126,7 +231,8 @@ public class SaastamoinenModelTest {
             FastMath.toRadians(70.0), FastMath.toRadians(75.0), FastMath.toRadians(80.0),
             FastMath.toRadians(85.0), FastMath.toRadians(90.0)
         };
-        double[][] expectedValues = new double[][] {
+
+        expectedValues = new double[][] {
             {
                 13.517414068807756, 9.204443522241771, 7.0029750138616835, 5.681588299211439, 4.8090544808193805,
                 4.196707503563898, 3.7474156937027994, 3.408088733958258, 3.1468182787091985, 2.943369134588668,
@@ -254,18 +360,6 @@ public class SaastamoinenModelTest {
                 1.238295129863562, 1.2335098392123367
             }
         };
-
-        for (int h = 0; h < heights.length; h++) {
-            for (int e = 0; e < elevations.length; e++) {
-                double height = heights[h];
-                double elevation = elevations[e];
-                double expectedValue = expectedValues[h][e];
-                double actualValue = model.pathDelay(elevation, height);
-                assertEquals("For height=" + height + " elevation = " +
-                             FastMath.toDegrees(elevation) + " precision not met",
-                             expectedValue, actualValue, epsilon);
-            }
-        }
     }
 
 }

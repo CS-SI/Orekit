@@ -16,15 +16,24 @@
  */
 package org.orekit.models.earth;
 
-import org.hipparchus.analysis.UnivariateFunction;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.InterpolationTableLoader;
+import org.orekit.utils.ParameterDriver;
 
 /** The modified Saastamoinen model. Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
@@ -48,7 +57,7 @@ import org.orekit.utils.InterpolationTableLoader;
  * @author Thomas Neidhart
  * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
  */
-public class SaastamoinenModel implements TroposphericModel {
+public class SaastamoinenModel implements DiscreteTroposphericModel {
 
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
@@ -69,7 +78,7 @@ public class SaastamoinenModel implements TroposphericModel {
     };
 
     /** Interpolation function for the B correction term. */
-    private final UnivariateFunction bFunction;
+    private final PolynomialSplineFunction bFunction;
 
     /** Polynomial function for the e term. */
     private final PolynomialFunction eFunction;
@@ -139,7 +148,8 @@ public class SaastamoinenModel implements TroposphericModel {
      * reasons, we use the value for h = 0 when altitude is negative.
      * </p>
      */
-    public double pathDelay(final double elevation, final double height) {
+    public double pathDelay(final double elevation, final double height,
+                            final double[] parameters, final AbsoluteDate date) {
 
         // there are no data in the model for negative altitudes
         // we use the data for the lowest available altitude: 0.0
@@ -171,6 +181,47 @@ public class SaastamoinenModel implements TroposphericModel {
         return delta;
     }
 
+    /** {@inheritDoc}
+     * <p>
+     * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
+     * reasons, we use the value for h = 0 when altitude is negative.
+     * </p>
+     */
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+
+        final Field<T> field = height.getField();
+        final T zero = field.getZero();
+        // there are no data in the model for negative altitudes
+        // we use the data for the lowest available altitude: 0.0
+        final T fixedHeight = FastMath.max(zero, height);
+
+        // the corrected temperature using a temperature gradient of -6.5 K/km
+        final T T = fixedHeight.multiply(6.5e-3).negate().add(t0);
+        // the corrected pressure
+        final T P = fixedHeight.multiply(2.26e-5).negate().add(1.0).pow(5.225).multiply(p0);
+        // the corrected humidity
+        final T R = FastMath.exp(fixedHeight.multiply(-6.396e-4)).multiply(r0);
+
+        // interpolate the b correction term
+        final T B = bFunction.value(fixedHeight.divide(1e3));
+        // calculate e
+        final T e = R.multiply(FastMath.exp(eFunction.value(T)));
+
+        // calculate the zenith angle from the elevation
+        final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
+
+        // get correction factor
+        final T deltaR = getDeltaR(fixedHeight, z, field);
+
+        // calculate the path delay in m
+        final T tan = FastMath.tan(z);
+        final T delta = FastMath.cos(z).divide(2.277e-3).reciprocal().
+                        multiply(P.add(T.divide(1255d).reciprocal().add(5e-2).multiply(e)).subtract(B.multiply(tan).multiply(tan))).add(deltaR);
+
+        return delta;
+    }
+
     /** Calculates the delta R correction term using linear interpolation.
      * @param height the height of the station in m
      * @param zenith the zenith angle of the satellite
@@ -182,6 +233,24 @@ public class SaastamoinenModel implements TroposphericModel {
         // limit the zenith angle to 90 degree
         // Note: the function is symmetric for negative zenith angles
         final double z = FastMath.min(Math.abs(zenith), 0.5 * FastMath.PI);
+        return deltaRFunction.value(h, z);
+    }
+
+    /** Calculates the delta R correction term using linear interpolation.
+     * @param <T> type of the elements
+     * @param height the height of the station in m
+     * @param zenith the zenith angle of the satellite
+     * @param field field used by default
+     * @return the delta R correction term in m
+     */
+    private  <T extends RealFieldElement<T>> T getDeltaR(final T height, final T zenith,
+                                                         final Field<T> field) {
+        final T zero = field.getZero();
+        // limit the height to a range of [0, 5000] m
+        final T h = FastMath.min(FastMath.max(zero, height), zero.add(5000));
+        // limit the zenith angle to 90 degree
+        // Note: the function is symmetric for negative zenith angles
+        final T z = FastMath.min(zenith.abs(), zero.add(0.5 * FastMath.PI));
         return deltaRFunction.value(h, z);
     }
 
@@ -252,6 +321,51 @@ public class SaastamoinenModel implements TroposphericModel {
         // the actual delta R is interpolated using a a bilinear interpolator
         return new BilinearInterpolatingFunction(xValForR, yValForR, fval);
 
+    }
+
+    @Override
+    public double[] computeZenithDelay(final double height, final double[] parameters,
+                                       final AbsoluteDate date) {
+        return new double[] {
+            pathDelay(0.5 * FastMath.PI, height, parameters, date),
+            0.
+        };
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+                                                                  final FieldAbsoluteDate<T> date) {
+        final Field<T> field = height.getField();
+        final T zero = field.getZero();
+        final T[] delay = MathArrays.buildArray(field, 2);
+        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), height, parameters, date);
+        delay[1] = zero;
+        return delay;
+    }
+
+    @Override
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
+        return new double[] {
+            1.0,
+            1.0
+        };
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
+        final T one = field.getOne();
+        final T[] factors = MathArrays.buildArray(field, 2);
+        factors[0] = one;
+        factors[1] = one;
+        return factors;
+    }
+
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
 }
