@@ -52,7 +52,7 @@ public class EventsLoggerTest {
     public void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
         @SuppressWarnings("unchecked")
-        EventDetector monitored = ((AbstractDetector<EventDetector>) logger.monitorDetector(umbraDetector)).
+        EventDetector monitored = ((AbstractDetector<?>) logger.monitorDetector(umbraDetector)).
                 withMaxIter(200);
         Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assert.assertEquals(200, monitored.getMaxIterationCount());

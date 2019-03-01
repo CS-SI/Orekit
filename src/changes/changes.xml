@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="evan" type="update" issue="389">
+        Fix type parametrization of AbstractDetector so that multiple with* methods can be
+        called when the type parameter is '?'.
+      </action>
       <action dev="bryan" type="fix" issue="527">
         Changed API for magnetic field model to a SI base unit API.
       </action>

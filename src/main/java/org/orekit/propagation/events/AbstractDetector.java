@@ -24,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public abstract class AbstractDetector<T extends EventDetector> implements EventDetector {
+public abstract class AbstractDetector<T extends AbstractDetector<T>> implements EventDetector {
 
     /** Default maximum checking interval (s). */
     public static final double DEFAULT_MAXCHECK = 600;
