@@ -214,6 +214,7 @@
       * biases
       * delays
       * Antenna Phase Center
+      * Shapiro relativistic effect
 
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
