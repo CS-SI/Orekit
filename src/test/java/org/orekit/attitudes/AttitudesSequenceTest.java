@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Decimal64Field;
@@ -103,9 +104,9 @@ public class AttitudesSequenceTest {
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
-                    public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
+                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
-                        return EventHandler.Action.RESET_STATE;
+                        return Action.RESET_STATE;
                     }
                 });
         final EventDetector monitored = logger.monitorDetector(ed);
@@ -211,7 +212,7 @@ public class AttitudesSequenceTest {
                 new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
                     int count = 0;
-                    public EventHandler.Action eventOccurred(final SpacecraftState s,
+                    public Action eventOccurred(final SpacecraftState s,
                                                              final EclipseDetector d,
                                                              final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);

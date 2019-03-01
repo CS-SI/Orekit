@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.frames.Frame;
@@ -27,10 +28,8 @@ import org.orekit.utils.PVCoordinates;
 /** Finder for satellite altitude crossing events.
  * <p>This class finds altitude events (i.e. satellite crossing
  * a predefined altitude level above ground).</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE
- * continue} propagation when ascending and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * <p>The default implementation behavior is to {@link Action#CONTINUE
+ * continue} propagation when ascending and to {@link Action#STOP stop}
  * propagation when descending. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)

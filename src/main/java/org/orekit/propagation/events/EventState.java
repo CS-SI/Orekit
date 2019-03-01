@@ -21,11 +21,11 @@ import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -437,10 +437,9 @@ public class EventState<T extends EventDetector> {
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
      * @return the user's requested action and the new state if the action is {@link
-     * org.orekit.propagation.events.handlers.EventHandler.Action#RESET_STATE Action.RESET_STATE}.
+     * Action#RESET_STATE Action.RESET_STATE}.
      * Otherwise the new state is {@code state}. The stop time indicates what time propagation
-     * should stop if the action is {@link
-     * org.orekit.propagation.events.handlers.EventHandler.Action#STOP Action.STOP}.
+     * should stop if the action is {@link Action#STOP Action.STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
      */
@@ -449,9 +448,9 @@ public class EventState<T extends EventDetector> {
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final EventHandler.Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = detector.eventOccurred(state, increasing == forward);
         final SpacecraftState newState;
-        if (action == EventHandler.Action.RESET_STATE) {
+        if (action == Action.RESET_STATE) {
             newState = detector.resetState(state);
         } else {
             newState = state;
@@ -542,7 +541,7 @@ public class EventState<T extends EventDetector> {
     public static class EventOccurrence {
 
         /** User requested action. */
-        private final EventHandler.Action action;
+        private final Action action;
         /** New state for a reset action. */
         private final SpacecraftState newState;
         /** The time to stop propagation if the action is a stop event. */
@@ -557,7 +556,7 @@ public class EventState<T extends EventDetector> {
          * @param stopDate to stop propagation if the action is {@link Action#STOP}. Used
          *                 to move the stop time to just after the root.
          */
-        EventOccurrence(final EventHandler.Action action,
+        EventOccurrence(final Action action,
                         final SpacecraftState newState,
                         final AbsoluteDate stopDate) {
             this.action = action;
@@ -570,7 +569,7 @@ public class EventState<T extends EventDetector> {
          *
          * @return the action.
          */
-        public EventHandler.Action getAction() {
+        public Action getAction() {
             return action;
         }
 

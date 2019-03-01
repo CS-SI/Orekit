@@ -18,6 +18,7 @@ package org.orekit.propagation.events.handlers;
 
 import java.util.List;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
@@ -29,7 +30,6 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;

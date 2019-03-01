@@ -3,13 +3,13 @@ package org.orekit.propagation.events;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 
+import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 
 /**

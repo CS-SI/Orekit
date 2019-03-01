@@ -26,6 +26,7 @@ import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.geometry.spherical.twod.Vertex;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -50,10 +51,8 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * This detector is typically used for ground observation missions with agile
  * satellites than can look away from nadir.
  * </p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
- * propagation at FOV entry and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at FOV entry and to {@link Action#STOP stop} propagation
  * at FOV exit. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)

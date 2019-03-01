@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
@@ -31,7 +32,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;

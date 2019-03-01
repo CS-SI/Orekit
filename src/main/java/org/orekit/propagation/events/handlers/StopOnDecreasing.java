@@ -16,14 +16,15 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
 
 /** Handle a detection event and choose what to do next.
  * <p>The implementation behavior is to {@link
- * EventHandler.Action#CONTINUE continue} propagation when ascending and to
- * {@link EventHandler.Action#STOP stop} propagation when descending.</p>
+ * Action#CONTINUE continue} propagation when ascending and to
+ * {@link Action#STOP stop} propagation when descending.</p>
  *
  * @author Hank Grabowski
  *
@@ -34,13 +35,13 @@ public class StopOnDecreasing <T extends EventDetector> implements EventHandler<
 
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link
-     * EventHandler.Action#CONTINUE continue} propagation when ascending and to
-     * {@link EventHandler.Action#STOP stop} propagation when descending.</p>
+     * Action#CONTINUE continue} propagation when ascending and to
+     * {@link Action#STOP stop} propagation when descending.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param detector the detector object calling this method (not used in the evaluation)
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
-     * @return {@link EventHandler.Action#STOP} or {@link EventHandler.Action#CONTINUE}
+     * @return {@link Action#STOP} or {@link Action#CONTINUE}
      */
     public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
         return increasing ? Action.CONTINUE : Action.STOP;
