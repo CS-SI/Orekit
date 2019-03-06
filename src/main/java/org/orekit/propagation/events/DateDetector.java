@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import java.util.ArrayList;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
@@ -34,8 +35,7 @@ import org.orekit.time.TimeStamped;
  *   <li>several dates can be added ({@link #addEventDate(AbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the maxCheck.</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * <p>The default implementation behavior is to {@link Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)

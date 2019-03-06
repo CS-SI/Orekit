@@ -28,6 +28,10 @@
         Fix type parametrization of AbstractDetector so that multiple with* methods can be
         called when the type parameter is '?'.
       </action>
+      <action dev="evan" type="remove" issue="506">
+        Remove EventHandler.Action and FieldEventHandler.Action. Use
+        org.hipparchus.ode.events.Action instead.
+      </action>
       <action dev="bryan" type="fix" issue="527">
         Changed API for magnetic field model to a SI base unit API.
       </action>

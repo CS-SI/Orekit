@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.frames.FramesFactory;
@@ -46,7 +47,7 @@ public class StopOnIncreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(EventHandler.Action.STOP, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, true));
+        Assert.assertSame(Action.STOP, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, true));
     }
 
     @Test
@@ -56,7 +57,7 @@ public class StopOnIncreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(EventHandler.Action.CONTINUE, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, false));
+        Assert.assertSame(Action.CONTINUE, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, false));
     }
 
 }

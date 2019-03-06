@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -156,9 +157,9 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /** {@inheritDoc} */
-    public EventHandler.Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
         @SuppressWarnings("unchecked")
-        final EventHandler.Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
+        final Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
         return whatNext;
     }
 

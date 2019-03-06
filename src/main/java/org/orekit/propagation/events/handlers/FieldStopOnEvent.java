@@ -19,12 +19,13 @@ package org.orekit.propagation.events.handlers;
 
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 
 
 /**
- * Event handler which will always return {@link FieldEventHandler.Action#CONTINUE continue} as a state.
+ * Event handler which will always return {@link Action#CONTINUE continue} as a state.
  * @author Hank Grabowski
  *
  * @param <T> class type for the generic version
@@ -38,7 +39,7 @@ public class FieldStopOnEvent <KK extends FieldEventDetector<T>, T extends RealF
      * @param s SpaceCraft state to be used in the evaluation
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
-     * @return {@link FieldEventHandler.Action#STOP stop} under all circumstances
+     * @return {@link Action#STOP stop} under all circumstances
      */
     @Override
     public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing) {

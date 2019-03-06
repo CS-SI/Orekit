@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -28,7 +29,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 
 /**
  * Handler that will record every time an event occurs and always return {@link
- * FieldEventHandler.Action#CONTINUE}.
+ * Action#CONTINUE}.
  *
  * <p> As this handler stores all observed events it may consume large amounts
  * of memory depending on the duration of propagation and the frequency of events.

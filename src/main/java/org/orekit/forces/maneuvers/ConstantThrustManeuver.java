@@ -22,6 +22,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -35,8 +36,6 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
@@ -412,12 +411,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         final DateDetector startDetector = new DateDetector(startDate).
             withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
                 firing = d.isForward();
-                return EventHandler.Action.RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             });
         final DateDetector endDetector = new DateDetector(endDate).
             withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
                 firing = !d.isForward();
-                return EventHandler.Action.RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             });
         return Stream.of(startDetector, endDetector);
     }
@@ -440,12 +439,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         final FieldDateDetector<T> startDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, startDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
                 firing = d.isForward();
-                return FieldEventHandler.Action.RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             });
         final FieldDateDetector<T> endDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, endDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
                 firing = !d.isForward();
-                return FieldEventHandler.Action.RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             });
         return Stream.of(startDetector, endDetector);
     }
