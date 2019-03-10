@@ -590,7 +590,7 @@ public class EOPHistory implements Serializable {
     /** Get a non-modifiable view of the EOP entries.
      * @return non-modifiable view of the EOP entries
      */
-    List<EOPEntry> getEntries() {
+    public List<EOPEntry> getEntries() {
         return cache.getAll();
     }
 

@@ -42,6 +42,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.GPSDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -85,6 +86,7 @@ public class Utils {
         FramesFactory.clearEOPHistoryLoaders();
         FramesFactory.setEOPContinuityThreshold(5 * Constants.JULIAN_DAY);
         TimeScalesFactory.clearUTCTAIOffsetsLoaders();
+        GPSDate.setRolloverReference(null);
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.clearOceanTidesReaders();
         DataProvidersManager.getInstance().clearProviders();
