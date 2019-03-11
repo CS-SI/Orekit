@@ -50,6 +50,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class Phase extends AbstractMeasurement<Phase> {
 
+    /** Name for ambiguity driver. */
+    public static final String AMBIGUITY_NAME = "ambiguity";
+
+    /** Driver for ambiguity. */
+    private final ParameterDriver ambiguityDriver;
+
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
@@ -60,7 +66,7 @@ public class Phase extends AbstractMeasurement<Phase> {
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param phase observed value
-     * @param wavelength phase observed value wavelength
+     * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
@@ -70,6 +76,10 @@ public class Phase extends AbstractMeasurement<Phase> {
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite) {
         super(date, phase, sigma, baseWeight, Arrays.asList(satellite));
+        ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME,
+                                               0.0, 1.0,
+                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        addParameterDriver(ambiguityDriver);
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getEastOffsetDriver());
         addParameterDriver(station.getNorthOffsetDriver());
@@ -91,6 +101,13 @@ public class Phase extends AbstractMeasurement<Phase> {
         return station;
     }
 
+    /** Get the wavelength.
+     * @return wavelength (m)
+     */
+    public double getWavelength() {
+        return wavelength;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<Phase> theoreticalEvaluation(final int iteration,
@@ -107,7 +124,7 @@ public class Phase extends AbstractMeasurement<Phase> {
         // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - station parameters (clock offset, station offsets, pole, prime meridian...)
+        //  - 6..n - station parameters (ambiguity, clock offset, station offsets, pole, prime meridian...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
@@ -159,7 +176,8 @@ public class Phase extends AbstractMeasurement<Phase> {
 
         // Phase value
         final double              cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final DerivativeStructure phase       = tauD.multiply(cOverLambda);
+        final DerivativeStructure ambiguity   = ambiguityDriver.getValue(factory, indices);
+        final DerivativeStructure phase       = tauD.multiply(cOverLambda).add(ambiguity);
 
         estimated.setEstimatedValue(phase.getValue());
 
