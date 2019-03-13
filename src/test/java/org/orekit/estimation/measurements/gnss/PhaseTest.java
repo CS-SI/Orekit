@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.gnss;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,6 +30,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.gnss.Frequency;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;

@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.gnss;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
 
 /** Base class for integer ambiguity solving algorithms.
  * @author Luc Maisonobe
@@ -49,39 +49,50 @@ public abstract class AmbiguitySolver {
         return Collections.unmodifiableList(ambiguityDrivers);
     }
 
-    /** Get the fixed ambiguity parameters drivers.
-     * @return fixed ambiguity parameters drivers
+    /** Get the ambiguity parameters drivers that have not been fixed yet.
+     * @return ambiguity parameters drivers that have not been fixed yet
      */
-    public List<ParameterDriver> getFixedAmbiguityDrivers() {
+    protected List<ParameterDriver> getFreeAmbiguityDrivers() {
         return ambiguityDrivers.
                         stream().
-                        filter(d -> d.getMaxValue() - d.getMinValue() < 1.0e-15).
+                        filter(d -> {
+                            if (d.isSelected()) {
+                                final double near   = FastMath.rint(d.getValue());
+                                final double gapMin = near - d.getMinValue();
+                                final double gapMax = d.getMaxValue() - near;
+                                return FastMath.max(FastMath.abs(gapMin), FastMath.abs(gapMax)) > 1.0e-15;
+                            } else {
+                                return false;
+                            }
+                        }).
                         collect(Collectors.toList());
     }
 
-    /** Get ambiguity indirection array.
+    /** Get ambiguity indirection array for ambiguity parameters drivers that have not been fixed yet.
      * @param startIndex start index for measurements parameters in global covariance matrix
      * @param measurementsParametersDrivers measurements parameters drivers in global covariance matrix order
      * @return indirection array between full covariance matrix and ambiguity covariance matrix
      */
-    protected int[] getAmbiguityIndirection(final int startIndex,
-                                            final ParameterDriversList measurementsParametersDrivers) {
+    protected int[] getFreeAmbiguityIndirection(final int startIndex,
+                                                final List<ParameterDriver> measurementsParametersDrivers) {
 
         // set up indirection array
-        final int n = ambiguityDrivers.size();
+        final List<ParameterDriver> freeDrivers = getFreeAmbiguityDrivers();
+        final int n = freeDrivers.size();
         final int[] indirection = new int[n];
         for (int i = 0; i < n; ++i) {
-            final String name = ambiguityDrivers.get(i).getName();
-            for (int k = startIndex; k < measurementsParametersDrivers.getNbParams(); ++k) {
-                if (name.equals(measurementsParametersDrivers.getDrivers().get(k).getName())) {
-                    indirection[i] = k;
+            indirection[i] = -1;
+            final String name = freeDrivers.get(i).getName();
+            for (int k = 0; k < measurementsParametersDrivers.size(); ++k) {
+                if (name.equals(measurementsParametersDrivers.get(k).getName())) {
+                    indirection[i] = startIndex + k;
                     break;
                 }
             }
-            if (indirection[i] == 0) {
+            if (indirection[i] < 0) {
                 // the parameter was not found
                 final StringBuilder builder = new StringBuilder();
-                for (final ParameterDriver driver : measurementsParametersDrivers.getDrivers()) {
+                for (final ParameterDriver driver : measurementsParametersDrivers) {
                     if (builder.length() > 0) {
                         builder.append(", ");
                     }
@@ -111,7 +122,7 @@ public abstract class AmbiguitySolver {
      * @return list of newly fixed abiguities (ambiguities already fixed before the call are not counted)
      */
     public abstract List<ParameterDriver> fixIntegerAmbiguities(int startIndex,
-                                                                ParameterDriversList measurementsParametersDrivers,
+                                                                List<ParameterDriver> measurementsParametersDrivers,
                                                                 RealMatrix covariance);
 
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
 
@@ -25,6 +25,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.MeasurementCreator;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.modifiers.PhaseAmbiguityModifier;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;

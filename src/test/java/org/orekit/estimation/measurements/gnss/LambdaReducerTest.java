@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.gnss;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -30,8 +29,9 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathArrays.Position;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.utils.ParameterDriver;
 
-public class LambdaSolverTest {
+public class LambdaReducerTest {
 
     @Test
     public void testSimpleFullDecomposition() {
@@ -46,9 +46,10 @@ public class LambdaSolverTest {
         });
         final RealMatrix covariance = refLow.transposeMultiply(refDiag).multiply(refLow);
         final int[] indirection = new int[] { 0, 1, 2, 3 };
-        Decomposition decomposition = decompose(indirection, covariance);
-        Assert.assertEquals(0.0, refLow.subtract(decomposition.low).getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, refDiag.subtract(decomposition.diag).getNorm(), 1.0e-15);
+        LambdaReducer reducer = new LambdaReducer(buildDrivers(indirection.length), indirection, covariance);
+        reducer.ltdlDecomposition();
+        Assert.assertEquals(0.0, refLow.subtract(reducer.getLow()).getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, refDiag.subtract(reducer.getDiag()).getNorm(), 1.0e-15);
     }
 
     @Test
@@ -61,7 +62,7 @@ public class LambdaSolverTest {
             final RealMatrix covariance = MatrixUtils.createRealMatrix(n, n);
             for (int i = 0; i < n; ++i) {                
                 for (int j = 0; j <= i; ++j) {
-                    final double entry = 2 * random.nextDouble() - 1;
+                    final double entry = 20 * random.nextDouble() - 10;
                     covariance.setEntry(i, j, entry);
                     covariance.setEntry(j, i, entry);
                 }
@@ -82,16 +83,17 @@ public class LambdaSolverTest {
     }
 
     private void doTestDecomposition(final int[] indirection, final RealMatrix covariance) {
-        final Decomposition decomposition = decompose(indirection, covariance);
+        final LambdaReducer reducer = new LambdaReducer(buildDrivers(indirection.length), indirection, covariance);
+        reducer.ltdlDecomposition();
         final RealMatrix extracted = MatrixUtils.createRealMatrix(indirection.length, indirection.length);
         for (int i = 0; i < indirection.length; ++i) {
             for (int j = 0; j < indirection.length; ++j) {
                 extracted.setEntry(i, j, covariance.getEntry(indirection[i], indirection[j]));
             }
         }
-        final RealMatrix rebuilt = decomposition.low.
-                                   transposeMultiply(decomposition.diag).
-                                   multiply(decomposition.low);
+        final RealMatrix rebuilt = reducer.getLow().
+                                   transposeMultiply(reducer.getDiag()).
+                                   multiply(reducer.getLow());
         double maxError = 0;
         for (int i = 0; i < indirection.length; ++i) {
             for (int j = 0; j < indirection.length; ++j) {
@@ -100,56 +102,16 @@ public class LambdaSolverTest {
                                                      rebuilt.getEntry(i, j)));
             }
         }
-        Assert.assertEquals(0.0, maxError, 1.0e-12);
+        Assert.assertEquals(0.0, maxError, 2.0e-11);
 
     }
 
-    private Decomposition decompose(final int[] indirection, final RealMatrix covariance) {
-        try {
-            final Class<?>       ltdlClass   = LambdaSolver.class.getDeclaredClasses()[0];
-            final Constructor<?> constructor = ltdlClass.getDeclaredConstructor(int[].class, RealMatrix.class);
-            final Field          lowField    = ltdlClass.getDeclaredField("low");
-            final Field          diagField   = ltdlClass.getDeclaredField("diag");
-            constructor.setAccessible(true);
-            lowField.setAccessible(true);
-            diagField.setAccessible(true);
-
-            // decompose matrix
-            Object decomposer = constructor.newInstance(indirection, covariance);
-            final double[] low  = (double[]) lowField.get(decomposer);
-            final double[] diag = (double[]) diagField.get(decomposer);
-            final int p = indirection.length;
-            Assert.assertEquals((p * (p - 1)) / 2, low.length);
-            Assert.assertEquals(p, diag.length);
-
-            // rebuild ambiguity covariance matrix
-            final RealMatrix d = MatrixUtils.createRealDiagonalMatrix(diag);
-            final RealMatrix l = MatrixUtils.createRealMatrix(p, p);
-            int index = 0;
-            for (int i = 0; i < l.getRowDimension(); ++i) {
-                for (int j = 0; j < i; ++j) {
-                    l.setEntry(i, j, low[index++]);
-                }
-                l.setEntry(i, i, 1.0);
-            }
-
-            return new Decomposition(l, d);
-
-        } catch (NoSuchMethodException | NoSuchFieldException |
-                 InstantiationException | InvocationTargetException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
-            return null;
+    private List<ParameterDriver> buildDrivers(final int n) {
+        List<ParameterDriver> list = new ArrayList<>(n);
+        for (int i = 0; i < n; ++i) {
+            list.add(new ParameterDriver("ambiguity-" + i, 0.0, 1.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
         }
+        return list;
     }
-        
-    private static class Decomposition {
-        private final RealMatrix low;
-        private final RealMatrix diag;
-        Decomposition(final RealMatrix low, final RealMatrix diag) {
-            this.low  = low;
-            this.diag = diag;
-        }
-    }
-
 }
 
