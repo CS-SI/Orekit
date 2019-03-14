@@ -16,13 +16,8 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.List;
-
-import org.hipparchus.linear.DiagonalMatrix;
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.orekit.utils.ParameterDriver;
 
 /** Base class for decorrelation/reduction engine for LAMBDA type methods.
  * <p>
@@ -34,13 +29,10 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 10.0
  */
-abstract class BaseLambdaReducer {
+abstract class AbstractLambdaReducer {
 
     /** Number of ambiguities. */
     private final int n;
-
-    /** Drivers for ambiguities. */
-    private final List<ParameterDriver> drivers;
 
     /** DEcorrelated ambiguities. */
     private final double[] decorrelated;
@@ -58,15 +50,14 @@ abstract class BaseLambdaReducer {
     private int[] zTransformation;
 
     /** Simple constructor.
-     * @param drivers parameters drivers for ambiguities
-     * @param indirection indirection array to extract ambiguity parameters
-     * @param covariance full covariance matrix
+     * @param floatAmbiguities float estimates of ambiguities
+     * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
+     * @param covariance global covariance matrix (includes ambiguities among other parameters)
      */
-    protected BaseLambdaReducer(final List<ParameterDriver> drivers, final int[] indirection, final RealMatrix covariance) {
+    protected AbstractLambdaReducer(final double[] floatAmbiguities, final int[] indirection, final RealMatrix covariance) {
 
-        this.n               = drivers.size();
-        this.drivers         = drivers;
-        this.decorrelated    = drivers.stream().mapToDouble(d -> d.getValue()).toArray();
+        this.n               = floatAmbiguities.length;
+        this.decorrelated    = floatAmbiguities.clone();
         this.indirection     = indirection.clone();
         this.low             = new double[(n * (n - 1)) / 2];
         this.diag            = new double[n];
@@ -107,28 +98,6 @@ abstract class BaseLambdaReducer {
      */
     protected abstract void doReduction(double[] d, double[] l);
 
-    /** Get the low triangular matrix of the Lᵀ.D.L decomposition.
-     * @return low triangular matrix of the Lᵀ.D.L decomposition
-     */
-    public RealMatrix getLow() {
-        final RealMatrix lowM = MatrixUtils.createRealMatrix(n, n);
-        int k = 0;
-        for (int i = 0; i < n; ++i) {
-            for (int j = 0; j < i; ++j) {
-                lowM.setEntry(i, j, low[k++]);
-            }
-            lowM.setEntry(i, i, 1.0);
-        }
-        return lowM;
-    }
-
-    /** Get the diagonal matrix of the Lᵀ.D.L decomposition.
-     * @return diagonal matrix of the Lᵀ.D.L decomposition
-     */
-    public DiagonalMatrix getDiag() {
-        return MatrixUtils.createRealDiagonalMatrix(diag);
-    }
-
     /** Perform one integer Gauss transformation.
      * <p>
      * This method corresponds to algorithm 2.1 in X.-W Chang, X. Yang and T. Zhou paper.
@@ -141,7 +110,8 @@ abstract class BaseLambdaReducer {
         if (mu != 0) {
 
             // update low triangular matrix (post-multiplying L by Zᵢⱼ = I - μ eᵢ eⱼᵀ)
-            for (int i = row; i < n; ++i) {
+            low[lIndex(row, col)] -= mu;
+            for (int i = row + 1; i < n; ++i) {
                 low[lIndex(i, col)] -= mu * low[lIndex(i, row)];
             }
 

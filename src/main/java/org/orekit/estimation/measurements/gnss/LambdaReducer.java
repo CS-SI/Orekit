@@ -16,10 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.List;
-
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.utils.ParameterDriver;
 
 /** Decorrelation/reduction engine for {@link LambdaSolver LAMBDA method}.
  * <p>
@@ -32,15 +29,15 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 10.0
  */
-class LambdaReducer extends BaseLambdaReducer {
+class LambdaReducer extends AbstractLambdaReducer {
 
     /** Simple constructor.
-     * @param drivers parameters drivers for ambiguities
-     * @param indirection indirection array to extract ambiguity parameters
-     * @param covariance full covariance matrix
+     * @param floatAmbiguities float estimates of ambiguities
+     * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
+     * @param covariance global covariance matrix (includes ambiguities among other parameters)
      */
-    LambdaReducer(final List<ParameterDriver> drivers, final int[] indirection, final RealMatrix covariance) {
-        super(drivers, indirection, covariance);
+    LambdaReducer(final double[] floatAmbiguities, final int[] indirection, final RealMatrix covariance) {
+        super(floatAmbiguities, indirection, covariance);
     }
 
     /** {@inheritDoc} */

@@ -18,10 +18,10 @@ package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.linear.RealMatrix;
 
-public class LambdaReducerTest extends AbstractLambdaReducerTest {
+public class ModifiedLambdaReducerTest extends AbstractLambdaReducerTest {
 
     protected AbstractLambdaReducer buildReducer(double[] floatAmbiguities, int[] indirection, RealMatrix covariance) {
-        return new LambdaReducer(floatAmbiguities, indirection, covariance);
+        return new ModifiedLambdaReducer(floatAmbiguities, indirection, covariance);
     }
 
 }

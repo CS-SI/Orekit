@@ -47,13 +47,17 @@ public class LambdaSolver extends AmbiguitySolver {
                                                        final List<ParameterDriver> measurementsParametersDrivers,
                                                        final RealMatrix covariance) {
 
-        // set up decorrelation engine for ambiguity covariances
-        final List<ParameterDriver> ambiguities  = getAllAmbiguityDrivers();
-        final int[]                 indirection  = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
-        final LambdaReducer    decorrelator = new LambdaReducer(ambiguities, indirection, covariance);
+        // set up decorrelation/reduction engine for ambiguity covariances
+        final List<ParameterDriver> ambiguities = getAllAmbiguityDrivers();
+        final double[]              floatAmbiguities = ambiguities.stream().mapToDouble(d -> d.getValue()).toArray();
+        final int[]                 indirection = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
+        final LambdaReducer         reducer     = new LambdaReducer(floatAmbiguities, indirection, covariance);
+
+        // perform initial Lᵀ.D.L decomposition
+        reducer.ltdlDecomposition();
 
         // perform decorrelation/reduction of covariances
-        decorrelator.reduction();
+        reducer.reduction();
 
         // perform discrete search of Integer Least Square problem
 
