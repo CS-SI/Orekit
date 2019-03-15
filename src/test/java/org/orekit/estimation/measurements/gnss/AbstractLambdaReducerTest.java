@@ -163,17 +163,19 @@ public abstract class AbstractLambdaReducerTest {
 
     private void doTestIntegerGaussTransformation(final RandomGenerator random,
                                                   final int[] indirection, final RealMatrix covariance) {
-        final double[] floatAmbiguities = new double[indirection.length];
-        for (int i = 0; i < floatAmbiguities.length; ++i) {
+        final int n = indirection.length;
+        final double[] floatAmbiguities = new double[n];
+        for (int i = 0; i < n; ++i) {
             floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
         }
         final AbstractLambdaReducer reducer = buildReducer(floatAmbiguities, indirection, covariance);
         reducer.ltdlDecomposition();
-        RealMatrix zRef    = MatrixUtils.createRealIdentityMatrix(indirection.length);
-        RealMatrix lowRef  = getLow(reducer);
-        RealMatrix diagRef = getDiag(reducer);
-        double[]   aBase   = getDecorrelated(reducer).clone();
-        double[]   aRef    = aBase;
+        RealMatrix identity = MatrixUtils.createRealIdentityMatrix(n);
+        RealMatrix zRef     = identity;
+        RealMatrix lowRef   = getLow(reducer);
+        RealMatrix diagRef  = getDiag(reducer);
+        double[]   aBase    = getDecorrelated(reducer).clone();
+        double[]   aRef     = aBase;
         Assert.assertEquals(0.0,
                             zRef.subtract(getZTranformation(reducer)).getNorm(),
                             1.0e-15);
@@ -185,6 +187,11 @@ public abstract class AbstractLambdaReducerTest {
             zRef = zRef.multiply(rigt.z);
             Assert.assertEquals(0.0,
                                 zRef.subtract(getZTranformation(reducer)).getNorm(),
+                                Precision.SAFE_MIN);
+
+            // check Z and Z⁻¹
+            Assert.assertEquals(0.0,
+                                identity.subtract(getZTranformation(reducer).multiply(getZInverseTranformation(reducer))).getNorm(),
                                 Precision.SAFE_MIN);
 
             // check diagonal part, which should not change
@@ -314,9 +321,17 @@ public abstract class AbstractLambdaReducerTest {
     }
 
     public RealMatrix getZTranformation(final AbstractLambdaReducer reducer) {
+        return dogetZs(reducer, "zTransformation");
+    }
+
+    public RealMatrix getZInverseTranformation(final AbstractLambdaReducer reducer) {
+        return dogetZs(reducer, "zInverseTransformation");
+    }
+
+    private RealMatrix dogetZs(final AbstractLambdaReducer reducer, final String fieldName) {
         try {
             final int n = getN(reducer);
-            final Field zField = AbstractLambdaReducer.class.getDeclaredField("zTransformation");
+            final Field zField = AbstractLambdaReducer.class.getDeclaredField(fieldName);
             zField.setAccessible(true);
             final int[] z = (int[]) zField.get(reducer);
             final RealMatrix zM = MatrixUtils.createRealMatrix(n, n);

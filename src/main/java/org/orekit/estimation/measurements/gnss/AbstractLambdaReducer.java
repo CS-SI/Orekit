@@ -49,6 +49,9 @@ abstract class AbstractLambdaReducer {
     /** Z transformation matrix, in row order. */
     private int[] zTransformation;
 
+    /** Z⁻¹ transformation matrix, in row order. */
+    private int[] zInverseTransformation;
+
     /** Simple constructor.
      * @param floatAmbiguities float estimates of ambiguities
      * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
@@ -56,12 +59,13 @@ abstract class AbstractLambdaReducer {
      */
     protected AbstractLambdaReducer(final double[] floatAmbiguities, final int[] indirection, final RealMatrix covariance) {
 
-        this.n               = floatAmbiguities.length;
-        this.decorrelated    = floatAmbiguities.clone();
-        this.indirection     = indirection.clone();
-        this.low             = new double[(n * (n - 1)) / 2];
-        this.diag            = new double[n];
-        this.zTransformation = new int[n * n];
+        this.n                      = floatAmbiguities.length;
+        this.decorrelated           = floatAmbiguities.clone();
+        this.indirection            = indirection.clone();
+        this.low                    = new double[(n * (n - 1)) / 2];
+        this.diag                   = new double[n];
+        this.zTransformation        = new int[n * n];
+        this.zInverseTransformation = new int[n * n];
 
         // initialize decomposition matrices
         for (int i = 0; i < n; ++i) {
@@ -70,6 +74,7 @@ abstract class AbstractLambdaReducer {
             }
             diag[i] = covariance.getEntry(indirection[i], indirection[i]);
             zTransformation[zIndex(i, i)] = 1;
+            zInverseTransformation[zIndex(i, i)] = 1;
         }
 
     }
@@ -115,9 +120,12 @@ abstract class AbstractLambdaReducer {
                 low[lIndex(i, col)] -= mu * low[lIndex(i, row)];
             }
 
-            // update Z transformation matrix (post-multiplying Z by Zᵢⱼ = I - μ eᵢ eⱼᵀ)
+            // update Z and Z⁻¹ transformations matrices
             for (int i = 0; i < n; ++i) {
-                zTransformation[zIndex(i, col)] -= mu * zTransformation[zIndex(i, row)];
+                // post-multiplying Z by Zᵢⱼ = I - μ eᵢ eⱼᵀ
+                zTransformation[zIndex(i, col)]        -= mu * zTransformation[zIndex(i, row)];
+                // pre-multiplying Z by Zᵢⱼ⁻¹ = I + μ eᵢ eⱼᵀ
+                zInverseTransformation[zIndex(row, i)] += mu * zInverseTransformation[zIndex(col, i)];
             }
 
             // update decorrelated ambiguities estimates (pre-multiplying a by  Zᵢⱼᵀ = I - μ eⱼ eᵢᵀ)
@@ -164,13 +172,21 @@ abstract class AbstractLambdaReducer {
             low[indexik1]      = tmp;
         }
 
-        // update z transformation matrix
+        // update Z and Z⁻¹ transformations matrices
         for (int i = 0; i < n; ++i) {
-            final int indexik0        = zIndex(i, k0);
-            final int indexik1        = indexik0 + 1;
-            final int tmp             = zTransformation[indexik0];
-            zTransformation[indexik0] = zTransformation[indexik1];
-            zTransformation[indexik1] = tmp;
+
+            final int indexik0               = zIndex(i, k0);
+            final int indexik1               = indexik0 + 1;
+            final int tmp1                   = zTransformation[indexik0];
+            zTransformation[indexik0]        = zTransformation[indexik1];
+            zTransformation[indexik1]        = tmp1;
+
+            final int indexk0i               = zIndex(k0, i);
+            final int indexk1i               = indexk0i + n;
+            final int tmp2                   = zInverseTransformation[indexk0i];
+            zInverseTransformation[indexk0i] = zInverseTransformation[indexk1i];
+            zInverseTransformation[indexk1i] = tmp2;
+
         }
 
         // update decorrelated ambiguities
