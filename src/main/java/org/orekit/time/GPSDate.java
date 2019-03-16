@@ -149,7 +149,7 @@ public class GPSDate implements Serializable, TimeStamped {
 
     /** Get the reference date ensuring continuity across GPS week rollover.
      * @return reference reference date for GPS week rollover
-     * @see #setRolloverReference(AbsoluteDate)
+     * @see #setRolloverReference(DateComponents)
      * @see #GPSDate(int, double)
      * @since 9.3.1
      */
