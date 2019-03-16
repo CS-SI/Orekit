@@ -20,6 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="9.3.1" date="2019-03-16" description="Version 9.3.1 is a minor version of Orekit.
+    It fixes an issue with GPS week rollover.">
+      <action dev="luc" type="add" issue="534">
+        Handle GPS week rollover in GPSDate.
+      </action>
+    </release>
     <release version="9.3" date="2019-01-25" description="Version 9.3 is a minor version of Orekit.
     It includes both new features and bug fixes. New features introduced in 9.3 are: a new GPSDate class,
     changed OrekitException from checked to unchecked exceptions, parameter drivers scales and reference
