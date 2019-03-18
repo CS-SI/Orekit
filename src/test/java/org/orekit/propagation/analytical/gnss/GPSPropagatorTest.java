@@ -40,6 +40,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -54,6 +55,7 @@ public class GPSPropagatorTest {
     @BeforeClass
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
+        GNSSDate.setRolloverReference(new DateComponents(DateComponents.GPS_EPOCH, 7 * 512));
         // Get the parser to read a SEM file
         SEMParser reader = new SEMParser(null);
         // Reads the SEM file

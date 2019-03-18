@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;

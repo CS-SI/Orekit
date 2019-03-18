@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
@@ -29,10 +30,8 @@ import org.orekit.utils.ElevationMask;
  * setting of azimuth and/or elevation bounds or a ground azimuth/elevation
  * mask input. Each calculation be configured to use atmospheric refraction
  * as well.
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
- * propagation at raising and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at raising and to {@link Action#STOP stop} propagation
  * at setting. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @author Hank Grabowski

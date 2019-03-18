@@ -21,12 +21,12 @@ import java.util.function.ToDoubleFunction;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.junit.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 

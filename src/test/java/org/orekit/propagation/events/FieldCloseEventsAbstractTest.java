@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -35,7 +36,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;

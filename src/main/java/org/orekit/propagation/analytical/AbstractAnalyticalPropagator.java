@@ -25,6 +25,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -39,7 +40,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
 import org.orekit.propagation.events.EventState.EventOccurrence;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;

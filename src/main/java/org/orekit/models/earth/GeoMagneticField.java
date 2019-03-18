@@ -38,14 +38,14 @@ import org.orekit.utils.Constants;
  */
 public class GeoMagneticField {
 
-    /** Semi major-axis of WGS-84 ellipsoid in km. */
-    private static double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS / 1000d;
+    /** Semi major-axis of WGS-84 ellipsoid in m. */
+    private static double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
 
     /** The first eccentricity squared. */
     private static double epssq = 0.0066943799901413169961;
 
-    /** Mean radius of IAU-66 ellipsoid, in km. */
-    private static double ellipsoidRadius = 6371.2;
+    /** Mean radius of IAU-66 ellipsoid, in m. */
+    private static double ellipsoidRadius = 6371200.0;
 
     /** The model name. */
     private String modelName;
@@ -181,7 +181,7 @@ public class GeoMagneticField {
      * @param hnm the h coefficient at position n,m
      */
     protected void setMainFieldCoefficients(final int n, final int m,
-                                         final double gnm, final double hnm) {
+                                            final double gnm, final double hnm) {
         final int index = n * (n + 1) / 2 + m;
         g[index] = gnm;
         h[index] = hnm;
@@ -194,7 +194,7 @@ public class GeoMagneticField {
      * @param dhnm the dh coefficient at position n,m
      */
     protected void setSecularVariationCoefficients(final int n, final int m,
-                                                final double dgnm, final double dhnm) {
+                                                   final double dgnm, final double dhnm) {
         final int index = n * (n + 1) / 2 + m;
         dg[index] = dgnm;
         dh[index] = dhnm;
@@ -202,18 +202,16 @@ public class GeoMagneticField {
 
     /** Calculate the magnetic field at the specified geodetic point identified
      * by latitude, longitude and altitude.
-     * @param latitude the WGS84 latitude in decimal degrees
-     * @param longitude the WGS84 longitude in decimal degrees
-     * @param height the height above the WGS84 ellipsoid in kilometers
+     * @param latitude the WGS84 latitude in radians
+     * @param longitude the WGS84 longitude in radians
+     * @param height the height above the WGS84 ellipsoid in meters
      * @return the {@link GeoMagneticElements} at the given geodetic point
      */
     public GeoMagneticElements calculateField(final double latitude,
                                               final double longitude,
                                               final double height) {
 
-        final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitude),
-                                                   FastMath.toRadians(longitude),
-                                                   height * 1000d);
+        final GeodeticPoint gp = new GeodeticPoint(latitude, longitude, height);
 
         final SphericalCoordinates sph = transformToSpherical(gp);
         final SphericalHarmonicVars vars = new SphericalHarmonicVars(sph);
@@ -339,7 +337,7 @@ public class GeoMagneticField {
         // to Earth Centered Earth Fixed Cartesian coordinates, and then to spherical coordinates.
 
         final double lat = gp.getLatitude();
-        final double heightAboveEllipsoid = gp.getAltitude() / 1000d;
+        final double heightAboveEllipsoid = gp.getAltitude();
         final double sinLat = FastMath.sin(lat);
 
         // compute the local radius of curvature on the reference ellipsoid
@@ -441,7 +439,7 @@ public class GeoMagneticField {
         } else {
             // special calculation for component - By - at geographic poles.
             // To avoid using this function, make sure that the latitude is not
-            // exactly +/-90.
+            // exactly +/- π/2.
             By = summationSpecial(sph, vars);
         }
 
@@ -488,19 +486,19 @@ public class GeoMagneticField {
     /** Utility class to hold spherical coordinates. */
     private static class SphericalCoordinates {
 
-        /** the radius. */
+        /** the radius (m). */
         private double r;
 
-        /** the azimuth angle. */
+        /** the azimuth angle (radians). */
         private double lambda;
 
-        /** the polar angle. */
+        /** the polar angle (radians). */
         private double phi;
 
         /** Create a new spherical coordinate object.
-         * @param r the radius
-         * @param lambda the lambda angle
-         * @param phi the phi angle
+         * @param r the radius, meters
+         * @param lambda the lambda angle, radians
+         * @param phi the phi angle, radians
          */
         private SphericalCoordinates(final double r, final double lambda, final double phi) {
             this.r = r;
@@ -528,7 +526,7 @@ public class GeoMagneticField {
 
             relativeRadiusPower = new double[maxN + 1];
 
-            // Compute a table of (EARTH_REFERENCE_RADIUS_KM / radius)^n for i in
+            // Compute a table of (EARTH_REFERENCE_RADIUS / radius)^n for i in
             // 0 .. maxN (this is much faster than calling FastMath.pow maxN+1 times).
 
             final double p = ellipsoidRadius / sph.r;

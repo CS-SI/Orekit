@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -33,7 +34,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.StopOnEvent;
@@ -647,27 +647,12 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         ContinuousDetector detectorB = new ContinuousDetector(t2);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState s) {
-                if (swap[0]) {
-                    return detectorB.g(s);
-                } else {
-                    return -1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-        };
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(s -> swap[0] ? detectorB.g(s) : -1);
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -714,28 +699,12 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                if (!swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return -1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-
-        };
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? -1 : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -780,28 +749,12 @@ public abstract class CloseEventsAbstractTest {
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
         final ContinuousDetector detectorD = new ContinuousDetector(t3);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                if (!swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return detectorD.g(state);
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-
-        };
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorD.g(state) : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -849,28 +802,12 @@ public abstract class CloseEventsAbstractTest {
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
         final ContinuousDetector detectorD = new ContinuousDetector(t3);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                if (swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return detectorD.g(state);
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-
-        };
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorB.g(state) : detectorD.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -936,30 +873,21 @@ public abstract class CloseEventsAbstractTest {
         // shared event list so we know the order in which they occurred
         List<Event<EventDetector>> events = new ArrayList<>();
         // never zero so there is no easy way out
-        EventDetector detectorA = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                final AbsoluteDate t = state.getDate();
-                if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
-                    return -1;
-                } else if (t.compareTo(epoch.shiftedBy(t2)) < 0) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-        };
+        EventDetector detectorA = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> {
+                    final AbsoluteDate t = state.getDate();
+                    if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
+                        return -1;
+                    } else if (t.compareTo(epoch.shiftedBy(t2)) < 0) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                });
         TimeDetector detectorB = new TimeDetector(t1)
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
@@ -1602,27 +1530,12 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         ContinuousDetector detectorB = new ContinuousDetector(t2);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                if (swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return 1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(double newMaxCheck,
-                                           double newThreshold,
-                                           int newMaxIter,
-                                           EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-
-        };
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorB.g(state) : 1);
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -1669,28 +1582,12 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                if (!swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return 1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-
-        };
+        EventDetector detectorC = new FunctionalDetector()
+        .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? 1 : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -1735,28 +1632,12 @@ public abstract class CloseEventsAbstractTest {
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
         final ContinuousDetector detectorD = new ContinuousDetector(t3);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                if (!swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return detectorD.g(state);
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-
-        };
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorD.g(state) : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -1804,28 +1685,12 @@ public abstract class CloseEventsAbstractTest {
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
         final ContinuousDetector detectorD = new ContinuousDetector(t3);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                if (swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return detectorD.g(state);
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-
-        };
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorB.g(state) : detectorD.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -1891,30 +1756,21 @@ public abstract class CloseEventsAbstractTest {
         // shared event list so we know the order in which they occurred
         List<Event<EventDetector>> events = new ArrayList<>();
         // never zero so there is no easy way out
-        EventDetector detectorA = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            @Override
-            public double g(SpacecraftState state) {
-                final AbsoluteDate t = state.getDate();
-                if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
-                    return -1;
-                } else if (t.compareTo(epoch.shiftedBy(t2)) > 0) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-        };
+        EventDetector detectorA = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> {
+                    final AbsoluteDate t = state.getDate();
+                    if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
+                        return -1;
+                    } else if (t.compareTo(epoch.shiftedBy(t2)) > 0) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                });
         TimeDetector detectorB = new TimeDetector(t1)
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)

@@ -150,6 +150,46 @@ public class GNSSDateTest {
     }
 
     @Test
+    public void testZeroZeroGPS() {
+        GNSSDate.setRolloverReference(new DateComponents(DateComponents.GPS_EPOCH, 7 * 512));
+        GNSSDate date1 = new GNSSDate(0, 0.0, SatelliteSystem.GPS);
+        Assert.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.GPS_EPOCH), 1.0e-15);
+        GNSSDate.setRolloverReference(new DateComponents(GNSSDate.getRolloverReference(), 1));
+        GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.GPS);
+        Assert.assertEquals(1024, date2.getWeekNumber());
+    }
+
+    @Test
+    public void testZeroZeroGalileo() {
+        GNSSDate.setRolloverReference(new DateComponents(DateComponents.GALILEO_EPOCH, 7 * 2048));
+        GNSSDate date1 = new GNSSDate(0, 0.0, SatelliteSystem.GALILEO);
+        Assert.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+        GNSSDate.setRolloverReference(new DateComponents(GNSSDate.getRolloverReference(), 1));
+        GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.GALILEO);
+        Assert.assertEquals(4096, date2.getWeekNumber());
+    }
+
+    @Test
+    public void testZeroZeroQZSS() {
+        GNSSDate.setRolloverReference(new DateComponents(DateComponents.QZSS_EPOCH, 7 * 512));
+        GNSSDate date1 = new GNSSDate(0, 0.0, SatelliteSystem.QZSS);
+        Assert.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.QZSS_EPOCH), 1.0e-15);
+        GNSSDate.setRolloverReference(new DateComponents(GNSSDate.getRolloverReference(), 1));
+        GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.QZSS);
+        Assert.assertEquals(1024, date2.getWeekNumber());
+    }
+
+    @Test
+    public void testZeroZeroBeidou() {
+        GNSSDate.setRolloverReference(new DateComponents(DateComponents.BEIDOU_EPOCH, 7 * 4096));
+        GNSSDate date1 = new GNSSDate(0, 0.0, SatelliteSystem.BEIDOU);
+        Assert.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.BEIDOU_EPOCH), 1.0e-15);
+        GNSSDate.setRolloverReference(new DateComponents(GNSSDate.getRolloverReference(), 1));
+        GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.BEIDOU);
+        Assert.assertEquals(8192, date2.getWeekNumber());
+    }
+
+    @Test
     public void testSerializationGPS() throws ClassNotFoundException, IOException {
         final DateComponents date = new DateComponents(2006, 8, 9);
         final TimeComponents time = new TimeComponents(16, 31, 03);
@@ -175,6 +215,24 @@ public class GNSSDateTest {
         final DateComponents date = new DateComponents(2010, 2, 26);
         final TimeComponents time = new TimeComponents(23, 15, 12);
         doTestSerialization(SatelliteSystem.BEIDOU, date, time, 216, 515713000.0);
+    }
+
+    @Test
+    public void testDefaultRolloverReference() {
+        Assert.assertNull(GNSSDate.getRolloverReference());
+        GNSSDate date = new GNSSDate(305, 1.5, SatelliteSystem.GPS);
+        // the default reference is extracted from last EOP entry
+        // which in this test comes from bulletin B 218, in the final values section
+        Assert.assertEquals("2006-03-05", GNSSDate.getRolloverReference().toString());
+        Assert.assertEquals(305 + 1024, date.getWeekNumber());
+    }
+
+    @Test
+    public void testUserRolloverReference() {
+        GNSSDate.setRolloverReference(new DateComponents(DateComponents.GPS_EPOCH, 7 * (3 * 1024 + 512)));
+        GNSSDate date = new GNSSDate(305, 1.5, SatelliteSystem.GPS);
+        Assert.assertEquals("2048-09-13", GNSSDate.getRolloverReference().toString());
+        Assert.assertEquals(305 + 3 * 1024, date.getWeekNumber());
     }
 
     private void doTestSerialization(final SatelliteSystem system,

@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 
 import java.util.Arrays;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
