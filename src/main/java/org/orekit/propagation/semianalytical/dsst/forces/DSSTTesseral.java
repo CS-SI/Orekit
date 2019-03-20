@@ -77,6 +77,7 @@ import org.orekit.utils.TimeSpanMap;
  *
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
+ *  @author Bryan Cazabonne (field translation)
  */
 public class DSSTTesseral implements DSSTForceModel {
 
@@ -210,7 +211,7 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param maxEccPowMdailyTesseralSP maximum power of the eccentricity to use in summation over s for
      * m-daily tesseral harmonics, (must be between 0 and {@code maxDegreeMdailyTesseralSP - 2},
      * but should typically not exceed 4 as higher values will exceed computer capacity)
-          * @since 7.2
+     * @since 7.2
      */
     public DSSTTesseral(final Frame centralBodyFrame,
                         final double centralBodyRotationRate,
@@ -729,6 +730,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /**
      * Get the non-resonant tesseral terms in the central body spherical harmonic field.
+     *
      * @param <T> type of the elements
      * @param type type of the elements used during the propagation
      * @param context container for attributes

@@ -24,13 +24,14 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
-/** This class is a container for the attributes of
- * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal DSSTZonal}.
+/**
+ * This class is a container for the common parameters used in {@link DSSTZonal}.
  * <p>
- * It replaces the last version of the method
- * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initializeStep(AuxiliaryElements)
- * initializeStep(AuxiliaryElements)}.
- * </p>
+ * It performs parameters initialization at each integration step for the Zonal contribution
+ * to the central body gravitational perturbation.
+ * <p>
+ *
+ * @author Bryan Cazabonne
  */
 class DSSTZonalContext extends ForceModelContext {
 
@@ -93,9 +94,9 @@ class DSSTZonalContext extends ForceModelContext {
     /** B * B.*/
     private double BB;
 
-    /** Simple constructor.
-     * Performs initialization at each integration step for the current force model.
-     * This method aims at being called before mean elements rates computation
+    /**
+     * Simple constructor.
+     *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param provider provider for spherical harmonics
      * @param parameters values of the force model parameters

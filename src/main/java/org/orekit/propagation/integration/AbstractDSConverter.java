@@ -20,9 +20,11 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 
 /** Converter for states and parameters arrays
- *  for both numerical and semi-analytical propagators.
+ *  for both {@link NumericalPropagator numerical} and {@link DSSTPropagator semi-analytical} propagators.
  *  @author Luc Maisonobe
  */
 public abstract class AbstractDSConverter {

@@ -26,19 +26,19 @@ import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 
-/** This class is a container for the field attributes of
- * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody DSSTThirdBody}.
+/**
+ * This class is a container for the common "field" parameters used in {@link DSSTThirdBody}.
  * <p>
- * It replaces the last version of the method
- * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initializeStep(AuxiliaryElements)
- * initializeStep(AuxiliaryElements)}.
- * </p>
+ * It performs parameters initialization at each integration step for the third
+ * body attraction perturbation.
+ * <p>
+ *
+ * @author Bryan Cazabonne
  */
 public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
 
@@ -134,9 +134,9 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     /** Factory for the DerivativeStructure instances. */
     private final FDSFactory<T> factory;
 
-    /** Simple constructor.
-     * Performs initialization at each integration step for the current force model.
-     * This method aims at being called before mean elements rates computation
+    /**
+     * Simple constructor.
+     *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param thirdBody body the 3rd body to consider
      * @param parameters values of the force model parameters

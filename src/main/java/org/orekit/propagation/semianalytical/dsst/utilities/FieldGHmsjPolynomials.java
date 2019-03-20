@@ -27,6 +27,7 @@ import org.hipparchus.util.FastMath;
  *  The expressions used are equations 2.7.5-(1)(2) from the Danielson paper.
  *  </p>
  *  @author Romain Di Costanzo
+ *  @author Bryan Cazabonne (field translation)
  */
 public class FieldGHmsjPolynomials <T extends RealFieldElement<T>> {
     /** C<sub>j</sub>(k, h), S<sub>j</sub>(k, h) coefficient.

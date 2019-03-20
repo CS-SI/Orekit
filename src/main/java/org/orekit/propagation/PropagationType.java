@@ -16,7 +16,13 @@
  */
 package org.orekit.propagation;
 
-/** Enumerate to define the propagation type used by the propagator.*/
+/** Enumerate to define the propagation type used by the propagator.
+ * <p>
+ * This enumerate can also be used to define if the orbital state is
+ * defined with osculating or mean elements at the propagator initialization.
+ * </p>
+ * @author Bryan Cazabonne
+ */
 public enum PropagationType {
 
     /** Mean propagation. */

@@ -39,7 +39,9 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Builder for DSST propagator. */
+/** Builder for DSST propagator.
+ * @author Bryan Cazabonne
+ */
 public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
@@ -110,7 +112,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** Get the integrator builder.
      * @return the integrator builder
-     * @since 9.2
      */
     public ODEIntegratorBuilder getIntegratorBuilder()
     {
@@ -119,7 +120,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** Get the list of all force models.
      * @return the list of all force models
-     * @since 9.2
      */
     public List<DSSTForceModel> getAllForceModels()
     {
@@ -128,7 +128,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** Get the attitudeProvider.
      * @return the attitude provider
-     * @since 9.2
      */
     public AttitudeProvider getAttitudeProvider()
     {
@@ -144,7 +143,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** Get the mass.
      * @return the mass
-     * @since 9.2
      */
     public double getMass()
     {

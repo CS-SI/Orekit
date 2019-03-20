@@ -24,9 +24,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 
-/** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13).
-*
-*/
+/** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13). */
 public class FieldGammaMnsFunction <T extends RealFieldElement<T>> {
 
     /** Factorial ratios. */

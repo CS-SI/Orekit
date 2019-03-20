@@ -26,6 +26,7 @@ import org.hipparchus.RealFieldElement;
  *  The expressions used are equations 4.1-(10) from the Danielson paper.
  *  </p>
  *  @author Lucian Barbulescu
+ *  @author Bryan Cazabonne (field translation)
  */
 public class FieldGHIJjsPolynomials<T extends RealFieldElement<T>> {
 

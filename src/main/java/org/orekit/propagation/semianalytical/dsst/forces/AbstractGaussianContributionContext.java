@@ -19,13 +19,13 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
-/** This class is a container for the attributes of
- * {@link org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianontribution AbstractGaussianContribution}.
+/**
+ * This class is a container for the common parameters used in {@link AbstractGaussianContribution}.
  * <p>
- * It replaces the last version of the method
- * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initializeStep(AuxiliaryElements)
- * initializeStep(AuxiliaryElements)}.
+ * It performs parameters initialization at each integration step for the Gaussian contributions
  * </p>
+ *
+ * @author Bryan Cazabonne
  */
 public class AbstractGaussianContributionContext extends ForceModelContext {
 
@@ -63,9 +63,9 @@ public class AbstractGaussianContributionContext extends ForceModelContext {
 
     // CHECKSTYLE: resume VisibilityModifier check
 
-    /** Simple constructor.
-     * Performs initialization at each integration step for the current force model.
-     * This method aims at being called before mean elements rates computation
+    /**
+     * Simple constructor.
+     *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters parameters values of the force model parameters
      */

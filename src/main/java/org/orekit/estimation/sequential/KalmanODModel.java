@@ -21,6 +21,10 @@ import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 
+/** Interface for models used in the Kalman orbit determination process.
+ * @author Luc Maisonobe
+ * @author Bryan Cazabonne
+ */
 public interface KalmanODModel extends KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 
     /** Get the current corrected estimate.

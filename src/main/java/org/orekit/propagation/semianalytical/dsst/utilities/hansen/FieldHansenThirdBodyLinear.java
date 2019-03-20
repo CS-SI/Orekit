@@ -32,6 +32,7 @@ import org.hipparchus.util.MathArrays;
  *
  * @author Petre Bazavan
  * @author Lucian Barbulescu
+ * @author Bryan Cazabonne
  */
 public class FieldHansenThirdBodyLinear <T extends RealFieldElement<T>> {
 

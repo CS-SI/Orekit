@@ -26,7 +26,9 @@ import org.orekit.estimation.sequential.KalmanODModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.ParameterDriversList;
 
-/** Base class for orbit determination model builders.  */
+/** Base class for orbit determination model builders.
+ * @author Bryan Cazabonne
+ */
 public interface IntegratedPropagatorBuilder extends PropagatorBuilder {
 
     /** Build a new {@link BatchLSODModel}.

@@ -35,11 +35,15 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.ParameterDriver;
 
-/** Force model for Newtonian central body attraction. */
+/** Force model for Newtonian central body attraction for the {@link DSSTPropagator DSST propagator}.
+ *  @author Bryan Cazabonne
+ *  @author Luc Maisonobe
+ */
 public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** Name of the single parameter of this model: the central attraction coefficient. */

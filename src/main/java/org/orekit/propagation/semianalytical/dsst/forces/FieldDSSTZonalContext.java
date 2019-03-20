@@ -21,18 +21,18 @@ import java.util.TreeMap;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
-/** This class is a container for the field attributes of
- * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal DSSTZonal}.
+/**
+ * This class is a container for the common "field" parameters used in {@link DSSTZonal}.
  * <p>
- * It replaces the last version of the method
- * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initializeStep(AuxiliaryElements)
- * initializeStep(AuxiliaryElements)}.
- * </p>
+ * It performs parameters initialization at each integration step for the Zonal contribution
+ * to the central body gravitational perturbation.
+ * <p>
+ *
+ * @author Bryan Cazabonne
  */
 public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
@@ -95,9 +95,9 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
     /** B * B.*/
     private T BB;
 
-    /** Simple constructor.
-     * Performs initialization at each integration step for the current force model.
-     * This method aims at being called before mean elements rates computation
+    /**
+     * Simple constructor.
+     *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param provider provider for spherical harmonics
      * @param parameters values of the force model parameters

@@ -50,9 +50,13 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
+ * <p>
+ * This class is an adaption of the {@link KalmanModel} class
+ * but for the {@link DSSTPropagator DSST propagator}.
+ * </p>
  * @author Romain Gerbaud
  * @author Maxime Journot
- * @since 9.2
+ * @author Bryan Cazabonne
  */
 public class DSSTKalmanModel implements KalmanODModel {
 

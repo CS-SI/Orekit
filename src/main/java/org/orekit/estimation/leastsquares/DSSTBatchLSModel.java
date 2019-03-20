@@ -53,8 +53,12 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.fitting.leastsquares.LeastSquaresProblem
  * least squares problems}.
+ * <p>
+ * This class is an adaption of the {@link BatchLSModel} class
+ * but for the {@link DSSTPropagator DSST propagator}.
+ * </p>
  * @author Luc Maisonobe
- * @since 8.0
+ * @author Bryan Cazabonne
  */
 public class DSSTBatchLSModel implements BatchLSODModel {
 

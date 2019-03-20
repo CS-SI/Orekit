@@ -32,6 +32,7 @@ import org.hipparchus.util.MathArrays;
  *
  * @author Petre Bazavan
  * @author Lucian Barbulescu
+ * @author Bryan Cazabonne
  */
 public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
 

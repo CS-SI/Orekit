@@ -21,13 +21,8 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
-/** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
- * SpacecraftState#getAdditionalState(String) additional state arrays}.
- * <p>
- * This class does not hold the states by itself. Instances of this class are guaranteed
- * to be immutable.
- * </p>
- * @author Luc Maisonobe
+/** Base class for jacobian mapper.
+ * @author Bryan Cazabonne
  */
 public abstract class AbstractJacobiansMapper {
 

@@ -28,18 +28,14 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 
-/** This class is a container for the attributes of
- * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody DSSTThirdBody}.
+/**
+ * This class is a container for the common parameters used in {@link DSSTThirdBody}.
  * <p>
- * It replaces the last version of the method
- * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initializeStep(AuxiliaryElements)
- * initializeStep(AuxiliaryElements)} and a part of the method
- * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initialize(AuxiliaryElements, boolean)
- * initialize(AuxiliaryElements, boolean)}.
- * </p>
+ * It performs parameters initialization at each integration step for the third
+ * body attraction perturbation.
  * <p>
- * This class contains only getter methods
- * </p>
+ *
+ * @author Bryan Cazabonne
  */
 class DSSTThirdBodyContext extends ForceModelContext {
 
@@ -135,9 +131,9 @@ class DSSTThirdBodyContext extends ForceModelContext {
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
 
-    /** Simple constructor.
-     * Performs initialization at each integration step for the current force model.
-     * This method aims at being called before mean elements rates computation
+    /**
+     * Simple constructor.
+     *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param thirdBody body the 3rd body to consider
      * @param parameters values of the force model parameters

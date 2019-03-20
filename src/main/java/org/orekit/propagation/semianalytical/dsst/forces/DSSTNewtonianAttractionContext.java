@@ -18,16 +18,22 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
-/** This class is a container for the field attributes of
- * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttractionContext DSSTNewtonianAttractionContext}. */
+/**
+ * This class is a container for the common parameters used in {@link DSSTNewtonianAttraction}.
+ * <p>
+ * It performs parameters initialization at each integration step for the central body attraction.
+ * <p>
+ *
+ * @author Bryan Cazabonne
+ */
 public class DSSTNewtonianAttractionContext extends ForceModelContext {
 
     /** Standard gravitational parameter μ for the body in m³/s². */
-    private final double           gm;
+    private final double gm;
 
-    /** Simple constructor.
-     * Performs initialization at each integration step for the current force model.
-     * This method aims at being called before mean elements rates computation
+    /**
+     * Simple constructor.
+     *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters values of the force model parameters
      */

@@ -20,6 +20,14 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
 
+/** Interpolation grid where a fixed number of points are
+ * evenly spaced between the start and the end of the integration step.
+ * <p>
+ * The grid is adapted to the step considered,
+ * meaning that for short steps, the grid will be dense,
+ * while for long steps the points will be far away one from each other
+ * </p>
+ */
 public class FieldFixedNumberInterpolationGrid<T extends RealFieldElement<T>> implements FieldInterpolationGrid<T> {
 
     /** Number of points in the grid per step. */

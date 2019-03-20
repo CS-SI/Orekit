@@ -82,6 +82,7 @@ import org.orekit.utils.TimeSpanMap;
  * {@link #getLLimits(SpacecraftState)} and {@link #getParametersDriversWithoutMu()}.
  * </p>
  * @author Pascal Parraud
+ * @author Bryan Cazabonne (field translation)
  */
 public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
@@ -192,10 +193,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     }
 
-    /** Get the drivers for force model parameters except the one for central attraction coefficient.
-     *  We add automatically the driver for central attraction coefficient at the last element of the {@link
-     *  ParameterDriver} array into {@link #getParametersDrivers()} method.
-     *  @return drivers for force model parameters
+    /** Get the drivers for force model parameters except the one for the central attraction coefficient.
+     * <p>
+     * The driver for central attraction coefficient is automatically
+     * added at the last element of the {@link ParameterDriver} array
+     * into {@link #getParametersDrivers()} method.
+     * </p>
+     * @return drivers for force model parameters
      */
     protected abstract ParameterDriver[] getParametersDriversWithoutMu();
 
@@ -327,11 +331,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     protected abstract double[] getLLimits(SpacecraftState state, AbstractGaussianContributionContext context);
 
     /** Compute the limits in L, the true longitude, for integration.
-    *  @param <T> type of the elements
-    *  @param state current state information: date, kinematics, attitude
-    *  @param context container for attributes
-    *  @return the integration limits in L
-    */
+     *
+     *  @param <T> type of the elements
+     *  @param state current state information: date, kinematics, attitude
+     *  @param context container for attributes
+     *  @return the integration limits in L
+     */
     protected abstract <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
                                                                       FieldAbstractGaussianContributionContext<T> context);
 
@@ -580,7 +585,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         return currentRhoSigmaj;
     }
 
-    /** Internal class for numerical quadrature. */
+    /** Internal class for numerical quadrature.
+     *  <p>
+     *  This class is a rewrite of {@link IntegrableFunction} for field elements
+     *  </p>
+     */
     private class FieldIntegrableFunction <T extends RealFieldElement<T>> implements RealFieldUnivariateVectorFunction<T> {
 
         /** Current state. */
@@ -1588,8 +1597,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
        *  @return the integral of the weighted function.
        */
         public <T extends RealFieldElement<T>> T[] integrate(final RealFieldUnivariateVectorFunction<T> f,
-                                                            final T lowerBound, final T upperBound,
-                                                            final Field<T> field) {
+                                                             final T lowerBound, final T upperBound,
+                                                             final Field<T> field) {
 
             final T zero = field.getZero();
 
@@ -1841,7 +1850,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
     }
 
-    /** Compute the C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup> coefficients.
+    /** Compute the C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup> coefficients with field elements.
      *  <p>
      *  Those coefficients are given in Danielson paper by expression 4.4-(6)
      *  </p>

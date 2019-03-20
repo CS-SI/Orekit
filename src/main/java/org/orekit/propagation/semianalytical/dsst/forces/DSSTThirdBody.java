@@ -63,6 +63,7 @@ import org.orekit.utils.TimeSpanMap;
  *
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
+ *  @author Bryan Cazabonne (field translation)
  */
 public class DSSTThirdBody implements DSSTForceModel {
 

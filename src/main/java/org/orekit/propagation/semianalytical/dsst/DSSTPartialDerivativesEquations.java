@@ -48,7 +48,7 @@ import org.orekit.utils.ParameterDriversList;
  * parameter driver} using {@link DSSTForceModel#getParameterDriver(String)} and then
  * select it by calling {@link ParameterDriver#setSelected(boolean) setSelected(true)}.
  * </p>
- * <p>
+ * @author Bryan Cazabonne
  */
 public class DSSTPartialDerivativesEquations implements AdditionalEquations {
 
@@ -164,7 +164,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * @param s0 initial state
      * @return state with initial Jacobians added
      * @see #getSelectedParameters()
-     * @since 9.0
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();

@@ -27,12 +27,14 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
-/** This class is a container for the attributes of
- * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral DSSTTesseral}.
+/**
+ * This class is a container for the common parameters used in {@link DSSTTesseral}.
  * <p>
- * It replaces the last version of the method
- * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initializeStep(AuxiliaryElements) initializeStep(AuxiliaryElements)}.
- * </p>
+ * It performs parameters initialization at each integration step for the Tesseral contribution
+ * to the central body gravitational perturbation.
+ * <p>
+ *
+ * @author Bryan Cazabonne
  */
 class DSSTTesseralContext extends ForceModelContext {
 
@@ -126,9 +128,9 @@ class DSSTTesseralContext extends ForceModelContext {
     /** List of resonant orders. */
     private final List<Integer> resOrders;
 
-    /** Simple constructor.
-     * Performs initialization at each integration step for the current force model.
-     * This method aims at being called before mean elements rates computation
+    /**
+     * Simple constructor.
+     *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics

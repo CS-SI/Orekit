@@ -23,6 +23,10 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.utils.ParameterDriversList;
 
+/** Interface for models used in the batch least squares orbit determination process.
+ * @author Luc Maisonobe
+ * @author Bryan Cazabonne
+ */
 public interface BatchLSODModel extends MultivariateJacobianFunction {
 
     /** Get the selected propagation drivers for a propagatorBuilder.

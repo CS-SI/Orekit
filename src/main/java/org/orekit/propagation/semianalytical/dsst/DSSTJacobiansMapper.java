@@ -40,6 +40,7 @@ import org.orekit.utils.ParameterDriversList;
  * to be immutable.
  * </p>
  * @author Luc Maisonobe
+ * @author Bryan Cazabonne
  * @see org.orekit.propagation.semianalytical.DSSTPartialDerivativesEquations
  * @see org.orekit.propagation.semianalytical.DSSTPropagator
  * @see SpacecraftState#getAdditionalState(String)
