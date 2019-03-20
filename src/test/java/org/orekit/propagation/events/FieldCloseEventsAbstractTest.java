@@ -68,7 +68,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         this.epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         this.initialOrbit = new FieldKeplerianOrbit<>(
             v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE,
-            eci, epoch, mu);
+            eci, epoch, v(mu));
     }
 
     /**
@@ -576,7 +576,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         double t1 = 15.0;
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(FastMath.PI / 2), v(0), v(0),
-                v(FastMath.PI / 2), PositionAngle.TRUE, eci, epoch.shiftedBy(t1), mu));
+                v(FastMath.PI / 2), PositionAngle.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
         // shared event list so we know the order in which they occurred
         List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
@@ -1531,7 +1531,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         double t1 = -15.0;
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(
                 v(6378137 + 500e3), v(0), v(FastMath.PI / 2), v(0), v(0),
-                v(FastMath.PI / 2), PositionAngle.TRUE, eci, epoch.shiftedBy(t1), mu));
+                v(FastMath.PI / 2), PositionAngle.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
         // shared event list so we know the order in which they occurred
         List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
@@ -2004,7 +2004,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends RealFieldElement<T>
         return new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0),
                 PositionAngle.TRUE, eci, epoch.shiftedBy(t),
-                mu));
+                v(mu)));
     }
 
     private List<FieldAbsoluteDate<T>> toDates(double[] eventTs) {

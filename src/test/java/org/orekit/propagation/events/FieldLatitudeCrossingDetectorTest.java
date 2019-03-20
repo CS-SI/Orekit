@@ -71,12 +71,12 @@ public class FieldLatitudeCrossingDetectorTest {
         final FieldOrbit<Decimal64> orbit = new FieldEquinoctialOrbit<>(
                 new FieldPVCoordinates<>(v(1), new PVCoordinates(position,  velocity)),
                 FramesFactory.getEME2000(), date,
-                Constants.EIGEN5C_EARTH_MU);
+                v(Constants.EIGEN5C_EARTH_MU));
 
         FieldPropagator<Decimal64> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit,
                                           Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                          Constants.EIGEN5C_EARTH_MU,
+                                          v(Constants.EIGEN5C_EARTH_MU),
                                           Constants.EIGEN5C_EARTH_C20,
                                           Constants.EIGEN5C_EARTH_C30,
                                           Constants.EIGEN5C_EARTH_C40,
@@ -133,12 +133,12 @@ public class FieldLatitudeCrossingDetectorTest {
         final FieldOrbit<Decimal64> orbit = new FieldEquinoctialOrbit<>(
                 new FieldPVCoordinates<>(v(1), new PVCoordinates(position,  velocity)),
                 FramesFactory.getEME2000(), date,
-                Constants.EIGEN5C_EARTH_MU);
+                v(Constants.EIGEN5C_EARTH_MU));
 
         FieldPropagator<Decimal64> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit,
                                           Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                          Constants.EIGEN5C_EARTH_MU,
+                                          v(Constants.EIGEN5C_EARTH_MU),
                                           Constants.EIGEN5C_EARTH_C20,
                                           Constants.EIGEN5C_EARTH_C30,
                                           Constants.EIGEN5C_EARTH_C40,

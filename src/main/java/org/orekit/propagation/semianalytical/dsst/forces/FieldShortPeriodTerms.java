@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,7 +31,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see DSSTForceModel
  * @author Luc Maisonobe
  */
-public interface FieldShortPeriodTerms <T extends RealFieldElement<T>> extends Serializable {
+public interface FieldShortPeriodTerms <T extends RealFieldElement<T>> {
 
     /** Evaluate the contributions of the short period terms.
      * @param meanOrbit mean orbit to which the short period contribution applies

@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1852,9 +1851,6 @@ public class DSSTTesseral implements DSSTForceModel {
      */
     private static class FieldTesseralShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151119L;
-
         /** Retrograde factor I.
          *  <p>
          *  DSST model needs equinoctial orbit as internal representation.
@@ -2154,10 +2150,7 @@ public class DSSTTesseral implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class FieldSlot <T extends RealFieldElement<T>> implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160319L;
+    private static class FieldSlot <T extends RealFieldElement<T>> {
 
         /** The coefficients C<sub>i</sub><sup>j</sup><sup>m</sup>.
          * <p>

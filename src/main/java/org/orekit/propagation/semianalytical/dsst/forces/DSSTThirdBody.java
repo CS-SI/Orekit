@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3183,9 +3182,6 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     private static class FieldThirdBodyShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151119L;
-
         /** Maximal value for j. */
         private final int jMax;
 
@@ -3203,7 +3199,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /**
          * Standard constructor.
-         *  @param interpolationPoints number of points used in the interpolation process
+         * @param interpolationPoints number of points used in the interpolation process
          * @param jMax maximal value for j
          * @param maxFreqF Max frequency of F
          * @param bodyName third body name
@@ -3368,10 +3364,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class FieldSlot <T extends RealFieldElement<T>> implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160319L;
+    private static class FieldSlot <T extends RealFieldElement<T>> {
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>

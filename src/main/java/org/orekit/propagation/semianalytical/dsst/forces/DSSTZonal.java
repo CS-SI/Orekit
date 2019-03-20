@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1565,9 +1564,6 @@ public class DSSTZonal implements DSSTForceModel {
     * @author Lucian Barbulescu
     */
     private static class FieldZonalShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151118L;
 
         /** Maximum value for j index. */
         private final int maxFrequencyShortPeriodics;
@@ -3396,10 +3392,7 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class FieldSlot <T extends RealFieldElement<T>> implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160319L;
+    private static class FieldSlot <T extends RealFieldElement<T>> {
 
         /**The coefficients D<sub>i</sub>.
          * <p>

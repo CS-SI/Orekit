@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.hipparchus.Field;
@@ -37,10 +36,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Nicolas Bernard
  *
  */
-public class FieldShortPeriodicsInterpolatedCoefficient <T extends RealFieldElement<T>> implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160319L;
+public class FieldShortPeriodicsInterpolatedCoefficient <T extends RealFieldElement<T>> {
 
     /**Values of the already computed coefficients.*/
     private ArrayList<T[]> values;

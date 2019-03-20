@@ -53,11 +53,12 @@ public class FieldRecordAndContinueTest {
                 new FieldRecordAndContinue<>();
         FieldAbsoluteDate<Decimal64> date =
                 new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
+        Decimal64 zero = date.getField().getZero();
         FieldDateDetector<Decimal64> detector = new FieldDateDetector<>(date);
         Frame eci = FramesFactory.getGCRF();
         FieldOrbit<Decimal64> orbit = new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0),
-                PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
+                PositionAngle.TRUE, eci, date, zero.add(Constants.EIGEN5C_EARTH_MU));
         FieldSpacecraftState<Decimal64> s1 = new FieldSpacecraftState<>(orbit);
         FieldSpacecraftState<Decimal64> s2 = s1.shiftedBy(-10);
         FieldSpacecraftState<Decimal64> s3 = s2.shiftedBy(1);

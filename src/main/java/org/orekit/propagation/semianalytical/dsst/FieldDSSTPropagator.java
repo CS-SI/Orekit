@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -741,10 +740,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
     }
 
     /** Internal mapper using mean parameters plus short periodic terms. */
-    private class FieldMeanPlusShortPeriodicMapper extends FieldStateMapper<T> implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151104L;
+    private class FieldMeanPlusShortPeriodicMapper extends FieldStateMapper<T> {
 
         /** Short periodic coefficients that must be stored as additional states. */
         private Set<String>                selectedCoefficients;
