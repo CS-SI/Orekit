@@ -38,6 +38,7 @@ public class GPSDateTest {
         Assert.assertEquals(1387, date.getWeekNumber());
         Assert.assertEquals(318677000.0, date.getMilliInWeek(), 1.0e-15);
         Assert.assertEquals(0, date.getDate().durationFrom(ref), 1.0e-15);
+        Assert.assertNull(GPSDate.getRolloverReference());
     }
 
     @Test
@@ -54,6 +55,34 @@ public class GPSDateTest {
         GPSDate date = new GPSDate(AbsoluteDate.GPS_EPOCH);
         Assert.assertEquals(0, date.getWeekNumber());
         Assert.assertEquals(0.0, date.getMilliInWeek(), 1.0e-15);
+    }
+
+    @Test
+    public void testZeroZero() {
+        GPSDate.setRolloverReference(new DateComponents(DateComponents.GPS_EPOCH, 7 * 512));
+        GPSDate date1 = new GPSDate(0, 0.0);
+        Assert.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.GPS_EPOCH), 1.0e-15);
+        GPSDate.setRolloverReference(new DateComponents(GPSDate.getRolloverReference(), 1));
+        GPSDate date2 = new GPSDate(0, 0.0);
+        Assert.assertEquals(1024, date2.getWeekNumber());
+    }
+
+    @Test
+    public void testDefaultRolloverReference() {
+        Assert.assertNull(GPSDate.getRolloverReference());
+        GPSDate date = new GPSDate(305, 1.5);
+        // the default reference is extracted from last EOP entry
+        // which in this test comes from bulletin B 218, in the final values section
+        Assert.assertEquals("2006-03-05", GPSDate.getRolloverReference().toString());
+        Assert.assertEquals(305 + 1024, date.getWeekNumber());
+    }
+
+    @Test
+    public void testUserRolloverReference() {
+        GPSDate.setRolloverReference(new DateComponents(DateComponents.GPS_EPOCH, 7 * (3 * 1024 + 512)));
+        GPSDate date = new GPSDate(305, 1.5);
+        Assert.assertEquals("2048-09-13", GPSDate.getRolloverReference().toString());
+        Assert.assertEquals(305 + 3 * 1024, date.getWeekNumber());
     }
 
     @Test

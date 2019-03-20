@@ -16,10 +16,9 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.Arrays;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -60,9 +59,6 @@ import org.orekit.time.AbsoluteDate;
 public class EventEnablingPredicateFilter<T extends EventDetector>
     extends AbstractDetector<EventEnablingPredicateFilter<T>> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150910L;
-
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
 
@@ -70,22 +66,22 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     private final T rawDetector;
 
     /** Enabling predicate function. */
-    private final transient EnablingPredicate<? super T> enabler;
+    private final EnablingPredicate<? super T> enabler;
 
     /** Transformers of the g function. */
-    private final transient Transformer[] transformers;
+    private final Transformer[] transformers;
 
     /** Update time of the transformers. */
-    private final transient AbsoluteDate[] updates;
+    private final AbsoluteDate[] updates;
 
     /** Indicator for forward integration. */
-    private transient boolean forward;
+    private boolean forward;
 
     /** Extreme time encountered so far. */
-    private transient AbsoluteDate extremeT;
+    private AbsoluteDate extremeT;
 
     /** Detector function value at extremeT. */
-    private transient double extremeG;
+    private double extremeG;
 
     /** Wrap an {@link EventDetector event detector}.
      * @param rawDetector event detector to wrap
@@ -279,19 +275,6 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
         }
     }
 
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     * @exception NotSerializableException if the {@link EnablingPredicate
-     * enabling predicate} is not serializable
-     */
-    private Object writeReplace() throws NotSerializableException {
-        if (enabler instanceof Serializable) {
-            return new DataTransferObject(rawDetector, (Serializable) enabler);
-        } else {
-            throw new NotSerializableException(enabler.getClass().getName());
-        }
-    }
-
     /** Local handler. */
     private static class LocalHandler<T extends EventDetector> implements EventHandler<EventEnablingPredicateFilter<T>> {
 
@@ -305,38 +288,6 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
         @Override
         public SpacecraftState resetState(final EventEnablingPredicateFilter<T> ef, final SpacecraftState oldState) {
             return ef.rawDetector.resetState(oldState);
-        }
-
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160321L;
-
-        /** Wrapped event detector. */
-        private final EventDetector rawDetector;
-
-        /** Enabling predicate function. */
-        private final Serializable enabler;
-
-        /** Simple constructor.
-         * @param rawDetector wrapped event detector
-         * @param enabler enabling predicate function
-         */
-        DataTransferObject(final EventDetector rawDetector, final Serializable enabler) {
-            this.rawDetector = rawDetector;
-            this.enabler     = enabler;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link EventEnablingPredicateFilter}.
-         * @return replacement {@link EventEnablingPredicateFilter}
-         */
-        @SuppressWarnings("unchecked")
-        private Object readResolve() {
-            return new EventEnablingPredicateFilter<EventDetector>(rawDetector,
-                            (EnablingPredicate<EventDetector>) enabler);
         }
 
     }

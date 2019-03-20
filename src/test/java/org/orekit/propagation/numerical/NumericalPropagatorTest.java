@@ -33,6 +33,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -81,7 +82,6 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalEquations;
@@ -722,8 +722,6 @@ public class NumericalPropagatorTest {
     }
 
     private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
-
-        private static final long serialVersionUID = 1L;
 
         public AdditionalStateLinearDetector(double maxCheck, double threshold) {
             this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<AdditionalStateLinearDetector>());

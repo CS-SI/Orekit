@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
@@ -35,10 +34,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Nicolas Bernard
  *
  */
-public class ShortPeriodicsInterpolatedCoefficient implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160319L;
+public class ShortPeriodicsInterpolatedCoefficient {
 
     /**Values of the already computed coefficients.*/
     private ArrayList<double[]> values;

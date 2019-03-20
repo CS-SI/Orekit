@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public interface ShortPeriodTerms extends Serializable {
+public interface ShortPeriodTerms {
 
     /** Evaluate the contributions of the short period terms.
      * @param meanOrbit mean orbit to which the short period contribution applies

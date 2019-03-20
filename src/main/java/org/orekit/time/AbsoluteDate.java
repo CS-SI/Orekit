@@ -59,10 +59,9 @@ import org.orekit.utils.Constants;
  *   #AbsoluteDate(DateComponents, TimeComponents, TimeScale)}, {@link
  *   #AbsoluteDate(int, int, int, int, int, double, TimeScale)}, {@link
  *   #AbsoluteDate(int, int, int, TimeScale)}, {@link #AbsoluteDate(Date,
- *   TimeScale)}, {@link #createGPSDate(int, double)}, {@link
- *   #parseCCSDSCalendarSegmentedTimeCode(byte, byte[])}, toString(){@link
- *   #toDate(TimeScale)}, {@link #toString(TimeScale) toString(timeScale)},
- *   {@link #toString()}, and {@link #timeScalesOffset}.</p>
+ *   TimeScale)}, {@link #parseCCSDSCalendarSegmentedTimeCode(byte, byte[])},
+ *   toString(){@link #toDate(TimeScale)}, {@link #toString(TimeScale)
+ *   toString(timeScale)}, {@link #toString()}, and {@link #timeScalesOffset}.</p>
  *   </li>
  *   <li><p>offset view (mainly for physical computation)</p>
  *   <p>offsets represent either the flow of time between two events
@@ -685,20 +684,6 @@ public class AbsoluteDate
 
     }
 
-
-    /** Build an instance corresponding to a GPS date.
-     * <p>GPS dates are provided as a week number starting at
-     * {@link #GPS_EPOCH GPS epoch} and as a number of milliseconds
-     * since week start.</p>
-     * @param weekNumber week number since {@link #GPS_EPOCH GPS epoch}
-     * @param milliInWeek number of milliseconds since week start
-     * @return a new instant
-     * @deprecated as of 9.3, replaced by {@link GPSDate#GPSDate(int, double)}.{@link GPSDate#getDate()}
-     */
-    @Deprecated
-    public static AbsoluteDate createGPSDate(final int weekNumber, final double milliInWeek) {
-        return new GPSDate(weekNumber, milliInWeek).getDate();
-    }
 
     /** Build an instance corresponding to a Julian Epoch (JE).
      * <p>According to Lieske paper: <a

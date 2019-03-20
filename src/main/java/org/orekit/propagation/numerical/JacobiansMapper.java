@@ -73,15 +73,6 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
         this.name = name;
     }
 
-    /** Get the state vector dimension.
-     * @return state vector dimension
-     * @deprecated as of 9.0, replaced with {@link #STATE_DIMENSION}
-     */
-    @Deprecated
-    public int getStateDimension() {
-        return STATE_DIMENSION;
-    }
-
     /** {@inheritDoc} */
     protected double[][] getJacobianConversion(final SpacecraftState state) {
 

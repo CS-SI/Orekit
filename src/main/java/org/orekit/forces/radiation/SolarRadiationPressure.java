@@ -20,14 +20,13 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
@@ -43,10 +42,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Solar radiation pressure force model.
  *
@@ -87,76 +83,11 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param sun Sun model
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      * @param spacecraft the object physical and geometrical information
-     * @deprecated as of 9.2 replaced by {@link #SolarRadiationPressure(ExtendedPVCoordinatesProvider,
-     * double, RadiationSensitive)}
-     */
-    @Deprecated
-    public SolarRadiationPressure(final PVCoordinatesProvider sun, final double equatorialRadius,
-                                  final RadiationSensitive spacecraft) {
-        this(D_REF, P_REF, sun, equatorialRadius, spacecraft);
-    }
-
-    /** Simple constructor with default reference values.
-     * <p>When this constructor is used, the reference values are:</p>
-     * <ul>
-     *   <li>d<sub>ref</sub> = 149597870000.0 m</li>
-     *   <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m²</li>
-     * </ul>
-     * @param sun Sun model
-     * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
-     * @param spacecraft the object physical and geometrical information
      * @since 9.2
      */
     public SolarRadiationPressure(final ExtendedPVCoordinatesProvider sun, final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
         this(D_REF, P_REF, sun, equatorialRadius, spacecraft);
-    }
-
-    /** Complete constructor.
-     * <p>Note that reference solar radiation pressure <code>pRef</code> in
-     * N/m² is linked to solar flux SF in W/m² using
-     * formula pRef = SF/c where c is the speed of light (299792458 m/s). So
-     * at 1UA a 1367 W/m² solar flux is a 4.56 10<sup>-6</sup>
-     * N/m² solar radiation pressure.</p>
-     * @param dRef reference distance for the solar radiation pressure (m)
-     * @param pRef reference solar radiation pressure at dRef (N/m²)
-     * @param sun Sun model
-     * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
-     * @param spacecraft the object physical and geometrical information
-     * @deprecated as of 9.2 replaced by {@link #SolarRadiationPressure(double, double,
-     * ExtendedPVCoordinatesProvider, double, RadiationSensitive)}
-     */
-    @Deprecated
-    public SolarRadiationPressure(final double dRef, final double pRef,
-                                  final PVCoordinatesProvider sun,
-                                  final double equatorialRadius,
-                                  final RadiationSensitive spacecraft) {
-        this.kRef = pRef * dRef * dRef;
-        if (sun instanceof ExtendedPVCoordinatesProvider) {
-            this.sun = (ExtendedPVCoordinatesProvider) sun;
-        } else {
-            this.sun = new ExtendedPVCoordinatesProvider() {
-
-                /** {@inheritDoc} */
-                @Override
-                public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-                    // delegate to raw Sun provider
-                    return sun.getPVCoordinates(date, frame);
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                    getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-                    // SRP was created with a provider that does not support fields,
-                    // but the fields methods are called
-                    throw new OrekitIllegalArgumentException(LocalizedCoreFormats.UNSUPPORTED_OPERATION);
-                }
-
-            };
-        };
-        this.equatorialRadius = equatorialRadius;
-        this.spacecraft = spacecraft;
     }
 
     /** Complete constructor.
@@ -451,9 +382,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** This class defines the umbra entry/exit detector. */
     private class UmbraDetector extends AbstractDetector<UmbraDetector> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20141228L;
-
         /** Build a new instance. */
         UmbraDetector() {
             super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
@@ -506,9 +434,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** This class defines the penumbra entry/exit detector. */
     private class PenumbraDetector extends AbstractDetector<PenumbraDetector> {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20141228L;
 
         /** Build a new instance. */
         PenumbraDetector() {

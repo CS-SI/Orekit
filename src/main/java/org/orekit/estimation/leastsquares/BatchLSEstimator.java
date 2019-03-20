@@ -436,7 +436,7 @@ public class BatchLSEstimator {
      * </p>
      * <p>
      * Beware that the returned object is the raw view from the underlying mathematical
-     * library. At this ral level, parameters have {@link ParameterDriver#getNormalizedValue()
+     * library. At this raw level, parameters have {@link ParameterDriver#getNormalizedValue()
      * normalized values} whereas the space flight parameters have {@link ParameterDriver#getValue()
      * physical values} with their units. So there are {@link ParameterDriver#getScale() scaling
      * factors} to apply when using these elements.

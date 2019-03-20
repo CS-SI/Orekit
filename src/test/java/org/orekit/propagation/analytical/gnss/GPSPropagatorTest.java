@@ -28,6 +28,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.GPSAlmanac;
@@ -36,6 +38,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.GPSDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -51,6 +54,7 @@ public class GPSPropagatorTest {
     @BeforeClass
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
+        GPSDate.setRolloverReference(new DateComponents(DateComponents.GPS_EPOCH, 7 * 512));
         // Get the parser to read a SEM file
         SEMParser reader = new SEMParser(null);
         // Reads the SEM file
@@ -99,6 +103,8 @@ public class GPSPropagatorTest {
     public void testFrames() {
         // Builds the GPSPropagator from the almanac
         final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        Assert.assertEquals("EME2000", propagator.getFrame().getName());
+        Assert.assertEquals(3.986005e14, GPSPropagator.getMU(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -109,6 +115,24 @@ public class GPSPropagatorTest {
         // Checks
         Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
         Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
+    }
+
+    @Test
+    public void testNoReset() {
+        try {
+            GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+            propagator.resetInitialState(propagator.getInitialState());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+        }
+        try {
+            GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+            propagator.resetIntermediateState(propagator.getInitialState(), true);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+        }
     }
 
     @Test

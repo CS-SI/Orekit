@@ -528,7 +528,6 @@ public class FieldKeplerianPropagatorTest {
             new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngle.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         AttitudeProvider wrongLaw = new AttitudeProvider() {
-            private static final long serialVersionUID = 1L;
             @Override
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
@@ -574,8 +573,6 @@ public class FieldKeplerianPropagatorTest {
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit,
                         new AttitudeProvider() {
-            private static final long serialVersionUID =
-                            1L;
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }

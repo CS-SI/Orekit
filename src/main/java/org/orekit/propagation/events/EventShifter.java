@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -37,9 +38,6 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  */
 public class EventShifter<T extends EventDetector> extends AbstractDetector<EventShifter<T>> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** Event detector for the raw unshifted event. */
     private final T detector;

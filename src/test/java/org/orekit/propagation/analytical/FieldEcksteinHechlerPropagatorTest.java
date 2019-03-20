@@ -614,8 +614,6 @@ public class FieldEcksteinHechlerPropagatorTest {
         final DummyLocalizable gasp = new DummyLocalizable("gasp");
         AttitudeProvider wrongLaw = new AttitudeProvider() {
 
-            private static final long serialVersionUID = 1L;
-
             @Override
             public Attitude getAttitude(PVCoordinatesProvider pvProv,
                                         AbsoluteDate date, Frame frame)

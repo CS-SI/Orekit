@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdapterDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
@@ -125,9 +125,6 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
 
     /** Adapter for managing feasibility status changes. */
     private class FeasibilityAdapter extends AdapterDetector {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20181206L;
 
         /** Build an adaptor wrapping an existing detector.
          * @param detector detector to wrap

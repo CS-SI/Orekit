@@ -63,9 +63,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class CelestialBodyPointed implements AttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6222161082155807729L;
-
     /** Frame in which {@link #phasingCel} is defined. */
     private final Frame celestialFrame;
 

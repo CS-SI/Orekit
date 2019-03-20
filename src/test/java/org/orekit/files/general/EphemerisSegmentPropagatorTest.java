@@ -1,5 +1,7 @@
 package org.orekit.files.general;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,6 +13,7 @@ import org.junit.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -148,8 +151,19 @@ public class EphemerisSegmentPropagatorTest {
         try {
             propagator.resetInitialState(ic);
             Assert.fail("Expected Exception");
-        } catch (OrekitException e) {
-            // expected
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+        }
+        try {
+            Method reset = EphemerisSegmentPropagator.class.getDeclaredMethod("resetIntermediateState",
+                                                                              SpacecraftState.class,
+                                                                              Boolean.TYPE);
+            reset.setAccessible(true);
+            reset.invoke(propagator, ic, true);
+            Assert.fail("Expected Exception");
+        } catch (InvocationTargetException ite) {
+            OrekitException oe = (OrekitException) ite.getCause();
+            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
 
     }

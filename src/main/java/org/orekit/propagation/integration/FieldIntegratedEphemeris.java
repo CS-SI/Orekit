@@ -49,10 +49,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * cumbersome tight links with the integrator.
  * </p>
  * <p>
- * Another use case is persistence, as this class is one of the few propagators
- * to be serializable.
- * </p>
- * <p>
  * As this class implements the {@link org.orekit.propagation.Propagator Propagator}
  * interface, it can itself be used in batch mode to build another instance of the
  * same type. This is however not recommended since it would be a waste of resources.

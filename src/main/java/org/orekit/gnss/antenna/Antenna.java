@@ -16,9 +16,13 @@
  */
 package org.orekit.gnss.antenna;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
 
 /**
@@ -66,12 +70,24 @@ public class Antenna {
         return sinexCode;
     }
 
+    /** Get supported frequencies.
+     * @return supported frequencies
+     * @since 10.0
+     */
+    public List<Frequency> getFrequencies() {
+        return patterns.
+               entrySet().
+               stream().
+               map(e -> e.getKey()).
+               collect(Collectors.toList());
+    }
+
     /** Get the phase center eccentricities.
      * @param frequency frequency of the signal to consider
      * @return phase center eccentricities (m)
      */
     public Vector3D getEccentricities(final Frequency frequency) {
-        return patterns.get(frequency).getEccentricities();
+        return getPattern(frequency).getEccentricities();
     }
 
     /** Get the value of the phase center variation in a signal direction.
@@ -80,7 +96,20 @@ public class Antenna {
      * @return value of the phase center variation (m)
      */
     public double getPhaseCenterVariation(final Frequency frequency, final Vector3D direction) {
-        return patterns.get(frequency).getPhaseCenterVariation(direction);
+        return getPattern(frequency).getPhaseCenterVariation(direction);
+    }
+
+    /** Get a frequency pattern.
+     * @param frequency frequency of the signal to consider
+     * @return pattern for this frequency
+     */
+    private FrequencyPattern getPattern(final Frequency frequency) {
+        final FrequencyPattern pattern = patterns.get(frequency);
+        if (pattern == null) {
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_FREQUENCY_FOR_ANTENNA,
+                                      frequency, type);
+        }
+        return pattern;
     }
 
 }

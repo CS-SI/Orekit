@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -24,10 +25,8 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor Field Of View.
  * <p>This class handle fields of view with a circular boundary.</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
- * propagation at FOV entry and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at FOV entry and to {@link Action#STOP stop} propagation
  * at FOV exit. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -35,9 +34,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldOfViewDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** Position/velocity provider of the considered target. */
     private final PVCoordinatesProvider targetPVProvider;

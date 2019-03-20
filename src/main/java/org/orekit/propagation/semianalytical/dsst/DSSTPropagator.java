@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -729,10 +727,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Internal mapper using mean parameters plus short periodic terms. */
-    private static class MeanPlusShortPeriodicMapper extends StateMapper implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151104L;
+    private static class MeanPlusShortPeriodicMapper extends StateMapper {
 
         /** Short periodic coefficients that must be stored as additional states. */
         private Set<String>                selectedCoefficients;
@@ -870,79 +865,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          */
         public List<ShortPeriodTerms> getShortPeriodTerms() {
             return shortPeriodTerms;
-        }
-
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if one of the force models cannot be serialized
-         */
-        private Object writeReplace() throws NotSerializableException {
-            return new DataTransferObject(getReferenceDate(), getMu(), getAttitudeProvider(), getFrame(),
-                                          satelliteRevolution, selectedCoefficients, shortPeriodTerms);
-        }
-
-        /** Internal class used only for serialization. */
-        private static class DataTransferObject implements Serializable {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20151106L;
-
-            /** Reference date. */
-            private final AbsoluteDate referenceDate;
-
-            /** Central attraction coefficient (m³/s²). */
-            private final double mu;
-
-            /** Attitude provider. */
-            private final AttitudeProvider attitudeProvider;
-
-            /** Inertial frame. */
-            private final Frame frame;
-
-            /** Short periodic coefficients that must be stored as additional states. */
-            private final Set<String> selectedCoefficients;
-
-            /** Number of satellite revolutions in the averaging interval. */
-            private final int satelliteRevolution;
-
-            /** Short period terms. */
-            private final List<ShortPeriodTerms> shortPeriodTerms;
-
-            /** Simple constructor.
-             * @param referenceDate reference date
-             * @param mu central attraction coefficient (m³/s²)
-             * @param attitudeProvider attitude provider
-             * @param frame inertial frame
-             * @param satelliteRevolution number of satellite revolutions in the averaging interval
-             * @param selectedCoefficients short periodic coefficients that must be stored as additional states
-             * @param shortPeriodTerms short period terms
-             */
-            DataTransferObject(final AbsoluteDate referenceDate, final double mu,
-                                      final AttitudeProvider attitudeProvider, final Frame frame,
-                                      final int satelliteRevolution,
-                                      final Set<String> selectedCoefficients,
-                                      final List<ShortPeriodTerms> shortPeriodTerms) {
-                this.referenceDate        = referenceDate;
-                this.mu                   = mu;
-                this.attitudeProvider     = attitudeProvider;
-                this.frame                = frame;
-                this.satelliteRevolution  = satelliteRevolution;
-                this.selectedCoefficients = selectedCoefficients;
-                this.shortPeriodTerms     = shortPeriodTerms;
-            }
-
-            /** Replace the deserialized data transfer object with a {@link MeanPlusShortPeriodicMapper}.
-             * @return replacement {@link MeanPlusShortPeriodicMapper}
-             */
-            private Object readResolve() {
-                final MeanPlusShortPeriodicMapper mapper =
-                        new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
-                mapper.setSatelliteRevolution(satelliteRevolution);
-                mapper.setSelectedCoefficients(selectedCoefficients);
-                mapper.setShortPeriodTerms(shortPeriodTerms);
-                return mapper;
-            }
-
         }
 
     }

@@ -53,9 +53,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class LofOffsetPointing extends GroundPointing {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150529L;
-
     /** Rotation from local orbital frame. */
     private final AttitudeProvider attitudeLaw;
 

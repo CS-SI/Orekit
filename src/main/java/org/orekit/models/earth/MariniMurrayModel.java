@@ -16,7 +16,16 @@
  */
 package org.orekit.models.earth;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** The Marini-Murray tropospheric delay model for laser ranging.
  *
@@ -25,10 +34,7 @@ import org.hipparchus.util.FastMath;
  *
  * @author Joris Olympio
  */
-public class MariniMurrayModel implements TroposphericModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 8442906721207317886L;
+public class MariniMurrayModel implements DiscreteTroposphericModel {
 
     /** The temperature at the station, K. */
     private double T0;
@@ -82,7 +88,8 @@ public class MariniMurrayModel implements TroposphericModel {
     }
 
     @Override
-    public double pathDelay(final double elevation, final double height) {
+    public double pathDelay(final double elevation, final double height,
+                            final double[] parameters, final AbsoluteDate date) {
         final double A = 0.002357 * P0 + 0.000141 * e0;
         final double K = 1.163 - 0.00968 * FastMath.cos(2 * latitude) - 0.00104 * T0 + 0.00001435 * P0;
         final double B = (1.084 * 1e-8) * P0 * T0 * K + (4.734 * 1e-8) * P0 * (P0 / T0) * (2 * K) / (3 * K - 1);
@@ -93,6 +100,66 @@ public class MariniMurrayModel implements TroposphericModel {
         final double sinE = FastMath.sin(elevation);
         final double dR = (flambda / fsite) * (A + B) / (sinE + B / ((A + B) * (sinE + 0.01)) );
         return dR;
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+        final double A = 0.002357 * P0 + 0.000141 * e0;
+        final double K = 1.163 - 0.00968 * FastMath.cos(2 * latitude) - 0.00104 * T0 + 0.00001435 * P0;
+        final double B = (1.084 * 1e-8) * P0 * T0 * K + (4.734 * 1e-8) * P0 * (P0 / T0) * (2 * K) / (3 * K - 1);
+        final double flambda = getLaserFrequencyParameter();
+
+        final T fsite = getSiteFunctionValue(height.divide(1000.));
+
+        final T sinE = FastMath.sin(elevation);
+        final T dR = fsite.divide(flambda).reciprocal().multiply(A + B).divide(sinE.add(sinE.add(0.01).multiply(A + B).divide(B).reciprocal()));
+        return dR;
+    }
+
+    @Override
+    public double[] computeZenithDelay(final double height, final double[] parameters,
+                                       final AbsoluteDate date) {
+        return new double[] {
+            pathDelay(0.5 * FastMath.PI, height, parameters, date),
+            0.
+        };
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+                                                                  final FieldAbsoluteDate<T> date) {
+        final Field<T> field = height.getField();
+        final T zero = field.getZero();
+        final T[] delay = MathArrays.buildArray(field, 2);
+        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), height, parameters, date);
+        delay[1] = zero;
+        return delay;
+    }
+
+    @Override
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
+        return new double[] {
+            1.0,
+            1.0
+        };
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
+        final T one = field.getOne();
+        final T[] factors = MathArrays.buildArray(field, 2);
+        factors[0] = one;
+        factors[1] = one;
+        return factors;
+    }
+
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Get the laser frequency parameter f(lambda).
@@ -112,6 +179,16 @@ public class MariniMurrayModel implements TroposphericModel {
      */
     private double getSiteFunctionValue(final double height) {
         return 1. - 0.0026 * FastMath.cos(2 * latitude) - 0.00031 * height;
+    }
+
+    /** Get the laser frequency parameter f(lambda).
+    *
+    * @param <T> type of the elements
+    * @param height height above the geoid, km
+    * @return the laser frequency parameter f(lambda).
+    */
+    private <T extends RealFieldElement<T>> T getSiteFunctionValue(final T height) {
+        return height.multiply(0.00031).negate().subtract(0.0026 * FastMath.cos(2 * latitude)).add(1.);
     }
 
     /** Get the water vapor.
@@ -137,4 +214,5 @@ public class MariniMurrayModel implements TroposphericModel {
         final double e = rh * fw * es;
         return e;
     }
+
 }

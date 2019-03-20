@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

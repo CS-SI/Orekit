@@ -16,11 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -31,7 +27,6 @@ import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -150,54 +145,6 @@ public class FootprintOverlapDetectorTest {
                                            middle.getFrame(), middle.getDate());
         Assert.assertEquals(fovCenterLatitude,  FastMath.toDegrees(gpFOV.getLatitude()),  0.001);
         Assert.assertEquals(fovCenterLongitude, FastMath.toDegrees(gpFOV.getLongitude()), 0.001);
-
-    }
-
-    @Test
-    public void testSerialization()
-      throws IOException, ClassNotFoundException, OrekitException {
-
-        // observe continental France plus Corsica
-        final SphericalPolygonsSet france = buildFrance();
-
-        // square field of view along Z axis (which is pointing sideways),
-        // aperture 5° (hence half-aperture 2.5°), 0.001 radians margin
-        final double alpha = FastMath.toRadians(2.5);
-        final FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
-                                                alpha, 4, 0.001);
-        double eta = FastMath.acos(FastMath.sin(alpha) * FastMath.sin(alpha));
-        double theoreticalArea = MathUtils.TWO_PI - 4 * eta;
-        final FootprintOverlapDetector detector =
-                new FootprintOverlapDetector(fov, earth, france, 50000.0).
-                withMaxCheck(1.0).
-                withThreshold(1.0e-6).
-                withHandler(new ContinueOnEvent<FootprintOverlapDetector>());
-
-        Assert.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                            ((OneAxisEllipsoid) detector.getBody()).getEquatorialRadius(),
-                            1.0e-12);
-        Assert.assertEquals(0.001, detector.getFieldOfView().getMargin(), 1.0e-12);
-        Assert.assertEquals(theoreticalArea, detector.getFieldOfView().getZone().getSize(), 1.0e-12);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(detector);
-
-        Assert.assertTrue(bos.size() > 2400);
-        Assert.assertTrue(bos.size() < 2500);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        FootprintOverlapDetector deserialized  = (FootprintOverlapDetector) ois.readObject();
-
-        Assert.assertEquals(detector.getZone().getSize(),         deserialized.getZone().getSize(),         1.0e-14);
-        Assert.assertEquals(detector.getZone().getBoundarySize(), deserialized.getZone().getBoundarySize(), 1.0e-14);
-        Assert.assertEquals(detector.getZone().getTolerance(),    deserialized.getZone().getTolerance(),    1.0e-15);
-        Assert.assertEquals(detector.getMaxCheckInterval(),       deserialized.getMaxCheckInterval(),       1.0e-15);
-        Assert.assertEquals(detector.getThreshold(),              deserialized.getThreshold(),              1.0e-15);
-        Assert.assertEquals(detector.getMaxIterationCount(),      deserialized.getMaxIterationCount());
-
-        Assert.assertTrue(new RegionFactory<Sphere2D>().difference(detector.getZone(), deserialized.getZone()).isEmpty());
 
     }
 

@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.LatitudeExtremumDetector;
 import org.orekit.propagation.events.handlers.EventHandler;

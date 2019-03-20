@@ -30,18 +30,15 @@ import org.orekit.utils.ParameterDriver;
 /** The Mendes - Pavlis tropospheric delay model for optical techniques.
 * It is valid for a wide range of wavelengths from 0.355µm to 1.064µm (Mendes and Pavlis, 2003)
 *
-* @see Mendes, V. B., & Pavlis, E. C. (2004). High‐accuracy zenith delay prediction at
-*      optical wavelengths. Geophysical Research Letters, 31(14).
+* @see "Mendes, V. B., & Pavlis, E. C. (2004). High‐accuracy zenith delay prediction at
+*      optical wavelengths. Geophysical Research Letters, 31(14)."
 *
-* @see <p>Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-*      IERS Technical Note No. 36, BKG (2010)</p>
+* @see "Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
+*      IERS Technical Note No. 36, BKG (2010)"
 *
 * @author Bryan Cazabonne
 */
 public class MendesPavlisModel implements DiscreteTroposphericModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6433588032679366305L;
 
     /** Coefficients for the dispertion equation for the hydrostatic component [µm<sup>-2</sup>]. */
     private static final double[] K_COEFFICIENTS = {

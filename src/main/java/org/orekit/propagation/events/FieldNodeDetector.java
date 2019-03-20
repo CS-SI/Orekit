@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
@@ -32,10 +33,8 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
  * or descending node crossing).</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.FieldEventHandler.Action#CONTINUE continue}
- * propagation at descending node crossing and to {@link
- * org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at descending node crossing and to {@link Action#STOP stop} propagation
  * at ascending node crossing. This can be changed by calling
  * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * <p>Beware that node detection will fail for almost equatorial orbits. If

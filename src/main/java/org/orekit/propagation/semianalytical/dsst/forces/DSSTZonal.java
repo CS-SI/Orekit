@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -1422,9 +1420,6 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private static class ZonalShortPeriodicCoefficients implements ShortPeriodTerms {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151118L;
-
         /** Maximum value for j index. */
         private final int maxFrequencyShortPeriodics;
 
@@ -1551,84 +1546,6 @@ public class DSSTZonal implements DSSTForceModel {
             if (selected.isEmpty() || selected.contains(key)) {
                 map.put(key, value);
             }
-        }
-
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if an additional state provider is not serializable
-         */
-        private Object writeReplace() throws NotSerializableException {
-
-            // slots transitions
-            final SortedSet<TimeSpanMap.Transition<Slot>> transitions     = slots.getTransitions();
-            final AbsoluteDate[]                          transitionDates = new AbsoluteDate[transitions.size()];
-            final Slot[]                                  allSlots        = new Slot[transitions.size() + 1];
-            int i = 0;
-            for (final TimeSpanMap.Transition<Slot> transition : transitions) {
-                if (i == 0) {
-                    // slot before the first transition
-                    allSlots[i] = transition.getBefore();
-                }
-                if (i < transitionDates.length) {
-                    transitionDates[i] = transition.getDate();
-                    allSlots[++i]      = transition.getAfter();
-                }
-            }
-
-            return new DataTransferObject(maxFrequencyShortPeriodics, interpolationPoints,
-                                          transitionDates, allSlots);
-
-        }
-
-
-        /** Internal class used only for serialization. */
-        private static class DataTransferObject implements Serializable {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20170420L;
-
-            /** Maximum value for j index. */
-            private final int maxFrequencyShortPeriodics;
-
-            /** Number of points used in the interpolation process. */
-            private final int interpolationPoints;
-
-            /** Transitions dates. */
-            private final AbsoluteDate[] transitionDates;
-
-            /** All slots. */
-            private final Slot[] allSlots;
-
-            /** Simple constructor.
-             * @param maxFrequencyShortPeriodics maximum value for j index
-             * @param interpolationPoints number of points used in the interpolation process
-             * @param transitionDates transitions dates
-             * @param allSlots all slots
-             */
-            DataTransferObject(final int maxFrequencyShortPeriodics, final int interpolationPoints,
-                               final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
-                this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
-                this.interpolationPoints        = interpolationPoints;
-                this.transitionDates            = transitionDates;
-                this.allSlots                   = allSlots;
-            }
-
-            /** Replace the deserialized data transfer object with a {@link ZonalShortPeriodicCoefficients}.
-             * @return replacement {@link ZonalShortPeriodicCoefficients}
-             */
-            private Object readResolve() {
-
-                final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
-                for (int i = 0; i < transitionDates.length; ++i) {
-                    slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
-                }
-
-                return new ZonalShortPeriodicCoefficients(maxFrequencyShortPeriodics,
-                                                          interpolationPoints,
-                                                          slots);
-
-            }
-
         }
 
     }
@@ -3413,10 +3330,7 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class Slot implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160319L;
+    private static class Slot {
 
         /**The coefficients D<sub>i</sub>.
          * <p>

@@ -45,20 +45,6 @@ public class Differentiation {
 
     /** Differentiate a scalar function using finite differences.
      * @param function function to differentiate
-     * @param driver driver for the parameter
-     * @param nbPoints number of points used for finite differences
-     * @param normalizedStep step for finite differences, in <em>normalized</em> units
-     * @return scalar function evaluating to the derivative of the original function
-     * @deprecated as of 9.3, replaced by {@link #differentiate(ParameterFunction, int, double)}
-     */
-    @Deprecated
-    public static ParameterFunction differentiate(final ParameterFunction function, final ParameterDriver driver,
-                                                  final int nbPoints, final double normalizedStep) {
-        return differentiate(function, nbPoints, normalizedStep * driver.getScale());
-    }
-
-    /** Differentiate a scalar function using finite differences.
-     * @param function function to differentiate
      * @param nbPoints number of points used for finite differences
      * @param step step for finite differences, in <em>physical</em> units
      * @return scalar function evaluating to the derivative of the original function

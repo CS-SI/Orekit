@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
@@ -52,7 +53,7 @@ public class EventsLoggerTest {
     public void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
         @SuppressWarnings("unchecked")
-        EventDetector monitored = ((AbstractDetector<EventDetector>) logger.monitorDetector(umbraDetector)).
+        EventDetector monitored = ((AbstractDetector<?>) logger.monitorDetector(umbraDetector)).
                 withMaxIter(200);
         Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assert.assertEquals(200, monitored.getMaxIterationCount());

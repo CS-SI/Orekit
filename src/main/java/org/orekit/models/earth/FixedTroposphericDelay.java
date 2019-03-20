@@ -16,23 +16,29 @@
  */
 package org.orekit.models.earth;
 
-import org.hipparchus.analysis.BivariateFunction;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.InterpolationTableLoader;
+import org.orekit.utils.ParameterDriver;
 
 /** A static tropospheric model that interpolates the actual tropospheric delay
  * based on values read from a configuration file (tropospheric-delay.txt) via
  * the {@link DataProvidersManager}.
  * @author Thomas Neidhart
  */
-public class FixedTroposphericDelay implements TroposphericModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -92320711761929077L;
+public class FixedTroposphericDelay implements DiscreteTroposphericModel {
 
     /** Singleton object for the default model. */
     private static FixedTroposphericDelay defaultModel;
@@ -47,7 +53,7 @@ public class FixedTroposphericDelay implements TroposphericModel {
     private final double[][] fArr;
 
     /** Interpolation function for the tropospheric delays. */
-    private transient BivariateFunction delayFunction;
+    private PiecewiseBicubicSplineInterpolatingFunction delayFunction;
 
     /** Creates a new {@link FixedTroposphericDelay} instance.
      * @param xArr abscissa grid for the interpolation function
@@ -97,7 +103,8 @@ public class FixedTroposphericDelay implements TroposphericModel {
     }
 
     /** {@inheritDoc} */
-    public double pathDelay(final double elevation, final double height) {
+    public double pathDelay(final double elevation, final double height,
+                            final double[] parameters, final AbsoluteDate date) {
         // limit the height to 5000 m
         final double h = FastMath.min(FastMath.max(0, height), 5000);
         // limit the elevation to 0 - π
@@ -106,6 +113,65 @@ public class FixedTroposphericDelay implements TroposphericModel {
         final double e = ele > 0.5 * FastMath.PI ? FastMath.PI - ele : ele;
 
         return delayFunction.value(h, e);
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+        final T zero = height.getField().getZero();
+        // limit the height to 5000 m
+        final T h = FastMath.min(FastMath.max(zero, height), zero.add(5000));
+        // limit the elevation to 0 - π
+        final T ele = FastMath.min(zero.add(FastMath.PI), FastMath.max(zero, elevation));
+        // mirror elevation at the right angle of π/2
+        final T e = ele.getReal() > 0.5 * FastMath.PI ? ele.negate().add(FastMath.PI) : ele;
+
+        return delayFunction.value(h, e);
+    }
+
+    @Override
+    public double[] computeZenithDelay(final double height, final double[] parameters,
+                                       final AbsoluteDate date) {
+        return new double[] {
+            pathDelay(0.5 * FastMath.PI, height, parameters, date),
+            0.
+        };
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+                                                                  final FieldAbsoluteDate<T> date) {
+        final Field<T> field = height.getField();
+        final T zero = field.getZero();
+        final T[] delay = MathArrays.buildArray(field, 2);
+        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), height, parameters, date);
+        delay[1] = zero;
+        return delay;
+    }
+
+    @Override
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
+        return new double[] {
+            1.0,
+            1.0
+        };
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
+        final T one = field.getOne();
+        final T[] factors = MathArrays.buildArray(field, 2);
+        factors[0] = one;
+        factors[1] = one;
+        return factors;
+    }
+
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Make sure the unserializable bivariate interpolation function is properly rebuilt.

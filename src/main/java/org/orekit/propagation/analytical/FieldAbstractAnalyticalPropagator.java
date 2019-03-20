@@ -27,6 +27,7 @@ import java.util.Queue;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -42,7 +43,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventState;
 import org.orekit.propagation.events.FieldEventState.EventOccurrence;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -190,6 +190,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
 
         FieldSpacecraftState<T>       previous = interpolator.getPreviousState();
         final FieldSpacecraftState<T> current  = interpolator.getCurrentState();
+        FieldBasicStepInterpolator restricted = interpolator;
+
         // initialize the events states if needed
         if (!statesInitialized) {
 
@@ -212,89 +214,104 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
                 return orderingSign * es0.getEventDate().compareTo(es1.getEventDate());
             }
         });
-        for (final FieldEventState<?, T> state : eventsStates) {
-            if (state.evaluateStep(interpolator)) {
-                // the event occurs during the current step
-                occurringEvents.add(state);
-            }
-        }
 
-
-
-        FieldBasicStepInterpolator restricted = interpolator;
-
+        boolean doneWithStep = false;
+        resetEvents:
         do {
-            eventLoop:
-            while (!occurringEvents.isEmpty()) {
-                // handle the chronologically first event
-                final FieldEventState<?, T> currentEvent = occurringEvents.poll();
 
-                // get state at event time
-                FieldSpacecraftState<T> eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
-                // try to advance all event states to current time
-                for (final FieldEventState<?, T> state : eventsStates) {
-                    if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
-                        // we need to handle another event first
-                        occurringEvents.add(currentEvent);
-                        occurringEvents.remove(state); // remove if already has pending event
-                        occurringEvents.add(state);
-                        continue eventLoop;
-                    }
-                }
-                // all event detectors agree we can advance to the current event time
-                final EventOccurrence<T> occurrence = currentEvent.doEvent(eventState);
-                final Action action = occurrence.getAction();
-                isLastStep = action == Action.STOP;
-                if (isLastStep) {
-                    // ensure the event is after the root if it is returned STOP
-                    // this lets the user integrate to a STOP event and then restart
-                    // integration from the same time.
-                    eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
-                    restricted = new FieldBasicStepInterpolator(restricted.isForward(), previous, eventState);
-                }
-                // handle the first part of the step, up to the event
-                if (getStepHandler() != null) {
-                    getStepHandler().handleStep(restricted, isLastStep);
-                }
-
-                if (isLastStep) {
-                    // the event asked to stop integration
-                    return eventState;
-                }
-
-                if (action == Action.RESET_DERIVATIVES || action == Action.RESET_STATE) {
-                    // some event handler has triggered changes that
-                    // invalidate the derivatives, we need to recompute them
-                    final FieldSpacecraftState<T> resetState = occurrence.getNewState();
-                    if (resetState != null) {
-                        resetIntermediateState( resetState, interpolator.isForward());
-                        return resetState;
-                    }
-                }
-                // at this point we know action == Action.CONTINUE
-
-                // prepare handling of the remaining part of the step
-                previous = eventState;
-                restricted         = new FieldBasicStepInterpolator(restricted.isForward(), eventState, current);
-
-                // check if the same event occurs again in the remaining part of the step
-                if (currentEvent.evaluateStep(restricted)) {
-                    // the event occurs during the current step
-                    occurringEvents.add(currentEvent);
-                }
-
-            }
-
-            // last part of the step, after the last event
-            // may be a new event here if the last event modified the g function of
-            // another event detector.
+            // Evaluate all event detectors for events
+            occurringEvents.clear();
             for (final FieldEventState<?, T> state : eventsStates) {
-                if (state.tryAdvance(current, interpolator)) {
+                if (state.evaluateStep(interpolator)) {
+                    // the event occurs during the current step
                     occurringEvents.add(state);
                 }
             }
 
-        } while (!occurringEvents.isEmpty());
+
+            do {
+                eventLoop:
+                while (!occurringEvents.isEmpty()) {
+                    // handle the chronologically first event
+                    final FieldEventState<?, T> currentEvent = occurringEvents.poll();
+
+                    // get state at event time
+                    FieldSpacecraftState<T> eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
+                    // try to advance all event states to current time
+                    for (final FieldEventState<?, T> state : eventsStates) {
+                        if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
+                            // we need to handle another event first
+                            // remove event we just updated to prevent heap corruption
+                            occurringEvents.remove(state);
+                            // add it back to update its position in the heap
+                            occurringEvents.add(state);
+                            // re-queue the event we were processing
+                            occurringEvents.add(currentEvent);
+                            continue eventLoop;
+                        }
+                    }
+                    // all event detectors agree we can advance to the current event time
+                    final EventOccurrence<T> occurrence = currentEvent.doEvent(eventState);
+                    final Action action = occurrence.getAction();
+                    isLastStep = action == Action.STOP;
+                    if (isLastStep) {
+                        // ensure the event is after the root if it is returned STOP
+                        // this lets the user integrate to a STOP event and then restart
+                        // integration from the same time.
+                        eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
+                        restricted = new FieldBasicStepInterpolator(restricted.isForward(), previous, eventState);
+                    }
+                    // handle the first part of the step, up to the event
+                    if (getStepHandler() != null) {
+                        getStepHandler().handleStep(restricted, isLastStep);
+                    }
+
+                    if (isLastStep) {
+                        // the event asked to stop integration
+                        return eventState;
+                    }
+
+                    if (action == Action.RESET_DERIVATIVES || action == Action.RESET_STATE) {
+                        // some event handler has triggered changes that
+                        // invalidate the derivatives, we need to recompute them
+                        final FieldSpacecraftState<T> resetState = occurrence.getNewState();
+                        if (resetState != null) {
+                            resetIntermediateState(resetState, interpolator.isForward());
+                            return resetState;
+                        }
+                    }
+                    // at this point action == Action.CONTINUE or Action.RESET_EVENTS
+
+                    // prepare handling of the remaining part of the step
+                    previous = eventState;
+                    restricted = new FieldBasicStepInterpolator(restricted.isForward(), eventState, current);
+
+                    if (action == Action.RESET_EVENTS) {
+                        continue resetEvents;
+                    }
+
+                    // at this pint action == Action.CONTINUE
+                    // check if the same event occurs again in the remaining part of the step
+                    if (currentEvent.evaluateStep(restricted)) {
+                        // the event occurs during the current step
+                        occurringEvents.add(currentEvent);
+                    }
+
+                }
+
+                // last part of the step, after the last event
+                // may be a new event here if the last event modified the g function of
+                // another event detector.
+                for (final FieldEventState<?, T> state : eventsStates) {
+                    if (state.tryAdvance(current, interpolator)) {
+                        occurringEvents.add(state);
+                    }
+                }
+
+            } while (!occurringEvents.isEmpty());
+
+            doneWithStep = true;
+        } while (!doneWithStep);
 
         final T remaining = target.durationFrom(current.getDate());
         if (interpolator.isForward()) {

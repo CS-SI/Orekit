@@ -18,31 +18,23 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Solar radiation pressure contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -98,35 +90,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param sun Sun model
      * @param equatorialRadius central body equatorial radius (for shadow computation)
      * @param mu central attraction coefficient
-     * @deprecated as of 9.2 replaced by {@link #DSSTSolarRadiationPressure(double, double,
-     * ExtendedPVCoordinatesProvider, double)}
-     */
-    @Deprecated
-    public DSSTSolarRadiationPressure(final double cr, final double area,
-                                      final PVCoordinatesProvider sun,
-                                      final double equatorialRadius,
-                                      final double mu) {
-        this(D_REF, P_REF, cr, area, sun, equatorialRadius, mu);
-    }
-
-    /**
-     * Simple constructor with default reference values and spherical spacecraft.
-     * <p>
-     * When this constructor is used, the reference values are:
-     * </p>
-     * <ul>
-     * <li>d<sub>ref</sub> = 149597870000.0 m</li>
-     * <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m²</li>
-     * </ul>
-     * <p>
-     * The spacecraft has a spherical shape.
-     * </p>
-     *
-     * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
-     * @param area cross sectional area of satellite
-     * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
-     * @param mu central attraction coefficient
      * @since 9.2
      */
     public DSSTSolarRadiationPressure(final double cr, final double area,
@@ -134,30 +97,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                                       final double equatorialRadius,
                                       final double mu) {
         this(D_REF, P_REF, cr, area, sun, equatorialRadius, mu);
-    }
-
-    /**
-     * Simple constructor with default reference values, but custom spacecraft.
-     * <p>
-     * When this constructor is used, the reference values are:
-     * </p>
-     * <ul>
-     * <li>d<sub>ref</sub> = 149597870000.0 m</li>
-     * <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m²</li>
-     * </ul>
-     *
-     * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
-     * @param spacecraft spacecraft model
-     * @param mu central attraction coefficient
-     * @deprecated as of 9.2 replaced by {{@link #DSSTSolarRadiationPressure(ExtendedPVCoordinatesProvider,
-     * double, RadiationSensitive)}
-     */
-    public DSSTSolarRadiationPressure(final PVCoordinatesProvider sun,
-                                      final double equatorialRadius,
-                                      final RadiationSensitive spacecraft,
-                                      final double mu) {
-        this(D_REF, P_REF, sun, equatorialRadius, spacecraft, mu);
     }
 
     /**
@@ -199,39 +138,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param sun Sun model
      * @param equatorialRadius central body equatorial radius (for shadow computation)
      * @param mu central attraction coefficient
-     * @deprecated as of 9.2 replaced by {@link #DSSTSolarRadiationPressure(double, double,
-     * double, double, ExtendedPVCoordinatesProvider, double)
-     */
-    @Deprecated
-    public DSSTSolarRadiationPressure(final double dRef, final double pRef,
-                                      final double cr, final double area,
-                                      final PVCoordinatesProvider sun,
-                                      final double equatorialRadius,
-                                      final double mu) {
-
-        // cR being the DSST SRP coef and assuming a spherical spacecraft,
-        // the conversion is:
-        // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
-        // with kA arbitrary sets to 0
-        this(dRef, pRef, sun, equatorialRadius, new IsotropicRadiationSingleCoefficient(area, cr), mu);
-    }
-
-    /**
-     * Constructor with customizable reference values but spherical spacecraft.
-     * <p>
-     * Note that reference solar radiation pressure <code>pRef</code> in N/m² is linked
-     * to solar flux SF in W/m² using formula pRef = SF/c where c is the speed of light
-     * (299792458 m/s). So at 1UA a 1367 W/m² solar flux is a 4.56 10<sup>-6</sup>
-     * N/m² solar radiation pressure.
-     * </p>
-     *
-     * @param dRef reference distance for the solar radiation pressure (m)
-     * @param pRef reference solar radiation pressure at dRef (N/m²)
-     * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
-     * @param area cross sectional area of satellite
-     * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
-     * @param mu central attraction coefficient
      * @since 9.2
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
@@ -245,61 +151,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
         // with kA arbitrary sets to 0
         this(dRef, pRef, sun, equatorialRadius, new IsotropicRadiationSingleCoefficient(area, cr), mu);
-    }
-
-    /**
-     * Complete constructor.
-     * <p>
-     * Note that reference solar radiation pressure <code>pRef</code> in N/m² is linked
-     * to solar flux SF in W/m² using formula pRef = SF/c where c is the speed of light
-     * (299792458 m/s). So at 1UA a 1367 W/m² solar flux is a 4.56 10<sup>-6</sup>
-     * N/m² solar radiation pressure.
-     * </p>
-     *
-     * @param dRef reference distance for the solar radiation pressure (m)
-     * @param pRef reference solar radiation pressure at dRef (N/m²)
-     * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
-     * @param spacecraft spacecraft model
-     * @param mu central attraction coefficient
-     * @deprecated as of 9.2 replaced by {@link #DSSTSolarRadiationPressure(double, double,
-     * ExtendedPVCoordinatesProvider, double, RadiationSensitive)
-     */
-    @Deprecated
-    public DSSTSolarRadiationPressure(final double dRef, final double pRef,
-                                      final PVCoordinatesProvider sun, final double equatorialRadius,
-                                      final RadiationSensitive spacecraft,
-                                      final double mu) {
-
-        //Call to the constructor from superclass using the numerical SRP model as ForceModel
-        super(PREFIX, GAUSS_THRESHOLD,
-              new SolarRadiationPressure(dRef, pRef, sun, equatorialRadius, spacecraft), mu);
-
-        if (sun instanceof ExtendedPVCoordinatesProvider) {
-            this.sun = (ExtendedPVCoordinatesProvider) sun;
-        } else {
-            this.sun = new ExtendedPVCoordinatesProvider() {
-
-                /** {@inheritDoc} */
-                @Override
-                public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-                    // delegate to raw Sun provider
-                    return sun.getPVCoordinates(date, frame);
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                    getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-                    // SRP was created with a provider that does not support fields,
-                    // but the fields methods are called
-                    throw new OrekitIllegalArgumentException(LocalizedCoreFormats.UNSUPPORTED_OPERATION);
-                }
-
-            };
-        };
-        this.ae   = equatorialRadius;
-        this.spacecraft = spacecraft;
     }
 
     /**
