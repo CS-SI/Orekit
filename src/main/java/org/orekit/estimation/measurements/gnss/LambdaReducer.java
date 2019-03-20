@@ -42,8 +42,13 @@ class LambdaReducer extends AbstractLambdaReducer {
 
     /** {@inheritDoc} */
     @Override
-    protected void doDecomposition(final double[] diag, final double[] low) {
-        // perform LT.D.L decomposition
+    public void ltdlDecomposition() {
+
+        // get references to the diagonal and lower triangulae parts
+        final double[] diag = getDiagReference();
+        final double[] low  = getLowReference();
+
+        // perform Lᵀ.D.L decomposition
         for (int k = diag.length - 1; k >= 0; --k) {
             final double inv = 1.0 / diag[k];
             for (int i = 0; i < k; ++i) {
@@ -62,8 +67,13 @@ class LambdaReducer extends AbstractLambdaReducer {
 
     /** {@inheritDoc} */
     @Override
-    protected void doReduction(final double[] diag, final double[] low) {
+    protected void doReduction() {
+
+        // get references to the diagonal and lower triangulae parts
+        final double[] diag = getDiagReference();
+        final double[] low  = getLowReference();
         final int n = diag.length;
+
         int kSaved = n - 2;
         int k0 = kSaved;
         while (k0 >= 0) {

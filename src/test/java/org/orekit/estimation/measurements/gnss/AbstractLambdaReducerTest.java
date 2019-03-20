@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
@@ -50,8 +51,8 @@ public abstract class AbstractLambdaReducerTest {
         final int[] indirection = new int[] { 0, 1, 2, 3 };
         AbstractLambdaReducer reducer = buildReducer(new double[indirection.length], indirection, covariance);
         reducer.ltdlDecomposition();
-        Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm(), 9.9e-13 * refLow.getNorm());
+        Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm(), 6.7e-13 * refDiag.getNorm());
     }
 
     @Test
@@ -123,6 +124,15 @@ public abstract class AbstractLambdaReducerTest {
         reducer.ltdlDecomposition();
         reducer.reduction();
 
+        final RealMatrix rebuiltCovariance = getZInverseTransformation(reducer).transpose().
+                                             multiply(getLow(reducer).
+                                                      transposeMultiply(getDiag(reducer)).
+                                                      multiply(getLow(reducer))).
+                                             multiply(getZInverseTransformation(reducer));
+        Assert.assertEquals(0.0,
+                            rebuiltCovariance.subtract(covariance).getNorm(),
+                            1.0e-16 * covariance.getNorm());
+
         final RealMatrix zRef = MatrixUtils.createRealMatrix(new double[][] {
             { -2,  3,  1 },
             {  3, -3, -1 },
@@ -130,7 +140,7 @@ public abstract class AbstractLambdaReducerTest {
         });
 
         Assert.assertEquals(0.0,
-                            zRef.subtract(getZTranformation(reducer)).getNorm(),
+                            zRef.subtract(getZTransformation(reducer)).getNorm(),
                             1.0e-15);
 
         // TODO implement and test search method
@@ -149,15 +159,9 @@ public abstract class AbstractLambdaReducerTest {
         final RealMatrix rebuilt = getLow(reducer).
                                    transposeMultiply(getDiag(reducer)).
                                    multiply(getLow(reducer));
-        double maxError = 0;
-        for (int i = 0; i < indirection.length; ++i) {
-            for (int j = 0; j < indirection.length; ++j) {
-                maxError = FastMath.max(maxError,
-                                        FastMath.abs(covariance.getEntry(indirection[i], indirection[j]) -
-                                                     rebuilt.getEntry(i, j)));
-            }
-        }
-        Assert.assertEquals(0.0, maxError, 2.0e-11);
+        Assert.assertEquals(0.0,
+                            rebuilt.subtract(extracted).getNorm(),
+                            2.5e-13 * extracted.getNorm());
 
     }
 
@@ -177,21 +181,21 @@ public abstract class AbstractLambdaReducerTest {
         double[]   aBase    = getDecorrelated(reducer).clone();
         double[]   aRef     = aBase;
         Assert.assertEquals(0.0,
-                            zRef.subtract(getZTranformation(reducer)).getNorm(),
+                            zRef.subtract(getZTransformation(reducer)).getNorm(),
                             1.0e-15);
         for (int k = 0; k < 10; ++k) {
-            final ReferenceIntegerGaussTransformation rigt = createRandomIntegerGaussTransformation(getLow(reducer), random);
-            reducer.integerGaussTransformation(rigt.i, rigt.j);
+            final IntegerGaussTransformation gauss = createRandomIntegerGaussTransformation(getLow(reducer), random);
+            reducer.integerGaussTransformation(gauss.i, gauss.j);
 
-            // check cumulated Z transform, with reference based on naive matrix multiplication
-            zRef = zRef.multiply(rigt.z);
+            // check accumulated Z transform, with reference based on naive matrix multiplication
+            zRef = zRef.multiply(gauss.z);
             Assert.assertEquals(0.0,
-                                zRef.subtract(getZTranformation(reducer)).getNorm(),
+                                zRef.subtract(getZTransformation(reducer)).getNorm(),
                                 Precision.SAFE_MIN);
 
             // check Z and Z⁻¹
             Assert.assertEquals(0.0,
-                                identity.subtract(getZTranformation(reducer).multiply(getZInverseTranformation(reducer))).getNorm(),
+                                identity.subtract(getZTransformation(reducer).multiply(getZInverseTransformation(reducer))).getNorm(),
                                 Precision.SAFE_MIN);
 
             // check diagonal part, which should not change
@@ -199,23 +203,23 @@ public abstract class AbstractLambdaReducerTest {
                                 diagRef.subtract(getDiag(reducer)).getNorm(),
                                 Precision.SAFE_MIN);
 
-            // check cumulated low triangular part, with reference based on naive matrix multiplication
-            lowRef = lowRef.multiply(rigt.z);
+            // check accumulated low triangular part, with reference based on naive matrix multiplication
+            lowRef = lowRef.multiply(gauss.z);
             Assert.assertEquals(0.0,
                                 lowRef.subtract(getLow(reducer)).getNorm(),
                                 Precision.SAFE_MIN);
-            Assert.assertTrue(getLow(reducer).getEntry(rigt.i, rigt.j) <= 0.5);
+            Assert.assertTrue(getLow(reducer).getEntry(gauss.i, gauss.j) <= 0.5);
 
             // check ambiguities, with reference based on single step naive matrix multiplication
-            aRef = rigt.z.transpose().operate(aRef);
+            aRef = gauss.z.transpose().operate(aRef);
             for (int i = 0; i < aRef.length; ++i) {
                 Assert.assertEquals(aRef[i], getDecorrelated(reducer)[i], 4.0e-14);
             }
 
-            // check ambiguities, with reference based on cumulated naive matrix multiplication
+            // check ambiguities, with reference based on accumulated naive matrix multiplication
             final double[] aRef2 = zRef.transpose().operate(aBase);
             for (int i = 0; i < aRef2.length; ++i) {
-                Assert.assertEquals(aRef2[i], getDecorrelated(reducer)[i], 4.0e-14);
+                Assert.assertEquals(aRef2[i], getDecorrelated(reducer)[i], 2.3e-13);
             }
 
         }
@@ -230,44 +234,40 @@ public abstract class AbstractLambdaReducerTest {
         final AbstractLambdaReducer reducer = buildReducer(floatAmbiguities, indirection, covariance);
         reducer.ltdlDecomposition();
         RealMatrix filteredCovariance = filterCovariance(covariance, indirection);
-        RealMatrix zRef    = MatrixUtils.createRealIdentityMatrix(indirection.length);
-        double[] aBase = getDecorrelated(reducer).clone();
-        double[] aRef  = aBase.clone();
+        RealMatrix zRef               = MatrixUtils.createRealIdentityMatrix(indirection.length);
+        double[]   aBase              = getDecorrelated(reducer).clone();
+        double[]   aRef               = aBase.clone();
         Assert.assertEquals(0.0,
-                            zRef.subtract(getZTranformation(reducer)).getNorm(),
+                            zRef.subtract(getZTransformation(reducer)).getNorm(),
                             1.0e-15);
         for (int k = 0; k < 10; ++k) {
-            final ReferencePermutation rp = createRandomPermutation(getLow(reducer),
+            final Permutation permutation = createRandomPermutation(getLow(reducer),
                                                                     getDiag(reducer),
                                                                     random);
-            reducer.permutation(rp.i, rp.delta);
+            reducer.permutation(permutation.i, permutation.delta);
 
-            // check cumulated Z transform, with reference based on naive matrix multiplication
-            zRef = zRef.multiply(rp.z);
+            // check accumulated Z transform, with reference based on naive matrix multiplication
+            zRef = zRef.multiply(permutation.z);
             Assert.assertEquals(0.0,
-                                zRef.subtract(getZTranformation(reducer)).getNorm(),
+                                zRef.subtract(getZTransformation(reducer)).getNorm(),
                                 Precision.SAFE_MIN);
 
             // check rebuilt permuted covariance
-            RealMatrix rebuilt = getLow(reducer).
-                                 transposeMultiply(getDiag(reducer)).
-                                 multiply(getLow(reducer));
-            RealMatrix permutedCovariance = zRef.
-                                            transposeMultiply(filteredCovariance).
-                                            multiply(zRef);
+            RealMatrix rebuilt  = getLow(reducer).transposeMultiply(getDiag(reducer)).multiply(getLow(reducer));
+            RealMatrix permuted = zRef.transposeMultiply(filteredCovariance).multiply(zRef);
             Assert.assertEquals(0.0,
-                                permutedCovariance.subtract(rebuilt).getNorm(),
-                                3.0e-10);
+                                permuted.subtract(rebuilt).getNorm(),
+                                2.7e-12 * filteredCovariance.getNorm());
 
             // check ambiguities, with reference based on direct permutation
-            final double tmp = aRef[rp.i];
-            aRef[rp.i]     = aRef[rp.i + 1];
-            aRef[rp.i + 1] = tmp;
+            final double tmp = aRef[permutation.i];
+            aRef[permutation.i]     = aRef[permutation.i + 1];
+            aRef[permutation.i + 1] = tmp;
             for (int i = 0; i < aRef.length; ++i) {
                 Assert.assertEquals(aRef[i], getDecorrelated(reducer)[i], 4.0e-14);
             }
 
-            // check ambiguities, with reference based on cumulated naive matrix multiplication
+            // check ambiguities, with reference based on accumulated naive matrix multiplication
             final double[] aRef2 = zRef.transpose().operate(aBase);
             for (int i = 0; i < aRef2.length; ++i) {
                 Assert.assertEquals(aRef2[i], getDecorrelated(reducer)[i], 4.0e-14);
@@ -320,11 +320,11 @@ public abstract class AbstractLambdaReducerTest {
         }
     }
 
-    public RealMatrix getZTranformation(final AbstractLambdaReducer reducer) {
+    public RealMatrix getZTransformation(final AbstractLambdaReducer reducer) {
         return dogetZs(reducer, "zTransformation");
     }
 
-    public RealMatrix getZInverseTranformation(final AbstractLambdaReducer reducer) {
+    public RealMatrix getZInverseTransformation(final AbstractLambdaReducer reducer) {
         return dogetZs(reducer, "zInverseTransformation");
     }
 
@@ -380,8 +380,8 @@ public abstract class AbstractLambdaReducerTest {
         return Arrays.copyOf(all, FastMath.max(2, 1 + random.nextInt(n)));
     }
 
-    private ReferenceIntegerGaussTransformation createRandomIntegerGaussTransformation(final RealMatrix low,
-                                                                                       final RandomGenerator random) {
+    private IntegerGaussTransformation createRandomIntegerGaussTransformation(final RealMatrix low,
+                                                                              final RandomGenerator random) {
         final int n = low.getRowDimension();
         int i = random.nextInt(n);
         int j = i;
@@ -393,14 +393,14 @@ public abstract class AbstractLambdaReducerTest {
             i = j;
             j = tmp;
         }
-        return new ReferenceIntegerGaussTransformation(n, i, j, (int) FastMath.rint(low.getEntry(i, j))); 
+        return new IntegerGaussTransformation(n, i, j, (int) FastMath.rint(low.getEntry(i, j))); 
     }
 
-    private static class ReferenceIntegerGaussTransformation {
+    private static class IntegerGaussTransformation {
         private final int i;
         private final int j;
         private final RealMatrix z;
-        ReferenceIntegerGaussTransformation(int n, int i, int j, int mu) {
+        IntegerGaussTransformation(int n, int i, int j, int mu) {
             this.i = i;
             this.j = j;
             this.z = MatrixUtils.createRealIdentityMatrix(n);
@@ -408,22 +408,22 @@ public abstract class AbstractLambdaReducerTest {
         }
     }
 
-    private ReferencePermutation createRandomPermutation(final RealMatrix low,
-                                                         final RealMatrix diag,
-                                                         final RandomGenerator random) {
+    private Permutation createRandomPermutation(final RealMatrix low,
+                                                final RealMatrix diag,
+                                                final RandomGenerator random) {
         final int    n     = low.getRowDimension();
         final int    i     = random.nextInt(n - 1);
         final double dk0   = diag.getEntry(i, i);
         final double dk1   = diag.getEntry(i + 1, i + 1);
         final double lk1k0 = low.getEntry(i + 1, i);
-        return new ReferencePermutation(n, i, dk0 + lk1k0 * lk1k0 * dk1); 
+        return new Permutation(n, i, dk0 + lk1k0 * lk1k0 * dk1); 
     }
 
-    private static class ReferencePermutation {
+    private static class Permutation {
         private final int i;
         private double delta;
         private final RealMatrix z;
-        ReferencePermutation(int n, int i, double delta) {
+        Permutation(int n, int i, double delta) {
             this.i     = i;
             this.delta = delta;
             this.z     = MatrixUtils.createRealIdentityMatrix(n);
@@ -443,6 +443,10 @@ public abstract class AbstractLambdaReducerTest {
             }
         }
         return filtered;
+    }
+
+    RealMatrix inverse(final RealMatrix m) {
+        return new QRDecomposer(1.0e-10).decompose(m).getInverse();
     }
 
 }

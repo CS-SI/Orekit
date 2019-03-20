@@ -34,7 +34,7 @@ abstract class AbstractLambdaReducer {
     /** Number of ambiguities. */
     private final int n;
 
-    /** DEcorrelated ambiguities. */
+    /** Decorrelated ambiguities. */
     private final double[] decorrelated;
 
     /** Indirection array to extract ambiguity parameters. */
@@ -79,29 +79,43 @@ abstract class AbstractLambdaReducer {
 
     }
 
-    /** Perform Lᵀ.D.L decomposition.
+    /** Get a reference to the diagonal matrix of the decomposition.
+     * <p>
+     * BEWARE: the returned value is a reference to an internal array,
+     * it is <em>only</em> intended for subclasses use (hence the
+     * method is protected and not public).
+     * </p>
+     * @return reference to the diagonal matrix of the decomposition
      */
-    public void ltdlDecomposition() {
-        doDecomposition(diag, low);
+    protected double[] getDiagReference() {
+        return diag;
     }
 
-    /** Perform Lᵀ.D.L decomposition.
-     * @param d diagonal matrix of the decomposition
-     * @param l lower triangular matrix of the decomposition
+    /** Get a reference to the lower triangular matrix of the decomposition.
+     * <p>
+     * BEWARE: the returned value is a reference to an internal array,
+     * it is <em>only</em> intended for subclasses use (hence the
+     * method is protected and not public).
+     * </p>
+     * @return reference to the lower triangular matrix of the decomposition
      */
-    protected abstract void doDecomposition(double[] d, double[] l);
+    protected double[] getLowReference() {
+        return low;
+    }
+
+    /** Perform Lᵀ.D.L = Q decomposition of the covariance matrix.
+     */
+    public abstract void ltdlDecomposition();
 
     /** Perform LAMBDA reduction.
      */
     public void reduction() {
-        doReduction(diag, low);
+        doReduction();
     }
 
     /** Perform LAMBDA reduction.
-     * @param d diagonal matrix of the decomposition
-     * @param l lower triangular matrix of the decomposition
      */
-    protected abstract void doReduction(double[] d, double[] l);
+    protected abstract void doReduction();
 
     /** Perform one integer Gauss transformation.
      * <p>
@@ -193,6 +207,51 @@ abstract class AbstractLambdaReducer {
         final double tmp = decorrelated[k0];
         decorrelated[k0] = decorrelated[k1];
         decorrelated[k1] = tmp;
+
+    }
+
+    /** Inverse the decomposition.
+     * <p>
+     * The method transforms the L⁻ᵀ.D⁻¹.L⁻¹ = Q decomposition of covariance into
+     * the L.D.Lᵀ = Q⁻¹ decomposition of the inverse of covariance.
+     * </p>
+     */
+    private void inverseDecomposition() {
+
+        // we rely on the following equation, where a low triangular
+        // matrix L of dimension n is split into sub-matrices
+        // with k + l + m = n
+        //
+        // [  A  |      |    ]  [        A⁻¹        |         |       ]   [  Iₖ  |      |     ]
+        // [  B  |  Iₗ  |    ]  [       -BA⁻¹       |   Iₗ    |       ] = [      |  Iₗ  |     ]
+        // [  C  |  D   |  E ]  [ E⁻¹ (DB - C) A⁻¹  | -E⁻¹D   |  E⁻¹  ]   [      |      |  Iₘ ]
+        //
+        // considering we have already computed A⁻¹ (i.e. inverted rows 0 to k-1
+        // of L), and using l = 1 in the previous expression (i.e. the middle matrix
+        // is only one row), we see that elements 0 to k-1 of row k are given by -BA⁻¹
+        // and that element k is 1. We therefore invert L row by row. The inverse
+        // matrix L⁻¹ is a low triangular matrix with unit diagonal, therefore
+        // A⁻¹ is also a low triangular matrix with unit diagonal, which is used in
+        // the loops below to speed up the computation of -BA⁻¹
+        final double[] row = new double[n - 1];
+        diag[0] = 1.0 / diag[0];
+        for (int i = 1; i < n; ++i) {
+
+            // lower triangular part
+            final int kI = lIndex(i, 0);
+            System.arraycopy(low, kI, row, 0, i);
+            for (int j = 0; j < i; ++j) {
+                double sum = row[j];
+                for (int l = j + 1; l < i; ++l) {
+                    sum += row[l] * low[lIndex(l, j)];
+                }
+                low[kI + j] = -sum;
+            }
+
+            // diagonal part
+            diag[i] = 1.0 / diag[i];
+
+        }
 
     }
 

@@ -42,14 +42,14 @@ class ModifiedLambdaReducer extends AbstractLambdaReducer {
 
     /** {@inheritDoc} */
     @Override
-    protected void doDecomposition(final double[] diag, final double[] low) {
+    public void ltdlDecomposition() {
         // TODO
         throw new OrekitInternalError(null);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void doReduction(final double[] diag, final double[] low) {
+    protected void doReduction() {
         // TODO
         throw new OrekitInternalError(null);
     }
