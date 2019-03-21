@@ -62,7 +62,6 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
