@@ -138,7 +138,7 @@ abstract class AbstractLambdaReducer {
             for (int i = 0; i < n; ++i) {
                 // post-multiplying Z by Zᵢⱼ = I - μ eᵢ eⱼᵀ
                 zTransformation[zIndex(i, col)]        -= mu * zTransformation[zIndex(i, row)];
-                // pre-multiplying Z by Zᵢⱼ⁻¹ = I + μ eᵢ eⱼᵀ
+                // pre-multiplying Z⁻¹ by Zᵢⱼ⁻¹ = I + μ eᵢ eⱼᵀ
                 zInverseTransformation[zIndex(row, i)] += mu * zInverseTransformation[zIndex(col, i)];
             }
 
