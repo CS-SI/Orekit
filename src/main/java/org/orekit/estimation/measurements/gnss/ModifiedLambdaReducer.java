@@ -49,7 +49,7 @@ class ModifiedLambdaReducer extends AbstractLambdaReducer {
 
     /** {@inheritDoc} */
     @Override
-    protected void doReduction() {
+    public void reduction() {
         // TODO
         throw new OrekitInternalError(null);
     }

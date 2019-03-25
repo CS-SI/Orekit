@@ -53,11 +53,15 @@ public class LambdaSolver extends AmbiguitySolver {
         final int[]                 indirection = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
         final LambdaReducer         reducer     = new LambdaReducer(floatAmbiguities, indirection, covariance);
 
-        // perform initial Lᵀ.D.L decomposition
+        // perform initial Lᵀ.D.L = Q decomposition of covariance
         reducer.ltdlDecomposition();
 
         // perform decorrelation/reduction of covariances
         reducer.reduction();
+
+        // transforms the Lᵀ.D.L = Q decomposition of covariance into
+        // the L⁻¹.D⁻¹.L⁻ᵀ = Q⁻¹ decomposition of the inverse of covariance.
+        reducer.inverseDecomposition();
 
         // perform discrete search of Integer Least Square problem
 

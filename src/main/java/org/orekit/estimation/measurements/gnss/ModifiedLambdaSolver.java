@@ -59,6 +59,10 @@ public class ModifiedLambdaSolver extends AmbiguitySolver {
         // perform decorrelation/reduction of covariances
         reducer.reduction();
 
+        // transforms the Lᵀ.D.L = Q decomposition of covariance into
+        // the L⁻¹.D⁻¹.L⁻ᵀ = Q⁻¹ decomposition of the inverse of covariance.
+        reducer.inverseDecomposition();
+
         // perform discrete search of Integer Least Square problem
 
         // TODO

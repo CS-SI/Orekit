@@ -40,7 +40,7 @@ abstract class AbstractLambdaReducer {
     /** Indirection array to extract ambiguity parameters. */
     private final int[] indirection;
 
-    /** Lower triangular matrix with unit diagonal, in row order. */
+    /** Lower triangular matrix with unit diagonal, in row order (unit diagonal not stored). */
     private final double[] low;
 
     /** Diagonal matrix. */
@@ -109,13 +109,7 @@ abstract class AbstractLambdaReducer {
 
     /** Perform LAMBDA reduction.
      */
-    public void reduction() {
-        doReduction();
-    }
-
-    /** Perform LAMBDA reduction.
-     */
-    protected abstract void doReduction();
+    public abstract void reduction();
 
     /** Perform one integer Gauss transformation.
      * <p>
@@ -212,15 +206,15 @@ abstract class AbstractLambdaReducer {
 
     /** Inverse the decomposition.
      * <p>
-     * The method transforms the L⁻ᵀ.D⁻¹.L⁻¹ = Q decomposition of covariance into
-     * the L.D.Lᵀ = Q⁻¹ decomposition of the inverse of covariance.
+     * This method transforms the Lᵀ.D.L = Q decomposition of covariance into
+     * the L⁻¹.D⁻¹.L⁻ᵀ = Q⁻¹ decomposition of the inverse of covariance.
      * </p>
      */
-    private void inverseDecomposition() {
+    public void inverseDecomposition() {
 
         // we rely on the following equation, where a low triangular
-        // matrix L of dimension n is split into sub-matrices
-        // with k + l + m = n
+        // matrix L of dimension n is split into sub-matrices of dimensions
+        // k, l and m with k + l + m = n
         //
         // [  A  |      |    ]  [        A⁻¹        |         |       ]   [  Iₖ  |      |     ]
         // [  B  |  Iₗ  |    ]  [       -BA⁻¹       |   Iₗ    |       ] = [      |  Iₗ  |     ]
@@ -229,27 +223,27 @@ abstract class AbstractLambdaReducer {
         // considering we have already computed A⁻¹ (i.e. inverted rows 0 to k-1
         // of L), and using l = 1 in the previous expression (i.e. the middle matrix
         // is only one row), we see that elements 0 to k-1 of row k are given by -BA⁻¹
-        // and that element k is 1. We therefore invert L row by row. The inverse
-        // matrix L⁻¹ is a low triangular matrix with unit diagonal, therefore
-        // A⁻¹ is also a low triangular matrix with unit diagonal, which is used in
-        // the loops below to speed up the computation of -BA⁻¹
+        // and that element k is I₁ = 1. We can therefore invert L row by row and we
+        // obtain an inverse matrix L⁻¹ which is a low triangular matrix with unit
+        // diagonal. A⁻¹ is therefore also a low triangular matrix with unit diagonal,
+        // which is used in the loops below to speed up the computation of -BA⁻¹
         final double[] row = new double[n - 1];
         diag[0] = 1.0 / diag[0];
-        for (int i = 1; i < n; ++i) {
+        for (int k = 1; k < n; ++k) {
 
-            // lower triangular part
-            final int kI = lIndex(i, 0);
-            System.arraycopy(low, kI, row, 0, i);
-            for (int j = 0; j < i; ++j) {
+            // compute row k of lower triangular part, by computing -BA⁻¹
+            final int iK = lIndex(k, 0);
+            System.arraycopy(low, iK, row, 0, k);
+            for (int j = 0; j < k; ++j) {
                 double sum = row[j];
-                for (int l = j + 1; l < i; ++l) {
+                for (int l = j + 1; l < k; ++l) {
                     sum += row[l] * low[lIndex(l, j)];
                 }
-                low[kI + j] = -sum;
+                low[iK + j] = -sum;
             }
 
             // diagonal part
-            diag[i] = 1.0 / diag[i];
+            diag[k] = 1.0 / diag[k];
 
         }
 
