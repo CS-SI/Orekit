@@ -56,6 +56,15 @@ public interface BeidouOrbitalElements extends GNSSOrbitalElements {
     }
 
     /**
+     * Gets the BeiDou Issue Of Data (IOD).
+     *
+     * @return the IOD
+     */
+    default int getIOD() {
+        return 0;
+    }
+
+    /**
      * Gets the estimated group delay differential TGD1 for B1I signal.
      *
      * @return the estimated group delay differential TGD1 for B1I signal (s)

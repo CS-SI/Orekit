@@ -225,4 +225,13 @@ public interface GLONASSOrbitalElements extends TimeStamped {
         return 0.0;
     }
 
+    /**
+     * Gets the GLONASS Issue Of Data (IOD).
+     *
+     * @return the IOD
+     */
+    default int getIOD() {
+        return 0;
+    }
+
 }
