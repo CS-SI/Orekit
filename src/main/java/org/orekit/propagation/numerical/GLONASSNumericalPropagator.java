@@ -169,8 +169,6 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
          *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
          * The ECI frame is set by default to the
          *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
-         * The ECEF frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
          * </p>
          *
          * @param integrator 4th order Runge-Kutta as recommended by GLONASS ICD
@@ -180,7 +178,6 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
-         * @see #ecef(Frame bodyFixed)
          */
         public Builder(final ClassicalRungeKuttaIntegrator integrator,
                        final GLONASSOrbitalElements glonassOrbElt,
