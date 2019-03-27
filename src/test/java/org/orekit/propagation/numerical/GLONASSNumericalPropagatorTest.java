@@ -16,12 +16,19 @@
  */
 package org.orekit.propagation.numerical;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -29,6 +36,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.GLONASSDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class GLONASSNumericalPropagatorTest {
@@ -79,6 +87,58 @@ public class GLONASSNumericalPropagatorTest {
 
         Assert.assertEquals(0.0, computedPosition.distance(expectedPosition), 1.1e-3);
         Assert.assertEquals(0.0, computedVelocity.distance(expectedVelocity), 3.3e-6);
+    }
+
+    @Test
+    public void testFromITRF2008ToPZ90() {
+        // Reference for the test
+        // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
+        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014" 
+
+        // Position in ITRF-2008
+        final Vector3D itrf2008P = new Vector3D(2845455.9753, 2160954.3073, 5265993.2656);
+
+        // Ref position in PZ-90.11
+        final Vector3D refPZ90   = new Vector3D(2845455.9772, 2160954.3078, 5265993.2664);
+
+        // Recomputed position in PZ-90.11
+        final Frame pz90 = FramesFactory.getPZ90(IERSConventions.IERS_2010, true);
+        final Frame itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008, IERSConventions.IERS_2010, true);
+        final Vector3D comPZ90 = itrf2008.getTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
+
+        // Check
+        Assert.assertEquals(refPZ90.getX(), comPZ90.getX(), 1.0e-4);
+        Assert.assertEquals(refPZ90.getY(), comPZ90.getY(), 1.0e-4);
+        Assert.assertEquals(refPZ90.getZ(), comPZ90.getZ(), 1.0e-4);
+    }
+
+    @Test
+    public void testFromITRF2008ToPZ90Field() {
+        doTestFromITRF2008ToPZ90Field(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFromITRF2008ToPZ90Field(final Field<T> field)  {
+        // Reference for the test
+        // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
+        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014" 
+
+        // Position in ITRF-2008
+        final FieldVector3D<T> itrf2008P = new FieldVector3D<>(field,
+                        new Vector3D(2845455.9753, 2160954.3073, 5265993.2656));
+
+        // Ref position in PZ-90.11
+        final FieldVector3D<T> refPZ90   = new FieldVector3D<>(field,
+                        new Vector3D(2845455.9772, 2160954.3078, 5265993.2664));
+
+        // Recomputed position in PZ-90.11
+        final Frame pz90 = FramesFactory.getPZ90(IERSConventions.IERS_2010, true);
+        final Frame itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008, IERSConventions.IERS_2010, true);
+        final FieldVector3D<T> comPZ90 = itrf2008.getTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
+
+        // Check
+        Assert.assertEquals(refPZ90.getX().getReal(), comPZ90.getX().getReal(), 1.0e-4);
+        Assert.assertEquals(refPZ90.getY().getReal(), comPZ90.getY().getReal(), 1.0e-4);
+        Assert.assertEquals(refPZ90.getZ().getReal(), comPZ90.getZ().getReal(), 1.0e-4);
     }
 
     /** Internal class used to initialized the {@link GLONASSNumericalPropagator}. */

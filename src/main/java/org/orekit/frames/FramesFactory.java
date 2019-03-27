@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -530,6 +531,8 @@ public class FramesFactory {
                 return getMOD(IERSConventions.IERS_1996, true);
             case TEME :
                 return getTEME();
+            case PZ90_11 :
+                return getPZ90(IERSConventions.IERS_2010, true);
             default :
                 // this should never happen
                 throw new OrekitInternalError(null);
@@ -1210,6 +1213,47 @@ public class FramesFactory {
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
 
                 frame = new FactoryManagedFrame(tod, temeShifting, true, factoryKey);
+                FRAMES.put(factoryKey, frame);
+            }
+
+            return frame;
+
+        }
+    }
+
+    /** Get the PZ-90 (Parameters of the Earth – 1990) reference frame.
+     * <p>
+     * This implementation does not return directly the PZ-90 frame but
+     * the PZ-90.11 frame. The PZ-90.11 reference system was updated
+     * on all operational GLONASS satellites starting from 3:00 pm on December 31, 2013.
+     * </p>
+     * <p>
+     * The transition between parent frame (ITRF-2008) and PZ-90.11 frame is performed using
+     * a seven parameters Helmert transformation.
+     * <pre>
+     *    From       To      ΔX(m)   ΔY(m)   ΔZ(m)   RX(mas)   RY(mas)  RZ(mas)   Epoch
+     * ITRF-2008  PZ-90.11  +0.003  +0.001  -0.000   +0.019    -0.042   +0.002     2010
+     * </pre>
+     * @see "Springer Handbook of Global Navigation Satellite Systems, Peter Teunissen & Oliver Montenbruck"
+     *
+     * @param convention IERS conventions to apply
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @return the selected reference frame singleton.
+     */
+    public static FactoryManagedFrame getPZ90(final IERSConventions convention,
+                                              final boolean simpleEOP) {
+        synchronized (FramesFactory.class) {
+
+            // try to find an already built frame
+            final Predefined factoryKey = Predefined.PZ90_11;
+            FactoryManagedFrame frame = FRAMES.get(factoryKey);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+                final Frame itrf = getITRF(ITRFVersion.ITRF_2008, convention, simpleEOP);
+                final HelmertTransformation pz90Raw = new HelmertTransformation(new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
+                                                                                +3., +1., -0., +0.019, -0.042, +0.002, 0., 0., 0., 0., 0., 0.);
+                frame = new FactoryManagedFrame(itrf, pz90Raw, false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
