@@ -32,9 +32,9 @@ import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 
-public abstract class AbstractLambdaReducerTest {
+public abstract class AbstractLambdaMethodTest {
 
-    protected abstract AbstractLambdaReducer buildReducer(double[] floatAmbiguitiess, int[] indirection, RealMatrix covariance);
+    protected abstract AbstractLambdaMethod buildReducer();
 
     @Test
     public void testSimpleFullDecomposition() {
@@ -49,7 +49,8 @@ public abstract class AbstractLambdaReducerTest {
         });
         final RealMatrix covariance = refLow.transposeMultiply(refDiag).multiply(refLow);
         final int[] indirection = new int[] { 0, 1, 2, 3 };
-        AbstractLambdaReducer reducer = buildReducer(new double[indirection.length], indirection, covariance);
+        AbstractLambdaMethod reducer = buildReducer();
+        reducer.initializeSearch(new double[indirection.length], indirection, covariance, 2, 1.0);
         reducer.ltdlDecomposition();
         Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm(), 9.9e-13 * refLow.getNorm());
         Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm(), 6.7e-13 * refDiag.getNorm());
@@ -120,7 +121,8 @@ public abstract class AbstractLambdaReducerTest {
             { 0.544, 2.340, 6.288 }
         });
 
-        final AbstractLambdaReducer reducer = buildReducer(floatAmbiguities, indirection, covariance);
+        final AbstractLambdaMethod reducer = buildReducer();
+        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2, 1.0);
         reducer.ltdlDecomposition();
         reducer.reduction();
 
@@ -148,7 +150,8 @@ public abstract class AbstractLambdaReducerTest {
     }
 
     private void doTestDecomposition(final int[] indirection, final RealMatrix covariance) {
-        final AbstractLambdaReducer reducer = buildReducer(new double[indirection.length], indirection, covariance);
+        final AbstractLambdaMethod reducer = buildReducer();
+        reducer.initializeSearch(new double[indirection.length], indirection, covariance, 2, 1.0);
         reducer.ltdlDecomposition();
         final RealMatrix extracted = MatrixUtils.createRealMatrix(indirection.length, indirection.length);
         for (int i = 0; i < indirection.length; ++i) {
@@ -172,7 +175,8 @@ public abstract class AbstractLambdaReducerTest {
         for (int i = 0; i < n; ++i) {
             floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
         }
-        final AbstractLambdaReducer reducer = buildReducer(floatAmbiguities, indirection, covariance);
+        final AbstractLambdaMethod reducer = buildReducer();
+        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2, 1.0);
         reducer.ltdlDecomposition();
         RealMatrix identity = MatrixUtils.createRealIdentityMatrix(n);
         RealMatrix zRef     = identity;
@@ -231,7 +235,8 @@ public abstract class AbstractLambdaReducerTest {
         for (int i = 0; i < floatAmbiguities.length; ++i) {
             floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
         }
-        final AbstractLambdaReducer reducer = buildReducer(floatAmbiguities, indirection, covariance);
+        final AbstractLambdaMethod reducer = buildReducer();
+        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2, 1.0);
         reducer.ltdlDecomposition();
         RealMatrix filteredCovariance = filterCovariance(covariance, indirection);
         RealMatrix zRef               = MatrixUtils.createRealIdentityMatrix(indirection.length);
@@ -276,9 +281,9 @@ public abstract class AbstractLambdaReducerTest {
         }
     }
 
-    private int getN(final AbstractLambdaReducer reducer) {
+    private int getN(final AbstractLambdaMethod reducer) {
         try {
-            final Field nField = AbstractLambdaReducer.class.getDeclaredField("n");
+            final Field nField = AbstractLambdaMethod.class.getDeclaredField("n");
             nField.setAccessible(true);
             return ((Integer) nField.get(reducer)).intValue();
         } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -287,10 +292,10 @@ public abstract class AbstractLambdaReducerTest {
         }
     }
 
-    private RealMatrix getLow(final AbstractLambdaReducer reducer) {
+    private RealMatrix getLow(final AbstractLambdaMethod reducer) {
         try {
             final int n = getN(reducer);
-            final Field lowField = AbstractLambdaReducer.class.getDeclaredField("low");
+            final Field lowField = AbstractLambdaMethod.class.getDeclaredField("low");
             lowField.setAccessible(true);
             final double[] low = (double[]) lowField.get(reducer);
             final RealMatrix lowM = MatrixUtils.createRealMatrix(n, n);
@@ -308,9 +313,9 @@ public abstract class AbstractLambdaReducerTest {
         }
     }
 
-    public DiagonalMatrix getDiag(final AbstractLambdaReducer reducer) {
+    public DiagonalMatrix getDiag(final AbstractLambdaMethod reducer) {
         try {
-            final Field diagField = AbstractLambdaReducer.class.getDeclaredField("diag");
+            final Field diagField = AbstractLambdaMethod.class.getDeclaredField("diag");
             diagField.setAccessible(true);
             final double[] diag = (double[]) diagField.get(reducer);
             return MatrixUtils.createRealDiagonalMatrix(diag);
@@ -320,18 +325,18 @@ public abstract class AbstractLambdaReducerTest {
         }
     }
 
-    public RealMatrix getZTransformation(final AbstractLambdaReducer reducer) {
+    public RealMatrix getZTransformation(final AbstractLambdaMethod reducer) {
         return dogetZs(reducer, "zTransformation");
     }
 
-    public RealMatrix getZInverseTransformation(final AbstractLambdaReducer reducer) {
+    public RealMatrix getZInverseTransformation(final AbstractLambdaMethod reducer) {
         return dogetZs(reducer, "zInverseTransformation");
     }
 
-    private RealMatrix dogetZs(final AbstractLambdaReducer reducer, final String fieldName) {
+    private RealMatrix dogetZs(final AbstractLambdaMethod reducer, final String fieldName) {
         try {
             final int n = getN(reducer);
-            final Field zField = AbstractLambdaReducer.class.getDeclaredField(fieldName);
+            final Field zField = AbstractLambdaMethod.class.getDeclaredField(fieldName);
             zField.setAccessible(true);
             final int[] z = (int[]) zField.get(reducer);
             final RealMatrix zM = MatrixUtils.createRealMatrix(n, n);
@@ -348,9 +353,9 @@ public abstract class AbstractLambdaReducerTest {
         }
     }
 
-    public double[] getDecorrelated(final AbstractLambdaReducer reducer) {
+    public double[] getDecorrelated(final AbstractLambdaMethod reducer) {
         try {
-            final Field decorrelatedField = AbstractLambdaReducer.class.getDeclaredField("decorrelated");
+            final Field decorrelatedField = AbstractLambdaMethod.class.getDeclaredField("decorrelated");
             decorrelatedField.setAccessible(true);
             return (double[]) decorrelatedField.get(reducer);
         } catch (NoSuchFieldException | IllegalAccessException e) {

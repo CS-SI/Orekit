@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import org.hipparchus.linear.RealMatrix;
@@ -27,19 +28,32 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ParameterDriver;
 
 /** Base class for integer ambiguity solving algorithms.
+ * @see LambdaMethod
+ * @see ModifiedLambdaMethod
  * @author Luc Maisonobe
  * @since 10.0
  */
-public abstract class AmbiguitySolver {
+public class AmbiguitySolver {
+
+    /** Number of solutions of the ILS problem to find. */
+    private static final int NB_SOLUTIONS = 2;
 
     /** Drivers for ambiguity drivers. */
     private final List<ParameterDriver> ambiguityDrivers;
 
+    /** Solver for the underlying Integer Least Square problem. */
+    private final IntegerLeastSquareSolver solver;
+
     /** Simple constructor.
      * @param ambiguityDrivers drivers for ambiguity parameters
+     * @param solver solver for the underlying Integer Least Square problem
+     * @see LambdaMethod
+     * @see ModifiedLambdaMethod
      */
-    protected AmbiguitySolver(final List<ParameterDriver> ambiguityDrivers) {
+    public AmbiguitySolver(final List<ParameterDriver> ambiguityDrivers,
+                           final IntegerLeastSquareSolver solver) {
         this.ambiguityDrivers = ambiguityDrivers;
+        this.solver           = solver;
     }
 
     /** Get all the ambiguity parameters drivers.
@@ -119,10 +133,28 @@ public abstract class AmbiguitySolver {
      * @param startIndex start index for measurements parameters in global covariance matrix
      * @param measurementsParametersDrivers measurements parameters drivers in global covariance matrix order
      * @param covariance global covariance matrix
-     * @return list of newly fixed abiguities (ambiguities already fixed before the call are not counted)
+     * @return list of newly fixed ambiguities (ambiguities already fixed before the call are not counted)
      */
-    public abstract List<ParameterDriver> fixIntegerAmbiguities(int startIndex,
-                                                                List<ParameterDriver> measurementsParametersDrivers,
-                                                                RealMatrix covariance);
+    public List<ParameterDriver> fixIntegerAmbiguities(final int startIndex,
+                                                       final List<ParameterDriver> measurementsParametersDrivers,
+                                                       final RealMatrix covariance) {
+
+        // set up Integer Least Square problem
+        final List<ParameterDriver> ambiguities      = getAllAmbiguityDrivers();
+        final double[]              floatAmbiguities = ambiguities.stream().mapToDouble(d -> d.getValue()).toArray();
+        final int[]                 indirection      = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
+
+        // solve the ILS problem
+        final double chi = 100; // TODO
+        final SortedSet<IntegerLeastSquareSolution> solutions =
+                        solver.solveILS(floatAmbiguities, indirection, covariance, NB_SOLUTIONS, chi);
+        if (solutions.size() < NB_SOLUTIONS) {
+            return Collections.emptyList();
+        }
+
+        // TODO
+        return null;
+
+    }
 
 }

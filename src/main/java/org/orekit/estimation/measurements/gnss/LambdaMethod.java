@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.hipparchus.linear.RealMatrix;
-
 /** Decorrelation/reduction engine for {@link LambdaSolver LAMBDA method}.
  * <p>
  * This class implements PJG Teunissen Least Square Ambiguity Decorrelation
@@ -26,23 +24,15 @@ import org.hipparchus.linear.RealMatrix;
  * A modified LAMBDA method for integer least-squares estimation</a> by X.-W Chang, X. Yang
  * and T. Zhou, Journal of Geodesy 79(9):552-565, DOI: 10.1007/s00190-005-0004-x
  * </p>
+ * @see AmbiguitySolver
  * @author Luc Maisonobe
  * @since 10.0
  */
-class LambdaReducer extends AbstractLambdaReducer {
-
-    /** Simple constructor.
-     * @param floatAmbiguities float estimates of ambiguities
-     * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
-     * @param covariance global covariance matrix (includes ambiguities among other parameters)
-     */
-    LambdaReducer(final double[] floatAmbiguities, final int[] indirection, final RealMatrix covariance) {
-        super(floatAmbiguities, indirection, covariance);
-    }
+class LambdaMethod extends AbstractLambdaMethod {
 
     /** {@inheritDoc} */
     @Override
-    public void ltdlDecomposition() {
+    protected void ltdlDecomposition() {
 
         // get references to the diagonal and lower triangular parts
         final double[] diag = getDiagReference();
@@ -67,7 +57,7 @@ class LambdaReducer extends AbstractLambdaReducer {
 
     /** {@inheritDoc} */
     @Override
-    public void reduction() {
+    protected void reduction() {
 
         // get references to the diagonal and lower triangular parts
         final double[] diag = getDiagReference();

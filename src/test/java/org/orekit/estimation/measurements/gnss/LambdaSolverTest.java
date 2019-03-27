@@ -38,7 +38,7 @@ public class LambdaSolverTest {
             { 0.544, 2.340, 6.288 }
         });
 
-        LambdaSolver solver = new LambdaSolver(ambiguitiesDrivers);
+        AmbiguitySolver solver = new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod());
         List<ParameterDriver> fixed = solver.fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance);
         Assert.assertEquals(3, fixed.size());
         Assert.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
@@ -53,6 +53,7 @@ public class LambdaSolverTest {
                                                                Double.NEGATIVE_INFINITY,
                                                                Double.POSITIVE_INFINITY);
             driver.setValue(floatValues[i]);
+            driver.setSelected(true);
             ambiguitiesDrivers.add(driver);
         }
         return ambiguitiesDrivers;

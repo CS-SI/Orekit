@@ -16,12 +16,17 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 
 /** Base class for decorrelation/reduction engine for LAMBDA type methods.
  * <p>
- * This class is based on the 2005 paper <a
+ * This class is based on both the 1996 paper <a href="https://www.researchgate.net/publication/2790708_The_LAMBDA_method_for_integer_ambiguity_estimation_implementation_aspects">
+ * The LAMBDA method for integer ambiguity estimation: implementation aspects</a> by
+ * Paul de Jonge and Christian Tiberius and on the 2005 paper <a
  * href="https://www.researchgate.net/publication/225518977_MLAMBDA_a_modified_LAMBDA_method_for_integer_least-squares_estimation">
  * A modified LAMBDA method for integer least-squares estimation</a> by X.-W Chang, X. Yang
  * and T. Zhou, Journal of Geodesy 79(9):552-565, DOI: 10.1007/s00190-005-0004-x
@@ -29,22 +34,22 @@ import org.hipparchus.util.FastMath;
  * @author Luc Maisonobe
  * @since 10.0
  */
-abstract class AbstractLambdaReducer {
+abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     /** Number of ambiguities. */
-    private final int n;
+    private int n;
 
     /** Decorrelated ambiguities. */
-    private final double[] decorrelated;
+    private double[] decorrelated;
 
     /** Indirection array to extract ambiguity parameters. */
-    private final int[] indirection;
+    private int[] indir;
 
     /** Lower triangular matrix with unit diagonal, in row order (unit diagonal not stored). */
-    private final double[] low;
+    private double[] low;
 
     /** Diagonal matrix. */
-    private final double[] diag;
+    private double[] diag;
 
     /** Z transformation matrix, in row order. */
     private int[] zTransformation;
@@ -52,27 +57,76 @@ abstract class AbstractLambdaReducer {
     /** Z⁻¹ transformation matrix, in row order. */
     private int[] zInverseTransformation;
 
-    /** Simple constructor.
+    /** Maximum number of solutions seeked. */
+    private int maxSolutions;
+
+    /** Square of search bound. */
+    private double chi2;
+
+    /** Difference between fixed and float ambiguities. */
+    private double[] diff;
+
+    /** Placeholder for fixed ambiguities. */
+    private long[] fixed;
+
+    /** Placeholder for solutions found. */
+    private SortedSet<IntegerLeastSquareSolution> solutions;
+
+    /** {@inheritDoc} */
+    @Override
+    public SortedSet<IntegerLeastSquareSolution> solveILS(final double[] floatAmbiguities, final int[] indirection,
+                                                          final RealMatrix covariance,
+                                                          final int nbSol, final double chi) {
+
+        // initialize the ILS problem search
+        initializeSearch(floatAmbiguities, indirection, covariance, nbSol, chi);
+
+        // perform initial Lᵀ.D.L = Q decomposition of covariance
+        ltdlDecomposition();
+
+        // perform decorrelation/reduction of covariances
+        reduction();
+
+        // transforms the Lᵀ.D.L = Q decomposition of covariance into
+        // the L⁻¹.D⁻¹.L⁻ᵀ = Q⁻¹ decomposition of the inverse of covariance.
+        inverseDecomposition();
+
+        // perform discrete search of Integer Least Square problem
+        solveILS();
+
+        return solutions;
+
+    }
+
+    /** Initialize search.
      * @param floatAmbiguities float estimates of ambiguities
      * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
-     * @param covariance global covariance matrix (includes ambiguities among other parameters)
+     * @param globalCovariance global covariance matrix (includes ambiguities among other parameters)
+     * @param nbSol number of solutions to search for
+     * @param chi search bound (size of the search ellipsoid)
      */
-    protected AbstractLambdaReducer(final double[] floatAmbiguities, final int[] indirection, final RealMatrix covariance) {
+    protected void initializeSearch(final double[] floatAmbiguities, final int[] indirection,
+                                    final RealMatrix globalCovariance, final int nbSol, final double chi) {
 
         this.n                      = floatAmbiguities.length;
         this.decorrelated           = floatAmbiguities.clone();
-        this.indirection            = indirection.clone();
+        this.indir                  = indirection.clone();
         this.low                    = new double[(n * (n - 1)) / 2];
         this.diag                   = new double[n];
         this.zTransformation        = new int[n * n];
         this.zInverseTransformation = new int[n * n];
+        this.maxSolutions           = nbSol;
+        this.chi2                   = chi * chi;
+        this.solutions              = new TreeSet<>();
+        this.fixed                  = new long[n];
+        this.diff                   = new double[n];
 
         // initialize decomposition matrices
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < i; ++j) {
-                low[lIndex(i, j)] = covariance.getEntry(indirection[i], indirection[j]);
+                low[lIndex(i, j)] = globalCovariance.getEntry(indirection[i], indirection[j]);
             }
-            diag[i] = covariance.getEntry(indirection[i], indirection[i]);
+            diag[i] = globalCovariance.getEntry(indirection[i], indirection[i]);
             zTransformation[zIndex(i, i)] = 1;
             zInverseTransformation[zIndex(i, i)] = 1;
         }
@@ -105,11 +159,11 @@ abstract class AbstractLambdaReducer {
 
     /** Perform Lᵀ.D.L = Q decomposition of the covariance matrix.
      */
-    public abstract void ltdlDecomposition();
+    protected abstract void ltdlDecomposition();
 
     /** Perform LAMBDA reduction.
      */
-    public abstract void reduction();
+    protected abstract void reduction();
 
     /** Perform one integer Gauss transformation.
      * <p>
@@ -210,7 +264,7 @@ abstract class AbstractLambdaReducer {
      * the L⁻¹.D⁻¹.L⁻ᵀ = Q⁻¹ decomposition of the inverse of covariance.
      * </p>
      */
-    public void inverseDecomposition() {
+    private void inverseDecomposition() {
 
         // we rely on the following equation, where a low triangular
         // matrix L of dimension n is split into sub-matrices of dimensions
@@ -225,8 +279,8 @@ abstract class AbstractLambdaReducer {
         // is only one row), we see that elements 0 to k-1 of row k are given by -BA⁻¹
         // and that element k is I₁ = 1. We can therefore invert L row by row and we
         // obtain an inverse matrix L⁻¹ which is a low triangular matrix with unit
-        // diagonal. A⁻¹ is therefore also a low triangular matrix with unit diagonal,
-        // which is used in the loops below to speed up the computation of -BA⁻¹
+        // diagonal. A⁻¹ is therefore also a low triangular matrix with unit diagonal.
+        // This property is used in the loops below to speed up the computation of -BA⁻¹
         final double[] row = new double[n - 1];
         diag[0] = 1.0 / diag[0];
         for (int k = 1; k < n; ++k) {
@@ -244,6 +298,76 @@ abstract class AbstractLambdaReducer {
 
             // diagonal part
             diag[k] = 1.0 / diag[k];
+
+        }
+
+    }
+
+    /** Find the best solutions to the Integer Least Square problem.
+     */
+    private void solveILS() {
+
+        // set up top level sampling for last ambiguity
+        final double right = chi2 / diag[n - 1];
+        final AlternatingSampler topSampler = new AlternatingSampler(decorrelated[n - 1], FastMath.sqrt(right));
+
+        // try different candidates for last ambiguity
+        while (topSampler.inRange()) {
+            fixed[n - 1] = topSampler.getCurrent();
+            diff[n - 1]  = fixed[n - 1] - decorrelated[n - 1];
+            final double left = diff[n - 1] * diff[n - 1];
+
+            // recursive search, assuming current candidate for last ambiguity
+            recursiveSolve(n - 1, left, right);
+
+            // prepare next candidate
+            topSampler.generateNext();
+
+        }
+
+    }
+
+    /** Recursive search of solutions to the Integer Least Square problem.
+     * @param index index of first fixed ambiguity
+     * @param left left hand side of search inequality (de Jonge and Tiberius 1996 paper, equation 4.6)
+     * @param right right hand side of search inequality (de Jonge and Tiberius 1996 paper, equation 4.6)
+     */
+    private void recursiveSolve(final int index, final double left, final double right) {
+
+        if (index == 0) {
+            // all ambiguities have been fixed
+            final double squaredNorm = chi2 - diag[0] * (right - left);
+            solutions.add(new IntegerLeastSquareSolution(fixed, squaredNorm));
+            if (solutions.size() > maxSolutions) {
+                solutions.remove(solutions.last());
+            }
+        } else {
+
+            // we need to fix more ambiguities
+            final int next = index - 1;
+
+            // compute search bounds as per section 4 in de Jonge and Tiberius 1996
+            double conditionedAmbiguity = decorrelated[next] - diff[index];
+            for (int j = index + 1; j < n; ++j) {
+                conditionedAmbiguity -= low[lIndex(j, index)] * diff[j];
+            }
+            final AlternatingSampler sampler = new AlternatingSampler(conditionedAmbiguity, FastMath.sqrt(right));
+            while (sampler.inRange()) {
+
+                // candidate for next ambiguity from sampler
+                fixed[next]            = sampler.getCurrent();
+                diff[next]             = fixed[next] - decorrelated[next];
+                final double nextRight = diag[index] / diag[next] * (right - left);
+                final double delta     = fixed[next] - conditionedAmbiguity;
+                final double nextLeft  = delta * delta;
+
+                // recursive search, assuming current candidate for next ambiguity
+                recursiveSolve(next, nextLeft, nextRight);
+
+                // prepare next candidate
+                sampler.generateNext();
+
+            }
 
         }
 
