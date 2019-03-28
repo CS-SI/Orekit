@@ -60,26 +60,17 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Maximum number of solutions seeked. */
     private int maxSolutions;
 
-    /** Square of search bound. */
-    private double chi2;
-
-    /** Difference between fixed and float ambiguities. */
-    private double[] diff;
-
-    /** Placeholder for fixed ambiguities. */
-    private long[] fixed;
-
     /** Placeholder for solutions found. */
     private SortedSet<IntegerLeastSquareSolution> solutions;
 
     /** {@inheritDoc} */
     @Override
-    public SortedSet<IntegerLeastSquareSolution> solveILS(final double[] floatAmbiguities, final int[] indirection,
-                                                          final RealMatrix covariance,
-                                                          final int nbSol, final double chi) {
+    public SortedSet<IntegerLeastSquareSolution> solveILS(final int nbSol, final double[] floatAmbiguities,
+                                                          final int[] indirection,
+                                                          final RealMatrix covariance) {
 
         // initialize the ILS problem search
-        initializeSearch(floatAmbiguities, indirection, covariance, nbSol, chi);
+        initializeSearch(floatAmbiguities, indirection, covariance, nbSol);
 
         // perform initial Lᵀ.D.L = Q decomposition of covariance
         ltdlDecomposition();
@@ -103,10 +94,9 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
      * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
      * @param globalCovariance global covariance matrix (includes ambiguities among other parameters)
      * @param nbSol number of solutions to search for
-     * @param chi search bound (size of the search ellipsoid)
      */
     protected void initializeSearch(final double[] floatAmbiguities, final int[] indirection,
-                                    final RealMatrix globalCovariance, final int nbSol, final double chi) {
+                                    final RealMatrix globalCovariance, final int nbSol) {
 
         this.n                      = floatAmbiguities.length;
         this.decorrelated           = floatAmbiguities.clone();
@@ -116,10 +106,7 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         this.zTransformation        = new int[n * n];
         this.zInverseTransformation = new int[n * n];
         this.maxSolutions           = nbSol;
-        this.chi2                   = chi * chi;
         this.solutions              = new TreeSet<>();
-        this.fixed                  = new long[n];
-        this.diff                   = new double[n];
 
         // initialize decomposition matrices
         for (int i = 0; i < n; ++i) {
@@ -307,6 +294,11 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
      */
     private void solveILS() {
 
+        // estimate search domain limit
+        final long[]   fixed   = new long[n];
+        final double[] offsets = new double[n];
+        final double   chi2    = estimateChi2(fixed, offsets);
+
         // set up top level sampling for last ambiguity
         final double right = chi2 / diag[n - 1];
         final AlternatingSampler topSampler = new AlternatingSampler(decorrelated[n - 1], FastMath.sqrt(right));
@@ -314,11 +306,11 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         // try different candidates for last ambiguity
         while (topSampler.inRange()) {
             fixed[n - 1] = topSampler.getCurrent();
-            diff[n - 1]  = fixed[n - 1] - decorrelated[n - 1];
-            final double left = diff[n - 1] * diff[n - 1];
+            offsets[n - 1]  = fixed[n - 1] - decorrelated[n - 1];
+            final double left = offsets[n - 1] * offsets[n - 1];
 
             // recursive search, assuming current candidate for last ambiguity
-            recursiveSolve(n - 1, left, right);
+            recursiveSolve(n - 1, left, right, chi2, fixed, offsets);
 
             // prepare next candidate
             topSampler.generateNext();
@@ -331,8 +323,12 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
      * @param index index of first fixed ambiguity
      * @param left left hand side of search inequality (de Jonge and Tiberius 1996 paper, equation 4.6)
      * @param right right hand side of search inequality (de Jonge and Tiberius 1996 paper, equation 4.6)
+     * @param chi2 search limit parameter χ²
+     * @param fixed placeholder for test fixed ambiguities
+     * @param offsets placeholder for offsets between fixed ambiguities and float ambiguities
      */
-    private void recursiveSolve(final int index, final double left, final double right) {
+    private void recursiveSolve(final int index, final double left, final double right,
+                                final double chi2, final long[] fixed, final double[] offsets) {
 
         if (index == 0) {
             // all ambiguities have been fixed
@@ -347,22 +343,19 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
             final int next = index - 1;
 
             // compute search bounds as per section 4 in de Jonge and Tiberius 1996
-            double conditionedAmbiguity = decorrelated[next] - diff[index];
-            for (int j = index + 1; j < n; ++j) {
-                conditionedAmbiguity -= low[lIndex(j, index)] * diff[j];
-            }
-            final AlternatingSampler sampler = new AlternatingSampler(conditionedAmbiguity, FastMath.sqrt(right));
+            final double conditional = conditionalEstimate(next, offsets);
+            final AlternatingSampler sampler = new AlternatingSampler(conditional, FastMath.sqrt(right));
             while (sampler.inRange()) {
 
                 // candidate for next ambiguity from sampler
                 fixed[next]            = sampler.getCurrent();
-                diff[next]             = fixed[next] - decorrelated[next];
+                offsets[next]          = fixed[next] - decorrelated[next];
                 final double nextRight = diag[index] / diag[next] * (right - left);
-                final double delta     = fixed[next] - conditionedAmbiguity;
+                final double delta     = fixed[next] - conditional;
                 final double nextLeft  = delta * delta;
 
                 // recursive search, assuming current candidate for next ambiguity
-                recursiveSolve(next, nextLeft, nextRight);
+                recursiveSolve(next, nextLeft, nextRight, chi2, fixed, offsets);
 
                 // prepare next candidate
                 sampler.generateNext();
@@ -371,6 +364,86 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
         }
 
+    }
+
+    /** Compute a safe estimate of search limit parameter χ².
+     * <p>
+     * The estimate is based on section 4.11 in de Jonge and Tiberius 1996,
+     * computing χ² such that it includes at least a few preset grid points
+     * </p>
+     * @param fixed placeholder for test fixed ambiguities
+     * @param offsets placeholder for offsets between fixed ambiguities and float ambiguities
+     * @return safe estimate of search limit parameter χ²
+     */
+    private double estimateChi2(final long[] fixed, final double[] offsets) {
+
+        // initialize test points, assuming ambiguities have been fully decorrelated
+        final AlternatingSampler[] samplers = new AlternatingSampler[n];
+        for (int i = 0; i < n; ++i) {
+            samplers[i] = new AlternatingSampler(decorrelated[i], 0.0);
+        }
+
+        final SortedSet<Double> squaredNorms = new TreeSet<>();
+
+        // first test point at center
+        for (int i = 0; i < n; ++i) {
+            fixed[i] = samplers[i].getCurrent();
+        }
+        squaredNorms.add(squaredNorm(fixed, offsets));
+
+        while (squaredNorms.size() < maxSolutions) {
+            // add a series of grid points, each shifted from center along a different axis
+            for (int i = 0; i < n; ++i) {
+                final long saved = fixed[i];
+                samplers[i].generateNext();
+                fixed[i] = samplers[i].getCurrent();
+                squaredNorms.add(squaredNorm(fixed, offsets));
+                fixed[i] = saved;
+            }
+        }
+
+        // select a limit ensuring at least the needed number of grid points are in the search domain
+        int count = 0;
+        for (final double s : squaredNorms) {
+            if (++count == maxSolutions) {
+                return s + 0.5;
+            }
+        }
+
+        // never reached
+        return Double.NaN;
+
+    }
+
+    /** Compute squared norm of a set of fixed ambiguities.
+     * @param fixed fixed ambiguities
+     * @param offsets placeholder for offsets between fixed ambiguities and float ambiguities
+     * @return squared norm of a set of fixed ambiguities
+     */
+    private double squaredNorm(final long[] fixed, final double[] offsets) {
+        double n2 = 0;
+        for (int i = 0; i < n; ++i) {
+            offsets[i] = fixed[i] - decorrelated[i];
+            final double delta = fixed[i] - conditionalEstimate(i, offsets);
+            n2 += diag[i] * delta * delta;
+        }
+        return n2;
+    }
+
+    /** Compute conditional estimate of an ambiguity.
+     * <p>
+     * This corresponds to equation 4.4 in de Jonge and Tiberius 1996
+     * </p>
+     * @param i index of the ambiguity
+     * @param offsets offsets between already fixed ambiguities and float ambiguities
+     * @return conditional estimate of ambiguity â<sub>i|i+1...n</sub>
+     */
+    private double conditionalEstimate(final int i, final double[] offsets) {
+        double conditional = decorrelated[i];
+        for (int j = i + 1; j < n; ++j) {
+            conditional -= low[lIndex(j, i)] * offsets[j];
+        }
+        return conditional;
     }
 
     /** Get the index of an entry in the lower triangular matrix.

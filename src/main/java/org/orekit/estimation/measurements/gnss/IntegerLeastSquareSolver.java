@@ -28,16 +28,13 @@ import org.hipparchus.linear.RealMatrix;
 public interface IntegerLeastSquareSolver {
 
     /** Find the best solutions to an Integer Least Square problem.
+     * @param nbSol number of solutions to search for
      * @param floatAmbiguities float estimates of ambiguities
      * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
      * @param covariance global covariance matrix (includes ambiguities among other parameters)
-     * @param nbSol number of solutions to search for
-     * @param chi search bound (size of the search ellipsoid)
      * @return at most {@code nbSol} solutions a to the Integer Least Square problem
-     * with (â - a)ᵀ Q⁻¹ (â - a) ≤ χ², where â is the vector of float ambiguities
-     * and Q is the covariance matrices
      */
-    SortedSet<IntegerLeastSquareSolution> solveILS(double[] floatAmbiguities, int[] indirection, RealMatrix covariance,
-                                                   int nbSol, double chi);
+    SortedSet<IntegerLeastSquareSolution> solveILS(int nbSol, double[] floatAmbiguities, int[] indirection,
+                                                   RealMatrix covariance);
 
 }

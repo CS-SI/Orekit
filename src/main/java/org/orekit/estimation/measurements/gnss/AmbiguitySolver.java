@@ -145,9 +145,8 @@ public class AmbiguitySolver {
         final int[]                 indirection      = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
 
         // solve the ILS problem
-        final double chi = 100; // TODO
         final SortedSet<IntegerLeastSquareSolution> solutions =
-                        solver.solveILS(floatAmbiguities, indirection, covariance, NB_SOLUTIONS, chi);
+                        solver.solveILS(NB_SOLUTIONS, floatAmbiguities, indirection, covariance);
         if (solutions.size() < NB_SOLUTIONS) {
             return Collections.emptyList();
         }

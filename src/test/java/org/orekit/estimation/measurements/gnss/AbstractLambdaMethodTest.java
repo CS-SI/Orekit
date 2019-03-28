@@ -50,7 +50,7 @@ public abstract class AbstractLambdaMethodTest {
         final RealMatrix covariance = refLow.transposeMultiply(refDiag).multiply(refLow);
         final int[] indirection = new int[] { 0, 1, 2, 3 };
         AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(new double[indirection.length], indirection, covariance, 2, 1.0);
+        reducer.initializeSearch(new double[indirection.length], indirection, covariance, 2);
         reducer.ltdlDecomposition();
         Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm(), 9.9e-13 * refLow.getNorm());
         Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm(), 6.7e-13 * refDiag.getNorm());
@@ -122,7 +122,7 @@ public abstract class AbstractLambdaMethodTest {
         });
 
         final AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2, 1.0);
+        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2);
         reducer.ltdlDecomposition();
         reducer.reduction();
 
@@ -151,7 +151,7 @@ public abstract class AbstractLambdaMethodTest {
 
     private void doTestDecomposition(final int[] indirection, final RealMatrix covariance) {
         final AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(new double[indirection.length], indirection, covariance, 2, 1.0);
+        reducer.initializeSearch(new double[indirection.length], indirection, covariance, 2);
         reducer.ltdlDecomposition();
         final RealMatrix extracted = MatrixUtils.createRealMatrix(indirection.length, indirection.length);
         for (int i = 0; i < indirection.length; ++i) {
@@ -176,7 +176,7 @@ public abstract class AbstractLambdaMethodTest {
             floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
         }
         final AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2, 1.0);
+        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2);
         reducer.ltdlDecomposition();
         RealMatrix identity = MatrixUtils.createRealIdentityMatrix(n);
         RealMatrix zRef     = identity;
@@ -236,7 +236,7 @@ public abstract class AbstractLambdaMethodTest {
             floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
         }
         final AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2, 1.0);
+        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2);
         reducer.ltdlDecomposition();
         RealMatrix filteredCovariance = filterCovariance(covariance, indirection);
         RealMatrix zRef               = MatrixUtils.createRealIdentityMatrix(indirection.length);
