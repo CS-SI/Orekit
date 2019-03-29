@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.SortedSet;
-
 import org.hipparchus.linear.RealMatrix;
 
 /** Interface for algorithms solving integer least square problems.
@@ -32,9 +30,10 @@ public interface IntegerLeastSquareSolver {
      * @param floatAmbiguities float estimates of ambiguities
      * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
      * @param covariance global covariance matrix (includes ambiguities among other parameters)
-     * @return at most {@code nbSol} solutions a to the Integer Least Square problem
+     * @return at most {@code nbSol} solutions a to the Integer Least Square problem, in increasing
+     * squared distance order
      */
-    SortedSet<IntegerLeastSquareSolution> solveILS(int nbSol, double[] floatAmbiguities, int[] indirection,
-                                                   RealMatrix covariance);
+    IntegerLeastSquareSolution[] solveILS(int nbSol, double[] floatAmbiguities, int[] indirection,
+                                          RealMatrix covariance);
 
 }

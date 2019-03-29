@@ -115,6 +115,7 @@ public abstract class AbstractLambdaMethodTest {
             5.450, 3.100, 2.970
         };
         final int[] indirection = new int[] { 0, 1, 2 };
+        final RealMatrix id = MatrixUtils.createRealIdentityMatrix(3);
         final RealMatrix covariance = MatrixUtils.createRealMatrix(new double[][] {
             { 6.290, 5.978, 0.544 },
             { 5.978, 6.292, 2.340 },
@@ -122,18 +123,16 @@ public abstract class AbstractLambdaMethodTest {
         });
 
         final AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2);
-        reducer.ltdlDecomposition();
-        reducer.reduction();
+        IntegerLeastSquareSolution[] solutions = reducer.solveILS(2, floatAmbiguities, indirection, covariance);
 
-        final RealMatrix rebuiltCovariance = getZInverseTransformation(reducer).transpose().
-                                             multiply(getLow(reducer).
-                                                      transposeMultiply(getDiag(reducer)).
-                                                      multiply(getLow(reducer))).
-                                             multiply(getZInverseTransformation(reducer));
+        final RealMatrix rebuiltInverseCovariance = getZTransformation(reducer).
+                                                    multiply(getLow(reducer).
+                                                             multiply(getDiag(reducer)).
+                                                             multiplyTransposed(getLow(reducer))).
+                                                    multiplyTransposed(getZTransformation(reducer));
         Assert.assertEquals(0.0,
-                            rebuiltCovariance.subtract(covariance).getNorm(),
-                            1.0e-16 * covariance.getNorm());
+                            id.subtract(rebuiltInverseCovariance.multiply(covariance)).getNorm(),
+                            2.7e-14);
 
         final RealMatrix zRef = MatrixUtils.createRealMatrix(new double[][] {
             { -2,  3,  1 },
@@ -142,10 +141,18 @@ public abstract class AbstractLambdaMethodTest {
         });
 
         Assert.assertEquals(0.0,
-                            zRef.subtract(getZTransformation(reducer)).getNorm(),
+                            id.subtract(zRef.transposeMultiply(getZInverseTransformation(reducer).transpose())).getNorm(),
                             1.0e-15);
 
-        // TODO implement and test search method
+        Assert.assertEquals(2, solutions.length);
+        Assert.assertEquals(0.2183310953369383, solutions[0].getSquaredDistance(), 1.0e-15);
+        Assert.assertEquals(5l, solutions[0].getSolution()[0]);
+        Assert.assertEquals(3l, solutions[0].getSolution()[1]);
+        Assert.assertEquals(4l, solutions[0].getSolution()[2]);
+        Assert.assertEquals(0.0, solutions[1].getSquaredDistance(), 1.0e-10);
+        Assert.assertEquals(-1l, solutions[1].getSolution()[0]);
+        Assert.assertEquals(-1l, solutions[1].getSolution()[1]);
+        Assert.assertEquals(-1l, solutions[1].getSolution()[2]);
 
     }
 

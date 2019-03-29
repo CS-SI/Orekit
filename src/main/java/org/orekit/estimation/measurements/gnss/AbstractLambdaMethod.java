@@ -36,14 +36,14 @@ import org.hipparchus.util.FastMath;
  */
 abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
+    /** Margin factor to apply to estimated search limit parameter. */
+    private static final double CHI2_MARGIN_FACTOR = 1.1;
+
     /** Number of ambiguities. */
     private int n;
 
     /** Decorrelated ambiguities. */
     private double[] decorrelated;
-
-    /** Indirection array to extract ambiguity parameters. */
-    private int[] indir;
 
     /** Lower triangular matrix with unit diagonal, in row order (unit diagonal not stored). */
     private double[] low;
@@ -65,9 +65,8 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     /** {@inheritDoc} */
     @Override
-    public SortedSet<IntegerLeastSquareSolution> solveILS(final int nbSol, final double[] floatAmbiguities,
-                                                          final int[] indirection,
-                                                          final RealMatrix covariance) {
+    public IntegerLeastSquareSolution[] solveILS(final int nbSol, final double[] floatAmbiguities,
+                                                 final int[] indirection, final RealMatrix covariance) {
 
         // initialize the ILS problem search
         initializeSearch(floatAmbiguities, indirection, covariance, nbSol);
@@ -85,7 +84,7 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         // perform discrete search of Integer Least Square problem
         solveILS();
 
-        return solutions;
+        return recoverAmbiguities();
 
     }
 
@@ -100,7 +99,6 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
         this.n                      = floatAmbiguities.length;
         this.decorrelated           = floatAmbiguities.clone();
-        this.indir                  = indirection.clone();
         this.low                    = new double[(n * (n - 1)) / 2];
         this.diag                   = new double[n];
         this.zTransformation        = new int[n * n];
@@ -366,6 +364,34 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     }
 
+    /** Recover ambiguities prior to the Z-transformation.
+     * @return recovered ambiguities
+     */
+    private IntegerLeastSquareSolution[] recoverAmbiguities() {
+
+        final IntegerLeastSquareSolution[] recovered = new IntegerLeastSquareSolution[solutions.size()];
+
+        int k = 0;
+        final long[] a = new long[n];
+        for (final IntegerLeastSquareSolution solution : solutions) {
+            final long[] s = solution.getSolution();
+            for (int i = 0; i < n; ++i) {
+                // compute a = Z⁻ᵀ.s
+                long ai = 0;
+                int l = zIndex(0, i);
+                for (int j = 0; j < n; ++j) {
+                    ai += zInverseTransformation[l] * s[j];
+                    l  += n;
+                }
+                a[i] = ai;
+            }
+            recovered[k++] = new IntegerLeastSquareSolution(a, solution.getSquaredDistance());
+        }
+
+        return recovered;
+
+    }
+
     /** Compute a safe estimate of search limit parameter χ².
      * <p>
      * The estimate is based on section 4.11 in de Jonge and Tiberius 1996,
@@ -406,7 +432,7 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         int count = 0;
         for (final double s : squaredNorms) {
             if (++count == maxSolutions) {
-                return s + 0.5;
+                return s * CHI2_MARGIN_FACTOR;
             }
         }
 
@@ -422,7 +448,7 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
      */
     private double squaredNorm(final long[] fixed, final double[] offsets) {
         double n2 = 0;
-        for (int i = 0; i < n; ++i) {
+        for (int i = n - 1; i >= 0; --i) {
             offsets[i] = fixed[i] - decorrelated[i];
             final double delta = fixed[i] - conditionalEstimate(i, offsets);
             n2 += diag[i] * delta * delta;

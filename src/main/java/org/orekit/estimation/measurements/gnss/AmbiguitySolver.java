@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import org.hipparchus.linear.RealMatrix;
@@ -145,9 +144,9 @@ public class AmbiguitySolver {
         final int[]                 indirection      = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
 
         // solve the ILS problem
-        final SortedSet<IntegerLeastSquareSolution> solutions =
+        final IntegerLeastSquareSolution[] solutions =
                         solver.solveILS(NB_SOLUTIONS, floatAmbiguities, indirection, covariance);
-        if (solutions.size() < NB_SOLUTIONS) {
+        if (solutions.length < NB_SOLUTIONS) {
             return Collections.emptyList();
         }
 
