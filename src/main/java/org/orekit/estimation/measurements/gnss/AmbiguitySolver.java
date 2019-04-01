@@ -26,7 +26,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ParameterDriver;
 
-/** Base class for integer ambiguity solving algorithms.
+/** Class for solving integer ambiguity problems.
  * @see LambdaMethod
  * @see ModifiedLambdaMethod
  * @author Luc Maisonobe

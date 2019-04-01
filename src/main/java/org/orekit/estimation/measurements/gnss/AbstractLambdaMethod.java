@@ -303,8 +303,8 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
         // try different candidates for last ambiguity
         while (topSampler.inRange()) {
-            fixed[n - 1] = topSampler.getCurrent();
-            offsets[n - 1]  = fixed[n - 1] - decorrelated[n - 1];
+            fixed[n - 1]      = topSampler.getCurrent();
+            offsets[n - 1]    = fixed[n - 1] - decorrelated[n - 1];
             final double left = offsets[n - 1] * offsets[n - 1];
 
             // recursive search, assuming current candidate for last ambiguity
@@ -341,16 +341,16 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
             final int next = index - 1;
 
             // compute search bounds as per section 4 in de Jonge and Tiberius 1996
-            final double conditional = conditionalEstimate(next, offsets);
-            final AlternatingSampler sampler = new AlternatingSampler(conditional, FastMath.sqrt(right));
+            final double             conditional = conditionalEstimate(next, offsets);
+            final double             nextRight   = diag[index] / diag[next] * (right - left);
+            final AlternatingSampler sampler     = new AlternatingSampler(conditional, FastMath.sqrt(nextRight));
             while (sampler.inRange()) {
 
                 // candidate for next ambiguity from sampler
-                fixed[next]            = sampler.getCurrent();
-                offsets[next]          = fixed[next] - decorrelated[next];
-                final double nextRight = diag[index] / diag[next] * (right - left);
-                final double delta     = fixed[next] - conditional;
-                final double nextLeft  = delta * delta;
+                fixed[next]           = sampler.getCurrent();
+                offsets[next]         = fixed[next] - decorrelated[next];
+                final double delta    = fixed[next] - conditional;
+                final double nextLeft = delta * delta;
 
                 // recursive search, assuming current candidate for next ambiguity
                 recursiveSolve(next, nextLeft, nextRight, chi2, fixed, offsets);

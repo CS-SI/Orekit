@@ -149,10 +149,10 @@ public abstract class AbstractLambdaMethodTest {
         Assert.assertEquals(5l, solutions[0].getSolution()[0]);
         Assert.assertEquals(3l, solutions[0].getSolution()[1]);
         Assert.assertEquals(4l, solutions[0].getSolution()[2]);
-        Assert.assertEquals(0.0, solutions[1].getSquaredDistance(), 1.0e-10);
-        Assert.assertEquals(-1l, solutions[1].getSolution()[0]);
-        Assert.assertEquals(-1l, solutions[1].getSolution()[1]);
-        Assert.assertEquals(-1l, solutions[1].getSolution()[2]);
+        Assert.assertEquals(0.3072725757902666, solutions[1].getSquaredDistance(), 1.0e-15);
+        Assert.assertEquals(6l, solutions[1].getSolution()[0]);
+        Assert.assertEquals(4l, solutions[1].getSolution()[1]);
+        Assert.assertEquals(4l, solutions[1].getSolution()[2]);
 
     }
 

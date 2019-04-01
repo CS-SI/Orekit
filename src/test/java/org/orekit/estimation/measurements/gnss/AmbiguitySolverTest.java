@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.utils.ParameterDriver;
 
-public class LambdaSolverTest {
+public class AmbiguitySolverTest {
 
     @Test
     public void testJoostenTiberiusFAQ() {
