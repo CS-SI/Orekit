@@ -61,6 +61,7 @@ import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
+import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
@@ -100,10 +101,11 @@ public class AttitudesSequenceTest {
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
-                new EclipseDetector(sun, 696000000.,
-                                    new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                         0.0,
-                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                new EclipseDetector(sun, 696000000., CelestialBodyFactory.getEarth(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+//                        new EclipseDetector(sun, 696000000.,
+//                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+//                                                                 0.0,
+//                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
                     public Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
