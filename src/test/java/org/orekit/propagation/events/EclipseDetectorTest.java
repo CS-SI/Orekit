@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.List;
+
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -28,16 +30,24 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventsLogger.LoggedEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -54,6 +64,51 @@ public class EclipseDetectorTest {
     private double               earthRadius;
 
     @Test
+    public void testPolar() {
+        final KeplerianOrbit original = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialState.getOrbit());
+        final KeplerianOrbit polar    = new KeplerianOrbit(original.getA(), original.getE(),
+                                                           0.5 * FastMath.PI, original.getPerigeeArgument(),
+                                                           original.getRightAscensionOfAscendingNode(),
+                                                           original.getTrueAnomaly(), PositionAngle.TRUE,
+                                                           original.getFrame(), original.getDate(),
+                                                           original.getMu());
+        propagator.resetInitialState(new SpacecraftState(polar));
+        EventsLogger logger = new EventsLogger();
+        EclipseDetector withoutFlattening = new EclipseDetector(60., 1.e-3,
+                                                                sun, sunRadius,
+                                                                earth, earthRadius).
+                                            withHandler(new ContinueOnEvent<>()).
+                                            withUmbra();
+//        EclipseDetector withFlattening    = new EclipseDetector(sun, sunRadius,
+//                                                                new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+//                                                                                     Constants.WGS84_EARTH_FLATTENING,
+//                                                                                     FramesFactory.getITRF(IERSConventions.IERS_2010,
+//                                                                                                           true))).
+//                                            withMaxCheck(60.0).
+//                                            withThreshold(1.0e-3).
+//                                            withHandler(new ContinueOnEvent<>()).
+//                                            withUmbra();
+        propagator.addEventDetector(logger.monitorDetector(withoutFlattening));
+//        propagator.addEventDetector(logger.monitorDetector(withFlattening));
+        double duration = 15000.0;
+        final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(duration));
+        Assert.assertEquals(duration, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        final List<LoggedEvent> events = logger.getLoggedEvents();
+        Assert.assertEquals(5, events.size());
+        Assert.assertTrue(events.get(0).getEventDetector() == withoutFlattening);
+        Assert.assertEquals( 2267.267, events.get(0).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(1).getEventDetector() == withoutFlattening);
+        Assert.assertEquals( 4324.592, events.get(1).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(2).getEventDetector() == withoutFlattening);
+        Assert.assertEquals( 8181.819, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(3).getEventDetector() == withoutFlattening);
+        Assert.assertEquals(10239.549, events.get(3).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(4).getEventDetector() == withoutFlattening);
+        Assert.assertEquals(14096.372, events.get(4).getState().getDate().durationFrom(iniDate), 1.0e-3);
+
+    }
+
+    @Test
     public void testEclipse() {
         EclipseDetector e = new EclipseDetector(60., 1.e-3,
                                                 sun, sunRadius,
@@ -63,10 +118,6 @@ public class EclipseDetectorTest {
         Assert.assertEquals(60.0, e.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
         Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
-        Assert.assertSame(sun, e.getOcculted());
-        Assert.assertEquals(sunRadius, e.getOccultedRadius(), 1.0);
-        Assert.assertSame(earth, e.getOcculting());
-        Assert.assertEquals(earthRadius, e.getOccultingRadius(), 1.0);
         Assert.assertTrue(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
