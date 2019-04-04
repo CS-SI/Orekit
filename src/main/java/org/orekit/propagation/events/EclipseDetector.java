@@ -82,10 +82,12 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occultedRadius the radius of the body to be occulted (m)
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius (m)
+     * @deprecated as of 10.0, replaced by {@link #EclipseDetector(PVCoordinatesProvider, double, OneAxisEllipsoid)}
      */
+    @Deprecated
     public EclipseDetector(final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD,
+        this(DEFAULT_MAXCHECK,
              occulted, occultedRadius, occulting, occultingRadius);
     }
 
@@ -100,7 +102,9 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occultedRadius the radius of the body to be occulted in meters
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius in meters
+     * @deprecated as of 10.0, replaced by {@link #EclipseDetector(PVCoordinatesProvider, double, OneAxisEllipsoid)}
      */
+    @Deprecated
     public EclipseDetector(final double maxCheck,
                            final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
@@ -119,7 +123,9 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occultedRadius the radius of the body to be occulted in meters
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius in meters
+     * @deprecated as of 10.0, replaced by {@link #EclipseDetector(PVCoordinatesProvider, double, OneAxisEllipsoid)}
      */
+    @Deprecated
     public EclipseDetector(final double maxCheck, final double threshold,
                            final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
