@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="538" due-to="Dorian">
+        Fixed default method compareTo in interface ComparableMeasurement.
+      </action>
       <action dev="luc" type="add" issue="532">
         Added Shapiro effect modifier for Range and InterSatelliteRange measurements.
       </action>
