@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="535">
+        Take occulting body flattening into account in eclipse detector.
+      </action>
       <action dev="luc" type="add" issue="532">
         Added Shapiro effect modifier for Range and InterSatelliteRange measurements.
       </action>

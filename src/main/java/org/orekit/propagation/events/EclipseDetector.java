@@ -205,18 +205,17 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        final Vector3D pted = occulted.getPVCoordinates(s.getDate(), occulting.getBodyFrame()).getPosition();
-        final Vector3D psat = s.getPVCoordinates(occulting.getBodyFrame()).getPosition();
-        final Vector3D ps   = psat.subtract(pted);
-        final double angle  = Vector3D.angle(ps, psat);
-        final double rs     = FastMath.asin(occultedRadius / ps.getNorm());
+        final Vector3D pted  = occulted.getPVCoordinates(s.getDate(), occulting.getBodyFrame()).getPosition();
+        final Vector3D psat  = s.getPVCoordinates(occulting.getBodyFrame()).getPosition();
+        final Vector3D plimb = occulting.pointOnLimb(psat, pted);
+        final Vector3D ps    = psat.subtract(pted);
+        final Vector3D pi    = psat.subtract(plimb);
+        final double angle   = Vector3D.angle(ps, psat);
+        final double rs      = FastMath.asin(occultedRadius / ps.getNorm());
         if (Double.isNaN(rs)) {
             return FastMath.PI;
         }
-        final double ro     = FastMath.asin(occulting.getEquatorialRadius() / psat.getNorm());
-        if (Double.isNaN(ro)) {
-            return -FastMath.PI;
-        }
+        final double ro = Vector3D.angle(pi, psat);
         return totalEclipse ? (angle - ro + rs) : (angle - ro - rs);
     }
 

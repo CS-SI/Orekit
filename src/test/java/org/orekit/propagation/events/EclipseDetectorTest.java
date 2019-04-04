@@ -32,6 +32,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -74,37 +75,61 @@ public class EclipseDetectorTest {
                                                            original.getMu());
         propagator.resetInitialState(new SpacecraftState(polar));
         EventsLogger logger = new EventsLogger();
-        EclipseDetector withoutFlattening = new EclipseDetector(60., 1.e-3,
-                                                                sun, sunRadius,
-                                                                earth, earthRadius).
+        OneAxisEllipsoid sphericalEarth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                               0.0,
+                                                               FramesFactory.getITRF(IERSConventions.IERS_2010,
+                                                                                     true));
+        EclipseDetector withoutFlattening = new EclipseDetector(sun, sunRadius, sphericalEarth).
+                                            withMaxCheck(60.0).
+                                            withThreshold(1.0e-3).
                                             withHandler(new ContinueOnEvent<>()).
                                             withUmbra();
-//        EclipseDetector withFlattening    = new EclipseDetector(sun, sunRadius,
-//                                                                new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-//                                                                                     Constants.WGS84_EARTH_FLATTENING,
-//                                                                                     FramesFactory.getITRF(IERSConventions.IERS_2010,
-//                                                                                                           true))).
-//                                            withMaxCheck(60.0).
-//                                            withThreshold(1.0e-3).
-//                                            withHandler(new ContinueOnEvent<>()).
-//                                            withUmbra();
+        OneAxisEllipsoid obateEarth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                           Constants.WGS84_EARTH_FLATTENING,
+                                                           FramesFactory.getITRF(IERSConventions.IERS_2010,
+                                                                                 true));
+        EclipseDetector withFlattening    = new EclipseDetector(sun, sunRadius, obateEarth).
+                                            withMaxCheck(60.0).
+                                            withThreshold(1.0e-3).
+                                            withHandler(new ContinueOnEvent<>()).
+                                            withUmbra();
         propagator.addEventDetector(logger.monitorDetector(withoutFlattening));
-//        propagator.addEventDetector(logger.monitorDetector(withFlattening));
+        propagator.addEventDetector(logger.monitorDetector(withFlattening));
         double duration = 15000.0;
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(duration));
         Assert.assertEquals(duration, finalState.getDate().durationFrom(iniDate), 1.0e-3);
         final List<LoggedEvent> events = logger.getLoggedEvents();
-        Assert.assertEquals(5, events.size());
+        Assert.assertEquals(10, events.size());
         Assert.assertTrue(events.get(0).getEventDetector() == withoutFlattening);
-        Assert.assertEquals( 2267.267, events.get(0).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(1).getEventDetector() == withoutFlattening);
-        Assert.assertEquals( 4324.592, events.get(1).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(2).getEventDetector() == withoutFlattening);
-        Assert.assertEquals( 8181.819, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertFalse(events.get(0).isIncreasing());
+        Assert.assertEquals( 2274.702, events.get(0).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(1).getEventDetector() == withFlattening);
+        Assert.assertFalse(events.get(1).isIncreasing());
+        Assert.assertEquals( 2280.427, events.get(1).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(2).getEventDetector() == withFlattening);
+        Assert.assertTrue(events.get(2).isIncreasing());
+        Assert.assertEquals( 4310.742, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
         Assert.assertTrue(events.get(3).getEventDetector() == withoutFlattening);
-        Assert.assertEquals(10239.549, events.get(3).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(3).isIncreasing());
+        Assert.assertEquals( 4317.155, events.get(3).getState().getDate().durationFrom(iniDate), 1.0e-3);
         Assert.assertTrue(events.get(4).getEventDetector() == withoutFlattening);
-        Assert.assertEquals(14096.372, events.get(4).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertFalse(events.get(4).isIncreasing());
+        Assert.assertEquals( 8189.250, events.get(4).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(5).getEventDetector() == withFlattening);
+        Assert.assertFalse(events.get(5).isIncreasing());
+        Assert.assertEquals( 8194.978, events.get(5).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(6).getEventDetector() == withFlattening);
+        Assert.assertTrue(events.get(6).isIncreasing());
+        Assert.assertEquals(10225.704, events.get(6).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(7).getEventDetector() == withoutFlattening);
+        Assert.assertTrue(events.get(7).isIncreasing());
+        Assert.assertEquals(10232.115, events.get(7).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(8).getEventDetector() == withoutFlattening);
+        Assert.assertFalse(events.get(8).isIncreasing());
+        Assert.assertEquals(14103.800, events.get(8).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertTrue(events.get(9).getEventDetector() == withFlattening);
+        Assert.assertFalse(events.get(9).isIncreasing());
+        Assert.assertEquals(14109.530, events.get(9).getState().getDate().durationFrom(iniDate), 1.0e-3);
 
     }
 
@@ -162,7 +187,12 @@ public class EclipseDetectorTest {
                                                                                                 new Vector3D(1000, 0, 0)),
                                                                    FramesFactory.getGCRF(),
                                                                    mu));
-        Assert.assertEquals(-FastMath.PI, e.g(s), 1.0e-15);
+        try {
+            e.g(s);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.POINT_INSIDE_ELLIPSOID, oe.getSpecifier());
+        }
     }
 
     @Test
