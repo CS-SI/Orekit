@@ -31,6 +31,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
@@ -49,6 +50,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -93,12 +95,17 @@ public class EarthObservation {
                                                                      RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
             final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
             final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-            final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
             final EventDetector dayNightEvent =
-                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                new EclipseDetector(sun, 696000000.,
+                                    new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                         0.0,
+                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>());
             final EventDetector nightDayEvent =
-                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                new EclipseDetector(sun, 696000000.,
+                                    new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                         0.0,
+                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>());
 
             final AttitudesSequence attitudesSequence = new AttitudesSequence();
