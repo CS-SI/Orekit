@@ -72,9 +72,12 @@ public class EventSlopeFilterTest {
     @Test
     public void testReplayForward() {
         EclipseDetector detector =
-                new EclipseDetector(60., 1.e-3,
-                                     CelestialBodyFactory.getSun(), sunRadius,
-                                     CelestialBodyFactory.getEarth(), earthRadius).
+                new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                     new OneAxisEllipsoid(earthRadius,
+                                                          0.0,
+                                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                withMaxCheck(60.0).
+                withThreshold(1.0e-3).
                 withPenumbra().withHandler(new Counter());
         final EventSlopeFilter<EclipseDetector> filter =
                 new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS).
@@ -102,10 +105,14 @@ public class EventSlopeFilterTest {
     @Test
     public void testReplayBackward() {
         EclipseDetector detector =
-                new EclipseDetector(60., 1.e-3,
-                                     CelestialBodyFactory.getSun(), sunRadius,
-                                     CelestialBodyFactory.getEarth(), earthRadius).
-                withPenumbra().withHandler(new Counter());
+                        new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                            new OneAxisEllipsoid(earthRadius,
+                                                                 0.0,
+                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                       withMaxCheck(60.0).
+                       withThreshold(1.0e-3).
+                       withPenumbra().
+                       withHandler(new Counter());
         final EventSlopeFilter<EclipseDetector> filter =
                 new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS).
                 withMaxIter(200);
@@ -138,10 +145,14 @@ public class EventSlopeFilterTest {
     @Test
     public void testUmbra() {
         EclipseDetector detector =
-                new EclipseDetector(60., 1.e-3,
-                                     CelestialBodyFactory.getSun(), sunRadius,
-                                     CelestialBodyFactory.getEarth(), earthRadius).
-                withPenumbra().withHandler(new Counter());
+                        new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                            new OneAxisEllipsoid(earthRadius,
+                                                                 0.0,
+                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                       withMaxCheck(60.0).
+                       withThreshold(1.0e-3).
+                       withPenumbra().
+                       withHandler(new Counter());
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(detector);
@@ -168,10 +179,14 @@ public class EventSlopeFilterTest {
     @Test
     public void testPenumbra() {
         EclipseDetector detector =
-                new EclipseDetector(60., 1.e-3,
-                                    CelestialBodyFactory.getSun(), sunRadius,
-                                    CelestialBodyFactory.getEarth(), earthRadius).
-                withPenumbra().withHandler(new Counter());
+                        new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                            new OneAxisEllipsoid(earthRadius,
+                                                                 0.0,
+                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                       withMaxCheck(60.0).
+                       withThreshold(1.0e-3).
+                       withPenumbra().
+                       withHandler(new Counter());
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(detector);
