@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="539">
+        Fixed DTM2000.getDensity method, made it independent of user time zone.
+      </action>
       <action dev="luc" type="add" issue="535">
         Take occulting body flattening into account in eclipse detector.
       </action>
