@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
@@ -341,9 +339,7 @@ public class DTM2000 implements Atmosphere {
         }
 
         // compute day number in current year
-        final Calendar cal = new GregorianCalendar();
-        cal.setTime(date.toDate(TimeScalesFactory.getUTC()));
-        final int day = cal.get(Calendar.DAY_OF_YEAR);
+        final int day = date.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
         //position in ECEF so we only have to do the transform once
         final Frame ecef = earth.getBodyFrame();
         final Vector3D pEcef = frame.getTransformTo(ecef, date)
@@ -381,10 +377,8 @@ public class DTM2000 implements Atmosphere {
         }
 
         // compute day number in current year
-        final Calendar cal = new GregorianCalendar();
-        cal.setTime(date.toDate(TimeScalesFactory.getUTC()));
-        final int day = cal.get(Calendar.DAY_OF_YEAR);
-        //position in ECEF so we only have to do the transform once
+        final int day = date.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
+        // position in ECEF so we only have to do the transform once
         final Frame ecef = earth.getBodyFrame();
         final FieldVector3D<T> pEcef = frame.getTransformTo(ecef, date).transformPosition(position);
         // compute geodetic position
