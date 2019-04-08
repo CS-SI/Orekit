@@ -124,6 +124,7 @@ public class IsotropicDrag implements DragSensitive {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                final Rotation rotation, final double mass,
                                                                final double density, final Vector3D relativeVelocity,

@@ -123,7 +123,10 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Factory for the DerivativeStructure instances. */
+    /** Factory for the DerivativeStructure instances.
+     * @deprecated Attribute not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
+     */
+    @Deprecated
     private final DSFactory factory;
 
     /** Build a spacecraft model with best lighting of solar array.
@@ -697,7 +700,9 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param position position of spacecraft in reference frame
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
+     * @deprecated Method not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
      */
+    @Deprecated
     public synchronized FieldVector3D<DerivativeStructure> getNormal(final AbsoluteDate date, final Frame frame,
                                                                      final FieldVector3D<DerivativeStructure> position,
                                                                      final FieldRotation<DerivativeStructure> rotation) {
@@ -772,6 +777,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame,
                                                                final Vector3D position, final Rotation rotation,
                                                                final double mass, final  double density,
@@ -877,6 +883,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame,
                                                                             final Vector3D position, final Rotation rotation,
                                                                             final double mass, final Vector3D flux,
@@ -1095,7 +1102,9 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param specularReflectionCoeffDS specular reflection coefficient
      * @param diffuseReflectionCoeffDS diffuse reflection coefficient
      * @return contribution of the facet to force in spacecraft frame
+     * @deprecated Method not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
      */
+    @Deprecated
     private FieldVector3D<DerivativeStructure> facetRadiationAcceleration(final Vector3D normal, final double area,
                                                                           final Vector3D fluxSat, final double dot,
                                                                           final DerivativeStructure specularReflectionCoeffDS,
