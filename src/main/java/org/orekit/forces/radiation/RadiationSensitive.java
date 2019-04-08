@@ -86,7 +86,9 @@ public interface RadiationSensitive {
      * @param parameters values of the force model parameters
      * @param paramName name of the parameter with respect to which derivatives are required
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
+     * @deprecated Method not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
      */
+    @Deprecated
     FieldVector3D<DerivativeStructure> radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
                                                                      Rotation rotation, double mass, Vector3D flux,
                                                                      double[] parameters,

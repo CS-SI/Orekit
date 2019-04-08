@@ -201,6 +201,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assert.assertTrue(3==count);
     }
 
+    /** Test parameter derivatives with class IsotropicRadiationCNES95Convention.
+     * @deprecated remove code after FIXME in next major version
+     */
+    @Deprecated
     @Test
     public void testParameterDerivativeIsotropicSingle() {
 
@@ -236,7 +240,11 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         }
     }
 
+    /** Test parameter derivatives with class IsotropicRadiationClassicalConvention.
+     * @deprecated remove code after FIXME in next major version
+     */
     @Test
+    @Deprecated
     public void testParameterDerivativeIsotropicClassical() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -255,6 +263,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 6.7e-16);
         checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 5.1e-16);
 
+        // FIXME: To remove
         try {
             rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                              state.getPVCoordinates().getPosition(),
@@ -269,7 +278,11 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     }
 
+    /** Test parameter derivatives with class IsotropicRadiationCNES95Convention.
+     * @deprecated remove code after FIXME in next major version
+     */
     @Test
+    @Deprecated
     public void testParameterDerivativeIsotropicCnes() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -287,7 +300,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.5e-15);
         checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 2.0e-14);
-
+        
+        // FIXME: To remove
         try {
             rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                              state.getPVCoordinates().getPosition(),
