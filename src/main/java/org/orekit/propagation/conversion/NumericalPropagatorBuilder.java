@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,11 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -62,14 +62,12 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @exception OrekitException if parameters drivers cannot be scaled
-     * @since 8.0
+          * @since 8.0
      */
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
                                       final PositionAngle positionAngle,
-                                      final double positionScale)
-        throws OrekitException {
+                                      final double positionScale) {
         super(referenceOrbit, positionAngle, positionScale, true);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
@@ -77,11 +75,60 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         this.attProvider = Propagator.DEFAULT_LAW;
     }
 
-    /** Set the attitude provider.
-     * @param attitudeProvider attitude provider
+    /** Create a copy of a NumericalPropagatorBuilder object.
+     * @return Copied version of the NumericalPropagatorBuilder
      */
-    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
-        this.attProvider = attitudeProvider;
+    public NumericalPropagatorBuilder copy() {
+        final NumericalPropagatorBuilder copyBuilder =
+                        new NumericalPropagatorBuilder(createInitialOrbit(),
+                                                       builder,
+                                                       getPositionAngle(),
+                                                       getPositionScale());
+        copyBuilder.setAttitudeProvider(attProvider);
+        copyBuilder.setMass(mass);
+        for (ForceModel model : forceModels) {
+            copyBuilder.addForceModel(model);
+        }
+        return copyBuilder;
+    }
+
+    /** Get the integrator builder.
+     * @return the integrator builder
+     * @since 9.2
+     */
+    public ODEIntegratorBuilder getIntegratorBuilder()
+    {
+        return builder;
+    }
+
+    /** Get the list of all force models.
+     * @return the list of all force models
+     * @since 9.2
+     */
+    public List<ForceModel> getAllForceModels()
+    {
+        return Collections.unmodifiableList(forceModels);
+    }
+
+    /** Add a force model to the global perturbation model.
+     * <p>If this method is not called at all, the integrated orbit will follow
+     * a Keplerian evolution only.</p>
+     * @param model perturbing {@link ForceModel} to add
+     */
+    public void addForceModel(final ForceModel model) {
+        forceModels.add(model);
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            addSupportedParameter(driver);
+        }
+    }
+
+    /** Get the mass.
+     * @return the mass
+     * @since 9.2
+     */
+    public double getMass()
+    {
+        return mass;
     }
 
     /** Set the initial mass.
@@ -91,23 +138,24 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         this.mass = mass;
     }
 
-    /** Add a force model to the global perturbation model.
-     * <p>If this method is not called at all, the integrated orbit will follow
-     * a Keplerian evolution only.</p>
-     * @param model perturbing {@link ForceModel} to add
-     * @exception OrekitException if model parameters cannot be set
+    /** Get the attitudeProvider.
+     * @return the attitude provider
+     * @since 9.2
      */
-    public void addForceModel(final ForceModel model)
-        throws OrekitException {
-        forceModels.add(model);
-        for (final ParameterDriver driver : model.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
+    public AttitudeProvider getAttitudeProvider()
+    {
+        return attProvider;
+    }
+
+    /** Set the attitude provider.
+     * @param attitudeProvider attitude provider
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attProvider = attitudeProvider;
     }
 
     /** {@inheritDoc} */
-    public NumericalPropagator buildPropagator(final double[] normalizedParameters)
-        throws OrekitException {
+    public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
         final Orbit           orbit    = createInitialOrbit();
@@ -125,5 +173,4 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
         return propagator;
     }
-
 }

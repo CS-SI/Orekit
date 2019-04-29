@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 
 package org.orekit.frames;
-
-import org.orekit.errors.OrekitException;
 
 /** Interface for Transform providers that use {@link EOPHistory Earth Orientation Parameters}.
  * @author Luc Maisonobe
@@ -43,9 +41,7 @@ public interface EOPBasedTransformProvider extends TransformProvider {
      * </p>
      * @return version of the provider that does <em>not</em> cache tidal corrections
      * @see FramesFactory#getNonInterpolatingTransform(Frame, Frame, AbsoluteDate)
-     * @exception OrekitException if EOP cannot be retrieved
      */
-    EOPBasedTransformProvider getNonInterpolatingProvider()
-        throws OrekitException;
+    EOPBasedTransformProvider getNonInterpolatingProvider();
 
 }

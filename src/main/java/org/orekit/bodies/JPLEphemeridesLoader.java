@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,6 +39,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -182,17 +183,15 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         /** Get the position-velocity at date.
          * @param date date at which the position-velocity is desired
          * @return position-velocity at the specified date
-         * @exception OrekitException if the date is not available to the loader
          */
-        PVCoordinates getRawPV(AbsoluteDate date) throws OrekitException;
+        PVCoordinates getRawPV(AbsoluteDate date);
 
         /** Get the position-velocity at date.
          * @param date date at which the position-velocity is desired
          * @param <T> type of the field elements
          * @return position-velocity at the specified date
-         * @exception OrekitException if the date is not available to the loader
          */
-        <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date) throws OrekitException;
+        <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
 
     }
 
@@ -247,10 +246,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Create a loader for JPL ephemerides binary files.
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
-     * @exception OrekitException if the header constants cannot be read
      */
-    public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType)
-        throws OrekitException {
+    public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
 
         this.supportedNames = supportedNames;
         constants = new AtomicReference<Map<String, Double>>();
@@ -275,15 +272,16 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Load celestial body.
      * @param name name of the celestial body
      * @return loaded celestial body
-     * @throws OrekitException if the body cannot be loaded
      */
-    public CelestialBody loadCelestialBody(final String name) throws OrekitException {
+    public CelestialBody loadCelestialBody(final String name) {
 
         final double gm       = getLoadedGravitationalCoefficient(generateType);
         final IAUPole iauPole = PredefinedIAUPoles.getIAUPole(generateType);
         final double scale;
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
+        String inertialFrameName = null;
+        String bodyOrientedFrameName = null;
         switch (generateType) {
             case SOLAR_SYSTEM_BARYCENTER : {
                 scale = -1.0;
@@ -293,6 +291,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                         parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
                 rawPVProvider = new EphemerisRawPVProvider();
+                inertialFrameName = Predefined.ICRF.getName();
+                bodyOrientedFrameName = null;
                 break;
             }
             case EARTH_MOON :
@@ -323,33 +323,30 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         // build the celestial body
         return new JPLCelestialBody(name, supportedNames, generateType, rawPVProvider,
-                                    gm, scale, iauPole, definingFrameAlignedWithICRF);
+                                    gm, scale, iauPole, definingFrameAlignedWithICRF,
+                                    inertialFrameName, bodyOrientedFrameName);
 
     }
 
     /** Get astronomical unit.
      * @return astronomical unit in meters
-     * @exception OrekitException if constants cannot be loaded
      */
-    public double getLoadedAstronomicalUnit() throws OrekitException {
+    public double getLoadedAstronomicalUnit() {
         return 1000.0 * getLoadedConstant(CONSTANT_AU);
     }
 
     /** Get Earth/Moon mass ratio.
      * @return Earth/Moon mass ratio
-     * @exception OrekitException if constants cannot be loaded
      */
-    public double getLoadedEarthMoonMassRatio() throws OrekitException {
+    public double getLoadedEarthMoonMassRatio() {
         return getLoadedConstant(CONSTANT_EMRAT);
     }
 
     /** Get the gravitational coefficient of a body.
      * @param body body for which the gravitational coefficient is requested
      * @return gravitational coefficient in m³/s²
-     * @exception OrekitException if constants cannot be loaded
      */
-    public double getLoadedGravitationalCoefficient(final EphemerisType body)
-        throws OrekitException {
+    public double getLoadedGravitationalCoefficient(final EphemerisType body) {
 
         // coefficient in au³/day²
         final double rawGM;
@@ -422,9 +419,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * </p>
      * @param names alternate names of the constant
      * @return value of the constant of NaN if the constant is not defined
-     * @exception OrekitException if constants cannot be loaded
      */
-    public double getLoadedConstant(final String... names) throws OrekitException {
+    public double getLoadedConstant(final String... names) {
 
         // lazy loading of constants
         Map<String, Double> map = constants.get();
@@ -457,10 +453,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Parse the first header record.
      * @param record first header record
      * @param name name of the file (or zip entry)
-     * @exception OrekitException if the header is not a JPL ephemerides binary file header
      */
-    private void parseFirstHeaderRecord(final byte[] record, final String name)
-        throws OrekitException {
+    private void parseFirstHeaderRecord(final byte[] record, final String name) {
 
         // get the ephemerides type
         final int deNum = extractInt(record, HEADER_EPHEMERIS_TYPE_OFFSET);
@@ -542,11 +536,10 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @param input input stream
      * @param name name of the file (or zip entry)
      * @return record record where to put bytes
-     * @exception OrekitException if the stream does not contain a JPL ephemeris
      * @exception IOException if a read error occurs
      */
     private byte[] readFirstRecord(final InputStream input, final String name)
-        throws OrekitException, IOException {
+        throws IOException {
 
         // read first part of record, up to the ephemeris type
         final byte[] firstPart = new byte[HEADER_RECORD_SIZE_OFFSET + 4];
@@ -668,10 +661,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @param record the byte array containing the header record
      * @param name the name of the data file
      * @return the record size for this file
-     * @throws OrekitException if the file contains unexpected data
      */
-    private int computeRecordSize(final byte[] record, final String name)
-        throws OrekitException {
+    private int computeRecordSize(final byte[] record, final String name) {
 
         int recordSize = 0;
         boolean ok = true;
@@ -850,8 +841,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         /** {@inheritDoc} */
-        public List<PosVelChebyshev> generate(final AbsoluteDate existingDate, final AbsoluteDate date)
-            throws TimeStampedCacheException {
+        public List<PosVelChebyshev> generate(final AbsoluteDate existingDate, final AbsoluteDate date) {
             try {
 
                 // prepare reading
@@ -904,7 +894,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         /** {@inheritDoc} */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             // read first header record
             final byte[] first = readFirstRecord(input, name);
@@ -960,9 +950,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         /** Parse regular ephemeris record.
          * @param record record to parse
          * @return date of the last parsed chunk
-         * @exception OrekitException if the header is not a JPL ephemerides binary file header
          */
-        private AbsoluteDate parseDataRecord(final byte[] record) throws OrekitException {
+        private AbsoluteDate parseDataRecord(final byte[] record) {
 
             // extract time range covered by the record
             final AbsoluteDate rangeStart = extractDate(record, DATA_START_RANGE_OFFSET);
@@ -1022,7 +1011,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     private class EphemerisRawPVProvider implements RawPVProvider {
 
         /** {@inheritDoc} */
-        public PVCoordinates getRawPV(final AbsoluteDate date) throws TimeStampedCacheException {
+        public PVCoordinates getRawPV(final AbsoluteDate date) {
 
             // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;
@@ -1043,8 +1032,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date)
-            throws TimeStampedCacheException {
+        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
 
             // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;

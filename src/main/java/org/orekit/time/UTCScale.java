@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,9 +54,8 @@ public class UTCScale implements TimeScale {
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
      * @param offsetModels UTC-TAI offsets
-     * @exception OrekitException if cache cannot be set up
      */
-    UTCScale(final List<OffsetModel> offsetModels) throws OrekitException {
+    UTCScale(final List<OffsetModel> offsetModels) {
 
         if (offsetModels.get(0).getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -33,7 +32,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements TimeStamped {
+public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements ComparableMeasurement {
 
     /** Associated observed measurement. */
     private final T observedMeasurement;
@@ -53,8 +52,8 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** Estimated value. */
     private double[] estimatedValue;
 
-    /** Current weight. */
-    private double[] currentWeight;
+    /** Measurement status. */
+    private Status status;
 
     /** Partial derivatives with respect to states. */
     private double[][][] stateDerivatives;
@@ -79,6 +78,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
         this.count                 = count;
         this.states                = states.clone();
         this.participants          = participants.clone();
+        this.status                = Status.PROCESSED;
         this.stateDerivatives      = new double[states.length][][];
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[]>();
     }
@@ -139,6 +139,12 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
         return observedMeasurement.getDate().durationFrom(states[0].getDate());
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double[] getObservedValue() {
+        return observedMeasurement.getObservedValue();
+    }
+
     /** Get the estimated value.
      * @return estimated value
      */
@@ -153,22 +159,24 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
         this.estimatedValue = estimatedValue.clone();
     }
 
-    /** Get the current weight.
+    /** Get the status.
      * <p>
-     * By default, the current weight is measurement {@link
-     * ObservedMeasurement#getBaseWeight() base weight}.
+     * The status is set to {@link Status#PROCESSED PROCESSED} at construction, and
+     * can be reset to {@link Status#REJECTED REJECTED} later on, typically by
+     * {@link org.orekit.estimation.measurements.modifiers.OutlierFilter OutlierFilter}
+     * or {@link org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter DynamicOutlierFilter}
      * </p>
-     * @return current weight
+     * @return status
      */
-    public double[] getCurrentWeight() {
-        return currentWeight == null ? observedMeasurement.getBaseWeight() : currentWeight.clone();
+    public Status getStatus() {
+        return status;
     }
 
-    /** Set the current weight.
-     * @param currentWeight current weight
+    /** Set the status.
+     * @param status status to set
      */
-    public void setCurrentWeight(final double... currentWeight) {
-        this.currentWeight = currentWeight.clone();
+    public void setStatus(final Status status) {
+        this.status = status;
     }
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()
@@ -238,6 +246,17 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      */
     public void setParameterDerivatives(final ParameterDriver driver, final double... parameterDerivatives) {
         parametersDerivatives.put(driver, parameterDerivatives);
+    }
+
+    /** Enumerate for the status of the measurement. */
+    public enum Status {
+
+        /** Status for processed measurements. */
+        PROCESSED,
+
+        /** Status for rejected measurements. */
+        REJECTED;
+
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,7 +126,7 @@ public class UTCScaleTest {
     }
 
     @Test
-    public void testWrapBeforeLeap() throws OrekitException {
+    public void testWrapBeforeLeap() {
         AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
         Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
     }
@@ -272,7 +272,7 @@ public class UTCScaleTest {
     }
 
     @Test
-    public void testDisplayDuringLeap() throws OrekitException {
+    public void testDisplayDuringLeap() {
         AbsoluteDate t0 = utc.getLastKnownLeapSecond().shiftedBy(-1.0);
         for (double dt = 0.0; dt < 3.0; dt += 0.375) {
             AbsoluteDate t = t0.shiftedBy(dt);
@@ -323,14 +323,14 @@ public class UTCScaleTest {
     }
 
     @Test
-    public void testIssue89() throws OrekitException {
+    public void testIssue89() {
         AbsoluteDate firstDayLastLeap = utc.getLastKnownLeapSecond().shiftedBy(10.0);
         AbsoluteDate rebuilt = new AbsoluteDate(firstDayLastLeap.toString(utc), utc);
         Assert.assertEquals(0.0, rebuilt.durationFrom(firstDayLastLeap), 1.0e-12);
     }
 
     @Test
-    public void testOffsetToTAIBeforeFirstLeapSecond() throws OrekitException {
+    public void testOffsetToTAIBeforeFirstLeapSecond() {
         TimeScale scale = TimeScalesFactory.getUTC();
         // time before first leap second
         DateComponents dateComponents = new DateComponents(1950, 1, 1);
@@ -358,7 +358,7 @@ public class UTCScaleTest {
     }
 
     @Test
-    public void testInfinityRegularDate() throws OrekitException {
+    public void testInfinityRegularDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
         Assert.assertEquals(-36.0,
                             scale.offsetFromTAI(AbsoluteDate.FUTURE_INFINITY),
@@ -369,7 +369,7 @@ public class UTCScaleTest {
     }
 
     @Test
-    public void testInfinityFieldDate() throws OrekitException {
+    public void testInfinityFieldDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
         Assert.assertEquals(-36.0,
                             scale.offsetFromTAI(FieldAbsoluteDate.getFutureInfinity(Decimal64Field.getInstance())).getReal(),
@@ -380,7 +380,7 @@ public class UTCScaleTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         UTCScale utc = TimeScalesFactory.getUTC();
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -398,7 +398,7 @@ public class UTCScaleTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
     }

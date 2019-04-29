@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 
 import java.util.Arrays;
 
-import org.orekit.errors.OrekitException;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -62,9 +62,6 @@ import org.orekit.time.AbsoluteDate;
  */
 
 public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<EventSlopeFilter<T>> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130409L;
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
@@ -129,7 +126,9 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     }
 
     /**  {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0,
+                     final AbsoluteDate t) {
+        super.init(s0, t);
 
         // delegate to raw detector
         rawDetector.init(s0, t);
@@ -143,7 +142,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     }
 
     /**  {@inheritDoc} */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         final double rawG = rawDetector.g(s);
 
@@ -235,15 +234,13 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     private static class LocalHandler<T extends EventDetector> implements EventHandler<EventSlopeFilter<T>> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventSlopeFilter<T> ef, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final EventSlopeFilter<T> ef, final boolean increasing) {
             return ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventSlopeFilter<T> ef, final SpacecraftState oldState)
-            throws OrekitException {
+        public SpacecraftState resetState(final EventSlopeFilter<T> ef, final SpacecraftState oldState) {
             return ef.rawDetector.resetState(oldState);
         }
 

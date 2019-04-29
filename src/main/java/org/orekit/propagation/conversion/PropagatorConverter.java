@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 
@@ -38,12 +37,11 @@ public interface PropagatorConverter {
      * @param nbPoints number of points for sampling over the time span
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
      */
     Propagator convert(Propagator source,
                        double timeSpan,
                        int nbPoints,
-                       List<String> freeParameters) throws OrekitException;
+                       List<String> freeParameters);
 
     /** Convert a propagator into another one.
      * @param source propagator to convert
@@ -51,33 +49,30 @@ public interface PropagatorConverter {
      * @param nbPoints number of points for sampling over the time span
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
      */
     Propagator convert(Propagator source,
                        double timeSpan,
                        int nbPoints,
-                       String... freeParameters) throws OrekitException;
+                       String... freeParameters);
 
     /** Find the propagator that minimize the mean square error for a sample of {@link SpacecraftState states}.
      * @param states spacecraft states sample to fit
      * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
      */
     Propagator convert(List<SpacecraftState> states,
                        boolean positionOnly,
-                       List<String> freeParameters) throws OrekitException;
+                       List<String> freeParameters);
 
     /** Find the propagator that minimize the mean square error for a sample of {@link SpacecraftState states}.
      * @param states spacecraft states sample to fit
      * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
      */
     Propagator convert(List<SpacecraftState> states,
                        boolean positionOnly,
-                       String... freeParameters) throws OrekitException;
+                       String... freeParameters);
 
 }

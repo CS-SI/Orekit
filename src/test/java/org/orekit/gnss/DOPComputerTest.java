@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ public class DOPComputerTest {
     private static GeodeticPoint location;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws OrekitException {
+    public static void setUpBeforeClass() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss");
         // Defines the Earth shape
@@ -57,7 +57,7 @@ public class DOPComputerTest {
     }
 
     @Test
-    public void testBasicCompute() throws OrekitException {
+    public void testBasicCompute() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location);
@@ -83,7 +83,7 @@ public class DOPComputerTest {
     }
 
     @Test
-    public void testComputeWithMinElevation() throws OrekitException {
+    public void testComputeWithMinElevation() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location)
@@ -110,7 +110,7 @@ public class DOPComputerTest {
     }
 
     @Test
-    public void testComputeWithElevationMask() throws OrekitException {
+    public void testComputeWithElevationMask() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location).withElevationMask(getMask());
@@ -136,7 +136,7 @@ public class DOPComputerTest {
     }
 
     @Test
-    public void testNoDOPComputed() throws OrekitException {
+    public void testNoDOPComputed() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location).withElevationMask(getMask());
@@ -162,7 +162,7 @@ public class DOPComputerTest {
     }
 
     @Test
-    public void testComputeFromTLE() throws OrekitException {
+    public void testComputeFromTLE() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location);
@@ -188,7 +188,7 @@ public class DOPComputerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNotEnoughSV() throws OrekitException {
+    public void testNotEnoughSV() {
 
         // Get the TLEs for 3 SV from the GPS constellation ...
         List<Propagator> gps = new ArrayList<Propagator>();
@@ -209,7 +209,7 @@ public class DOPComputerTest {
         computer.compute(date, gps);
     }
 
-    private List<Propagator> getGpsPropagators() throws OrekitException {
+    private List<Propagator> getGpsPropagators() {
         // Gets the GPS almanacs from the Yuma file
         final YUMAParser reader = new YUMAParser(null);
         reader.loadData();
@@ -223,7 +223,7 @@ public class DOPComputerTest {
         return propagators;
     }
 
-    private List<Propagator> getTlePropagators() throws OrekitException {
+    private List<Propagator> getTlePropagators() {
 
         List<Propagator> propagators = new ArrayList<Propagator>();
 

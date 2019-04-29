@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -107,15 +107,13 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawCnm(final int n, final int m)
-                throws OrekitException {
+            public double getRawCnm(final int n, final int m) {
                 checkLimits(n, m);
                 return rawC[n][m];
             }
 
             /** {@inheritDoc} */
-            public double getRawSnm(final int n, final int m)
-                throws OrekitException {
+            public double getRawSnm(final int n, final int m) {
                 checkLimits(n, m);
                 return rawS[n][m];
             }
@@ -126,10 +124,8 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** Check limits.
      * @param degree degree
      * @param order order
-     * @exception OrekitException if indices are out of bound
      */
-    private void checkLimits(final int degree, final int order)
-        throws OrekitException {
+    private void checkLimits(final int degree, final int order) {
 
         if (degree >= rawC.length) {
             throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,

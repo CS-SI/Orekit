@@ -71,9 +71,8 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
      * the frame for orbits created by this propagator.
      *
      * @param ephemeris segment containing the data for this propagator.
-     * @throws OrekitException if {@link EphemerisSegment#getFrame()} throws one.
      */
-    EphemerisSegmentPropagator(final EphemerisSegment ephemeris) throws OrekitException {
+    EphemerisSegmentPropagator(final EphemerisSegment ephemeris) {
         super(Propagator.DEFAULT_LAW);
         this.cache = new ImmutableTimeStampedCache<>(
                 ephemeris.getInterpolationSamples(),
@@ -106,7 +105,7 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
 
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
-                                                     final Frame frame) throws OrekitException {
+                                                     final Frame frame) {
         final Stream<TimeStampedPVCoordinates> neighbors = this.cache.getNeighbors(date);
         final TimeStampedPVCoordinates point =
                 TimeStampedPVCoordinates.interpolate(date, ephemeris.getAvailableDerivatives(), neighbors);
@@ -114,7 +113,7 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) {
         final TimeStampedPVCoordinates pv = this.getPVCoordinates(date, inertialFrame);
         return new CartesianOrbit(pv, inertialFrame, this.ephemeris.getMu());
     }
@@ -130,23 +129,23 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    protected double getMass(final AbsoluteDate date) throws OrekitException {
+    protected double getMass(final AbsoluteDate date) {
         return DEFAULT_MASS;
     }
 
     @Override
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() {
         return this.basicPropagate(this.getMinDate());
     }
 
     @Override
     protected void resetIntermediateState(final SpacecraftState state,
-                                          final boolean forward) throws OrekitException {
+                                          final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     @Override
-    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 

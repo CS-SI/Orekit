@@ -10,7 +10,6 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -50,31 +49,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param range observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
-     */
-    public TurnAroundRangeAnalytic(final GroundStation masterStation, final GroundStation slaveStation,
-                                   final AbsoluteDate date, final double turnAroundRange,
-                                   final double sigma, final double baseWeight)
-        throws OrekitException {
-        super(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight);
-    }
-
     /** Constructor from parent TurnAroundRange class
      * @param Range parent class
      */
-    public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange)
-        throws OrekitException {
+    public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange) {
         super(turnAroundRange.getMasterStation(), turnAroundRange.getSlaveStation(),
               turnAroundRange.getDate(), turnAroundRange.getObservedValue()[0],
               turnAroundRange.getTheoreticalStandardDeviation()[0],
-              turnAroundRange.getBaseWeight()[0]);
+              turnAroundRange.getBaseWeight()[0],
+              new ObservableSatellite(0));
     }
 
 
@@ -87,12 +70,10 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * @param initialState
      * @param state
      * @return
-     * @throws OrekitException
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
                                                                                   final SpacecraftState initialState,
-                                                                                  final SpacecraftState state)
-        throws OrekitException {
+                                                                                  final SpacecraftState state) {
 
         // Stations attributes from parent Range class
         final GroundStation masterGroundStation = this.getMasterStation();
@@ -357,11 +338,11 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // ------------------------------------------------------------
 
         if (masterGroundStation.getEastOffsetDriver().isSelected()  ||
-                        masterGroundStation.getNorthOffsetDriver().isSelected() ||
-                        masterGroundStation.getZenithOffsetDriver().isSelected()||
-                        slaveGroundStation.getEastOffsetDriver().isSelected()  ||
-                        slaveGroundStation.getNorthOffsetDriver().isSelected() ||
-                        slaveGroundStation.getZenithOffsetDriver().isSelected()) {
+            masterGroundStation.getNorthOffsetDriver().isSelected() ||
+            masterGroundStation.getZenithOffsetDriver().isSelected()||
+            slaveGroundStation.getEastOffsetDriver().isSelected()  ||
+            slaveGroundStation.getNorthOffsetDriver().isSelected() ||
+            slaveGroundStation.getZenithOffsetDriver().isSelected()) {
 
             // tMd derivatives / stations
             // --------------------------
@@ -547,11 +528,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * @param evaluation
      * @param state
      * @return
-     * @throws OrekitException
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationValidation(final int iteration, final int evaluation,
-                                                                                    final SpacecraftState state)
-        throws OrekitException {
+                                                                                    final SpacecraftState state) {
         // Stations & DSFactory attributes from parent TurnArounsRange class
         final GroundStation masterGroundStation       = getMasterStation();
         final GroundStation slaveGroundStation        = getSlaveStation();
@@ -600,7 +579,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as DerivativeStructures
         // The components of master station's position in offset frame are the 3 third derivative parameters
         final FieldTransform<DerivativeStructure> masterToInert =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDateDS, dsFactory, indices);
+                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDate, dsFactory, indices);
 
         // Master station PV in inertial frame at measurement date
         final FieldVector3D<DerivativeStructure> QMaster = masterToInert.transformPosition(zero);

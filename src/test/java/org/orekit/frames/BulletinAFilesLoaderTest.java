@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.orekit.utils.IERSConventions;
 public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testStartDate() throws OrekitException {
+    public void testStartDate() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt").fillHistory(null, history);
@@ -46,7 +46,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testEndDate() throws OrekitException {
+    public void testEndDate() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt").fillHistory(null, history);
@@ -57,7 +57,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testSingleFile() throws OrekitException {
+    public void testSingleFile() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-039.txt").fillHistory(null, data);
@@ -78,7 +78,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testRapidDataContent() throws OrekitException {
+    public void testRapidDataContent() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME).fillHistory(null, data);
@@ -91,7 +91,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testFinalValuesContent() throws OrekitException {
+    public void testFinalValuesContent() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME).fillHistory(null, data);
@@ -108,7 +108,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testMissingSections() throws OrekitException {
+    public void testMissingSections() {
         setRoot("bulletinA");
         checkTruncated("bulletina-missing-eop-rapid-service.txt",    OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE);
         checkTruncated("bulletina-missing-eop-prediction.txt",       OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE);
@@ -119,7 +119,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testMissingData() throws OrekitException {
+    public void testMissingData() {
         setRoot("bulletinA");
         checkTruncated("bulletina-truncated-in-eop-data.txt",  OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE);
         checkTruncated("bulletina-truncated-in-pole-data.txt", OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE);
@@ -137,7 +137,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testInconsistentDate() throws OrekitException {
+    public void testInconsistentDate() {
         setRoot("bulletinA");
         checkInconsistent("bulletina-inconsistent-year.txt");
         checkInconsistent("bulletina-inconsistent-month.txt");

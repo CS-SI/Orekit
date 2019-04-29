@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,18 +126,18 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
 
     /** {@inheritDoc} */
     @Override
-    public OEMFile parse(final String fileName) throws OrekitException {
+    public OEMFile parse(final String fileName) {
         return (OEMFile) super.parse(fileName);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OEMFile parse(final InputStream stream) throws OrekitException {
+    public OEMFile parse(final InputStream stream) {
         return (OEMFile) super.parse(stream);
     }
 
     /** {@inheritDoc} */
-    public OEMFile parse(final InputStream stream, final String fileName) throws OrekitException {
+    public OEMFile parse(final InputStream stream, final String fileName) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
             return parse(reader, fileName);
         } catch (IOException ioe) {
@@ -146,8 +146,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
     }
 
     @Override
-    public OEMFile parse(final BufferedReader reader, final String fileName)
-            throws OrekitException {
+    public OEMFile parse(final BufferedReader reader, final String fileName) {
 
         try {
 
@@ -248,10 +247,9 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * @param reader the reader
      * @param pi the parser info
      * @exception IOException if an error occurs while reading from the stream
-     * @exception OrekitException if a date cannot be parsed
      */
     private void parseEphemeridesDataLines(final BufferedReader reader,  final ParseInfo pi)
-        throws OrekitException, IOException {
+        throws IOException {
 
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
@@ -327,10 +325,9 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * @param reader the reader
      * @param pi the parser info
      * @throws IOException if an error occurs while reading from the stream
-     * @throws OrekitException if the frame cannot be retrieved
      */
     private void parseCovarianceDataLines(final BufferedReader reader, final ParseInfo pi)
-        throws IOException, OrekitException  {
+        throws IOException {
         int i = 0;
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 

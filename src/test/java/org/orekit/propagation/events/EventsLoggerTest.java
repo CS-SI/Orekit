@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
@@ -27,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -36,6 +38,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class EventsLoggerTest {
@@ -49,10 +52,9 @@ public class EventsLoggerTest {
     private EventDetector        penumbraDetector;
 
     @Test
-    public void testLogUmbra() throws OrekitException {
+    public void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
-        @SuppressWarnings("unchecked")
-        EventDetector monitored = ((AbstractDetector<EventDetector>) logger.monitorDetector(umbraDetector)).
+        EventDetector monitored = ((AbstractDetector<?>) logger.monitorDetector(umbraDetector)).
                 withMaxIter(200);
         Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assert.assertEquals(200, monitored.getMaxIterationCount());
@@ -65,7 +67,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testLogPenumbra() throws OrekitException {
+    public void testLogPenumbra() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(umbraDetector);
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -76,7 +78,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testLogAll() throws OrekitException {
+    public void testLogAll() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -87,7 +89,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testImmutableList() throws OrekitException {
+    public void testImmutableList() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -115,7 +117,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testClearLog() throws OrekitException {
+    public void testClearLog() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -159,11 +161,15 @@ public class EventsLoggerTest {
         Assert.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private EventDetector buildDetector(final boolean totalEclipse) throws OrekitException {
+    private EventDetector buildDetector(final boolean totalEclipse) {
 
         EclipseDetector detector =
-                new EclipseDetector(60., 1.e-3, CelestialBodyFactory.getSun(), 696000000,
-                                   CelestialBodyFactory.getEarth(), 6400000);
+                new EclipseDetector(CelestialBodyFactory.getSun(), 696000000,
+                                    new OneAxisEllipsoid(6400000,
+                                                         0.0,
+                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                withMaxCheck(60.0).
+                withThreshold(1.0e-3);
 
         if (totalEclipse) {
             detector = detector.withUmbra();

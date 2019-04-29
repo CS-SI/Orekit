@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,10 @@ package org.orekit.forces.maneuvers;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
@@ -37,9 +37,8 @@ import org.orekit.utils.PVCoordinates;
  * that can be provided to any {@link org.orekit.propagation.Propagator
  * Propagator}.</p>
  * <p>The maneuver is triggered when an underlying event generates a
- * {@link org.orekit.propagation.events.handlers.EventHandler.Action#STOP STOP} event,
- * in which case this class will generate a {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#RESET_STATE RESET_STATE}
+ * {@link Action#STOP STOP} event, in which case this class will generate a {@link
+ * Action#RESET_STATE RESET_STATE}
  * event (the stop event from the underlying object is therefore filtered out).
  * In the simple cases, the underlying event detector may be a basic
  * {@link org.orekit.propagation.events.DateDetector date event}, but it
@@ -63,9 +62,6 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  */
 public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<ImpulseManeuver<T>> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** The attitude to override during the maneuver, if set. */
     private final AttitudeProvider attitudeOverride;
@@ -151,7 +147,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     }
 
     /** {@inheritDoc} */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         return trigger.g(s);
     }
 
@@ -190,12 +186,11 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     private static class Handler<T extends EventDetector> implements EventHandler<ImpulseManeuver<T>> {
 
         /** {@inheritDoc} */
-        public EventHandler.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
-                                                 final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
+                                    final boolean increasing) {
 
             // filter underlying event
-            final EventHandler.Action underlyingAction = im.trigger.eventOccurred(s, increasing);
+            final Action underlyingAction = im.trigger.eventOccurred(s, increasing);
 
             return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
 
@@ -203,8 +198,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState)
-            throws OrekitException {
+        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState) {
 
             final AbsoluteDate date = oldState.getDate();
             final AttitudeProvider override = im.getAttitudeOverride();

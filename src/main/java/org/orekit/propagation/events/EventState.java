@@ -21,17 +21,13 @@ import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-
-import java.io.Serializable;
 
 /** This class handles the state for one {@link EventDetector
  * event detector} during integration steps.
@@ -50,10 +46,7 @@ import java.io.Serializable;
  * @author Luc Maisonobe
  * @param <T> class type for the generic version
  */
-public class EventState<T extends EventDetector> implements Serializable {
-
-    /** Serializable version identifier. */
-    private static final long serialVersionUID = 4489391420715269318L;
+public class EventState<T extends EventDetector> {
 
     /** Event detector. */
     private T detector;
@@ -139,8 +132,10 @@ public class EventState<T extends EventDetector> implements Serializable {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
      */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0,
+                     final AbsoluteDate t) {
         detector.init(s0, t);
         lastT = AbsoluteDate.PAST_INFINITY;
         lastG = Double.NaN;
@@ -151,9 +146,8 @@ public class EventState<T extends EventDetector> implements Serializable {
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    private double g(final SpacecraftState s) throws OrekitException {
+    private double g(final SpacecraftState s) {
         if (!s.getDate().equals(lastT)) {
             lastT = s.getDate();
             lastG = detector.g(s);
@@ -163,11 +157,8 @@ public class EventState<T extends EventDetector> implements Serializable {
 
     /** Reinitialize the beginning of the step.
      * @param interpolator interpolator valid for the current step
-     * @exception OrekitException if the event detector
-     * value cannot be evaluated at the beginning of the step
      */
-    public void reinitializeBegin(final OrekitStepInterpolator interpolator)
-        throws OrekitException {
+    public void reinitializeBegin(final OrekitStepInterpolator interpolator) {
         forward = interpolator.isForward();
         final SpacecraftState s0 = interpolator.getPreviousState();
         this.t0 = s0.getDate();
@@ -195,12 +186,10 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @return true if the event detector triggers an event before
      * the end of the proposed step (this implies the step should be
      * rejected)
-     * @exception OrekitException if the switching function
-     * cannot be evaluated
      * @exception MathRuntimeException if an event cannot be located
      */
     public boolean evaluateStep(final OrekitStepInterpolator interpolator)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
 
         forward = interpolator.isForward();
         final SpacecraftState s1 = interpolator.getCurrentState();
@@ -256,12 +245,10 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @param tb           latest possible time for root.
      * @param gb           g(tb).
      * @return if a zero crossing was found.
-     * @throws OrekitException if the event detector throws one
      */
     private boolean findRoot(final OrekitStepInterpolator interpolator,
                              final AbsoluteDate ta, final double ga,
-                             final AbsoluteDate tb, final double gb)
-            throws OrekitException {
+                             final AbsoluteDate tb, final double gb) {
         // check there appears to be a root in [ta, tb]
         check(ga == 0.0 || gb == 0.0 || (ga > 0.0 && gb < 0.0) || (ga < 0.0 && gb > 0.0));
 
@@ -321,35 +308,27 @@ public class EventState<T extends EventDetector> implements Serializable {
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             } else {
                 // both non-zero, the usual case, use a root finder.
-                try {
-                    // time zero for evaluating the function f. Needs to be final
-                    final AbsoluteDate fT0 = loopT;
-                    final UnivariateFunction f = dt -> {
-                        try {
-                            return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
-                    };
-                    // tb as a double for use in f
-                    final double tbDouble = tb.durationFrom(fT0);
-                    if (forward) {
-                        final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
-                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        beforeRootG = interval.getLeftValue();
-                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        afterRootG = interval.getRightValue();
-                    } else {
-                        final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
-                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        beforeRootG = interval.getRightValue();
-                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        afterRootG = interval.getLeftValue();
-                    }
-                } catch (OrekitExceptionWrapper oew) {
-                    throw oew.getException();
+                // time zero for evaluating the function f. Needs to be final
+                final AbsoluteDate fT0 = loopT;
+                final UnivariateFunction f = dt -> {
+                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
+                };
+                // tb as a double for use in f
+                final double tbDouble = tb.durationFrom(fT0);
+                if (forward) {
+                    final Interval interval =
+                            solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                    beforeRootG = interval.getLeftValue();
+                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                    afterRootG = interval.getRightValue();
+                } else {
+                    final Interval interval =
+                            solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                    beforeRootG = interval.getRightValue();
+                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                    afterRootG = interval.getLeftValue();
                 }
             }
             // tolerance is set to less than 1 ulp
@@ -422,11 +401,9 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @return if the event detector has an event it has not detected before that is on or
      * before the same time as {@code state}. In other words {@code false} means continue
      * on while {@code true} means stop and handle my event first.
-     * @exception OrekitException if the g function throws one
      */
     public boolean tryAdvance(final SpacecraftState state,
-                              final OrekitStepInterpolator interpolator)
-        throws OrekitException {
+                              final OrekitStepInterpolator interpolator) {
         // check this is only called before a pending event.
         check(!(pendingEvent && strictlyAfter(pendingEventTime, state.getDate())));
 
@@ -460,23 +437,20 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
      * @return the user's requested action and the new state if the action is {@link
-     * org.orekit.propagation.events.handlers.EventHandler.Action#RESET_STATE Action.RESET_STATE}.
+     * Action#RESET_STATE Action.RESET_STATE}.
      * Otherwise the new state is {@code state}. The stop time indicates what time propagation
-     * should stop if the action is {@link
-     * org.orekit.propagation.events.handlers.EventHandler.Action#STOP Action.STOP}.
+     * should stop if the action is {@link Action#STOP Action.STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
-     * @exception OrekitException if the event detector throws one
      */
-    public EventOccurrence doEvent(final SpacecraftState state)
-        throws OrekitException {
+    public EventOccurrence doEvent(final SpacecraftState state) {
         // check event is pending and is at the same time
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final EventHandler.Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = detector.eventOccurred(state, increasing == forward);
         final SpacecraftState newState;
-        if (action == EventHandler.Action.RESET_STATE) {
+        if (action == Action.RESET_STATE) {
             newState = detector.resetState(state);
         } else {
             newState = state;
@@ -567,7 +541,7 @@ public class EventState<T extends EventDetector> implements Serializable {
     public static class EventOccurrence {
 
         /** User requested action. */
-        private final EventHandler.Action action;
+        private final Action action;
         /** New state for a reset action. */
         private final SpacecraftState newState;
         /** The time to stop propagation if the action is a stop event. */
@@ -582,7 +556,7 @@ public class EventState<T extends EventDetector> implements Serializable {
          * @param stopDate to stop propagation if the action is {@link Action#STOP}. Used
          *                 to move the stop time to just after the root.
          */
-        EventOccurrence(final EventHandler.Action action,
+        EventOccurrence(final Action action,
                         final SpacecraftState newState,
                         final AbsoluteDate stopDate) {
             this.action = action;
@@ -595,7 +569,7 @@ public class EventState<T extends EventDetector> implements Serializable {
          *
          * @return the action.
          */
-        public EventHandler.Action getAction() {
+        public Action getAction() {
             return action;
         }
 

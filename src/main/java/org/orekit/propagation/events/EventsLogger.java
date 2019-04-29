@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,10 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -44,10 +43,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Luc Maisonobe
  */
-public class EventsLogger implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -8643810076248572648L;
+public class EventsLogger {
 
     /** List of occurred events. */
     private final List<LoggedEvent> log;
@@ -106,10 +102,7 @@ public class EventsLogger implements Serializable {
     }
 
     /** Class for logged events entries. */
-    public static class LoggedEvent implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131202L;
+    public static class LoggedEvent {
 
         /** Event detector triggered. */
         private final EventDetector detector;
@@ -162,9 +155,6 @@ public class EventsLogger implements Serializable {
      */
     private class LoggingWrapper<T extends EventDetector> extends AbstractDetector<LoggingWrapper<T>> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131118L;
-
         /** Wrapped events detector. */
         private final T detector;
 
@@ -213,12 +203,14 @@ public class EventsLogger implements Serializable {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        public void init(final SpacecraftState s0,
+                         final AbsoluteDate t) {
+            super.init(s0, t);
             detector.init(s0, t);
         }
 
         /** {@inheritDoc} */
-        public double g(final SpacecraftState s) throws OrekitException {
+        public double g(final SpacecraftState s) {
             return detector.g(s);
         }
 
@@ -230,16 +222,14 @@ public class EventsLogger implements Serializable {
     private static class LocalHandler<T extends EventDetector> implements EventHandler<LoggingWrapper<T>> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing) {
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState)
-            throws OrekitException {
+        public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState) {
             return wrapper.detector.resetState(oldState);
         }
 

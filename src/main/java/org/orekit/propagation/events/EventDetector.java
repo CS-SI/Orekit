@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
-
-import org.orekit.errors.OrekitException;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
@@ -46,7 +43,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface EventDetector extends Serializable {
+public interface EventDetector {
 
     /** Initialize event handler at the start of a propagation.
      * <p>
@@ -59,6 +56,7 @@ public interface EventDetector extends Serializable {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
      */
     default void init(SpacecraftState s0, AbsoluteDate t) {
         // nothing by default
@@ -69,9 +67,8 @@ public interface EventDetector extends Serializable {
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    double g(SpacecraftState s) throws OrekitException;
+    double g(SpacecraftState s);
 
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold (s)
@@ -92,10 +89,9 @@ public interface EventDetector extends Serializable {
      * @param s SpaceCraft state to be used in the evaluation
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return the Action that the calling detector should pass back to the evaluation system
-     * @exception OrekitException if some specific error occurs
-     * @since 7.0
+          * @since 7.0
      */
-    Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
+    Action eventOccurred(SpacecraftState s, boolean increasing);
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
@@ -110,10 +106,9 @@ public interface EventDetector extends Serializable {
      * </p>
      * @param oldState old state
      * @return new state
-     * @exception OrekitException if the state cannot be reseted
-     * @since 7.0
+          * @since 7.0
      */
-    default SpacecraftState resetState(SpacecraftState oldState) throws OrekitException {
+    default SpacecraftState resetState(SpacecraftState oldState) {
         return oldState;
     }
 

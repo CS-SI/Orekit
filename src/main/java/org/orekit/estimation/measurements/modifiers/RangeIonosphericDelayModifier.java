@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -65,11 +63,9 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @param station station
      * @param state spacecraft state
      * @return the measurement error due to ionosphere
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorIonosphericModel(final GroundStation station,
-                                              final SpacecraftState state)
-        throws OrekitException {
+                                              final SpacecraftState state) {
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -102,25 +98,18 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @param refstate reference spacecraft state
      *
      * @return Jacobian of the delay wrt state
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
-                                               final SpacecraftState refstate)
-        throws OrekitException {
+                                               final SpacecraftState refstate) {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
-                                try {
-                                    // evaluate target's elevation with a changed target position
-                                    final double value = rangeErrorIonosphericModel(station, state);
+                            public double[] value(final SpacecraftState state) {
+                                // evaluate target's elevation with a changed target position
+                                final double value = rangeErrorIonosphericModel(station, state);
 
-                                    return new double[] {
-                                        value
-                                    };
-
-                                } catch (OrekitException oe) {
-                                    throw new OrekitExceptionWrapper(oe);
-                                }
+                                return new double[] {
+                                    value
+                                };
                             }
                         }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
                         PositionAngle.TRUE, 15.0, 3).value(refstate);
@@ -136,24 +125,22 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @param state spacecraft state
      * @param delay current ionospheric delay
      * @return derivative of the delay wrt station offset parameter
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorParameterDerivative(final GroundStation station,
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state,
-                                                 final double delay)
-        throws OrekitException {
+                                                 final double delay) {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+            public double value(final ParameterDriver parameterDriver) {
                 return rangeErrorIonosphericModel(station, state);
             }
         };
 
         final ParameterFunction rangeErrorDerivative =
-                        Differentiation.differentiate(rangeError, driver, 3, 10.0);
+                        Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
 
         return rangeErrorDerivative.value(driver);
 
@@ -166,8 +153,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<Range> estimated)
-        throws OrekitException {
+    public void modify(final EstimatedMeasurement<Range> estimated) {
         final Range           measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
@@ -192,7 +178,8 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
         }
         estimated.setStateDerivatives(0, stateDerivatives);
 
-        for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                          station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {

@@ -1,4 +1,4 @@
-/*
+/* Contributed to the public domain
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,8 +84,7 @@ public class Relativity extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final double gm = parameters[0];
 
@@ -111,8 +110,7 @@ public class Relativity extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
 
         final T gm = parameters[0];
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -111,7 +111,7 @@ public enum OceanLoadDeformationCoefficients {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getCoefficients() throws OrekitException {
+        public double[] getCoefficients() {
 
             final InputStream stream =
                     OceanLoadDeformationCoefficients.class.getResourceAsStream(RESOURCE_NAME);
@@ -167,8 +167,7 @@ public enum OceanLoadDeformationCoefficients {
 
     /** Get the load deformation coefficients for ocean tides.
      * @return load deformation coefficients for ocean tides
-     * @exception OrekitException if coefficients cannot be loaded
      */
-    public abstract double[] getCoefficients() throws OrekitException;
+    public abstract double[] getCoefficients();
 
 }

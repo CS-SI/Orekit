@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -75,12 +76,10 @@ public class EOPHistory implements Serializable {
      * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @exception OrekitException if tidal correction model cannot be loaded
      */
     protected EOPHistory(final IERSConventions conventions,
                          final Collection<EOPEntry> data,
-                         final boolean simpleEOP)
-        throws OrekitException {
+                         final boolean simpleEOP) {
         this(conventions, data, simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection()));
     }
 
@@ -88,12 +87,10 @@ public class EOPHistory implements Serializable {
      * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
      * @param tidalCorrection correction to apply to EOP
-     * @exception OrekitException if tidal correction model cannot be loaded
      */
     private EOPHistory(final IERSConventions conventions,
                          final Collection<EOPEntry> data,
-                         final TimeVectorFunction tidalCorrection)
-        throws OrekitException {
+                         final TimeVectorFunction tidalCorrection) {
         this.conventions      = conventions;
         this.tidalCorrection  = tidalCorrection;
         if (data.size() >= INTERPOLATION_POINTS) {
@@ -109,10 +106,8 @@ public class EOPHistory implements Serializable {
 
     /** Get non-interpolating version of the instance.
      * @return non-interpolatig version of the instance
-     * @exception OrekitException if tidal correction model cannot be loaded
      */
-    public EOPHistory getNonInterpolatingEOPHistory()
-        throws OrekitException {
+    public EOPHistory getNonInterpolatingEOPHistory() {
         return new EOPHistory(conventions, getEntries(), conventions.getEOPTidalCorrection());
     }
 
@@ -332,9 +327,8 @@ public class EOPHistory implements Serializable {
      *
      * @param central central date
      * @return array of cached entries surrounding specified date
-     * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
-    protected Stream<EOPEntry> getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
+    protected Stream<EOPEntry> getNeighbors(final AbsoluteDate central) {
         return cache.getNeighbors(central);
     }
 
@@ -532,11 +526,35 @@ public class EOPHistory implements Serializable {
 
     }
 
+    /** Get the ITRF version.
+     * @param date date at which the value is desired
+     * @return ITRF version of the EOP covering the specified date
+     * @since 9.2
+     */
+    public ITRFVersion getITRFVersion(final AbsoluteDate date) {
+
+        // check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default ITRF 2014
+            return ITRFVersion.ITRF_2014;
+        }
+
+        try {
+            // we have EOP data for date
+            final Optional<EOPEntry> first = getNeighbors(date).findFirst();
+            return first.isPresent() ? first.get().getITRFType() : ITRFVersion.ITRF_2014;
+
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check performed at start
+            throw new OrekitInternalError(tce);
+        }
+
+    }
+
     /** Check Earth orientation parameters continuity.
      * @param maxGap maximal allowed gap between entries (in seconds)
-     * @exception OrekitException if there are holes in the data sequence
      */
-    public void checkEOPContinuity(final double maxGap) throws OrekitException {
+    public void checkEOPContinuity(final double maxGap) {
         TimeStamped preceding = null;
         for (final TimeStamped current : this.cache.getAll()) {
 
@@ -572,7 +590,7 @@ public class EOPHistory implements Serializable {
     /** Get a non-modifiable view of the EOP entries.
      * @return non-modifiable view of the EOP entries
      */
-    List<EOPEntry> getEntries() {
+    public List<EOPEntry> getEntries() {
         return cache.getAll();
     }
 

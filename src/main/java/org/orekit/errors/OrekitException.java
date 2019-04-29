@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ import org.hipparchus.exception.MathRuntimeException;
 
  */
 
-public class OrekitException extends Exception implements LocalizedException {
+public class OrekitException extends RuntimeException implements LocalizedException {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20150611L;
@@ -108,7 +108,7 @@ public class OrekitException extends Exception implements LocalizedException {
     /** {@inheritDoc} */
     @Override
     public String getMessage(final Locale locale) {
-        return buildMessage(locale, specifier, parts);
+        return buildMessage(locale);
     }
 
     /** {@inheritDoc} */
@@ -158,19 +158,28 @@ public class OrekitException extends Exception implements LocalizedException {
     /**
      * Builds a message string by from a pattern and its arguments.
      * @param locale Locale in which the message should be translated
-     * @param specifier format specifier (to be translated)
-     * @param parts parts to insert in the format (no translation)
      * @return a message string
      */
-    private static String buildMessage(final Locale locale, final Localizable specifier, final Object... parts) {
+    private String buildMessage(final Locale locale) {
         if (specifier == null) {
             return "";
         } else {
-            final String localizedString = specifier.getLocalizedString(locale);
-            if (localizedString == null) {
-                return "";
-            } else {
-                return new MessageFormat(localizedString, locale).format(parts);
+            try {
+                final String localizedString = specifier.getLocalizedString(locale);
+                if (localizedString == null) {
+                    return "";
+                } else {
+                    return new MessageFormat(localizedString, locale).format(parts);
+                }
+                //CHECKSTYLE: stop IllegalCatch check
+            } catch (Throwable t) {
+                //CHECKSTYLE: resume IllegalCatch check
+                // Message formatting or localization failed
+                // Catch all exceptions to prevent the stack trace from being lost
+                // Add the exception as suppressed so the user can fix that bug too
+                this.addSuppressed(t);
+                // just use the source string as the message
+                return specifier.getSourceString();
             }
         }
     }

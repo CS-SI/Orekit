@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -134,7 +134,7 @@ public class SpacecraftStateTest {
 
     private void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
                                          double expectedErrorA, double expectedErrorM, double expectedErrorQ)
-        throws OrekitException {
+        {
         AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
         SpacecraftState centerState = propagator.propagate(centerDate).addAdditionalState("quadratic", 0);
         List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
@@ -168,7 +168,7 @@ public class SpacecraftStateTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testDatesConsistency() throws OrekitException {
+    public void testDatesConsistency() {
         new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(10.0),
                                                            orbit.getDate().shiftedBy(10.0), orbit.getFrame()));
     }
@@ -178,7 +178,7 @@ public class SpacecraftStateTest {
      * FixedRate attitude provider.
      */
     @Test
-    public void testDateConsistencyClose() throws OrekitException {
+    public void testDateConsistencyClose() {
         //setup
         Orbit orbit10Shifts = orbit;
         for (int i = 0; i < 10; i++) {
@@ -199,7 +199,7 @@ public class SpacecraftStateTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testFramesConsistency() throws OrekitException {
+    public void testFramesConsistency() {
         new SpacecraftState(orbit,
                             new Attitude(orbit.getDate(),
                                          FramesFactory.getGCRF(),
@@ -231,7 +231,7 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testAdditionalStates() throws OrekitException {
+    public void testAdditionalStates() {
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(60));
         final SpacecraftState extended =
                 state.

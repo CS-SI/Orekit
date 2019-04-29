@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -31,10 +31,8 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
  * or descending node crossing).</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
- * propagation at descending node crossing and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at descending node crossing and to {@link Action#STOP stop} propagation
  * at ascending node crossing. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * <p>Beware that node detection will fail for almost equatorial orbits. If
@@ -47,9 +45,6 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * @author Luc Maisonobe
  */
 public class NodeDetector extends AbstractDetector<NodeDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** Frame in which the equator is defined. */
     private final Frame frame;
@@ -161,9 +156,8 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * This function computes the Z position in the defined frame.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         return s.getPVCoordinates(frame).getPosition().getZ();
     }
 

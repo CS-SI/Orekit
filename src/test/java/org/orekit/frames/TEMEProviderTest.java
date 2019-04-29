@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -42,7 +41,7 @@ import org.orekit.utils.PVCoordinates;
 public class TEMEProviderTest {
 
     @Test
-    public void testValladoTEMEofDate() throws OrekitException {
+    public void testValladoTEMEofDate() {
 
         // this reference test has been extracted from Vallado's book:
         // Fundamentals of Astrodynamics and Applications
@@ -78,7 +77,7 @@ public class TEMEProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         TEMEProvider provider = new TEMEProvider(IERSConventions.IERS_2010,
                                                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
 
@@ -86,8 +85,8 @@ public class TEMEProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 280000);
-        Assert.assertTrue(bos.size() < 285000);
+        Assert.assertTrue(bos.size() > 295000);
+        Assert.assertTrue(bos.size() < 300000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

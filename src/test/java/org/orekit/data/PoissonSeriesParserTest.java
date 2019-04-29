@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,27 +48,27 @@ import org.orekit.utils.IERSConventions;
 public class PoissonSeriesParserTest {
 
     @Test(expected=OrekitException.class)
-    public void testEmptyData() throws OrekitException {
+    public void testEmptyData() {
         buildData("");
     }
 
     @Test(expected=OrekitException.class)
-    public void testNoCoeffData() throws OrekitException {
+    public void testNoCoeffData() {
         buildData("this is NOT an IERS nutation model file\n");
     }
 
     @Test(expected=OrekitException.class)
-    public void testEmptyArrayData() throws OrekitException {
+    public void testEmptyArrayData() {
         buildData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n");
     }
 
     @Test(expected=OrekitException.class)
-    public void testMissingTermData() throws OrekitException {
+    public void testMissingTermData() {
         buildData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n"
                   + "j = 0  Nb of terms = 1\n");
     }
 
-    private PoissonSeries buildData(String data) throws OrekitException {
+    private PoissonSeries buildData(String data) {
         return new PoissonSeriesParser(0).
                 withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                 parse(new ByteArrayInputStream(data.getBytes()),
@@ -76,7 +76,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNoFile() throws OrekitException {
+    public void testNoFile() {
         InputStream stream =
                 PoissonSeriesParserTest.class.getResourceAsStream("/org/orekit/resources/missing");
         new PoissonSeriesParser(17).
@@ -88,7 +88,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testMissingSeries() throws OrekitException {
+    public void testMissingSeries() {
         try {
             String data =
                     "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
@@ -113,7 +113,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testMissingTerms() throws OrekitException {
+    public void testMissingTerms() {
         try {
             String data =
                     "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
@@ -137,7 +137,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testSmall() throws OrekitException {
+    public void testSmall() {
         String data =
             "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
             + "j = 0  Nb of terms = 1\n"
@@ -152,7 +152,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testSecondsMarkers() throws OrekitException {
+    public void testSecondsMarkers() {
         String data =
             "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
             + "j = 0  Nb of terms = 1\n"
@@ -167,7 +167,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testExtract() throws OrekitException {
+    public void testExtract() {
         String data =
             "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
             + "precession-nutation model\n"
@@ -240,7 +240,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testWrongIndex() throws OrekitException {
+    public void testWrongIndex() {
         String data =
             "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
             + "precession-nutation model\n"
@@ -315,7 +315,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testTruncated() throws OrekitException {
+    public void testTruncated() {
         String data =
             "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
             + "precession-nutation model\n"
@@ -373,7 +373,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testTrue1996Files() throws OrekitException {
+    public void testTrue1996Files() {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
                 new PoissonSeriesParser(10).
@@ -391,7 +391,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testTrue2003Files() throws OrekitException {
+    public void testTrue2003Files() {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
                 new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
@@ -408,7 +408,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testTrue2010Files() throws OrekitException {
+    public void testTrue2010Files() {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
                 new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
@@ -494,7 +494,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testGammaTauForbidden() throws OrekitException {
+    public void testGammaTauForbidden() {
         try {
             new PoissonSeriesParser(18).withGamma(4).withDoodson(4, 3);
             Assert.fail("an exception should have been thrown");
@@ -504,7 +504,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testTauGammaForbidden() throws OrekitException {
+    public void testTauGammaForbidden() {
         try {
             new PoissonSeriesParser(18).withDoodson(4, 3).withGamma(4);
             Assert.fail("an exception should have been thrown");
@@ -514,7 +514,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testCompile() throws OrekitException, SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public void testCompile() throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
                 new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
@@ -551,7 +551,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testDerivativesAsField() throws OrekitException {
+    public void testDerivativesAsField() {
 
         Utils.setDataRoot("regular-data");
         String directory = "/assets/org/orekit/IERS-conventions/";
@@ -609,7 +609,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testDerivativesFromDoubleAPI() throws OrekitException {
+    public void testDerivativesFromDoubleAPI() {
         Utils.setDataRoot("regular-data");
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
@@ -653,7 +653,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testDerivativesFromFieldAPI() throws OrekitException {
+    public void testDerivativesFromFieldAPI() {
         Utils.setDataRoot("regular-data");
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =

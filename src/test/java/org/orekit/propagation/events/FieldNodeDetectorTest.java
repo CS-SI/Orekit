@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -40,16 +39,16 @@ import org.orekit.utils.Constants;
 public class FieldNodeDetectorTest {
 
     @Test
-    public void testIssue138() throws OrekitException{
+    public void testIssue138() {
         doTestIssue138(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testIssue158() throws OrekitException{
+    public void testIssue158() {
         doTestIssue158(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>void doTestIssue138(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>void doTestIssue138(Field<T> field) {
         T zero = field.getZero();
         T a = zero.add(800000 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
         T e = zero.add(0.0001);
@@ -95,7 +94,7 @@ public class FieldNodeDetectorTest {
 
     }
 
-    private <T extends RealFieldElement<T>>void doTestIssue158(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>void doTestIssue158(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 

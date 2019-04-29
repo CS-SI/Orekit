@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldOrbit;
@@ -47,7 +46,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class CelestialBodyPointingTest {
 
     @Test
-    public void testSunPointing() throws OrekitException {
+    public void testSunPointing() {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         final Frame frame = FramesFactory.getGCRF();
@@ -100,7 +99,7 @@ public class CelestialBodyPointingTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);

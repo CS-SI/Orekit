@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 
 public class NewcombOperatorTest {
 
     @Test
-    public void recursionTest() throws OrekitException {
+    public void recursionTest() {
 
         for (int n = 2; n < 10; n++) {
             final int mnm1 = -n - 1;
@@ -56,7 +55,7 @@ public class NewcombOperatorTest {
     }
 
     @Test
-    public void valueRefTest() throws OrekitException {
+    public void valueRefTest() {
         final int n   = -17;
         final int s   = 14;
         final int rho = 12;

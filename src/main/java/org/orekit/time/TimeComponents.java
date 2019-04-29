@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -235,7 +235,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     }
 
     /** Get the seconds number.
-     * @return second second number from 0.0 to 60.0 (excluded)
+     * @return second second number from 0.0 to 61.0 (excluded). Note that 60 &le; second
+     * &lt; 61 only occurs during a leap second.
      */
     public double getSecond() {
         return second;

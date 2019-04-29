@@ -30,6 +30,8 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Predefined;
+import org.orekit.frames.VersionedITRF;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -269,12 +271,10 @@ public class StreamingOemWriter {
      *                  Section 5.2.4.5 and Annex A.
      * @param metadata  for the satellite. Can be overridden in {@link #newSegment(Frame,
      *                  Map)} for a specific segment. See {@link StreamingOemWriter}.
-     * @throws OrekitException If the UTC time scale could not be used.
      */
     public StreamingOemWriter(final Appendable writer,
                               final TimeScale timeScale,
-                              final Map<Keyword, String> metadata)
-            throws OrekitException {
+                              final Map<Keyword, String> metadata) {
 
         this.writer = writer;
         this.timeScale = timeScale;
@@ -320,8 +320,10 @@ public class StreamingOemWriter {
             return tod;
         } else if (name.contains("Equinox") && name.contains(itrf)) {
             return "GRC";
+        } else if (frame instanceof VersionedITRF) {
+            return ((VersionedITRF) frame).getITRFVersion().getName().replace("-", "");
         } else if (name.contains("CIO") && name.contains(itrf)) {
-            return "ITRF2008";
+            return "ITRF2014";
         } else {
             // don't know how to map it to a CCSDS reference frame
             return name;
@@ -340,6 +342,8 @@ public class StreamingOemWriter {
             return name.substring(0, name.length() - 9).toUpperCase(STANDARDIZED_LOCALE);
         } else if (frame instanceof CcsdsModifiedFrame) {
             return ((CcsdsModifiedFrame) frame).getCenterName();
+        } else if (frame.getName().equals(Predefined.ICRF.getName())) {
+            return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.toUpperCase(STANDARDIZED_LOCALE);
         } else if (frame.getDepth() == 0 || frame instanceof FactoryManagedFrame) {
             return "EARTH";
         } else {
@@ -501,7 +505,7 @@ public class StreamingOemWriter {
         @Override
         public void init(final SpacecraftState s0,
                          final AbsoluteDate t,
-                         final double step) throws OrekitException {
+                         final double step) {
             try {
                 final String start = dateToString(s0.getDate().getComponents(timeScale));
                 final String stop = dateToString(t.getComponents(timeScale));
@@ -516,7 +520,7 @@ public class StreamingOemWriter {
 
         @Override
         public void handleStep(final SpacecraftState s,
-                               final boolean isLast) throws OrekitException {
+                               final boolean isLast) {
             try {
                 writeEphemerisLine(s.getPVCoordinates(this.frame));
             } catch (IOException e) {

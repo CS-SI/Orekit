@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.errors.OrekitMessages;
 public class OrphanFrameTest {
 
     @Test
-    public void testNotAttached() throws OrekitException {
+    public void testNotAttached() {
 
         OrphanFrame level0  = new OrphanFrame("l0");
         OrphanFrame level1A = new OrphanFrame("l1A");
@@ -56,7 +56,7 @@ public class OrphanFrameTest {
     }
 
     @Test
-    public void testAlreadyAttachedSubTree() throws OrekitException {
+    public void testAlreadyAttachedSubTree() {
         OrphanFrame level0 = new OrphanFrame("l0");
         OrphanFrame level1 = new OrphanFrame("l1");
         level0.addChild(level1, Transform.IDENTITY, false);
@@ -69,7 +69,7 @@ public class OrphanFrameTest {
     }
 
     @Test
-    public void testAlreadyAttachedMainTree() throws OrekitException {
+    public void testAlreadyAttachedMainTree() {
         OrphanFrame level0 = new OrphanFrame("l0");
         level0.attachTo(FramesFactory.getGCRF(), Transform.IDENTITY, false);
         try {
@@ -81,7 +81,7 @@ public class OrphanFrameTest {
     }
 
     @Test
-    public void testSimpleUse() throws OrekitException {
+    public void testSimpleUse() {
         OrphanFrame level0  = new OrphanFrame("l0");
         OrphanFrame level1A = new OrphanFrame("l1A");
         OrphanFrame level1B = new OrphanFrame("l1B");
@@ -101,7 +101,7 @@ public class OrphanFrameTest {
     }
 
     @Test
-    public void testLateAddition() throws OrekitException {
+    public void testLateAddition() {
         OrphanFrame level0  = new OrphanFrame("l0");
         OrphanFrame level1A = new OrphanFrame("l1A");
         OrphanFrame level1B = new OrphanFrame("l1B");

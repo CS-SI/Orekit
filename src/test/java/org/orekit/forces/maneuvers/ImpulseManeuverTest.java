@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -54,7 +53,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class ImpulseManeuverTest {
     @Test
-    public void testInclinationManeuver() throws OrekitException {
+    public void testInclinationManeuver() {
         final Orbit initialOrbit =
             new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
                                PositionAngle.MEAN, FramesFactory.getEME2000(),
@@ -77,7 +76,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testInertialManeuver() throws OrekitException {
+    public void testInertialManeuver() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;
@@ -108,6 +107,9 @@ public class ImpulseManeuverTest {
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
         ImpulseManeuver<DateDetector> burnAtEpoch = new ImpulseManeuver<DateDetector>(dateDetector, attitudeOverride, deltaV, isp).withThreshold(driftTimeInSec/4);
+        Assert.assertEquals(0.0, Vector3D.distance(deltaV, burnAtEpoch.getDeltaVSat()), 1.0e-15);
+        Assert.assertEquals(isp, burnAtEpoch.getIsp(), 1.0e-15);
+        Assert.assertSame(dateDetector, burnAtEpoch.getTrigger());
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
@@ -125,7 +127,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testBackward() throws OrekitException {
+    public void testBackward() {
 
         final AbsoluteDate iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
         final Orbit initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
@@ -153,7 +155,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testBackAndForth() throws OrekitException {
+    public void testBackAndForth() {
 
         final AttitudeProvider lof = new LofOffset(FramesFactory.getEME2000(), LOFType.VNC);
         final double mu = Constants.EIGEN5C_EARTH_MU;
@@ -195,7 +197,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testAdditionalStateKeplerian() throws OrekitException {
+    public void testAdditionalStateKeplerian() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;
@@ -238,7 +240,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testAdditionalStateNumerical() throws OrekitException {
+    public void testAdditionalStateNumerical() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;

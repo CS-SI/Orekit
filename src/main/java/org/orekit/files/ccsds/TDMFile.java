@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,7 +85,7 @@ public class TDMFile {
     /** Set the header comment.
      * @param headerComment header comment
      */
-    void setHeaderComment(final List<String> headerComment) {
+    public void setHeaderComment(final List<String> headerComment) {
         this.headerComment = new ArrayList<>(headerComment);
     }
 
@@ -99,7 +99,7 @@ public class TDMFile {
     /** Set the file creation date and time in UTC.
      * @param creationDate the creation date to be set
      */
-    void setCreationDate(final AbsoluteDate creationDate) {
+    public void setCreationDate(final AbsoluteDate creationDate) {
         this.creationDate = creationDate;
     }
 
@@ -113,7 +113,7 @@ public class TDMFile {
     /** Set the file originator.
      * @param originator the originator to be set
      */
-    void setOriginator(final String originator) {
+    public void setOriginator(final String originator) {
         this.originator = originator;
     }
 
@@ -137,9 +137,8 @@ public class TDMFile {
     }
 
     /** Check that, according to the CCSDS standard, every ObservationsBlock has the same time system.
-     *  @exception OrekitException if some blocks do not have the same time system
      */
-    public void checkTimeSystems() throws OrekitException {
+    public void checkTimeSystems() {
         final CcsdsTimeScale timeSystem = getObservationsBlocks().get(0).getMetaData().getTimeSystem();
         for (final ObservationsBlock block : observationsBlocks) {
             if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {
@@ -497,7 +496,7 @@ public class TDMFile {
 
         /** Create a new TDM meta-data.
          */
-        TDMMetaData() {
+        public TDMMetaData() {
             participants   = new TreeMap<>();
             transmitDelays = new TreeMap<>();
             receiveDelays  = new TreeMap<>();

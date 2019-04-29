@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -617,7 +617,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates<T> shiftedBy(final T dt) {
         final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
-        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt.getReal()),
+        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt),
                                                    spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
     }
 

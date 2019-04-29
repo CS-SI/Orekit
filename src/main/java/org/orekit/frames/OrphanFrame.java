@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,12 +82,9 @@ public class OrphanFrame implements Serializable {
      * @param transform transform from instance to child
      * @param isPseudoInertial true if child is considered pseudo-inertial
      * (i.e. suitable for propagating orbit)
-     * @exception OrekitException if child frame has already been attached to
-     * either an {@link OrphanFrame} or to a {@link Frame}
      */
     public void addChild(final OrphanFrame child, final Transform transform,
-                         final boolean isPseudoInertial)
-        throws OrekitException {
+                         final boolean isPseudoInertial) {
         addChild(child, new FixedTransformProvider(transform), isPseudoInertial);
     }
 
@@ -100,12 +97,9 @@ public class OrphanFrame implements Serializable {
      * @param transformProvider provider for transform from instance to child
      * @param isPseudoInertial true if child is considered pseudo-inertial
      * (i.e. suitable for propagating orbit)
-     * @exception OrekitException if child frame has already been attached to
-     * either an {@link OrphanFrame} or to a {@link Frame}
      */
     public void addChild(final OrphanFrame child, final TransformProvider transformProvider,
-                         final boolean isPseudoInertial)
-        throws OrekitException {
+                         final boolean isPseudoInertial) {
 
         // safety check
         if (child.orphanParent != null) {
@@ -131,12 +125,9 @@ public class OrphanFrame implements Serializable {
      * @param transform transform from parent frame to instance
      * @param isPseudoInertial true if frame is considered pseudo-inertial
      * (i.e. suitable for propagating orbit)
-     * @exception OrekitException if child frame has already been attached to
-     * either an {@link OrphanFrame} or to a {@link Frame}
      */
     public void attachTo(final Frame parent, final Transform transform,
-                         final boolean isPseudoInertial)
-        throws OrekitException {
+                         final boolean isPseudoInertial) {
         attachTo(parent, new FixedTransformProvider(transform), isPseudoInertial);
     }
 
@@ -145,12 +136,9 @@ public class OrphanFrame implements Serializable {
      * @param transformProvider provider for transform from parent frame to instance
      * @param isPseudoInertial true if frame is considered pseudo-inertial
      * (i.e. suitable for propagating orbit)
-     * @exception OrekitException if child frame has already been attached to
-     * either an {@link OrphanFrame} or to a {@link Frame}
      */
     public void attachTo(final Frame parent, final TransformProvider transformProvider,
-                         final boolean isPseudoInertial)
-        throws OrekitException {
+                         final boolean isPseudoInertial) {
 
         // safety check
         if (orphanParent != null) {
@@ -174,9 +162,8 @@ public class OrphanFrame implements Serializable {
 
     /** Get the associated {@link Frame frame}.
      * @return associated frame
-     * @exception OrekitException if instance has not been attached to the frames tree
      */
-    public Frame getFrame() throws OrekitException {
+    public Frame getFrame() {
 
         // safety check
         if (frame == null) {

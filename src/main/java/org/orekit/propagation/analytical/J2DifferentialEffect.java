@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -63,13 +62,11 @@ public class J2DifferentialEffect
      * @param applyBefore if true, effect is applied both before and after
      * reference date, if false it is only applied after reference date
      * @param gravityField gravity field to use
-     * @exception OrekitException if gravity field does not contain J2 coefficient
      */
     public J2DifferentialEffect(final SpacecraftState original,
                                 final AdapterPropagator.DifferentialEffect directEffect,
                                 final boolean applyBefore,
-                                final UnnormalizedSphericalHarmonicsProvider gravityField)
-        throws OrekitException {
+                                final UnnormalizedSphericalHarmonicsProvider gravityField) {
         this(original, directEffect, applyBefore,
              gravityField.getAe(), gravityField.getMu(),
              -gravityField.onDate(original.getDate()).getUnnormalizedCnm(2, 0));
@@ -86,11 +83,9 @@ public class J2DifferentialEffect
          * @param applyBefore if true, effect is applied both before and after
          * reference date, if false it is only applied after reference date
          * @param gravityField gravity field to use
-         * @exception OrekitException if gravity field does not contain J2 coefficient
          */
     public J2DifferentialEffect(final Orbit orbit0, final Orbit orbit1, final boolean applyBefore,
-                                final UnnormalizedSphericalHarmonicsProvider gravityField)
-        throws OrekitException {
+                                final UnnormalizedSphericalHarmonicsProvider gravityField) {
         this(orbit0, orbit1, applyBefore,
              gravityField.getAe(), gravityField.getMu(),
              -gravityField.onDate(orbit0.getDate()).getUnnormalizedCnm(2, 0));
@@ -109,13 +104,11 @@ public class J2DifferentialEffect
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m³/s²)
      * @param j2 un-normalized zonal coefficient (about +1.08e-3 for Earth)
-     * @exception OrekitException if direct effect cannot be applied
      */
     public J2DifferentialEffect(final SpacecraftState original,
                                 final AdapterPropagator.DifferentialEffect directEffect,
                                 final boolean applyBefore,
-                                final double referenceRadius, final double mu, final double j2)
-        throws OrekitException {
+                                final double referenceRadius, final double mu, final double j2) {
         this(original.getOrbit(),
              directEffect.apply(original.shiftedBy(0.001)).getOrbit().shiftedBy(-0.001),
              applyBefore, referenceRadius, mu, j2);

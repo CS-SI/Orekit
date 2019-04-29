@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -42,7 +40,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends TimeStamped {
+public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends ComparableMeasurement {
 
     /** Enable or disable a measurement.
      * <p>
@@ -96,17 +94,8 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      * </p>
      * @return base weight
      * @see #getTheoreticalStandardDeviation()
-     * @see EstimatedMeasurement#getCurrentWeight()
      */
     double[] getBaseWeight();
-
-    /** Get the observed value.
-     * <p>
-     * The observed value is the value that was measured by the instrument.
-     * </p>
-     * @return observed value (array of size {@link #getDimension()}
-     */
-    double[] getObservedValue();
 
     /** Add a modifier.
      * <p>
@@ -115,10 +104,8 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      * </p>
      * @param modifier modifier to add
      * @see #getModifiers()
-     * @exception OrekitException if there is a conflict between measurement and
-     * modifiers parameters
      */
-    void addModifier(EstimationModifier<T> modifier) throws OrekitException;
+    void addModifier(EstimationModifier<T> modifier);
 
     /** Get the modifiers that apply to a measurement.
      * @return modifiers that apply to a measurement
@@ -131,18 +118,11 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      */
     List<ParameterDriver> getParametersDrivers();
 
-    /** Get the indices of the {@link org.orekit.propagation.Propagator propagators}
-     * related to this measurement.
-     * <p>
-     * The propagators are indexed starting from 0 and ordered according to
-     * the order of the {@link org.orekit.propagation.conversion.PropagatorBuilder
-     * propagators builders} in the orbit determination engine used.
-     * </p>
-     * @return indices of the {@link org.orekit.propagation.Propagator propagators}
-     * related to this measurement
-     * @since 9.0
+    /** Get the satellites related to this measurement.
+     * @return satellites related to this measurement
+     * @since 9.3
      */
-    List<Integer> getPropagatorsIndices();
+    List<ObservableSatellite> getSatellites();
 
     /** Estimate the theoretical value of the measurement.
      * <p>
@@ -153,9 +133,7 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      * @param evaluation evaluations number
      * @param states orbital states at measurement date
      * @return estimated measurement
-     * @exception OrekitException if value cannot be computed
      */
-    EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState[] states)
-        throws OrekitException;
+    EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState[] states);
 
 }

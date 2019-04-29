@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,13 +29,13 @@ import org.orekit.errors.OrekitException;
 public class ClasspathCrawlerTest {
 
     @Test(expected=OrekitException.class)
-    public void testNoElement() throws OrekitException {
+    public void testNoElement() {
         new ClasspathCrawler("inexistant-element").feed(Pattern.compile(".*"),
                                                         new CountingLoader());
     }
 
     @Test
-    public void testNominal() throws OrekitException {
+    public void testNominal() {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("regular-data/UTC-TAI.history",
                              "regular-data/de405-ephemerides/unxp0000.405",
@@ -47,7 +47,7 @@ public class ClasspathCrawlerTest {
     }
 
     @Test
-    public void testCompressed() throws OrekitException {
+    public void testCompressed() {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("compressed-data/UTC-TAI.history.gz",
                              "compressed-data/eopc04_08_IAU2000.00.gz",
@@ -57,7 +57,7 @@ public class ClasspathCrawlerTest {
     }
 
     @Test
-    public void testMultiZip() throws OrekitException {
+    public void testMultiZip() {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"),
                                                               crawler);
@@ -65,7 +65,7 @@ public class ClasspathCrawlerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testIOException() throws OrekitException {
+    public void testIOException() {
         try {
             new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new IOExceptionLoader());
         } catch (OrekitException oe) {
@@ -78,7 +78,7 @@ public class ClasspathCrawlerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testParseException() throws OrekitException {
+    public void testParseException() {
         try {
             new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new ParseExceptionLoader());
         } catch (OrekitException oe) {

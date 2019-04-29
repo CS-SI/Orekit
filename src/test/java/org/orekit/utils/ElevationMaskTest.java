@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 
 
 public class ElevationMaskTest {
@@ -48,7 +47,7 @@ public class ElevationMaskTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testMaskException() throws OrekitException {
+    public void testMaskException() {
         double [][] masque = {{FastMath.toRadians(   0), FastMath.toRadians(5)},
                               {FastMath.toRadians( 360), FastMath.toRadians(4)}};
 
@@ -56,7 +55,7 @@ public class ElevationMaskTest {
     }
 
     @Test
-    public void testGetElevation() throws OrekitException {
+    public void testGetElevation() {
         double [][] masqueData = {{FastMath.toRadians(  0), FastMath.toRadians(5)},
                               {FastMath.toRadians(180), FastMath.toRadians(3)},
                               {FastMath.toRadians(-90), FastMath.toRadians(4)}};

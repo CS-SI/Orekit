@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,12 @@
  */
 package org.orekit.propagation.integration;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -55,10 +48,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * cumbersome tight links with the integrator.
  * </p>
  * <p>
- * Another use case is persistence, as this class is one of the few propagators
- * to be serializable.
- * </p>
- * <p>
  * As this class implements the {@link org.orekit.propagation.Propagator Propagator}
  * interface, it can itself be used in batch mode to build another instance of the
  * same type. This is however not recommended since it would be a waste of resources.
@@ -74,10 +63,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class IntegratedEphemeris
-    extends AbstractAnalyticalPropagator implements BoundedPropagator, Serializable  {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140213L;
+    extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
     /** Event detection requires evaluating the state slightly before / past an event. */
     private static final double EXTRAPOLATION_TOLERANCE = 1.0;
@@ -118,7 +104,6 @@ public class IntegratedEphemeris
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
-     * @exception OrekitException if several providers have the same name
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
@@ -126,8 +111,7 @@ public class IntegratedEphemeris
                                final DenseOutputModel model,
                                final Map<String, double[]> unmanaged,
                                final List<AdditionalStateProvider> providers,
-                               final String[] equations)
-        throws OrekitException {
+                               final String[] equations) {
 
         super(mapper.getAttitudeProvider());
 
@@ -154,11 +138,8 @@ public class IntegratedEphemeris
     /** Interpolate the model at some date.
      * @param date desired interpolation date
      * @return state interpolated at date
-     * @exception OrekitException if specified date is outside
-     * of supported range
      */
-    private ODEStateAndDerivative getInterpolatedState(final AbsoluteDate date)
-        throws OrekitException {
+    private ODEStateAndDerivative getInterpolatedState(final AbsoluteDate date) {
 
         // compare using double precision instead of AbsoluteDate.compareTo(...)
         // because time is expressed as a double when searching for events
@@ -175,36 +156,29 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date)
-        throws OrekitException {
-        try {
-            final ODEStateAndDerivative os = getInterpolatedState(date);
-            SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
-                                                           os.getPrimaryState(), os.getPrimaryDerivative(),
-                                                           meanOrbit);
-            for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
-                state = state.addAdditionalState(initial.getKey(), initial.getValue());
-            }
-            return state;
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+        final ODEStateAndDerivative os = getInterpolatedState(date);
+        SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
+                                                       os.getPrimaryState(), os.getPrimaryDerivative(),
+                                                       meanOrbit);
+        for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
+            state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
+        return state;
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date)
-        throws OrekitException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc} */
-    protected double getMass(final AbsoluteDate date) throws OrekitException {
+    protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -228,54 +202,18 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state)
-        throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws OrekitException {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() {
         return updateAdditionalStates(basicPropagate(getMinDate()));
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
-     */
-    private Object writeReplace() throws NotSerializableException {
-
-        // unmanaged additional states
-        final String[]   unmanagedNames  = new String[unmanaged.size()];
-        final double[][] unmanagedValues = new double[unmanaged.size()][];
-        int i = 0;
-        for (Map.Entry<String, double[]> entry : unmanaged.entrySet()) {
-            unmanagedNames[i]  = entry.getKey();
-            unmanagedValues[i] = entry.getValue();
-            ++i;
-        }
-
-        // managed states providers
-        final List<AdditionalStateProvider> serializableProviders = new ArrayList<AdditionalStateProvider>();
-        final List<String> equationNames = new ArrayList<String>();
-        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
-            if (provider instanceof LocalProvider) {
-                equationNames.add(((LocalProvider) provider).getName());
-            } else if (provider instanceof Serializable) {
-                serializableProviders.add(provider);
-            }
-        }
-
-        return new DataTransferObject(startDate, minDate, maxDate, mapper, meanOrbit, model,
-                                      unmanagedNames, unmanagedValues,
-                                      serializableProviders.toArray(new AdditionalStateProvider[serializableProviders.size()]),
-                                      equationNames.toArray(new String[equationNames.size()]));
-
     }
 
     /** Local provider for additional state data. */
@@ -302,97 +240,11 @@ public class IntegratedEphemeris
         }
 
         /** {@inheritDoc} */
-        public double[] getAdditionalState(final SpacecraftState state)
-            throws OrekitException {
+        public double[] getAdditionalState(final SpacecraftState state) {
 
             // extract the part of the interpolated array corresponding to the additional state
             return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);
 
-        }
-
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20140213L;
-
-        /** Mapper between raw double components and spacecraft state. */
-        private final StateMapper mapper;
-
-        /** Indicator for mean orbit output. */
-        private final boolean meanOrbit;
-
-        /** Start date of the integration (can be min or max). */
-        private final AbsoluteDate startDate;
-
-        /** First date of the range. */
-        private final AbsoluteDate minDate;
-
-        /** Last date of the range. */
-        private final AbsoluteDate maxDate;
-
-        /** Underlying raw mathematical model. */
-        private final DenseOutputModel model;
-
-        /** Names of unmanaged additional states that must be simply copied. */
-        private final String[] unmanagedNames;
-
-        /** Values of unmanaged additional states that must be simply copied. */
-        private final double[][] unmanagedValues;
-
-        /** Names of additional equations. */
-        private final String[] equations;
-
-        /** Providers for pre-integrated states. */
-        private final AdditionalStateProvider[] providers;
-
-        /** Simple constructor.
-         * @param startDate Start date of the integration (can be minDate or maxDate)
-         * @param minDate first date of the range
-         * @param maxDate last date of the range
-         * @param mapper mapper between raw double components and spacecraft state
-         * @param meanOrbit output only the mean orbit.
-         * @param model underlying raw mathematical model
-         * @param unmanagedNames names of unmanaged additional states that must be simply copied
-         * @param unmanagedValues values of unmanaged additional states that must be simply copied
-         * @param providers providers for pre-integrated states
-         * @param equations names of additional equations
-         */
-        DataTransferObject(final AbsoluteDate startDate,
-                                  final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                                  final StateMapper mapper, final boolean meanOrbit,
-                                  final DenseOutputModel model,
-                                  final String[] unmanagedNames, final double[][] unmanagedValues,
-                                  final AdditionalStateProvider[] providers,
-                                  final String[] equations) {
-            this.startDate       = startDate;
-            this.minDate         = minDate;
-            this.maxDate         = maxDate;
-            this.mapper          = mapper;
-            this.meanOrbit       = meanOrbit;
-            this.model           = model;
-            this.unmanagedNames  = unmanagedNames;
-            this.unmanagedValues = unmanagedValues;
-            this.providers       = providers;
-            this.equations       = equations;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link IntegratedEphemeris}.
-         * @return replacement {@link IntegratedEphemeris}
-         */
-        private Object readResolve() {
-            try {
-                final Map<String, double[]> unmanaged = new HashMap<String, double[]>(unmanagedNames.length);
-                for (int i = 0; i < unmanagedNames.length; ++i) {
-                    unmanaged.put(unmanagedNames[i], unmanagedValues[i]);
-                }
-                return new IntegratedEphemeris(startDate, minDate, maxDate, mapper, meanOrbit, model,
-                                               unmanaged, Arrays.asList(providers), equations);
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
         }
 
     }

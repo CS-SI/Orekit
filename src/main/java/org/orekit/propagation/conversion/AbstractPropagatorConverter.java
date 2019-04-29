@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOpti
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -122,14 +121,13 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param nbPoints number of fitting points over time span
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
-     * @exception IllegalArgumentException if one of the parameters cannot be free
+          * @exception IllegalArgumentException if one of the parameters cannot be free
      */
     public Propagator convert(final Propagator source,
                               final double timeSpan,
                               final int nbPoints,
                               final List<String> freeParameters)
-        throws OrekitException, IllegalArgumentException {
+        throws IllegalArgumentException {
         setFreeParameters(freeParameters);
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
         return convert(states, false, freeParameters);
@@ -144,14 +142,13 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param nbPoints number of fitting points over time span
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
-     * @exception IllegalArgumentException if one of the parameters cannot be free
+          * @exception IllegalArgumentException if one of the parameters cannot be free
      */
     public Propagator convert(final Propagator source,
                               final double timeSpan,
                               final int nbPoints,
                               final String... freeParameters)
-        throws OrekitException, IllegalArgumentException {
+        throws IllegalArgumentException {
         setFreeParameters(Arrays.asList(freeParameters));
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
         return convert(states, false, freeParameters);
@@ -162,13 +159,12 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
-     * @exception IllegalArgumentException if one of the parameters cannot be free
+          * @exception IllegalArgumentException if one of the parameters cannot be free
      */
     public Propagator convert(final List<SpacecraftState> states,
                               final boolean positionOnly,
                               final List<String> freeParameters)
-        throws OrekitException, IllegalArgumentException {
+        throws IllegalArgumentException {
         setFreeParameters(freeParameters);
         return adapt(states, positionOnly);
     }
@@ -178,13 +174,12 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
-     * @exception IllegalArgumentException if one of the parameters cannot be free
+          * @exception IllegalArgumentException if one of the parameters cannot be free
      */
     public Propagator convert(final List<SpacecraftState> states,
                               final boolean positionOnly,
                               final String... freeParameters)
-        throws OrekitException, IllegalArgumentException {
+        throws IllegalArgumentException {
         setFreeParameters(Arrays.asList(freeParameters));
         return adapt(states, positionOnly);
     }
@@ -253,11 +248,10 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param timeSpan time span for the sample
      * @param nbPoints number of points for the sample over the time span
      * @return a sample of {@link SpacecraftState}
-     * @exception OrekitException if one of the sample point cannot be computed
      */
     private List<SpacecraftState> createSample(final Propagator source,
                                                final double timeSpan,
-                                               final int nbPoints) throws OrekitException {
+                                               final int nbPoints) {
 
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
 
@@ -272,9 +266,8 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
     /** Free some parameters.
      * @param freeParameters names of the free parameters
-     * @exception OrekitException if one of the parameters cannot be free
      */
-    private void setFreeParameters(final Iterable<String> freeParameters) throws OrekitException {
+    private void setFreeParameters(final Iterable<String> freeParameters) {
 
         // start by setting all parameters as not estimated
         for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
@@ -310,10 +303,9 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param states set of spacecraft states to fit
      * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be adapted
      */
     private Propagator adapt(final List<SpacecraftState> states,
-                             final boolean positionOnly) throws OrekitException {
+                             final boolean positionOnly) {
 
         this.onlyPosition = positionOnly;
 
@@ -337,11 +329,10 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Find the propagator that minimize the mean square error for a sample of {@link SpacecraftState states}.
      * @param initial initial estimation parameters (position, velocity, free parameters)
      * @return fitted parameters
-     * @exception OrekitException if propagator cannot be adapted
-     * @exception MathRuntimeException if maximal number of iterations is exceeded
+          * @exception MathRuntimeException if maximal number of iterations is exceeded
      */
     private double[] fit(final double[] initial)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
 
         final LeastSquaresProblem problem = new LeastSquaresBuilder().
                                             maxIterations(maxIterations).
@@ -361,40 +352,31 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Get the Root Mean Square Deviation for a given parameters set.
      * @param parameterSet position/velocity parameters set
      * @return RMSD
-     * @exception OrekitException if position/velocity cannot be computed at some date
      */
-    private double getRMS(final double[] parameterSet) throws OrekitException {
-        try {
-            final double[] residuals = getObjectiveFunction().value(parameterSet);
-            for (int i = 0; i < residuals.length; ++i) {
-                residuals[i] = target[i] - residuals[i];
-            }
-            double sum2 = 0;
-            for (final double residual : residuals) {
-                sum2 += residual * residual;
-            }
-            return FastMath.sqrt(sum2 / residuals.length);
-
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
+    private double getRMS(final double[] parameterSet) {
+        final double[] residuals = getObjectiveFunction().value(parameterSet);
+        for (int i = 0; i < residuals.length; ++i) {
+            residuals[i] = target[i] - residuals[i];
         }
+        double sum2 = 0;
+        for (final double residual : residuals) {
+            sum2 += residual * residual;
+        }
+        return FastMath.sqrt(sum2 / residuals.length);
     }
 
     /** Build the adpated propagator for a given position/velocity(/free) parameters set.
      * @param parameterSet position/velocity(/free) parameters set
      * @return adapted propagator
-     * @exception OrekitException if propagator cannot be build
      */
-    private Propagator buildAdaptedPropagator(final double[] parameterSet)
-        throws OrekitException {
+    private Propagator buildAdaptedPropagator(final double[] parameterSet) {
         return builder.buildPropagator(parameterSet);
     }
 
     /** Set the states sample.
      * @param states spacecraft states sample
-     * @exception OrekitException if position/velocity cannot be extracted from sample
      */
-    private void setSample(final List<SpacecraftState> states) throws OrekitException {
+    private void setSample(final List<SpacecraftState> states) {
 
         this.sample = states;
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -159,10 +159,8 @@ public class CelestialBodyFactory {
      * @see #addDefaultCelestialBodyLoader(String)
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
-     * @exception OrekitException if the header constants cannot be read
      */
-    public static void addDefaultCelestialBodyLoader(final String supportedNames)
-        throws OrekitException {
+    public static void addDefaultCelestialBodyLoader(final String supportedNames) {
         addDefaultCelestialBodyLoader(SOLAR_SYSTEM_BARYCENTER, supportedNames);
         addDefaultCelestialBodyLoader(SUN,                     supportedNames);
         addDefaultCelestialBodyLoader(MERCURY,                 supportedNames);
@@ -191,10 +189,8 @@ public class CelestialBodyFactory {
      * @see #addDefaultCelestialBodyLoader(String)
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
-     * @exception OrekitException if the header constants cannot be read
      */
-    public static void addDefaultCelestialBodyLoader(final String name, final String supportedNames)
-        throws OrekitException {
+    public static void addDefaultCelestialBodyLoader(final String name, final String supportedNames) {
 
         CelestialBodyLoader loader = null;
         if (name.equalsIgnoreCase(SOLAR_SYSTEM_BARYCENTER)) {
@@ -316,33 +312,29 @@ public class CelestialBodyFactory {
      * {@link org.orekit.frames.FramesFactory#getGCRF() GCRF})
      * </p>
      * @return solar system barycenter aggregated body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getSolarSystemBarycenter() throws OrekitException {
+    public static CelestialBody getSolarSystemBarycenter() {
         return getBody(SOLAR_SYSTEM_BARYCENTER);
     }
 
     /** Get the Sun singleton body.
      * @return Sun body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getSun() throws OrekitException {
+    public static CelestialBody getSun() {
         return getBody(SUN);
     }
 
     /** Get the Mercury singleton body.
      * @return Sun body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getMercury() throws OrekitException {
+    public static CelestialBody getMercury() {
         return getBody(MERCURY);
     }
 
     /** Get the Venus singleton body.
      * @return Venus body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getVenus() throws OrekitException {
+    public static CelestialBody getVenus() {
         return getBody(VENUS);
     }
 
@@ -355,73 +347,64 @@ public class CelestialBodyFactory {
      * {@link org.orekit.frames.FramesFactory#getGCRF() GCRF})
      * </p>
      * @return Earth-Moon barycenter bodies pair
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getEarthMoonBarycenter() throws OrekitException {
+    public static CelestialBody getEarthMoonBarycenter() {
         return getBody(EARTH_MOON);
     }
 
     /** Get the Earth singleton body.
      * @return Earth body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getEarth() throws OrekitException {
+    public static CelestialBody getEarth() {
         return getBody(EARTH);
     }
 
     /** Get the Moon singleton body.
      * @return Moon body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getMoon() throws OrekitException {
+    public static CelestialBody getMoon() {
         return getBody(MOON);
     }
 
     /** Get the Mars singleton body.
      * @return Mars body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getMars() throws OrekitException {
+    public static CelestialBody getMars() {
         return getBody(MARS);
     }
 
     /** Get the Jupiter singleton body.
      * @return Jupiter body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getJupiter() throws OrekitException {
+    public static CelestialBody getJupiter() {
         return getBody(JUPITER);
     }
 
     /** Get the Saturn singleton body.
      * @return Saturn body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getSaturn() throws OrekitException {
+    public static CelestialBody getSaturn() {
         return getBody(SATURN);
     }
 
     /** Get the Uranus singleton body.
      * @return Uranus body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getUranus() throws OrekitException {
+    public static CelestialBody getUranus() {
         return getBody(URANUS);
     }
 
     /** Get the Neptune singleton body.
      * @return Neptune body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getNeptune() throws OrekitException {
+    public static CelestialBody getNeptune() {
         return getBody(NEPTUNE);
     }
 
     /** Get the Pluto singleton body.
      * @return Pluto body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getPluto() throws OrekitException {
+    public static CelestialBody getPluto() {
         return getBody(PLUTO);
     }
 
@@ -438,10 +421,8 @@ public class CelestialBodyFactory {
      * </p>
      * @param name name of the celestial body
      * @return celestial body
-     * @exception OrekitException if the celestial body cannot be built
      */
-    public static CelestialBody getBody(final String name)
-        throws OrekitException {
+    public static CelestialBody getBody(final String name) {
         synchronized (CELESTIAL_BODIES_MAP) {
             CelestialBody body = CELESTIAL_BODIES_MAP.get(name);
             if (body == null) {

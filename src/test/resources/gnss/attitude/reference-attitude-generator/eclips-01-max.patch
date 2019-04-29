@@ -1,0 +1,54 @@
+--- eclips_Dec2017.f.orig	2018-09-20 11:45:13.940118418 +0200
++++ eclips_Dec2017.f	2018-09-20 11:52:56.580130048 +0200
+@@ -97,6 +97,9 @@
+ C                                     INPUT BEI PRN TO USE GAL NOON/NIGHT
+ C                                     TURNS (YRTIN CAN BE USED FOR
+ C                                     ANY SATs, INLUDING GPS ONES)
++C                      Feb 02, 2018  FIXED NUMERICAL NOISE APPEARING AT
++C                                    EXACT SUN ALIGNMENT AND LEADING TO
++C                                    NaN BEING PRODUCED (Luc Maisonobe)
+ C     PARAMETERS        DESCRIPTION
+ C
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -503,7 +506,7 @@
+       END IF
+ C Jan 10, 2017  end
+       IF ( (NIGHT .OR. NOON)) THEN
+-       DET=SQRT((180.d0-acos(svbcos)/DTR)**2-BETADG**2)
++       DET=SQRT(MAX(0.0D0,(180.d0-acos(svbcos)/DTR)**2-BETADG**2))
+        PHI = PI/2.d0/DTR
+ C Check if already after a midnight or noon
+        IF(NIGHT) THEN
+@@ -519,7 +522,7 @@
+ C Jan 16, 2015- end
+        END IF 
+        IF(NOON) THEN
+-       DET=SQRT((acos(svbcos)*180./pi)**2-BETADG**2)
++       DET=SQRT(MAX(0.0D0,(acos(svbcos)*180./pi)**2-BETADG**2))
+ C Jan 16, 2015- start (NO IIR X-REVERSAL!)
+ c        IF(IBLK(IPRN).EQ.4.OR.IBLK(IPRN).EQ.5) THEN
+ c         IF(DABS(YANGLE).LT.90.d0) DET=-DET
+@@ -575,9 +578,9 @@
+      &     .OR.(IPRN .GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN)
+      &     .AND.NIGHT) THEN
+            ECLSTM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))-
+-     &      SQRT((ANIGHT-180.d0)**2-BETADG**2)/MURATE
++     &      SQRT(MAX(0.0D0,(ANIGHT-180.d0)**2-BETADG**2))/MURATE
+            ECLETM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))+
+-     &      2.d0*SQRT((ANIGHT-180.d0)**2-BETADG**2)/MURATE
++     &      2.d0*SQRT(MAX(0.0D0,(ANIGHT-180.d0)**2-BETADG**2))/MURATE
+           END IF
+       END IF
+ C
+@@ -642,9 +645,9 @@
+      &       .OR.(IPRN .GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN)
+      &       .AND.NIGHT) THEN
+              ECLSTM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))-
+-     &       SQRT((ANIGHT-180.d0)**2-BETADG**2)/MURATE
++     &       SQRT(MAX(0.0D0,(ANIGHT-180.d0)**2-BETADG**2))/MURATE
+              ECLETM(IPRN,NECLIPS(IPRN))= ECLSTM(IPRN,NECLIPS(IPRN))+
+-     &       2.d0*SQRT((ANIGHT-180.d0)**2-BETADG**2)/MURATE
++     &       2.d0*SQRT(MAX(0.0D0,(ANIGHT-180.d0)**2-BETADG**2))/MURATE
+             END IF
+         END IF
+         ENDIF

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -273,8 +272,6 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     public abstract T getHy();
 
     /** Get the second component of the inclination vector derivative.
-     * <p>
-     * </p>
      * @return second component of the inclination vector derivative
      */
     public abstract T getHyDot();
@@ -400,11 +397,9 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
      * @return FieldPVCoordinates in the specified output frame
-     * @exception OrekitException if transformation between frames cannot be computed
-     * @see #getPVCoordinates()
+          * @see #getPVCoordinates()
      */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame)
-        throws OrekitException {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
         }
@@ -421,8 +416,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame)
-        throws OrekitException {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 

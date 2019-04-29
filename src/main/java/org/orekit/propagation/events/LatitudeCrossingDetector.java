@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -30,9 +29,6 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * @since 7.1
  */
 public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150824L;
 
     /** Body on which the latitude is defined. */
     private OneAxisEllipsoid body;
@@ -115,9 +111,8 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return spacecraft latitude minus the fixed latitude to be crossed
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
         final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),

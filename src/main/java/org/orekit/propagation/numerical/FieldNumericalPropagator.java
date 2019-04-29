@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -119,9 +119,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * final T          maxStep   = zero.add(500);
  * final T          initStep  = zero.add(60);
  * final double[][] tolerance = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
- * AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tolerance[0], tolerance[1]);
+ * AdaptiveStepsizeFieldIntegrator&lt;T&gt; integrator = new DormandPrince853FieldIntegrator&lt;&gt;(field, minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
- * propagator = new FieldNumericalPropagator<>(field, integrator);
+ * propagator = new FieldNumericalPropagator&lt;&gt;(field, integrator);
  * </pre>
  * <p>By default, at the end of the propagation, the propagator resets the initial state to the final state,
  * thus allowing a new propagation to be started from there without recomputing the part already performed.
@@ -265,32 +265,6 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         return Collections.unmodifiableList(forceModels);
     }
 
-    /** Get perturbing force models list.
-     * @return list of perturbing force models
-     * @deprecated as of 9.1, this method is deprecated, the perturbing
-     * force models are retrieved together with the Newtonian attraction
-     * by calling {@link #getAllForceModels()}
-     */
-    @Deprecated
-    public List<ForceModel> getForceModels() {
-        return hasNewtonianAttraction() ? forceModels.subList(0, forceModels.size() - 1) : forceModels;
-    }
-
-    /** Get the Newtonian attraction from the central body force model.
-     * @return Newtonian attraction force model
-     * @deprecated as of 9.1, this method is deprecated, the Newtonian
-     * attraction force model (if any) is the last in the {@link #getAllForceModels()}
-     */
-    @Deprecated
-    public NewtonianAttraction getNewtonianAttractionForceModel() {
-        final int last = forceModels.size() - 1;
-        if (last >= 0 && forceModels.get(last) instanceof NewtonianAttraction) {
-            return (NewtonianAttraction) forceModels.get(last);
-        } else {
-            return null;
-        }
-    }
-
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
@@ -327,14 +301,13 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
     /** Set the initial state.
      * @param initialState initial state
-     * @exception OrekitException if initial state cannot be set
      */
-    public void setInitialState(final FieldSpacecraftState<T> initialState) throws OrekitException {
+    public void setInitialState(final FieldSpacecraftState<T> initialState) {
         resetInitialState(initialState);
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final FieldSpacecraftState<T> state) throws OrekitException {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             setMu(state.getMu());
@@ -343,8 +316,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -380,8 +352,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final T[] yDot,
-                                                       final boolean meanOnly)
-            throws OrekitException {
+                                                       final boolean meanOnly) {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
             final T mass = y[6];
@@ -433,8 +404,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         @Override
-        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target)
-            throws OrekitException {
+        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
             final SpacecraftState stateD  = initialState.toSpacecraftState();
             final AbsoluteDate    targetD = target.toAbsoluteDate();
             for (final ForceModel forceModel : forceModels) {
@@ -444,7 +414,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         @Override
-        public T[] computeDerivatives(final FieldSpacecraftState<T> state) throws OrekitException {
+        public T[] computeDerivatives(final FieldSpacecraftState<T> state) {
             final T zero = state.getA().getField().getZero();
             orbit = state.getOrbit();
             Arrays.fill(yDot, zero);
@@ -469,8 +439,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         @Override
-        public void addNonKeplerianAcceleration(final FieldVector3D<T> gamma)
-            throws OrekitException {
+        public void addNonKeplerianAcceleration(final FieldVector3D<T> gamma) {
             for (int i = 0; i < 6; ++i) {
                 final T[] jRow = jacobian[i];
                 yDot[i] = yDot[i].add(jRow[3].linearCombination(jRow[3], gamma.getX(),
@@ -515,11 +484,9 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @exception OrekitException if Jacobian is singular
-     * @param <T> elements type
+          * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type)
-        throws OrekitException {
+    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type) {
 
         // estimate the scalar velocity error
         final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();

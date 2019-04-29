@@ -16,21 +16,24 @@
  */
 package org.orekit.models.earth;
 
-import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import org.hipparchus.analysis.BivariateFunction;
-import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.InterpolationTableLoader;
+import org.orekit.utils.ParameterDriver;
 
 /** The modified Saastamoinen model. Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
@@ -54,13 +57,10 @@ import org.orekit.utils.InterpolationTableLoader;
  * @author Thomas Neidhart
  * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
  */
-public class SaastamoinenModel implements TroposphericModel {
+public class SaastamoinenModel implements DiscreteTroposphericModel {
 
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160126L;
 
     /** X values for the B function. */
     private static final double[] X_VALUES_FOR_B = {
@@ -78,13 +78,13 @@ public class SaastamoinenModel implements TroposphericModel {
     };
 
     /** Interpolation function for the B correction term. */
-    private final transient UnivariateFunction bFunction;
+    private final PolynomialSplineFunction bFunction;
 
     /** Polynomial function for the e term. */
-    private final transient PolynomialFunction eFunction;
+    private final PolynomialFunction eFunction;
 
     /** Interpolation function for the delta R correction term. */
-    private final transient BilinearInterpolatingFunction deltaRFunction;
+    private final BilinearInterpolatingFunction deltaRFunction;
 
     /** The temperature at the station [K]. */
     private double t0;
@@ -103,12 +103,10 @@ public class SaastamoinenModel implements TroposphericModel {
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
-     * @exception OrekitException if δR correction term table cannot be loaded
      * @since 7.1
      */
     public SaastamoinenModel(final double t0, final double p0, final double r0,
-                             final String deltaRFileName)
-        throws OrekitException {
+                             final String deltaRFileName) {
         this(t0, p0, r0,
              deltaRFileName == null ? defaultDeltaR() : loadDeltaR(deltaRFileName));
     }
@@ -139,10 +137,8 @@ public class SaastamoinenModel implements TroposphericModel {
      * </ul>
      *
      * @return a Saastamoinen model with standard environmental values
-     * @exception OrekitException if δR correction term table cannot be loaded
      */
-    public static SaastamoinenModel getStandardModel()
-        throws OrekitException {
+    public static SaastamoinenModel getStandardModel() {
         return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, (String) null);
     }
 
@@ -152,7 +148,8 @@ public class SaastamoinenModel implements TroposphericModel {
      * reasons, we use the value for h = 0 when altitude is negative.
      * </p>
      */
-    public double pathDelay(final double elevation, final double height) {
+    public double pathDelay(final double elevation, final double height,
+                            final double[] parameters, final AbsoluteDate date) {
 
         // there are no data in the model for negative altitudes
         // we use the data for the lowest available altitude: 0.0
@@ -184,6 +181,47 @@ public class SaastamoinenModel implements TroposphericModel {
         return delta;
     }
 
+    /** {@inheritDoc}
+     * <p>
+     * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
+     * reasons, we use the value for h = 0 when altitude is negative.
+     * </p>
+     */
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+
+        final Field<T> field = height.getField();
+        final T zero = field.getZero();
+        // there are no data in the model for negative altitudes
+        // we use the data for the lowest available altitude: 0.0
+        final T fixedHeight = FastMath.max(zero, height);
+
+        // the corrected temperature using a temperature gradient of -6.5 K/km
+        final T T = fixedHeight.multiply(6.5e-3).negate().add(t0);
+        // the corrected pressure
+        final T P = fixedHeight.multiply(2.26e-5).negate().add(1.0).pow(5.225).multiply(p0);
+        // the corrected humidity
+        final T R = FastMath.exp(fixedHeight.multiply(-6.396e-4)).multiply(r0);
+
+        // interpolate the b correction term
+        final T B = bFunction.value(fixedHeight.divide(1e3));
+        // calculate e
+        final T e = R.multiply(FastMath.exp(eFunction.value(T)));
+
+        // calculate the zenith angle from the elevation
+        final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
+
+        // get correction factor
+        final T deltaR = getDeltaR(fixedHeight, z, field);
+
+        // calculate the path delay in m
+        final T tan = FastMath.tan(z);
+        final T delta = FastMath.cos(z).divide(2.277e-3).reciprocal().
+                        multiply(P.add(T.divide(1255d).reciprocal().add(5e-2).multiply(e)).subtract(B.multiply(tan).multiply(tan))).add(deltaR);
+
+        return delta;
+    }
+
     /** Calculates the delta R correction term using linear interpolation.
      * @param height the height of the station in m
      * @param zenith the zenith angle of the satellite
@@ -198,14 +236,30 @@ public class SaastamoinenModel implements TroposphericModel {
         return deltaRFunction.value(h, z);
     }
 
+    /** Calculates the delta R correction term using linear interpolation.
+     * @param <T> type of the elements
+     * @param height the height of the station in m
+     * @param zenith the zenith angle of the satellite
+     * @param field field used by default
+     * @return the delta R correction term in m
+     */
+    private  <T extends RealFieldElement<T>> T getDeltaR(final T height, final T zenith,
+                                                         final Field<T> field) {
+        final T zero = field.getZero();
+        // limit the height to a range of [0, 5000] m
+        final T h = FastMath.min(FastMath.max(zero, height), zero.add(5000));
+        // limit the zenith angle to 90 degree
+        // Note: the function is symmetric for negative zenith angles
+        final T z = FastMath.min(zenith.abs(), zero.add(0.5 * FastMath.PI));
+        return deltaRFunction.value(h, z);
+    }
+
     /** Load δR function.
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table
      * @return δR function
-     * @exception OrekitException if table cannot be loaded
      */
-    private static BilinearInterpolatingFunction loadDeltaR(final String deltaRFileName)
-        throws OrekitException {
+    private static BilinearInterpolatingFunction loadDeltaR(final String deltaRFileName) {
 
         // read the δR interpolation function from the config file
         final InterpolationTableLoader loader = new InterpolationTableLoader();
@@ -269,200 +323,49 @@ public class SaastamoinenModel implements TroposphericModel {
 
     }
 
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(this);
+    @Override
+    public double[] computeZenithDelay(final double height, final double[] parameters,
+                                       final AbsoluteDate date) {
+        return new double[] {
+            pathDelay(0.5 * FastMath.PI, height, parameters, date),
+            0.
+        };
     }
 
-    /** Specialization of the data transfer object for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160126L;
-
-        /** The temperature at the station [K]. */
-        private double t0;
-
-        /** The atmospheric pressure [mbar]. */
-        private double p0;
-
-        /** The humidity [percent]. */
-        private double r0;
-
-        /** Samples x-coordinates. */
-        private final double[] xval;
-
-        /** Samples y-coordinates. */
-        private final double[] yval;
-
-        /** Set of cubic splines patching the whole data grid. */
-        private final double[][] fval;
-
-        /** Simple constructor.
-         * @param model model to serialize
-         */
-        DataTransferObject(final SaastamoinenModel model) {
-            this.t0 = model.t0;
-            this.p0 = model.p0;
-            this.r0 = model.r0;
-            this.xval = model.deltaRFunction.xval.clone();
-            this.yval = model.deltaRFunction.yval.clone();
-            this.fval = model.deltaRFunction.fval.clone();
-        }
-
-        /** Replace the deserialized data transfer object with a {@link SaastamoinenModel}.
-         * @return replacement {@link SaastamoinenModel}
-         */
-        private Object readResolve() {
-            return new SaastamoinenModel(t0, p0, r0,
-                                         new BilinearInterpolatingFunction(xval, yval, fval));
-        }
-
+    @Override
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+                                                                  final FieldAbsoluteDate<T> date) {
+        final Field<T> field = height.getField();
+        final T zero = field.getZero();
+        final T[] delay = MathArrays.buildArray(field, 2);
+        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), height, parameters, date);
+        delay[1] = zero;
+        return delay;
     }
 
-    /**
-     * Function that implements a standard bilinear interpolation.
-     * The interpolation as found
-     * in the Wikipedia reference <a href =
-     * "http://en.wikipedia.org/wiki/Bilinear_interpolation">BiLinear
-     * Interpolation</a>. This is a stand-in until Apache Math has a
-     * bilinear interpolator
-     */
-    private static class BilinearInterpolatingFunction implements BivariateFunction {
+    @Override
+    public double[] mappingFactors(final double elevation, final double height,
+                                   final double[] parameters, final AbsoluteDate date) {
+        return new double[] {
+            1.0,
+            1.0
+        };
+    }
 
-        /**
-         * The minimum number of points that are needed to compute the
-         * function.
-         */
-        private static final int MIN_NUM_POINTS = 2;
+    @Override
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
+        final T one = field.getOne();
+        final T[] factors = MathArrays.buildArray(field, 2);
+        factors[0] = one;
+        factors[1] = one;
+        return factors;
+    }
 
-        /** Samples x-coordinates. */
-        private final double[] xval;
-
-        /** Samples y-coordinates. */
-        private final double[] yval;
-
-        /** Set of cubic splines patching the whole data grid. */
-        private final double[][] fval;
-
-        /**
-         * @param x Sample values of the x-coordinate, in increasing order.
-         * @param y Sample values of the y-coordinate, in increasing order.
-         * @param f Values of the function on every grid point. the expected
-         *        number of elements.
-         * @throws MathIllegalArgumentException if the length of x and y don't
-         *         match the row, column height of f, or if any of the arguments
-         *         are null, or if any of the arrays has zero length, or if
-         *         {@code x} or {@code y} are not strictly increasing.
-         */
-        BilinearInterpolatingFunction(final double[] x, final double[] y, final double[][] f)
-                        throws MathIllegalArgumentException {
-
-            if (x == null || y == null || f == null || f[0] == null) {
-                throw new IllegalArgumentException("All arguments must be non-null");
-            }
-
-            final int xLen = x.length;
-            final int yLen = y.length;
-
-            if (xLen == 0 || yLen == 0 || f.length == 0 || f[0].length == 0) {
-                throw new MathIllegalArgumentException(LocalizedCoreFormats.NO_DATA);
-            }
-
-            if (xLen < MIN_NUM_POINTS || yLen < MIN_NUM_POINTS || f.length < MIN_NUM_POINTS ||
-                            f[0].length < MIN_NUM_POINTS) {
-                throw new MathIllegalArgumentException(LocalizedCoreFormats.INSUFFICIENT_DATA);
-            }
-
-            if (xLen != f.length) {
-                throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                       xLen, f.length);
-            }
-
-            if (yLen != f[0].length) {
-                throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                       yLen, f[0].length);
-            }
-
-            MathArrays.checkOrder(x);
-            MathArrays.checkOrder(y);
-
-            xval = x.clone();
-            yval = y.clone();
-            fval = f.clone();
-        }
-
-        @Override
-        public double value(final double x, final double y) {
-            final int offset = 1;
-            final int count = offset + 1;
-            final int i = searchIndex(x, xval, offset, count);
-            final int j = searchIndex(y, yval, offset, count);
-
-            final double x1 = xval[i];
-            final double x2 = xval[i + 1];
-            final double y1 = yval[j];
-            final double y2 = yval[j + 1];
-            final double fQ11 = fval[i][j];
-            final double fQ21 = fval[i + 1][j];
-            final double fQ12 = fval[i][j + 1];
-            final double fQ22 = fval[i + 1][j + 1];
-
-            final double f = (fQ11 * (x2 - x)  * (y2 - y) +
-                            fQ21 * (x  - x1) * (y2 - y) +
-                            fQ12 * (x2 - x)  * (y  - y1) +
-                            fQ22 * (x  - x1) * (y  - y1)) /
-                            ((x2 - x1) * (y2 - y1));
-
-            return f;
-        }
-
-        /**
-         * @param c Coordinate.
-         * @param val Coordinate samples.
-         * @param offset how far back from found value to offset for
-         *        querying
-         * @param count total number of elements forward from beginning that
-         *        will be queried
-         * @return the index in {@code val} corresponding to the interval
-         *         containing {@code c}.
-         * @throws MathIllegalArgumentException if {@code c} is out of the range
-         *         defined by the boundary values of {@code val}.
-         */
-        private int searchIndex(final double c, final double[] val, final int offset, final int count)
-            throws MathIllegalArgumentException {
-            int r = Arrays.binarySearch(val, c);
-
-            if (r == -1 || r == -val.length - 1) {
-                throw new MathIllegalArgumentException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
-                                                       c, val[0], val[val.length - 1]);
-            }
-
-            if (r < 0) {
-                // "c" in within an interpolation sub-interval, which
-                // returns
-                // negative
-                // need to remove the negative sign for consistency
-                r = -r - offset - 1;
-            } else {
-                r -= offset;
-            }
-
-            if (r < 0) {
-                r = 0;
-            }
-
-            if ((r + count) >= val.length) {
-                // "c" is the last sample of the range: Return the index
-                // of the sample at the lower end of the last sub-interval.
-                r = val.length - count;
-            }
-
-            return r;
-        }
-
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
 }

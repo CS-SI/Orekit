@@ -20,13 +20,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -34,7 +34,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.StopOnEvent;
@@ -66,12 +65,11 @@ public abstract class CloseEventsAbstractTest {
      *
      * @param stepSize   required minimum step of integrator.
      * @return a usable propagator.
-     * @throws OrekitException
      */
-    public abstract Propagator getPropagator(double stepSize) throws OrekitException;
+    public abstract Propagator getPropagator(double stepSize);
 
     @Test
-    public void testCloseEventsFirstOneIsReset() throws OrekitException {
+    public void testCloseEventsFirstOneIsReset() {
         // setup
         // a fairly rare state to reproduce this bug. Two dates, d1 < d2, that
         // are very close. Event triggers on d1 will reset state to break out of
@@ -107,7 +105,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     @Test
-    public void testCloseEvents() throws OrekitException {
+    public void testCloseEvents() {
         // setup
         double tolerance = 1;
         Propagator propagator = getPropagator(10);
@@ -137,7 +135,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     @Test
-    public void testSimultaneousEvents() throws OrekitException {
+    public void testSimultaneousEvents() {
         // setup
         Propagator propagator = getPropagator(10);
 
@@ -172,7 +170,7 @@ public abstract class CloseEventsAbstractTest {
      * preserve the alternating increasing / decreasing sequence.
      */
     @Test
-    public void testFastSwitching() throws OrekitException {
+    public void testFastSwitching() {
         // setup
         // step size of 10 to land in between two events we would otherwise miss
         Propagator propagator = getPropagator(10);
@@ -197,7 +195,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** "A Tricky Problem" from bug #239. */
     @Test
-    public void testTrickyCaseLower() throws OrekitException {
+    public void testTrickyCaseLower() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -247,7 +245,7 @@ public abstract class CloseEventsAbstractTest {
      * t3.
      */
     @Test
-    public void testRootFindingTolerance() throws OrekitException {
+    public void testRootFindingTolerance() {
         //setup
         double maxCheck = 10;
         double t2 = 11, t3 = t2 + 1e-5;
@@ -285,7 +283,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
     @Test
-    public void testRootPlusToleranceHasWrongSign() throws OrekitException {
+    public void testRootPlusToleranceHasWrongSign() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -329,7 +327,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
     @Test
-    public void testRootPlusToleranceHasWrongSignAndLessThanTb() throws OrekitException {
+    public void testRootPlusToleranceHasWrongSignAndLessThanTb() {
         // setup
         // test is fragile w.r.t. implementation and these parameters
         double maxCheck = 10;
@@ -360,7 +358,7 @@ public abstract class CloseEventsAbstractTest {
      * < 0.
      */
     @Test
-    public void testDoubleRoot() throws OrekitException {
+    public void testDoubleRoot() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -398,7 +396,7 @@ public abstract class CloseEventsAbstractTest {
      * > 0.
      */
     @Test
-    public void testDoubleRootOppositeSign() throws OrekitException {
+    public void testDoubleRootOppositeSign() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -433,7 +431,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check root finding when zero at both ends. */
     @Test
-    public void testZeroAtBeginningAndEndOfInterval() throws OrekitException {
+    public void testZeroAtBeginningAndEndOfInterval() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -461,7 +459,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check root finding when zero at both ends. */
     @Test
-    public void testZeroAtBeginningAndEndOfIntervalOppositeSign() throws OrekitException {
+    public void testZeroAtBeginningAndEndOfIntervalOppositeSign() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -490,7 +488,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** Test where an event detector has to back up multiple times. */
     @Test
-    public void testMultipleBackups() throws OrekitException {
+    public void testMultipleBackups() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -550,7 +548,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** Test a reset event triggering another event at the same time. */
     @Test
-    public void testEventCausedByStateReset() throws OrekitException {
+    public void testEventCausedByStateReset() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -596,7 +594,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when t + tolerance == t. */
     @Test
-    public void testConvergenceTooTight() throws OrekitException {
+    public void testConvergenceTooTight() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18;
@@ -627,7 +625,7 @@ public abstract class CloseEventsAbstractTest {
      * too hard to implement.
      */
     @Test
-    public void testEventChangesGFunctionDefinition() throws OrekitException {
+    public void testEventChangesGFunctionDefinition() {
         // setup
         double maxCheck = 5;
         double tolerance = 1e-6;
@@ -649,29 +647,167 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         ContinuousDetector detectorB = new ContinuousDetector(t2);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(s -> swap[0] ? detectorB.g(s) : -1);
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+        propagator.addEventDetector(detectorC);
 
-            private static final long serialVersionUID = 1L;
+        // action
+        propagator.propagate(epoch.shiftedBy(30));
 
-            @Override
-            public double g(SpacecraftState s) throws OrekitException {
-                if (swap[0]) {
-                    return detectorB.g(s);
-                } else {
-                    return -1;
-                }
-            }
+        // verify
+        Assert.assertEquals(2, events.size());
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(1).isIncreasing());
+        Assert.assertSame(detectorC, events.get(1).getDetector());
+    }
 
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-        };
+    /**
+     * test when one event detector changes the definition of another's g function before
+     * the end of the step as a result of an event occurring. In this case the change
+     * cancels the occurrence of the event.
+     */
+    @Test
+    public void testEventChangesGFunctionDefinitionCancel() {
+        // setup
+        double maxCheck = 5;
+        double tolerance = 1e-6;
+        double t1 = 11, t2 = 11.1;
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        // mutable boolean
+        boolean[] swap = new boolean[1];
+        final ContinuousDetector detectorA = new ContinuousDetector(t1)
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState state,
+                                                EventDetector detector,
+                                                boolean increasing) {
+                        swap[0] = true;
+                        super.eventOccurred(state, detector, increasing);
+                        return Action.RESET_EVENTS;
+                    }
+                });
+        final ContinuousDetector detectorB = new ContinuousDetector(t2);
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? -1 : detectorB.g(state));
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+        propagator.addEventDetector(detectorC);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(30));
+
+        // verify
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+    }
+
+    /**
+     * test when one event detector changes the definition of another's g function before
+     * the end of the step as a result of an event occurring. In this case the change
+     * delays the occurrence of the event.
+     */
+    @Test
+    public void testEventChangesGFunctionDefinitionDelay() {
+        // setup
+        double maxCheck = 5;
+        double tolerance = 1e-6;
+        double t1 = 11, t2 = 11.1, t3 = 11.2;
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        // mutable boolean
+        boolean[] swap = new boolean[1];
+        final ContinuousDetector detectorA = new ContinuousDetector(t1)
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState state,
+                                                EventDetector detector,
+                                                boolean increasing) {
+                        swap[0] = true;
+                        super.eventOccurred(state, detector, increasing);
+                        return Action.RESET_EVENTS;
+                    }
+                });
+        final ContinuousDetector detectorB = new ContinuousDetector(t2);
+        final ContinuousDetector detectorD = new ContinuousDetector(t3);
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorD.g(state) : detectorB.g(state));
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+        propagator.addEventDetector(detectorC);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(30));
+
+        // verify
+        Assert.assertEquals(2, events.size());
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assert.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(1).isIncreasing());
+        Assert.assertSame(detectorC, events.get(1).getDetector());
+    }
+
+    /**
+     * test when one event detector changes the definition of another's g function before
+     * the end of the step as a result of an event occurring. In this case the change
+     * causes the event to happen sooner than originally expected.
+     */
+    @Test
+    public void testEventChangesGFunctionDefinitionAccelerate() {
+        // setup
+        double maxCheck = 5;
+        double tolerance = 1e-6;
+        double t1 = 11, t2 = 11.1, t3 = 11.2;
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        // mutable boolean
+        boolean[] swap = new boolean[1];
+        final ContinuousDetector detectorA = new ContinuousDetector(t1)
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState state,
+                                                EventDetector detector,
+                                                boolean increasing) {
+                        swap[0] = true;
+                        super.eventOccurred(state, detector, increasing);
+                        return Action.RESET_EVENTS;
+                    }
+                });
+        final ContinuousDetector detectorB = new ContinuousDetector(t2);
+        final ContinuousDetector detectorD = new ContinuousDetector(t3);
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorB.g(state) : detectorD.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -691,7 +827,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when root finding tolerance > event finding tolerance. */
     @Test
-    public void testToleranceStop() throws OrekitException {
+    public void testToleranceStop() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18; // less than 1 ulp
@@ -729,7 +865,7 @@ public abstract class CloseEventsAbstractTest {
      * detector to force a very small window for the first event detector.
      */
     @Test
-    public void testShortBracketingInterval() throws OrekitException {
+    public void testShortBracketingInterval() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -737,32 +873,21 @@ public abstract class CloseEventsAbstractTest {
         // shared event list so we know the order in which they occurred
         List<Event<EventDetector>> events = new ArrayList<>();
         // never zero so there is no easy way out
-        EventDetector detectorA = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public double g(SpacecraftState state) {
-                final AbsoluteDate t = state.getDate();
-                if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
-                    return -1;
-                } else if (t.compareTo(epoch.shiftedBy(t2)) < 0) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-        };
+        EventDetector detectorA = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> {
+                    final AbsoluteDate t = state.getDate();
+                    if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
+                        return -1;
+                    } else if (t.compareTo(epoch.shiftedBy(t2)) < 0) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                });
         TimeDetector detectorB = new TimeDetector(t1)
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
@@ -789,7 +914,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when root finding tolerance > event finding tolerance. */
     @Test
-    public void testToleranceMaxIterations() throws OrekitException {
+    public void testToleranceMaxIterations() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18; // less than 1 ulp
@@ -821,7 +946,7 @@ public abstract class CloseEventsAbstractTest {
 
 
     @Test
-    public void testCloseEventsFirstOneIsResetReverse() throws OrekitException {
+    public void testCloseEventsFirstOneIsResetReverse() {
         // setup
         // a fairly rare state to reproduce this bug. Two dates, d1 < d2, that
         // are very close. Event triggers on d1 will reset state to break out of
@@ -861,7 +986,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     @Test
-    public void testCloseEventsReverse() throws OrekitException {
+    public void testCloseEventsReverse() {
         // setup
         double tolerance = 1;
         Propagator propagator = getPropagator(10);
@@ -892,7 +1017,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     @Test
-    public void testSimultaneousEventsReverse() throws OrekitException {
+    public void testSimultaneousEventsReverse() {
         // setup
         Propagator propagator = getPropagator(10);
 
@@ -927,7 +1052,7 @@ public abstract class CloseEventsAbstractTest {
      * preserve the alternating increasing / decreasing sequence.
      */
     @Test
-    public void testFastSwitchingReverse() throws OrekitException {
+    public void testFastSwitchingReverse() {
         // setup
         // step size of 10 to land in between two events we would otherwise miss
         Propagator propagator = getPropagator(10);
@@ -951,7 +1076,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** "A Tricky Problem" from bug #239. */
     @Test
-    public void testTrickyCaseLowerReverse() throws OrekitException {
+    public void testTrickyCaseLowerReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1001,7 +1126,7 @@ public abstract class CloseEventsAbstractTest {
      * t3.
      */
     @Test
-    public void testRootFindingToleranceReverse() throws OrekitException {
+    public void testRootFindingToleranceReverse() {
         //setup
         double maxCheck = 10;
         double t2 = -11, t3 = t2 - 1e-5;
@@ -1039,7 +1164,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
     @Test
-    public void testRootPlusToleranceHasWrongSignReverse() throws OrekitException {
+    public void testRootPlusToleranceHasWrongSignReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1083,7 +1208,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
     @Test
-    public void testRootPlusToleranceHasWrongSignAndLessThanTbReverse() throws OrekitException {
+    public void testRootPlusToleranceHasWrongSignAndLessThanTbReverse() {
         // setup
         // test is fragile w.r.t. implementation and these parameters
         double maxCheck = 10;
@@ -1114,7 +1239,7 @@ public abstract class CloseEventsAbstractTest {
      * < 0.
      */
     @Test
-    public void testDoubleRootReverse() throws OrekitException {
+    public void testDoubleRootReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1152,7 +1277,7 @@ public abstract class CloseEventsAbstractTest {
      * > 0.
      */
     @Test
-    public void testDoubleRootOppositeSignReverse() throws OrekitException {
+    public void testDoubleRootOppositeSignReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1188,7 +1313,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check root finding when zero at both ends. */
     @Test
-    public void testZeroAtBeginningAndEndOfIntervalReverse() throws OrekitException {
+    public void testZeroAtBeginningAndEndOfIntervalReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1217,7 +1342,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check root finding when zero at both ends. */
     @Test
-    public void testZeroAtBeginningAndEndOfIntervalOppositeSignReverse() throws OrekitException {
+    public void testZeroAtBeginningAndEndOfIntervalOppositeSignReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1246,7 +1371,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** Test where an event detector has to back up multiple times. */
     @Test
-    public void testMultipleBackupsReverse() throws OrekitException {
+    public void testMultipleBackupsReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1306,7 +1431,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** Test a reset event triggering another event at the same time. */
     @Test
-    public void testEventCausedByStateResetReverse() throws OrekitException {
+    public void testEventCausedByStateResetReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1352,7 +1477,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when t + tolerance == t. */
     @Test
-    public void testConvergenceTooTightReverse() throws OrekitException {
+    public void testConvergenceTooTightReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18;
@@ -1383,7 +1508,7 @@ public abstract class CloseEventsAbstractTest {
      * too hard to implement.
      */
     @Test
-    public void testEventChangesGFunctionDefinitionReverse() throws OrekitException {
+    public void testEventChangesGFunctionDefinitionReverse() {
         // setup
         double maxCheck = 5;
         double tolerance = 1e-6;
@@ -1405,29 +1530,12 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         ContinuousDetector detectorB = new ContinuousDetector(t2);
-        EventDetector detectorC = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public double g(SpacecraftState state) throws OrekitException {
-                if (swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return 1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(double newMaxCheck,
-                                           double newThreshold,
-                                           int newMaxIter,
-                                           EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-
-        };
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorB.g(state) : 1);
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -1445,9 +1553,164 @@ public abstract class CloseEventsAbstractTest {
         Assert.assertSame(detectorC, events.get(1).getDetector());
     }
 
+    /**
+     * test when one event detector changes the definition of another's g function before
+     * the end of the step as a result of an event occurring. In this case the change
+     * cancels the occurrence of the event.
+     */
+    @Test
+    public void testEventChangesGFunctionDefinitionCancelReverse() {
+        // setup
+        double maxCheck = 5;
+        double tolerance = 1e-6;
+        double t1 = -11, t2 = -11.1;
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        // mutable boolean
+        boolean[] swap = new boolean[1];
+        final ContinuousDetector detectorA = new ContinuousDetector(t1)
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState state,
+                                                EventDetector detector,
+                                                boolean increasing) {
+                        swap[0] = true;
+                        super.eventOccurred(state, detector, increasing);
+                        return Action.RESET_EVENTS;
+                    }
+                });
+        final ContinuousDetector detectorB = new ContinuousDetector(t2);
+        EventDetector detectorC = new FunctionalDetector()
+        .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? 1 : detectorB.g(state));
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+        propagator.addEventDetector(detectorC);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-30));
+
+        // verify
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+    }
+
+    /**
+     * test when one event detector changes the definition of another's g function before
+     * the end of the step as a result of an event occurring. In this case the change
+     * delays the occurrence of the event.
+     */
+    @Test
+    public void testEventChangesGFunctionDefinitionDelayReverse() {
+        // setup
+        double maxCheck = 5;
+        double tolerance = 1e-6;
+        double t1 = -11, t2 = -11.1, t3 = -11.2;
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        // mutable boolean
+        boolean[] swap = new boolean[1];
+        final ContinuousDetector detectorA = new ContinuousDetector(t1)
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState state,
+                                                EventDetector detector,
+                                                boolean increasing) {
+                        swap[0] = true;
+                        super.eventOccurred(state, detector, increasing);
+                        return Action.RESET_EVENTS;
+                    }
+                });
+        final ContinuousDetector detectorB = new ContinuousDetector(t2);
+        final ContinuousDetector detectorD = new ContinuousDetector(t3);
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorD.g(state) : detectorB.g(state));
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+        propagator.addEventDetector(detectorC);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-30));
+
+        // verify
+        Assert.assertEquals(2, events.size());
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assert.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(1).isIncreasing());
+        Assert.assertSame(detectorC, events.get(1).getDetector());
+    }
+
+    /**
+     * test when one event detector changes the definition of another's g function before
+     * the end of the step as a result of an event occurring. In this case the change
+     * causes the event to happen sooner than originally expected.
+     */
+    @Test
+    public void testEventChangesGFunctionDefinitionAccelerateReverse() {
+        // setup
+        double maxCheck = 5;
+        double tolerance = 1e-6;
+        double t1 = -11, t2 = -11.1, t3 = -11.2;
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        // mutable boolean
+        boolean[] swap = new boolean[1];
+        final ContinuousDetector detectorA = new ContinuousDetector(t1)
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState state,
+                                                EventDetector detector,
+                                                boolean increasing) {
+                        swap[0] = true;
+                        super.eventOccurred(state, detector, increasing);
+                        return Action.RESET_EVENTS;
+                    }
+                });
+        final ContinuousDetector detectorB = new ContinuousDetector(t2);
+        final ContinuousDetector detectorD = new ContinuousDetector(t3);
+        EventDetector detectorC = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> swap[0] ? detectorB.g(state) : detectorD.g(state));
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+        propagator.addEventDetector(detectorC);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-30));
+
+        // verify
+        Assert.assertEquals(2, events.size());
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assert.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(1).isIncreasing());
+        Assert.assertSame(detectorC, events.get(1).getDetector());
+    }
+
     /** check when root finding tolerance > event finding tolerance. */
     @Test
-    public void testToleranceStopReverse() throws OrekitException {
+    public void testToleranceStopReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18; // less than 1 ulp
@@ -1485,7 +1748,7 @@ public abstract class CloseEventsAbstractTest {
      * detector to force a very small window for the first event detector.
      */
     @Test
-    public void testShortBracketingIntervalReverse() throws OrekitException {
+    public void testShortBracketingIntervalReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1493,32 +1756,21 @@ public abstract class CloseEventsAbstractTest {
         // shared event list so we know the order in which they occurred
         List<Event<EventDetector>> events = new ArrayList<>();
         // never zero so there is no easy way out
-        EventDetector detectorA = new AbstractDetector<EventDetector>
-                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public double g(SpacecraftState state) {
-                final AbsoluteDate t = state.getDate();
-                if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
-                    return -1;
-                } else if (t.compareTo(epoch.shiftedBy(t2)) > 0) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-
-            @Override
-            protected EventDetector create(
-                    double newMaxCheck,
-                    double newThreshold,
-                    int newMaxIter,
-                    EventHandler<? super EventDetector> newHandler) {
-                return null;
-            }
-        };
+        EventDetector detectorA = new FunctionalDetector()
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance)
+                .withMaxIter(100)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> {
+                    final AbsoluteDate t = state.getDate();
+                    if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
+                        return -1;
+                    } else if (t.compareTo(epoch.shiftedBy(t2)) > 0) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                });
         TimeDetector detectorB = new TimeDetector(t1)
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
@@ -1545,7 +1797,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when root finding tolerance > event finding tolerance. */
     @Test
-    public void testToleranceMaxIterationsReverse() throws OrekitException {
+    public void testToleranceMaxIterationsReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18; // less than 1 ulp
@@ -1582,7 +1834,7 @@ public abstract class CloseEventsAbstractTest {
      * @param t time of state.
      * @return new state.
      */
-    private SpacecraftState state(double t) throws OrekitException {
+    private SpacecraftState state(double t) {
         return new SpacecraftState(
                 new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
                         PositionAngle.TRUE, eci, epoch.shiftedBy(t),
@@ -1600,8 +1852,6 @@ public abstract class CloseEventsAbstractTest {
 
     /** Trigger an event at a particular time. */
     private static class TimeDetector extends AbstractDetector<TimeDetector> {
-
-        private static final long serialVersionUID = 1L;
 
         /** time of the event to trigger. */
         private final List<AbsoluteDate> eventTs;
@@ -1636,7 +1886,7 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             final AbsoluteDate t = s.getDate();
             int i = 0;
             while (i < eventTs.size() && t.compareTo(eventTs.get(i)) > 0) {
@@ -1668,8 +1918,6 @@ public abstract class CloseEventsAbstractTest {
      */
     private static class FlatDetector extends AbstractDetector<FlatDetector> {
 
-        private static final long serialVersionUID = 1L;
-
         private final EventDetector g;
 
         public FlatDetector(double... eventTs) {
@@ -1692,7 +1940,7 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             return FastMath.signum(g.g(s));
         }
 
@@ -1708,8 +1956,6 @@ public abstract class CloseEventsAbstractTest {
 
     /** quadratic. */
     private static class ContinuousDetector extends AbstractDetector<ContinuousDetector> {
-
-        private static final long serialVersionUID = 1L;
 
         /** time of the event to trigger. */
         private final List<AbsoluteDate> eventTs;
@@ -1729,7 +1975,7 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             final AbsoluteDate t = s.getDate();
             int i = 0;
             while (i < eventTs.size() && t.compareTo(eventTs.get(i)) > 0) {

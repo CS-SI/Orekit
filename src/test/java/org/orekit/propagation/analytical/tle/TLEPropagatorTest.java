@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -47,7 +46,7 @@ public class TLEPropagatorTest {
     private double period;
 
     @Test
-    public void testSlaveMode() throws OrekitException {
+    public void testSlaveMode() {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         AbsoluteDate initDate = tle.getDate();
@@ -68,7 +67,7 @@ public class TLEPropagatorTest {
     }
 
     @Test
-    public void testEphemerisMode() throws OrekitException {
+    public void testEphemerisMode() {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         propagator.setEphemerisMode();
@@ -111,7 +110,7 @@ public class TLEPropagatorTest {
     /** Test if body center belongs to the direction pointed by the satellite
      */
     @Test
-    public void testBodyCenterInPointingDirection() throws OrekitException {
+    public void testBodyCenterInPointingDirection() {
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -161,7 +160,7 @@ public class TLEPropagatorTest {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws OrekitException {
+            {
             // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
             Rotation rotSat = currentState.getAttitude().getRotation();
 
@@ -189,7 +188,7 @@ public class TLEPropagatorTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
 
         // setup a TLE for a GPS satellite

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.orekit.utils.Constants;
 public class EGMFormatReaderTest {
 
     @Test
-    public void testReadNormalized() throws OrekitException {
+    public void testReadNormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
@@ -49,7 +49,7 @@ public class EGMFormatReaderTest {
     }
 
     @Test
-    public void testReadUnnormalized() throws OrekitException {
+    public void testReadUnnormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -82,7 +82,7 @@ public class EGMFormatReaderTest {
     }
 
     @Test
-    public void testReadLimits() throws OrekitException {
+    public void testReadLimits() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
@@ -109,21 +109,21 @@ public class EGMFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile1() throws OrekitException {
+    public void testCorruptedFile1() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("corrupted-1-egm96_to5", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile2() throws OrekitException {
+    public void testCorruptedFile2() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("corrupted-2-egm96_to5", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test
-    public void testZeroTidePattern1() throws OrekitException {
+    public void testZeroTidePattern1() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("dummy_egm2008", true));
         Assert.assertEquals(TideSystem.ZERO_TIDE,
@@ -131,7 +131,7 @@ public class EGMFormatReaderTest {
     }
 
     @Test
-    public void testZeroTidePattern2() throws OrekitException {
+    public void testZeroTidePattern2() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("dummy_zerotide", true));
         Assert.assertEquals(TideSystem.ZERO_TIDE,
@@ -140,7 +140,7 @@ public class EGMFormatReaderTest {
 
     @Test
     public void testWgs84CoefficientOverride()
-        throws OrekitException {
+        {
         final double epsilon = Precision.EPSILON;
 
         Utils.setDataRoot("potential");
@@ -161,7 +161,7 @@ public class EGMFormatReaderTest {
 
     private void checkValue(final double value, final int n, final int m,
                             final double constant, final int maxUlps)
-        throws OrekitException {
+        {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         double normalized = factor * constant;
         double epsilon = maxUlps * FastMath.ulp(normalized);

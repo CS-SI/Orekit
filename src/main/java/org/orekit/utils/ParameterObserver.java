@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -30,9 +29,8 @@ public interface ParameterObserver {
     /** Notify that a parameter value has been changed.
      * @param previousValue previous value
      * @param driver parameter driver that has been changed
-     * @exception OrekitException if value is invalid for the driven model
      */
-    void valueChanged(double previousValue, ParameterDriver driver) throws OrekitException;
+    void valueChanged(double previousValue, ParameterDriver driver);
 
     /** Notify that a parameter reference date has been changed.
      * <p>
@@ -68,6 +66,54 @@ public interface ParameterObserver {
      * @since 9.0
      */
     default void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter reference value has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousReferenceValue previous reference value
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void referenceValueChanged(final double previousReferenceValue, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter minimum value has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousMinValue previous minimum value
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void minValueChanged(final double previousMinValue, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter maximum value has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousMaxValue previous maximum value
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void maxValueChanged(final double previousMaxValue, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter scale has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousScale previous scale
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void scaleChanged(final double previousScale, final ParameterDriver driver) {
         // nothing by default
     }
 

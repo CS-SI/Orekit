@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,7 +121,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *  Instances of this class are immutable.
  *  </p>
  *
- *  @author Mike Picone & al (Naval Research Laboratory), 2001: FORTRAN routine
+ *  @author Mike Picone &amp; al (Naval Research Laboratory), 2001: FORTRAN routine
  *  @author Dominik Brodowski, 2004: C routine
  *  @author Pascal Parraud, 2016: Java translation
  *  @since 8.1
@@ -1070,10 +1070,8 @@ public class NRLMSISE00 implements Atmosphere {
      * @param number switch number between 1 and 23
      * @param value switch value
      * @return a <em>new</em> instance, with switch changed
-     * @exception OrekitException if switch number is not between 1 and 23
      */
-    public NRLMSISE00 withSwitch(final int number, final int value)
-        throws OrekitException {
+    public NRLMSISE00 withSwitch(final int number, final int value) {
         if (number < 1 || number > 23) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, number, 1, 23);
         }
@@ -1115,8 +1113,7 @@ public class NRLMSISE00 implements Atmosphere {
     @Override
     public double getDensity(final AbsoluteDate date,
                              final Vector3D position,
-                             final Frame frame)
-        throws OrekitException {
+                             final Frame frame) {
 
         // check if data are available :
         if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
@@ -1153,8 +1150,7 @@ public class NRLMSISE00 implements Atmosphere {
     @Override
     public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
-                                                        final Frame frame)
-        throws OrekitException {
+                                                        final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
         if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
@@ -1194,11 +1190,10 @@ public class NRLMSISE00 implements Atmosphere {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return the local solar time (hour in [0, 24[)
-     * @throws OrekitException if position cannot be computed in given frame
      */
     private double localSolarTime(final AbsoluteDate date,
                                   final Vector3D position,
-                                  final Frame frame) throws OrekitException {
+                                  final Frame frame) {
         final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
         final double lst = FastMath.PI + FastMath.atan2(
                 sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
@@ -1212,12 +1207,10 @@ public class NRLMSISE00 implements Atmosphere {
      * @param frame the frame in which is defined the position
      * @param <T> type of the filed elements
      * @return the local solar time (hour in [0, 24[)
-     * @throws OrekitException if position cannot be computed in given frame
      */
     private <T extends RealFieldElement<T>> T localSolarTime(final AbsoluteDate date,
                                                              final FieldVector3D<T> position,
-                                                             final Frame frame)
-        throws OrekitException {
+                                                             final Frame frame) {
         final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
         final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
         final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -49,7 +48,7 @@ import org.orekit.utils.PVCoordinates;
 public class SmallManeuverAnalyticalModelTest {
 
     @Test
-    public void testLowEarthOrbit1() throws OrekitException {
+    public void testLowEarthOrbit1() {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -96,7 +95,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testLowEarthOrbit2() throws OrekitException {
+    public void testLowEarthOrbit2() {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -143,7 +142,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testEccentricOrbit() throws OrekitException {
+    public void testEccentricOrbit() {
 
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
@@ -161,9 +160,13 @@ public class SmallManeuverAnalyticalModelTest {
         double isp      = 315.0;
         BoundedPropagator withoutManeuver = getEphemeris(heo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(heo, mass, t0, dV, f, isp);
-        SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
+        SpacecraftState s0 = withoutManeuver.propagate(t0);
+        SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(s0, dV, isp);
         Assert.assertEquals(t0, model.getDate());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(dV, s0.getAttitude().getRotation().applyTo(model.getInertialDV())),
+                            1.0e-15);
+        Assert.assertSame(FramesFactory.getEME2000(), model.getInertialFrame());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -190,7 +193,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testJacobian() throws OrekitException {
+    public void testJacobian() {
 
         Frame eme2000 = FramesFactory.getEME2000();
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-2, 2.0e-3,
@@ -277,7 +280,7 @@ public class SmallManeuverAnalyticalModelTest {
     private BoundedPropagator getEphemeris(final Orbit orbit, final double mass,
                                            final AbsoluteDate t0, final Vector3D dV,
                                            final double f, final double isp)
-        throws OrekitException {
+        {
 
         AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH);
         final SpacecraftState initialState =

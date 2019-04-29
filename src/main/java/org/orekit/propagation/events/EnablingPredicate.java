@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 /** This interface represents an event enabling predicate function.
@@ -31,9 +30,7 @@ public interface EnablingPredicate<S extends EventDetector> {
      * @param g value of the underlying detector for the current state
      * @return true if the event is enabled (i.e. it can be
      * triggered), false if it should be ignored
-     * @exception OrekitException if enabling status cannot be determined
      */
-    boolean eventIsEnabled(SpacecraftState state, S eventDetector, double g)
-        throws OrekitException;
+    boolean eventIsEnabled(SpacecraftState state, S eventDetector, double g);
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ import org.orekit.time.TimeScalesFactory;
 public class TimeStampedFieldAngularCoordinatesTest {
 
     @Test
-    public void testZeroRate() throws OrekitException {
+    public void testZeroRate() {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<>(AbsoluteDate.J2000_EPOCH,
                                                          createRotation(0.48, 0.64, 0.36, 0.48, false),
@@ -53,7 +53,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testShift() throws OrekitException {
+    public void testShift() {
         double rate = 2 * FastMath.PI / (12 * 60);
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<>(AbsoluteDate.J2000_EPOCH,
@@ -93,7 +93,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
         double rate = 2 * FastMath.PI / (12 * 60);
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<>(AbsoluteDate.J2000_EPOCH,
@@ -197,7 +197,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationNeedOffsetWrongRate() throws OrekitException {
+    public void testInterpolationNeedOffsetWrongRate() {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double omega  = 2.0 * FastMath.PI;
         TimeStampedFieldAngularCoordinates<DerivativeStructure> reference =
@@ -228,7 +228,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationRotationOnly() throws OrekitException {
+    public void testInterpolationRotationOnly() {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
@@ -262,7 +262,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationAroundPI() throws OrekitException {
+    public void testInterpolationAroundPI() {
 
         DSFactory factory = new DSFactory(4, 1);
         List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample =
@@ -300,7 +300,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationTooSmallSample() throws OrekitException {
+    public void testInterpolationTooSmallSample() {
         DSFactory factory = new DSFactory(4, 1);
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
@@ -332,7 +332,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationGTODIssue() throws OrekitException {
+    public void testInterpolationGTODIssue() {
         AbsoluteDate t0 = new AbsoluteDate("2004-04-06T19:59:28.000", TimeScalesFactory.getTAI());
         double[][] params = new double[][] {
             { 0.0, -0.3802356750911964, -0.9248896320037013, 7.292115030462892e-5 },

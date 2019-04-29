@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,13 +22,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 
 
 public class CenterNameTest {
 
     @Test
-    public void testSupportedCenters() throws OrekitException {
+    public void testSupportedCenters() {
         for (final String name : Arrays.asList("SOLAR_SYSTEM_BARYCENTER", "SUN", "MERCURY", "VENUS",
                                                "EARTH_MOON", "EARTH", "MOON", "MARS", "JUPITER",
                                                "SATURN", "URANUS", "NEPTUNE", "PLUTO")) {
@@ -37,7 +36,7 @@ public class CenterNameTest {
     }
 
     @Test
-    public void testUnupportedCenters() throws OrekitException {
+    public void testUnupportedCenters() {
         for (final String name : Arrays.asList("CERES", "SEDNA", "ERIS", "PLANET-9")) {
             try {
                 CenterName.valueOf(name);

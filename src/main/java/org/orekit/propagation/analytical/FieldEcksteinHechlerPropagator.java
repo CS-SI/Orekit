@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
  *  using the analytical Eckstein-Hechler model.
  * <p>The Eckstein-Hechler model is suited for near circular orbits
- * (e < 0.1, with poor accuracy between 0.005 and 0.1) and inclination
+ * (e &lt; 0.1, with poor accuracy between 0.005 and 0.1) and inclination
  * neither equatorial (direct or retrograde) nor critical (direct or
  * retrograde).</p>
  * @see FieldOrbit
@@ -70,12 +70,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial FieldOrbit<T>
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * or if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                          final UnnormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException {
+                                          final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, DEFAULT_LAW, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
@@ -87,14 +84,12 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final  AttitudeProvider attitude,
                                           final T mass,
                                           final UnnormalizedSphericalHarmonicsProvider provider,
-                                          final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics)
-        throws OrekitException {
+                                          final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics) {
         this(initialOrbit, attitude,  mass, provider.getAe(), provider.getMu(),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
@@ -122,14 +117,12 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception OrekitException if the mean parameters cannot be computed
-     * @see org.orekit.utils.Constants
+          * @see org.orekit.utils.Constants
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final double referenceRadius, final double mu,
                                           final double c20, final double c30, final double c40,
-                                          final double c50, final double c60)
-        throws OrekitException {
+                                          final double c50, final double c60) {
         this(initialOrbit, DEFAULT_LAW, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
@@ -139,12 +132,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param initialOrbit initial FieldOrbit<T>
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * or if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
-                                          final UnnormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException {
+                                          final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
@@ -168,13 +158,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception OrekitException if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final double referenceRadius, final double mu,
                                           final double c20, final double c30, final double c40,
-                                          final double c50, final double c60)
-        throws OrekitException {
+                                          final double c50, final double c60) {
         this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -183,13 +171,10 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param initialOrbit initial FieldOrbit<T>
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * or if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
-                                          final UnnormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException {
+                                          final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, attitudeProv, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
@@ -213,14 +198,12 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception OrekitException if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
                                           final double referenceRadius, final double mu,
                                           final double c20, final double c30, final double c40,
-                                          final double c50, final double c60)
-        throws OrekitException {
+                                          final double c50, final double c60) {
         this(initialOrbit, attitudeProv, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
@@ -230,14 +213,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * or if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
                                           final T mass,
-                                          final UnnormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException {
+                                          final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
@@ -261,15 +241,13 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception OrekitException if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
                                           final T mass,
                                           final double referenceRadius, final double mu,
                                           final double c20, final double c30, final double c40,
-                                          final double c50, final double c60)
-        throws OrekitException {
+                                          final double c50, final double c60) {
 
         super(mass.getField(), attitudeProv);
         final Field<T> field = mass.getField();
@@ -297,8 +275,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final FieldSpacecraftState<T> state)
-        throws OrekitException {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         this.initialModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                   state.getMass());
@@ -306,8 +283,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
-        throws OrekitException {
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         final FieldEHModel<T> newModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
         if (forward) {
@@ -321,12 +297,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param osculating osculating FieldOrbit<T>
      * @param mass constant mass
      * @return Eckstein-Hechler mean model
-     * @exception OrekitException if FieldOrbit<T> goes outside of supported range
-     * (trajectory inside the Brillouin sphere, too eccentric, equatorial, critical
-     * inclination) or if convergence cannot be reached
      */
-    private FieldEHModel<T> computeMeanParameters(final FieldCircularOrbit<T> osculating, final T mass)
-        throws OrekitException {
+    private FieldEHModel<T> computeMeanParameters(final FieldCircularOrbit<T> osculating, final T mass) {
 
         // sanity check
         if (osculating.getA().getReal() < referenceRadius) {
@@ -388,8 +360,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
-    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final FieldEHModel<T> current = models.get(date);
@@ -473,11 +444,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
          * @param referenceRadius reference radius of the central body attraction model (m)
          * @param mu central attraction coefficient (m³/s²)
          * @param ck0 un-normalized zonal coefficients
-         * @exception OrekitException if mean FieldOrbit<T> is not within model supported domain
          */
         FieldEHModel(final FDSFactory<T> factory, final FieldCircularOrbit<T> mean, final T mass,
-                     final double referenceRadius, final double mu, final double[] ck0)
-            throws OrekitException {
+                     final double referenceRadius, final double mu, final double[] ck0) {
 
             this.factory         = factory;
             this.mean            = mean;
@@ -610,10 +579,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         /** Extrapolate an FieldOrbit<T> up to a specific target date.
          * @param date target date for the FieldOrbit<T>
          * @return propagated parameters
-         * @exception OrekitException if some parameters are out of bounds
          */
-        public FieldDerivativeStructure<T>[] propagateParameters(final FieldAbsoluteDate<T> date)
-            throws OrekitException {
+        public FieldDerivativeStructure<T>[] propagateParameters(final FieldAbsoluteDate<T> date) {
             final Field<T> field = date.durationFrom(mean.getDate()).getField();
             final T one = field.getOne();
             final T zero = field.getZero();

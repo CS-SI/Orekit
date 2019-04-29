@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,8 @@
  */
 package org.orekit.utils;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface representing a scalar function depending on a {@link ParameterDriver}.
- * @see Differentiation#differentiate(ParameterFunction, ParameterDriver, int, double)
+ * @see Differentiation#differentiate(ParameterFunction, int, double)
  * @author Luc Maisonobe
  * @since 8.0
  */
@@ -28,8 +26,7 @@ public interface ParameterFunction {
     /** Evaluate the function.
      * @param parameterDriver driver for the parameter.
      * @return scalar value of the function
-     * @throws OrekitException if evaluation cannot be performed
      */
-    double value(ParameterDriver parameterDriver) throws OrekitException;
+    double value(ParameterDriver parameterDriver);
 
 }

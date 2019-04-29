@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -45,21 +44,15 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return un-normalized coefficient Cnm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
-        double getUnnormalizedCnm(int n, int m)
-            throws OrekitException;
+        double getUnnormalizedCnm(int n, int m);
 
         /** Get a spherical harmonic sine coefficient.
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return un-normalized coefficient Snm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
-        double getUnnormalizedSnm(int n, int m)
-            throws OrekitException;
+        double getUnnormalizedSnm(int n, int m);
 
     }
 
@@ -69,9 +62,8 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
      *
      * @param date of evaluation
      * @return un-normalized coefficients on {@code date}.
-     * @throws OrekitException on error
      * @since 6.1
      */
-    UnnormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
+    UnnormalizedSphericalHarmonics onDate(AbsoluteDate date);
 
 }

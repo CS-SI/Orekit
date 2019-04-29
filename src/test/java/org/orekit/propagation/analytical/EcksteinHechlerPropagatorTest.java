@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,18 +17,11 @@
 package org.orekit.propagation.analytical;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
@@ -55,7 +48,6 @@ import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -67,8 +59,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
@@ -95,7 +85,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class EcksteinHechlerPropagatorTest {
 
     @Test
-    public void sameDateCartesian() throws OrekitException {
+    public void sameDateCartesian() {
 
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
@@ -140,7 +130,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void sameDateKeplerian() throws OrekitException {
+    public void sameDateKeplerian() {
 
         // Definition of initial conditions with Keplerian parameters
         // -----------------------------------------------------------
@@ -182,7 +172,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void almostSphericalBody() throws OrekitException {
+    public void almostSphericalBody() {
 
         // Definition of initial conditions
         // ---------------------------------
@@ -251,7 +241,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void propagatedCartesian() throws OrekitException {
+    public void propagatedCartesian() {
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
         // with e around e = 1.4e-4 and i = 1.7 rad
@@ -336,7 +326,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void propagatedKeplerian() throws OrekitException {
+    public void propagatedKeplerian() {
         // Definition of initial conditions with Keplerian parameters
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -418,7 +408,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void undergroundOrbit() throws OrekitException {
+    public void undergroundOrbit() {
 
         // for a semi major axis < equatorial radius
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
@@ -439,7 +429,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void equatorialOrbit() throws OrekitException {
+    public void equatorialOrbit() {
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
         Orbit initialOrbit = new CircularOrbit(7000000, 1.0e-4, -1.5e-4,
                                                0.0, 1.2, 2.3, PositionAngle.MEAN,
@@ -458,7 +448,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void criticalInclination() throws OrekitException {
+    public void criticalInclination() {
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
         Orbit initialOrbit = new CircularOrbit(new PVCoordinates(new Vector3D(-3862363.8474653554,
                                                                               -3521533.9758022362,
@@ -482,7 +472,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void tooEllipticalOrbit() throws OrekitException {
+    public void tooEllipticalOrbit() {
         // for an eccentricity too big for the model
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
@@ -502,7 +492,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void hyperbolic() throws OrekitException {
+    public void hyperbolic() {
         KeplerianOrbit hyperbolic =
             new KeplerianOrbit(-1.0e10, 2, 0, 0, 0, 0, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -512,18 +502,17 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void wrongAttitude() throws OrekitException {
+    public void wrongAttitude() {
         KeplerianOrbit orbit =
             new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         AttitudeProvider wrongLaw = new AttitudeProvider() {
-            private static final long serialVersionUID = 5918362126173997016L;
-            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) throws OrekitException {
+            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
             public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                                 FieldAbsoluteDate<T> date, Frame frame)
-                throws OrekitException {
+                {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
         };
@@ -533,7 +522,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testAcceleration() throws OrekitException {
+    public void testAcceleration() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
@@ -590,7 +579,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void ascendingNode() throws OrekitException {
+    public void ascendingNode() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
@@ -613,7 +602,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void stopAtTargetDate() throws OrekitException {
+    public void stopAtTargetDate() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -627,7 +616,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void perigee() throws OrekitException {
+    public void perigee() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
@@ -643,7 +632,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void date() throws OrekitException {
+    public void date() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -657,7 +646,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void fixedStep() throws OrekitException {
+    public void fixedStep() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -667,7 +656,7 @@ public class EcksteinHechlerPropagatorTest {
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
             public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws OrekitException {
+            {
                 if (previous != null) {
                     Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
@@ -679,7 +668,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void setting() throws OrekitException {
+    public void setting() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -707,7 +696,7 @@ public class EcksteinHechlerPropagatorTest {
 
     @Test
     public void testInitializationCorrectness()
-        throws OrekitException, IOException {
+        throws IOException {
 
         //  Definition of initial conditions
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
@@ -770,232 +759,6 @@ public class EcksteinHechlerPropagatorTest {
                                               fittedOrbit.getPVCoordinates().getPosition()),
                             0.1);
 
-    }
-
-    @Test
-    public void testNonSerializableStateProvider() throws OrekitException, IOException {
-        AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
-        Frame itrf        = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        Frame eme2000     = FramesFactory.getEME2000();
-        Vector3D pole     = itrf.getTransformTo(eme2000, date).transformVector(Vector3D.PLUS_K);
-        Frame poleAligned = new Frame(FramesFactory.getEME2000(),
-                                      new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
-                                      "pole aligned", true);
-        CircularOrbit initial = new CircularOrbit(7208669.8179538045, 1.3740461966386876E-4, -3.2364250248363356E-5,
-                                                       FastMath.toRadians(97.40236024565775),
-                                                       FastMath.toRadians(166.15873160992115),
-                                                       FastMath.toRadians(90.1282370098961), PositionAngle.MEAN,
-                                                       poleAligned, date, provider.getMu());
-
-        EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(initial, provider);
-
-        // this serialization should work
-        new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(propagator);
-
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
-            public String getName() {
-                return "not serializable";
-            }
-            public double[] getAdditionalState(SpacecraftState state) {
-                return new double[] { 0 };
-            }
-        });
-
-        try {
-            // this serialization should not work
-            new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(propagator);
-            Assert.fail("an exception should have been thrown");
-        } catch (NotSerializableException nse) {
-            // expected
-        }
-
-    }
-
-    @Test
-    public void testIssue223()
-        throws OrekitException, IOException, ClassNotFoundException {
-
-        //  Definition of initial conditions
-        AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
-        Frame itrf        = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        Frame eme2000     = FramesFactory.getEME2000();
-        Vector3D pole     = itrf.getTransformTo(eme2000, date).transformVector(Vector3D.PLUS_K);
-        Frame poleAligned = new Frame(FramesFactory.getEME2000(),
-                                      new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
-                                      "pole aligned", true);
-        CircularOrbit initial = new CircularOrbit(7208669.8179538045, 1.3740461966386876E-4, -3.2364250248363356E-5,
-                                                       FastMath.toRadians(97.40236024565775),
-                                                       FastMath.toRadians(166.15873160992115),
-                                                       FastMath.toRadians(90.1282370098961), PositionAngle.MEAN,
-                                                       poleAligned, date, provider.getMu());
-
-        EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(initial, provider);
-
-        propagator.addAdditionalStateProvider(new SevenProvider());
-        propagator.setEphemerisMode();
-        propagator.propagate(initial.getDate().shiftedBy(40000));
-
-        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
-
-        Assert.assertSame(poleAligned, ephemeris.getFrame());
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(ephemeris);
-
-        Assert.assertTrue(bos.size() > 2450);
-        Assert.assertTrue(bos.size() < 2550);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        BoundedPropagator deserialized  = (BoundedPropagator) ois.readObject();
-        Assert.assertEquals(initial.getA(), deserialized.getInitialState().getA(), 1.0e-10);
-        Assert.assertEquals(initial.getEquinoctialEx(), deserialized.getInitialState().getEquinoctialEx(), 1.0e-10);
-        SpacecraftState s = deserialized.propagate(initial.getDate().shiftedBy(20000));
-        Map<String, double[]> additional = s.getAdditionalStates();
-        Assert.assertEquals(1, additional.size());
-        Assert.assertEquals(1, additional.get("seven").length);
-        Assert.assertEquals(7, additional.get("seven")[0], 1.0e-15);
-
-
-    }
-
-    @Test
-    public void testIssue224Forward()
-        throws OrekitException, IOException, ClassNotFoundException {
-
-        AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
-        Frame itrf        = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        Frame eme2000     = FramesFactory.getEME2000();
-        Vector3D pole     = itrf.getTransformTo(eme2000, date).transformVector(Vector3D.PLUS_K);
-        Frame poleAligned = new Frame(FramesFactory.getEME2000(),
-                                      new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
-                                      "pole aligned", true);
-        CircularOrbit initial = new CircularOrbit(7208669.8179538045, 1.3740461966386876E-4, -3.2364250248363356E-5,
-                                                  FastMath.toRadians(97.40236024565775),
-                                                  FastMath.toRadians(166.15873160992115),
-                                                  FastMath.toRadians(90.1282370098961), PositionAngle.MEAN,
-                                                  poleAligned, date, provider.getMu());
-
-        EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(initial,
-                                                                             new LofOffset(poleAligned,
-                                                                                           LOFType.VVLH),
-                                                                             1000.0,
-                                                                             provider);
-        propagator.addAdditionalStateProvider(new SevenProvider());
-        propagator.setEphemerisMode();
-
-        // Impulsive burns
-        final AbsoluteDate burn1Date = initial.getDate().shiftedBy(200);
-        ImpulseManeuver<DateDetector> impulsiveBurn1 =
-                new ImpulseManeuver<DateDetector>(new DateDetector(burn1Date), new Vector3D(0.0, 500.0, 0.0), 320);
-        propagator.addEventDetector(impulsiveBurn1);
-        final AbsoluteDate burn2Date = initial.getDate().shiftedBy(300);
-        ImpulseManeuver<DateDetector> impulsiveBurn2 =
-                new ImpulseManeuver<DateDetector>(new DateDetector(burn2Date), new Vector3D(0.0, 500.0, 0.0), 320);
-        propagator.addEventDetector(impulsiveBurn2);
-
-        propagator.propagate(initial.getDate().shiftedBy(400));
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(propagator.getGeneratedEphemeris());
-
-        Assert.assertTrue(bos.size() > 2950);
-        Assert.assertTrue(bos.size() < 3050);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        BoundedPropagator ephemeris  = (BoundedPropagator) ois.readObject();
-
-        ephemeris.setMasterMode(10, new OrekitFixedStepHandler() {
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-                if (currentState.getDate().durationFrom(burn1Date) < -0.001) {
-                    Assert.assertEquals(97.402, FastMath.toDegrees(currentState.getI()), 1.0e-3);
-                } else if (currentState.getDate().durationFrom(burn1Date) >  0.001 &&
-                           currentState.getDate().durationFrom(burn2Date) < -0.001) {
-                    Assert.assertEquals(98.183, FastMath.toDegrees(currentState.getI()), 1.0e-3);
-                } else if (currentState.getDate().durationFrom(burn2Date) > 0.001) {
-                    Assert.assertEquals(99.310, FastMath.toDegrees(currentState.getI()), 1.0e-3);
-                }
-            }
-        });
-        ephemeris.propagate(ephemeris.getMaxDate());
-
-    }
-
-    @Test
-    public void testIssue224Backward()
-        throws OrekitException, IOException, ClassNotFoundException {
-
-        AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
-        Frame itrf        = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        Frame eme2000     = FramesFactory.getEME2000();
-        Vector3D pole     = itrf.getTransformTo(eme2000, date).transformVector(Vector3D.PLUS_K);
-        Frame poleAligned = new Frame(FramesFactory.getEME2000(),
-                                      new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
-                                      "pole aligned", true);
-        CircularOrbit initial = new CircularOrbit(7208669.8179538045, 1.3740461966386876E-4, -3.2364250248363356E-5,
-                                                  FastMath.toRadians(97.40236024565775),
-                                                  FastMath.toRadians(166.15873160992115),
-                                                  FastMath.toRadians(90.1282370098961), PositionAngle.MEAN,
-                                                  poleAligned, date, provider.getMu());
-
-        EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(initial,
-                                                                             new LofOffset(poleAligned,
-                                                                                           LOFType.VVLH),
-                                                                             1000.0,
-                                                                             provider);
-        propagator.addAdditionalStateProvider(new SevenProvider());
-        propagator.setEphemerisMode();
-
-        // Impulsive burns
-        final AbsoluteDate burn1Date = initial.getDate().shiftedBy(-200);
-        ImpulseManeuver<DateDetector> impulsiveBurn1 =
-                new ImpulseManeuver<DateDetector>(new DateDetector(burn1Date), new Vector3D(0.0, 500.0, 0.0), 320);
-        propagator.addEventDetector(impulsiveBurn1);
-        final AbsoluteDate burn2Date = initial.getDate().shiftedBy(-300);
-        ImpulseManeuver<DateDetector> impulsiveBurn2 =
-                new ImpulseManeuver<DateDetector>(new DateDetector(burn2Date), new Vector3D(0.0, 500.0, 0.0), 320);
-        propagator.addEventDetector(impulsiveBurn2);
-
-        propagator.propagate(initial.getDate().shiftedBy(-400));
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(propagator.getGeneratedEphemeris());
-
-        Assert.assertTrue(bos.size() > 2950);
-        Assert.assertTrue(bos.size() < 3050);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        BoundedPropagator ephemeris  = (BoundedPropagator) ois.readObject();
-
-        ephemeris.setMasterMode(10, new OrekitFixedStepHandler() {
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-                if (currentState.getDate().durationFrom(burn1Date) > 0.001) {
-                    Assert.assertEquals(97.402, FastMath.toDegrees(currentState.getI()), 1.0e-3);
-                } else if (currentState.getDate().durationFrom(burn1Date) < -0.001 &&
-                           currentState.getDate().durationFrom(burn2Date) >  0.001) {
-                    Assert.assertEquals(98.164, FastMath.toDegrees(currentState.getI()), 1.0e-3);
-                } else if (currentState.getDate().durationFrom(burn2Date) < -0.001) {
-                    Assert.assertEquals(99.273, FastMath.toDegrees(currentState.getI()), 1.0e-3);
-                }
-            }
-        });
-        ephemeris.propagate(ephemeris.getMinDate());
-
-    }
-
-    private static class SevenProvider implements AdditionalStateProvider, Serializable {
-        private static final long serialVersionUID = 1L;
-        public String getName() {
-            return "seven";
-        }
-        public double[] getAdditionalState(final SpacecraftState state) {
-            return new double[] { 7 };
-        }
     }
 
     private static double tangLEmLv(double Lv, double ex, double ey) {

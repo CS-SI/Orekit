@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -261,7 +260,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testNumericalIssue25() throws OrekitException {
+    public void testNumericalIssue25() {
         Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
         Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);
         CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(position, velocity),
@@ -349,7 +348,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() throws OrekitException {
+    public void testDerivativesConversionSymmetry() {
         final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
         Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
@@ -376,7 +375,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetryHyperbolic() throws OrekitException {
+    public void testDerivativesConversionSymmetryHyperbolic() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
         final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
@@ -438,7 +437,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testNumericalIssue135() throws OrekitException {
+    public void testNumericalIssue135() {
         Vector3D position = new Vector3D(-6.7884943832e7, -2.1423006112e7, -3.1603915377e7);
         Vector3D velocity = new Vector3D(-4732.55, -2472.086, -3022.177);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
@@ -477,7 +476,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testJacobianReference() throws OrekitException {
+    public void testJacobianReference() {
 
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -515,14 +514,14 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testInterpolationWithDerivatives() throws OrekitException {
+    public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
                             394, 2.15e-8, 3.21, 1.39e-9,
                             2474, 6842, 6.55, 186);
     }
 
     @Test
-    public void testInterpolationWithoutDerivatives() throws OrekitException {
+    public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(false,
                             394, 2.61, 3.21, 0.154,
                             2474, 2.28e12, 6.55, 6.22e10);
@@ -533,7 +532,7 @@ public class CartesianOrbitTest {
                                      double shiftVelocityErrorWithin, double interpolationVelocityErrorWithin,
                                      double shiftPositionErrorFarPast, double interpolationPositionErrorFarPast,
                                      double shiftVelocityErrorFarPast, double interpolationVelocityErrorFarPast)
-        throws OrekitException {
+        {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -624,7 +623,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testNonKeplerianDerivatives() throws OrekitException {
+    public void testNonKeplerianDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -712,7 +711,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+    public void testCopyNonKeplerianAcceleration() {
 
         final Frame eme2000     = FramesFactory.getEME2000();
 

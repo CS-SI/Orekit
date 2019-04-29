@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,17 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -99,7 +94,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      */
     private static final int I = 1;
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
+    // CHECKSTYLE: stop VisibilityModifier check
 
     /** a. */
     protected double a;
@@ -150,7 +145,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** μ .*/
     protected double mu;
 
-    // CHECKSTYLE: resume VisibilityModifierCheck
+    // CHECKSTYLE: resume VisibilityModifier check
 
     /** Contribution to be numerically averaged. */
     private final ForceModel contribution;
@@ -203,8 +198,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux)
-        throws OrekitException {
+    public void initializeStep(final AuxiliaryElements aux) {
 
         // Equinoctial elements
         a  = aux.getSma();
@@ -250,7 +244,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState state) {
 
         double[] meanElementRate = new double[6];
         // Computes the limits for the integral
@@ -277,9 +271,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *
      *  @param  state current state information: date, kinematics, attitude
      *  @return the integration limits in L
-     *  @exception OrekitException if some specific error occurs
      */
-    protected abstract double[] getLLimits(SpacecraftState state) throws OrekitException;
+    protected abstract double[] getLLimits(SpacecraftState state);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
@@ -288,12 +281,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  @param low lower bound of the integral interval
      *  @param high upper bound of the integral interval
      *  @return the mean element rates
-     *  @throws OrekitException if some specific error occurs
      */
     private double[] getMeanElementRate(final SpacecraftState state,
             final GaussQuadrature gauss,
             final double low,
-            final double high) throws OrekitException {
+            final double high) {
         final double[] meanElementRate = gauss.integrate(new IntegrableFunction(state, true, 0), low, high);
         // Constant multiplier for integral
         final double coef = 1. / (2. * FastMath.PI * B);
@@ -328,8 +320,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = gaussianSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
@@ -430,39 +421,35 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // Compute acceleration
             Vector3D acc = Vector3D.ZERO;
-            try {
 
-                // shift the orbit to dt
-                final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
+            // shift the orbit to dt
+            final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
-                // Recompose an orbit with time held fixed to be compliant with DSST theory
-                final Orbit recomposedOrbit =
-                        new EquinoctialOrbit(shiftedOrbit.getA(),
-                                             shiftedOrbit.getEquinoctialEx(),
-                                             shiftedOrbit.getEquinoctialEy(),
-                                             shiftedOrbit.getHx(),
-                                             shiftedOrbit.getHy(),
-                                             shiftedOrbit.getLv(),
-                                             PositionAngle.TRUE,
-                                             shiftedOrbit.getFrame(),
-                                             state.getDate(),
-                                             shiftedOrbit.getMu());
+            // Recompose an orbit with time held fixed to be compliant with DSST theory
+            final Orbit recomposedOrbit =
+                    new EquinoctialOrbit(shiftedOrbit.getA(),
+                                         shiftedOrbit.getEquinoctialEx(),
+                                         shiftedOrbit.getEquinoctialEy(),
+                                         shiftedOrbit.getHx(),
+                                         shiftedOrbit.getHy(),
+                                         shiftedOrbit.getLv(),
+                                         PositionAngle.TRUE,
+                                         shiftedOrbit.getFrame(),
+                                         state.getDate(),
+                                         shiftedOrbit.getMu());
 
-                // Get the corresponding attitude
-                final Attitude recomposedAttitude =
-                        attitudeProvider.getAttitude(recomposedOrbit,
-                                                     recomposedOrbit.getDate(),
-                                                     recomposedOrbit.getFrame());
+            // Get the corresponding attitude
+            final Attitude recomposedAttitude =
+                    attitudeProvider.getAttitude(recomposedOrbit,
+                                                 recomposedOrbit.getDate(),
+                                                 recomposedOrbit.getFrame());
 
-                // create shifted SpacecraftState with attitude at specified time
-                final SpacecraftState shiftedState =
-                        new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
+            // create shifted SpacecraftState with attitude at specified time
+            final SpacecraftState shiftedState =
+                    new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
 
-                acc = contribution.acceleration(shiftedState, contribution.getParameters());
+            acc = contribution.acceleration(shiftedState, contribution.getParameters());
 
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
             //Compute the derivatives of the elements by the speed
             final double[] deriv = new double[6];
             // da/dv
@@ -602,8 +589,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  of the orbital elements using the Gaussian quadrature rule to get the acceleration.
      */
     private static class GaussQuadrature {
-
-        // CHECKSTYLE: stop NoWhitespaceAfter
 
         // Points and weights for the available quadrature orders
 
@@ -1046,7 +1031,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             0.00732755390127620800,
             0.00315334605230596250
         };
-        // CHECKSTYLE: resume NoWhitespaceAfter
 
         /** Node points. */
         private final double[] nodePoints;
@@ -1211,10 +1195,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Standard constructor.
          * @param state the current state
          * @param jMax maximum value for j
-         * @throws OrekitException in case of an error
          */
-        FourierCjSjCoefficients(final SpacecraftState state, final int jMax)
-            throws OrekitException {
+        FourierCjSjCoefficients(final SpacecraftState state, final int jMax) {
             //Initialise the fields
             this.jMax = jMax;
 
@@ -1234,10 +1216,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * as D<sub>i</sub><sup>m</sup> is always 0.
          * </p>
          * @param state the current state
-         * @throws OrekitException in case of an error
          */
-        private void computeCoefficients(final SpacecraftState state)
-            throws OrekitException {
+        private void computeCoefficients(final SpacecraftState state) {
             // Computes the limits for the integral
             final double[] ll = getLLimits(state);
             // Computes integrated mean element rates if Llow < Lhigh
@@ -1289,9 +1269,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *
      */
     private static class GaussianShortPeriodicCoefficients implements ShortPeriodTerms {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151118L;
 
         /** Maximum value for j index. */
         private final int jMax;
@@ -1345,13 +1322,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param uijvij U and V coefficients
          * @param n Keplerian mean motion
          * @param a semi major axis
-         * @throws OrekitException if an error occurs
          */
         private void computeCoefficients(final SpacecraftState state, final Slot slot,
                                          final FourierCjSjCoefficients fourierCjSj,
                                          final UijVijCoefficients uijvij,
-                                         final double n, final double a)
-            throws OrekitException {
+                                         final double n, final double a) {
 
             // get the current date
             final AbsoluteDate date = state.getDate();
@@ -1498,8 +1473,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);
@@ -1536,88 +1510,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             if (selected.isEmpty() || selected.contains(key)) {
                 map.put(key, value);
             }
-        }
-
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if an additional state provider is not serializable
-         */
-        private Object writeReplace() throws NotSerializableException {
-
-            // slots transitions
-            final SortedSet<TimeSpanMap.Transition<Slot>> transitions     = slots.getTransitions();
-            final AbsoluteDate[]                          transitionDates = new AbsoluteDate[transitions.size()];
-            final Slot[]                                  allSlots        = new Slot[transitions.size() + 1];
-            int i = 0;
-            for (final TimeSpanMap.Transition<Slot> transition : transitions) {
-                if (i == 0) {
-                    // slot before the first transition
-                    allSlots[i] = transition.getBefore();
-                }
-                if (i < transitionDates.length) {
-                    transitionDates[i] = transition.getDate();
-                    allSlots[++i]      = transition.getAfter();
-                }
-            }
-
-            return new DataTransferObject(jMax, interpolationPoints, coefficientsKeyPrefix,
-                                          transitionDates, allSlots);
-
-        }
-
-
-        /** Internal class used only for serialization. */
-        private static class DataTransferObject implements Serializable {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20160319L;
-
-            /** Maximum value for j index. */
-            private final int jMax;
-
-            /** Number of points used in the interpolation process. */
-            private final int interpolationPoints;
-
-            /** Prefix for coefficients keys. */
-            private final String coefficientsKeyPrefix;
-
-            /** Transitions dates. */
-            private final AbsoluteDate[] transitionDates;
-
-            /** All slots. */
-            private final Slot[] allSlots;
-
-            /** Simple constructor.
-             * @param jMax maximum value for j index
-             * @param interpolationPoints number of points used in the interpolation process
-             * @param coefficientsKeyPrefix prefix for coefficients keys
-             * @param transitionDates transitions dates
-             * @param allSlots all slots
-             */
-            DataTransferObject(final int jMax, final int interpolationPoints,
-                               final String coefficientsKeyPrefix,
-                               final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
-                this.jMax                  = jMax;
-                this.interpolationPoints   = interpolationPoints;
-                this.coefficientsKeyPrefix = coefficientsKeyPrefix;
-                this.transitionDates       = transitionDates;
-                this.allSlots              = allSlots;
-            }
-
-            /** Replace the deserialized data transfer object with a {@link GaussianShortPeriodicCoefficients}.
-             * @return replacement {@link GaussianShortPeriodicCoefficients}
-             */
-            private Object readResolve() {
-
-                final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
-                for (int i = 0; i < transitionDates.length; ++i) {
-                    slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
-                }
-
-                return new GaussianShortPeriodicCoefficients(coefficientsKeyPrefix, jMax, interpolationPoints, slots);
-
-            }
-
         }
 
     }
@@ -1905,10 +1797,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class Slot implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160319L;
+    private static class Slot {
 
         /**The coefficients D<sub>i</sub><sup>j</sup>.
          * <p>

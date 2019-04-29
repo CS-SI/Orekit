@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -38,7 +39,6 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -53,7 +53,45 @@ public class EventDetectorTest {
     private double mu;
 
     @Test
-    public void testBasicScheduling() throws OrekitException {
+    public void testEventHandlerInit() {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
+        final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
+        final AbsoluteDate date = new AbsoluteDate(2003, 9, 16, utc);
+        final Orbit orbit = new CircularOrbit(new PVCoordinates(position,  velocity),
+                                              FramesFactory.getEME2000(), date, mu);
+        // mutable boolean
+        final boolean[] eventOccurred = new boolean[1];
+        EventHandler<DateDetector> handler = new EventHandler<DateDetector>() {
+            private boolean initCalled;
+            @Override
+            public Action eventOccurred(SpacecraftState s,
+                                        DateDetector detector,
+                                        boolean increasing) {
+                if (!initCalled) {
+                    throw new RuntimeException("init() not called before eventOccurred()");
+                }
+                eventOccurred[0] = true;
+                return Action.STOP;
+            }
+
+            @Override
+            public void init(SpacecraftState initialState,
+                             AbsoluteDate target) {
+                initCalled = true;
+            }
+        };
+
+        Propagator propagator = new KeplerianPropagator(orbit);
+        double stepSize = 60.0;
+        propagator.addEventDetector(new DateDetector(date.shiftedBy(5.25 * stepSize)).withHandler(handler));
+        propagator.propagate(date.shiftedBy(10 * stepSize));
+        Assert.assertTrue(eventOccurred[0]);
+
+    }
+
+    @Test
+    public void testBasicScheduling() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -106,11 +144,6 @@ public class EventDetectorTest {
             return outOfOrderCallDetected;
         }
 
-        @Deprecated
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target) {
-        }
-
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }
@@ -118,7 +151,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testIssue108Numerical() throws OrekitException {
+    public void testIssue108Numerical() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -136,7 +169,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testIssue108Analytical() throws OrekitException {
+    public void testIssue108Analytical() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -158,7 +191,6 @@ public class EventDetectorTest {
 
     private static class GCallsCounter extends AbstractDetector<GCallsCounter> {
 
-        private static final long serialVersionUID = 1L;
         private int count;
 
         public GCallsCounter(final double maxCheck, final double threshold,
@@ -184,7 +216,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testNoisyGFunction() throws OrekitException {
+    public void testNoisyGFunction() {
 
         // initial conditions
         Frame eme2000 = FramesFactory.getEME2000();
@@ -211,7 +243,6 @@ public class EventDetectorTest {
 
     private static class CloseApproachDetector extends AbstractDetector<CloseApproachDetector> {
 
-        private static final long serialVersionUID = 1L;
         private final PVCoordinatesProvider provider;
 
         public CloseApproachDetector(double maxCheck, double threshold,
@@ -221,7 +252,7 @@ public class EventDetectorTest {
             this.provider = provider;
         }
 
-        public double g(final SpacecraftState s) throws OrekitException {
+        public double g(final SpacecraftState s) {
             PVCoordinates pv1     = provider.getPVCoordinates(s.getDate(), s.getFrame());
             PVCoordinates pv2     = s.getPVCoordinates();
             Vector3D deltaP       = pv1.getPosition().subtract(pv2.getPosition());
@@ -240,7 +271,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testWrappedException() throws OrekitException {
+    public void testWrappedException() {
         final Throwable dummyCause = new RuntimeException();
         try {
             // initial conditions
@@ -253,9 +284,8 @@ public class EventDetectorTest {
                                                                                    new Vector3D(-5012.9298276860990, 1920.3567095973078, -5172.7403501801580)),
                                                                  eme2000, initialDate, Constants.WGS84_EARTH_MU));
             k.addEventDetector(new DateDetector(initialDate.shiftedBy(Constants.JULIAN_DAY)) {
-                private static final long serialVersionUID = 1L;
                 @Override
-                public double g(final SpacecraftState s) throws OrekitException {
+                public double g(final SpacecraftState s) {
                     final double dt = s.getDate().durationFrom(exceptionDate);
                     if (FastMath.abs(dt) < 1.0) {
                         throw new OrekitException(dummyCause, LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy");
@@ -271,9 +301,8 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testDefaultMethods() throws OrekitException {
+    public void testDefaultMethods() {
         EventDetector dummyDetector = new EventDetector() {
-            private static final long serialVersionUID = 1L;
 
             @Override
             public double getThreshold() {

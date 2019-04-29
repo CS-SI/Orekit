@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -233,9 +233,8 @@ public abstract class OGMFile extends ODMFile {
 
     /** Get the spacecraft mass.
      * @return the spacecraft mass
-     * @exception OrekitException if mass is unknown
      */
-    public double getMass() throws OrekitException {
+    public double getMass() {
         if (Double.isNaN(mass)) {
             throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_SPACECRAFT_MASS);
         }

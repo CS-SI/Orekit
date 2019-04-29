@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -43,21 +42,15 @@ public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvide
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return raw coefficient Cnm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
-        double getRawCnm(int n, int m)
-            throws OrekitException;
+        double getRawCnm(int n, int m);
 
         /** Get a spherical harmonic sine coefficient.
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return raw coefficient Snm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
-        double getRawSnm(int n, int m)
-            throws OrekitException;
+        double getRawSnm(int n, int m);
 
     }
 
@@ -65,8 +58,7 @@ public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvide
      * Get the raw spherical harmonic coefficients on a specific date.
      * @param date to evaluate the spherical harmonics
      * @return the raw spherical harmonics on {@code date}.
-     * @throws OrekitException on error
      */
-    RawSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
+    RawSphericalHarmonics onDate(AbsoluteDate date);
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,10 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
+import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -151,9 +153,8 @@ public class TLE implements TimeStamped, Serializable {
      * before trying to build this object.<p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
-     * @exception OrekitException if some format error occurs or lines are inconsistent
      */
-    public TLE(final String line1, final String line2) throws OrekitException {
+    public TLE(final String line1, final String line2) {
 
         // identification
         satelliteNumber = parseInteger(line1, 2, 5);
@@ -264,11 +265,8 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Get the first line.
      * @return first line
-     * @exception OrekitException if UTC conversion cannot be done or
-     * some parameter is too large to fit format
      */
-    public String getLine1()
-        throws OrekitException {
+    public String getLine1() {
         if (line1 == null) {
             buildLine1();
         }
@@ -277,10 +275,8 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Get the second line.
      * @return second line
-     * @exception OrekitException if some parameter is too large to fit format
      */
-    public String getLine2()
-        throws OrekitException {
+    public String getLine2() {
         if (line2 == null) {
             buildLine2();
         }
@@ -288,11 +284,8 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Build the line 1 from the parsed elements.
-     * @exception OrekitException if UTC conversion cannot be done or
-     * some parameter is too large to fit format
      */
-    private void buildLine1()
-        throws OrekitException {
+    private void buildLine1() {
 
         final StringBuffer buffer = new StringBuffer();
 
@@ -350,16 +343,20 @@ public class TLE implements TimeStamped, Serializable {
      * @param rightJustified if true, the resulting string is
      * right justified (i.e. space are added to the left)
      * @return formatted and padded number
-     * @exception OrekitException if parameter is too large to fit format
      */
     private String formatExponentMarkerFree(final String name, final double d, final int mantissaSize,
-                                            final char c, final int size, final boolean rightJustified)
-        throws OrekitException {
+                                            final char c, final int size, final boolean rightJustified) {
         final double dAbs = FastMath.abs(d);
         int exponent = (dAbs < 1.0e-9) ? -9 : (int) FastMath.ceil(FastMath.log10(dAbs));
-        final long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
+        long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         if (mantissa == 0) {
             exponent = 0;
+        } else if (mantissa > (ArithmeticUtils.pow(10, mantissaSize) - 1)) {
+            // rare case: if d has a single digit like d = 1.0e-4 with mantissaSize = 5
+            // the above computation finds exponent = -4 and mantissa = 100000 which
+            // doesn't fit in a 5 digits string
+            exponent++;
+            mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         }
         final String sMantissa = addPadding(name, (int) mantissa, '0', mantissaSize, true);
         final String sExponent = Integer.toString(FastMath.abs(exponent));
@@ -370,9 +367,8 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Build the line 2 from the parsed elements.
-     * @exception OrekitException if some parameter is too large to fit format
      */
-    private void buildLine2() throws OrekitException {
+    private void buildLine2() {
 
         final StringBuffer buffer = new StringBuffer();
         final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
@@ -412,11 +408,9 @@ public class TLE implements TimeStamped, Serializable {
      * @param rightJustified if true, the resulting string is
      * right justified (i.e. space are added to the left)
      * @return padded string
-     * @exception OrekitException if parameter is too large to fit format
      */
     private String addPadding(final String name, final int k, final char c,
-                              final int size, final boolean rightJustified)
-        throws OrekitException {
+                              final int size, final boolean rightJustified) {
         return addPadding(name, Integer.toString(k), c, size, rightJustified);
     }
 
@@ -428,11 +422,9 @@ public class TLE implements TimeStamped, Serializable {
      * @param rightJustified if true, the resulting string is
      * right justified (i.e. space are added to the left)
      * @return padded string
-     * @exception OrekitException if parameter is too large to fit format
      */
     private String addPadding(final String name, final String string, final char c,
-                              final int size, final boolean rightJustified)
-        throws OrekitException {
+                              final int size, final boolean rightJustified) {
 
         if (string.length() > size) {
             throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
@@ -631,10 +623,8 @@ public class TLE implements TimeStamped, Serializable {
      * @param line2 the second element
      * @return true if format is recognized (non null lines, 69 characters length,
      * line content), false if not
-     * @exception OrekitException if checksum is not valid
      */
-    public static boolean isFormatOK(final String line1, final String line2)
-        throws OrekitException {
+    public static boolean isFormatOK(final String line1, final String line2) {
 
         if (line1 == null || line1.length() != 69 ||
             line2 == null || line2.length() != 69) {
@@ -650,13 +640,13 @@ public class TLE implements TimeStamped, Serializable {
         final int checksum1 = checksum(line1);
         if (Integer.parseInt(line1.substring(68)) != (checksum1 % 10)) {
             throw new OrekitException(OrekitMessages.TLE_CHECKSUM_ERROR,
-                                      1, line1.substring(68), checksum1 % 10, line1);
+                                      1, Integer.toString(checksum1 % 10), line1.substring(68), line1);
         }
 
         final int checksum2 = checksum(line2);
         if (Integer.parseInt(line2.substring(68)) != (checksum2 % 10)) {
             throw new OrekitException(OrekitMessages.TLE_CHECKSUM_ERROR,
-                                      2, line2.substring(68), checksum2 % 10, line2);
+                                      2, Integer.toString(checksum2 % 10), line2.substring(68), line2);
         }
 
         return true;
@@ -678,6 +668,68 @@ public class TLE implements TimeStamped, Serializable {
             }
         }
         return sum % 10;
+    }
+
+    /** Check if this tle equals the provided tle.
+     * <p>Due to the difference in precision between object and string
+     * representations of TLE, it is possible for this method to return false
+     * even if string representations returned by {@link #toString()}
+     * are equal.</p>
+     * @param o other tle
+     * @return true if this tle equals the provided tle
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof TLE)) {
+            return false;
+        }
+        final TLE tle = (TLE) o;
+        return satelliteNumber == tle.satelliteNumber &&
+                classification == tle.classification &&
+                launchYear == tle.launchYear &&
+                launchNumber == tle.launchNumber &&
+                Objects.equals(launchPiece, tle.launchPiece) &&
+                ephemerisType == tle.ephemerisType &&
+                elementNumber == tle.elementNumber &&
+                Objects.equals(epoch, tle.epoch) &&
+                meanMotion == tle.meanMotion &&
+                meanMotionFirstDerivative == tle.meanMotionFirstDerivative &&
+                meanMotionSecondDerivative == tle.meanMotionSecondDerivative &&
+                eccentricity == tle.eccentricity &&
+                inclination == tle.inclination &&
+                pa == tle.pa &&
+                raan == tle.raan &&
+                meanAnomaly == tle.meanAnomaly &&
+                revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
+                bStar == tle.bStar;
+    }
+
+    /** Get a hashcode for this tle.
+     * @return hashcode
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(satelliteNumber,
+                classification,
+                launchYear,
+                launchNumber,
+                launchPiece,
+                ephemerisType,
+                elementNumber,
+                epoch,
+                meanMotion,
+                meanMotionFirstDerivative,
+                meanMotionSecondDerivative,
+                eccentricity,
+                inclination,
+                pa,
+                raan,
+                meanAnomaly,
+                revolutionNumberAtEpoch,
+                bStar);
     }
 
 }

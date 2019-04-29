@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
@@ -51,10 +50,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the TAR (Turn-Around Range) comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest TAR Analytical Values\n");
@@ -66,10 +64,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives computation
      * using TurnAroundRange function as a comparison
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -85,10 +82,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesFiniteDifferences() throws OrekitException {
+    public void testStateDerivativesFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -104,10 +100,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the state derivatives with modifier
      * using TurnAroundRange function as a comparison
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -123,10 +118,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the state derivatives with modifier
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifierFiniteDifferences() throws OrekitException {
+    public void testStateDerivativesWithModifierFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -136,16 +130,15 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.2e-9, 1.9e-8, 3.5e-7, 7.3e-5, 3.4e-4, 1.2e-2);
+                                    3.1e-8, 9.9e-8, 1.8e-6, 7.5e-5, 2.6e-4, 0.5e-2);
     }
 
     /**
      * Test the values of the analytic parameters derivatives computation
      * using TurnAroundRange function as a comparison
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -164,10 +157,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic parameters derivatives
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesFiniteDifferences() throws OrekitException {
+    public void testParameterDerivativesFiniteDifferences() {
 
         // Print the results ?
         boolean printResults = false;
@@ -186,10 +178,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic parameters derivatives with modifiers computation
      * using TurnAroundRange function as a comparison
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -208,10 +199,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic parameters derivatives with modifiers computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifierFiniteDifferences() throws OrekitException {
+    public void testParameterDerivativesWithModifierFiniteDifferences() {
 
         // Print the results ?
         boolean printResults = false;
@@ -230,10 +220,9 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Generic test function for values of the TAR
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -325,13 +314,12 @@ public class TurnAroundRangeAnalyticTest {
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, TurnAroundRange class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException
-     */
+      */
     void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean,
                                      final double refErrorsPMax, final double refErrorsVMedian,
                                      final double refErrorsVMean, final double refErrorsVMax)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -401,7 +389,7 @@ public class TurnAroundRangeAnalyticTest {
             if (isFiniteDifferences) {
                 // Compute a reference value using finite differences
                 jacobianRef = Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) throws OrekitException {
+                    public double[] value(final SpacecraftState state) {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -485,12 +473,11 @@ public class TurnAroundRangeAnalyticTest {
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, TurnAroundRange class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
                                          final double refErrorQMMedian, final double refErrorQMMean, final double refErrorQMMax,
                                          final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -502,9 +489,11 @@ public class TurnAroundRangeAnalyticTest {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    masterStation = entry.getKey();
             final GroundStation    slaveStation  = entry.getValue();
+            masterStation.getClockOffsetDriver().setSelected(false);
             masterStation.getEastOffsetDriver().setSelected(true);
             masterStation.getNorthOffsetDriver().setSelected(true);
             masterStation.getZenithOffsetDriver().setSelected(true);
+            slaveStation.getClockOffsetDriver().setSelected(false);
             slaveStation.getEastOffsetDriver().setSelected(true);
             slaveStation.getNorthOffsetDriver().setSelected(true);
             slaveStation.getZenithOffsetDriver().setSelected(true);
@@ -601,10 +590,10 @@ public class TurnAroundRangeAnalyticTest {
                                     Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
-                                        public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                        public double value(final ParameterDriver parameterDriver) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                         }
-                                    }, drivers[i], 3, 20.0);
+                                    }, 3, 20.0 * drivers[i].getScale());
                     ref = dMkdP.value(drivers[i]);
                 } else {
                     // Compute a reference value using TurnAroundRange function

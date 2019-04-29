@@ -23,14 +23,11 @@ import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -140,8 +137,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
      */
-    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+    public void init(final FieldSpacecraftState<T> s0,
+                     final FieldAbsoluteDate<T> t) {
         detector.init(s0, t);
         final Field<T> field = detector.getMaxCheckInterval().getField();
         lastT = FieldAbsoluteDate.getPastInfinity(field);
@@ -153,9 +152,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    private T g(final FieldSpacecraftState<T> s) throws OrekitException {
+    private T g(final FieldSpacecraftState<T> s) {
         if (!s.getDate().equals(lastT)) {
             lastT = s.getDate();
             lastG = detector.g(s);
@@ -165,11 +163,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
 
     /** Reinitialize the beginning of the step.
      * @param interpolator interpolator valid for the current step
-     * @exception OrekitException if the event detector
-     * value cannot be evaluated at the beginning of the step
      */
-    public void reinitializeBegin(final FieldOrekitStepInterpolator<T> interpolator)
-        throws OrekitException {
+    public void reinitializeBegin(final FieldOrekitStepInterpolator<T> interpolator) {
         forward = interpolator.isForward();
         final FieldSpacecraftState<T> s0 = interpolator.getPreviousState();
         this.t0 = s0.getDate();
@@ -197,12 +192,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @return true if the event detector triggers an event before
      * the end of the proposed step (this implies the step should be
      * rejected)
-     * @exception OrekitException if the switching function
-     * cannot be evaluated
      * @exception MathRuntimeException if an event cannot be located
      */
     public boolean evaluateStep(final FieldOrekitStepInterpolator<T> interpolator)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
         forward = interpolator.isForward();
         final FieldSpacecraftState<T> s1 = interpolator.getCurrentState();
         final FieldAbsoluteDate<T> t1 = s1.getDate();
@@ -256,14 +249,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @param tb           latest possible time for root.
      * @param gb           g(tb).
      * @return if a zero crossing was found.
-     * @throws OrekitException if the event detector throws one
      */
-
-
     private boolean findRoot(final FieldOrekitStepInterpolator<T> interpolator,
                              final FieldAbsoluteDate<T> ta, final T ga,
-                             final FieldAbsoluteDate<T> tb, final T gb)
-        throws OrekitException {
+                             final FieldAbsoluteDate<T> tb, final T gb) {
 
         final T zero = ga.getField().getZero();
 
@@ -324,35 +313,27 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             } else {
                 // both non-zero, the usual case, use a root finder.
-                try {
-                    // time zero for evaluating the function f. Needs to be final
-                    final FieldAbsoluteDate<T> fT0 = loopT;
-                    final UnivariateFunction f = dt -> {
-                        try {
-                            return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
-                    };
-                    // tb as a double for use in f
-                    final T tbDouble = tb.durationFrom(fT0);
-                    if (forward) {
-                        final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
-                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        beforeRootG = zero.add(interval.getLeftValue());
-                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        afterRootG = zero.add(interval.getRightValue());
-                    } else {
-                        final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
-                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        beforeRootG = zero.add(interval.getRightValue());
-                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        afterRootG = zero.add(interval.getLeftValue());
-                    }
-                } catch (OrekitExceptionWrapper oew) {
-                    throw oew.getException();
+                // time zero for evaluating the function f. Needs to be final
+                final FieldAbsoluteDate<T> fT0 = loopT;
+                final UnivariateFunction f = dt -> {
+                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
+                };
+                // tb as a double for use in f
+                final T tbDouble = tb.durationFrom(fT0);
+                if (forward) {
+                    final Interval interval =
+                            solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
+                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                    beforeRootG = zero.add(interval.getLeftValue());
+                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                    afterRootG = zero.add(interval.getRightValue());
+                } else {
+                    final Interval interval =
+                            solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
+                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                    beforeRootG = zero.add(interval.getRightValue());
+                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                    afterRootG = zero.add(interval.getLeftValue());
                 }
             }
             // tolerance is set to less than 1 ulp
@@ -426,11 +407,9 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @return if the event detector has an event it has not detected before that is on or
      * before the same time as {@code state}. In other words {@code false} means continue
      * on while {@code true} means stop and handle my event first.
-     * @exception OrekitException if the g function throws one
      */
     public boolean tryAdvance(final FieldSpacecraftState<T> state,
-                              final FieldOrekitStepInterpolator<T> interpolator)
-        throws OrekitException {
+                              final FieldOrekitStepInterpolator<T> interpolator) {
         // check this is only called before a pending event.
 
         check(!(pendingEvent && strictlyAfter(pendingEventTime, state.getDate())));
@@ -465,22 +444,20 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
      * @return the user's requested action and the new state if the action is {@link
-     * org.orekit.propagation.events.handlers.FieldEventHandler.Action#RESET_STATE}. Otherwise
+     * Action#RESET_STATE}. Otherwise
      * the new state is {@code state}. The stop time indicates what time propagation should
-     * stop if the action is {@link org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP}.
+     * stop if the action is {@link Action#STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
-     * @exception OrekitException if the event detector throws one
      */
-    public EventOccurrence<T> doEvent(final FieldSpacecraftState<T> state)
-        throws OrekitException {
+    public EventOccurrence<T> doEvent(final FieldSpacecraftState<T> state) {
         // check event is pending and is at the same time
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final FieldEventHandler.Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = detector.eventOccurred(state, increasing == forward);
         final FieldSpacecraftState<T> newState;
-        if (action == FieldEventHandler.Action.RESET_STATE) {
+        if (action == Action.RESET_STATE) {
             newState = detector.resetState(state);
         } else {
             newState = state;
@@ -571,7 +548,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
     public static class EventOccurrence<T extends RealFieldElement<T>> {
 
         /** User requested action. */
-        private final FieldEventHandler.Action action;
+        private final Action action;
         /** New state for a reset action. */
         private final FieldSpacecraftState<T> newState;
         /** The time to stop propagation if the action is a stop event. */
@@ -586,7 +563,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
          * @param stopDate to stop propagation if the action is {@link Action#STOP}. Used
          *                 to move the stop time to just after the root.
          */
-        EventOccurrence(final FieldEventHandler.Action action,
+        EventOccurrence(final Action action,
                         final FieldSpacecraftState<T> newState,
                         final FieldAbsoluteDate<T> stopDate) {
             this.action = action;
@@ -599,7 +576,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
          *
          * @return the action.
          */
-        public FieldEventHandler.Action getAction() {
+        public Action getAction() {
             return action;
         }
 

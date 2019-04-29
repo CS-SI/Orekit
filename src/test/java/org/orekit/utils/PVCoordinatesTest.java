@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,7 +62,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVectorNeg() throws OrekitException {
+    public void testToDerivativeStructureVectorNeg() {
         try {
             PVCoordinates.ZERO.toDerivativeStructureVector(-1);
             Assert.fail("an exception should have been thrown");
@@ -73,7 +73,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector3() throws OrekitException {
+    public void testToDerivativeStructureVector3() {
         try {
             PVCoordinates.ZERO.toDerivativeStructureVector(3);
             Assert.fail("an exception should have been thrown");
@@ -84,7 +84,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector0() throws OrekitException {
+    public void testToDerivativeStructureVector0() {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
@@ -101,7 +101,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector1() throws OrekitException {
+    public void testToDerivativeStructureVector1() {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
@@ -121,7 +121,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector2() throws OrekitException {
+    public void testToDerivativeStructureVector2() {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
@@ -153,7 +153,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePVNeg() throws OrekitException {
+    public void testToDerivativeStructurePVNeg() {
         try {
             PVCoordinates.ZERO.toDerivativeStructurePV(-1);
             Assert.fail("an exception should have been thrown");
@@ -164,7 +164,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV3() throws OrekitException {
+    public void testToDerivativeStructurePV3() {
         try {
             PVCoordinates.ZERO.toDerivativeStructurePV(3);
             Assert.fail("an exception should have been thrown");
@@ -175,7 +175,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV0() throws OrekitException {
+    public void testToDerivativeStructurePV0() {
         FieldPVCoordinates<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
@@ -194,7 +194,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV1() throws OrekitException {
+    public void testToDerivativeStructurePV1() {
         FieldPVCoordinates<DerivativeStructure> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
@@ -221,7 +221,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV2() throws OrekitException {
+    public void testToDerivativeStructurePV2() {
         FieldPVCoordinates<DerivativeStructure> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
@@ -263,7 +263,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testJerkIsVelocitySecondDerivative() throws OrekitException {
+    public void testJerkIsVelocitySecondDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -284,7 +284,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testJerkIsAccelerationDerivative() throws OrekitException {
+    public void testJerkIsAccelerationDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -317,7 +317,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testJounceIsAccelerationSecondDerivative() throws OrekitException {
+    public void testJounceIsAccelerationSecondDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -343,7 +343,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testMomentumDerivative() throws OrekitException {
+    public void testMomentumDerivative() {
         final PVCoordinates pva =
                         new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                           new Vector3D(-2079., 5291., -7842.));
@@ -525,7 +525,7 @@ public class PVCoordinatesTest {
     }
 
     private interface OrbitFunction {
-        Vector3D apply(final CartesianOrbit o) throws OrekitException;
+        Vector3D apply(final CartesianOrbit o);
     }
 
     private Vector3D differentiate(CartesianOrbit orbit, OrbitFunction picker) {

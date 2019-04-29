@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.util.Arrays;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -98,11 +97,9 @@ public class SmallManeuverAnalyticalModel
      * is performed
      * @param dV velocity increment in spacecraft frame
      * @param isp engine specific impulse (s)
-     * @exception OrekitException if spacecraft frame cannot be transformed
      */
     public SmallManeuverAnalyticalModel(final SpacecraftState state0,
-                                        final Vector3D dV, final double isp)
-        throws OrekitException {
+                                        final Vector3D dV, final double isp) {
         this(state0, state0.getFrame(),
              state0.getAttitude().getRotation().applyInverseTo(dV),
              isp);
@@ -114,11 +111,9 @@ public class SmallManeuverAnalyticalModel
      * @param frame frame in which velocity increment is defined
      * @param dV velocity increment in specified frame
      * @param isp engine specific impulse (s)
-     * @exception OrekitException if velocity increment frame cannot be transformed
      */
     public SmallManeuverAnalyticalModel(final SpacecraftState state0, final Frame frame,
-                                        final Vector3D dV, final double isp)
-        throws OrekitException {
+                                        final Vector3D dV, final double isp) {
 
         this.state0    = state0;
         this.massRatio = FastMath.exp(-dV.getNorm() / (Constants.G0_STANDARD_GRAVITY * isp));
@@ -255,11 +250,9 @@ public class SmallManeuverAnalyticalModel
      * @param jacobian placeholder 6x4 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x4, only the 6x4 upper left corner will be modified
      * @see #apply(Orbit)
-     * @exception OrekitException if time derivative of the initial Jacobian cannot be computed
      */
     public void getJacobian(final Orbit orbit1, final PositionAngle positionAngle,
-                            final double[][] jacobian)
-        throws OrekitException {
+                            final double[][] jacobian) {
 
         final double dt = orbit1.getDate().durationFrom(state0.getDate());
         if (dt < 0) {
@@ -320,9 +313,8 @@ public class SmallManeuverAnalyticalModel
     }
 
     /** Lazy evaluation of the initial Jacobian time derivative.
-     * @exception OrekitException if initial orbit cannot be shifted
      */
-    private void evaluateJ0Dot() throws OrekitException {
+    private void evaluateJ0Dot() {
 
         if (j0Dot == null) {
 

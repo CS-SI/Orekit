@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,12 +27,19 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Before;
 import org.orekit.errors.OrekitException;
 
 public class NetworkCrawlerTest {
 
+    @Before
+    public void setUp() {
+        // Clear any filters that another test may have left
+        DataProvidersManager.getInstance().clearFilters();
+    }
+
     @Test(expected=OrekitException.class)
-    public void noElement() throws OrekitException, MalformedURLException {
+    public void noElement() throws MalformedURLException {
         File existing   = new File(url("regular-data").getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
         new NetworkCrawler(inexistent.toURI().toURL()).feed(Pattern.compile(".*"), new CountingLoader());
@@ -60,7 +67,7 @@ public class NetworkCrawlerTest {
 //    }
 
     @Test
-    public void local() throws OrekitException {
+    public void local() {
         CountingLoader crawler = new CountingLoader();
         NetworkCrawler nc = new NetworkCrawler(url("regular-data/UTC-TAI.history"),
                            url("regular-data/de405-ephemerides/unxp0000.405"),
@@ -74,7 +81,7 @@ public class NetworkCrawlerTest {
     }
 
     @Test
-    public void compressed() throws OrekitException {
+    public void compressed() {
         CountingLoader crawler = new CountingLoader();
         new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
                            url("compressed-data/eopc04_08_IAU2000.00.gz"),
@@ -83,14 +90,14 @@ public class NetworkCrawlerTest {
     }
 
     @Test
-    public void multiZip() throws OrekitException {
+    public void multiZip() {
         CountingLoader crawler = new CountingLoader();
         new NetworkCrawler(url("zipped-data/multizip.zip")).feed(Pattern.compile(".*\\.txt$"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test(expected=OrekitException.class)
-    public void ioException() throws OrekitException {
+    public void ioException() {
         try {
             new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(Pattern.compile(".*"), new IOExceptionLoader());
         } catch (OrekitException oe) {
@@ -103,7 +110,7 @@ public class NetworkCrawlerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void parseException() throws OrekitException {
+    public void parseException() {
         try {
             new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(Pattern.compile(".*"), new ParseExceptionLoader());
         } catch (OrekitException oe) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,28 +20,39 @@ package org.orekit.data;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class DataProvidersManagerTest {
 
+    @After
+    public void tearDown() {
+        // clear the filters so they don't change other tests
+        DataProvidersManager.getInstance().clearFilters();
+    }
+
     @Test
-    public void testDefaultConfiguration() throws OrekitException {
+    public void testDefaultConfiguration() {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
         Assert.assertFalse(DataProvidersManager.getInstance().isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
-        Assert.assertEquals(21, crawler.getCount());
+        Assert.assertEquals(18, crawler.getCount());
     }
 
     @Test
-    public void testLoadMonitoring() throws OrekitException {
+    public void testLoadMonitoring() {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.clearProviders();
@@ -49,13 +60,17 @@ public class DataProvidersManagerTest {
         Assert.assertFalse(manager.isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertEquals(0, manager.getLoadedDataNames().size());
         CountingLoader tleCounter = new CountingLoader(false);
-        Assert.assertTrue(manager.feed(".*\\.tle$", tleCounter));
-        Assert.assertEquals(4, tleCounter.getCount());
-        Assert.assertEquals(4, manager.getLoadedDataNames().size());
+        Assert.assertFalse(manager.feed(".*\\.tle$", tleCounter));
+        Assert.assertEquals(0, tleCounter.getCount());
+        Assert.assertEquals(0, manager.getLoadedDataNames().size());
+        CountingLoader txtCounter = new CountingLoader(false);
+        Assert.assertTrue(manager.feed(".*\\.txt$", txtCounter));
+        Assert.assertEquals(5, txtCounter.getCount());
+        Assert.assertEquals(5, manager.getLoadedDataNames().size());
         CountingLoader de405Counter = new CountingLoader(false);
         Assert.assertTrue(manager.feed(".*\\.405$", de405Counter));
         Assert.assertEquals(4, de405Counter.getCount());
-        Assert.assertEquals(8, manager.getLoadedDataNames().size());
+        Assert.assertEquals(9, manager.getLoadedDataNames().size());
         manager.clearLoadedDataNames();
         Assert.assertEquals(0, manager.getLoadedDataNames().size());
     }
@@ -71,11 +86,11 @@ public class DataProvidersManagerTest {
         } catch (OrekitException oe) {
             // expected
         }
-        Assert.assertEquals(21, crawler.getCount());
+        Assert.assertEquals(18, crawler.getCount());
     }
 
     @Test
-    public void testEmptyProperty() throws OrekitException {
+    public void testEmptyProperty() {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, "");
         CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
@@ -84,7 +99,7 @@ public class DataProvidersManagerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testInexistentDirectory() throws OrekitException {
+    public void testInexistentDirectory() {
         File inexistent = new File(getPath("regular-data"), "inexistent");
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
         CountingLoader crawler = new CountingLoader(false);
@@ -93,7 +108,7 @@ public class DataProvidersManagerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testInexistentZipArchive() throws OrekitException {
+    public void testInexistentZipArchive() {
         File inexistent = new File(getPath("regular-data"), "inexistent.zip");
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, inexistent.getAbsolutePath());
         CountingLoader crawler = new CountingLoader(false);
@@ -102,7 +117,7 @@ public class DataProvidersManagerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNeitherDirectoryNorZip() throws OrekitException {
+    public void testNeitherDirectoryNorZip() {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data/UTC-TAI.history"));
         CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
@@ -110,7 +125,7 @@ public class DataProvidersManagerTest {
     }
 
     @Test
-    public void testListModification() throws OrekitException {
+    public void testListModification() {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("regular-data"));
         CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager manager = DataProvidersManager.getInstance();
@@ -126,7 +141,7 @@ public class DataProvidersManagerTest {
         Assert.assertNotNull(manager.removeProvider(providers.get(0)));
         Assert.assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
-            public boolean feed(Pattern supported, DataLoader visitor) throws OrekitException {
+            public boolean feed(Pattern supported, DataLoader visitor) {
                 return true;
             }
         };
@@ -137,7 +152,7 @@ public class DataProvidersManagerTest {
         Assert.assertNotNull(manager.removeProvider(provider));
         Assert.assertEquals(1, manager.getProviders().size());
         Assert.assertNull(manager.removeProvider(new DataProvider() {
-            public boolean feed(Pattern supported, DataLoader visitor) throws OrekitException {
+            public boolean feed(Pattern supported, DataLoader visitor) {
                 throw new OrekitException(new DummyLocalizable("oops!"));
             }
         }));
@@ -147,7 +162,7 @@ public class DataProvidersManagerTest {
     }
 
     @Test
-    public void testComplexPropertySetting() throws OrekitException {
+    public void testComplexPropertySetting() {
         String sep = System.getProperty("path.separator");
         File top = new File(getPath("regular-data"));
         File dir1 = new File(top, "de405-ephemerides");
@@ -171,12 +186,36 @@ public class DataProvidersManagerTest {
     }
 
     @Test
-    public void testMultiZip() throws OrekitException {
+    public void testMultiZip() {
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, getPath("zipped-data/multizip.zip"));
         CountingLoader crawler = new CountingLoader(false);
         DataProvidersManager.getInstance().clearProviders();
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*\\.txt$", crawler));
         Assert.assertEquals(6, crawler.getCount());
+    }
+
+    @Test
+    public void testSimpleFilter() {
+        Utils.setDataRoot("regular-data");
+        CountingFilter filter = new CountingFilter();
+        DataProvidersManager.getInstance().addFilter(filter);
+        CountingLoader crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
+        Assert.assertEquals(18, crawler.getCount());
+        Assert.assertEquals(18, filter.getFilteredCount());
+        Assert.assertEquals(18, filter.getOpenedCount());
+    }
+
+    @Test
+    public void testMultiLayerFilter() {
+        Utils.setDataRoot("regular-data");
+        final int layers = 10;
+        MultiLayerFilter filter = new MultiLayerFilter(layers);
+        DataProvidersManager.getInstance().addFilter(filter);
+        CountingLoader crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
+        Assert.assertEquals(18, crawler.getCount());
+        Assert.assertEquals(18 * layers, filter.getOpenedCount());
     }
 
     private static class CountingLoader implements DataLoader {
@@ -190,7 +229,7 @@ public class DataProvidersManagerTest {
             return true;
         }
         public void loadData(InputStream input, String name)
-            throws OrekitException {
+            {
             ++count;
             if (shouldFail) {
                 throw new OrekitException(new DummyLocalizable("intentional failure"));
@@ -198,6 +237,68 @@ public class DataProvidersManagerTest {
         }
         public int getCount() {
             return count;
+        }
+    }
+
+    private static class CountingFilter implements DataFilter {
+        private Map<NamedData, NamedData> filtered;
+        private int opened;
+        public CountingFilter() {
+            filtered = new IdentityHashMap<>();
+            opened   = 0;
+        }
+        public NamedData filter(NamedData original) {
+            if (filtered.containsKey(original)) {
+                return original;
+            } else {
+                NamedData f = new NamedData(original.getName(),
+                                            () -> {
+                                                ++opened;
+                                                return original.getStreamOpener().openStream();
+                                            });
+                filtered.put(f, f);
+                return f;
+            }
+        }
+        public int getFilteredCount() {
+            return filtered.size();
+        }
+        public int getOpenedCount() {
+            return opened;
+        }
+    }
+
+    private static class MultiLayerFilter implements DataFilter {
+        private static final String  PREFIX  = "multilayer-";
+        private static final Pattern PATTERN = Pattern.compile(PREFIX + "(\\d+)-(.*)");
+        private final int layers;
+        private int opened;
+        public MultiLayerFilter(final int layers) {
+            this.layers = layers;
+            this.opened = 0;
+        }
+        public NamedData filter(final NamedData original) {
+            Matcher matcher = PATTERN.matcher(original.getName());
+            int level = 0;
+            String baseName = original.getName();
+            if (matcher.matches()) {
+                level = Integer.parseInt(matcher.group(1));
+                baseName = matcher.group(2);
+            }
+            if (level++ < layers) {
+                // add one filtering layer
+                return new NamedData(PREFIX + level + "-" + baseName,
+                                     () -> {
+                                         ++opened;
+                                         return original.getStreamOpener().openStream();
+                                     });
+            } else {
+                // final layer, don't filter anymore
+                return original;
+            }
+        }
+        public int getOpenedCount() {
+            return opened;
         }
     }
 

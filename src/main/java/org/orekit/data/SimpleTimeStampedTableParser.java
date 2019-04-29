@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,9 +46,8 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
         /** Convert a row.
          * @param rawFields raw row fields, as read from the file
          * @return converted row
-         * @exception OrekitException if conversion cannot be performed
          */
-        S convert(double[] rawFields) throws OrekitException;
+        S convert(double[] rawFields);
     }
 
     /** Pattern for fields with real type. */
@@ -74,9 +73,8 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
      * @param stream stream containing the table
      * @param name name of the resource file (for error messages only)
      * @return parsed table
-     * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public List<T> parse(final InputStream stream, final String name) throws OrekitException {
+    public List<T> parse(final InputStream stream, final String name) {
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);

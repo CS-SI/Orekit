@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -71,9 +70,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class YawSteering extends GroundPointing implements AttitudeProviderModifier {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150529L;
-
     /** Pointing axis. */
     private static final PVCoordinates PLUS_Z =
             new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
@@ -93,14 +89,12 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @param sun sun motion model
      * @param phasingAxis satellite axis that must be roughly in Sun direction
      * (if solar arrays rotation axis is Y, then this axis should be either +X or -X)
-     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
      * @since 7.1
      */
     public YawSteering(final Frame inertialFrame,
                        final GroundPointing groundPointingLaw,
                        final PVCoordinatesProvider sun,
-                       final Vector3D phasingAxis)
-        throws OrekitException {
+                       final Vector3D phasingAxis) {
         super(inertialFrame, groundPointingLaw.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
         this.sun = sun;
@@ -118,16 +112,14 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
 
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                                final AbsoluteDate date, final Frame frame) {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame)
-        throws OrekitException {
+                                                                                        final Frame frame) {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
@@ -136,11 +128,9 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @param date date at which state is requested
      * @param frame reference frame from which attitude is computed
      * @return satellite base attitude state, i.e without compensation.
-     * @throws OrekitException if some specific error occurs
      */
     public Attitude getBaseState(final PVCoordinatesProvider pvProv,
-                                 final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                 final AbsoluteDate date, final Frame frame) {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
 
@@ -150,20 +140,17 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
      * @return satellite base attitude state, i.e without compensation.
-     * @throws OrekitException if some specific error occurs
      * @since 9.0
      */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                         final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                final AbsoluteDate date, final Frame frame) {
 
         // attitude from base attitude provider
         final Attitude base = getBaseState(pvProv, date, frame);
@@ -189,8 +176,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
 
         final Field<T>              field = date.getField();
         final FieldVector3D<T>      zero  = FieldVector3D.getZero(field);

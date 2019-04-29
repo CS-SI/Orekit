@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,42 +69,42 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class OneAxisEllipsoidTest {
 
     @Test
-    public void testStandard() throws OrekitException {
+    public void testStandard() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     4637885.347, 121344.608, 4362452.869,
                                     0.026157811533131, 0.757987116290729, 260.455572965555);
     }
 
     @Test
-    public void testLongitudeZero() throws OrekitException {
+    public void testLongitudeZero() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     6378400.0, 0, 6379000.0,
                                     0.0, 0.787815771252351, 2653416.77864152);
     }
 
     @Test
-    public void testLongitudePi() throws OrekitException {
+    public void testLongitudePi() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     -6379999.0, 0, 6379000.0,
                                     3.14159265358979, 0.787690146758403, 2654544.7767725);
     }
 
     @Test
-    public void testNorthPole() throws OrekitException {
+    public void testNorthPole() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     0.0, 0.0, 7000000.0,
                                     0.0, 1.57079632679490, 643247.685859644);
     }
 
     @Test
-    public void testEquator() throws OrekitException {
+    public void testEquator() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     6379888.0, 6377000.0, 0.0,
                                     0.785171775899913, 0.0, 2642345.24279301);
     }
 
     @Test
-    public void testNoFlattening() throws OrekitException {
+    public void testNoFlattening() {
         final double r      = 7000000.0;
         final double lambda = 2.345;
         final double phi    = -1.23;
@@ -118,7 +118,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testNoFlatteningPolar() throws OrekitException {
+    public void testNoFlatteningPolar() {
         final double r = 1000.0;
         final double h = 100;
         checkCartesianToEllipsoidic(r, 0,
@@ -136,7 +136,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testOnSurface() throws OrekitException {
+    public void testOnSurface() {
         Vector3D surfacePoint = new Vector3D(-1092200.775949484,
                                              -3944945.7282234835,
                                               4874931.946956173);
@@ -149,28 +149,28 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testInside3Roots() throws OrekitException {
+    public void testInside3Roots() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     9219.0, -5322.0, 6056743.0,
                                     5.75963470503781, 1.56905114598949, -300000.009586231);
     }
 
     @Test
-    public void testInsideLessThan3Roots() throws OrekitException {
+    public void testInsideLessThan3Roots() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     1366863.0, -789159.0, -5848.988,
                                     -0.523598928689, -0.00380885831963, -4799808.27951);
     }
 
     @Test
-    public void testOutside() throws OrekitException {
+    public void testOutside() {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257,
                                     5722966.0, -3304156.0, -24621187.0,
                                     5.75958652642615, -1.3089969725151, 19134410.3342696);
     }
 
     @Test
-    public void testGeoCar() throws OrekitException {
+    public void testGeoCar() {
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -183,7 +183,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundProjectionPosition() throws OrekitException {
+    public void testGroundProjectionPosition() {
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                  Constants.WGS84_EARTH_FLATTENING,
@@ -218,7 +218,7 @@ public class OneAxisEllipsoidTest {
 
     @Test
     public void testGroundProjectionDerivatives()
-            throws OrekitException {
+            {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -242,7 +242,7 @@ public class OneAxisEllipsoidTest {
 
     @Test
     public void testGroundToGroundIssue181()
-            throws OrekitException {
+            {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -266,7 +266,7 @@ public class OneAxisEllipsoidTest {
 
     private double[] derivativesErrors(PVCoordinatesProvider provider, AbsoluteDate date, Frame frame,
                                        OneAxisEllipsoid model)
-        throws OrekitException {
+        {
         List<TimeStampedPVCoordinates> pvList       = new ArrayList<TimeStampedPVCoordinates>();
         List<TimeStampedPVCoordinates> groundPVList = new ArrayList<TimeStampedPVCoordinates>();
         for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
@@ -301,7 +301,7 @@ public class OneAxisEllipsoidTest {
 
     @Test
     public void testGroundProjectionTaylor()
-            throws OrekitException {
+            {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -338,7 +338,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testLineIntersection() throws OrekitException {
+    public void testLineIntersection() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
@@ -387,7 +387,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testNoLineIntersection() throws OrekitException {
+    public void testNoLineIntersection() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
@@ -398,7 +398,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testNegativeZ() throws OrekitException {
+    public void testNegativeZ() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
@@ -409,7 +409,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testNumerousIteration() throws OrekitException {
+    public void testNumerousIteration() {
         // this test, which corresponds to an unrealistic extremely flat ellipsoid,
         // is designed to need more than the usual 2 or 3 iterations in the iterative
         // version of the Toshio Fukushima's algorithm. It in fact would reach
@@ -425,7 +425,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testEquatorialInside() throws OrekitException {
+    public void testEquatorialInside() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
@@ -438,7 +438,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testFarPoint() throws OrekitException {
+    public void testFarPoint() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
@@ -449,7 +449,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testIssue141() throws OrekitException {
+    public void testIssue141() {
         AbsoluteDate date = new AbsoluteDate("2002-03-06T20:50:20.44188731559965033", TimeScalesFactory.getUTC());
         Frame frame = FramesFactory.getGTOD(IERSConventions.IERS_1996, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -462,7 +462,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         OneAxisEllipsoid original = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                          Constants.WGS84_EARTH_FLATTENING,
                                                          FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true));
@@ -483,7 +483,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testIntersectionFromPoints() throws OrekitException {
+    public void testIntersectionFromPoints() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 03, 21),
                                              TimeComponents.H12,
                                              TimeScalesFactory.getUTC());
@@ -613,7 +613,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testMovingGeodeticPointSymmetry() throws OrekitException {
+    public void testMovingGeodeticPointSymmetry() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -648,7 +648,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testMovingGeodeticPoint() throws OrekitException {
+    public void testMovingGeodeticPoint() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -725,7 +725,7 @@ public class OneAxisEllipsoidTest {
                                              double x, double y, double z,
                                              double longitude, double latitude,
                                              double altitude)
-        throws OrekitException {
+        {
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -752,7 +752,7 @@ public class OneAxisEllipsoidTest {
 
     @Test
     public void testTransformVsOldIterativeSobol()
-        throws OrekitException {
+        {
 
         OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -769,7 +769,7 @@ public class OneAxisEllipsoidTest {
 
     @Test
     public void testTransformVsOldIterativePolarAxis()
-        throws OrekitException {
+        {
         OneAxisEllipsoid model = new OneAxisEllipsoid(90, 5.0 / 9.0,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Stream<Vector3D> points = DoubleStream.iterate(0, x -> x + 1.0).limit(150).mapToObj(z -> new Vector3D(0, 0, z));
@@ -778,18 +778,27 @@ public class OneAxisEllipsoidTest {
 
     @Test
     public void testTransformVsOldIterativeEquatorial()
-        throws OrekitException {
+        {
         OneAxisEllipsoid model = new OneAxisEllipsoid(90, 5.0 / 9.0,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Stream<Vector3D> points = DoubleStream.iterate(0, x -> x + 1.0).limit(150).mapToObj(x -> new Vector3D(x, 0, 0));
         doTestTransformVsOldIterative(model, points, 2.0e-15, 1.0e-15, 1.0e-14 * model.getEquatorialRadius());
     }
 
+    @Test
+    public void testIssue373() {
+        final Frame            ecef   = FramesFactory.getITRF(IERSConventions.IERS_2010,true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1./298.257223563, ecef);
+        final Vector3D         sunPos = new Vector3D(-149757851422.23358, 8410610314.781021, 14717269835.161688 );
+        final GeodeticPoint    sunGP  = earth.transform(sunPos, ecef, null);
+        Assert.assertEquals(5.603878, FastMath.toDegrees(sunGP.getLatitude()), 1.0e-6);
+    }
+
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
                                                Stream<Vector3D> points,
                                                double latitudeTolerance, double longitudeTolerance,
                                                double altitudeTolerance)
-        throws OrekitException {
+        {
         points.forEach(point -> {
             try {
                 GeodeticPoint reference = transformOldIterative(model, point, model.getBodyFrame(), null);
@@ -815,13 +824,12 @@ public class OneAxisEllipsoidTest {
      * @param frame frame in which Cartesian point is expressed
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point
-     * @exception OrekitException if point cannot be converted to body frame
      */
     private GeodeticPoint transformOldIterative(final OneAxisEllipsoid model,
                                                 final Vector3D point,
                                                 final Frame frame,
                                                 final AbsoluteDate date)
-        throws OrekitException {
+        {
 
         // transform point to body frame
         final Vector3D pointInBodyFrame = frame.getTransformTo(model.getBodyFrame(), date).transformPosition(point);

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2017 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -47,7 +47,7 @@ an absolute definition. We want the end date to be 20 seconds after the
 start date.
   
     double duration = 20.0;
-    AbsoluteDate end = new AbsoluteDate(start, duration);
+    AbsoluteDate end = start.shiftedBy(duration);
 
 We then print a header for our output.
   
@@ -61,7 +61,7 @@ we create an instance relative to the previous one.
     double step = 0.5;
     for (AbsoluteDate date = start;
          date.compareTo(end) < 0;
-         date = new AbsoluteDate(date, step)) {
+         date = date.shiftedBy(step)) {
        // loop body
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,12 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -36,7 +30,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -62,7 +55,7 @@ public class EventEnablingPredicateFilterTest {
     private Orbit orbit;
 
     @Test
-    public void testForward0Degrees() throws OrekitException {
+    public void testForward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -70,7 +63,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5Degrees() throws OrekitException {
+    public void testForward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -78,7 +71,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5DegreesStartEnabled() throws OrekitException {
+    public void testForward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(12614.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -86,7 +79,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward0Degrees() throws OrekitException {
+    public void testBackward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -94,7 +87,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5Degrees() throws OrekitException {
+    public void testBackward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -102,7 +95,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5DegreesStartEnabled() throws OrekitException {
+    public void testBackward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(73112.0),
                orbit.getDate(),
@@ -111,7 +104,7 @@ public class EventEnablingPredicateFilterTest {
 
     private void doElevationTest(final double minElevation,
                                  final AbsoluteDate start, final AbsoluteDate end,
-                                 final int expectedEvents, final boolean sameSign) throws OrekitException {
+                                 final int expectedEvents, final boolean sameSign) {
 
         final ElevationExtremumDetector raw =
                 new ElevationExtremumDetector(0.001, 1.e-6, new TopocentricFrame(earth, gp, "test")).
@@ -121,7 +114,7 @@ public class EventEnablingPredicateFilterTest {
                                 new EnablingPredicate<ElevationExtremumDetector>() {
                                     public boolean eventIsEnabled(final SpacecraftState state,
                                                                   final ElevationExtremumDetector eventDetector,
-                                                                  final double g) throws OrekitException {
+                                                                  final double g) {
                                         return eventDetector.getElevation(state) > minElevation;
                                     }
                 }).withMaxCheck(60.0);
@@ -174,7 +167,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testResetState() throws OrekitException {
+    public void testResetState() {
         final List<AbsoluteDate> reset = new ArrayList<AbsoluteDate>();
         DateDetector raw = new DateDetector(orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
@@ -220,7 +213,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryForward() throws OrekitException, IOException {
+    public void testExceedHistoryForward() throws IOException {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -273,7 +266,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryBackward() throws OrekitException, IOException {
+    public void testExceedHistoryBackward() throws IOException {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -326,70 +319,17 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testNonSerializable() throws IOException {
-        try {
-            final EventEnablingPredicateFilter<DateDetector> filter =
-                            new EventEnablingPredicateFilter<DateDetector>(new DateDetector(AbsoluteDate.J2000_EPOCH),
-                                                                           new  DummyNonSerializablePredicate());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream    oos = new ObjectOutputStream(bos);
-            oos.writeObject(filter);
-            Assert.fail("an exception should habe been thrown");
-        } catch (NotSerializableException nse) {
-            Assert.assertTrue(nse.getMessage().contains("DummyNonSerializablePredicate"));
-        }
-    }
+    public void testGenerics() {
+        // setup
+        DateDetector detector = new DateDetector(orbit.getDate());
+        EnablingPredicate<EventDetector> predicate = (state, eventDetector, g) -> true;
 
-    private static class DummyNonSerializablePredicate implements EnablingPredicate<DateDetector> {
-
-        @Override
-        public boolean eventIsEnabled(final SpacecraftState state,
-                                      final DateDetector eventDetector,
-                                      final double g) {
-            return true;
-        }
-
-    }
-
-    @Test
-    public void testSerializable()
-        throws IOException, IllegalArgumentException, IllegalAccessException,
-               ClassNotFoundException, NoSuchFieldException, SecurityException {
-        final EventEnablingPredicateFilter<DateDetector> filter =
-                        new EventEnablingPredicateFilter<DateDetector>(new DateDetector(AbsoluteDate.J2000_EPOCH),
-                                                                       new  DummySerializablePredicate());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(filter);
-
-        Assert.assertTrue(bos.size() >  900);
-        Assert.assertTrue(bos.size() < 1000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        @SuppressWarnings("unchecked")
-        EventEnablingPredicateFilter<DateDetector> deserialized  =
-                        (EventEnablingPredicateFilter<DateDetector>) ois.readObject();
-        Field enabler = EventEnablingPredicateFilter.class.getDeclaredField("enabler");
-        enabler.setAccessible(true);
-        Assert.assertEquals(DummySerializablePredicate.class, enabler.get(deserialized).getClass());
-    }
-
-    private static class DummySerializablePredicate implements EnablingPredicate<DateDetector>, Serializable {
-
-        private static final long serialVersionUID = 20160321L;
-
-        @Override
-        public boolean eventIsEnabled(final SpacecraftState state,
-                                      final DateDetector eventDetector,
-                                      final double g) {
-            return true;
-        }
-
+        // action + verify. Just make sure it compiles with generics
+        new EventEnablingPredicateFilter<>(detector, predicate);
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
 
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;
@@ -61,14 +60,14 @@ public enum Force {
     },
 
     OCEAN_TIDES() {
-        public ForceModel getForceModel(Context context) throws OrekitException {
+        public ForceModel getForceModel(Context context) {
             return new OceanTides(context.earth.getBodyFrame(), context.gravity.getAe(), context.gravity.getMu(),
                                   7, 7, context.conventions, context.ut1);
         }
     },
 
     SOLID_TIDES() {
-        public ForceModel getForceModel(Context context) throws OrekitException {
+        public ForceModel getForceModel(Context context) {
             return new SolidTides(context.earth.getBodyFrame(), context.gravity.getAe(), context.gravity.getMu(),
                                   context.gravity.getTideSystem(),
                                   context.conventions, context.ut1, context.sun, context.moon);
@@ -81,6 +80,6 @@ public enum Force {
         }
     };
 
-    public abstract ForceModel getForceModel(Context context) throws OrekitException;
+    public abstract ForceModel getForceModel(Context context);
 
 }

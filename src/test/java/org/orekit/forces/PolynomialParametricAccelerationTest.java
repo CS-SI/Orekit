@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,7 +67,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
     private Orbit initialOrbit;
 
     @Test
-    public void testEquivalentInertialManeuver() throws OrekitException {
+    public void testEquivalentInertialManeuver() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -88,7 +88,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
     }
 
     @Test
-    public void testEquivalentTangentialManeuver() throws OrekitException {
+    public void testEquivalentTangentialManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -105,7 +105,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuver() throws OrekitException {
+    public void testEquivalentTangentialOverriddenManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -129,7 +129,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
                                           final AttitudeProvider accelerationLaw,
                                           final PolynomialParametricAcceleration parametricAcceleration,
                                           final double positionTolerance)
-        throws OrekitException {
+        {
 
         SpacecraftState initialState = new SpacecraftState(initialOrbit,
                                                            maneuverLaw.getAttitude(initialOrbit,
@@ -171,7 +171,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
     }
 
     @Test
-    public void testEquivalentInertialManeuverField() throws OrekitException {
+    public void testEquivalentInertialManeuverField() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -192,7 +192,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
     }
 
     @Test
-    public void testEquivalentTangentialManeuverField() throws OrekitException {
+    public void testEquivalentTangentialManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -209,7 +209,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuverField() throws OrekitException {
+    public void testEquivalentTangentialOverriddenManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -235,7 +235,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
                                                                           final AttitudeProvider accelerationLaw,
                                                                           final PolynomialParametricAcceleration parametricAcceleration,
                                                                           final double positionTolerance)
-                                                                                          throws OrekitException {
+                                                                                          {
 
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(field,
                                                                           new SpacecraftState(initialOrbit,
@@ -283,7 +283,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
     }
 
     @Test
-    public void testParameterDerivative() throws OrekitException {
+    public void testParameterDerivative() {
 
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);

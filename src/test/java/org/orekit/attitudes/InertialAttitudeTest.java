@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public class InertialAttitudeTest {
     private Orbit        orbit0;
 
     @Test
-    public void testIsInertial() throws OrekitException {
+    public void testIsInertial() {
         InertialProvider law = new InertialProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9, RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
@@ -69,7 +69,7 @@ public class InertialAttitudeTest {
     }
 
     @Test
-    public void testCompensateMomentum() throws OrekitException {
+    public void testCompensateMomentum() {
         InertialProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2, RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
@@ -83,7 +83,7 @@ public class InertialAttitudeTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
@@ -130,7 +130,7 @@ public class InertialAttitudeTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ import org.orekit.errors.OrekitMessages;
 public class AngularCoordinatesTest {
 
     @Test
-    public void testDefaultConstructor() throws OrekitException {
+    public void testDefaultConstructor() {
         AngularCoordinates ac = new AngularCoordinates();
         Assert.assertEquals(0.0, ac.getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, ac.getRotationRate().getNorm(), 1.0e-15);
@@ -52,7 +52,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructuresNeg() throws OrekitException {
+    public void testDerivativesStructuresNeg() {
         try {
             AngularCoordinates.IDENTITY.toDerivativeStructureRotation(-1);
             Assert.fail("an exception should have been thrown");
@@ -64,7 +64,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures3() throws OrekitException {
+    public void testDerivativesStructures3() {
         try {
             AngularCoordinates.IDENTITY.toDerivativeStructureRotation(3);
             Assert.fail("an exception should have been thrown");
@@ -76,7 +76,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures0() throws OrekitException {
+    public void testDerivativesStructures0() {
         RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
 
         Rotation r    = randomRotation(random);
@@ -90,7 +90,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures1() throws OrekitException {
+    public void testDerivativesStructures1() {
         RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
 
         Rotation r    = randomRotation(random);
@@ -104,7 +104,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures2() throws OrekitException {
+    public void testDerivativesStructures2() {
         RandomGenerator random = new Well1024a(0x1633878dddac047dl);
 
         Rotation r    = randomRotation(random);
@@ -118,7 +118,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testZeroRate() throws OrekitException {
+    public void testZeroRate() {
         AngularCoordinates ac =
                 new AngularCoordinates(new Rotation(0.48, 0.64, 0.36, 0.48, false), Vector3D.ZERO, Vector3D.ZERO);
         Assert.assertEquals(Vector3D.ZERO, ac.getRotationRate());
@@ -130,7 +130,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testShiftWithoutAcceleration() throws OrekitException {
+    public void testShiftWithoutAcceleration() {
         double rate = 2 * FastMath.PI / (12 * 60);
         AngularCoordinates ac =
                 new AngularCoordinates(Rotation.IDENTITY,
@@ -153,7 +153,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testShiftWithAcceleration() throws OrekitException {
+    public void testShiftWithAcceleration() {
         double rate = 2 * FastMath.PI / (12 * 60);
         double acc  = 0.001;
         double dt   = 1.0;
@@ -214,7 +214,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
         double rate = 2 * FastMath.PI / (12 * 60);
         AngularCoordinates angularCoordinates =
                 new AngularCoordinates(new Rotation(0.48, 0.64, 0.36, 0.48, false),
@@ -354,7 +354,7 @@ public class AngularCoordinatesTest {
 
     @Test
     public void testInverseCrossProducts()
-        throws OrekitException {
+        {
         checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_J);
         checkInverse(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.ZERO);
         checkInverse(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_J);
@@ -377,7 +377,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testRandomInverseCrossProducts() throws OrekitException {
+    public void testRandomInverseCrossProducts() {
         RandomGenerator generator = new Well1024a(0x52b29d8f6ac2d64bl);
         for (int i = 0; i < 10000; ++i) {
             Vector3D omega = randomVector(generator, 10 * generator.nextDouble() + 1.0);
@@ -387,7 +387,7 @@ public class AngularCoordinatesTest {
         }
     }
 
-    private void checkInverse(Vector3D omega, Vector3D v1, Vector3D v2) throws OrekitException {
+    private void checkInverse(Vector3D omega, Vector3D v1, Vector3D v2) {
         checkInverse(omega,
                      v1, Vector3D.crossProduct(omega, v1),
                      v2, Vector3D.crossProduct(omega, v2));
@@ -427,7 +427,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testRandomPVCoordinates() throws OrekitException {
+    public void testRandomPVCoordinates() {
         RandomGenerator generator = new Well1024a(0x49eb5b92d1f94b89l);
         for (int i = 0; i < 100; ++i) {
             Rotation r           = randomRotation(generator);
@@ -455,7 +455,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testCancellingDerivatives() throws OrekitException {
+    public void testCancellingDerivatives() {
         PVCoordinates u1 = new PVCoordinates(new Vector3D(-0.4466591282528639,   -0.009657376949231283,  -0.894652087807798),
                                              new Vector3D(-8.897296517803556E-4,  2.7825250920407674E-4,  4.411979658413134E-4),
                                              new Vector3D( 4.753127475302486E-7,  1.0209400376727623E-8,  9.515403756524403E-7));

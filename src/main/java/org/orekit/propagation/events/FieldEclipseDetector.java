@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.orekit.propagation.events;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
@@ -29,10 +29,8 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Finder for satellite eclipse related events.
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
  * eclipse) or penumbra (partial eclipse).</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.FieldEventHandler.Action#CONTINUE continue}
- * propagation when entering the eclipse and to {@link
- * org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation when entering the eclipse and to {@link Action#STOP stop} propagation
  * when exiting the eclipse. This can be changed by calling {@link
  * #withHandler(FieldEventHandler)} after construction.</p>
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
@@ -219,9 +217,8 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
      * and positive when exiting.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+    public T g(final FieldSpacecraftState<T> s) {
         final Vector3D pted = occulted.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition();
         final Vector3D ping = occulting.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition();
         final Vector3D psat = s.toSpacecraftState().getPVCoordinates().getPosition();

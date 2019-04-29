@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -27,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -37,6 +39,7 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class EventShifterTest {
@@ -50,7 +53,7 @@ public class EventShifterTest {
     private double earthRadius = 6400000.;
 
     @Test
-    public void testNegNeg() throws OrekitException {
+    public void testNegNeg() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         EclipseDetector raw = createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3);
         final EventHandler<? super EclipseDetector> h = raw.getHandler();
@@ -60,7 +63,7 @@ public class EventShifterTest {
             public Action eventOccurred(SpacecraftState s,
                                         EclipseDetector detector,
                                         boolean increasing)
-              throws OrekitException {
+              {
                 h.eventOccurred(s, detector, increasing);
                 return Action.RESET_STATE;
             }
@@ -68,7 +71,7 @@ public class EventShifterTest {
             @Override
             public SpacecraftState resetState(EclipseDetector detector,
                                               SpacecraftState oldState)
-                                                  throws OrekitException {
+                                                  {
                 return h.resetState(detector, oldState);
             }
 
@@ -91,7 +94,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testNegPos() throws OrekitException {
+    public void testNegPos() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                                       true, -15,  20));
@@ -106,7 +109,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testPosNeg() throws OrekitException {
+    public void testPosNeg() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                                       true,  15, -20));
@@ -121,7 +124,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testPosPos() throws OrekitException {
+    public void testPosPos() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                                       true,  15,  20));
@@ -136,7 +139,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testIncreasingError() throws OrekitException {
+    public void testIncreasingError() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 2.0e-9));
         propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-10s increasing", "-10s decreasing", 2.0e-3),
                                                                       true, -10, -10));
@@ -179,12 +182,14 @@ public class EventShifterTest {
     }
 
     private EclipseDetector createRawDetector(final String nameIncreasing, final String nameDecreasing,
-                                              final double tolerance)
-        throws OrekitException {
-        return new EclipseDetector(60., 1.e-10,
-                                   CelestialBodyFactory.getSun(), sunRadius,
-                                   CelestialBodyFactory.getEarth(), earthRadius).
-                                   withHandler(new EventHandler<EclipseDetector>() {
+                                              final double tolerance) {
+        return new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                   new OneAxisEllipsoid(earthRadius,
+                                                        0.0,
+                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+               withMaxCheck(60.0).
+               withThreshold(1.0e-10).
+               withHandler(new EventHandler<EclipseDetector>() {
                                        public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
                                                                    boolean increasing) {
                                            log.add(new EventEntry(s.getDate().durationFrom(iniDate), tolerance,

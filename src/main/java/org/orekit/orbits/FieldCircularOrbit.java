@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -748,74 +748,6 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      */
     public static <T extends RealFieldElement<T>> T eccentricToMean(final T alphaE, final T ex, final T ey) {
         return alphaE.subtract(ex.multiply(alphaE.sin()).subtract(ey.multiply(alphaE.cos())));
-    }
-
-    /** Compute position from circular parameters.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param i inclination (rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param alphaV  v + ω true latitude argument (rad)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the fiels elements
-     * @return position vector
-     */
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> circularToPosition(final T a, final T ex, final T ey,
-                                                                                      final T i, final T raan, final T alphaV,
-                                                                                      final double mu) {
-
-        final T zero = a.getField().getZero();
-
-        // get equinoctial parameters
-        final T equEx = ex.multiply(raan.cos()).subtract(ey.multiply(raan.sin()));
-        final T equEy = ey.multiply(raan.cos()).add(ex.multiply(raan.sin()));
-        final T hx;
-        final T hy;
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
-            hx = zero.add(Double.NaN);
-            hy = zero.add(Double.NaN);
-        } else {
-            final T tan = i.divide(2).tan();
-            hx = raan.cos().multiply(tan);
-            hy = raan.sin().multiply(tan);
-        }
-        final T lE = trueToEccentric(alphaV, ex, ey).add(raan);
-
-        // inclination-related intermediate parameters
-        final T hx2   = hx.multiply(hx);
-        final T hy2   = hy.multiply(hy);
-        final T factH = (hx2.add(1).add(hy2)).reciprocal();
-
-        // reference axes defining the orbital plane
-        final T ux = (hx2.add(1).subtract(hy2)).multiply(factH);
-        final T uy =  hx.multiply(2).multiply(hy).multiply(factH);
-        final T uz = hy.multiply(-2).multiply(factH);
-
-        final T vx = uy;
-        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
-        final T vz =  hx.multiply(factH).multiply(2);
-
-        // eccentricity-related intermediate parameters
-        final T exey = equEx.multiply(equEy);
-        final T ex2  = equEx.multiply(equEx);
-        final T ey2  = equEy.multiply(equEy);
-        final T e2   = ex2.add(ey2);
-        final T eta  = e2.negate().add(1).sqrt().add(1);
-        final T beta = eta.reciprocal();
-
-        // eccentric latitude argument
-        final T cLe    = lE.cos();
-        final T sLe    = lE.sin();
-
-        // coordinates of position and velocity in the orbital plane
-        final T x      = a.multiply(beta.negate().multiply(ey2).add(1).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(equEx));
-        final T y      = a.multiply(beta.negate().multiply(ex2).add(1).multiply(sLe).add(beta.multiply(exey).multiply(cLe)).subtract(equEy));
-
-        return new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
-                                   x.multiply(uy).add(y.multiply(vy)),
-                                   x.multiply(uz).add(y.multiply(vz)));
-
     }
 
     /** {@inheritDoc} */

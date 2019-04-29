@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -61,11 +60,9 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
      * @param station station
      * @param state spacecraft state
      * @return the measurement error due to ionosphere
-     * @throws OrekitException  if frames transformations cannot be computed
      */
     private double angularErrorIonosphericModel(final GroundStation station,
-                                                final SpacecraftState state)
-        throws OrekitException {
+                                                final SpacecraftState state) {
 
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -99,8 +96,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated)
-        throws OrekitException {
+    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];

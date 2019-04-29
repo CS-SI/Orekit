@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
@@ -58,8 +57,10 @@ public interface FieldEventDetector <T extends RealFieldElement<T>> {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
      */
-    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+    default void init(FieldSpacecraftState<T> s0,
+                      FieldAbsoluteDate<T> t) {
         // nothing by default
     }
 
@@ -68,9 +69,8 @@ public interface FieldEventDetector <T extends RealFieldElement<T>> {
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    T g(FieldSpacecraftState<T> s) throws OrekitException;
+    T g(FieldSpacecraftState<T> s);
 
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold (s)
@@ -91,10 +91,9 @@ public interface FieldEventDetector <T extends RealFieldElement<T>> {
      * @param s SpaceCraft state to be used in the evaluation
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return the Action that the calling detector should pass back to the evaluation system
-     * @exception OrekitException if some specific error occurs
-     * @since 7.0
+          * @since 7.0
      */
-    Action eventOccurred(FieldSpacecraftState<T> s, boolean increasing) throws OrekitException;
+    Action eventOccurred(FieldSpacecraftState<T> s, boolean increasing);
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
@@ -109,10 +108,9 @@ public interface FieldEventDetector <T extends RealFieldElement<T>> {
      * </p>
      * @param oldState old state
      * @return new state
-     * @exception OrekitException if the state cannot be reseted
-     * @since 7.0
+          * @since 7.0
      */
-    default FieldSpacecraftState<T> resetState(FieldSpacecraftState<T> oldState) throws OrekitException {
+    default FieldSpacecraftState<T> resetState(FieldSpacecraftState<T> oldState) {
         return oldState;
     }
 

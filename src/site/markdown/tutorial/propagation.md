@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2017 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -42,12 +42,12 @@ Let's set up an initial state as:
     
     double mu =  3.986004415e+14;
     
-    double a = 24396159;                 // semi major axis in meters
-    double e = 0.72831215;               // eccentricity
-    double i = Math.toRadians(7);        // inclination
-    double omega = Math.toRadians(180);  // perigee argument
-    double raan = Math.toRadians(261);   // right ascension of ascending node
-    double lM = 0;                       // mean anomaly
+    double a = 24396159;                     // semi major axis in meters
+    double e = 0.72831215;                   // eccentricity
+    double i = FastMath.toRadians(7);        // inclination
+    double omega = FastMath.toRadians(180);  // perigee argument
+    double raan = FastMath.toRadians(261);   // right ascension of ascending node
+    double lM = 0;                           // mean anomaly
 
 The initial orbit is defined as a `KeplerianOrbit`.
 More details on the orbit representation can be found
@@ -267,7 +267,7 @@ As in the two tutorials above, let's first define some initial state as:
     Frame inertialFrame = FramesFactory.getEME2000();
     // Initial date
     TimeScale utc = TimeScalesFactory.getUTC();
-    AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,utc);
+    AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
     // Central attraction coefficient
     double mu =  3.986004415e+14;
     // Initial orbit
@@ -338,6 +338,7 @@ start date and to exactly the final date:
                               ex: 0.11393312156755062; ey: 0.719345418868777;
                               hx: -0.009567941763699867; hy: -0.06040960680288257;
                               lv: 559.0092657655282;}
+
      date :  2004-01-02T01:10:00.000
      equinoctial parameters: {a: 2.4396159E7;
                               ex: 0.11393312156755062; ey: 0.719345418868777;
@@ -346,9 +347,9 @@ start date and to exactly the final date:
 
 The following shows the error message we get when we try to use a date outside
 of the ephemeris range (in this case, the intermediate date was set to 1000 seconds
-before ephemeris start:
+before ephemeris start):
 
-    out of range date for ephemerides: 2004-01-01T23:13:20.000
+    out of range date for ephemerides: 2004-01-01T23:13:20.000, [2004-01-01T23:30:00.000, 2004-01-02T01:10:00.000]
 
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/propagation/EphemerisMode.java`.
@@ -471,7 +472,7 @@ We can see that the propagation stopped just after detecting the setting:
 
     Visibility on station1 begins at 2004-01-01T23:31:52.098
     Visibility on station1 ends at 2004-01-01T23:42:48.850
-    Final state : 768.850266549196
+    Final state : 768.850266477389
 
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/propagation/VisibilityCheck.java`.

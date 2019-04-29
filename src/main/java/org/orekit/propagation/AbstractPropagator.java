@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -98,7 +98,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() {
         return initialState;
     }
 
@@ -113,7 +113,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         initialState = state;
         setStartDate(state.getDate());
     }
@@ -155,8 +155,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
-        throws OrekitException {
+    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider) {
 
         // check if the name is already used
         if (isAdditionalStateManaged(additionalStateProvider.getName())) {
@@ -178,11 +177,9 @@ public abstract class AbstractPropagator implements Propagator {
     /** Update state by adding all additional states.
      * @param original original state
      * @return updated state, with all additional states included
-     * @exception OrekitException if one of the providers throws one
-     * @see #addAdditionalStateProvider(AdditionalStateProvider)
+          * @see #addAdditionalStateProvider(AdditionalStateProvider)
      */
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original)
-        throws OrekitException {
+    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -257,7 +254,7 @@ public abstract class AbstractPropagator implements Propagator {
     public abstract void clearEventsDetectors();
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate target) throws OrekitException {
+    public SpacecraftState propagate(final AbsoluteDate target) {
         if (startDate == null) {
             startDate = getInitialState().getDate();
         }
@@ -265,8 +262,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 

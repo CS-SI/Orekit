@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ import org.orekit.utils.IERSConventions;
 public class OceanTidesTest {
 
     @Test
-    public void testDefaultInterpolation() throws OrekitException {
+    public void testDefaultInterpolation() {
 
         IERSConventions conventions = IERSConventions.IERS_2010;
         Frame eme2000 = FramesFactory.getEME2000();
@@ -93,21 +93,21 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testTideEffect1996() throws OrekitException {
+    public void testTideEffect1996() {
         doTestTideEffect(IERSConventions.IERS_1996, 3.66948, 0.00000);
     }
 
     @Test
-    public void testTideEffect2003() throws OrekitException {
+    public void testTideEffect2003() {
         doTestTideEffect(IERSConventions.IERS_2003, 3.66941, 0.00000);
     }
 
     @Test
-    public void testTideEffect2010() throws OrekitException {
+    public void testTideEffect2010() {
         doTestTideEffect(IERSConventions.IERS_2010, 3.66939, 0.08981);
     }
 
-    private void doTestTideEffect(IERSConventions conventions, double delta1, double delta2) throws OrekitException {
+    private void doTestTideEffect(IERSConventions conventions, double delta1, double delta2) {
 
         Frame eme2000 = FramesFactory.getEME2000();
         Frame itrf    = FramesFactory.getITRF(conventions, true);
@@ -152,7 +152,7 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testNoGetParameter() throws OrekitException {
+    public void testNoGetParameter() {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
@@ -177,7 +177,7 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testNoSetParameter() throws OrekitException {
+    public void testNoSetParameter() {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
@@ -201,7 +201,7 @@ public class OceanTidesTest {
     }
 
     private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel... forceModels)
-        throws OrekitException {
+        {
         double[][] tolerances = NumericalPropagator.tolerances(10, orbit, OrbitType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);

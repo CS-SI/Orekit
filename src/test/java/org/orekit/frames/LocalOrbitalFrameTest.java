@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -32,7 +31,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class LocalOrbitalFrameTest {
 
     @Test
-    public void testTNW() throws OrekitException {
+    public void testTNW() {
         AbsoluteDate date = initDate.shiftedBy(400);
         PVCoordinates pv = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.TNW, date,
@@ -43,7 +42,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testQSW() throws OrekitException {
+    public void testQSW() {
         AbsoluteDate date = initDate.shiftedBy(400);
         PVCoordinates pv = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.QSW, date,
@@ -54,7 +53,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testLVLH() throws OrekitException {
+    public void testLVLH() {
         AbsoluteDate date = initDate.shiftedBy(400);
         PVCoordinates pv = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.LVLH, date,
@@ -65,7 +64,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testVVLH() throws OrekitException {
+    public void testVVLH() {
         AbsoluteDate date = initDate.shiftedBy(400);
         PVCoordinates pv = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.VVLH, date,
@@ -76,7 +75,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testVNC() throws OrekitException {
+    public void testVNC() {
         AbsoluteDate date = initDate.shiftedBy(400);
         PVCoordinates pv = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.VNC, date,
@@ -89,7 +88,7 @@ public class LocalOrbitalFrameTest {
     private void checkFrame(LOFType type, AbsoluteDate date,
                             Vector3D expectedXDirection, Vector3D expectedYDirection,
                             Vector3D expectedZDirection, Vector3D expectedRotationDirection)
-        throws OrekitException {
+        {
         LocalOrbitalFrame lof = new LocalOrbitalFrame(FramesFactory.getGCRF(), type, provider, type.name());
 
         Transform t = lof.getTransformTo(FramesFactory.getGCRF(), date);
@@ -115,7 +114,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         inertialFrame = FramesFactory.getGCRF();
         initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         initialOrbit =

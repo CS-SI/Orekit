@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -73,10 +72,8 @@ public class L1TransformProvider implements TransformProvider {
     /** Simple constructor.
      * @param primaryBody Primary body.
      * @param secondaryBody Secondary body.
-     * @throws OrekitException in .getInertiallyOrientedFrame() if frame cannot be retrieved
      */
-    public L1TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody)
-        throws OrekitException {
+    public L1TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody) {
         this.primaryBody   = primaryBody;
         this.secondaryBody = secondaryBody;
         this.frame         = primaryBody.getInertiallyOrientedFrame();
@@ -84,8 +81,7 @@ public class L1TransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date)
-        throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
         final PVCoordinates pv21        = secondaryBody.getPVCoordinates(date, frame);
         final Vector3D      translation = getL1(pv21.getPosition()).negate();
         final Rotation      rotation    = new Rotation(pv21.getPosition(), pv21.getVelocity(),
@@ -95,8 +91,7 @@ public class L1TransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
         final FieldVector3D<T>      translation = getL1(pv21.getPosition()).negate();
         final Field<T>              field       = pv21.getPosition().getX().getField();
@@ -111,10 +106,8 @@ public class L1TransformProvider implements TransformProvider {
     /** Compute the coordinates of the L1 point.
      * @param primaryToSecondary relative position of secondary body with respect to primary body
      * @return coordinates of the L1 point given in frame: primaryBody.getInertiallyOrientedFrame()
-     * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
-    private Vector3D getL1(final Vector3D primaryToSecondary)
-        throws OrekitException {
+    private Vector3D getL1(final Vector3D primaryToSecondary) {
 
         // mass ratio
         final double massRatio = secondaryBody.getGM() / primaryBody.getGM();
@@ -153,11 +146,9 @@ public class L1TransformProvider implements TransformProvider {
      * @param <T> type of the field elements
      * @param primaryToSecondary relative position of secondary body with respect to primary body
      * @return coordinates of the L1 point given in frame: primaryBody.getInertiallyOrientedFrame()
-     * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
     private <T extends RealFieldElement<T>> FieldVector3D<T>
-        getL1(final FieldVector3D<T> primaryToSecondary)
-        throws OrekitException {
+        getL1(final FieldVector3D<T> primaryToSecondary) {
 
         // mass ratio
         final double massRatio = secondaryBody.getGM() / primaryBody.getGM();

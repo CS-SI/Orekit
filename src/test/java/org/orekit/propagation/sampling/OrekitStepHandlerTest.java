@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.sampling;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Queue;
@@ -31,7 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -48,13 +51,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-import static org.junit.Assert.*;
-
 public class OrekitStepHandlerTest {
 
     @Test
     public void testForwardBackwardStep()
-        throws OrekitException, InterruptedException, ExecutionException {
+        throws InterruptedException, ExecutionException {
         final AbsoluteDate initialDate = new AbsoluteDate(2014, 01, 01, 00, 00,
                                                           00.000,
                                                           TimeScalesFactory
@@ -100,7 +101,7 @@ public class OrekitStepHandlerTest {
                 .submit(new Callable<SpacecraftState>() {
 
                     public SpacecraftState call()
-                        throws OrekitException {
+                        {
                         return kepler.propagate(initialDate.shiftedBy(dt));
                     }
                 });
@@ -115,11 +116,9 @@ public class OrekitStepHandlerTest {
     /**
      * Check {@link OrekitStepInterpolator#isPreviousStateInterpolated()} and {@link
      * OrekitStepInterpolator#isCurrentStateInterpolated()}.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testIsInterpolated() throws OrekitException {
+    public void testIsInterpolated() {
         // setup
         NumericalPropagator propagator =
                 new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60));
@@ -151,7 +150,7 @@ public class OrekitStepHandlerTest {
 
     @Before
     public void setUp()
-        throws OrekitException {
+        {
         Utils.setDataRoot("regular-data");
     }
 }

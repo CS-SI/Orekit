@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,25 @@
  */
 package org.orekit.frames;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -96,6 +101,19 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         return point;
     }
 
+    /** Get the surface point defining the origin of the frame.
+     * @param <T> tyoe of the elements
+     * @param field of the elements
+     * @return surface point defining the origin of the frame
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
+        final T zero = field.getZero();
+        return new FieldGeodeticPoint<>(zero.add(point.getLatitude()),
+                                        zero.add(point.getLongitude()),
+                                        zero.add(point.getAltitude()));
+    }
+
     /** Get the zenith direction of topocentric frame, expressed in parent shape frame.
      * <p>The zenith direction is defined as the normal to local horizontal plane.</p>
      * @return unit vector in the zenith direction
@@ -159,15 +177,34 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return elevation of the point
-     * @exception OrekitException if frames transformations cannot be computed
      */
     public double getElevation(final Vector3D extPoint, final Frame frame,
-                               final AbsoluteDate date)
-        throws OrekitException {
+                               final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
         final Vector3D extPointTopo = t.transformPosition(extPoint);
+
+        // Elevation angle is PI/2 - angle between zenith and given point direction
+        return extPointTopo.getDelta();
+    }
+
+    /** Get the elevation of a point with regards to the local point.
+     * <p>The elevation is the angle between the local horizontal and
+     * the direction from local point to given point.</p>
+     * @param <T> type of the elements
+     * @param extPoint point for which elevation shall be computed
+     * @param frame frame in which the point is defined
+     * @param date computation date
+     * @return elevation of the point
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> T getElevation(final FieldVector3D<T> extPoint, final Frame frame,
+                                                          final FieldAbsoluteDate<T> date) {
+
+        // Transform given point from given frame to topocentric frame
+        final FieldTransform<T> t = frame.getTransformTo(this, date);
+        final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
 
         // Elevation angle is PI/2 - angle between zenith and given point direction
         return extPointTopo.getDelta();
@@ -181,11 +218,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return azimuth of the point
-     * @exception OrekitException if frames transformations cannot be computed
      */
     public double getAzimuth(final Vector3D extPoint, final Frame frame,
-                             final AbsoluteDate date)
-        throws OrekitException {
+                             final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = getTransformTo(frame, date).getInverse();
@@ -200,20 +235,65 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
     }
 
+    /** Get the azimuth of a point with regards to the topocentric frame center point.
+     * <p>The azimuth is the angle between the North direction at local point and
+     * the projection in local horizontal plane of the direction from local point
+     * to given point. Azimuth angles are counted clockwise, i.e positive towards the East.</p>
+     * @param <T> type of the elements
+     * @param extPoint point for which elevation shall be computed
+     * @param frame frame in which the point is defined
+     * @param date computation date
+     * @return azimuth of the point
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> T getAzimuth(final FieldVector3D<T> extPoint, final Frame frame,
+                                                        final FieldAbsoluteDate<T> date) {
+
+        // Transform given point from given frame to topocentric frame
+        final FieldTransform<T> t = getTransformTo(frame, date).getInverse();
+        final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
+
+        // Compute azimuth
+        T azimuth = FastMath.atan2(extPointTopo.getX(), extPointTopo.getY());
+        if (azimuth.getReal() < 0.) {
+            azimuth = azimuth.add(MathUtils.TWO_PI);
+        }
+        return azimuth;
+
+    }
+
     /** Get the range of a point with regards to the topocentric frame center point.
      * @param extPoint point for which range shall be computed
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return range (distance) of the point
-     * @exception OrekitException if frames transformations cannot be computed
      */
     public double getRange(final Vector3D extPoint, final Frame frame,
-                           final AbsoluteDate date)
-        throws OrekitException {
+                           final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
         final Vector3D extPointTopo = t.transformPosition(extPoint);
+
+        // Compute range
+        return extPointTopo.getNorm();
+
+    }
+
+    /** Get the range of a point with regards to the topocentric frame center point.
+     * @param <T> type of the elements
+     * @param extPoint point for which range shall be computed
+     * @param frame frame in which the point is defined
+     * @param date computation date
+     * @return range (distance) of the point
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> T getRange(final FieldVector3D<T> extPoint, final Frame frame,
+                                                      final FieldAbsoluteDate<T> date) {
+
+        // Transform given point from given frame to topocentric frame
+        final FieldTransform<T> t = frame.getTransformTo(this, date);
+        final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
 
         // Compute range
         return extPointTopo.getNorm();
@@ -225,11 +305,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return range rate of the point (positive if point departs from frame)
-     * @exception OrekitException if frames transformations cannot be computed
      */
     public double getRangeRate(final PVCoordinates extPV, final Frame frame,
-                               final AbsoluteDate date)
-        throws OrekitException {
+                               final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
@@ -238,6 +316,27 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         // Compute range rate (doppler) : relative rate along the line of sight
         return Vector3D.dotProduct(extPVTopo.getPosition(), extPVTopo.getVelocity()) /
                extPVTopo.getPosition().getNorm();
+
+    }
+
+    /** Get the range rate of a point with regards to the topocentric frame center point.
+     * @param <T> type of the elements
+     * @param extPV point/velocity for which range rate shall be computed
+     * @param frame frame in which the point is defined
+     * @param date computation date
+     * @return range rate of the point (positive if point departs from frame)
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> T getRangeRate(final FieldPVCoordinates<T> extPV, final Frame frame,
+                                                          final FieldAbsoluteDate<T> date) {
+
+        // Transform given point from given frame to topocentric frame
+        final FieldTransform<T> t = frame.getTransformTo(this, date);
+        final FieldPVCoordinates<T> extPVTopo = t.transformPVCoordinates(extPV);
+
+        // Compute range rate (doppler) : relative rate along the line of sight
+        return FieldVector3D.dotProduct(extPVTopo.getPosition(), extPVTopo.getVelocity()).divide(
+               extPVTopo.getPosition().getNorm());
 
     }
 
@@ -252,11 +351,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param azimuth pointing azimuth from station
      * @param elevation pointing elevation from station
      * @return limit visibility point for the satellite
-     * @throws OrekitException if point cannot be found
      */
     public GeodeticPoint computeLimitVisibilityPoint(final double radius,
-                                                     final double azimuth, final double elevation)
-        throws OrekitException {
+                                                     final double azimuth, final double elevation) {
         try {
             // convergence threshold on point position: 1mm
             final double deltaP = 0.001;
@@ -269,12 +366,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
             final double distance = solver.solve(1000, new UnivariateFunction() {
                 /** {@inheritDoc} */
                 public double value(final double x) {
-                    try {
-                        final GeodeticPoint gp = pointAtDistance(azimuth, elevation, x);
-                        return parentShape.transform(gp).getNorm() - radius;
-                    } catch (OrekitException oe) {
-                        throw new OrekitExceptionWrapper(oe);
-                    }
+                    final GeodeticPoint gp = pointAtDistance(azimuth, elevation, x);
+                    return parentShape.transform(gp).getNorm() - radius;
                 }
             }, 0, 2 * radius);
 
@@ -283,8 +376,6 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
-        } catch (OrekitExceptionWrapper lwe) {
-            throw lwe.getException();
         }
     }
 
@@ -293,11 +384,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param elevation pointing elevation from station
      * @param distance distance to station
      * @return observed point
-     * @exception OrekitException if point cannot be computed
      */
     public GeodeticPoint pointAtDistance(final double azimuth, final double elevation,
-                                         final double distance)
-        throws OrekitException {
+                                         final double distance) {
         final double cosAz = FastMath.cos(azimuth);
         final double sinAz = FastMath.sin(azimuth);
         final double cosEl = FastMath.cos(elevation);
@@ -312,10 +401,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param date current date
      * @param frame the frame where to define the position
      * @return position/velocity of the topocentric frame origin (m and m/s)
-     * @exception OrekitException if position cannot be computed in given frame
      */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date,
                                                                                                Vector3D.ZERO,
                                                                                                Vector3D.ZERO,

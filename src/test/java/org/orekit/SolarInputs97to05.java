@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,10 +73,8 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
 
     /** Simple constructor.
      * Data file address is set internally, nothing to be done here.
-     *
-     * @exception OrekitException
      */
-    private SolarInputs97to05() throws OrekitException {
+    private SolarInputs97to05() {
 
         data = new TreeSet<TimeStamped>(new ChronologicalComparator());
         InputStream in = SolarInputs97to05.class.getResourceAsStream("/atmosphere/JB_All_97-05.txt");
@@ -95,9 +93,8 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
 
     /** Singleton getter.
      * @return the unique instance of this class.
-     * @exception OrekitException
      */
-    public static SolarInputs97to05 getInstance() throws OrekitException {
+    public static SolarInputs97to05 getInstance() {
         if (LazyHolder.instance == null) {
             throw LazyHolder.orekitException;
         }
@@ -178,7 +175,7 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
 
     }
 
-    private void findClosestLine(AbsoluteDate date) throws OrekitException {
+    private void findClosestLine(AbsoluteDate date) {
 
         if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > Constants.JULIAN_DAY)) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);

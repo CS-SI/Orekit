@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,6 @@
 package org.orekit.attitudes;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,7 +46,6 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -88,7 +82,7 @@ public class TabulatedLofOffsetTest {
     PVCoordinates pvSatEME2000;
 
     @Test
-    public void testConstantOffset() throws OrekitException {
+    public void testConstantOffset() {
 
         RandomGenerator random = new Well19937a(0x1199d4bb8f53d2b6l);
         for (LOFType type : LOFType.values()) {
@@ -124,7 +118,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @Test
-    public void testYawCompensation() throws OrekitException {
+    public void testYawCompensation() {
 
         // create a sample from Yaw compensation law
         final LOFType type = LOFType.VNC;
@@ -135,7 +129,7 @@ public class TabulatedLofOffsetTest {
         originalPropagator.setAttitudeProvider(yawCompensLaw);
         originalPropagator.setMasterMode(1.0, new OrekitFixedStepHandler() {
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws OrekitException {
+                {
                 Rotation  offsetAtt    = currentState.getAttitude().getRotation();
                 LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
                 Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
@@ -155,7 +149,7 @@ public class TabulatedLofOffsetTest {
         rebuildingPropagator.setAttitudeProvider(tabulated);
         rebuildingPropagator.setMasterMode(0.3, new OrekitFixedStepHandler() {
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws OrekitException {
+                {
                 final SpacecraftState rebuilt = originalPropagator.propagate(currentState.getDate());
                 final Rotation r1 = currentState.getAttitude().getRotation();
                 final Rotation r2 = rebuilt.getAttitude().getRotation();
@@ -168,58 +162,10 @@ public class TabulatedLofOffsetTest {
 
     }
 
-    @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
-
-        // create a sample from Yaw compensation law
-        final LOFType type = LOFType.VNC;
-        final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
-        final AttitudeProvider yawCompensLaw =
-                new YawCompensation(orbit.getFrame(), new NadirPointing(orbit.getFrame(), earth));
-        final Propagator originalPropagator = new KeplerianPropagator(orbit);
-        originalPropagator.setAttitudeProvider(yawCompensLaw);
-        originalPropagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-            public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws OrekitException {
-                Rotation  offsetAtt    = currentState.getAttitude().getRotation();
-                LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
-                Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
-                                                             currentState.getFrame()).getRotation();
-                Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
-                sample.add(new TimeStampedAngularCoordinates(currentState.getDate(),
-                                                             offsetProper, Vector3D.ZERO, Vector3D.ZERO));
-            }
-        });
-        originalPropagator.propagate(orbit.getDate().shiftedBy(2000));
-        originalPropagator.setSlaveMode();
-
-        // use the sample and generate an ephemeris
-        final AttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(), type, sample,
-                                                                  6, AngularDerivativesFilter.USE_RR);
-        final Propagator rebuildingPropagator = new KeplerianPropagator(orbit);
-        rebuildingPropagator.setAttitudeProvider(tabulated);
-        rebuildingPropagator.setEphemerisMode();
-        rebuildingPropagator.propagate(orbit.getDate().shiftedBy(5));
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(rebuildingPropagator.getGeneratedEphemeris());
-
-        // even despite we propagated only 5 seconds, the attitude sample is huge
-        Assert.assertTrue(bos.size() > 17000);
-        Assert.assertTrue(bos.size() < 18000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        TabulatedLofOffset deserialized = (TabulatedLofOffset) ((BoundedPropagator) ois.readObject()).getAttitudeProvider();
-        Assert.assertEquals(sample.size(), deserialized.getTable().size());
-
-    }
-
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);

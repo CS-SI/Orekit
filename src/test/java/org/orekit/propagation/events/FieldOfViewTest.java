@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,11 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.spherical.twod.S2Point;
-import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.random.UnitSphereRandomVectorGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.FastMath;
@@ -57,7 +50,7 @@ import org.orekit.utils.PVCoordinates;
 public class FieldOfViewTest {
 
     @Test
-    public void testDihedralFielOfView() throws OrekitException {
+    public void testDihedralFielOfView() {
         double maxError = 0;
         for (double alpha1 = 0; alpha1 < 0.5 * FastMath.PI; alpha1 += 0.1) {
             for (double alpha2 = 0; alpha2 < 0.5 * FastMath.PI; alpha2 += 0.1) {
@@ -76,7 +69,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testTooWideDihedralFielOfView() throws OrekitException {
+    public void testTooWideDihedralFielOfView() {
         double tooLarge = 1.6;
         try {
             new FieldOfView(Vector3D.PLUS_I,
@@ -93,7 +86,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testSquare() throws OrekitException {
+    public void testSquare() {
         FieldOfView square1 = new FieldOfView(Vector3D.PLUS_K,
                                               Vector3D.PLUS_I, 0.25,
                                               Vector3D.MINUS_J, 0.25,
@@ -110,7 +103,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testRegularPolygon() throws OrekitException {
+    public void testRegularPolygon() {
         double delta          = 0.25;
         double margin         = 0.01;
         double maxAreaError   = 0;
@@ -143,7 +136,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testNoFootprintInside() throws OrekitException {
+    public void testNoFootprintInside() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(3.0), 6, 0.0);
@@ -160,7 +153,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testNadirHexagonalFootprint() throws OrekitException {
+    public void testNadirHexagonalFootprint() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(3.0), 6, 0.0);
@@ -206,7 +199,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testRollPitchYawHexagonalFootprint() throws OrekitException {
+    public void testRollPitchYawHexagonalFootprint() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(3.0), 6, 0.0);
@@ -255,7 +248,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testFOVPartiallyTruncatedAtLimb() throws OrekitException {
+    public void testFOVPartiallyTruncatedAtLimb() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(40.0), 6, 0.0);
@@ -301,7 +294,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testFOVLargerThanEarth() throws OrekitException {
+    public void testFOVLargerThanEarth() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(45.0), 6, 0.0);
@@ -347,7 +340,7 @@ public class FieldOfViewTest {
     }
 
     @Test
-    public void testFOVAwayFromEarth() throws OrekitException {
+    public void testFOVAwayFromEarth() {
         Utils.setDataRoot("regular-data");
         FieldOfView fov = new FieldOfView(Vector3D.MINUS_K, Vector3D.PLUS_I,
                                           FastMath.toRadians(3.0), 6, 0.0);
@@ -367,33 +360,6 @@ public class FieldOfViewTest {
                                               inertToBody);
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(1.0));
         Assert.assertEquals(0, footprint.size());
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        FieldOfView fov = new FieldOfView(new SphericalPolygonsSet(1.0e-12,
-                                                                   new S2Point(Vector3D.PLUS_I),
-                                                                   new S2Point(Vector3D.PLUS_J),
-                                                                   new S2Point(Vector3D.PLUS_K)),
-                                          0.001);
-        Assert.assertEquals(0.5 * FastMath.PI, fov.getZone().getSize(),         1.0e-15);
-        Assert.assertEquals(1.5 * FastMath.PI, fov.getZone().getBoundarySize(), 1.0e-15);
-        Assert.assertEquals(0.001,  fov.getMargin(), 1.0e-15);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(fov);
-
-
-        Assert.assertTrue(bos.size() > 400);
-        Assert.assertTrue(bos.size() < 450);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        FieldOfView deserialized  = (FieldOfView) ois.readObject();
-        Assert.assertEquals(0.5 * FastMath.PI, deserialized.getZone().getSize(),         1.0e-15);
-        Assert.assertEquals(1.5 * FastMath.PI, deserialized.getZone().getBoundarySize(), 1.0e-15);
-        Assert.assertEquals(0.001,  deserialized.getMargin(), 1.0e-15);
-
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,6 @@ package org.orekit.time;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface for loading UTC-TAI offsets data files.
  * @author Luc Maisonobe
  * @since 7.1
@@ -29,8 +27,7 @@ public interface UTCTAIOffsetsLoader {
     /** Load UTC-TAI offsets entries.
      * @return sorted UTC-TAI offsets entries (if the linear offsets used
      * prior to 1972 are missing, they will be inserted automatically)
-     * @exception OrekitException if time steps are inconsistent
      */
-    List<OffsetModel> loadOffsets() throws OrekitException;
+    List<OffsetModel> loadOffsets();
 
 }

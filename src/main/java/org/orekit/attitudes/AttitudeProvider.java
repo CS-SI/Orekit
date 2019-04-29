@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,7 @@
  */
 package org.orekit.attitudes;
 
-import java.io.Serializable;
-
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -32,17 +29,15 @@ import org.orekit.utils.PVCoordinatesProvider;
  * from an date and position-velocity local provider.</p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface AttitudeProvider extends Serializable {
+public interface AttitudeProvider {
 
     /** Compute the attitude corresponding to an orbital state.
      * @param pvProv local position-velocity provider around current date
      * @param date current date
      * @param frame reference frame from which attitude is computed
      * @return attitude attitude on the specified date and position-velocity state
-     * @throws OrekitException if attitude cannot be computed
      */
-    Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame)
-        throws OrekitException;
+    Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame);
 
     /** Compute the attitude corresponding to an orbital state.
      * @param pvProv local position-velocity provider around current date
@@ -50,11 +45,9 @@ public interface AttitudeProvider extends Serializable {
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
      * @return attitude attitude on the specified date and position-velocity state
-     * @throws OrekitException if attitude cannot be computed
      * @since 9.0
      */
     <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                  FieldAbsoluteDate<T> date,
-                                                                 Frame frame)
-        throws OrekitException;
+                                                                 Frame frame);
 }

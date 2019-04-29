@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,6 @@ import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -36,14 +34,17 @@ import org.orekit.utils.ParameterDriver;
 public class AngularAzElMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
+    private final ObservableSatellite satellite;
 
     public AngularAzElMeasurementCreator(final Context context) {
-        this.context = context;
+        this.context   = context;
+        this.satellite = new ObservableSatellite(0);
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
-            for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
                                                         station.getPrimeMeridianOffsetDriver(),
@@ -60,8 +61,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
         }
     }
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         for (final GroundStation station : context.stations) {
 
             final AbsoluteDate     date      = currentState.getDate();
@@ -72,14 +72,10 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                    public double value(final double x) throws OrekitExceptionWrapper {
-                        try {
-                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
-                            final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                            return d - x * Constants.SPEED_OF_LIGHT;
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
+                    public double value(final double x) {
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                        final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                        return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
 
@@ -101,7 +97,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
                                                                currentState.getFrame(),
                                                                currentState.getDate());
 
-                addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight));
+                addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight, satellite));
             }
 
         }

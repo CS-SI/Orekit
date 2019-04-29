@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -38,13 +37,12 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
                                                                                   final FieldVector3D<DerivativeStructure> position,
                                                                                   final FieldVector3D<DerivativeStructure> velocity,
                                                                                   final FieldRotation<DerivativeStructure> rotation,
-                                                                                  final DerivativeStructure mass)
-        throws OrekitException;
+                                                                                  final DerivativeStructure mass);
 
     protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
                                                         final AttitudeProvider attitudeProvider,
                                                         final double checkTolerance, final boolean print)
-        throws OrekitException {
+        {
         FieldSpacecraftState<DerivativeStructure> fState = toDS(state, attitudeProvider);
         FieldVector3D<DerivativeStructure> dsNew = forceModel.acceleration(fState,
                                                                            forceModel.getParameters(fState.getDate().getField()));

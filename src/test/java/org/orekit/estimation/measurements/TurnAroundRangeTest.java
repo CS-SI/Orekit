@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
@@ -52,10 +51,9 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the TAR (Turn-Around Range) comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest TAR Values\n");
@@ -67,10 +65,9 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the state derivatives
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -93,10 +90,9 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the state derivatives with modifier
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -119,10 +115,9 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the parameter derivatives
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -147,10 +142,9 @@ public class TurnAroundRangeTest {
     /**
      * Test the values of the parameter derivatives with modifier
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -174,10 +168,8 @@ public class TurnAroundRangeTest {
     /**
      * Generic test function for values of the TAR
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
-    void genericTestValues(final boolean printResults)
-                    throws OrekitException {
+    void genericTestValues(final boolean printResults) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -272,8 +264,7 @@ public class TurnAroundRangeTest {
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
-                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-        throws OrekitException {
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -299,15 +290,15 @@ public class TurnAroundRangeTest {
         // Print the results ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s%n",
-                            "Master Station", "Slave Station",
-                            "Measurement Date", "State Date",
-                            "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
-                            "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
-                            "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s%n",
+                              "Master Station", "Slave Station",
+                              "Measurement Date", "State Date",
+                              "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
+                              "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
+                              "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
         }
 
         // Loop on the measurements
@@ -337,7 +328,7 @@ public class TurnAroundRangeTest {
 
             // Compute a reference value using finite differences
             jacobianRef = Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) throws OrekitException {
+                public double[] value(final SpacecraftState state) {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -365,15 +356,15 @@ public class TurnAroundRangeTest {
                 String masterStationName = ((TurnAroundRange) measurement).getMasterStation().getBaseFrame().getName();
                 String slaveStationName  = ((TurnAroundRange) measurement).getSlaveStation().getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
-                                "%10.3e  %10.3e  %10.3e  " +
-                                "%10.3e  %10.3e  %10.3e  " +
-                                "%10.3e  %10.3e  %10.3e  " +
-                                "%10.3e  %10.3e  %10.3e%n",
-                                masterStationName, slaveStationName, measurement.getDate(), date,
-                                dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
-                                dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
-                                dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
-                                dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
+                                  "%10.3e  %10.3e  %10.3e  " +
+                                  "%10.3e  %10.3e  %10.3e  " +
+                                  "%10.3e  %10.3e  %10.3e  " +
+                                  "%10.3e  %10.3e  %10.3e%n",
+                                  masterStationName, slaveStationName, measurement.getDate(), date,
+                                  dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
+                                  dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
+                                  dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
+                                  dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
             }
         } // End loop on the measurements
 
@@ -406,8 +397,7 @@ public class TurnAroundRangeTest {
 
     void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
                                          final double refErrorQMMedian, final double refErrorQMMean, final double refErrorQMMax,
-                                         final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax)
-        throws OrekitException {
+                                         final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -419,9 +409,11 @@ public class TurnAroundRangeTest {
         for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
             final GroundStation    masterStation = entry.getKey();
             final GroundStation    slaveStation  = entry.getValue();
+            masterStation.getClockOffsetDriver().setSelected(true);
             masterStation.getEastOffsetDriver().setSelected(true);
             masterStation.getNorthOffsetDriver().setSelected(true);
             masterStation.getZenithOffsetDriver().setSelected(true);
+            slaveStation.getClockOffsetDriver().setSelected(false);
             slaveStation.getEastOffsetDriver().setSelected(true);
             slaveStation.getNorthOffsetDriver().setSelected(true);
             slaveStation.getZenithOffsetDriver().setSelected(true);
@@ -437,18 +429,18 @@ public class TurnAroundRangeTest {
         // Print results on console ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s %-15s %-23s  %-23s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s  " +
-                            "%10s  %10s  %10s%n",
-                            "Master Station", "Slave Station",
-                            "Measurement Date", "State Date",
-                            "ΔdQMx", "rel ΔdQMx",
-                            "ΔdQMy", "rel ΔdQMy",
-                            "ΔdQMz", "rel ΔdQMz",
-                            "ΔdQSx", "rel ΔdQSx",
-                            "ΔdQSy", "rel ΔdQSy",
-                            "ΔdQSz", "rel ΔdQSz");
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s  " +
+                              "%10s  %10s  %10s%n",
+                              "Master Station", "Slave Station",
+                              "Measurement Date", "State Date",
+                              "ΔdQMx", "rel ΔdQMx",
+                              "ΔdQMy", "rel ΔdQMy",
+                              "ΔdQMz", "rel ΔdQMz",
+                              "ΔdQSx", "rel ΔdQSx",
+                              "ΔdQSy", "rel ΔdQSy",
+                              "ΔdQSz", "rel ΔdQSz");
          }
 
         // List to store the results for master and slave station
@@ -506,10 +498,10 @@ public class TurnAroundRangeTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                    public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
-                                }, drivers[i], 3, 20.0);
+                                }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i]);
 
                 // Deltas

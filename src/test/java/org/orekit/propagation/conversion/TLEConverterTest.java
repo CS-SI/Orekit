@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -38,32 +37,32 @@ public class TLEConverterTest {
     private TLE leoTLE;
 
     @Test
-    public void testConversionGeoPositionVelocity() throws OrekitException {
+    public void testConversionGeoPositionVelocity() {
         checkFit(geoTLE, 86400, 300, 1.0e-3, false, false, 9.350e-8);
     }
 
     @Test
-    public void testConversionGeoPositionOnly() throws OrekitException {
+    public void testConversionGeoPositionOnly() {
         checkFit(geoTLE, 86400, 300, 1.0e-3, true, false, 1.328e-7);
     }
 
     @Test
-    public void testConversionLeoPositionVelocityWithoutBStar() throws OrekitException {
+    public void testConversionLeoPositionVelocityWithoutBStar() {
         checkFit(leoTLE, 86400, 300, 1.0e-3, false, false, 10.77);
     }
 
     @Test
-    public void testConversionLeoPositionOnlyWithoutBStar() throws OrekitException {
+    public void testConversionLeoPositionOnlyWithoutBStar() {
         checkFit(leoTLE, 86400, 300, 1.0e-3, true, false, 15.23);
     }
 
     @Test
-    public void testConversionLeoPositionVelocityWithBStar() throws OrekitException {
+    public void testConversionLeoPositionVelocityWithBStar() {
         checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 2.646e-8);
     }
 
     @Test
-    public void testConversionLeoPositionOnlyWithBStar() throws OrekitException {
+    public void testConversionLeoPositionOnlyWithBStar() {
         checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 4.102e-8);
     }
 
@@ -74,7 +73,7 @@ public class TLEConverterTest {
                             final boolean positionOnly,
                             final boolean withBStar,
                             final double expectedRMS)
-        throws OrekitException {
+        {
 
         Propagator p = TLEPropagator.selectExtrapolator(tle);
         List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
@@ -126,7 +125,7 @@ public class TLEConverterTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                          "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");

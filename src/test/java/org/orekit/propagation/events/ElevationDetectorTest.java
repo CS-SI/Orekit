@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -28,7 +29,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -66,7 +66,7 @@ public class ElevationDetectorTest {
     private double c60;
 
     @Test
-    public void testAgata() throws OrekitException {
+    public void testAgata() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -121,7 +121,7 @@ public class ElevationDetectorTest {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws OrekitException {
+            {
             BodyShape shape = topo.getParentShape();
             GeodeticPoint p =
                             shape.transform(currentState.getPVCoordinates().getPosition(),
@@ -140,15 +140,10 @@ public class ElevationDetectorTest {
         public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }
 
-        @Deprecated
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target) {
-        }
-
     }
 
     @Test
-    public void testEventForMask() throws OrekitException {
+    public void testEventForMask() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -198,7 +193,7 @@ public class ElevationDetectorTest {
 
 
     @Test
-    public void testHorizon() throws OrekitException {
+    public void testHorizon() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -236,7 +231,7 @@ public class ElevationDetectorTest {
 
 
     @Test
-    public void testIssue136() throws OrekitException {
+    public void testIssue136() {
 
         //  Initial state definition : date, orbit
         AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
@@ -291,7 +286,7 @@ public class ElevationDetectorTest {
     }
 
     @Test
-    public void testIssue110() throws OrekitException {
+    public void testIssue110() {
 
         // KEPLERIAN PROPAGATOR
         final Frame eme2000Frame = FramesFactory.getEME2000();
@@ -336,7 +331,7 @@ public class ElevationDetectorTest {
     }
 
 
-    public void testPresTemp() throws OrekitException {
+    public void testPresTemp() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -374,7 +369,7 @@ public class ElevationDetectorTest {
     }
 
     @Test
-    public void testIssue203() throws OrekitException {
+    public void testIssue203() {
 
         //  Initial state definition : date, orbit
         AbsoluteDate initialDate = new AbsoluteDate("2012-01-26T07:00:00.000", TimeScalesFactory.getUTC());

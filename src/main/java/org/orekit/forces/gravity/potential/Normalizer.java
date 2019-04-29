@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 
@@ -34,11 +33,8 @@ class Normalizer implements NormalizedSphericalHarmonicsProvider {
 
     /** Simple constructor.
      * @param unnormalized provider to normalize
-     * @exception OrekitException if degree and order are too large
-     * and the normalization coefficients underflow
      */
-    Normalizer(final UnnormalizedSphericalHarmonicsProvider unnormalized)
-        throws OrekitException {
+    Normalizer(final UnnormalizedSphericalHarmonicsProvider unnormalized) {
         this.unnormalized = unnormalized;
         this.factors      = GravityFieldFactory.getUnnormalizationFactors(unnormalized.getMaxDegree(),
                                                                           unnormalized.getMaxOrder());
@@ -88,7 +84,7 @@ class Normalizer implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
         final UnnormalizedSphericalHarmonics harmonics = unnormalized.onDate(date);
         return new NormalizedSphericalHarmonics() {
 
@@ -100,15 +96,13 @@ class Normalizer implements NormalizedSphericalHarmonicsProvider {
 
             /** {@inheritDoc} */
             @Override
-            public double getNormalizedCnm(final int n, final int m)
-                throws OrekitException {
+            public double getNormalizedCnm(final int n, final int m) {
                 return harmonics.getUnnormalizedCnm(n, m) / factors[n][m];
             }
 
             /** {@inheritDoc} */
             @Override
-            public double getNormalizedSnm(final int n, final int m)
-                throws OrekitException {
+            public double getNormalizedSnm(final int n, final int m) {
                 return harmonics.getUnnormalizedSnm(n, m) / factors[n][m];
             }
 

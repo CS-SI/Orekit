@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.orekit.utils.Constants;
 public class SHMFormatReaderTest {
 
     @Test
-    public void testReadLimits() throws OrekitException {
+    public void testReadLimits() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
@@ -59,7 +59,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testRegular03cNormalized() throws OrekitException {
+    public void testRegular03cNormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
@@ -84,7 +84,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testRegular03cUnnormalized() throws OrekitException {
+    public void testRegular03cUnnormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -111,7 +111,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testReadCompressed01c() throws OrekitException {
+    public void testReadCompressed01c() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("compressed-eigen-cg01c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -138,28 +138,28 @@ public class SHMFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile1() throws OrekitException {
+    public void testCorruptedFile1() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-1-eigen_coef", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile2() throws OrekitException {
+    public void testCorruptedFile2() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-2-eigen_coef", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile3() throws OrekitException {
+    public void testCorruptedFile3() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-3-eigen_coef", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test
-    public void testZeroTide() throws OrekitException {
+    public void testZeroTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("dummy_unknown_tide_shm", false));
         Assert.assertEquals(TideSystem.UNKNOWN,
@@ -171,7 +171,7 @@ public class SHMFormatReaderTest {
                             final int refYear, final int refMonth, final int refDay,
                             final double constant, final double trend,
                             final int maxUlps)
-        throws OrekitException {
+        {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         AbsoluteDate refDate = new AbsoluteDate(refYear, refMonth, refDay, 12, 0, 0, TimeScalesFactory.getTT());
         double dtYear = date.durationFrom(refDate) / Constants.JULIAN_YEAR;

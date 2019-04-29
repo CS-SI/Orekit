@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -44,11 +43,11 @@ import org.orekit.utils.FieldPVCoordinates;
 public class FieldApsideDetectorTest {
 
     @Test
-    public void testSimple() throws OrekitException{
+    public void testSimple() {
         doTestSimple(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSimple(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSimple(Field<T> field) {
         final T zero = field.getZero();
 
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -92,7 +91,7 @@ public class FieldApsideDetectorTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

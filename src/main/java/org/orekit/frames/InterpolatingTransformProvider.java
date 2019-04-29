@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -102,33 +100,6 @@ public class InterpolatingTransformProvider implements TransformProvider {
         this.fieldCaches = new HashMap<>();
     }
 
-    /** Simple constructor.
-     * @param rawProvider provider for raw (non-interpolated) transforms
-     * @param cFilter filter for derivatives from the sample to use in interpolation
-     * @param aFilter filter for derivatives from the sample to use in interpolation
-     * @param earliest was earliest supported date, but is ignored now and can safely be null
-     * @param latest was latest supported date, but is ignored now and can safely be null
-     * @param gridPoints number of interpolation grid points
-     * @param step grid points time step
-     * @param maxSlots maximum number of independent cached time slots
-     * in the {@link GenericTimeStampedCache time-stamped cache}
-     * @param maxSpan maximum duration span in seconds of one slot
-     * in the {@link GenericTimeStampedCache time-stamped cache}
-     * @param newSlotInterval time interval above which a new slot is created
-     * in the {@link GenericTimeStampedCache time-stamped cache}
-     * @deprecated as of 9.1, replaced by {@link #InterpolatingTransformProvider(TransformProvider,
-     * CartesianDerivativesFilter, AngularDerivativesFilter, int, double, int, double, double)}
-     */
-    @Deprecated
-    public InterpolatingTransformProvider(final TransformProvider rawProvider,
-                                          final CartesianDerivativesFilter cFilter,
-                                          final AngularDerivativesFilter aFilter,
-                                          final AbsoluteDate earliest, final AbsoluteDate latest,
-                                          final int gridPoints, final double step,
-                                          final int maxSlots, final double maxSpan, final double newSlotInterval) {
-        this(rawProvider, cFilter, aFilter, gridPoints, step, maxSlots, maxSpan, newSlotInterval);
-    }
-
     /** Get the underlying provider for raw (non-interpolated) transforms.
      * @return provider for raw (non-interpolated) transforms
      */
@@ -152,55 +123,38 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
-        try {
+    public Transform getTransform(final AbsoluteDate date) {
+        // retrieve a sample from the thread-safe cache
+        final List<Transform> sample = cache.getNeighbors(date).collect(Collectors.toList());
 
-            // retrieve a sample from the thread-safe cache
-            final List<Transform> sample = cache.getNeighbors(date).collect(Collectors.toList());
-
-            // interpolate to specified date
-            return Transform.interpolate(date, cFilter, aFilter, sample);
-
-        } catch (OrekitExceptionWrapper oew) {
-            // something went wrong while generating the sample,
-            // we just forward the exception up
-            throw oew.getException();
-        }
+        // interpolate to specified date
+        return Transform.interpolate(date, cFilter, aFilter, sample);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
-        try {
-
-            @SuppressWarnings("unchecked")
-            GenericTimeStampedCache<FieldTransform<T>> fieldCache =
-                (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
-            if (fieldCache == null) {
-                fieldCache =
-                    new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
-                                                                   cache.getMaxSlots(),
-                                                                   cache.getMaxSpan(),
-                                                                   cache.getNewSlotQuantumGap(),
-                                                                   new FieldTransformGenerator<>(date.getField(),
-                                                                                                 cache.getNeighborsSize(),
-                                                                                                 rawProvider,
-                                                                                                 step));
-                fieldCaches.put(date.getField(), fieldCache);
-            }
-
-            // retrieve a sample from the thread-safe cache
-            final Stream<FieldTransform<T>> sample = fieldCache.getNeighbors(date.toAbsoluteDate());
-
-            // interpolate to specified date
-            return FieldTransform.interpolate(date, cFilter, aFilter, sample);
-
-        } catch (OrekitExceptionWrapper oew) {
-            // something went wrong while generating the sample,
-            // we just forward the exception up
-            throw oew.getException();
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        @SuppressWarnings("unchecked")
+        GenericTimeStampedCache<FieldTransform<T>> fieldCache =
+            (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
+        if (fieldCache == null) {
+            fieldCache =
+                new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                                                               cache.getMaxSlots(),
+                                                               cache.getMaxSpan(),
+                                                               cache.getNewSlotQuantumGap(),
+                                                               new FieldTransformGenerator<>(date.getField(),
+                                                                                             cache.getNeighborsSize(),
+                                                                                             rawProvider,
+                                                                                             step));
+            fieldCaches.put(date.getField(), fieldCache);
         }
+
+        // retrieve a sample from the thread-safe cache
+        final Stream<FieldTransform<T>> sample = fieldCache.getNeighbors(date.toAbsoluteDate());
+
+        // interpolate to specified date
+        return FieldTransform.interpolate(date, cFilter, aFilter, sample);
     }
 
     /** Replace the instance with a data transfer object for serialization.

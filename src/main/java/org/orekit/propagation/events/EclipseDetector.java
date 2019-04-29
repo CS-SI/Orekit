@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,29 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
+import org.orekit.frames.TransformProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite eclipse related events.
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
  * eclipse) or penumbra (partial eclipse).</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
- * propagation when entering the eclipse and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation when entering the eclipse and to {@link Action#STOP stop} propagation
  * when exiting the eclipse. This can be changed by calling {@link
  * #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -38,14 +46,8 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class EclipseDetector extends AbstractDetector<EclipseDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Occulting body. */
-    private final PVCoordinatesProvider occulting;
-
-    /** Occulting body radius (m). */
-    private final double occultingRadius;
+    private final OneAxisEllipsoid occulting;
 
     /** Occulted body. */
     private final PVCoordinatesProvider occulted;
@@ -54,7 +56,23 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     private final double occultedRadius;
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
-    private boolean totalEclipse;
+    private final boolean totalEclipse;
+
+    /** Build a new eclipse detector.
+     * <p>The new instance is a total eclipse (umbra) detector with default
+     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
+     * @param occulted the body to be occulted
+     * @param occultedRadius the radius of the body to be occulted (m)
+     * @param occulting the occulting body
+     * @since 10.0
+     */
+    public EclipseDetector(final PVCoordinatesProvider occulted,  final double occultedRadius,
+                           final OneAxisEllipsoid occulting) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing<EclipseDetector>(),
+             occulted, occultedRadius, occulting, true);
+    }
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
@@ -64,10 +82,12 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occultedRadius the radius of the body to be occulted (m)
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius (m)
+     * @deprecated as of 10.0, replaced by {@link #EclipseDetector(PVCoordinatesProvider, double, OneAxisEllipsoid)}
      */
+    @Deprecated
     public EclipseDetector(final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD,
+        this(DEFAULT_MAXCHECK,
              occulted, occultedRadius, occulting, occultingRadius);
     }
 
@@ -82,7 +102,9 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occultedRadius the radius of the body to be occulted in meters
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius in meters
+     * @deprecated as of 10.0, replaced by {@link #EclipseDetector(PVCoordinatesProvider, double, OneAxisEllipsoid)}
      */
+    @Deprecated
     public EclipseDetector(final double maxCheck,
                            final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
@@ -101,12 +123,14 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occultedRadius the radius of the body to be occulted in meters
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius in meters
+     * @deprecated as of 10.0, replaced by {@link #EclipseDetector(PVCoordinatesProvider, double, OneAxisEllipsoid)}
      */
+    @Deprecated
     public EclipseDetector(final double maxCheck, final double threshold,
                            final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<EclipseDetector>(),
-             occulted, occultedRadius, occulting, occultingRadius, true);
+             occulted, occultedRadius, new SphericalOccultingBody(occulting, occultingRadius), true);
     }
 
     /** Private constructor with full parameters.
@@ -122,21 +146,18 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occulted the body to be occulted
      * @param occultedRadius the radius of the body to be occulted in meters
      * @param occulting the occulting body
-     * @param occultingRadius the occulting body radius in meters
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
-     * @since 6.1
+     * @since 10.0
      */
     private EclipseDetector(final double maxCheck, final double threshold,
                             final int maxIter, final EventHandler<? super EclipseDetector> handler,
                             final PVCoordinatesProvider occulted,  final double occultedRadius,
-                            final PVCoordinatesProvider occulting, final double occultingRadius,
-                            final boolean totalEclipse) {
+                            final OneAxisEllipsoid occulting, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
-        this.occulted        = occulted;
-        this.occultedRadius  = FastMath.abs(occultedRadius);
-        this.occulting       = occulting;
-        this.occultingRadius = FastMath.abs(occultingRadius);
-        this.totalEclipse    = totalEclipse;
+        this.occulted       = occulted;
+        this.occultedRadius = FastMath.abs(occultedRadius);
+        this.occulting      = occulting;
+        this.totalEclipse   = totalEclipse;
     }
 
     /** {@inheritDoc} */
@@ -144,7 +165,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
                                      final int nawMaxIter, final EventHandler<? super EclipseDetector> newHandler) {
         return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                   occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
+                                   occulted, occultedRadius, occulting, totalEclipse);
     }
 
     /**
@@ -158,8 +179,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withUmbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, occultingRadius,
-                                   true);
+                                   occulted, occultedRadius, occulting, true);
     }
 
     /**
@@ -173,36 +193,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withPenumbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, occultingRadius,
-                                   false);
-    }
-
-    /** Get the occulting body.
-     * @return the occulting body
-     */
-    public PVCoordinatesProvider getOcculting() {
-        return occulting;
-    }
-
-    /** Get the occulting body radius (m).
-     * @return the occulting body radius
-     */
-    public double getOccultingRadius() {
-        return occultingRadius;
-    }
-
-    /** Get the occulted body.
-     * @return the occulted body
-     */
-    public PVCoordinatesProvider getOcculted() {
-        return occulted;
-    }
-
-    /** Get the occulted body radius (m).
-     * @return the occulted body radius
-     */
-    public double getOccultedRadius() {
-        return occultedRadius;
+                                   occulted, occultedRadius, occulting, false);
     }
 
     /** Get the total eclipse detection flag.
@@ -218,24 +209,58 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * and positive when exiting.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
-        final Vector3D pted = occulted.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final Vector3D ping = occulting.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final Vector3D psat = s.getPVCoordinates().getPosition();
-        final Vector3D ps   = pted.subtract(psat);
-        final Vector3D po   = ping.subtract(psat);
-        final double angle  = Vector3D.angle(ps, po);
-        final double rs     = FastMath.asin(occultedRadius / ps.getNorm());
+    public double g(final SpacecraftState s) {
+        final Vector3D pted  = occulted.getPVCoordinates(s.getDate(), occulting.getBodyFrame()).getPosition();
+        final Vector3D psat  = s.getPVCoordinates(occulting.getBodyFrame()).getPosition();
+        final Vector3D plimb = occulting.pointOnLimb(psat, pted);
+        final Vector3D ps    = psat.subtract(pted);
+        final Vector3D pi    = psat.subtract(plimb);
+        final double angle   = Vector3D.angle(ps, psat);
+        final double rs      = FastMath.asin(occultedRadius / ps.getNorm());
         if (Double.isNaN(rs)) {
             return FastMath.PI;
         }
-        final double ro     = FastMath.asin(occultingRadius / po.getNorm());
-        if (Double.isNaN(ro)) {
-            return -FastMath.PI;
-        }
+        final double ro = Vector3D.angle(pi, psat);
         return totalEclipse ? (angle - ro + rs) : (angle - ro - rs);
+    }
+
+    /** Temporary dummy ellipsoid for spherical occulting bodies.
+     * @deprecated as of 10.0, this class is a temporary intermediate for deprecated constructors
+     */
+    @Deprecated
+    private static class SphericalOccultingBody extends OneAxisEllipsoid {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20190403L;
+
+        /** Simple constructor.
+         * @param occulting the occulting body
+         * @param occultingRadius the occulting body radius in meters
+         */
+        SphericalOccultingBody(final PVCoordinatesProvider occulting, final double occultingRadius) {
+            super(occultingRadius, 0.0,
+                  new Frame(FramesFactory.getEME2000(),
+                            new TransformProvider() {
+
+                            /** Serializable UID. */
+                            private static final long serialVersionUID = 20190403L;
+
+                            /** {@inheritDoc} */
+                            @Override
+                            public Transform getTransform(final AbsoluteDate date) {
+                                return new Transform(date, occulting.getPVCoordinates(date, FramesFactory.getEME2000()));
+                            }
+
+                            /** {@inheritDoc} */
+                            @Override
+                            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                                // never called
+                                throw new OrekitInternalError(null);
+                            }
+                    }, "dummy"));
+        }
+
     }
 
 }

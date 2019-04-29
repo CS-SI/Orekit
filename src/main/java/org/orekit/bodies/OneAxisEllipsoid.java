@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -80,7 +79,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** Simple constructor.
      * <p>Standard values for Earth models can be found in the {@link org.orekit.utils.Constants Constants} class:</p>
-     * <table border="1" cellpadding="5" style="background-color:#f5f5dc;">
+     * <table border="1" cellpadding="5" style="background-color:#f5f5dc;" summary="">
      * <caption>Ellipsoid Models</caption>
      * <tr style="background-color:#c9d5c9;"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
      * <tr><td style="background-color:#c9d5c9;">GRS 80</td>
@@ -89,7 +88,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * <tr><td style="background-color:#c9d5c9;">WGS84</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_EQUATORIAL_RADIUS Constants.WGS84_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_FLATTENING Constants.WGS84_EARTH_FLATTENING}</td></tr>
-     * </table summary="">
+     * </table>
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
@@ -140,18 +139,28 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return bodyFrame;
     }
 
-    /** {@inheritDoc} */
-    public GeodeticPoint getIntersectionPoint(final Line line, final Vector3D close,
-                                              final Frame frame, final AbsoluteDate date)
-        throws OrekitException {
+    /** Get the intersection point of a line with the surface of the body.
+     * <p>A line may have several intersection points with a closed
+     * surface (we consider the one point case as a degenerated two
+     * points case). The close parameter is used to select which of
+     * these points should be returned. The selected point is the one
+     * that is closest to the close point.</p>
+     * @param line test line (may intersect the body or not)
+     * @param close point used for intersections selection
+     * @param frame frame in which line is expressed
+     * @param date date of the line in given frame
+     * @return intersection point at altitude zero or null if the line does
+     * not intersect the surface
+     * @since 9.3
+     */
+    public Vector3D getCartesianIntersectionPoint(final Line line, final Vector3D close,
+                                                  final Frame frame, final AbsoluteDate date) {
 
         // transform line and close to body frame
         final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
-        final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
-        final double closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
 
-        // compute some miscellaneous variables outside of the loop
+        // compute some miscellaneous variables
         final Vector3D point    = lineInBodyFrame.getOrigin();
         final double x          = point.getX();
         final double y          = point.getY();
@@ -180,9 +189,22 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double k2 = c / (a * k1);
 
         // select the right point
+        final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
+        final double   closeAbscissa    = lineInBodyFrame.getAbscissa(closeInBodyFrame);
         final double k =
             (FastMath.abs(k1 - closeAbscissa) < FastMath.abs(k2 - closeAbscissa)) ? k1 : k2;
-        final Vector3D intersection = lineInBodyFrame.pointAt(k);
+        return lineInBodyFrame.pointAt(k);
+
+    }
+
+    /** {@inheritDoc} */
+    public GeodeticPoint getIntersectionPoint(final Line line, final Vector3D close,
+                                              final Frame frame, final AbsoluteDate date) {
+
+        final Vector3D intersection = getCartesianIntersectionPoint(line, close, frame, date);
+        if (intersection == null) {
+            return null;
+        }
         final double ix = intersection.getX();
         final double iy = intersection.getY();
         final double iz = intersection.getZ();
@@ -193,20 +215,31 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     }
 
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
-                                                                                      final FieldVector3D<T> close,
-                                                                                      final Frame frame,
-                                                                                      final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    /** Get the intersection point of a line with the surface of the body.
+     * <p>A line may have several intersection points with a closed
+     * surface (we consider the one point case as a degenerated two
+     * points case). The close parameter is used to select which of
+     * these points should be returned. The selected point is the one
+     * that is closest to the close point.</p>
+     * @param line test line (may intersect the body or not)
+     * @param close point used for intersections selection
+     * @param frame frame in which line is expressed
+     * @param date date of the line in given frame
+     * @param <T> type of the field elements
+     * @return intersection point at altitude zero or null if the line does
+     * not intersect the surface
+     * @since 9.3
+     */
+    public <T extends RealFieldElement<T>> FieldVector3D<T> getCartesianIntersectionPoint(final FieldLine<T> line,
+                                                                                          final FieldVector3D<T> close,
+                                                                                          final Frame frame,
+                                                                                          final FieldAbsoluteDate<T> date) {
 
         // transform line and close to body frame
         final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
         final FieldLine<T>      lineInBodyFrame  = frameToBodyFrame.transformLine(line);
-        final FieldVector3D<T>  closeInBodyFrame = frameToBodyFrame.transformPosition(close);
-        final T                 closeAbscissa    = lineInBodyFrame.getAbscissa(closeInBodyFrame);
 
-        // compute some miscellaneous variables outside of the loop
+        // compute some miscellaneous variables
         final FieldVector3D<T> point = lineInBodyFrame.getOrigin();
         final T x  = point.getX();
         final T y  = point.getY();
@@ -235,9 +268,23 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final T k2 = c.divide(a.multiply(k1));
 
         // select the right point
+        final FieldVector3D<T>  closeInBodyFrame = frameToBodyFrame.transformPosition(close);
+        final T                 closeAbscissa    = lineInBodyFrame.getAbscissa(closeInBodyFrame);
         final T k = (FastMath.abs(k1.getReal() - closeAbscissa.getReal()) < FastMath.abs(k2.getReal() - closeAbscissa.getReal())) ?
                     k1 : k2;
-        final FieldVector3D<T> intersection = lineInBodyFrame.pointAt(k);
+        return lineInBodyFrame.pointAt(k);
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
+                                                                                      final FieldVector3D<T> close,
+                                                                                      final Frame frame,
+                                                                                      final FieldAbsoluteDate<T> date) {
+
+        final FieldVector3D<T> intersection = getCartesianIntersectionPoint(line, close, frame, date);
+        if (intersection == null) {
+            return null;
+        }
         final T ix = intersection.getX();
         final T iy = intersection.getY();
         final T iz = intersection.getZ();
@@ -282,8 +329,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** {@inheritDoc} */
-    public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+    public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame) {
 
         // transform point to body frame
         final Transform  toBody    = frame.getTransformTo(bodyFrame, date);
@@ -306,8 +352,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates projectToGround(final TimeStampedPVCoordinates pv, final Frame frame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates projectToGround(final TimeStampedPVCoordinates pv, final Frame frame) {
 
         // transform point to body frame
         final Transform                toBody        = frame.getTransformTo(bodyFrame, pv.getDate());
@@ -364,8 +409,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * </ul>
      * </p>
      */
-    public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date)
-        throws OrekitException {
+    public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
         final Vector3D pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
@@ -410,7 +454,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         } else {
             // use Toshio Fukushima method, with several iterations
             final double epsPhi = 1.0e-15;
-            final double epsH   = 1.0e-14 * getA();
+            final double epsH   = 1.0e-14 * FastMath.max(getA(), FastMath.sqrt(r2 + z * z));
             final double c     = getA() * e2;
             final double absZ  = FastMath.abs(z);
             final double zc    = g * absZ;
@@ -487,8 +531,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      */
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
                                                                            final Frame frame,
-                                                                           final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+                                                                           final FieldAbsoluteDate<T> date) {
 
         // transform point to body frame
         final FieldVector3D<T> pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
@@ -598,11 +641,9 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point,
      * using time as the single derivation parameter
-     * @exception OrekitException if point cannot be converted to body frame
      */
     public FieldGeodeticPoint<DerivativeStructure> transform(final PVCoordinates point,
-                                                             final Frame frame, final AbsoluteDate date)
-        throws OrekitException {
+                                                             final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
         final Transform toBody = frame.getTransformTo(bodyFrame, date);

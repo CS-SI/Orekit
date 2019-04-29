@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.RawSphericalHarmonicsProvider.RawSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 
@@ -83,7 +82,7 @@ class WrappingUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProv
     }
 
     @Override
-    public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
         final RawSphericalHarmonics raw = rawProvider.onDate(date);
         return new UnnormalizedSphericalHarmonics() {
 
@@ -95,16 +94,14 @@ class WrappingUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProv
 
             /** {@inheritDoc} */
             @Override
-            public double getUnnormalizedCnm(final int n, final int m)
-                throws OrekitException {
+            public double getUnnormalizedCnm(final int n, final int m) {
                 // no conversion is done here
                 return raw.getRawCnm(n, m);
             }
 
             /** {@inheritDoc} */
             @Override
-            public double getUnnormalizedSnm(final int n, final int m)
-                throws OrekitException {
+            public double getUnnormalizedSnm(final int n, final int m) {
                 // no conversion is done here
                 return raw.getRawSnm(n, m);
             }

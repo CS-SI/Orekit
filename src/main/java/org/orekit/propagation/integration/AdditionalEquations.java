@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.integration;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
  *
@@ -65,6 +65,26 @@ public interface AdditionalEquations {
      */
     String getName();
 
+    /**
+     * Initialize the equations at the start of propagation.
+     *
+     * <p>
+     * This method will be called once at propagation start,
+     * before any calls to {@link #computeDerivatives(SpacecraftState, double[])}.
+     * </p>
+     *
+     * <p>
+     * The default implementation of this method does nothing.
+     * </p>
+     *
+     * @param initialState initial state information at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code
+     *                     initialState.getDate()}.
+     */
+    default void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // nothing by default
+    }
+
     /** Compute the derivatives related to the additional state parameters.
      * <p>
      * When this method is called, the spacecraft state contains the main
@@ -80,9 +100,7 @@ public interface AdditionalEquations {
      * should be put
      * @return cumulative effect of the equations on the main state (may be null if
      * equations do not change main state at all)
-     * @exception OrekitException if some specific error occurs
      */
-    double[] computeDerivatives(SpacecraftState s,  double[] pDot)
-        throws OrekitException;
+    double[] computeDerivatives(SpacecraftState s,  double[] pDot);
 
 }

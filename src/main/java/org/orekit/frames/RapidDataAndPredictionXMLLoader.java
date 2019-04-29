@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,8 +78,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history)
-        throws OrekitException {
+                            final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter);
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         history.addAll(parser.history);
@@ -91,6 +90,9 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
         /** Converter for nutation corrections. */
         private final IERSConventions.NutationCorrectionConverter converter;
 
+        /** Configuration for ITRF versions. */
+        private final ITRFVersionLoader itrfVersionLoader;
+
         /** History entries. */
         private final List<EOPEntry> history;
 
@@ -98,8 +100,9 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
          * @param converter converter to use
          */
         Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter = converter;
-            this.history   = new ArrayList<EOPEntry>();
+            this.converter         = converter;
+            this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            this.history           = new ArrayList<EOPEntry>();
         }
 
         /** {@inheritDoc} */
@@ -191,18 +194,22 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
             /** Indicator for daily data XML format or final data XML format. */
             private DataFileContent content;
 
+            /** ITRF version configuration. */
+            private ITRFVersionLoader.ITRFVersionConfiguration configuration;
+
             /** Simple constructor.
              * @param name file name
              */
             EOPContentHandler(final String name) {
-                this.name = name;
-                buffer  = new StringBuffer();
+                this.name   = name;
+                this.buffer = new StringBuffer();
             }
 
             /** {@inheritDoc} */
             @Override
             public void startDocument() {
-                content = DataFileContent.UNKNOWN;
+                content       = DataFileContent.UNKNOWN;
+                configuration = null;
             }
 
             /** {@inheritDoc} */
@@ -303,9 +310,8 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
             /** Handle end of an element in a daily data file.
              * @param qName name of the element
-             * @exception OrekitException if an EOP element cannot be built
              */
-            private void endDailyElement(final String qName) throws OrekitException {
+            private void endDailyElement(final String qName) {
                 if (qName.equals(DATE_YEAR_ELT) && (buffer.length() > 0)) {
                     year = Integer.parseInt(buffer.toString());
                 } else if (qName.equals(DATE_MONTH_ELT) && (buffer.length() > 0)) {
@@ -350,16 +356,20 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                             };
                             nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
+                        if (configuration == null || !configuration.isValid(mjd)) {
+                            // get a configuration for current name and date range
+                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                        }
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                                                 configuration.getVersion()));
                     }
                 }
             }
 
             /** Handle end of an element in a final data file.
              * @param qName name of the element
-             * @exception OrekitException if an EOP element cannot be built
              */
-            private void endFinalElement(final String qName) throws OrekitException {
+            private void endFinalElement(final String qName) {
                 if (qName.equals(DATE_ELT) && (buffer.length() > 0)) {
                     final String[] fields = buffer.toString().split("-");
                     if (fields.length == 3) {
@@ -405,7 +415,12 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                             };
                             nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
+                        if (configuration == null || !configuration.isValid(mjd)) {
+                            // get a configuration for current name and date range
+                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                        }
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                                                 configuration.getVersion()));
                     }
                 }
             }
@@ -429,9 +444,8 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
             }
 
             /** Check if the year, month, day date and MJD date are consistent.
-             * @exception OrekitException if dates are not consistent
              */
-            private void checkDates() throws OrekitException {
+            private void checkDates() {
                 if (new DateComponents(year, month, day).getMJD() != mjd) {
                     throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
                                               name, year, month, day, mjd);

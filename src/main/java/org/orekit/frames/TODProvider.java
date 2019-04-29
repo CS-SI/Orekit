@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,10 +56,8 @@ class TODProvider implements EOPBasedTransformProvider {
     /** Simple constructor.
      * @param conventions IERS conventions to apply
      * @param eopHistory EOP history
-     * @exception OrekitException if IERS conventions tables cannot be read
      */
-    TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
-        throws OrekitException {
+    TODProvider(final IERSConventions conventions, final EOPHistory eopHistory) {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
@@ -74,14 +72,13 @@ class TODProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public TODProvider getNonInterpolatingProvider()
-        throws OrekitException {
+    public TODProvider getNonInterpolatingProvider() {
         return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // compute nutation angles
         final double[] angles = nutationFunction.value(date);
@@ -113,8 +110,7 @@ class TODProvider implements EOPBasedTransformProvider {
     /** Replace the instance with a data transfer object for serialization.
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute nutation angles
         final T[] angles = nutationFunction.value(date);

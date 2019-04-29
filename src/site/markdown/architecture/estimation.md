@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2017 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -24,13 +24,14 @@ support: the library provides the framework with top level interfaces and classi
 implementations (say distance and angular measurements among others). Some hooks are
 also provided for expert users who need to supplement the framework with mission-specific
 features and implementations (say specific delay models for example). The provided objects
-are sufficient for basic orbit determination and can easily be extended to address more
+are sufficient for classical orbit determination and can easily be extended to address more
 operational needs.
 
 Organization
 ------------
 
-There are two main sub-packages: `org.orekit.estimation.measurements` and `org.orekit.estimation.leastsquares`.
+There are three main sub-packages: `org.orekit.estimation.measurements`, `org.orekit.estimation.leastsquares`,
+and `org.orekit.estimation.sequential`.
 
 ### Measurements
 
@@ -61,6 +62,35 @@ by two difference ground stations would refer to different sets of ground statio
 The classical measurements and modifiers are already provided by Orekit in the same package, but for more advanced
 needs, users are expected to implement their own implementations. This ensures the extensibility of this design.
 
+#### Measurements generation
+
+![measurements generation class diagram](../images/design/measurements-generation-class-diagram.png)
+
+The `measurements.generation` package provides a simulation feature that can generate realistic
+measurements. This is mainly useful in validation phases and in mission analysis (for example
+design of a ground stations network or assessment of achievable accuracy for a mission).
+
+For each type of measurement that must be generated, a `Scheduler` is configured to match the mission
+or ground segment specific measurements schedule and includes a `MeasurementBuilder` for the measurement
+type considered. One particularly important predefined scheduler is the `EventBaseScheduler`. This
+scheduler uses a regular event detector to identify measurements feasibility time spans. Some event
+detectors that may be useful with this scheduler are visibility from ground (`ElevationDetector`),
+ground at night (`GrondAtNightDetector`) for satellite laser ranging, sunlit satellite (`EclipseDetector`)
+for optical tracking, inter satellite direct view (`InterSatDirectViewDetector`) for GNSS, and
+boolean combination of several detector (`BooleanDetector`) for complex settings. This scheduler as
+well as the simpler `ContinuousScheduler` both rely on `DatesSelector` to select individual measurements
+dates within a time range. The `FixedStepSelector` generates a continuous stream of measurements separated
+by a fixed step (for example one measurement every 60s during the allowed time range) while the `BurstSelector`
+generates bursts of high rate measurements separated by rest periods (for example bursts containing
+256 measurements each separated by 100ms, with a new burst generated every 300s). Both selectors can
+ensure the dates are aligned with a time scale (for example the first measurement in each burst being
+at exact UTC minutes 5, 10, 15... in the previous example).
+
+Several schedulers can be configured at the same time, if either different types of measurements are
+available (range, range-rate, optical tracking on stars background...) or several independent schedules
+are used (for example if several ground stations are available). All schedulers are registered to
+a `Generator` which when run will produce simulated measurements in the specified time range.
+
 ### Least Squares
 
 ![orbit determination overview class diagram](../images/design/orbit-determination-overview-class-diagram.png)
@@ -85,6 +115,37 @@ generic step handling mechanism and the orbit determination framework. At each m
 and Jacobians from the propagator side, calls the measurement methods to get the residuals and the partial
 derivatives on the measurements side, and fetches the least squares estimator with the combined values, to be
 provided back to the Hipparchus least squares solver, thus closing the loop.
+
+### Kalman filter
+
+![kalman filter overview class diagram](../images/design/kalman-overview-class-diagram.png)
+
+The `sequential` package provides an implementation of a Kalman estimator engine to perform an orbit
+determination. Users will typically create one instance of this object (using the builder), and feed the
+filter one measurement at a time, each time getting a corrected state.
+
+One important difference with the batch least squares estimator is that a Kalman filter needs an initial
+covariance matrix (which can be computed from a previous orbit determination, possibly from a batch least
+squares for the first estimation) and a process noise matrix, which represent the expected noise induced
+by the propagation itself between the previous and the current measurement.
+
+In simple cases, or if the user has no clue about what to use, a simple provider is available in Orekit that
+uses only constant matrices. This is however not suitable for the process noise as its depends on both
+previous and current states and most importantly on the time gap between them. If two measurements are only
+a few seconds apart, the noise introduced by the estimation step should be far smaller than the noise
+introduced by an estimation step between measurements separated by a few hours.
+
+A simplified model expanding an error ellipsoid with principal axes in the along-track, across-track and
+normal directions and using polynomials lengths for the ellipsoid axes is expected to be included in the
+library. Finding the right coefficients for the polynomials will remain the responsibility of user. One
+way to tune it properly for a family of orbits is to use a first run of Taylor algebra during the mission
+analysis phase, to monitor how the high order uncertainties evolve, and to fit an ellipsoid on this evolution.
+Then a Kalman filter using a covariance matrix provider with such a polynomial ellipsoid model
+will be more realistic than a basic constant matrix.
+
+For even more accurate representations, users are free to set up their own models, which could go up to
+evaluating the effect of each force models. This is done by providing a custom implementation of
+`ProcessNoiseMatrixProvider`.
 
 ### Estimated parameters
 

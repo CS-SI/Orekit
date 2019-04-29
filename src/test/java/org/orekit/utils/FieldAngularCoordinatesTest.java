@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,12 +39,79 @@ import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 
 public class FieldAngularCoordinatesTest {
 
     @Test
-    public void testZeroRate() throws OrekitException {
+    public void testDerivativesStructuresNeg() {
+        try {
+            AngularCoordinates.IDENTITY.toDerivativeStructureRotation(-1);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            Assert.assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
+        }
+
+    }
+
+    @Test
+    public void testDerivativesStructures3() {
+        try {
+            AngularCoordinates.IDENTITY.toDerivativeStructureRotation(3);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            Assert.assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
+        }
+
+    }
+
+    @Test
+    public void testDerivativesStructures0() {
+        RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(0));
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationRate().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures1() {
+        RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(1));
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures2() {
+        RandomGenerator random = new Well1024a(0x1633878dddac047dl);
+
+        FieldRotation<Decimal64> r    = randomRotation64(random);
+        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(2));
+        Assert.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
+    }
+
+    @Test
+    public void testZeroRate() {
         FieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new FieldAngularCoordinates<>(createRotation(0.48, 0.64, 0.36, 0.48, false),
                                               createVector(0, 0, 0, 4),
@@ -58,7 +125,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testShift() throws OrekitException {
+    public void testShift() {
         double rate = 2 * FastMath.PI / (12 * 60);
         FieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new FieldAngularCoordinates<>(createRotation(1, 0, 0, 0, false),
@@ -95,7 +162,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
         double rate = 2 * FastMath.PI / (12 * 60);
         FieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new FieldAngularCoordinates<>(createRotation(0.48, 0.64, 0.36, 0.48, false),
@@ -192,7 +259,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testResultAngularCoordinates() throws OrekitException{
+    public void testResultAngularCoordinates() {
         Field<Decimal64> field = Decimal64Field.getInstance();
         Decimal64 zero = field.getZero();
         FieldVector3D<Decimal64> pos_B = new FieldVector3D<>(zero.add(-0.23723922134606962    ),
@@ -397,7 +464,7 @@ public class FieldAngularCoordinatesTest {
 
     @Test
     public void testInverseCrossProducts()
-        throws OrekitException {
+        {
         Decimal64Field field = Decimal64Field.getInstance();
         checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), FieldVector3D.getPlusJ(field));
         checkInverse(FieldVector3D.getZero(field),  FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
@@ -422,7 +489,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testRandomInverseCrossProducts() throws OrekitException {
+    public void testRandomInverseCrossProducts() {
         RandomGenerator generator = new Well1024a(0xda0ee5b245efd438l);
         for (int i = 0; i < 10000; ++i) {
             FieldVector3D<DerivativeStructure> omega = randomVector(generator, 10 * generator.nextDouble() + 1.0);
@@ -433,7 +500,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testRandomPVCoordinates() throws OrekitException {
+    public void testRandomPVCoordinates() {
         RandomGenerator generator = new Well1024a(0xf978035a328a565bl);
         for (int i = 0; i < 100; ++i) {
             FieldRotation<DerivativeStructure> r           = randomRotation(generator);
@@ -461,7 +528,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testCancellingDerivatives() throws OrekitException {
+    public void testCancellingDerivatives() {
         PVCoordinates u1 = new PVCoordinates(new Vector3D(-0.4466591282528639,   -0.009657376949231283,  -0.894652087807798),
                                              new Vector3D(-8.897296517803556E-4,  2.7825250920407674E-4,  4.411979658413134E-4),
                                              new Vector3D( 4.753127475302486E-7,  1.0209400376727623E-8,  9.515403756524403E-7));
@@ -482,7 +549,7 @@ public class FieldAngularCoordinatesTest {
     }
 
     private <T extends RealFieldElement<T>> void checkInverse(FieldVector3D<T> omega, FieldVector3D<T> v1, FieldVector3D<T> v2)
-        throws OrekitException {
+        {
         checkInverse(omega,
                      v1, FieldVector3D.crossProduct(omega, v1),
                      v2, FieldVector3D.crossProduct(omega, v2));
@@ -566,6 +633,27 @@ public class FieldAngularCoordinatesTest {
         return new FieldVector3D<>(factory.variable(0, x),
                                    factory.variable(1, y),
                                    factory.variable(2, z));
+    }
+
+    private FieldRotation<Decimal64> randomRotation64(RandomGenerator random) {
+        double q0 = random.nextDouble() * 2 - 1;
+        double q1 = random.nextDouble() * 2 - 1;
+        double q2 = random.nextDouble() * 2 - 1;
+        double q3 = random.nextDouble() * 2 - 1;
+        double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+        return new FieldRotation<>(new Decimal64(q0 / q),
+                                   new Decimal64(q1 / q),
+                                   new Decimal64(q2 / q),
+                                   new Decimal64(q3 / q),
+                                   false);
+    }
+
+    private FieldVector3D<Decimal64> randomVector64(RandomGenerator random, double norm) {
+        double n = random.nextDouble() * norm;
+        double x = random.nextDouble();
+        double y = random.nextDouble();
+        double z = random.nextDouble();
+        return new FieldVector3D<>(n, new FieldVector3D<>(new Decimal64(x), new Decimal64(y), new Decimal64(z)).normalize());
     }
 
 }

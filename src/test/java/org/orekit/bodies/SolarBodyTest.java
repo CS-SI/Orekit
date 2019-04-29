@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,7 +62,7 @@ import org.orekit.utils.ParameterDriver;
 public class SolarBodyTest {
 
     @Test
-    public void testNaif() throws OrekitException, UnsupportedEncodingException, IOException {
+    public void testNaif() throws UnsupportedEncodingException, IOException {
         Utils.setDataRoot("regular-data");
         final Frame refFrame = FramesFactory.getICRF();
         final TimeScale tdb = TimeScalesFactory.getTDB();
@@ -103,7 +103,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testPO405() throws OrekitException {
+    public void testPO405() {
 
         Utils.setDataRoot("regular-data");
         double threshold = 4.0e-11;
@@ -171,7 +171,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testPO406() throws OrekitException {
+    public void testPO406() {
 
         Utils.setDataRoot("regular-data");
         double threshold = 2.0e-13;
@@ -192,7 +192,7 @@ public class SolarBodyTest {
                                   final int targetNumber, final int centerNumber,
                                   final int coordinateNumber, final double coordinateValue,
                                   final double threshold)
-        throws OrekitException {
+        {
         final AbsoluteDate date = new AbsoluteDate(year,  month, day, TimeScalesFactory.getTDB());
         final CelestialBody target = getBody(targetNumber);
         final CelestialBody center = getBody(centerNumber);
@@ -204,7 +204,7 @@ public class SolarBodyTest {
         }
     }
 
-    private CelestialBody getBody(final int number) throws OrekitException {
+    private CelestialBody getBody(final int number) {
         switch (number) {
             case 1 :
                 return CelestialBodyFactory.getMercury();
@@ -257,73 +257,73 @@ public class SolarBodyTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void noMercury() throws OrekitException {
+    public void noMercury() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getMercury();
     }
 
     @Test(expected = OrekitException.class)
-    public void noVenus() throws OrekitException {
+    public void noVenus() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getVenus();
     }
 
     @Test(expected = OrekitException.class)
-    public void noEarthMoonBarycenter() throws OrekitException {
+    public void noEarthMoonBarycenter() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getEarthMoonBarycenter();
     }
 
     @Test(expected = OrekitException.class)
-    public void noMars() throws OrekitException {
+    public void noMars() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getMars();
     }
 
     @Test(expected = OrekitException.class)
-    public void noJupiter() throws OrekitException {
+    public void noJupiter() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getJupiter();
     }
 
     @Test(expected = OrekitException.class)
-    public void noSaturn() throws OrekitException {
+    public void noSaturn() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getSaturn();
     }
 
     @Test(expected = OrekitException.class)
-    public void noUranus() throws OrekitException {
+    public void noUranus() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getUranus();
     }
 
     @Test(expected = OrekitException.class)
-    public void noNeptune() throws OrekitException {
+    public void noNeptune() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getNeptune();
     }
 
     @Test(expected = OrekitException.class)
-    public void noPluto() throws OrekitException {
+    public void noPluto() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getPluto();
     }
 
     @Test(expected = OrekitException.class)
-    public void noMoon() throws OrekitException {
+    public void noMoon() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getMoon();
     }
 
     @Test(expected = OrekitException.class)
-    public void noSun() throws OrekitException {
+    public void noSun() {
         Utils.setDataRoot("no-data");
         CelestialBodyFactory.getSun();
     }
 
     @Test
-    public void testFrameShift() throws OrekitException {
+    public void testFrameShift() {
         Utils.setDataRoot("regular-data");
         final Frame moon  = CelestialBodyFactory.getMoon().getBodyOrientedFrame();
         final Frame earth = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
@@ -345,7 +345,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testPropagationVsEphemeris() throws OrekitException {
+    public void testPropagationVsEphemeris() {
 
         Utils.setDataRoot("regular-data");
 
@@ -394,7 +394,7 @@ public class SolarBodyTest {
         // checks are done within the step handler
         propag.setMasterMode(1000.0, new OrekitFixedStepHandler() {
             public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws OrekitException {
+                {
                 // propagated position should remain within 1400m of ephemeris for one month
                 Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
                 Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
@@ -444,7 +444,7 @@ public class SolarBodyTest {
         /** {@inheritDoc} */
         @Override
         public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-            throws OrekitException {
+            {
 
             final double gm = parameters[0];
 
@@ -462,7 +462,7 @@ public class SolarBodyTest {
         @Override
         public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
-            throws OrekitException {
+            {
 
             final T gm = parameters[0];
 
@@ -497,7 +497,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testKepler() throws OrekitException {
+    public void testKepler() {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
         final double au = 149597870691.0;
@@ -515,7 +515,7 @@ public class SolarBodyTest {
 
     private void checkKepler(final PVCoordinatesProvider orbiting, final CelestialBody central,
                              final AbsoluteDate start, final double a, final double epsilon)
-        throws OrekitException {
+        {
 
         // set up Keplerian orbit of orbiting body around central body
         Orbit orbit = new KeplerianOrbit(orbiting.getPVCoordinates(start, central.getInertiallyOrientedFrame()),

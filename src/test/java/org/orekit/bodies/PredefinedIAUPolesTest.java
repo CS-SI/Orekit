@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.IAUPoleFactory.OldIAUPole;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -54,7 +53,7 @@ import org.orekit.utils.Constants;
 public class PredefinedIAUPolesTest {
 
     @Test
-    public void testGCRFAligned() throws OrekitException, UnsupportedEncodingException, IOException {
+    public void testGCRFAligned() throws UnsupportedEncodingException, IOException {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
@@ -63,7 +62,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testSun() throws OrekitException, UnsupportedEncodingException, IOException {
+    public void testSun() throws UnsupportedEncodingException, IOException {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
@@ -78,7 +77,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testNaif() throws OrekitException, UnsupportedEncodingException, IOException {
+    public void testNaif() throws UnsupportedEncodingException, IOException {
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/IAU-pole-NAIF.txt");
         BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, "UTF-8"));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -116,7 +115,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector2() throws OrekitException {
+    public void testToDerivativeStructureVector2() {
         FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
                                                     new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
@@ -356,6 +355,27 @@ public class TimeStampedFieldPVCoordinatesTest {
             Assert.assertEquals(0,                   a.getZ().getReal(), 4.0e-8  * a.getNorm().getReal());
         }
 
+    }
+
+    @Test
+    public void testIssue510() {
+        DSFactory factory = new DSFactory(1, 1);
+        TimeStampedFieldPVCoordinates<DerivativeStructure> pv =
+                        new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(factory.getDerivativeField()),
+                                                            new FieldVector3D<>(factory.constant(10.0),
+                                                                                factory.constant(20.0),
+                                                                                factory.constant(30.0)),
+                                                            new FieldVector3D<>(factory.constant(1.0),
+                                                                                factory.constant(2.0),
+                                                                                factory.constant(3.0)),
+                                                            FieldVector3D.getZero(factory.getDerivativeField()));
+        DerivativeStructure dt = factory.variable(0, 1.0);
+        TimeStampedFieldPVCoordinates<DerivativeStructure> shifted = pv.shiftedBy(dt);
+        Assert.assertEquals(1.0, shifted.getDate().durationFrom(pv.getDate()).getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(pv.getVelocity().getX().getValue(), shifted.getPosition().getX().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(pv.getVelocity().getY().getValue(), shifted.getPosition().getY().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(pv.getVelocity().getZ().getValue(), shifted.getPosition().getZ().getPartialDerivative(1), 1.0e-15);
+        
     }
 
     private PolynomialFunction randomPolynomial(int degree, Random random) {

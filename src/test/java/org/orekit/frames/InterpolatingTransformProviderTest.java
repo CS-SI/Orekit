@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,37 +41,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 public class InterpolatingTransformProviderTest {
 
     @Test
-    @Deprecated
-    public void testDeprecatedConstructor() throws OrekitException {
-
-        AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
-        CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
-        InterpolatingTransformProvider interpolatingProvider =
-                new InterpolatingTransformProvider(rawProvider,
-                                                   CartesianDerivativesFilter.USE_PVA,
-                                                   AngularDerivativesFilter.USE_RR,
-                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                   5, 0.8, 10, 60.0, 60.0);
-
-        for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
-            Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
-            Transform interpolated = interpolatingProvider.getTransform(t0.shiftedBy(dt));
-            Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           7.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           3.0e-14);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            1.3e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         2.2e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 1.2e-14);
-
-        }
-        Assert.assertEquals(10,   rawProvider.getCount());
-        Assert.assertEquals(3001, referenceProvider.getCount());
-
-    }
-
-    @Test
-    public void testCacheHitWithDerivatives() throws OrekitException {
+    public void testCacheHitWithDerivatives() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
@@ -99,7 +69,7 @@ public class InterpolatingTransformProviderTest {
     }
 
     @Test
-    public void testCacheHitWithoutDerivatives() throws OrekitException {
+    public void testCacheHitWithoutDerivatives() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
@@ -126,11 +96,11 @@ public class InterpolatingTransformProviderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testForwardException() throws OrekitException {
+    public void testForwardException() {
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(new TransformProvider() {
                     private static final long serialVersionUID = -3126512810306982868L;
-                    public Transform getTransform(AbsoluteDate date) throws OrekitException {
+                    public Transform getTransform(AbsoluteDate date) {
                         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
                     }
                     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
@@ -144,7 +114,7 @@ public class InterpolatingTransformProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);

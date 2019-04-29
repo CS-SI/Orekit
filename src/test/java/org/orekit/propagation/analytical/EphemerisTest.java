@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -51,7 +46,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class EphemerisTest {
 
@@ -117,45 +111,6 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
-
-        propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
-        int numberOfIntervals = 150;
-        double deltaT = finalDate.durationFrom(initDate) / numberOfIntervals;
-
-        List<SpacecraftState> states = new ArrayList<SpacecraftState>(numberOfIntervals + 1);
-        for (int j = 0; j<= numberOfIntervals; j++) {
-            states.add(propagator.propagate(initDate.shiftedBy((j * deltaT))));
-        }
-
-        int numInterpolationPoints = 2;
-        Ephemeris ephemPropagator = new Ephemeris(states, numInterpolationPoints, 1.25);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(ephemPropagator);
-
-        Assert.assertTrue(bos.size() > 30000);
-        Assert.assertTrue(bos.size() < 31000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        Ephemeris deserialized  = (Ephemeris) ois.readObject();
-        Assert.assertEquals(deserialized.getMinDate(), ephemPropagator.getMinDate());
-        Assert.assertEquals(deserialized.getMaxDate(), ephemPropagator.getMaxDate());
-        Assert.assertEquals(deserialized.getExtrapolationThreshold(), ephemPropagator.getExtrapolationThreshold(), 1.0e-15);
-        for (double dt = 0; dt < finalDate.durationFrom(initDate); dt += 10.0) {
-            AbsoluteDate date = initDate.shiftedBy(dt);
-            TimeStampedPVCoordinates pvRef = ephemPropagator.getPVCoordinates(date, inertialFrame);
-            TimeStampedPVCoordinates pv    = deserialized.getPVCoordinates(date, inertialFrame);
-            Assert.assertEquals(0.0, Vector3D.distance(pvRef.getPosition(),     pv.getPosition()),     1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(pvRef.getVelocity(),     pv.getVelocity()),     1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(pvRef.getAcceleration(), pv.getAcceleration()), 1.0e-15);
-        }
-
-    }
-
-    @Test
     public void testNonResettableState() {
         try {
             propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
@@ -173,7 +128,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testAdditionalStates() throws OrekitException {
+    public void testAdditionalStates() {
         final String name1  = "dt0";
         final String name2  = "dt1";
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
@@ -212,7 +167,7 @@ public class EphemerisTest {
 
     @Test
     public void testProtectedMethods()
-        throws OrekitException, SecurityException, NoSuchMethodException,
+        throws SecurityException, NoSuchMethodException,
                InvocationTargetException, IllegalAccessException {
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
 
@@ -243,7 +198,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testExtrapolation() throws OrekitException {
+    public void testExtrapolation() {
         double dt = finalDate.durationFrom(initDate);
         double timeStep = dt / 20.0;
         List<SpacecraftState> states = new ArrayList<SpacecraftState>();

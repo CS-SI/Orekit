@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Collection;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -68,14 +68,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param v1 desired image of u1 by the rotation
      * @param v2 desired image of u2 by the rotation
      * @param tolerance relative tolerance factor used to check singularities
-     * @exception OrekitException if the vectors components cannot be converted to
-     * {@link DerivativeStructure} with proper order
      */
     public TimeStampedFieldAngularCoordinates (final AbsoluteDate date,
                                                final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
                                                final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
-                                               final double tolerance)
-        throws OrekitException {
+                                               final double tolerance) {
         this(new FieldAbsoluteDate<>(u1.getPosition().getX().getField(), date),
              u1, u2, v1, v2, tolerance);
     }
@@ -103,14 +100,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param v1 desired image of u1 by the rotation
      * @param v2 desired image of u2 by the rotation
      * @param tolerance relative tolerance factor used to check singularities
-     * @exception OrekitException if the vectors components cannot be converted to
-     * {@link DerivativeStructure} with proper order
      */
     public TimeStampedFieldAngularCoordinates (final FieldAbsoluteDate<T> date,
                                                final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
                                                final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
-                                               final double tolerance)
-        throws OrekitException {
+                                               final double tolerance) {
         super(u1, u2, v1, v2, tolerance);
         this.date = date;
     }
@@ -154,6 +148,21 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
              new FieldRotation<>(field, ac.getRotation()),
              new FieldVector3D<>(field, ac.getRotationRate()),
              new FieldVector3D<>(field, ac.getRotationAcceleration()));
+    }
+
+    /** Builds a TimeStampedFieldAngularCoordinates from  a {@link FieldRotation}&lt;{@link FieldDerivativeStructure}&gt;.
+     * <p>
+     * The rotation components must have time as their only derivation parameter and
+     * have consistent derivation orders.
+     * </p>
+     * @param date coordinates date
+     * @param r rotation with time-derivatives embedded within the coordinates
+     * @since 9.2
+     */
+    public TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
+                                              final FieldRotation<FieldDerivativeStructure<T>> r) {
+        super(r);
+        this.date = date;
     }
 
     /** Revert a rotation/rotation rate pair.
@@ -286,13 +295,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
      */
     public static <T extends RealFieldElement<T>>
         TimeStampedFieldAngularCoordinates<T> interpolate(final AbsoluteDate date,
                                                           final AngularDerivativesFilter filter,
-                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
-        throws OrekitException {
+                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {
         return interpolate(new FieldAbsoluteDate<>(sample.iterator().next().getRotation().getQ0().getField(), date),
                            filter, sample);
     }
@@ -326,13 +333,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
      */
     public static <T extends RealFieldElement<T>>
         TimeStampedFieldAngularCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                           final AngularDerivativesFilter filter,
-                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
-        throws OrekitException {
+                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {
 
         // get field properties
         final Field<T> field = sample.iterator().next().getRotation().getQ0().getField();

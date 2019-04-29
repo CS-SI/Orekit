@@ -1,4 +1,21 @@
-package fr.cs.examples.propagation;
+/* Copyright 2002-2019 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+ package fr.cs.examples.propagation;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +39,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
@@ -50,9 +66,8 @@ public class FieldPropagation {
     /** Program entry point.
      * @param args program arguments (unused here)
      * @throws IOException
-     * @throws OrekitException
      */
-    public static void main(String[] args) throws IOException, OrekitException {
+    public static void main(String[] args) throws IOException {
 
         // the goal of this example is to make a Montecarlo simulation giving an error on the semiaxis,
         // the inclination and the RAAN. The interest of doing it with Orekit based on the
@@ -67,8 +82,8 @@ public class FieldPropagation {
         if (!orekitData.exists()) {
             System.err.format(Locale.US, "Failed to find %s folder%n",
                               orekitData.getAbsolutePath());
-            System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                              "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                              "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                               home.getAbsolutePath());
             System.exit(1);
         }
@@ -219,7 +234,7 @@ public class FieldPropagation {
         @Override
         public void handleStep(FieldSpacecraftState<T> currentState,
                                boolean isLast)
-            throws OrekitException {
+            {
             @SuppressWarnings("unchecked")
             TimeStampedFieldPVCoordinates<DerivativeStructure> PV_t = (TimeStampedFieldPVCoordinates<DerivativeStructure>) currentState.getPVCoordinates();
 

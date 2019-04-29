@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,10 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -36,8 +35,7 @@ import org.orekit.time.TimeStamped;
  *   <li>several dates can be added ({@link #addEventDate(AbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the maxCheck.</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * <p>The default implementation behavior is to {@link Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -45,9 +43,6 @@ import org.orekit.time.TimeStamped;
  * @author Pascal Parraud
  */
 public class DateDetector extends AbstractDetector<DateDetector> implements TimeStamped {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** Last date for g computation. */
     private AbsoluteDate gDate;
@@ -118,9 +113,8 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * This function measures the difference between the current and the target date.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         gDate = s.getDate();
         if (currentIndex < 0) {
             return -1.0;
@@ -202,10 +196,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     }
 
     /** Event date specification. */
-    private static class EventDate implements Serializable, TimeStamped {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -7641032576122527149L;
+    private static class EventDate implements TimeStamped {
 
         /** Event date. */
         private final AbsoluteDate eventDate;

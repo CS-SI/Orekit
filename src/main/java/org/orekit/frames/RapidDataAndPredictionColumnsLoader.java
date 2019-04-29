@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -149,8 +149,7 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history)
-        throws OrekitException {
+                            final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter, isNonRotatingOrigin);
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         history.addAll(parser.history);
@@ -161,6 +160,9 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
         /** Converter for nutation corrections. */
         private final IERSConventions.NutationCorrectionConverter converter;
+
+        /** Configuration for ITRF versions. */
+        private final ITRFVersionLoader itrfVersionLoader;
 
         /** Indicator for Non-Rotating Origin. */
         private final boolean isNonRotatingOrigin;
@@ -179,8 +181,9 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
          * @param isNonRotatingOrigin type of nutation correction
          */
         Parser(final IERSConventions.NutationCorrectionConverter converter,
-                      final boolean isNonRotatingOrigin) {
+               final boolean isNonRotatingOrigin) {
             this.converter           = converter;
+            this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.isNonRotatingOrigin = isNonRotatingOrigin;
             this.history             = new ArrayList<EOPEntry>();
             this.lineNumber          = 0;
@@ -193,7 +196,9 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
         /** {@inheritDoc} */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
+
+            ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
             // set up a reader for line-oriented bulletin B files
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
@@ -312,7 +317,12 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
                     }
                 }
 
-                history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
+                if (configuration == null || !configuration.isValid(mjd)) {
+                    // get a configuration for current name and date range
+                    configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                }
+                history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                                         configuration.getVersion()));
 
             }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import org.hipparchus.dfp.DfpField;
 import org.hipparchus.dfp.DfpMath;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.RawSphericalHarmonicsProvider;
@@ -96,7 +95,7 @@ class ReferenceFieldModel {
     }
 
     public Dfp nonCentralPart(final AbsoluteDate date, final Vector3D position)
-            throws OrekitException {
+            {
 
         int degree = provider.getMaxDegree();
         int order  = provider.getMaxOrder();
@@ -152,17 +151,17 @@ class ReferenceFieldModel {
             return new RawerSphericalHarmonicsProvider(provider) {
                 @Override
                 public RawSphericalHarmonics onDate(final AbsoluteDate date)
-                        throws OrekitException {
+                        {
                     final NormalizedSphericalHarmonics normalized =
                             ((NormalizedSphericalHarmonicsProvider) provider).onDate(date);
                     return new RawSphericalHarmonics() {
                         @Override
-                        public double getRawCnm(int n, int m) throws OrekitException {
+                        public double getRawCnm(int n, int m) {
                             return normalized.getNormalizedCnm(n, m);
                         }
 
                         @Override
-                        public double getRawSnm(int n, int m) throws OrekitException {
+                        public double getRawSnm(int n, int m) {
                             return normalized.getNormalizedSnm(n, m);
                         }
 
@@ -177,17 +176,17 @@ class ReferenceFieldModel {
             return new RawerSphericalHarmonicsProvider(provider) {
                 @Override
                 public RawSphericalHarmonics onDate(final AbsoluteDate date)
-                        throws OrekitException {
+                        {
                     final UnnormalizedSphericalHarmonics unnormalized =
                             ((UnnormalizedSphericalHarmonicsProvider) provider).onDate(date);
                     return new RawSphericalHarmonics() {
                         @Override
-                        public double getRawCnm(int n, int m) throws OrekitException {
+                        public double getRawCnm(int n, int m) {
                             return unnormalized.getUnnormalizedCnm(n, m);
                         }
 
                         @Override
-                        public double getRawSnm(int n, int m) throws OrekitException {
+                        public double getRawSnm(int n, int m) {
                             return unnormalized.getUnnormalizedSnm(n, m);
                         }
 

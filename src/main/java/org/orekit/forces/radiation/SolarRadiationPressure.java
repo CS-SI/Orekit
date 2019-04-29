@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
@@ -33,12 +34,14 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 
 /** Solar radiation pressure force model.
@@ -63,7 +66,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
     private final double kRef;
 
     /** Sun model. */
-    private final PVCoordinatesProvider sun;
+    private final ExtendedPVCoordinatesProvider sun;
 
     /** Central body model. */
     private final double equatorialRadius;
@@ -80,8 +83,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param sun Sun model
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      * @param spacecraft the object physical and geometrical information
+     * @since 9.2
      */
-    public SolarRadiationPressure(final PVCoordinatesProvider sun, final double equatorialRadius,
+    public SolarRadiationPressure(final ExtendedPVCoordinatesProvider sun, final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
         this(D_REF, P_REF, sun, equatorialRadius, spacecraft);
     }
@@ -97,9 +101,10 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param sun Sun model
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      * @param spacecraft the object physical and geometrical information
+     * @since 9.2
      */
     public SolarRadiationPressure(final double dRef, final double pRef,
-                                  final PVCoordinatesProvider sun,
+                                  final ExtendedPVCoordinatesProvider sun,
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
         this.kRef = pRef * dRef * dRef;
@@ -116,8 +121,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final AbsoluteDate date         = s.getDate();
         final Frame        frame        = s.getFrame();
@@ -138,8 +142,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
 
         final FieldAbsoluteDate<T> date         = s.getDate();
         final Frame                frame        = s.getFrame();
@@ -162,11 +165,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param frame in which is defined the position
      * @param date the date
      * @return lighting ratio
-     * @exception OrekitException if the trajectory is inside the central body
-     * @since 7.1
+          * @since 7.1
      */
-    public double getLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)
-        throws OrekitException {
+    public double getLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date) {
 
         final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
         if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
@@ -227,18 +228,16 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param date the date
      * @param <T> extends RealFieldElement
      * @return lighting ratio
-     * @exception OrekitException if the trajectory is inside the central body
-     * @since 7.1
+          * @since 7.1
      */
     public <T extends RealFieldElement<T>> T getLightingRatio(final FieldVector3D<T> position,
                                                               final Frame frame,
-                                                              final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+                                                              final FieldAbsoluteDate<T> date) {
 
         final T one = date.getField().getOne();
 
-        final Vector3D sunPosition = sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition();
-        if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
+        final FieldVector3D<T> sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        if (sunPosition.getNorm().getReal() < 2 * Constants.SUN_RADIUS) {
             // we are in fact computing a trajectory around Sun (or solar system barycenter),
             // not around a planet,we consider lighting ratio is always 1
             return one;
@@ -297,7 +296,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
+        return Stream.of(new FieldUmbraDetector<>(field), new FieldPenumbraDetector<>(field));
     }
 
     /** {@inheritDoc} */
@@ -310,10 +309,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param sunPosition Sun position in the selected frame
      * @param position the satellite's position in the selected frame
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-     * @exception OrekitException if the trajectory is inside the central body
      */
-    private double[] getEclipseAngles(final Vector3D sunPosition, final Vector3D position)
-        throws OrekitException {
+    private double[] getEclipseAngles(final Vector3D sunPosition, final Vector3D position) {
         final double[] angle = new double[3];
 
         final Vector3D satSunVector = sunPosition.subtract(position);
@@ -339,10 +336,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param position the satellite's position in the selected frame.
      * @param <T> extends RealFieldElement
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-     * @exception OrekitException if the trajectory is inside the central body
      */
-    private <T extends RealFieldElement<T>> T[] getEclipseAngles(final Vector3D sunPosition, final FieldVector3D<T> position)
-        throws OrekitException {
+    private <T extends RealFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> sunPosition, final FieldVector3D<T> position) {
         final T[] angle = MathArrays.buildArray(position.getX().getField(), 3);
 
         final FieldVector3D<T> mP           = position.negate();
@@ -387,9 +382,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** This class defines the umbra entry/exit detector. */
     private class UmbraDetector extends AbstractDetector<UmbraDetector> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20141228L;
-
         /** Build a new instance. */
         UmbraDetector() {
             super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
@@ -431,9 +423,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
          * the central body apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
-         * @exception OrekitException if sun or spacecraft position cannot be computed
          */
-        public double g(final SpacecraftState s) throws OrekitException {
+        public double g(final SpacecraftState s) {
             final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                                     s.getPVCoordinates().getPosition());
             return angle[0] - angle[1] + angle[2] - ANGULAR_MARGIN;
@@ -443,9 +434,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** This class defines the penumbra entry/exit detector. */
     private class PenumbraDetector extends AbstractDetector<PenumbraDetector> {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20141228L;
 
         /** Build a new instance. */
         PenumbraDetector() {
@@ -488,12 +476,133 @@ public class SolarRadiationPressure extends AbstractForceModel {
          * the sum of the central body and Sun's apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
-         * @exception OrekitException if sun or spacecraft position cannot be computed
          */
-        public double g(final SpacecraftState s) throws OrekitException {
+        public double g(final SpacecraftState s) {
             final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                                     s.getPVCoordinates().getPosition());
             return angle[0] - angle[1] - angle[2] + ANGULAR_MARGIN;
+        }
+
+    }
+
+    /** This class defines the umbra entry/exit detector.
+     * @since 9.2
+     */
+    private class FieldUmbraDetector<T extends RealFieldElement<T>>
+        extends FieldAbstractDetector<FieldUmbraDetector<T>, T> {
+
+        /** Build a new instance.
+         * @param field field to which elements belong
+         */
+        FieldUmbraDetector(final Field<T> field) {
+            super(field.getZero().add(60.0), field.getZero().add(1.0e-3),
+                  DEFAULT_MAX_ITER, new FieldEventHandler<FieldUmbraDetector<T>, T>() {
+
+                      /** {@inheritDoc} */
+                      public Action eventOccurred(final FieldSpacecraftState<T> s,
+                                                  final FieldUmbraDetector<T> detector,
+                                                  final boolean increasing) {
+                          return Action.RESET_DERIVATIVES;
+                      }
+
+                  });
+        }
+
+        /** Private constructor with full parameters.
+         * <p>
+         * This constructor is private as users are expected to use the builder
+         * API with the various {@code withXxx()} methods to set up the instance
+         * in a readable manner without using a huge amount of parameters.
+         * </p>
+         * @param maxCheck maximum checking interval (s)
+         * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
+         * @param handler event handler to call at event occurrences
+         */
+        private FieldUmbraDetector(final T maxCheck, final T threshold,
+                                   final int maxIter,
+                                   final FieldEventHandler<? super FieldUmbraDetector<T>, T> handler) {
+            super(maxCheck, threshold, maxIter, handler);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected FieldUmbraDetector<T> create(final T newMaxCheck, final T newThreshold,
+                                               final int newMaxIter,
+                                               final FieldEventHandler<? super FieldUmbraDetector<T>, T> newHandler) {
+            return new FieldUmbraDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        }
+
+        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
+         * the central body apparent radius.
+         * @param s the current state information : date, kinematics, attitude
+         * @return value of the g function
+         */
+        public T g(final FieldSpacecraftState<T> s) {
+            final T[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
+                                               s.getPVCoordinates().getPosition());
+            return angle[0].subtract(angle[1]).add(angle[2]).subtract(ANGULAR_MARGIN);
+        }
+
+    }
+
+    /** This class defines the penumbra entry/exit detector.
+     * @since 9.2
+     */
+    private class FieldPenumbraDetector<T extends RealFieldElement<T>>
+          extends FieldAbstractDetector<FieldPenumbraDetector<T>, T> {
+
+        /** Build a new instance.
+         * @param field field to which elements belong
+         */
+        FieldPenumbraDetector(final Field<T> field) {
+            super(field.getZero().add(60.0), field.getZero().add(1.0e-3),
+                  DEFAULT_MAX_ITER, new FieldEventHandler<FieldPenumbraDetector<T>, T>() {
+
+                      /** {@inheritDoc} */
+                      public Action eventOccurred(final FieldSpacecraftState<T> s,
+                                                  final FieldPenumbraDetector<T> detector,
+                                                  final boolean increasing) {
+                          return Action.RESET_DERIVATIVES;
+                      }
+
+                  });
+        }
+
+        /** Private constructor with full parameters.
+         * <p>
+         * This constructor is private as users are expected to use the builder
+         * API with the various {@code withXxx()} methods to set up the instance
+         * in a readable manner without using a huge amount of parameters.
+         * </p>
+         * @param maxCheck maximum checking interval (s)
+         * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
+         * @param handler event handler to call at event occurrences
+         */
+        private FieldPenumbraDetector(final T maxCheck, final T threshold,
+                                      final int maxIter,
+                                      final FieldEventHandler<? super FieldPenumbraDetector<T>, T> handler) {
+            super(maxCheck, threshold, maxIter, handler);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected FieldPenumbraDetector<T> create(final T newMaxCheck, final T newThreshold,
+                                                  final int newMaxIter,
+                                                  final FieldEventHandler<? super FieldPenumbraDetector<T>, T> newHandler) {
+            return new FieldPenumbraDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        }
+
+        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
+         * the sum of the central body and Sun's apparent radius.
+         * @param s the current state information : date, kinematics, attitude
+         * @return value of the g function
+         */
+        public T g(final FieldSpacecraftState<T> s) {
+            final T[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
+                                               s.getPVCoordinates().getPosition());
+            return angle[0].subtract(angle[1]).subtract(angle[2]).add(ANGULAR_MARGIN);
         }
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
@@ -49,6 +50,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -70,8 +72,8 @@ public class EarthObservation {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
@@ -93,12 +95,17 @@ public class EarthObservation {
                                                                      RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
             final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
             final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-            final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
             final EventDetector dayNightEvent =
-                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                new EclipseDetector(sun, 696000000.,
+                                    new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                         0.0,
+                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>());
             final EventDetector nightDayEvent =
-                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                new EclipseDetector(sun, 696000000.,
+                                    new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                         0.0,
+                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>());
 
             final AttitudesSequence attitudesSequence = new AttitudesSequence();
@@ -138,9 +145,7 @@ public class EarthObservation {
             attitudesSequence.registerSwitchEvents(propagator);
 
             propagator.setMasterMode(180.0, new OrekitFixedStepHandler() {
-                public void init(final SpacecraftState s0, final AbsoluteDate t) {
-                }
-                public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+                public void handleStep(SpacecraftState currentState, boolean isLast) {
                     DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
                     angleDegree.setDecimalSeparator('\u00b0');
                     DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);

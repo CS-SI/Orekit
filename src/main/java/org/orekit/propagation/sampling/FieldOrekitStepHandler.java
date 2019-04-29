@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -38,16 +37,13 @@ public interface FieldOrekitStepHandler<T extends RealFieldElement<T>> {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
-     * @exception OrekitException if step handler cannot be initialized
      */
-    void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) throws OrekitException;
+    void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t);
 
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
      * @param isLast if true, this is the last integration step
-     * @exception OrekitException if step cannot be handled
      */
-    void handleStep(FieldOrekitStepInterpolator<T> interpolator, boolean isLast)
-        throws OrekitException;
+    void handleStep(FieldOrekitStepInterpolator<T> interpolator, boolean isLast);
 
 }

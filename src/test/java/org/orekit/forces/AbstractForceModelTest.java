@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,6 @@ import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -51,7 +50,7 @@ public abstract class AbstractForceModelTest {
     protected void checkParameterDerivative(SpacecraftState state,
                                             ForceModel forceModel, String name,
                                             double hFactor, double tol)
-        throws OrekitException {
+        {
 
         final DSFactory factory11 = new DSFactory(1, 1);
         final Field<DerivativeStructure> field = factory11.getDerivativeField();
@@ -98,7 +97,7 @@ public abstract class AbstractForceModelTest {
 
     protected FieldSpacecraftState<DerivativeStructure> toDS(final SpacecraftState state,
                                                              final AttitudeProvider attitudeProvider)
-        throws OrekitException {
+        {
 
         final Vector3D p = state.getPVCoordinates().getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
@@ -129,7 +128,7 @@ public abstract class AbstractForceModelTest {
     protected void checkStateJacobianVsFiniteDifferences(final  SpacecraftState state0, final ForceModel forceModel,
                                                          final AttitudeProvider provider, final double dP,
                                                          final double checkTolerance, final boolean print)
-        throws OrekitException {
+        {
 
         double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters()).toArray(),
@@ -237,7 +236,7 @@ public abstract class AbstractForceModelTest {
     protected void checkStateJacobian(NumericalPropagator propagator, SpacecraftState state0,
                                       AbsoluteDate targetDate, double hFactor,
                                       double[] integratorAbsoluteTolerances, double checkTolerance)
-        throws OrekitException {
+        {
 
         propagator.setInitialState(state0);
         double[][] reference = new double[][] {
@@ -264,7 +263,7 @@ public abstract class AbstractForceModelTest {
         propagator.setMasterMode(new OrekitStepHandler() {
 
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-                throws OrekitException {
+                {
                 if (isLast) {
                     // pick up final Jacobian
                     mapper.getStateJacobian(interpolator.getCurrentState(), dYdY0);
@@ -286,7 +285,7 @@ public abstract class AbstractForceModelTest {
     private double[] jacobianColumn(final NumericalPropagator propagator, final SpacecraftState state0,
                                     final AbsoluteDate targetDate, final int index,
                                     final double h)
-                                            throws OrekitException {
+                                            {
         return differential4(integrateShiftedState(propagator, state0, targetDate, index, -2 * h),
                              integrateShiftedState(propagator, state0, targetDate, index, -1 * h),
                              integrateShiftedState(propagator, state0, targetDate, index, +1 * h),
@@ -298,7 +297,7 @@ public abstract class AbstractForceModelTest {
                                            final SpacecraftState state0,
                                            final AbsoluteDate targetDate,
                                            final int index, final double h)
-        throws OrekitException {
+        {
         OrbitType orbitType = propagator.getOrbitType();
         PositionAngle angleType = propagator.getPositionAngleType();
         double[] a = new double[6];

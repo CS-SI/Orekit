@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -64,9 +63,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class CelestialBodyPointed implements AttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6222161082155807729L;
-
     /** Frame in which {@link #phasingCel} is defined. */
     private final Frame celestialFrame;
 
@@ -103,8 +99,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                final AbsoluteDate date, final Frame frame) {
 
         final PVCoordinates satPV = pvProv.getPVCoordinates(date, celestialFrame);
 
@@ -145,8 +140,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        throws OrekitException {
+                                                                        final Frame frame) {
 
         final Field<T> field = date.getField();
         final FieldPVCoordinates<T> satPV = pvProv.getPVCoordinates(date, celestialFrame);

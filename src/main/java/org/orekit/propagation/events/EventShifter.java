@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -38,9 +38,6 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  */
 public class EventShifter<T extends EventDetector> extends AbstractDetector<EventShifter<T>> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** Event detector for the raw unshifted event. */
     private final T detector;
@@ -130,12 +127,14 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0,
+                     final AbsoluteDate t) {
+        super.init(s0, t);
         detector.init(s0, t);
     }
 
     /** {@inheritDoc} */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
         final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
         return (increasingOffset >= decreasingOffset) ?
@@ -149,8 +148,7 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
         private SpacecraftState shiftedState;
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing) {
 
             if (shifter.useShiftedStates) {
                 // the state provided by the caller already includes the time shift
@@ -167,8 +165,7 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState)
-            throws OrekitException {
+        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState) {
             return shifter.detector.resetState(shiftedState);
         }
 

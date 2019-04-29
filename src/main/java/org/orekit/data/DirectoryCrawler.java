@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
@@ -60,9 +58,8 @@ public class DirectoryCrawler implements DataProvider {
 
     /** Build a data files crawler.
      * @param root root of the directories tree (must be a directory)
-     * @exception OrekitException if root is not a directory
      */
-    public DirectoryCrawler(final File root) throws OrekitException {
+    public DirectoryCrawler(final File root) {
         if (!root.isDirectory()) {
             throw new OrekitException(OrekitMessages.NOT_A_DIRECTORY, root.getAbsolutePath());
         }
@@ -70,8 +67,7 @@ public class DirectoryCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final Pattern supported, final DataLoader visitor)
-        throws OrekitException {
+    public boolean feed(final Pattern supported, final DataLoader visitor) {
         try {
             return feed(supported, visitor, root);
         } catch (IOException ioe) {
@@ -85,14 +81,12 @@ public class DirectoryCrawler implements DataProvider {
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to feed
      * @param directory current directory
-     * @exception OrekitException if some data is missing, duplicated
-     * or can't be read
      * @return true if something has been loaded
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
     private boolean feed(final Pattern supported, final DataLoader visitor, final File directory)
-        throws OrekitException, IOException, ParseException {
+        throws IOException, ParseException {
 
         // search in current directory
         final File[] list = directory.listFiles();
@@ -108,35 +102,30 @@ public class DirectoryCrawler implements DataProvider {
         for (int i = 0; i < list.length; ++i) {
             try {
                 if (visitor.stillAcceptsData()) {
-                    if (list[i].isDirectory()) {
+                    final File file = list[i];
+                    if (file.isDirectory()) {
 
                         // recurse in the sub-directory
-                        loaded = feed(supported, visitor, list[i]) || loaded;
+                        loaded = feed(supported, visitor, file) || loaded;
 
-                    } else if (ZIP_ARCHIVE_PATTERN.matcher(list[i].getName()).matches()) {
+                    } else if (ZIP_ARCHIVE_PATTERN.matcher(file.getName()).matches()) {
 
                         // browse inside the zip/jar file
-                        final DataProvider zipProvider = new ZipJarCrawler(list[i]);
+                        final DataProvider zipProvider = new ZipJarCrawler(file);
                         loaded = zipProvider.feed(supported, visitor) || loaded;
 
                     } else {
 
-                        // remove suffix from gzip files
-                        final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(list[i].getName());
-                        final String baseName =
-                            gzipMatcher.matches() ? gzipMatcher.group(1) : list[i].getName();
+                        // apply all registered filters
+                        NamedData data = new NamedData(file.getName(), () -> new FileInputStream(file));
+                        data = DataProvidersManager.getInstance().applyAllFilters(data);
 
-                        if (supported.matcher(baseName).matches()) {
-
+                        if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            InputStream input = new FileInputStream(list[i]);
-                            if (gzipMatcher.matches()) {
-                                input = new GZIPInputStream(input);
+                            try (InputStream input = data.getStreamOpener().openStream()) {
+                                visitor.loadData(input, file.getPath());
+                                loaded = true;
                             }
-                            visitor.loadData(input, list[i].getPath());
-                            input.close();
-                            loaded = true;
-
                         }
 
                     }

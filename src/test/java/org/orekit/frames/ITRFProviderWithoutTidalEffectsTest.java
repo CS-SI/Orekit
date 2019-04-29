@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -37,7 +36,7 @@ import org.orekit.utils.PVCoordinates;
 public class ITRFProviderWithoutTidalEffectsTest {
 
     @Test
-    public void testRoughRotation() throws OrekitException {
+    public void testRoughRotation() {
 
         AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2006, 02, 24),
                                               new TimeComponents(15, 38, 00),
@@ -60,7 +59,7 @@ public class ITRFProviderWithoutTidalEffectsTest {
     }
 
     @Test
-    public void testRoughOrientation() throws OrekitException {
+    public void testRoughOrientation() {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -83,7 +82,7 @@ public class ITRFProviderWithoutTidalEffectsTest {
     }
 
     @Test
-    public void testRoughERA() throws OrekitException {
+    public void testRoughERA() {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
         TIRFProvider TIRF2000 = (TIRFProvider) FramesFactory.getTIRF(IERSConventions.IERS_2010).getTransformProvider();
@@ -102,7 +101,7 @@ public class ITRFProviderWithoutTidalEffectsTest {
     }
 
     @Test
-    public void testMSLIBTransformJ2000_TerVrai() throws OrekitException {
+    public void testMSLIBTransformJ2000_TerVrai() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                              new TimeComponents(02, 00, 00),
@@ -119,7 +118,7 @@ public class ITRFProviderWithoutTidalEffectsTest {
     }
 
     @Test
-    public void testMSLIBTransformJ2000_TerRef() throws OrekitException {
+    public void testMSLIBTransformJ2000_TerRef() {
 
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                            new TimeComponents(02, 00, 00),
@@ -173,7 +172,7 @@ public class ITRFProviderWithoutTidalEffectsTest {
     }
 
     @Test
-    public void testMontenbruck() throws OrekitException {
+    public void testMontenbruck() {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00,
                                            TimeScalesFactory.getGPS());
         Transform trans = FramesFactory.getITRF(IERSConventions.IERS_2010, true).getTransformTo(FramesFactory.getGCRF(), t0);

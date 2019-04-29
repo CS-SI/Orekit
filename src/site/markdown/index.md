@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2017 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -26,7 +26,7 @@
   * Time
 
     * high accuracy absolute dates
-    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS ...)
+    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)
     * transparent handling of leap seconds
 
   * Geometry
@@ -137,10 +137,12 @@
       * latitude, longitude extremum
       * elevation extremum
       * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
-      * moving target detection in spacecraft sensor Field Of View (any shape, with special case for circular)
+      * moving target detection (with optional radius) in spacecraft sensor Field Of View (any shape, with special case for circular)
       * spacecraft detection in ground based Field Of View (any shape)
       * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal
+      * inter-satellites direct view
+      * ground at night
       * impulse maneuvers occurrence
 
     * possibility of slightly shifting events in time (for example to switch from
@@ -163,16 +165,29 @@
       * orbit referenced attitudes (LOF aligned, offset on all axes),
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
       * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
+      * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
 
   * Orbit determination
   
     * batch least squares fitting
 
+      * optimizers choice (Levenberg-Marquardt or Gauss-Newton)
+      * decomposition algorithms choice (QR, LU, SVD, Cholesky)
+      * choice between forming normal equations or not
+
+    *  Kalman filtering
+
+      * customizable process noise matrices providers
+      * time dependent process noise provider
+
+    * parameters estimation
+
       * orbital parameters estimation (or only a subset if desired)
       * force model parameters estimation (drag coefficients, radiation pressure coefficients,
         central attraction, maneuver thrust or flow rate)
-      * measurements parameters estimation (biases, station position, pole motion and rate,
-        prime meridian correction and rate)
+      * measurements parameters estimation (biases, satellite clock offset, station clock offset,
+        station position, pole motion and rate, prime meridian correction and rate, total zenith
+        delay in tropospheric correction)
 
     * multi-satellites orbit determination
     * ground stations displacements due to solid tides
@@ -185,7 +200,10 @@
       * azimuth/elevation
       * right ascension/declination
       * position-velocity
+      * position
       * inter-satellites range (one way and two way)
+      * GNSS code
+      * GNSS phase
 
     * possibility to add custom measurements
     * several predefined modifiers
@@ -196,23 +214,39 @@
       * biases
       * delays
       * Antenna Phase Center
+      * Shapiro relativistic effect
 
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
+    * measurements generation
+
+      * with measurements feasibility triggered by regular event detectors
+        (ground visibility, ground at night, sunlit satellite, inter satellites
+         direct view, boolean combination...)
+      * with measurement scheduling as fixed step streams (optionally aligned with round UTC time)
+      * with measurement scheduling as high rate bursts rest periods (optionally aligned with round UTC time)
+      * possibility to customize measurement scheduling
+
+  * GNSS
+
+    * computation of Dilution Of Precision
+    * loading of ANTEX antenna models file
+    * loading of RINEX observation files (version 2 and version 3)
 
   * Orbit file handling
   
-    * loading of SP3-a and SP3-c orbit files
+    * loading of SP3 orbit files (from version a to d)
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format
 
   * Earth models
   
-    * tropospheric delay (modified Saastamoinen)
+    * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
+    * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
     * displacement of ground points due to tides
@@ -225,7 +259,9 @@
     * loading from classpath
     * loading from network (even through internet proxies)
     * support for zip archives
-    * support from gzip compressed files
+    * automatic decompression of gzip compressed (.gz) files upon loading
+    * automatic decompression of Unix compressed (.Z) files upon loading
+    * plugin mechanism to add filtering like custom decompression algorithms, deciphering or monitoring
     * plugin mechanism to delegate loading to user defined database or data access library
 
   * Localized in several languages

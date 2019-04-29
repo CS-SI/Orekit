@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,14 @@ package org.orekit.propagation.analytical;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -42,6 +44,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 public class EphemerisEventsTest {
 
@@ -102,18 +105,21 @@ public class EphemerisEventsTest {
         return new Ephemeris(tab, 2);
     }
 
-    private EclipseDetector buildEclipsDetector(final OrbitType type) throws OrekitException {
+    private EclipseDetector buildEclipsDetector(final OrbitType type) {
 
         double sunRadius = 696000000.;
         double earthRadius = 6400000.;
 
-        EclipseDetector ecl = new EclipseDetector(60., 1.e-3,
-                                                  CelestialBodyFactory.getSun(), sunRadius,
-                                                  CelestialBodyFactory.getEarth(), earthRadius).
+        EclipseDetector ecl = new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                                  new OneAxisEllipsoid(earthRadius,
+                                                                       0.0,
+                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                              withMaxCheck(60.0).
+                              withThreshold(1.0e-3).
                               withHandler(new EventHandler<EclipseDetector>() {
                                 public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
                                                             boolean increasing)
-                                    throws OrekitException {
+                                    {
                                     Assert.assertEquals(type, s.getOrbit().getType());
                                     if (increasing) {
                                         ++inEclipsecounter;

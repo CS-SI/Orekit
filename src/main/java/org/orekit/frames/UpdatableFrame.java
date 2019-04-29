@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.RealFieldElement;
 import org.orekit.errors.FrameAncestorException;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -138,12 +137,9 @@ public class UpdatableFrame extends Frame {
      * @param f2 second control frame (may be the instance itself)
      * @param f1Tof2 desired transform from first to second control frame
      * @param date date of the transform
-     * @exception OrekitException if the path between the two control frames does
-     * not cross the link between instance and its parent frame or if some
-     * intermediate transform fails
      */
     public void updateTransform(final Frame f1, final Frame f2, final Transform f1Tof2,
-                                final AbsoluteDate date) throws OrekitException {
+                                final AbsoluteDate date) {
 
         Frame fA = f1;
         Frame fB = f2;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,6 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
@@ -101,10 +100,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     /** Build a spacecraft state from orbit only.
      * <p>FieldAttitude<T> and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit)
-        throws OrekitException {
+    public FieldSpacecraftState(final FieldOrbit<T> orbit) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), null);
@@ -126,10 +123,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * <p>FieldAttitude<T> law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass)
-        throws OrekitException {
+    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
@@ -151,10 +146,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * <p>FieldAttitude<T> and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional)
-        throws OrekitException {
+    public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
@@ -178,10 +171,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param additional additional states
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional)
-        throws OrekitException {
+    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
@@ -398,11 +389,9 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
      */
     public FieldSpacecraftState<T> interpolate(final FieldAbsoluteDate<T> date,
-                                               final Stream<FieldSpacecraftState<T>> sample)
-        throws OrekitException {
+                                               final Stream<FieldSpacecraftState<T>> sample) {
 
         // prepare interpolators
         final List<FieldOrbit<T>> orbits = new ArrayList<>();
@@ -415,26 +404,18 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         }
 
         // extract sample data
-        try {
-            sample.forEach(state -> {
-                try {
-                    final T deltaT = state.getDate().durationFrom(date);
-                    orbits.add(state.getOrbit());
-                    attitudes.add(state.getAttitude());
-                    final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
-                    mm[0] = state.getMass();
-                    massInterpolator.addSamplePoint(deltaT,
-                                                    mm);
-                    for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
-                        entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-                    }
-                } catch (OrekitException oe) {
-                    throw new OrekitExceptionWrapper(oe);
-                }
-            });
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
-        }
+        sample.forEach(state -> {
+            final T deltaT = state.getDate().durationFrom(date);
+            orbits.add(state.getOrbit());
+            attitudes.add(state.getAttitude());
+            final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
+            mm[0] = state.getMass();
+            massInterpolator.addSamplePoint(deltaT,
+                                            mm);
+            for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
+                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
+            }
+        });
 
         // perform interpolations
         final FieldOrbit<T> interpolatedOrbit       = orbit.interpolate(date, orbits);
@@ -494,13 +475,11 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * not their values.
      * </p>
      * @param state state to compare to instance
-     * @exception OrekitException if either instance or state supports an additional
-     * state not supported by the other one
      * @exception MathIllegalArgumentException if an additional state does not have
      * the same dimension in both states
      */
     public void ensureCompatibleAdditionalStates(final FieldSpacecraftState<T> state)
-        throws OrekitException, MathIllegalArgumentException {
+        throws MathIllegalArgumentException {
 
         // check instance additional states is a subset of the other one
         for (final Map.Entry<String, T[]> entry : additional.entrySet()) {
@@ -530,12 +509,11 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     /** Get an additional state.
      * @param name name of the additional state
      * @return value of the additional state
-     * @exception OrekitException if no additional state with that name exists
-     * @see #addAdditionalState(String, RealFieldElement...)
+          * @see #addAdditionalState(String, RealFieldElement...)
      * @see #hasAdditionalState(String)
      * @see #getAdditionalStates()
      */
-    public T[] getAdditionalState(final String name) throws OrekitException {
+    public T[] getAdditionalState(final String name) {
         if (!additional.containsKey(name)) {
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
         }
@@ -695,10 +673,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * {@link TimeStampedFieldPVCoordinates} if it needs to keep the value for a while.
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
-     * @exception OrekitException if the transformation between frames cannot be computed
      */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame)
-        throws OrekitException {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
         return orbit.getPVCoordinates(outputFrame);
     }
 
@@ -735,6 +711,16 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
             }
         }
         return new SpacecraftState(orbit.toOrbit(), attitude.toAttitude(), mass.getReal(), map);
+    }
+
+    @Override
+    public String toString() {
+        return "FieldSpacecraftState{" +
+                "orbit=" + orbit +
+                ", attitude=" + attitude +
+                ", mass=" + mass +
+                ", additional=" + additional +
+                '}';
     }
 
 }

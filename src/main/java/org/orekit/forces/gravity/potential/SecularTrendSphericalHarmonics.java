@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -91,7 +90,7 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     @Override
-    public RawSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public RawSphericalHarmonics onDate(final AbsoluteDate date) {
         final RawSphericalHarmonics harmonics = provider.onDate(date);
         //compute date offset from reference
         final double dateOffset = getOffset(date);
@@ -103,8 +102,7 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawCnm(final int n, final int m)
-                throws OrekitException {
+            public double getRawCnm(final int n, final int m) {
 
                 // retrieve the constant part of the coefficient
                 double cnm = harmonics.getRawCnm(n, m);
@@ -119,8 +117,7 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawSnm(final int n, final int m)
-                throws OrekitException {
+            public double getRawSnm(final int n, final int m) {
 
                 // retrieve the constant part of the coefficient
                 double snm = harmonics.getRawSnm(n, m);

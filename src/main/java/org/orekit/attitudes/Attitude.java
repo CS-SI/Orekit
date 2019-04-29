@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -127,10 +126,8 @@ public class Attitude
      * @param newReferenceFrame desired reference frame for attitude
      * @return an attitude that has the same orientation and motion as the instance,
      * but guaranteed to have the specified reference frame
-     * @exception OrekitException if conversion between reference frames fails
      */
-    public Attitude withReferenceFrame(final Frame newReferenceFrame)
-        throws OrekitException {
+    public Attitude withReferenceFrame(final Frame newReferenceFrame) {
 
         if (newReferenceFrame == referenceFrame) {
             // simple case, the instance is already compliant
@@ -209,10 +206,8 @@ public class Attitude
      * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
      * and numerical problems (including NaN appearing).
      * </p>
-     * @exception OrekitException if the number of point is too small for interpolating
      */
-    public Attitude interpolate(final AbsoluteDate interpolationDate, final Stream<Attitude> sample)
-        throws OrekitException {
+    public Attitude interpolate(final AbsoluteDate interpolationDate, final Stream<Attitude> sample) {
         final List<TimeStampedAngularCoordinates> datedPV =
              sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
         final TimeStampedAngularCoordinates interpolated =

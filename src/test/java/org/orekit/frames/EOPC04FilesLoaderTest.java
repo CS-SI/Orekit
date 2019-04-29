@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import java.util.TreeSet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
@@ -34,7 +33,7 @@ import org.orekit.utils.IERSConventions;
 public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testMissingMonths() throws OrekitException {
+    public void testMissingMonths() {
         setRoot("missing-months");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -44,7 +43,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testStartDate() throws OrekitException {
+    public void testStartDate() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -55,7 +54,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testEndDate() throws OrekitException {
+    public void testEndDate() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -66,7 +65,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testContent() throws OrekitException {
+    public void testContent() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -78,6 +77,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
         Assert.assertEquals(        (9 * (-0.2920264 + -0.2928461) - (-0.2913281 + -0.2937305)) / 16,  history.getUT1MinusUTC(date), 1.0e-10);
         Assert.assertEquals(asToRad((9 * (-0.105933  + -0.108553)  - (-0.103513  + -0.111054))  / 16), history.getPoleCorrection(date).getXp(), 1.0e-10);
         Assert.assertEquals(asToRad((9 * ( 0.201451  +  0.203596)  - ( 0.199545  +  0.205660))  / 16), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assert.assertEquals(ITRFVersion.ITRF_2008, history.getITRFVersion(date));
     }
 
     private double asToRad(double as) {

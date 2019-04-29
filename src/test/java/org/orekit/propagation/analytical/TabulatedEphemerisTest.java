@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class TabulatedEphemerisTest {
 
     @Test
-    public void testInterpolationFullEcksteinHechlerOrbit() throws OrekitException {
+    public void testInterpolationFullEcksteinHechlerOrbit() {
         // with full Eckstein-Hechler Cartesian orbit,
         // including non-Keplerian acceleration, interpolation is very good
         checkInterpolation(new StateFilter() {
@@ -64,7 +64,7 @@ public class TabulatedEphemerisTest {
     }
 
     @Test
-    public void testInterpolationKeplerianAcceleration() throws OrekitException {
+    public void testInterpolationKeplerianAcceleration() {
         // with Keplerian-only acceleration, interpolation is quite wrong
         checkInterpolation(new StateFilter() {
             public SpacecraftState filter(SpacecraftState state) {
@@ -85,7 +85,7 @@ public class TabulatedEphemerisTest {
     }
 
     private void checkInterpolation(StateFilter f, double expectedDP, double expectedDV)
-        throws OrekitException {
+        {
 
         double mass = 2500;
         double a = 7187990.1979844316;
@@ -169,7 +169,7 @@ public class TabulatedEphemerisTest {
     }
 
     @Test
-    public void testPiWraping() throws OrekitException {
+    public void testPiWraping() {
 
         TimeScale utc= TimeScalesFactory.getUTC();
         Frame frame = FramesFactory.getEME2000();

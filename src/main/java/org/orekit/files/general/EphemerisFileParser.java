@@ -19,8 +19,6 @@ package org.orekit.files.general;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import org.orekit.errors.OrekitException;
-
 /**
  * Parse an ephemeris file.
  *
@@ -34,11 +32,10 @@ public interface EphemerisFileParser {
      * @param reader   containing the ephemeris file.
      * @param fileName to use in error messages.
      * @return a parsed ephemeris file.
-     * @throws OrekitException if the ephemeris file cannot be parsed.
      * @throws IOException     if {@code reader} throws one.
      */
     EphemerisFile parse(BufferedReader reader, String fileName)
-            throws OrekitException, IOException;
+            throws IOException;
 
     /**
      * Parse an ephemeris file from a file on the local file system.
@@ -55,10 +52,9 @@ public interface EphemerisFileParser {
      *
      * @param fileName path to the ephemeris file.
      * @return parsed ephemeris file.
-     * @throws OrekitException if the ephemeris file cannot be parsed.
      * @throws IOException     if one is thrown while opening or reading from {@code
      *                         fileName}.
      */
-    EphemerisFile parse(String fileName) throws IOException, OrekitException;
+    EphemerisFile parse(String fileName) throws IOException;
 
 }

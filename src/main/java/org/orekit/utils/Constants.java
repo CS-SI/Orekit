@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,35 @@ public interface Constants {
     double SPEED_OF_LIGHT = 299792458.0;
 
     /** Astronomical unit as a conventional unit of length since IAU 2012 resolution B2: 149597870700.0 m.
-     * @see <a href="http://www.iau.org/static/resolutions/IAU2012_English.pdf">IAU 2012 resolution</a>
+     * @see <a href="http://www.iau.org/static/resolutions/IAU2012_English.pdf">IAU 2012 resolutions</a>
      */
     double IAU_2012_ASTRONOMICAL_UNIT = 149597870700.0;
+
+    /** Solar radius as defined by IAU 2015 resolution B3: 695700000.0 m.
+     * @see <a href="https://www.iau.org/static/resolutions/IAU2015_English.pdf">IAU 2015 resolutions</a>
+     */
+    double IAU_2015_NOMINAL_SOLAR_RADIUS = 695700000.0;
+
+    /** Sun attraction coefficient as defined by IAU 2015 resolution B3: 1.3271244e20 (m³/s²). */
+    double IAU_2015_NOMINAL_SUN_GM = 1.3271244e20;
+
+    /** Earth equatorial radius as defined by IAU 2015 resolution B3: 6.3781e6 (m). */
+    double IAU_2015_NOMINAL_EARTH_EQUATORIAL_RADIUS = 6.3781e6;
+
+    /** Earth polar radius as defined by IAU 2015 resolution B3: 6.3568e6 (m). */
+    double IAU_2015_NOMINAL_EARTH_POLAR_RADIUS = 6.3568e6;
+
+    /** Earth attraction coefficient as defined by IAU 2015 resolution B3: 3.986004e14 (m³/s²). */
+    double IAU_2015_NOMINAL_EARTH_GM = 3.986004e14;
+
+    /** Jupiter equatorial radius as defined by IAU 2015 resolution B3: 7.1492e7 (m). */
+    double IAU_2015_NOMINAL_JUPITER_EQUATORIAL_RADIUS = 7.1492e7;
+
+    /** Jupiter polar radius as defined by IAU 2015 resolution B3: 6.6854e7 (m). */
+    double IAU_2015_NOMINAL_JUPITER_POLAR_RADIUS = 6.6854e7;
+
+    /** Jupiter attraction coefficient as defined by IAU 2015 resolution B3: 1.2668653e17 (m³/s²). */
+    double IAU_2015_NOMINAL_JUPITER_GM = 1.2668653e17;
 
     /** Duration of a mean solar day: 86400.0 s. */
     double JULIAN_DAY = 86400.0;

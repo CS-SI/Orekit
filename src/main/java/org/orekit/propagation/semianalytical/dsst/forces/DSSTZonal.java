@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -197,14 +194,12 @@ public class DSSTZonal implements DSSTForceModel {
      * values will exceed computer capacity)
      * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
      * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
-     * @exception OrekitException if degrees or powers are out of range
-     * @since 7.2
+          * @since 7.2
      */
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
                      final int maxDegreeShortPeriodics,
                      final int maxEccPowShortPeriodics,
-                     final int maxFrequencyShortPeriodics)
-        throws OrekitException {
+                     final int maxFrequencyShortPeriodics) {
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
@@ -239,10 +234,8 @@ public class DSSTZonal implements DSSTForceModel {
      * @param index index value
      * @param min minimum value for index
      * @param max maximum value for index
-     * @exception OrekitException if index is out of range
      */
-    private void checkIndexRange(final int index, final int min, final int max)
-        throws OrekitException {
+    private void checkIndexRange(final int index, final int min, final int max) {
         if (index < min || index > max) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
@@ -267,8 +260,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
-        throws OrekitException {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
 
         computeMeanElementsTruncations(aux);
 
@@ -298,9 +290,8 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** Compute indices truncations for mean elements computations.
      * @param aux auxiliary elements
-     * @throws OrekitException if an error occurs
      */
-    private void computeMeanElementsTruncations(final AuxiliaryElements aux) throws OrekitException {
+    private void computeMeanElementsTruncations(final AuxiliaryElements aux) {
 
         //Compute the max eccentricity power for the mean element rate expansion
         if (maxDegree == 2) {
@@ -397,7 +388,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
+    public void initializeStep(final AuxiliaryElements aux) {
 
         // Equinoctial elements
         a = aux.getSma();
@@ -444,7 +435,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState) {
         return computeMeanElementRates(spacecraftState.getDate());
     }
 
@@ -457,9 +448,8 @@ public class DSSTZonal implements DSSTForceModel {
     /** Compute the mean element rates.
      * @param date current date
      * @return the mean element rates
-     * @throws OrekitException if an error occurs in hansen computation
      */
-    private double[] computeMeanElementRates(final AbsoluteDate date) throws OrekitException {
+    private double[] computeMeanElementRates(final AbsoluteDate date) {
         // Compute potential derivative
         final double[] dU  = computeUDerivatives(date);
         final double dUda  = dU[0];
@@ -495,9 +485,8 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      *  @param date current date
      *  @return potential derivatives
-     *  @throws OrekitException if an error occurs in hansen computation
      */
-    private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
+    private double[] computeUDerivatives(final AbsoluteDate date) {
 
         final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
@@ -616,8 +605,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = zonalSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
@@ -664,10 +652,8 @@ public class DSSTZonal implements DSSTForceModel {
     /** Generate the values for the D<sub>i</sub> coefficients.
      * @param date target date
      * @param slot slot to which the coefficients belong
-     * @throws OrekitException if an error occurs during the coefficient computation
      */
-    private void computeDiCoefficients(final AbsoluteDate date, final Slot slot)
-        throws OrekitException {
+    private void computeDiCoefficients(final AbsoluteDate date, final Slot slot) {
         final double[] meanElementRates = computeMeanElementRates(date);
         final double[] currentDi = new double[6];
 
@@ -981,9 +967,6 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private static class ZonalShortPeriodicCoefficients implements ShortPeriodTerms {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151118L;
-
         /** Maximum value for j index. */
         private final int maxFrequencyShortPeriodics;
 
@@ -1075,8 +1058,7 @@ public class DSSTZonal implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-                throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);
@@ -1111,84 +1093,6 @@ public class DSSTZonal implements DSSTForceModel {
             if (selected.isEmpty() || selected.contains(key)) {
                 map.put(key, value);
             }
-        }
-
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if an additional state provider is not serializable
-         */
-        private Object writeReplace() throws NotSerializableException {
-
-            // slots transitions
-            final SortedSet<TimeSpanMap.Transition<Slot>> transitions     = slots.getTransitions();
-            final AbsoluteDate[]                          transitionDates = new AbsoluteDate[transitions.size()];
-            final Slot[]                                  allSlots        = new Slot[transitions.size() + 1];
-            int i = 0;
-            for (final TimeSpanMap.Transition<Slot> transition : transitions) {
-                if (i == 0) {
-                    // slot before the first transition
-                    allSlots[i] = transition.getBefore();
-                }
-                if (i < transitionDates.length) {
-                    transitionDates[i] = transition.getDate();
-                    allSlots[++i]      = transition.getAfter();
-                }
-            }
-
-            return new DataTransferObject(maxFrequencyShortPeriodics, interpolationPoints,
-                                          transitionDates, allSlots);
-
-        }
-
-
-        /** Internal class used only for serialization. */
-        private static class DataTransferObject implements Serializable {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20170420L;
-
-            /** Maximum value for j index. */
-            private final int maxFrequencyShortPeriodics;
-
-            /** Number of points used in the interpolation process. */
-            private final int interpolationPoints;
-
-            /** Transitions dates. */
-            private final AbsoluteDate[] transitionDates;
-
-            /** All slots. */
-            private final Slot[] allSlots;
-
-            /** Simple constructor.
-             * @param maxFrequencyShortPeriodics maximum value for j index
-             * @param interpolationPoints number of points used in the interpolation process
-             * @param transitionDates transitions dates
-             * @param allSlots all slots
-             */
-            DataTransferObject(final int maxFrequencyShortPeriodics, final int interpolationPoints,
-                               final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
-                this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
-                this.interpolationPoints        = interpolationPoints;
-                this.transitionDates            = transitionDates;
-                this.allSlots                   = allSlots;
-            }
-
-            /** Replace the deserialized data transfer object with a {@link ZonalShortPeriodicCoefficients}.
-             * @return replacement {@link ZonalShortPeriodicCoefficients}
-             */
-            private Object readResolve() {
-
-                final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
-                for (int i = 0; i < transitionDates.length; ++i) {
-                    slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
-                }
-
-                return new ZonalShortPeriodicCoefficients(maxFrequencyShortPeriodics,
-                                                          interpolationPoints,
-                                                          slots);
-
-            }
-
         }
 
     }
@@ -1253,11 +1157,9 @@ public class DSSTZonal implements DSSTForceModel {
          *  @param nMax maximum possible value for n
          *  @param sMax maximum possible value for s
          *  @param jMax maximum possible value for j
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         FourierCjSjCoefficients(final AbsoluteDate date,
-                                final int nMax, final int sMax, final int jMax)
-                throws OrekitException {
+                                final int nMax, final int sMax, final int jMax) {
             this.ghijCoef = new GHIJjsPolynomials(k, h, alpha, beta);
             // Qns coefficients
             final double[][] Qns  = CoefficientsFactory.computeQns(gamma, nMax, nMax);
@@ -1283,9 +1185,8 @@ public class DSSTZonal implements DSSTForceModel {
 
         /** Generate all coefficients.
          * @param date the current date
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
-        private void generateCoefficients(final AbsoluteDate date) throws OrekitException {
+        private void generateCoefficients(final AbsoluteDate date) {
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
             for (int j = 1; j <= jMax; j++) {
 
@@ -1994,10 +1895,7 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /** Coefficients valid for one time slot. */
-    private static class Slot implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160319L;
+    private static class Slot {
 
         /**The coefficients D<sub>i</sub>.
          * <p>

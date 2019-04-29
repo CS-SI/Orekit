@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
@@ -49,7 +50,7 @@ public class DateDetectorTest {
     private NumericalPropagator propagator;
 
     @Test
-    public void testSimpleTimer() throws OrekitException {
+    public void testSimpleTimer() {
         DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
         Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
         propagator.addEventDetector(dateDetector);
@@ -59,14 +60,13 @@ public class DateDetectorTest {
     }
 
     @Test
-    public void testEmbeddedTimer() throws OrekitException {
+    public void testEmbeddedTimer() {
         dateDetector = new DateDetector(maxCheck, threshold);
         Assert.assertNull(dateDetector.getDate());
         EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()).
                 withHandler(new ContinueOnEvent<NodeDetector>() {
-                    private static final long serialVersionUID = 1L;
                     public Action eventOccurred(SpacecraftState s, NodeDetector nd, boolean increasing)
-                        throws OrekitException {
+                        {
                         if (increasing) {
                             nodeDate = s.getDate();
                             dateDetector.addEventDate(nodeDate.shiftedBy(dt));
@@ -83,12 +83,11 @@ public class DateDetectorTest {
     }
 
     @Test
-    public void testAutoEmbeddedTimer() throws OrekitException {
+    public void testAutoEmbeddedTimer() {
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(-dt)).
                 withHandler(new ContinueOnEvent<DateDetector>() {
-                    private static final long serialVersionUID = 1L;
                     public Action eventOccurred(SpacecraftState s, DateDetector dd,  boolean increasing)
-                            throws OrekitException {
+                            {
                         AbsoluteDate nextDate = s.getDate().shiftedBy(-dt);
                         dd.addEventDate(nextDate);
                         ++evtno;
@@ -102,12 +101,11 @@ public class DateDetectorTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testExceptionTimer() throws OrekitException {
+    public void testExceptionTimer() {
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt)).
                 withHandler(new ContinueOnEvent<DateDetector>() {
-                    private static final long serialVersionUID = 1L;
                     public Action eventOccurred(SpacecraftState s, DateDetector dd, boolean increasing)
-                        throws OrekitException {
+                        {
                         double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
                         AbsoluteDate nextDate = s.getDate().shiftedBy(step);
                         dd.addEventDate(nextDate);
@@ -121,11 +119,9 @@ public class DateDetectorTest {
 
     /**
      * Check that a generic event handler can be used with an event detector.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testGenericHandler() throws OrekitException {
+    public void testGenericHandler() {
         //setup
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt));
         // generic event handler that works with all detectors.
@@ -134,7 +130,7 @@ public class DateDetectorTest {
             public Action eventOccurred(SpacecraftState s,
                                         EventDetector detector,
                                         boolean increasing)
-                    throws OrekitException {
+                    {
                 Assert.assertSame(dateDetector, detector);
                 return Action.STOP;
             }
@@ -142,7 +138,7 @@ public class DateDetectorTest {
             @Override
             public SpacecraftState resetState(EventDetector detector,
                                               SpacecraftState oldState)
-                    throws OrekitException {
+                    {
                 throw new RuntimeException("Should not be called");
             }
         };

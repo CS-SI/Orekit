@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.bodies;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface for loading celestial bodies.
  * @author Luc Maisonobe
  */
@@ -26,8 +24,7 @@ public interface CelestialBodyLoader {
     /** Load celestial body.
      * @param name name of the celestial body
      * @return loaded celestial body
-     * @throws OrekitException if the body cannot be loaded
      */
-    CelestialBody loadCelestialBody(String name) throws OrekitException;
+    CelestialBody loadCelestialBody(String name);
 
 }

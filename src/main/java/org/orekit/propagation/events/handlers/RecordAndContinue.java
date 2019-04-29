@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
@@ -25,7 +26,7 @@ import java.util.List;
 
 /**
  * Handler that will record every time an event occurs and always return {@link
- * EventHandler.Action#CONTINUE}.
+ * Action#CONTINUE}.
  *
  * <p> As this handler stores all observed events it may consume large amounts
  * of memory depending on the duration of propagation and the frequency of
@@ -97,6 +98,14 @@ public class RecordAndContinue<T extends EventDetector>
             return state;
         }
 
+        @Override
+        public String toString() {
+            return "Event{" +
+                    "state=" + state +
+                    ", increasing=" + increasing +
+                    ", detector=" + detector +
+                    '}';
+        }
     }
 
     /** Observed events. */

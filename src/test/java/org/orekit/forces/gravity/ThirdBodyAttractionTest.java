@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,7 +78,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass)
-        throws OrekitException {
+        {
         try {
             java.lang.reflect.Field bodyField = ThirdBodyAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
@@ -105,7 +105,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test(expected= OrekitException.class)
-    public void testSunContrib() throws OrekitException {
+    public void testSunContrib() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -145,7 +145,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() throws OrekitException {
+    public void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -295,7 +295,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException {
+    public void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -355,7 +355,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
     @Test
-    public void testMoonContrib() throws OrekitException {
+    public void testMoonContrib() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -413,7 +413,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() throws OrekitException {
+    public void testParameterDerivative() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -432,7 +432,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() throws OrekitException {
+    public void testJacobianVs80Implementation() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -452,7 +452,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobian()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -36,10 +35,8 @@ public class L2Frame extends Frame {
     /** Simple constructor.
      * @param primaryBody Celestial body with bigger mass, m1.
      * @param secondaryBody Celestial body with smaller mass, m2.
-     * @exception OrekitException If frame cannot be retrieved from {@code primaryBody}.
      */
-    public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody)
-        throws OrekitException {
+    public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody) {
         super(primaryBody.getInertiallyOrientedFrame(),
               new ShiftingTransformProvider(new L2TransformProvider(primaryBody, secondaryBody),
                                             CartesianDerivativesFilter.USE_P,

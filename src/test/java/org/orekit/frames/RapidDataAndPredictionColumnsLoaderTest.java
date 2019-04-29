@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.orekit.utils.IERSConventions;
 public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testStartDateDaily1980() throws OrekitException {
+    public void testStartDateDaily1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -47,7 +47,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testEndDateDaily1980() throws OrekitException {
+    public void testEndDateDaily1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -58,7 +58,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testStartDateDaily2000() throws OrekitException {
+    public void testStartDateDaily2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -69,7 +69,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testMissingColumnsPadding1980() throws OrekitException {
+    public void testMissingColumnsPadding1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -117,7 +117,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testMissingColumnsPadding2000() throws OrekitException {
+    public void testMissingColumnsPadding2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -153,7 +153,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testEndDateDaily2000() throws OrekitException {
+    public void testEndDateDaily2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -164,7 +164,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testNoColumns() throws OrekitException {
+    public void testNoColumns() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -182,7 +182,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testPost2070() throws OrekitException {
+    public void testPost2070() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -194,51 +194,51 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testTruncatedLine() throws OrekitException {
+    public void testTruncatedLine() {
         doTestWrongFile("^finals2000A-truncated-line\\.daily$", 3);
     }
 
     @Test
-    public void testWrongDateFormat() throws OrekitException {
+    public void testWrongDateFormat() {
         doTestWrongFile("^finals2000A-wrong-date-format\\.daily$", 3);
     }
 
     @Test
-    public void testWrongYear() throws OrekitException {
+    public void testWrongYear() {
         doTestWrongFile("^finals2000A-wrong-year\\.daily$", 6);
     }
 
     @Test
-    public void testWrongMonth() throws OrekitException {
+    public void testWrongMonth() {
         doTestWrongFile("^finals2000A-wrong-month\\.daily$", 5);
     }
 
     @Test
-    public void testWrongDay() throws OrekitException {
+    public void testWrongDay() {
         doTestWrongFile("^finals2000A-wrong-day\\.daily$", 4);
     }
 
     @Test
-    public void testWrongPoleFormat() throws OrekitException {
+    public void testWrongPoleFormat() {
         doTestWrongFile("^finals2000A-wrong-pole-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongUT1UTCFormat() throws OrekitException {
+    public void testWrongUT1UTCFormat() {
         doTestWrongFile("^finals2000A-wrong-ut1-utc-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongLODFormat() throws OrekitException {
+    public void testWrongLODFormat() {
         doTestWrongFile("^finals2000A-wrong-lod-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongNutationFormat() throws OrekitException {
+    public void testWrongNutationFormat() {
         doTestWrongFile("^finals2000A-wrong-nutation-format\\.daily$", 7);
     }
 
-    private void doTestWrongFile(String fileName, int lineNumber) throws OrekitException {
+    private void doTestWrongFile(String fileName, int lineNumber) {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();

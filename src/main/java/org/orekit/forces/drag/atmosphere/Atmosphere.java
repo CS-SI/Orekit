@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.io.Serializable;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -46,11 +45,8 @@ public interface Atmosphere extends Serializable {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return local density (kg/m³)
-     * @exception OrekitException if date is out of range of solar activity model
-     * or if some frame conversion cannot be performed
      */
-    double getDensity(AbsoluteDate date, Vector3D position, Frame frame)
-        throws OrekitException;
+    double getDensity(AbsoluteDate date, Vector3D position, Frame frame);
 
     /** Get the local density.
      * @param date current date
@@ -58,11 +54,8 @@ public interface Atmosphere extends Serializable {
      * @param frame the frame in which is defined the position
      * @param <T> instance of RealFieldElement
      * @return local density (kg/m³)
-     * @exception OrekitException if date is out of range of solar activity model
-     * or if some frame conversion cannot be performed
      */
-    <T extends RealFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
-        throws OrekitException;
+    <T extends RealFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame);
 
     /** Get the inertial velocity of atmosphere molecules.
      * <p>By default, atmosphere is supposed to have a null
@@ -72,10 +65,8 @@ public interface Atmosphere extends Serializable {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return velocity (m/s) (defined in the same frame as the position)
-     * @exception OrekitException if some conversion cannot be performed
      */
-    default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
-        throws OrekitException {
+    default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) {
         final Transform     bodyToFrame = getFrame().getTransformTo(frame, date);
         final Vector3D      posInBody   = bodyToFrame.getInverse().transformPosition(position);
         final PVCoordinates pvBody      = new PVCoordinates(posInBody, Vector3D.ZERO);
@@ -89,10 +80,8 @@ public interface Atmosphere extends Serializable {
      * @param frame the frame in which is defined the position
      * @param <T> instance of RealFieldElement
      * @return velocity (m/s) (defined in the same frame as the position)
-     * @exception OrekitException if some conversion cannot be performed
      */
-    default <T extends RealFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
-        throws OrekitException {
+    default <T extends RealFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
         final Transform             bodyToFrame = getFrame().getTransformTo(frame, date.toAbsoluteDate());
         final FieldVector3D<T>      posInBody   = bodyToFrame.getInverse().transformPosition(position);
         final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody, FieldVector3D.getZero(position.getX().getField()));

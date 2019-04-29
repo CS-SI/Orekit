@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -41,7 +40,7 @@ import org.orekit.utils.Constants;
 public class OnBoardAntennaRangeModifierTest {
 
     @Test
-    public void testPreliminary() throws OrekitException {
+    public void testPreliminary() {
 
         // this test does not check OnBoardAntennaRangeModifier at all,
         // it just checks RangeMeasurementCreator behaves as necessary for the other test
@@ -58,7 +57,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
-                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
+                                                               new RangeMeasurementCreator(context, Vector3D.ZERO, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -67,7 +66,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
-                                                               new RangeMeasurementCreator(context, new Vector3D(xOffset, 0, 0)),
+                                                               new RangeMeasurementCreator(context, new Vector3D(xOffset, 0, 0), 0.0),
                                                                1.0, 3.0, 300.0);
 
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
@@ -81,7 +80,7 @@ public class OnBoardAntennaRangeModifierTest {
     }
 
     @Test
-    public void testEffect() throws OrekitException {
+    public void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -95,7 +94,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
-                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
+                                                               new RangeMeasurementCreator(context, Vector3D.ZERO, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -104,7 +103,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
-                                                               new RangeMeasurementCreator(context, apc),
+                                                               new RangeMeasurementCreator(context, apc, 0.0),
                                                                1.0, 3.0, 300.0);
 
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,

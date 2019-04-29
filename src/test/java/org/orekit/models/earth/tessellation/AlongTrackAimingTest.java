@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ import org.orekit.utils.IERSConventions;
 public class AlongTrackAimingTest {
 
     @Test
-    public void testAscending() throws OrekitException {
+    public void testAscending() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, true);
         for (double latitude = FastMath.toRadians(-50.21); latitude < FastMath.toRadians(50.21); latitude += 0.001) {
             final GeodeticPoint gp = new GeodeticPoint(latitude, 0.0, 0.0);
@@ -60,7 +60,7 @@ public class AlongTrackAimingTest {
     }
 
     @Test
-    public void testDescending() throws OrekitException {
+    public void testDescending() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, false);
         for (double latitude = FastMath.toRadians(-50.21); latitude < FastMath.toRadians(50.21); latitude += 0.001) {
             final GeodeticPoint gp = new GeodeticPoint(latitude, 0.0, 0.0);
@@ -82,7 +82,7 @@ public class AlongTrackAimingTest {
     }
 
     @Test
-    public void testTooNorthernLatitude() throws OrekitException {
+    public void testTooNorthernLatitude() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, true);
         try {
             final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), 0.0, 0.0);
@@ -95,7 +95,7 @@ public class AlongTrackAimingTest {
     }
 
     @Test
-    public void testTooSouthernLatitude() throws OrekitException {
+    public void testTooSouthernLatitude() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, true);
         try {
             final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(-51.0), 0.0, 0.0);
@@ -108,7 +108,7 @@ public class AlongTrackAimingTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
                                   FastMath.toRadians(5.300), PositionAngle.MEAN,

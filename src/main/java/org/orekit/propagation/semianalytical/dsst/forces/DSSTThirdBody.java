@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -32,7 +29,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -243,11 +239,9 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
      *  @param meanOnly only mean elements will be used for the propagation
-     *  @throws OrekitException if some specific error occurs
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
-        throws OrekitException {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
 
         // Initializes specific parameters.
         initializeStep(aux);
@@ -332,7 +326,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
+    public void initializeStep(final AuxiliaryElements aux) {
 
         // Equinoctial elements
         a = aux.getSma();
@@ -436,8 +430,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = shortPeriods.createSlot(meanStates);
 
@@ -1846,9 +1839,6 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     private static class ThirdBodyShortPeriodicCoefficients implements ShortPeriodTerms {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151119L;
-
         /** Maximal value for j. */
         private final int jMax;
 
@@ -1943,8 +1933,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);
@@ -1980,100 +1969,10 @@ public class DSSTThirdBody implements DSSTForceModel {
             }
         }
 
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if an additional state provider is not serializable
-         */
-        private Object writeReplace() throws NotSerializableException {
-
-            // slots transitions
-            final SortedSet<TimeSpanMap.Transition<Slot>> transitions     = slots.getTransitions();
-            final AbsoluteDate[]                          transitionDates = new AbsoluteDate[transitions.size()];
-            final Slot[]                                  allSlots        = new Slot[transitions.size() + 1];
-            int i = 0;
-            for (final TimeSpanMap.Transition<Slot> transition : transitions) {
-                if (i == 0) {
-                    // slot before the first transition
-                    allSlots[i] = transition.getBefore();
-                }
-                if (i < transitionDates.length) {
-                    transitionDates[i] = transition.getDate();
-                    allSlots[++i]      = transition.getAfter();
-                }
-            }
-
-            return new DataTransferObject(jMax, interpolationPoints, maxFreqF, prefix,
-                                          transitionDates, allSlots);
-
-        }
-
-
-        /** Internal class used only for serialization. */
-        private static class DataTransferObject implements Serializable {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20160319L;
-
-            /** Maximum value for j index. */
-            private final int jMax;
-
-            /** Number of points used in the interpolation process. */
-            private final int interpolationPoints;
-
-            /** Max frequency of F. */
-            private final int    maxFreqF;
-
-            /** Coefficients prefix. */
-            private final String prefix;
-
-            /** Transitions dates. */
-            private final AbsoluteDate[] transitionDates;
-
-            /** All slots. */
-            private final Slot[] allSlots;
-
-            /** Simple constructor.
-             * @param jMax maximum value for j index
-             * @param interpolationPoints number of points used in the interpolation process
-             * @param maxFreqF max frequency of F
-             * @param prefix prefix for coefficients keys
-             * @param transitionDates transitions dates
-             * @param allSlots all slots
-             */
-            DataTransferObject(final int jMax, final int interpolationPoints,
-                               final int maxFreqF, final String prefix,
-                               final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
-                this.jMax                  = jMax;
-                this.interpolationPoints   = interpolationPoints;
-                this.maxFreqF              = maxFreqF;
-                this.prefix                = prefix;
-                this.transitionDates       = transitionDates;
-                this.allSlots              = allSlots;
-            }
-
-            /** Replace the deserialized data transfer object with a {@link ThirdBodyShortPeriodicCoefficients}.
-             * @return replacement {@link ThirdBodyShortPeriodicCoefficients}
-             */
-            private Object readResolve() {
-
-                final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
-                for (int i = 0; i < transitionDates.length; ++i) {
-                    slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
-                }
-
-                return new ThirdBodyShortPeriodicCoefficients(jMax, interpolationPoints, maxFreqF, prefix, slots);
-
-            }
-
-        }
-
     }
 
     /** Coefficients valid for one time slot. */
-    private static class Slot implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160319L;
+    private static class Slot {
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>

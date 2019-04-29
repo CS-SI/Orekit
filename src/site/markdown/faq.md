@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2017 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -132,6 +132,7 @@ Math to Hipparchus
   Orekit 9.0   | Hipparchus          1.1
   Orekit 9.0.1 | Hipparchus          1.1
   Orekit 9.1   | Hipparchus          1.2
+  Orekit 9.2   | Hipparchus          1.3
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 
@@ -194,9 +195,9 @@ USNO tai-utc.dat file. If either file is found in the Orekit configuration, it w
 and the message should not appear.
 
 Configuring data loading is explained in the configuration page. For a start, the simplest configuration
-is to download the orekit-data.zip file from the download page, to unzip it anywhere you want, note the
-path of the orekit-data folder that will be created and add the following lines at the start of
-your program:
+ is to download the [orekit-data-master.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)
+file from the forge, to unzip it anywhere you want, rename the `orekit-data-master` folder that will be created
+into `orekit-data` and add the following lines at the start of your program:
 
     File orekitData = new File("/path/to/the/folder/orekit-data");
     DataProvidersManager manager = DataProvidersManager.getInstance();

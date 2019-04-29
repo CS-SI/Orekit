@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@ public class LofOffsetPointingTest {
     /** Test if both constructors are equivalent
      */
     @Test
-    public void testLof() throws OrekitException {
+    public void testLof() {
 
         //  Satellite position
         final CircularOrbit circ =
@@ -104,7 +104,7 @@ public class LofOffsetPointingTest {
     }
 
     @Test
-    public void testMiss() throws OrekitException {
+    public void testMiss() {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
                                    FastMath.toRadians(5.300), PositionAngle.MEAN,
@@ -120,7 +120,7 @@ public class LofOffsetPointingTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
@@ -165,7 +165,7 @@ public class LofOffsetPointingTest {
     }
 
     @Test
-    public void testTypesField() throws OrekitException {
+    public void testTypesField() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -204,7 +204,7 @@ public class LofOffsetPointingTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
 
         final Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();

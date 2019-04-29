@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -84,15 +83,6 @@ public class JacobiansMapper {
      */
     public int getAdditionalStateDimension() {
         return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
-    }
-
-    /** Get the state vector dimension.
-     * @return state vector dimension
-     * @deprecated as of 9.0, replaced with {@link #STATE_DIMENSION}
-     */
-    @Deprecated
-    public int getStateDimension() {
-        return STATE_DIMENSION;
     }
 
     /** Get the number of parameters.
@@ -172,11 +162,9 @@ public class JacobiansMapper {
      * </p>
      * @param state spacecraft state
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
-     * @exception OrekitException if state does not contain the Jacobian additional state
-     * @see #getParametersJacobian(SpacecraftState, double[][])
+          * @see #getParametersJacobian(SpacecraftState, double[][])
      */
-    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0)
-        throws OrekitException {
+    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0) {
 
         // get the conversion Jacobian between state parameters and Cartesian parameters
         final double[][] dYdC = getdYdC(state);
@@ -212,11 +200,9 @@ public class JacobiansMapper {
      * </p>
      * @param state spacecraft state
      * @param dYdP placeholder where to put the Jacobian with respect to parameters
-     * @exception OrekitException if state does not contain the Jacobian additional state
-     * @see #getStateJacobian(SpacecraftState, double[][])
+          * @see #getStateJacobian(SpacecraftState, double[][])
      */
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
-        throws OrekitException {
+    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
 
         if (parameters.getNbParams() != 0) {
 

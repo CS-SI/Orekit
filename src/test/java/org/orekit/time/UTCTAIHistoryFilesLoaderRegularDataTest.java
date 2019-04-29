@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,17 +22,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 
 public class UTCTAIHistoryFilesLoaderRegularDataTest {
 
     @Test
-    public void testRegular() throws OrekitException {
+    public void testRegular() {
         Assert.assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
     }
 
     @Test
-    public void testFirstLeap() throws OrekitException {
+    public void testFirstLeap() {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
         Assert.assertEquals(1.4228180,
@@ -41,7 +40,7 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
     }
 
     @Test
-    public void testLaststLeap() throws OrekitException {
+    public void testLaststLeap() {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(2015, 7, 1, 0, 0, 0.0, utc);
         Assert.assertEquals(1.0,

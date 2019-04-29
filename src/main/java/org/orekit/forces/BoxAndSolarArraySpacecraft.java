@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -123,7 +123,10 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Factory for the DerivativeStructure instances. */
+    /** Factory for the DerivativeStructure instances.
+     * @deprecated Attribute not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
+     */
+    @Deprecated
     private final DSFactory factory;
 
     /** Build a spacecraft model with best lighting of solar array.
@@ -627,12 +630,9 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param position position of spacecraft in reference frame
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
-     * @exception OrekitException if sun direction cannot be computed in best lighting
-     * configuration
      */
     public synchronized Vector3D getNormal(final AbsoluteDate date, final Frame frame,
-                                           final Vector3D position, final Rotation rotation)
-        throws OrekitException {
+                                           final Vector3D position, final Rotation rotation) {
 
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
@@ -664,14 +664,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
      * @param <T> type of the field elements
-     * @exception OrekitException if sun direction cannot be computed in best lighting
-     * configuration
      */
     public synchronized <T extends RealFieldElement<T>> FieldVector3D<T> getNormal(final FieldAbsoluteDate<T> date,
                                                                                    final Frame frame,
                                                                                    final FieldVector3D<T> position,
-                                                                                   final FieldRotation<T> rotation)
-        throws OrekitException {
+                                                                                   final FieldRotation<T> rotation) {
 
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
@@ -703,13 +700,12 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param position position of spacecraft in reference frame
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
-     * @exception OrekitException if sun direction cannot be computed in best lighting
-     * configuration
+     * @deprecated Method not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
      */
+    @Deprecated
     public synchronized FieldVector3D<DerivativeStructure> getNormal(final AbsoluteDate date, final Frame frame,
                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                     final FieldRotation<DerivativeStructure> rotation)
-        throws OrekitException {
+                                                                     final FieldRotation<DerivativeStructure> rotation) {
 
         final DerivativeStructure zero = position.getX().getField().getZero();
 
@@ -744,8 +740,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     public Vector3D dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                      final Rotation rotation, final double mass,
                                      final double density, final Vector3D relativeVelocity,
-                                     final double[] parameters)
-        throws OrekitException {
+                                     final double[] parameters) {
 
         final double dragCoeff = parameters[0];
         final double liftRatio = liftParameterDriver == null ? 0.0 : parameters[1];
@@ -782,13 +777,13 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame,
                                                                final Vector3D position, final Rotation rotation,
                                                                final double mass, final  double density,
                                                                final Vector3D relativeVelocity,
                                                                final double[] parameters,
-                                                               final String paramName)
-        throws OrekitException {
+                                                               final String paramName) {
 
         final DerivativeStructure dragCoeffDS;
         final DerivativeStructure liftRatioDS;
@@ -850,8 +845,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     @Override
     public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                   final Rotation rotation, final double mass, final Vector3D flux,
-                                                  final double[] parameters)
-        throws OrekitException {
+                                                  final double[] parameters) {
 
         if (flux.getNormSq() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
@@ -889,12 +883,12 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame,
                                                                             final Vector3D position, final Rotation rotation,
                                                                             final double mass, final Vector3D flux,
                                                                             final double[] parameters,
-                                                                            final String paramName)
-        throws OrekitException {
+                                                                            final String paramName) {
 
         if (flux.getNormSq() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
@@ -954,8 +948,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final  T density, final FieldVector3D<T> relativeVelocity,
-                         final T[] parameters)
-        throws OrekitException {
+                         final T[] parameters) {
 
         final T dragCoeff = parameters[0];
         final T liftRatio = liftParameterDriver == null ? dragCoeff.getField().getZero() : parameters[1];
@@ -1000,8 +993,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
-                                      final T[] parameters)
-        throws OrekitException {
+                                      final T[] parameters) {
 
         if (flux.getNormSq().getReal() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
@@ -1110,7 +1102,9 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param specularReflectionCoeffDS specular reflection coefficient
      * @param diffuseReflectionCoeffDS diffuse reflection coefficient
      * @return contribution of the facet to force in spacecraft frame
+     * @deprecated Method not used anymore, should have been deleted in 9.0 but was left over. To be deleted in the next major version.
      */
+    @Deprecated
     private FieldVector3D<DerivativeStructure> facetRadiationAcceleration(final Vector3D normal, final double area,
                                                                           final Vector3D fluxSat, final double dot,
                                                                           final DerivativeStructure specularReflectionCoeffDS,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -76,7 +76,7 @@ public class YawSteeringTest {
     OneAxisEllipsoid earthShape;
 
     @Test
-    public void testTarget() throws OrekitException {
+    public void testTarget() {
 
         //  Attitude laws
         // **************
@@ -105,7 +105,7 @@ public class YawSteeringTest {
     }
 
     @Test
-    public void testSunAligned() throws OrekitException {
+    public void testSunAligned() {
 
         //  Attitude laws
         // **************
@@ -127,7 +127,7 @@ public class YawSteeringTest {
     }
 
     @Test
-    public void testCompensAxis() throws OrekitException {
+    public void testCompensAxis() {
 
         //  Attitude laws
         // **************
@@ -158,7 +158,7 @@ public class YawSteeringTest {
     /** Test the derivatives of the sliding target
      */
     @Test
-    public void testSlidingDerivatives() throws OrekitException {
+    public void testSlidingDerivatives() {
 
         GroundPointing law = new YawSteering(circOrbit.getFrame(),
                                              new NadirPointing(circOrbit.getFrame(), earthShape),
@@ -190,7 +190,7 @@ public class YawSteeringTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
 
         NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
@@ -236,7 +236,7 @@ public class YawSteeringTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
 
         final Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();

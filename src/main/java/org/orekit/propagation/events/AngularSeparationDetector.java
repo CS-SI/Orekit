@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -30,8 +30,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * is the {@link org.orekit.bodies.CelestialBodyFactory#getSun() Sun}, for computing
  * interferences for the telemetry link. Another similar case is when the beacon is
  * another spacecraft, for interferences computation.</p>
- * <p>The default handler behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * <p>The default handler behavior is to {@link Action#STOP stop}
  * propagation when spacecraft enters the proximity zone. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -39,9 +38,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 8.0
  */
 public class AngularSeparationDetector extends AbstractDetector<AngularSeparationDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160519L;
 
     /** Beacon at the center of the proximity zone. */
     private final PVCoordinatesProvider beacon;
@@ -137,9 +133,8 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         final PVCoordinates sPV = s.getPVCoordinates();
         final PVCoordinates bPV = beacon.getPVCoordinates(s.getDate(), s.getFrame());
         final PVCoordinates oPV = observer.getPVCoordinates(s.getDate(), s.getFrame());

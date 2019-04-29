@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -43,7 +42,7 @@ import org.orekit.utils.IERSConventions;
 public class OceanTidesFieldTest {
 
     @Test
-    public void testDeltaCnmSnm() throws OrekitException {
+    public void testDeltaCnmSnm() {
 
         // this is an arbitrarily truncated model, limited to 4x4 and with only a few waves
         List<OceanTidesWave> waves = getWaves(4, 4, 55565, 56554, 85455, 135655, 273555);
@@ -82,7 +81,7 @@ public class OceanTidesFieldTest {
     }
 
     private List<OceanTidesWave> getWaves(int degree, int order, int... doodson)
-        throws OrekitException {
+        {
 
         // load a complete model
         AstronomicalAmplitudeReader aaReader =

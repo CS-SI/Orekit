@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.models.earth.tessellation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 
 /** Interface defining the aiming direction of {@link Tile tiles}.
  * @author Luc Maisonobe
@@ -29,8 +28,7 @@ public interface TileAiming {
      * @param point point on the ellipsoid (Cartesian coordinates)
      * @param gp point on the ellipsoid (geodetic coordinates)
      * @return normalized along tile direction
-     * @exception OrekitException if direction cannot be estimated
      */
-    Vector3D alongTileDirection(Vector3D point, GeodeticPoint gp) throws OrekitException;
+    Vector3D alongTileDirection(Vector3D point, GeodeticPoint gp);
 
 }

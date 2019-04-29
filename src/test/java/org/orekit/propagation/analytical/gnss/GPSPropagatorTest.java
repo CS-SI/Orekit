@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,18 +23,23 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.GPSAlmanac;
 import org.orekit.gnss.SEMParser;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.GPSDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -47,8 +52,9 @@ public class GPSPropagatorTest {
     private static List<GPSAlmanac> almanacs;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws OrekitException {
+    public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
+        GPSDate.setRolloverReference(new DateComponents(DateComponents.GPS_EPOCH, 7 * 512));
         // Get the parser to read a SEM file
         SEMParser reader = new SEMParser(null);
         // Reads the SEM file
@@ -58,7 +64,28 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testGPSCycle() throws OrekitException {
+    public void testClockCorrections() {
+        final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        propagator.addAdditionalStateProvider(new ClockCorrectionsProvider(almanacs.get(0)));
+        // Propagate at the GPS date and one GPS cycle later
+        final AbsoluteDate date0 = almanacs.get(0).getDate();
+        double dtRelMin = 0;
+        double dtRelMax = 0;
+        for (double dt = 0; dt < 0.5 * Constants.JULIAN_DAY; dt += 1.0) {
+            SpacecraftState state = propagator.propagate(date0.shiftedBy(dt));
+            double[] corrections = state.getAdditionalState(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
+            Assert.assertEquals(3, corrections.length);
+            Assert.assertEquals(1.33514404296875E-05, corrections[0], 1.0e-19);
+            dtRelMin = FastMath.min(dtRelMin, corrections[1]);
+            dtRelMax = FastMath.max(dtRelMax, corrections[1]);
+            Assert.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
+        }
+        Assert.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
+        Assert.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
+    }
+
+    @Test
+    public void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
         final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
         // Propagate at the GPS date and one GPS cycle later
@@ -73,9 +100,11 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testFrames() throws OrekitException {
+    public void testFrames() {
         // Builds the GPSPropagator from the almanac
         final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        Assert.assertEquals("EME2000", propagator.getFrame().getName());
+        Assert.assertEquals(3.986005e14, GPSPropagator.getMU(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -89,7 +118,25 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testTLE() throws OrekitException {
+    public void testNoReset() {
+        try {
+            GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+            propagator.resetInitialState(propagator.getInitialState());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+        }
+        try {
+            GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+            propagator.resetIntermediateState(propagator.getInitialState(), true);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testTLE() {
 
         List<GPSPropagator> gpsPropagators = new ArrayList<GPSPropagator>();
         for (final GPSAlmanac almanac : almanacs) {
@@ -211,7 +258,7 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testDerivativesConsistency() throws OrekitException {
+    public void testDerivativesConsistency() {
 
         final Frame eme2000 = FramesFactory.getEME2000();
         double errorP = 0;
@@ -220,8 +267,7 @@ public class GPSPropagatorTest {
         for (final GPSAlmanac almanac : almanacs) {
             GPSPropagator propagator = new GPSPropagator.Builder(almanac).build();
             GPSOrbitalElements elements = propagator.getGPSOrbitalElements();
-            AbsoluteDate t0 = AbsoluteDate.createGPSDate(elements.getWeek(),
-                                                           0.001 * elements.getTime());
+            AbsoluteDate t0 = new GPSDate(elements.getWeek(), 0.001 * elements.getTime()).getDate();
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
                 final AbsoluteDate central = t0.shiftedBy(dt);
                 final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);

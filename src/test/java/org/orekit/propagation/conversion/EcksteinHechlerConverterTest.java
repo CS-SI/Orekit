@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -48,12 +47,12 @@ public class EcksteinHechlerConverterTest {
     private UnnormalizedSphericalHarmonicsProvider provider;
 
     @Test
-    public void testConversionPositionVelocity() throws OrekitException {
+    public void testConversionPositionVelocity() {
         checkFit(orbit, 86400, 300, 1.0e-3, false, 1.781e-8);
     }
 
     @Test
-    public void testConversionPositionOnly() throws OrekitException {
+    public void testConversionPositionOnly() {
         checkFit(orbit, 86400, 300, 1.0e-3, true, 3.208e-8);
     }
 
@@ -63,7 +62,7 @@ public class EcksteinHechlerConverterTest {
                             final double threshold,
                             final boolean positionOnly,
                             final double expectedRMS)
-        throws OrekitException {
+        {
 
         // shift position by 3m
         CircularOrbit modified = new CircularOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
@@ -127,7 +126,7 @@ public class EcksteinHechlerConverterTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);

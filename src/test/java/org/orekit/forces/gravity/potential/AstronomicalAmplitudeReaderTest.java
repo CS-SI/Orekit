@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,13 +23,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
 
 public class AstronomicalAmplitudeReaderTest {
 
     @Test
     public void testHfFES2004()
-        throws OrekitException {
+        {
         AstronomicalAmplitudeReader reader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);

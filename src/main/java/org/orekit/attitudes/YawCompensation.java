@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -65,9 +64,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class YawCompensation extends GroundPointing implements AttitudeProviderModifier {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150529L;
-
     /** J axis. */
     private static final PVCoordinates PLUS_J =
             new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
@@ -82,11 +78,9 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     /** Creates a new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
-     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
      * @since 7.1
      */
-    public YawCompensation(final Frame inertialFrame, final GroundPointing groundPointingLaw)
-        throws OrekitException {
+    public YawCompensation(final Frame inertialFrame, final GroundPointing groundPointingLaw) {
         super(inertialFrame, groundPointingLaw.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
     }
@@ -100,16 +94,14 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                                final AbsoluteDate date, final Frame frame) {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame)
-        throws OrekitException {
+                                                                                        final Frame frame) {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
@@ -118,11 +110,9 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @param date date at which state is requested
      * @param frame reference frame from which attitude is computed
      * @return satellite base attitude state, i.e without compensation.
-     * @throws OrekitException if some specific error occurs
      */
     public Attitude getBaseState(final PVCoordinatesProvider pvProv,
-                                 final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                 final AbsoluteDate date, final Frame frame) {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
 
@@ -132,20 +122,17 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
      * @return satellite base attitude state, i.e without compensation.
-     * @throws OrekitException if some specific error occurs
      * @since 9.0
      */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                         final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                final AbsoluteDate date, final Frame frame) {
 
         final Transform bodyToRef = getBodyFrame().getTransformTo(frame, date);
 
@@ -200,8 +187,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
 
         final Field<T>              field = date.getField();
         final FieldVector3D<T>      zero  = FieldVector3D.getZero(field);
@@ -263,11 +249,9 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @param date date at which compensation is requested
      * @param frame reference frame from which attitude is computed
      * @return yaw compensation angle for orbit.
-     * @throws OrekitException if some specific error occurs
      */
     public double getYawAngle(final PVCoordinatesProvider pvProv,
-                              final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                              final AbsoluteDate date, final Frame frame) {
         final Rotation rBase        = getBaseState(pvProv, date, frame).getRotation();
         final Rotation rCompensated = getAttitude(pvProv, date, frame).getRotation();
         final Rotation compensation = rCompensated.compose(rBase.revert(), RotationConvention.VECTOR_OPERATOR);
@@ -280,13 +264,11 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
      * @return yaw compensation angle for orbit.
-     * @throws OrekitException if some specific error occurs
      * @since 9.0
      */
     public <T extends RealFieldElement<T>> T getYawAngle(final FieldPVCoordinatesProvider<T> pvProv,
                                                          final FieldAbsoluteDate<T> date,
-                                                         final Frame frame)
-        throws OrekitException {
+                                                         final Frame frame) {
         final FieldRotation<T> rBase        = getBaseState(pvProv, date, frame).getRotation();
         final FieldRotation<T> rCompensated = getAttitude(pvProv, date, frame).getRotation();
         final FieldRotation<T> compensation = rCompensated.compose(rBase.revert(), RotationConvention.VECTOR_OPERATOR);

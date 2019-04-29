@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -325,14 +323,13 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Set the initial state.
      * @param initialState initial state
-     * @exception OrekitException if initial state cannot be set
      */
-    public void setInitialState(final SpacecraftState initialState) throws OrekitException {
+    public void setInitialState(final SpacecraftState initialState) {
         resetInitialState(initialState);
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
@@ -342,8 +339,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -355,10 +351,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Internal mapper using directly osculating parameters. */
-    private static class OsculatingMapper extends StateMapper implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20130621L;
+    private static class OsculatingMapper extends StateMapper {
 
         /** Simple constructor.
          * <p>
@@ -382,8 +375,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
-                                               final boolean meanOnly)
-            throws OrekitException {
+                                               final boolean meanOnly) {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
             final double mass = y[6];
@@ -437,66 +429,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             }
         }
 
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
-         */
-        private Object writeReplace() throws NotSerializableException {
-            return new DataTransferObject(getReferenceDate(), getMu(), getOrbitType(),
-                                          getPositionAngleType(), getAttitudeProvider(), getFrame());
-        }
-
-        /** Internal class used only for serialization. */
-        private static class DataTransferObject implements Serializable {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20130621L;
-
-            /** Reference date. */
-            private final AbsoluteDate referenceDate;
-
-            /** Central attraction coefficient (m³/s²). */
-            private final double mu;
-
-            /** Orbit type to use for mapping. */
-            private final OrbitType orbitType;
-
-            /** Angle type to use for propagation. */
-            private final PositionAngle positionAngleType;
-
-            /** Attitude provider. */
-            private final AttitudeProvider attitudeProvider;
-
-            /** Inertial frame. */
-            private final Frame frame;
-
-            /** Simple constructor.
-             * @param referenceDate reference date
-             * @param mu central attraction coefficient (m³/s²)
-             * @param orbitType orbit type to use for mapping
-             * @param positionAngleType angle type to use for propagation
-             * @param attitudeProvider attitude provider
-             * @param frame inertial frame
-             */
-            DataTransferObject(final AbsoluteDate referenceDate, final double mu,
-                                      final OrbitType orbitType, final PositionAngle positionAngleType,
-                                      final AttitudeProvider attitudeProvider, final Frame frame) {
-                this.referenceDate     = referenceDate;
-                this.mu                = mu;
-                this.orbitType         = orbitType;
-                this.positionAngleType = positionAngleType;
-                this.attitudeProvider  = attitudeProvider;
-                this.frame             = frame;
-            }
-
-            /** Replace the deserialized data transfer object with a {@link OsculatingMapper}.
-             * @return replacement {@link OsculatingMapper}
-             */
-            private Object readResolve() {
-                return new OsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
-            }
-        }
-
     }
 
     /** {@inheritDoc} */
@@ -541,8 +473,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState initialState, final AbsoluteDate target)
-                throws OrekitException {
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
             for (final ForceModel forceModel : forceModels) {
                 forceModel.init(initialState, target);
             }
@@ -550,7 +481,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
+        public double[] computeDerivatives(final SpacecraftState state) {
 
             currentState = state;
             Arrays.fill(yDot, 0.0);
@@ -603,8 +534,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void addNonKeplerianAcceleration(final Vector3D gamma)
-            throws OrekitException {
+        public void addNonKeplerianAcceleration(final Vector3D gamma) {
             for (int i = 0; i < 6; ++i) {
                 final double[] jRow = jacobian[i];
                 yDot[i] += jRow[3] * gamma.getX() + jRow[4] * gamma.getY() + jRow[5] * gamma.getZ();
@@ -681,10 +611,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @exception OrekitException if Jacobian is singular
      */
-    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type)
-        throws OrekitException {
+    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();

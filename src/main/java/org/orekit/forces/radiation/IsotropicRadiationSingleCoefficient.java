@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -118,8 +118,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
-                                      final T[] parameters)
-        throws OrekitException {
+                                      final T[] parameters) {
         final T cr = parameters[0];
         return new FieldVector3D<>(mass.reciprocal().multiply(crossSection).multiply(cr), flux);
 
@@ -127,11 +126,11 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                             final Rotation rotation, final double mass,
                                                                             final Vector3D flux, final double[] parameters,
-                                                                            final String paramName)
-        throws OrekitException {
+                                                                            final String paramName) {
 
         final DerivativeStructure crDS;
         if (REFLECTION_COEFFICIENT.equals(paramName)) {

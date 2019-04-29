@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,8 +58,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class BatchLSEstimatorTest {
 
+    /**
+     * Perfect PV measurements with a perfect start
+     */
     @Test
-    public void testKeplerPV() throws OrekitException {
+    public void testKeplerPV() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -100,9 +103,56 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
-
+    
+    /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testKeplerRange() throws OrekitException {
+    public void testKeplerPVBackward() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               0.0, -1.0, 300.0);
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 8.3e-9,
+                                     0.0, 5.3e-8,
+                                     0.0, 5.6e-9,
+                                     0.0, 1.6e-12);
+
+        RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
+        RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
+        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
+
+    }
+
+    /**
+     * Perfect range measurements with a biased start
+     */
+    @Test
+    public void testKeplerRange() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -137,8 +187,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -193,8 +242,11 @@ public class BatchLSEstimatorTest {
 
     }
 
+    /**
+     * Perfect range measurements with a biased start and an on-board antenna range offset 
+     */
     @Test
-    public void testKeplerRangeWithOnBoardAntennaOffset() throws OrekitException {
+    public void testKeplerRangeWithOnBoardAntennaOffset() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -209,7 +261,7 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -233,8 +285,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -290,7 +341,7 @@ public class BatchLSEstimatorTest {
     }
 
     @Test
-    public void testMultiSat() throws OrekitException {
+    public void testMultiSat() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -351,8 +402,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -414,8 +464,8 @@ public class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 2.3e-06,
                                      0.0, 6.6e-06,
-                                     0.0, 6.2e-07,
-                                     0.0, 2.8e-10);
+                                     0.0, 6.4e-07,
+                                     0.0, 2.9e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -454,10 +504,9 @@ public class BatchLSEstimatorTest {
      *  One common (µ)
      *  Some specifics for each satellite (Cr and Ca)
      * 
-     * @throws OrekitException
      */
     @Test
-    public void testMultiSatWithParameters() throws OrekitException {
+    public void testMultiSatWithParameters() {
 
         // Test: Set the propagator drivers to estimate for each satellite
         final boolean muEstimated  = true;
@@ -561,8 +610,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -592,15 +640,15 @@ public class BatchLSEstimatorTest {
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
-                                                    PositionAngle.TRUE,
-                                                    closeOrbit.getFrame(),
-                                                    closeOrbit.getDate(),
-                                                    closeOrbit.getMu());
+                                                parameters.get( 7).getValue(),
+                                                parameters.get( 8).getValue(),
+                                                parameters.get( 9).getValue(),
+                                                parameters.get(10).getValue(),
+                                                parameters.get(11).getValue(),
+                                                PositionAngle.TRUE,
+                                                closeOrbit.getFrame(),
+                                                closeOrbit.getDate(),
+                                                closeOrbit.getMu());
         Assert.assertEquals(4.7246,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               before.getPVCoordinates().getPosition()),
@@ -609,7 +657,7 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 5,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 6.0e-06,
                                      0.0, 1.7e-05,
                                      0.0, 4.4e-07,
@@ -649,7 +697,7 @@ public class BatchLSEstimatorTest {
     }
     
     @Test
-    public void testWrappedException() throws OrekitException {
+    public void testWrappedException() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -682,7 +730,7 @@ public class BatchLSEstimatorTest {
                                            ParameterDriversList estimatedOrbitalParameters,
                                            ParameterDriversList estimatedPropagatorParameters,
                                            ParameterDriversList estimatedMeasurementsParameters,
-                                           EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) throws DummyException {
+                                           EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 throw new DummyException();
             }
         });
@@ -707,8 +755,11 @@ public class BatchLSEstimatorTest {
         }
     }
 
+    /**
+     * Perfect range rate measurements with a perfect start
+     */
     @Test
-    public void testKeplerRangeRate() throws OrekitException {
+    public void testKeplerRangeRate() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -737,15 +788,18 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 1.6e-2,
-                                     0.0, 3.4e-2,
-                                     0.0, 170.0,  // we only have range rate...
-                                     0.0, 6.5e-2);
+        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 5.3e-7,
+                                     0.0, 1.3e-6,
+                                     0.0, 8.4e-4,
+                                     0.0, 5.1e-7);
     }
 
+    /**
+     * Perfect range and range rate measurements with a perfect start
+     */
     @Test
-    public void testKeplerRangeAndRangeRate() throws OrekitException {
+    public void testKeplerRangeAndRangeRate() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -783,10 +837,10 @@ public class BatchLSEstimatorTest {
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         EstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 0.16,
-                                     0.0, 0.40,
-                                     0.0, 2.1e-3,
-                                     0.0, 8.1e-7);
+                                     0.0, 4.6e7,
+                                     0.0, 1.4e-6,
+                                     0.0, 5.9e-7,
+                                     0.0, 2.7e-10);
     }
 
 }

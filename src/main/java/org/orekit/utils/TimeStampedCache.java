@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import java.util.stream.Stream;
 
-import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -50,11 +49,8 @@ public interface TimeStampedCache<T extends TimeStamped> {
      * @param central central date
      * @return list of cached entries surrounding the specified date. The size
      *         of the list is guaranteed to be {@link #getNeighborsSize()}.
-     * @throws TimeStampedCacheException if {@code central} is outside the range
-     *         of data this cache is capable of providing.
      */
-    Stream<T> getNeighbors(AbsoluteDate central)
-        throws TimeStampedCacheException;
+    Stream<T> getNeighbors(AbsoluteDate central);
 
     /**
      * Get the fixed size of the lists returned by

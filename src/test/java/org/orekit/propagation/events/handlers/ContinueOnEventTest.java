@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -30,7 +30,7 @@ import org.orekit.utils.Constants;
 public class ContinueOnEventTest {
 
     @Test
-    public void testNoReset() throws OrekitException {
+    public void testNoReset() {
         SpacecraftState s = new SpacecraftState(new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
                                                                    0.048363, PositionAngle.MEAN,
                                                                    FramesFactory.getEME2000(),
@@ -40,23 +40,23 @@ public class ContinueOnEventTest {
     }
 
     @Test
-    public void testIncreasing() throws OrekitException {
+    public void testIncreasing() {
         SpacecraftState s = new SpacecraftState(new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
                                                                    0.048363, PositionAngle.MEAN,
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(EventHandler.Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, true));
+        Assert.assertSame(Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, true));
     }
 
     @Test
-    public void testDecreasing() throws OrekitException {
+    public void testDecreasing() {
         SpacecraftState s = new SpacecraftState(new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
                                                                    0.048363, PositionAngle.MEAN,
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(EventHandler.Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, false));
+        Assert.assertSame(Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, false));
     }
 
 }

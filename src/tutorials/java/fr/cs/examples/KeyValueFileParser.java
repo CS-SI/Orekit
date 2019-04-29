@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -98,7 +98,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * </p>
      * @param input input stream
      * @exception IOException if input file cannot be read
-     * @exception OrekitException if a line cannot be read properly
      */
     public void parseInput(final String name, final InputStream input)
         throws IOException, OrekitException {
@@ -399,7 +398,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param key parameter key
      * @return inertial frame corresponding to the key
      * @exception NoSuchElementException if key is not in the map
-     * @exception OrekitException if frame cannot be built
      */
     public Frame getInertialFrame(final Key key) throws NoSuchElementException, OrekitException {
 
@@ -431,7 +429,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param parameters key/value map containing the parameters
      * @return Earth frame corresponding to the key
      * @exception NoSuchElementException if key is not in the map
-     * @exception OrekitException if frame cannot be built
      */
     public Frame getEarthFrame(final Key key)
             throws NoSuchElementException, OrekitException {

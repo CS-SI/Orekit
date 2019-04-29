@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,12 +84,10 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @throws OrekitException if the TEME frame cannot be set
      * @since 7.1
      */
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
-                                final double positionScale)
-        throws OrekitException {
+                                final double positionScale) {
         super(TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getOrbit(),
               positionAngle, positionScale, false);
         this.satelliteNumber         = templateTLE.getSatelliteNumber();
@@ -120,8 +118,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters)
-        throws OrekitException {
+    public Propagator buildPropagator(final double[] normalizedParameters) {
 
         // create the orbit
         setParameters(normalizedParameters);

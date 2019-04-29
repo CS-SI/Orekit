@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,6 +44,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
@@ -77,7 +78,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     private Orbit initialOrbit;
 
     @Test
-    public void testEquivalentInertialManeuver() throws OrekitException {
+    public void testEquivalentInertialManeuver() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -100,7 +101,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialManeuver() throws OrekitException {
+    public void testEquivalentTangentialManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -119,7 +120,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuver() throws OrekitException {
+    public void testEquivalentTangentialOverriddenManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -145,7 +146,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
                                           final AttitudeProvider accelerationLaw,
                                           final HarmonicParametricAcceleration parametricAcceleration,
                                           final double positionTolerance)
-        throws OrekitException {
+        {
 
         SpacecraftState initialState = new SpacecraftState(initialOrbit,
                                                            maneuverLaw.getAttitude(initialOrbit,
@@ -187,7 +188,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentInertialManeuverField() throws OrekitException {
+    public void testEquivalentInertialManeuverField() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -210,7 +211,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialManeuverField() throws OrekitException {
+    public void testEquivalentTangentialManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -229,7 +230,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuverField() throws OrekitException {
+    public void testEquivalentTangentialOverriddenManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -257,7 +258,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
                                                                           final AttitudeProvider accelerationLaw,
                                                                           final HarmonicParametricAcceleration parametricAcceleration,
                                                                           final double positionTolerance)
-                                                                                          throws OrekitException {
+                                                                                          {
 
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(field,
                                                                           new SpacecraftState(initialOrbit,
@@ -305,24 +306,24 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative1T() throws OrekitException {
+    public void testParameterDerivative1T() {
         doTestParameterDerivative(1, 4.0e-14, 2.0e-11);
     }
 
     @Test
-    public void testParameterDerivative2T() throws OrekitException {
+    public void testParameterDerivative2T() {
         doTestParameterDerivative(2, 3.0e-14, 7.0e-12);
     }
 
     @Test
-    public void testParameterDerivative3T() throws OrekitException {
+    public void testParameterDerivative3T() {
         doTestParameterDerivative(3, 2.0e-14, 2.0e-11);
     }
 
     private void doTestParameterDerivative(final int harmonicMultiplier,
                                            final double amplitudeDerivativeTolerance,
                                            final double phaseDerivativeTolerance)
-        throws OrekitException {
+        {
 
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -346,7 +347,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testCoefficientsDetermination() throws OrekitException {
+    public void testCoefficientsDetermination() {
 
         final double mass = 2500;
         final Orbit orbit = new CircularOrbit(7500000.0, 1.0e-4, 1.0e-3, 1.7, 0.3, 0.5, PositionAngle.TRUE,
@@ -386,12 +387,13 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         propagator0.addForceModel(hpaRefX1);
         propagator0.addForceModel(hpaRefY1);
         propagator0.addForceModel(hpaRefZ2);
+        ObservableSatellite sat0 = new ObservableSatellite(0);
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         propagator0.setMasterMode(10.0,
                                   (state, isLast) ->
                                   measurements.add(new PV(state.getDate(),
                                                           state.getPVCoordinates().getPosition(), state.getPVCoordinates().getVelocity(),
-                                                          1.0e-3, 1.0e-6, 1.0)));
+                                                          1.0e-3, 1.0e-6, 1.0, sat0)));
         propagator0.propagate(orbit.getDate().shiftedBy(900));
 
         // set up an estimator to retrieve the maneuver as several harmonic accelerations in inertial frame
@@ -436,7 +438,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     private void setParameter(BatchLSEstimator estimator, String name, double value)
-        throws OrekitException {
+        {
         for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
             if (driver.getName().equals(name)) {
                 driver.setSelected(true);
@@ -448,7 +450,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     private double getParameter(BatchLSEstimator estimator, String name)
-        throws OrekitException {
+        {
         for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
             if (driver.getName().equals(name)) {
                 return driver.getValue();

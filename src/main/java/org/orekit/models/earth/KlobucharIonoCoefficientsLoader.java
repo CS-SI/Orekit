@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.orekit.time.DateComponents;
 /** Loads Klobuchar-Style ionospheric coefficients a given input stream.
  * A stream contains the alphas and betas coefficient for a given day.
  * <p>
- * They are obtained from <a href="ftp://ftp.unibe.ch/aiub/CODE/">University of Bern Astronomical Institute ftp</a>.
+ * They are obtained from <a href="ftp://ftp.aiub.unibe.ch/aiub/CODE/">University of Bern Astronomical Institute ftp</a>.
  * Find more on the files at the <a href="http://www.aiub.unibe.ch/research/code___analysis_center/klobuchar_style_ionospheric_coefficients/index_eng.html">Astronomical Institute site</a>.
  * <p>
  * The files are UNIX-style compressed (.Z) files.
@@ -108,8 +108,8 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
     }
 
     /** Load the data using supported names .
-     * @throws OrekitException */
-    public void loadKlobucharIonosphericCoefficients() throws OrekitException {
+     */
+    public void loadKlobucharIonosphericCoefficients() {
         DataProvidersManager.getInstance().feed(supportedNames, this);
 
         // Throw an exception if alphas or betas were not loaded properly
@@ -120,9 +120,8 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
 
     /** Load the data for a given day.
      * @param dateComponents day given but its DateComponents
-     * @throws OrekitException if the coefficients could not be loaded
      */
-    public void loadKlobucharIonosphericCoefficients(final DateComponents dateComponents) throws OrekitException {
+    public void loadKlobucharIonosphericCoefficients(final DateComponents dateComponents) {
 
         // The files are named CGIMDDD0.YYN where DDD and YY substitute day of year and 2-digits year
         final int    doy        = dateComponents.getDayOfYear();
@@ -149,11 +148,9 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
      * @param name name of the file (or zip entry)
      * @exception IOException if data can't be read
      * @exception ParseException if data can't be parsed
-     * @exception OrekitException if some data is missing
-     * or if some loader specific error occurs
      */
     public void loadData(final InputStream input, final String name)
-        throws IOException, ParseException, OrekitException {
+        throws IOException, ParseException {
 
         // Open stream and parse data
         final BufferedReader br = new BufferedReader(new InputStreamReader(input, "UTF-8"));

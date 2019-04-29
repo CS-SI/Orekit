@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -32,11 +31,15 @@ import org.orekit.utils.IERSConventions;
 public class HelmertTransformationTest {
 
     @Test
-    public void testHelmert20052008() throws OrekitException {
+    public void testHelmert20052008() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        Frame itrf2005 =
-                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005.createTransformedITRF(itrf2008, "2005");
+        HelmertTransformation.Predefined ht = HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005;
+        Assert.assertEquals(ITRFVersion.ITRF_2008, ht.getOrigin());
+        Assert.assertEquals(ITRFVersion.ITRF_2005, ht.getDestination());
+        Assert.assertEquals(new AbsoluteDate(2000, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
+                            ht.getTransformation().getEpoch());
+        Frame itrf2005 = ht.createTransformedITRF(itrf2008, "2005");
         Vector3D pos2005 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
 
         // check the Helmert transformation as per http://itrf.ign.fr/ITRF_solutions/2008/tp_08-05.php
@@ -61,7 +64,7 @@ public class HelmertTransformationTest {
     }
 
     @Test
-    public void testHelmert20002005() throws OrekitException {
+    public void testHelmert20002005() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -92,7 +95,7 @@ public class HelmertTransformationTest {
     }
 
     @Test
-    public void testHelmert19972000() throws OrekitException {
+    public void testHelmert19972000() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -123,7 +126,7 @@ public class HelmertTransformationTest {
     }
 
     @Test
-    public void testHelmert19932000() throws OrekitException {
+    public void testHelmert19932000() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -154,7 +157,7 @@ public class HelmertTransformationTest {
     }
 
     @Test
-    public void test2014PivotVs2008Pivot() throws OrekitException {
+    public void test2014PivotVs2008Pivot() {
 
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2014
         Frame itrf2014 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

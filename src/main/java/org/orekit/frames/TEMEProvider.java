@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,11 +61,8 @@ class TEMEProvider implements EOPBasedTransformProvider {
     /** Simple constructor.
      * @param conventions IERS conventions to apply
      * @param eopHistory EOP history
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read
      */
-    TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory)
-        throws OrekitException {
+    TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory) {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
@@ -80,22 +77,20 @@ class TEMEProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public TEMEProvider getNonInterpolatingProvider()
-        throws OrekitException {
+    public TEMEProvider getNonInterpolatingProvider() {
         return new TEMEProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
         final double eqe = getEquationOfEquinoxes(date);
         return new Transform(date, new Rotation(Vector3D.PLUS_K, eqe, RotationConvention.FRAME_TRANSFORM));
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final T eqe = getEquationOfEquinoxes(date);
         return new FieldTransform<>(date, new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
                                                               eqe,
@@ -105,10 +100,8 @@ class TEMEProvider implements EOPBasedTransformProvider {
     /** Get the Equation of the Equinoxes at the current date.
      * @param  date the date
      * @return equation of the equinoxes
-     * @exception OrekitException if nutation model cannot be computed
      */
-    private double getEquationOfEquinoxes(final AbsoluteDate date)
-        throws OrekitException {
+    private double getEquationOfEquinoxes(final AbsoluteDate date) {
 
         // compute nutation angles
         final double[] angles = nutationFunction.value(date);
@@ -137,10 +130,8 @@ class TEMEProvider implements EOPBasedTransformProvider {
      * @param  date the date
      * @param <T> type of the field elements
      * @return equation of the equinoxes
-     * @exception OrekitException if nutation model cannot be computed
      */
-    private <T extends RealFieldElement<T>> T getEquationOfEquinoxes(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    private <T extends RealFieldElement<T>> T getEquationOfEquinoxes(final FieldAbsoluteDate<T> date) {
 
         // compute nutation angles
         final T[] angles = nutationFunction.value(date);

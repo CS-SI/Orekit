@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,6 +72,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -88,7 +89,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass)
-        throws OrekitException {
+        {
         try {
             java.lang.reflect.Field kRefField = SolarRadiationPressure.class.getDeclaredField("kRef");
             kRefField.setAccessible(true);
@@ -125,7 +126,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLightingInterplanetary() throws OrekitException, ParseException {
+    public void testLightingInterplanetary() throws ParseException {
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
@@ -133,7 +134,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngle.TRUE,
                                          CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(),
                                          date, Constants.JPL_SSD_SUN_GM);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, Constants.SUN_RADIUS,
                                        (RadiationSensitive) new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
@@ -153,7 +154,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLighting() throws OrekitException, ParseException {
+    public void testLighting() throws ParseException {
             // Initialization
             AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                                  new TimeComponents(13, 59, 27.816),
@@ -161,7 +162,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                                FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
                                                0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
-            PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+            ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             OneAxisEllipsoid earth =
                 new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -200,8 +201,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assert.assertTrue(3==count);
     }
 
+    /** Test parameter derivatives with class IsotropicRadiationCNES95Convention.
+     * @deprecated remove code after FIXME in next major version
+     */
+    @Deprecated
     @Test
-    public void testParameterDerivativeIsotropicSingle() throws OrekitException {
+    public void testParameterDerivativeIsotropicSingle() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -235,8 +240,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         }
     }
 
+    /** Test parameter derivatives with class IsotropicRadiationClassicalConvention.
+     * @deprecated remove code after FIXME in next major version
+     */
     @Test
-    public void testParameterDerivativeIsotropicClassical() throws OrekitException {
+    @Deprecated
+    public void testParameterDerivativeIsotropicClassical() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -254,6 +263,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 6.7e-16);
         checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 5.1e-16);
 
+        // FIXME: To remove
         try {
             rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                              state.getPVCoordinates().getPosition(),
@@ -268,8 +278,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     }
 
+    /** Test parameter derivatives with class IsotropicRadiationCNES95Convention.
+     * @deprecated remove code after FIXME in next major version
+     */
     @Test
-    public void testParameterDerivativeIsotropicCnes() throws OrekitException {
+    @Deprecated
+    public void testParameterDerivativeIsotropicCnes() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -286,7 +300,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.5e-15);
         checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 2.0e-14);
-
+        
+        // FIXME: To remove
         try {
             rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                              state.getPVCoordinates().getPosition(),
@@ -303,7 +318,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianIsotropicSingle()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -335,7 +350,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testLocalJacobianIsotropicClassicalVs80Implementation()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -359,14 +374,14 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight()
-        throws OrekitException {
+        {
         // here, lighting ratio is exactly 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(250.0, 1000.0, 3.0e-8, false);
     }
 
     @Test
     public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesPenumbra()
-        throws OrekitException {
+        {
         // here, lighting ratio is about 0.57,
         // and remains strictly between 0 and 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(275.5, 100.0, 8.0e-7, false);
@@ -374,7 +389,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesEclipse()
-        throws OrekitException {
+        {
         // here, lighting ratio is exactly 0 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(300.0, 1000.0, 1.0e-50, false);
     }
@@ -382,7 +397,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     private void doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(double deltaT, double dP,
                                                                           double checkTolerance,
                                                                           boolean print)
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -405,7 +420,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianIsotropicClassical()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -437,7 +452,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianIsotropicCnes()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -468,7 +483,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeBox() throws OrekitException {
+    public void testParameterDerivativeBox() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -490,7 +505,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianBox()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -534,7 +549,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         Assert.assertEquals(86164, period, 1);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -591,7 +606,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldIsotropicTest() throws OrekitException {
+    public void RealFieldIsotropicTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -636,7 +651,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         NP.setOrbitType(type);
         NP.setInitialState(iSR);
 
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -749,7 +764,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException {
+    public void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 0);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -792,7 +807,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
         NP.setInitialState(iSR);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -814,169 +829,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
-    }
-
-    /**Testing if the propagation between the FieldPropagation and the propagation
-     * is equivalent.
-     * Also testing if propagating X+dX with the propagation is equivalent to
-     * propagation X with the FieldPropagation and then applying the taylor
-     * expansion of dX to the result.*/
-    @Test
-    public void RealFieldBoxTest() throws OrekitException {
-        DSFactory factory = new DSFactory(6, 5);
-        DerivativeStructure a_0 = factory.variable(0, 7e7);
-        DerivativeStructure e_0 = factory.variable(1, 0.4);
-        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
-        DerivativeStructure R_0 = factory.variable(3, 0.7);
-        DerivativeStructure O_0 = factory.variable(4, 0.5);
-        DerivativeStructure n_0 = factory.variable(5, 0.1);
-
-        Field<DerivativeStructure> field = a_0.getField();
-        DerivativeStructure zero = field.getZero();
-
-        FieldAbsoluteDate<DerivativeStructure> J2000 = FieldAbsoluteDate.getJ2000Epoch(field);
-
-        Frame EME = FramesFactory.getEME2000();
-
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
-                                                                                 EME,
-                                                                                 J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
-
-        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
-
-        SpacecraftState iSR = initialState.toSpacecraftState();
-
-        final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
-
-
-        AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
-        AdaptiveStepsizeIntegrator RIntegrator =
-                        new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
-        RIntegrator.setInitialStepSize(60);
-
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
-        FNP.setOrbitType(type);
-        FNP.setInitialState(initialState);
-
-        NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
-        NP.setInitialState(iSR);
-
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-
-        // creation of the force model
-        OneAxisEllipsoid earth =
-            new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        SolarRadiationPressure forceModel =
-                        new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                                   new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                                                  Vector3D.PLUS_J,
-                                                                                  initialState.getDate().toAbsoluteDate(), Vector3D.PLUS_K, 1.0e-6,
-                                                                                  1.2, 0.7, 0.2));
-
-        FNP.addForceModel(forceModel);
-        NP.addForceModel(forceModel);
-        NP.setEphemerisMode();
-
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
-        FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
-        SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
-        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
-        PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
-
-        Assert.assertEquals(0,
-                            Vector3D.distance(finPVC_DS.toPVCoordinates().getPosition(),
-                                              finPVC_R.getPosition()),
-                            1.0e-8);
-
-        long number = 23091991;
-        RandomGenerator RG = new Well19937a(number);
-        GaussianRandomGenerator NGG = new GaussianRandomGenerator(RG);
-        UncorrelatedRandomVectorGenerator URVG = new UncorrelatedRandomVectorGenerator(new double[] {0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 },
-                                                                                       new double[] {1e3, 0.01, 0.01, 0.01, 0.01, 0.01},
-                                                                                       NGG);
-        double a_R = a_0.getReal();
-        double e_R = e_0.getReal();
-        double i_R = i_0.getReal();
-        double R_R = R_0.getReal();
-        double O_R = O_0.getReal();
-        double n_R = n_0.getReal();
-        for (int ii = 0; ii < 1; ii++){
-            double[] rand_next = URVG.nextVector();
-            double a_shift = a_R + rand_next[0];
-            double e_shift = e_R + rand_next[1];
-            double i_shift = i_R + rand_next[2];
-            double R_shift = R_R + rand_next[3];
-            double O_shift = O_R + rand_next[4];
-            double n_shift = n_R + rand_next[5];
-
-            KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
-                                                           PositionAngle.MEAN,
-                                                           EME,
-                                                           J2000.toAbsoluteDate(),
-                                                           Constants.EIGEN5C_EARTH_MU
-                                                           );
-
-            SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
-
-            NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
-
-            shift_NP.setInitialState(shift_iSR);
-
-            shift_NP.addForceModel(forceModel);
-
-            SpacecraftState finalState_shift = shift_NP.propagate(target.toAbsoluteDate());
-
-
-            PVCoordinates finPVC_shift = finalState_shift.getPVCoordinates();
-
-            //position check
-
-            FieldVector3D<DerivativeStructure> pos_DS = finPVC_DS.getPosition();
-            double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double y_DS = pos_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double z_DS = pos_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-
-            //System.out.println(pos_DS.getX().getPartialDerivative(1));
-
-            double x = finPVC_shift.getPosition().getX();
-            double y = finPVC_shift.getPosition().getY();
-            double z = finPVC_shift.getPosition().getZ();
-            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 4e-9);
-            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 5e-9);
-            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 6e-10);
-
-            //velocity check
-
-            FieldVector3D<DerivativeStructure> vel_DS = finPVC_DS.getVelocity();
-            double vx_DS = vel_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vy_DS = vel_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vz_DS = vel_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vx = finPVC_shift.getVelocity().getX();
-            double vy = finPVC_shift.getVelocity().getY();
-            double vz = finPVC_shift.getVelocity().getZ();
-            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 5e-11);
-            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 3e-10);
-            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 5e-11);
-            //acceleration check
-
-            FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
-            double ax_DS = acc_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double ay_DS = acc_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double az_DS = acc_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double ax = finPVC_shift.getAcceleration().getX();
-            double ay = finPVC_shift.getAcceleration().getY();
-            double az = finPVC_shift.getAcceleration().getZ();
-            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 2e-10);
-            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 4e-10);
-            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 7e-10);
-        }
     }
 
     @Before

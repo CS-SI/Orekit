@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,17 +45,17 @@ public class KeplerianConverterTest {
     private final static double mu = 3.9860047e14;
 
     @Test
-    public void testConversionPositionVelocity() throws OrekitException {
+    public void testConversionPositionVelocity() {
         checkFit(orbit, 86400, 300, 1.0e-3, false, 1.901e-8);
     }
 
     @Test
-    public void testConversionPositionOnly() throws OrekitException {
+    public void testConversionPositionOnly() {
         checkFit(orbit, 86400, 300, 1.0e-3, true, 2.691e-8);
     }
 
     @Test(expected = OrekitException.class)
-    public void testConversionWithFreeParameter() throws OrekitException {
+    public void testConversionWithFreeParameter() {
         checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto");
     }
 
@@ -66,7 +66,7 @@ public class KeplerianConverterTest {
                             final boolean positionOnly,
                             final double expectedRMS,
                             final String... freeParameters)
-        throws OrekitException {
+        {
 
         Propagator p = new KeplerianPropagator(orbit);
         List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
@@ -111,7 +111,7 @@ public class KeplerianConverterTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
