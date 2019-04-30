@@ -41,7 +41,7 @@ Eclipse is provided in [building.md](src/site/markdown/building.md) file.
 
 [Official Orekit artifacts](https://mvnrepository.com/artifact/org.orekit/orekit)
 are available on Maven public repository and on the
-(Orekit web site](http://orekit.org/download.html).
+[Orekit web site](http://orekit.org/download.html).
 
 * The [src/main/java](src/main/java) directory contains the library sources.
 * The [src/main/resources](src/main/resources) directory contains the library
@@ -75,7 +75,7 @@ friendly free licenses.
   released under MIT license.
 
 More detailed information is available in the
-[Maven site](https://www.orekit.org/site-orekit-development/dependencies.html)
+[Maven site](https://www.orekit.org/site-orekit-development/dependencies.html).
 
 ## License
 
