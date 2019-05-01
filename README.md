@@ -61,12 +61,12 @@ are available on Maven public repository and on the
 Orekit relies on the following free software, all released under business
 friendly free licenses.
 
-### Compile-time/run-time dependency
+### Compile-time/run-time dependencies
 
 * [Hipparchus](https://hipparchus.org/) from the Hipparchus project released
   under the Apache Software License, version 2
 
-### Test-time dependency
+### Test-time dependencies
 
 * [JUnit 4](http://www.junit.org/) from Erich Gamma and Kent Beck released
   under the Eclipse Public License, version 1.0
