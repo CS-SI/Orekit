@@ -64,20 +64,21 @@ Eclipse is provided in [building.md](src/site/markdown/building.md) file.
 
 ## Dependencies
 
-Orekit relies on the following free software, all released under business
-friendly free licenses.
+Orekit relies on the following
+[FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software) libraries,
+all released under business friendly FOSS licenses.
 
 ### Compile-time/run-time dependencies
 
-* [Hipparchus](https://hipparchus.org/) from the Hipparchus project released
-  under the Apache Software License, version 2
+* [Hipparchus](https://hipparchus.org/), a mathematics library released under
+  the Apache License, version 2.0
 
 ### Test-time dependencies
 
-* [JUnit 4](http://www.junit.org/) from Erich Gamma and Kent Beck released
+* [JUnit 4](http://www.junit.org/), a widely used unit test framework released
   under the Eclipse Public License, version 1.0
 
-* [Mockito](https://site.mockito.org/) from Szczepan Faber and others,
+* [Mockito](https://site.mockito.org/), a mocking framework for unit tests,
   released under MIT license.
 
 More detailed information is available in the
