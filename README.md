@@ -10,6 +10,26 @@ quick studies up to critical operations. As a library, Orekit provides basic
 elements (orbits, dates, attitude, frames, ...) and various algorithms to
 handle them (conversions, propagations, pointing, ...).
 
+## Download
+
+### Official releases
+
+[Official Orekit releases](https://gitlab.orekit.org/orekit/orekit/releases)
+are available on our [Gitlab instance](https://gitlab.orekit.org/). They are
+also available in the
+[Maven repository](https://mvnrepository.com/artifact/org.orekit/orekit).
+
+### Development version
+
+To get the latest development version, please clone our official repository
+and checkout the `develop` branch:
+
+```bash
+git clone -b develop https://gitlab.orekit.org/orekit/orekit.git
+```
+__Note:__ Our official repository is
+[mirrored on Github](https://github.com/CS-SI/Orekit).
+
 ## Documentation
 
 Project overview, architecture and development, detailed features list,
@@ -23,6 +43,9 @@ can report bugs and suggest new features in our
 [issues tracking system](https://gitlab.orekit.org/orekit/orekit/issues).
 
 ## Contributing
+
+Orekit exists thanks to the contribution of
+[many people](https://gitlab.orekit.org/orekit/orekit/graphs/develop).
 
 If you are interested in participating in the development effort, subscribe to
 the [forum](https://forum.orekit.org/) and step up to discuss it. The larger
@@ -39,10 +62,6 @@ More information is available in our
 Detailed information on how to build Orekit from source either using Maven or
 Eclipse is provided in [building.md](src/site/markdown/building.md) file.
 
-[Official Orekit artifacts](https://mvnrepository.com/artifact/org.orekit/orekit)
-are available on Maven public repository and on the
-[Orekit web site](http://orekit.org/download.html).
-
 * The [src/main/java](src/main/java) directory contains the library sources.
 * The [src/main/resources](src/main/resources) directory contains the library
   data.
@@ -55,7 +74,7 @@ are available on Maven public repository and on the
   example data.
 * The [src/design](src/design) directory contains pieces for a UML model of
   the library.
-  
+
 ## Dependencies
 
 Orekit relies on the following free software, all released under business
@@ -70,7 +89,7 @@ friendly free licenses.
 
 * [JUnit 4](http://www.junit.org/) from Erich Gamma and Kent Beck released
   under the Eclipse Public License, version 1.0
-  
+
 * [Mockito](https://site.mockito.org/) from Szczepan Faber and others,
   released under MIT license.
 
