@@ -6,7 +6,7 @@
   <fileSets>
     <fileSet>
       <includes>
-       <include>README.txt</include>
+       <include>README.md</include>
        <include>LICENSE.txt</include>
        <include>NOTICE.txt</include>
        <include>BUILDING.txt</include>
