@@ -71,12 +71,12 @@ all released under business friendly FOSS licenses.
 ### Compile-time/run-time dependencies
 
 * [Hipparchus](https://hipparchus.org/), a mathematics library released under
-  the Apache License, version 2.0
+  the Apache License, version 2.0.
 
 ### Test-time dependencies
 
 * [JUnit 4](http://www.junit.org/), a widely used unit test framework released
-  under the Eclipse Public License, version 1.0
+  under the Eclipse Public License, version 1.0.
 
 * [Mockito](https://site.mockito.org/), a mocking framework for unit tests,
   released under MIT license.
