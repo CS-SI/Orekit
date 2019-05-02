@@ -62,19 +62,6 @@ More information is available in our
 Detailed information on how to build Orekit from source either using Maven or
 Eclipse is provided in [building.md](src/site/markdown/building.md) file.
 
-* The [src/main/java](src/main/java) directory contains the library sources.
-* The [src/main/resources](src/main/resources) directory contains the library
-  data.
-* The [src/test/java](src/test/java) directory contains the tests sources.
-* The [src/test/resources](src/test/resources) directory contains the tests
-  data.
-* The [src/tutorials/java](src/tutorials/java) directory contains sources for
-  example use of the library.
-* The [src/tutorials/resources](src/tutorials/resources) directory contains
-  example data.
-* The [src/design](src/design) directory contains pieces for a UML model of
-  the library.
-
 ## Dependencies
 
 Orekit relies on the following free software, all released under business
