@@ -46,7 +46,6 @@ can report bugs and suggest new features in our
 
 Orekit exists thanks to the contribution of
 [many people](https://gitlab.orekit.org/orekit/orekit/graphs/develop).
-
 Please take a look at our
 [contributing guidelines](src/site/markdown/contributing.md) if you're
 interested in helping!
