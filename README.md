@@ -47,15 +47,9 @@ can report bugs and suggest new features in our
 Orekit exists thanks to the contribution of
 [many people](https://gitlab.orekit.org/orekit/orekit/graphs/develop).
 
-If you are interested in participating in the development effort, subscribe to
-the [forum](https://forum.orekit.org/) and step up to discuss it. The larger
-the community is, the better Orekit will be. The main rule is that everything
-intended to be included in Orekit core must be distributed under the Apache
-License, version 2.0 (you will be asked to sign a contributor license
-agreement).
-
-More information is available in our
-[development guidelines](https://www.orekit.org/site-orekit-development/guidelines.html).
+Please take a look at our
+[contributing guidelines](src/site/markdown/contributing.md) if you're
+interested in helping!
 
 ## Building
 
