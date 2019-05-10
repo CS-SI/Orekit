@@ -40,7 +40,8 @@ tutorials, Javadoc and a lot of other information is available on the
 
 The main communication channel is our [forum](https://forum.orekit.org/). You
 can report bugs and suggest new features in our
-[issues tracking system](https://gitlab.orekit.org/orekit/orekit/issues).
+[issues tracking system](https://gitlab.orekit.org/orekit/orekit/issues). When
+reporting security issues check the "This issue is confidential" box.
 
 ## Contributing
 
