@@ -1581,6 +1581,18 @@ public class KeplerianOrbitTest {
 
     }
 
+    @Test
+    public void testIssue544() {
+        // Initial parameters
+        // In order to test the issue, we volontary set the anomaly at Double.NaN.
+        double e = 0.7311;
+        double anomaly = Double.NaN;
+        // Computes the elliptic eccentric anomaly 
+        double E = KeplerianOrbit.meanToEllipticEccentric(anomaly, e);
+        // Verify that an infinite loop did not occur
+        Assert.assertTrue(Double.isNaN(E));  
+    }
+
     @Before
     public void setUp() {
 

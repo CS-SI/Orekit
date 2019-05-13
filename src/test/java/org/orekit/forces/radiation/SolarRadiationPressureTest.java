@@ -45,7 +45,6 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
@@ -77,7 +76,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
 
 
 public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
@@ -199,107 +197,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             }
         }
         Assert.assertTrue(3==count);
-    }
-
-    @Test
-    public void testParameterDerivativeIsotropicSingle() {
-
-        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
-        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       Constants.EIGEN5C_EARTH_MU));
-
-        RadiationSensitive rs = new IsotropicRadiationSingleCoefficient(2.5, 0.7);
-        SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                           rs);
-
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 2.0e-15);
-
-        try {
-            rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                             state.getPVCoordinates().getPosition(),
-                                             state.getAttitude().getRotation(),
-                                             state.getMass(), Vector3D.ZERO,
-                                             new double[2],
-                                             RadiationSensitive.ABSORPTION_COEFFICIENT);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
-        }
-        for (ParameterDriver driver : rs.getRadiationParametersDrivers()) {
-            Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                driver.getName());
-        }
-    }
-
-    @Test
-    public void testParameterDerivativeIsotropicClassical() {
-
-        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
-        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       Constants.EIGEN5C_EARTH_MU));
-
-        RadiationSensitive rs = new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2);
-        SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                           rs);
-
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 6.7e-16);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 5.1e-16);
-
-        try {
-            rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                             state.getPVCoordinates().getPosition(),
-                                             state.getAttitude().getRotation(),
-                                             state.getMass(), Vector3D.ZERO,
-                                             new double[2],
-                                             "UNKNOWN");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
-        }
-
-    }
-
-    @Test
-    public void testParameterDerivativeIsotropicCnes() {
-
-        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
-        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       Constants.EIGEN5C_EARTH_MU));
-
-        RadiationSensitive rs = new IsotropicRadiationCNES95Convention(2.5, 0.7, 0.2);
-        SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                           rs);
-
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.5e-15);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 2.0e-14);
-
-        try {
-            rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                             state.getPVCoordinates().getPosition(),
-                                             state.getAttitude().getRotation(),
-                                             state.getMass(), Vector3D.ZERO,
-                                             new double[2],
-                                             "UNKNOWN");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
-        }
-
     }
 
     @Test

@@ -17,8 +17,6 @@
 package org.orekit.forces.radiation;
 
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -26,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -68,9 +65,6 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
     /** Cross section (m²). */
     private final double crossSection;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Simple constructor.
      * @param crossSection Surface (m²)
      * @param ca absorption coefficient Ca between 0.0 an 1.0
@@ -82,7 +76,6 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
                                                             ca, SCALE, 0.0, 1.0);
             reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
                                                             cs, SCALE, 0.0, 1.0);
-            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -122,31 +115,4 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
         final T kP = ca.add(cs).negate().add(1).multiply(4.0 / 9.0).add(1).multiply(crossSection);
         return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                                            final Rotation rotation, final double mass,
-                                                                            final Vector3D flux, final double[] parameters,
-                                                                            final String paramName) {
-
-        final DerivativeStructure caDS;
-        final DerivativeStructure csDS;
-        if (ABSORPTION_COEFFICIENT.equals(paramName)) {
-            caDS = factory.variable(0, parameters[0]);
-            csDS = factory.constant(parameters[1]);
-        } else if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            caDS = factory.constant(parameters[0]);
-            csDS = factory.variable(0, parameters[1]);
-        } else {
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
-                                      ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
-        }
-
-        final DerivativeStructure kP =
-                caDS.add(csDS).subtract(1).multiply(-4.0 / 9.0).add(1).multiply(crossSection);
-        return new FieldVector3D<>(kP.divide(mass), flux);
-
-    }
-
 }

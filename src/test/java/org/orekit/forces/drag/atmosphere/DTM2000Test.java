@@ -17,6 +17,8 @@
 package org.orekit.forces.drag.atmosphere;
 
 
+import java.util.TimeZone;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -33,6 +35,9 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -186,6 +191,48 @@ public class DTM2000Test {
             }
         }
 
+    }
+    
+    /** Test issue 539. Density computation should be independent of user's default time zone.
+     * See <a href="https://gitlab.orekit.org/orekit/orekit/issues/539"> issue 539 on Orekit forge.</a>
+     */
+    @Test
+    public void testTimeZoneIndependantIssue539() {
+        
+        // Prepare input: Choose a date in summer time for "GMT+1" time zone.
+        // So that after 22h in GMT we are in the next day in local time
+        TimeScale utc     = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate("2000-04-01T22:30:00.000", utc);
+        
+        // LEO random position, in GCRF
+        Vector3D position = new Vector3D(-1038893.194, -4654348.144, 5021579.14);
+        Frame gcrf = FramesFactory.getGCRF();
+        
+        // Get ITRF and Earth ellipsoid
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.GRIM5C1_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.GRIM5C1_EARTH_FLATTENING, itrf);
+        SolarInputs97to05 in = SolarInputs97to05.getInstance();
+        earth.setAngularThreshold(1e-10);
+        DTM2000 atm = new DTM2000(in, sun, earth);
+        
+        // Store user time zone
+        TimeZone defaultTZ = TimeZone.getDefault();
+        
+        // Set default time zone to UTC & get density
+        TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));        
+        double rhoUtc = atm.getDensity(date, position, gcrf);
+        
+        // Set default time zone to GMT+1 & get density
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Paris"));
+        double rhoParis = atm.getDensity(date, position, gcrf);
+        
+        // Check that the 2 densities are equal
+        Assert.assertEquals(0., rhoUtc - rhoParis, 0.);
+        
+        // Set back default time zone to what it was before the test, to avoid any interference with another routine
+        TimeZone.setDefault(defaultTZ);
     }
 
     @Before

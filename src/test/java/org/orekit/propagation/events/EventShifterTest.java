@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -38,6 +39,7 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class EventShifterTest {
@@ -180,12 +182,14 @@ public class EventShifterTest {
     }
 
     private EclipseDetector createRawDetector(final String nameIncreasing, final String nameDecreasing,
-                                              final double tolerance)
-        {
-        return new EclipseDetector(60., 1.e-10,
-                                   CelestialBodyFactory.getSun(), sunRadius,
-                                   CelestialBodyFactory.getEarth(), earthRadius).
-                                   withHandler(new EventHandler<EclipseDetector>() {
+                                              final double tolerance) {
+        return new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                   new OneAxisEllipsoid(earthRadius,
+                                                        0.0,
+                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+               withMaxCheck(60.0).
+               withThreshold(1.0e-10).
+               withHandler(new EventHandler<EclipseDetector>() {
                                        public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
                                                                    boolean increasing) {
                                            log.add(new EventEntry(s.getDate().durationFrom(iniDate), tolerance,

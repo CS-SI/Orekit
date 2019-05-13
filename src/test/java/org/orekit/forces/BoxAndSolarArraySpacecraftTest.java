@@ -20,6 +20,7 @@ package org.orekit.forces;
 import java.util.List;
 
 import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -29,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,7 +41,6 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
@@ -56,6 +57,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -523,150 +525,61 @@ public class BoxAndSolarArraySpacecraftTest {
 
     }
 
-    @Test
-    public void testWrongParameterDrag() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        try {
-            s.dragAcceleration(state.getDate(), state.getFrame(),
-                               state.getPVCoordinates().getPosition(),
-                               state.getAttitude().getRotation(),
-                               state.getMass(), 1.0e-6, Vector3D.PLUS_I,
-                               getDragParameters(s),
-                               "wrong");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                oe.getSpecifier());
-            Assert.assertEquals("wrong", (String) oe.getParts()[0]);
-        }
-    }
-
-    @Test
-    public void testMissingParameterLift() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 2.0, 1.0, 0.0);
-        try {
-            s.dragAcceleration(state.getDate(), state.getFrame(),
-                               state.getPVCoordinates().getPosition(),
-                               state.getAttitude().getRotation(),
-                               state.getMass(), 1.0e-6, Vector3D.PLUS_I,
-                               getDragParameters(s),
-                               DragSensitive.LIFT_RATIO);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                oe.getSpecifier());
-            Assert.assertEquals(2, oe.getParts().length);
-            Assert.assertEquals(DragSensitive.LIFT_RATIO, (String) oe.getParts()[0]);
-            Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, (String) oe.getParts()[1]);
-        }
-    }
-
-    @Test
-    public void testPresentParameterLift() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 1.0, 0.0);
-        FieldVector3D<DerivativeStructure> a = s.dragAcceleration(state.getDate(), state.getFrame(),
-                                                                  state.getPVCoordinates().getPosition(),
-                                                                  state.getAttitude().getRotation(),
-                                                                  state.getMass(), 1.0e-6, Vector3D.PLUS_I,
-                                                                  getDragParameters(s),
-                                                                  DragSensitive.LIFT_RATIO);
-        Assert.assertEquals(5.58e-10, a.getNorm().getReal(), 1.0e-12);
-    }
-
-    @Test
-    public void testWrongParameterLift() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 1.0, 0.0);
-        try {
-            s.dragAcceleration(state.getDate(), state.getFrame(),
-                               state.getPVCoordinates().getPosition(),
-                               state.getAttitude().getRotation(),
-                               state.getMass(), 1.0e-6, Vector3D.PLUS_I,
-                               getDragParameters(s),
-                               "wrong");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                oe.getSpecifier());
-            Assert.assertEquals(3, oe.getParts().length);
-            Assert.assertEquals("wrong", (String) oe.getParts()[0]);
-            Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, (String) oe.getParts()[1]);
-            Assert.assertEquals(DragSensitive.LIFT_RATIO, (String) oe.getParts()[2]);
-        }
-    }
-
-    @Test
-    public void testWrongParameterRadiation() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        try {
-            s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
-                                            state.getAttitude().getRotation(),
-                                            state.getMass(), Vector3D.PLUS_I,
-                                            getRadiationParameters(s),
-                                            "wrong");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                oe.getSpecifier());
-            Assert.assertEquals("wrong", (String) oe.getParts()[0]);
-        }
-    }
-
+    /** Test solar array radiation acceleration with zero flux. */
     @Test
     public void testNullIllumination() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
             new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        FieldVector3D<DerivativeStructure> a =
-                        s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
-                                            state.getAttitude().getRotation(),
-                                            state.getMass(), new Vector3D(Precision.SAFE_MIN / 2,
-                                                                          Vector3D.PLUS_I),
-                                            getRadiationParameters(s),
-                                            RadiationSensitive.ABSORPTION_COEFFICIENT);
+        
+        // "Field" the inputs using Decimal64
+        Field<Decimal64> field = Decimal64Field.getInstance();
+        Decimal64[] srpParam = getRadiationParameters(s, field);
+        
+        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, state.getDate());
+        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPVCoordinates().getPosition());
+        FieldRotation<Decimal64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
+        Decimal64 mass = new Decimal64(state.getMass());
+        FieldVector3D<Decimal64> flux = new FieldVector3D<Decimal64>(field.getOne(), 
+                        new Vector3D(Precision.SAFE_MIN / 2, Vector3D.PLUS_I));
+
+        
+        FieldVector3D<Decimal64> a = s.radiationPressureAcceleration(date, state.getFrame(),
+                                                                     position, rotation, mass,
+                                                                     flux, srpParam);
         Assert.assertEquals(0.0, a.getNorm().getReal(), Double.MIN_VALUE);
     }
 
+    /** Test forward/backward acceleration due to solar array radiation pressure. */
     @Test
     public void testBackwardIllumination() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
             new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
-                                 state.getPVCoordinates().getPosition(),
-                                 state.getAttitude().getRotation());
-        FieldVector3D<DerivativeStructure> aPlus =
-                        s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
-                                            state.getAttitude().getRotation(),
-                                            state.getMass(), n,
-                                            getRadiationParameters(s),
-                                            RadiationSensitive.ABSORPTION_COEFFICIENT);
-        FieldVector3D<DerivativeStructure> aMinus =
-                        s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
-                                            state.getAttitude().getRotation(),
-                                            state.getMass(), n.negate(),
-                                            getRadiationParameters(s),
-                                            RadiationSensitive.ABSORPTION_COEFFICIENT);
+        
+        // "Field" the inputs using Decimal64
+        Field<Decimal64> field = Decimal64Field.getInstance();
+        Decimal64[] srpParam = getRadiationParameters(s, field);
+        
+        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, state.getDate());
+        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPVCoordinates().getPosition());
+        FieldRotation<Decimal64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
+        Decimal64 mass = new Decimal64(state.getMass());
+        
+        // Flux equal to SA normal
+        FieldVector3D<Decimal64> flux = s.getNormal(date, state.getFrame(), position, rotation);
+        
+        // Forward flux
+        FieldVector3D<Decimal64> aPlus = s.radiationPressureAcceleration(date, state.getFrame(),
+                                                                         position, rotation, mass,
+                                                                         flux, srpParam);
+        // Backward flux
+        FieldVector3D<Decimal64> aMinus = s.radiationPressureAcceleration(date, state.getFrame(),
+                                                                          position, rotation, mass,
+                                                                          flux.negate(), srpParam);
+        
         Assert.assertEquals(0.0, aPlus.add(aMinus).getNorm().getReal(), Double.MIN_VALUE);
     }
 
@@ -705,6 +618,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
+    @Deprecated
     public void testNormalOptimalRotationDS() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -761,6 +675,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
+    @Deprecated
     public void testNormalFixedRateDS() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -806,6 +721,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
+    @Deprecated
     public void testNormalSunAlignedDS() {
         BoxAndSolarArraySpacecraft s =
                         new BoxAndSolarArraySpacecraft(0, 0, 0,
@@ -818,7 +734,75 @@ public class BoxAndSolarArraySpacecraftTest {
                                                                 FieldRotation.getIdentity(factory.getDerivativeField()));
         Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
     }
+    
+    /** Test the functions computing drag and SRP acceleration and giving FieldVector3D outputs.
+     *  By comparing the "double" value with a "Decimal64" implementation. 
+     */
+    @Test
+    public void testFieldAcceleration() {
+        
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        
+        // Assuming simple Earth rotation model, constant density and flux
+        Vector3D earthRot = new Vector3D(0., 0., Constants.GRIM5C1_EARTH_ANGULAR_VELOCITY);
+        double density = 1.e-3;
+        double refFlux = 4.56e-6;
+        
+        
+        // Build a S/C box with non-nil coefficients so that the computation of the acceleration does not
+        // avoid any line of code
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(1., 2., 3., sun, 20.0, Vector3D.PLUS_J, 2.0, 0.3, 0.5, 0.4);
+        
+        for (double dt = 0; dt < 4000; dt += 60) {
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+        
+            // Data used in acceleration computation
+            Vector3D position = state.getPVCoordinates().getPosition();
+            Vector3D velocity = state.getPVCoordinates().getVelocity();
+            Vector3D vAtm = Vector3D.crossProduct(earthRot, position);
+            Vector3D relativeVelocity = vAtm.subtract(velocity);
+            
+            Frame frame = state.getFrame();
+            Rotation rotation = state.getAttitude().getRotation();
+            double mass = state.getMass();
+            Vector3D flux = position.subtract(sun.getPVCoordinates(date, frame).getPosition()).normalize().scalarMultiply(refFlux);
+            
+            // Acceleration in double
+            Vector3D aDrag = s.dragAcceleration(date, frame, position, rotation, mass,
+                                                density, relativeVelocity,
+                                                getDragParameters(s));
+            Vector3D aSrp = s.radiationPressureAcceleration(date, frame, position, rotation, mass,
+                                                            flux, getRadiationParameters(s));
+            
+            // "Field" the inputs using Decimal64
+            Field<Decimal64> field = Decimal64Field.getInstance();
+            
+            FieldAbsoluteDate<Decimal64> dateF = new FieldAbsoluteDate<>(field, date);
+            FieldVector3D<Decimal64> positionF = new FieldVector3D<Decimal64>(field.getOne(), position);
+            FieldRotation<Decimal64> rotationF = new FieldRotation<>(field, rotation);
+            Decimal64 massF = new Decimal64(mass);
+            FieldVector3D<Decimal64> fluxF = new FieldVector3D<Decimal64>(field.getOne(), flux);
+            Decimal64 densityF = new Decimal64(density);
+            FieldVector3D<Decimal64> relativeVelocityF = new FieldVector3D<Decimal64>(field.getOne(), relativeVelocity);
+    
+            
+            // Acceleration in Decimal64
+            FieldVector3D<Decimal64> aDragF = s.dragAcceleration(dateF, frame,
+                                                                 positionF, rotationF, massF, densityF,
+                                                                 relativeVelocityF, getDragParameters(s, field));
+            FieldVector3D<Decimal64> aSrpF = s.radiationPressureAcceleration(dateF, frame,
+                                                                         positionF, rotationF, massF,
+                                                                         fluxF, getRadiationParameters(s, field));            
+            // Compare double and Decimal64 accelerations
+            Assert.assertEquals(0.0, Vector3D.distance(aDrag,  aDragF.toVector3D()), Precision.EPSILON);
+            Assert.assertEquals(0.0, Vector3D.distance(aSrp,  aSrpF.toVector3D()), Precision.EPSILON);
+        }
+    }
 
+    /** Get drag parameters as double[]. */
     private double[] getDragParameters(final BoxAndSolarArraySpacecraft basa) {
         final ParameterDriver[] drivers = basa.getDragParametersDrivers();
         final double[] parameters = new double[drivers.length];
@@ -828,11 +812,34 @@ public class BoxAndSolarArraySpacecraftTest {
         return parameters;
     }
 
+    /** Get radiation parameters as double[]. */
     private double[] getRadiationParameters(final BoxAndSolarArraySpacecraft basa) {
         final ParameterDriver[] drivers = basa.getRadiationParametersDrivers();
         final double[] parameters = new double[drivers.length];
         for (int i = 0; i < drivers.length; ++i) {
             parameters[i] = drivers[i].getValue();
+        }
+        return parameters;
+    }
+    
+    /** Get drag parameters as field[]. */
+    private <T extends RealFieldElement<T>> T[] getDragParameters(final BoxAndSolarArraySpacecraft basa,
+                                                                  final Field<T> field) {
+        final ParameterDriver[] drivers = basa.getDragParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.length);
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = field.getZero().add(drivers[i].getValue());
+        }
+        return parameters;
+    }
+    
+    /** Get radiation parameters as field[]. */
+    private <T extends RealFieldElement<T>> T[] getRadiationParameters(final BoxAndSolarArraySpacecraft basa,
+                                                                  final Field<T> field) {
+        final ParameterDriver[] drivers = basa.getRadiationParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.length);
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = field.getZero().add(drivers[i].getValue());
         }
         return parameters;
     }

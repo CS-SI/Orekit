@@ -137,7 +137,7 @@
       * latitude, longitude extremum
       * elevation extremum
       * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
-      * moving target detection in spacecraft sensor Field Of View (any shape, with special case for circular)
+      * moving target detection (with optional radius) in spacecraft sensor Field Of View (any shape, with special case for circular)
       * spacecraft detection in ground based Field Of View (any shape)
       * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal

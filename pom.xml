@@ -46,7 +46,7 @@
     <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
-    <orekit.hipparchus.version>1.5-SNAPSHOT</orekit.hipparchus.version>
+    <orekit.hipparchus.version>1.5</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
