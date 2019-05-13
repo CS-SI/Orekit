@@ -41,7 +41,6 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
@@ -524,115 +523,6 @@ public class BoxAndSolarArraySpacecraftTest {
 
         }
 
-    }
-
-    @Test
-    @Deprecated
-    public void testWrongParameterDrag() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        try {
-            s.dragAcceleration(state.getDate(), state.getFrame(),
-                               state.getPVCoordinates().getPosition(),
-                               state.getAttitude().getRotation(),
-                               state.getMass(), 1.0e-6, Vector3D.PLUS_I,
-                               getDragParameters(s),
-                               "wrong");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                oe.getSpecifier());
-            Assert.assertEquals("wrong", (String) oe.getParts()[0]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testMissingParameterLift() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 2.0, 1.0, 0.0);
-        try {
-            s.dragAcceleration(state.getDate(), state.getFrame(),
-                               state.getPVCoordinates().getPosition(),
-                               state.getAttitude().getRotation(),
-                               state.getMass(), 1.0e-6, Vector3D.PLUS_I,
-                               getDragParameters(s),
-                               DragSensitive.LIFT_RATIO);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                oe.getSpecifier());
-            Assert.assertEquals(2, oe.getParts().length);
-            Assert.assertEquals(DragSensitive.LIFT_RATIO, (String) oe.getParts()[0]);
-            Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, (String) oe.getParts()[1]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testPresentParameterLift() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 1.0, 0.0);
-        FieldVector3D<DerivativeStructure> a = s.dragAcceleration(state.getDate(), state.getFrame(),
-                                                                  state.getPVCoordinates().getPosition(),
-                                                                  state.getAttitude().getRotation(),
-                                                                  state.getMass(), 1.0e-6, Vector3D.PLUS_I,
-                                                                  getDragParameters(s),
-                                                                  DragSensitive.LIFT_RATIO);
-        Assert.assertEquals(5.58e-10, a.getNorm().getReal(), 1.0e-12);
-    }
-
-    @Test
-    @Deprecated
-    public void testWrongParameterLift() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 1.0, 0.0);
-        try {
-            s.dragAcceleration(state.getDate(), state.getFrame(),
-                               state.getPVCoordinates().getPosition(),
-                               state.getAttitude().getRotation(),
-                               state.getMass(), 1.0e-6, Vector3D.PLUS_I,
-                               getDragParameters(s),
-                               "wrong");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                oe.getSpecifier());
-            Assert.assertEquals(3, oe.getParts().length);
-            Assert.assertEquals("wrong", (String) oe.getParts()[0]);
-            Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, (String) oe.getParts()[1]);
-            Assert.assertEquals(DragSensitive.LIFT_RATIO, (String) oe.getParts()[2]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testWrongParameterRadiation() {
-        SpacecraftState state = propagator.getInitialState();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        try {
-            s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
-                                            state.getAttitude().getRotation(),
-                                            state.getMass(), Vector3D.PLUS_I,
-                                            getRadiationParameters(s),
-                                            "wrong");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                oe.getSpecifier());
-            Assert.assertEquals("wrong", (String) oe.getParts()[0]);
-        }
     }
 
     /** Test solar array radiation acceleration with zero flux. */
