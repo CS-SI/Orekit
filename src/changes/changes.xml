@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="maxime" type="add" issue="546">
+        Updated Hipparchus dependency to version 1.5 in pom.xml file.
+      </action>
       <action dev="maxime" type="fix" issue="514">
         Deleted unused DerivativeStructure acceleration computation methods.
         In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests. 
