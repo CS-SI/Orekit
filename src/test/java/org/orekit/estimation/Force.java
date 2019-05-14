@@ -18,13 +18,13 @@ package org.orekit.estimation;
 
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.OceanTides;
 import org.orekit.forces.gravity.Relativity;
 import org.orekit.forces.gravity.SolidTides;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.models.earth.atmosphere.HarrisPriester;
 
 public enum Force {
 

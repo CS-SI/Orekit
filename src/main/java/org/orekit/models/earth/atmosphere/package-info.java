@@ -16,8 +16,7 @@
  */
 /**
  *
- * This package provides classes to get atmospheric data,
- * including solar flux and planetary geomagnetic indices.
+ * This package provides the atmosphere model interface and several implementations.
  *
  */
-package org.orekit.forces.drag.atmosphere.data;
+package org.orekit.models.earth.atmosphere;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.drag.atmosphere.data;
+package org.orekit.models.earth.atmosphere.data;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
@@ -35,14 +35,15 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.Atmosphere;
-import org.orekit.forces.drag.atmosphere.DTM2000;
-import org.orekit.forces.drag.atmosphere.DTM2000InputParameters;
-import org.orekit.forces.drag.atmosphere.NRLMSISE00;
-import org.orekit.forces.drag.atmosphere.NRLMSISE00InputParameters;
-import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation.StrengthLevel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.atmosphere.Atmosphere;
+import org.orekit.models.earth.atmosphere.DTM2000;
+import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
+import org.orekit.models.earth.atmosphere.NRLMSISE00;
+import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
+import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
+import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation.StrengthLevel;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;

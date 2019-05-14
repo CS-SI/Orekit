@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.drag.atmosphere;
+package org.orekit.models.earth.atmosphere;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;

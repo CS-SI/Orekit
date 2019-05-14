@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.drag.atmosphere.data;
+package org.orekit.models.earth.atmosphere.data;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,8 +33,8 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.drag.atmosphere.DTM2000InputParameters;
-import org.orekit.forces.drag.atmosphere.NRLMSISE00InputParameters;
+import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
+import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
@@ -81,7 +81,7 @@ import org.orekit.utils.Constants;
  * <p>
  * With these data, the {@link #getAp(AbsoluteDate date)} method returns an array
  * of seven times the same daily Ap value, i.e. it is suited to be used only with
- * the {@link org.orekit.forces.drag.atmosphere.NRLMSISE00 NRLMSISE00} atmospheric
+ * the {@link org.orekit.models.earth.atmosphere.NRLMSISE00 NRLMSISE00} atmospheric
  * model where the switch #9 is set to 1.
  * </p>
  *
