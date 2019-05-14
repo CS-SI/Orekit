@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,24 +34,27 @@ import org.orekit.utils.ParameterDriver;
  */
 public class AmbiguitySolver {
 
-    /** Number of solutions of the ILS problem to find. */
-    private static final int NB_SOLUTIONS = 2;
-
     /** Drivers for ambiguity drivers. */
     private final List<ParameterDriver> ambiguityDrivers;
 
     /** Solver for the underlying Integer Least Square problem. */
     private final IntegerLeastSquareSolver solver;
 
+    /** Acceptance test to use. */
+    private final AmbiguityAcceptance acceptance;
+
     /** Simple constructor.
      * @param ambiguityDrivers drivers for ambiguity parameters
      * @param solver solver for the underlying Integer Least Square problem
+     * @param acceptance acceptance test to use
      * @see LambdaMethod
      */
     public AmbiguitySolver(final List<ParameterDriver> ambiguityDrivers,
-                           final IntegerLeastSquareSolver solver) {
+                           final IntegerLeastSquareSolver solver,
+                           final AmbiguityAcceptance acceptance) {
         this.ambiguityDrivers = ambiguityDrivers;
         this.solver           = solver;
+        this.acceptance       = acceptance;
     }
 
     /** Get all the ambiguity parameters drivers.
@@ -142,14 +146,33 @@ public class AmbiguitySolver {
         final int[]                 indirection      = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
 
         // solve the ILS problem
-        final IntegerLeastSquareSolution[] solutions =
-                        solver.solveILS(NB_SOLUTIONS, floatAmbiguities, indirection, covariance);
-        if (solutions.length < NB_SOLUTIONS) {
+        final IntegerLeastSquareSolution[] candidates =
+                        solver.solveILS(acceptance.numberOfCandidates(), floatAmbiguities, indirection, covariance);
+        if (candidates.length < acceptance.numberOfCandidates()) {
             return Collections.emptyList();
         }
 
+        // check acceptance
+        final IntegerLeastSquareSolution bestCandidate = acceptance.accept(candidates);
+        if (bestCandidate == null) {
+            return Collections.emptyList();
+        }
+
+        // fix the ambiguities
+        final long[] fixedAmbiguities = bestCandidate.getSolution();
+        final List<ParameterDriver> fixedDrivers = new ArrayList<>(indirection.length);
+        for (int i = 0; i < indirection.length; ++i) {
+            final ParameterDriver driver = measurementsParametersDrivers.get(indirection[i] - startIndex);
+            driver.setMinValue(fixedAmbiguities[i]);
+            driver.setMaxValue(fixedAmbiguities[i]);
+            fixedDrivers.add(driver);
+        }
+
         // TODO
-        return null;
+        // update the other float parameter drivers estimates
+        // using their correlations with the fixed ambiguities
+
+        return fixedDrivers;
 
     }
 

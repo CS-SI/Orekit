@@ -38,8 +38,15 @@ public class AmbiguitySolverTest {
             { 0.544, 2.340, 6.288 }
         });
 
-        AmbiguitySolver solver = new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod());
-        List<ParameterDriver> fixed = solver.fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance);
+        // acceptance ratio not met
+        Assert.assertTrue(new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
+                                              new SimpleRatioAmbiguityAcceptance(0.5)).
+                          fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance).
+                          isEmpty());
+
+        List<ParameterDriver> fixed = new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
+                                                          new SimpleRatioAmbiguityAcceptance(0.8)).
+                                      fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance);
         Assert.assertEquals(3, fixed.size());
         Assert.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
         Assert.assertEquals(3, fixed.get(1).getValue(), 1.0e-15);

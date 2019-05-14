@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added ambiguity resolution for phase measurements.
+        This feature is not complete yet and is considered experimental.
+      </action>
       <action dev="maxime" type="add" issue="546">
         Updated Hipparchus dependency to version 1.5 in pom.xml file.
       </action>
