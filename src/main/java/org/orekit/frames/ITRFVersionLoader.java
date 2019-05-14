@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -68,7 +69,7 @@ class ITRFVersionLoader {
 
     /** Default entry to use if no suitable configuration is found. */
     private static final ITRFVersionConfiguration DEFAULT =
-                    new ITRFVersionConfiguration(Pattern.compile(ANYTHING), ITRFVersion.ITRF_2014,
+                    new ITRFVersionConfiguration("", ITRFVersion.ITRF_2014,
                                                  Integer.MIN_VALUE, Integer.MAX_VALUE);
 
     /** Configuration. */
@@ -148,7 +149,7 @@ class ITRFVersionLoader {
                     lineNumber++;
                     line = line.trim();
                     if (!(line.startsWith("#") || line.isEmpty())) {
-                        Pattern pattern     = null;
+                        String prefix       = null;
                         ITRFVersion version = null;
                         int validityStart   = Integer.MIN_VALUE;
                         int validityEnd     = Integer.MAX_VALUE;
@@ -156,14 +157,14 @@ class ITRFVersionLoader {
                         if (matcherII.matches()) {
                             // both start and end of validity are at infinity
                             // the ITRF version applies throughout history
-                            pattern = Pattern.compile(ANYTHING + matcherII.group(1));
+                            prefix  = matcherII.group(1);
                             version = ITRFVersion.getITRFVersion(matcherII.group(2));
                         } else {
                             final Matcher matcherID = patternID.matcher(line);
                             if (matcherID.matches()) {
                                 // both start of validity is at infinity
                                 // the ITRF version applies in the far past
-                                pattern     = Pattern.compile(ANYTHING + matcherID.group(1));
+                                prefix      = matcherID.group(1);
                                 validityEnd = new DateComponents(Integer.parseInt(matcherID.group(2)),
                                                                  Integer.parseInt(matcherID.group(3)),
                                                                  Integer.parseInt(matcherID.group(4))).getMJD();
@@ -173,7 +174,7 @@ class ITRFVersionLoader {
                                 if (matcherDI.matches()) {
                                     // both end of validity is at infinity
                                     // the ITRF version applies to the upcoming future
-                                    pattern       = Pattern.compile(ANYTHING + matcherDI.group(1));
+                                    prefix        = matcherDI.group(1);
                                     validityStart = new DateComponents(Integer.parseInt(matcherDI.group(2)),
                                                                        Integer.parseInt(matcherDI.group(3)),
                                                                        Integer.parseInt(matcherDI.group(4))).getMJD();
@@ -182,7 +183,7 @@ class ITRFVersionLoader {
                                     final Matcher matcherDD = patternDD.matcher(line);
                                     if (matcherDD.matches()) {
                                         // the ITRF version applies during a limited range
-                                        pattern       = Pattern.compile(ANYTHING + matcherDD.group(1));
+                                        prefix        = matcherDD.group(1);
                                         validityStart = new DateComponents(Integer.parseInt(matcherDD.group(2)),
                                                                            Integer.parseInt(matcherDD.group(3)),
                                                                            Integer.parseInt(matcherDD.group(4))).getMJD();
@@ -198,9 +199,13 @@ class ITRFVersionLoader {
                                 }
                             }
                         }
-
+                        // error if prefix contains / or \ since these will never match
+                        if (prefix.contains("\\") || prefix.contains("/")) {
+                            throw new OrekitException(
+                                    OrekitMessages.ITRF_VERSIONS_PREFIX_ONLY, prefix);
+                        }
                         // store the parsed entry
-                        configurations.add(new ITRFVersionConfiguration(pattern, version, validityStart, validityEnd));
+                        configurations.add(new ITRFVersionConfiguration(prefix, version, validityStart, validityEnd));
 
                     }
 
@@ -219,7 +224,7 @@ class ITRFVersionLoader {
     public static class ITRFVersionConfiguration {
 
         /** File names to which this configuration applies. */
-        private final Pattern pattern;
+        private final String prefix;
 
         /** ITRF version. */
         private final ITRFVersion version;
@@ -231,16 +236,16 @@ class ITRFVersionLoader {
         private final int validityEnd;
 
         /** Simple constructor.
-         * @param pattern file names to which this configuration applies
+         * @param prefix file names to which this configuration applies
          * @param version ITRF version
          * @param validityStart start of validity (included)
          * @param validityEnd end of validity (excluded)
          */
-        ITRFVersionConfiguration(final Pattern pattern,
+        ITRFVersionConfiguration(final String prefix,
                                  final ITRFVersion version,
                                  final int validityStart,
                                  final int validityEnd) {
-            this.pattern       = pattern;
+            this.prefix        = prefix;
             this.version       = version;
             this.validityStart = validityStart;
             this.validityEnd   = validityEnd;
@@ -251,7 +256,8 @@ class ITRFVersionLoader {
          * @return true if the configuration applies to the specified file
          */
         boolean appliesTo(final String name) {
-            return pattern.matcher(name).matches();
+            final int i = FastMath.max(name.lastIndexOf("/"), name.lastIndexOf("\\"));
+            return name.startsWith(prefix, i + 1);
         }
 
         /** Get ITRF version.

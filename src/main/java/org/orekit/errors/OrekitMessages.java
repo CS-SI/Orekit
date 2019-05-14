@@ -223,7 +223,11 @@ public enum OrekitMessages implements Localizable {
     VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED("Vienna coefficients ah or aw or zh or zw could not be loaded from {0}"),
     VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE("Vienna coefficients ah or aw or zh or zw not available for date {0}"),
     NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE("file {0} does not contain Vienna coefficients ah, aw, zh or zw"),
-    IRREGULAR_OR_INCOMPLETE_GRID("irregular or incomplete grid in file {0}");
+    IRREGULAR_OR_INCOMPLETE_GRID("irregular or incomplete grid in file {0}"),
+    ITRF_VERSIONS_PREFIX_ONLY("The first column of itrf-versions.conf is a plain " +
+            "prefix that is matched against the name of each loaded file. It should " +
+            "not contain any regular expression syntax or directory components, i.e. " +
+            "\"/\" or \"\\\". Actual value: \"{0}\".");
 
 
     // CHECKSTYLE: resume JavadocVariable check

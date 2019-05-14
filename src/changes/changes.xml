@@ -26,7 +26,18 @@
       </action>
       <action dev="maxime" type="fix" issue="514">
         Deleted unused DerivativeStructure acceleration computation methods.
-        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests. 
+        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests.
+      </action>
+      <action dev="evan" type="update" issue="543">
+        Change format of itrf-versions.conf to use prefix matching instead of Regular
+        Expression matching. All existing itrf-versions.conf files will need to be
+        updated. This is to avoid a potential denial of service where a crafted
+        itrf-versions.conf could cause the application to hang.
+      </action>
+      <action dev="evan" type="update" issue="543">
+        ZipJarCrawler now uses "!/" to denote the start of the path within the archive
+        which matches the convention used by JarURLConnection. ZipJarCrawler used to use
+        "!".
       </action>
       <action dev="bryan" type="fix" issue="544" due-to="Josef Probst">
         Fixed endless loop on GPSPropagator and (Field)KeplerianOrbit.
