@@ -65,11 +65,28 @@ public abstract class AbstractLambdaMethodTest {
         for (int k = 0; k < 1000; ++k) {
             // generate random test data
             final int        n           = FastMath.max(2, 1 + random.nextInt(20));
-            final RealMatrix covariance  = createRandomSymmetricMatrix(n, random);
+            final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
 
             // perform decomposition test
             doTestDecomposition(indirection, covariance);
+
+        }
+
+    }
+
+    @Test
+    public void testRandomProblems() {
+        
+        RandomGenerator random = new Well19937a(0x1c68f36088a9133al);
+        for (int k = 0; k < 1000; ++k) {
+            // generate random test data
+            final int        n           = FastMath.max(2, 1 + random.nextInt(10));
+            final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
+            final int[]      indirection = createRandomIndirectionArray(n, random);
+
+            // perform decomposition test
+            doTestILS(random, indirection, covariance);
 
         }
 
@@ -83,7 +100,7 @@ public abstract class AbstractLambdaMethodTest {
             // generate random test data
             final int        n           = FastMath.max(2, 1 + random.nextInt(20));
    
-            final RealMatrix covariance  = createRandomSymmetricMatrix(n, random);
+            final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
 
             // perform integer Gauss transformation test
@@ -100,10 +117,10 @@ public abstract class AbstractLambdaMethodTest {
             // generate random test data
             final int        n           = FastMath.max(2, 1 + random.nextInt(20));
    
-            final RealMatrix covariance  = createRandomSymmetricMatrix(n, random);
+            final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
 
-            // perform permutation transformation test
+            // perform ILS resolution test
             doTestPermutation(random, indirection, covariance);
 
         }
@@ -290,6 +307,50 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
+    private void doTestILS(final RandomGenerator random,
+                           final int[] indirection, final RealMatrix covariance) {
+        final double[] floatAmbiguities = new double[indirection.length];
+        for (int i = 0; i < floatAmbiguities.length; ++i) {
+            floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
+        }
+        final RealMatrix aHat        = MatrixUtils.createColumnRealMatrix(floatAmbiguities);
+        final RealMatrix invCov      = new QRDecomposer(1.0e-10).
+                                       decompose(filterCovariance(covariance, indirection)).
+                                       getInverse();
+        final AbstractLambdaMethod reducer = buildReducer();
+        final int nbSol = 10;
+        final IntegerLeastSquareSolution[] solutions =
+                        reducer.solveILS(nbSol, floatAmbiguities, indirection, covariance);
+
+        // check solutions are consistent
+        Assert.assertEquals(nbSol, solutions.length);
+        for (int i = 0; i < nbSol - 1; ++i) {
+            Assert.assertTrue(solutions[i].getSquaredDistance() <= solutions[i + 1].getSquaredDistance());
+        }
+        for (int i = 0; i < nbSol; ++i) {
+            final RealMatrix a = MatrixUtils.createRealMatrix(floatAmbiguities.length, 1);
+            for (int k = 0; k < a.getRowDimension(); ++k) {
+                a.setEntry(k, 0, solutions[i].getSolution()[k]);
+            }
+            final double squaredNorm = a.subtract(aHat).transposeMultiply(invCov).multiply(a.subtract(aHat)).getEntry(0, 0);
+            Assert.assertEquals(squaredNorm, solutions[i].getSquaredDistance(), 6.0e-10 * squaredNorm);
+        }
+
+        // check we can't find a better solution than the first one in the array
+        double min = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < 1000; ++i) {
+            final RealMatrix a = MatrixUtils.createRealMatrix(floatAmbiguities.length, 1);
+            for (int k = 0; k < a.getRowDimension(); ++k) {
+                long close = FastMath.round(floatAmbiguities[k]);
+                a.setEntry(k, 0, close + random.nextInt(11) - 5);
+            }            
+            final double squaredNorm = a.subtract(aHat).transposeMultiply(invCov).multiply(a.subtract(aHat)).getEntry(0, 0);
+            min = FastMath.min(min, (squaredNorm - solutions[0].getSquaredDistance()) / solutions[0].getSquaredDistance());
+        }
+        Assert.assertTrue(min > -1.0e-10);
+
+    }
+
     private int getN(final AbstractLambdaMethod reducer) {
         try {
             final Field nField = AbstractLambdaMethod.class.getDeclaredField("n");
@@ -322,7 +383,7 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    public DiagonalMatrix getDiag(final AbstractLambdaMethod reducer) {
+    private DiagonalMatrix getDiag(final AbstractLambdaMethod reducer) {
         try {
             final Field diagField = AbstractLambdaMethod.class.getDeclaredField("diag");
             diagField.setAccessible(true);
@@ -333,11 +394,11 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    public RealMatrix getZTransformation(final AbstractLambdaMethod reducer) {
+    private RealMatrix getZTransformation(final AbstractLambdaMethod reducer) {
         return dogetZs(reducer, "zTransformation");
     }
 
-    public RealMatrix getZInverseTransformation(final AbstractLambdaMethod reducer) {
+    private RealMatrix getZInverseTransformation(final AbstractLambdaMethod reducer) {
         return dogetZs(reducer, "zInverseTransformation");
     }
 
@@ -361,7 +422,7 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    public double[] getDecorrelated(final AbstractLambdaMethod reducer) {
+    private double[] getDecorrelated(final AbstractLambdaMethod reducer) {
         try {
             final Field decorrelatedField = AbstractLambdaMethod.class.getDeclaredField("decorrelated");
             decorrelatedField.setAccessible(true);
@@ -372,16 +433,14 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    private RealMatrix createRandomSymmetricMatrix(final int n, final RandomGenerator random) {
+    private RealMatrix createRandomSymmetricPositiveDefiniteMatrix(final int n, final RandomGenerator random) {
         final RealMatrix matrix = MatrixUtils.createRealMatrix(n, n);
         for (int i = 0; i < n; ++i) {                
-            for (int j = 0; j <= i; ++j) {
-                final double entry = 20 * random.nextDouble() - 10;
-                matrix.setEntry(i, j, entry);
-                matrix.setEntry(j, i, entry);
+            for (int j = 0; j < n; ++j) {
+                matrix.setEntry(i, j, 20 * random.nextDouble() - 10);
             }
         }
-        return matrix;
+        return matrix.transposeMultiply(matrix);
     }
 
     private int[] createRandomIndirectionArray(final int n, final RandomGenerator random) {
