@@ -69,7 +69,7 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
                                                  final int[] indirection, final RealMatrix covariance) {
 
         // initialize the ILS problem search
-        initializeSearch(floatAmbiguities, indirection, covariance, nbSol);
+        initializeProblem(floatAmbiguities, indirection, covariance, nbSol);
 
         // perform initial Lᵀ.D.L = Q decomposition of covariance
         ltdlDecomposition();
@@ -77,25 +77,25 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         // perform decorrelation/reduction of covariances
         reduction();
 
-        // transforms the Lᵀ.D.L = Q decomposition of covariance into
+        // transform the Lᵀ.D.L = Q decomposition of covariance into
         // the L⁻¹.D⁻¹.L⁻ᵀ = Q⁻¹ decomposition of the inverse of covariance.
         inverseDecomposition();
 
         // perform discrete search of Integer Least Square problem
-        solveILS();
+        discreteSearch();
 
         return recoverAmbiguities();
 
     }
 
-    /** Initialize search.
+    /** Initialize ILS problem.
      * @param floatAmbiguities float estimates of ambiguities
      * @param indirection indirection array to extract ambiguity covariances from global covariance matrix
      * @param globalCovariance global covariance matrix (includes ambiguities among other parameters)
      * @param nbSol number of solutions to search for
      */
-    protected void initializeSearch(final double[] floatAmbiguities, final int[] indirection,
-                                    final RealMatrix globalCovariance, final int nbSol) {
+    private void initializeProblem(final double[] floatAmbiguities, final int[] indirection,
+                                   final RealMatrix globalCovariance, final int nbSol) {
 
         this.n                      = floatAmbiguities.length;
         this.decorrelated           = floatAmbiguities.clone();
@@ -290,76 +290,65 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     /** Find the best solutions to the Integer Least Square problem.
      */
-    private void solveILS() {
+    private void discreteSearch() {
 
         // estimate search domain limit
         final long[]   fixed   = new long[n];
         final double[] offsets = new double[n];
+        final double[] left    = new double[n];
+        final double[] right   = new double[n];
         final double   chi2    = estimateChi2(fixed, offsets);
 
+        final AlternatingSampler[] samplers = new AlternatingSampler[n];
+
         // set up top level sampling for last ambiguity
-        final double right = chi2 / diag[n - 1];
-        final AlternatingSampler topSampler = new AlternatingSampler(decorrelated[n - 1], FastMath.sqrt(right));
+        right[n - 1] = chi2 / diag[n - 1];
+        int index = n - 1;
+        while (index < n) {
+            if (index == -1) {
 
-        // try different candidates for last ambiguity
-        while (topSampler.inRange()) {
-            fixed[n - 1]      = topSampler.getCurrent();
-            offsets[n - 1]    = fixed[n - 1] - decorrelated[n - 1];
-            final double left = offsets[n - 1] * offsets[n - 1];
+                // all ambiguities have been fixed
+                final double squaredNorm = chi2 - diag[0] * (right[0] - left[0]);
+                solutions.add(new IntegerLeastSquareSolution(fixed, squaredNorm));
+                if (solutions.size() > maxSolutions) {
+                    solutions.remove(solutions.last());
+                }
 
-            // recursive search, assuming current candidate for last ambiguity
-            recursiveSolve(n - 1, left, right, chi2, fixed, offsets);
+                ++index;
 
-            // prepare next candidate
-            topSampler.generateNext();
+            } else {
 
-        }
+                if (samplers[index] == null) {
+                    // we start exploring a new ambiguity
+                    samplers[index] = new AlternatingSampler(conditionalEstimate(index, offsets), FastMath.sqrt(right[index]));
+                } else {
+                    // continue exploring the same ambiguity
+                    samplers[index].generateNext();
+                }
 
-    }
+                if (samplers[index].inRange()) {
+                    fixed[index]       = samplers[index].getCurrent();
+                    offsets[index]     = fixed[index] - decorrelated[index];
+                    final double delta = fixed[index] - samplers[index].getMidPoint();
+                    left[index]        = delta * delta;
+                    if (index > 0) {
+                        right[index - 1]   = diag[index] / diag[index - 1] * (right[index] - left[index]);
+                    }
 
-    /** Recursive search of solutions to the Integer Least Square problem.
-     * @param index index of first fixed ambiguity
-     * @param left left hand side of search inequality (de Jonge and Tiberius 1996 paper, equation 4.6)
-     * @param right right hand side of search inequality (de Jonge and Tiberius 1996 paper, equation 4.6)
-     * @param chi2 search limit parameter χ²
-     * @param fixed placeholder for test fixed ambiguities
-     * @param offsets placeholder for offsets between fixed ambiguities and float ambiguities
-     */
-    private void recursiveSolve(final int index, final double left, final double right,
-                                final double chi2, final long[] fixed, final double[] offsets) {
+                    // go down one level
+                    --index;
 
-        if (index == 0) {
-            // all ambiguities have been fixed
-            final double squaredNorm = chi2 - diag[0] * (right - left);
-            solutions.add(new IntegerLeastSquareSolution(fixed, squaredNorm));
-            if (solutions.size() > maxSolutions) {
-                solutions.remove(solutions.last());
-            }
-        } else {
+                } else {
 
-            // we need to fix more ambiguities
-            final int next = index - 1;
+                    // we have completed exploration of this ambiguity range
+                    samplers[index] = null;
 
-            // compute search bounds as per section 4 in de Jonge and Tiberius 1996
-            final double             conditional = conditionalEstimate(next, offsets);
-            final double             nextRight   = diag[index] / diag[next] * (right - left);
-            final AlternatingSampler sampler     = new AlternatingSampler(conditional, FastMath.sqrt(nextRight));
-            while (sampler.inRange()) {
+                    // go up one level
+                    ++index;
 
-                // candidate for next ambiguity from sampler
-                fixed[next]           = sampler.getCurrent();
-                offsets[next]         = fixed[next] - decorrelated[next];
-                final double delta    = fixed[next] - conditional;
-                final double nextLeft = delta * delta;
-
-                // recursive search, assuming current candidate for next ambiguity
-                recursiveSolve(next, nextLeft, nextRight, chi2, fixed, offsets);
-
-                // prepare next candidate
-                sampler.generateNext();
+                }
 
             }
-
         }
 
     }

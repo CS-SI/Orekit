@@ -34,7 +34,7 @@ import org.hipparchus.util.FastMath;
  * the initial k₀ that is implicitly generated at construction will be out of
  * range. The {@link #inRange()} method can be used to check if the last generator
  * is still producing numbers within the initial range or if it has already
- * started generating number out of the range.
+ * started generating out of range numbers.
  * </p>
  * <p>
  * If there are integers between {@code a - r} and {@code a + r}, it is guaranteed
@@ -54,6 +54,9 @@ import org.hipparchus.util.FastMath;
  * @since 10.0
  */
 class AlternatingSampler {
+
+    /** Range midpoint. */
+    private final double a;
 
     /** Offset with respect to A001057. */
     private final long offset;
@@ -89,6 +92,7 @@ class AlternatingSampler {
      */
     AlternatingSampler(final double a, final double r) {
 
+        this.a      = a;
         this.offset = (long) FastMath.rint(a);
         this.sign   = offset <= a ? +1 : -1;
         this.min    = (long) FastMath.ceil(a - r);
@@ -97,6 +101,13 @@ class AlternatingSampler {
         this.k1      = 0;
         this.k0      = 0;
         this.current = offset;
+    }
+
+    /** Get the range midpoint.
+     * @return range midpoint
+     */
+    public double getMidPoint() {
+        return a;
     }
 
     /** Get current value.

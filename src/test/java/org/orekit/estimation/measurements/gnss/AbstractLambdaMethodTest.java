@@ -17,6 +17,8 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.hipparchus.linear.DiagonalMatrix;
@@ -50,7 +52,7 @@ public abstract class AbstractLambdaMethodTest {
         final RealMatrix covariance = refLow.transposeMultiply(refDiag).multiply(refLow);
         final int[] indirection = new int[] { 0, 1, 2, 3 };
         AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(new double[indirection.length], indirection, covariance, 2);
+        initializeProblem(reducer, new double[indirection.length], indirection, covariance, 2);
         reducer.ltdlDecomposition();
         Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm(), 9.9e-13 * refLow.getNorm());
         Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm(), 6.7e-13 * refDiag.getNorm());
@@ -158,7 +160,7 @@ public abstract class AbstractLambdaMethodTest {
 
     private void doTestDecomposition(final int[] indirection, final RealMatrix covariance) {
         final AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(new double[indirection.length], indirection, covariance, 2);
+        initializeProblem(reducer, new double[indirection.length], indirection, covariance, 2);
         reducer.ltdlDecomposition();
         final RealMatrix extracted = MatrixUtils.createRealMatrix(indirection.length, indirection.length);
         for (int i = 0; i < indirection.length; ++i) {
@@ -183,7 +185,7 @@ public abstract class AbstractLambdaMethodTest {
             floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
         }
         final AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2);
+        initializeProblem(reducer, floatAmbiguities, indirection, covariance, 2);
         reducer.ltdlDecomposition();
         RealMatrix identity = MatrixUtils.createRealIdentityMatrix(n);
         RealMatrix zRef     = identity;
@@ -243,7 +245,7 @@ public abstract class AbstractLambdaMethodTest {
             floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
         }
         final AbstractLambdaMethod reducer = buildReducer();
-        reducer.initializeSearch(floatAmbiguities, indirection, covariance, 2);
+        initializeProblem(reducer, floatAmbiguities, indirection, covariance, 2);
         reducer.ltdlDecomposition();
         RealMatrix filteredCovariance = filterCovariance(covariance, indirection);
         RealMatrix zRef               = MatrixUtils.createRealIdentityMatrix(indirection.length);
@@ -324,8 +326,7 @@ public abstract class AbstractLambdaMethodTest {
         try {
             final Field diagField = AbstractLambdaMethod.class.getDeclaredField("diag");
             diagField.setAccessible(true);
-            final double[] diag = (double[]) diagField.get(reducer);
-            return MatrixUtils.createRealDiagonalMatrix(diag);
+            return new DiagonalMatrix((double[]) diagField.get(reducer));
         } catch (NoSuchFieldException | IllegalAccessException e) {
             Assert.fail(e.getLocalizedMessage());
             return null;
@@ -429,6 +430,23 @@ public abstract class AbstractLambdaMethodTest {
         final double dk1   = diag.getEntry(i + 1, i + 1);
         final double lk1k0 = low.getEntry(i + 1, i);
         return new Permutation(n, i, dk0 + lk1k0 * lk1k0 * dk1); 
+    }
+
+    private void initializeProblem(final AbstractLambdaMethod method,
+                                   final double[] floatAmbiguities, final int[] indirection,
+                                   final RealMatrix globalCovariance, final int nbSol) {
+        try {
+            final Method initializeMethod = AbstractLambdaMethod.class.getDeclaredMethod("initializeProblem",
+                                                                                         double[].class,
+                                                                                         int[].class,
+                                                                                         RealMatrix.class,
+                                                                                         Integer.TYPE);
+            initializeMethod.setAccessible(true);
+            initializeMethod.invoke(method, floatAmbiguities, indirection, globalCovariance, nbSol);
+        } catch (NoSuchMethodException | IllegalAccessException |
+                 IllegalArgumentException | InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
     }
 
     private static class Permutation {
