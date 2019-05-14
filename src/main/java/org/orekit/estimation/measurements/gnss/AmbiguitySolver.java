@@ -28,7 +28,6 @@ import org.orekit.utils.ParameterDriver;
 
 /** Class for solving integer ambiguity problems.
  * @see LambdaMethod
- * @see ModifiedLambdaMethod
  * @author Luc Maisonobe
  * @since 10.0
  */
@@ -47,7 +46,6 @@ public class AmbiguitySolver {
      * @param ambiguityDrivers drivers for ambiguity parameters
      * @param solver solver for the underlying Integer Least Square problem
      * @see LambdaMethod
-     * @see ModifiedLambdaMethod
      */
     public AmbiguitySolver(final List<ParameterDriver> ambiguityDrivers,
                            final IntegerLeastSquareSolver solver) {
