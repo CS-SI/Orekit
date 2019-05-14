@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth;
+package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class GlobalMappingFunctionModelTest {
+public class NiellMappingFunctionModelTest {
 
     @BeforeClass
     public static void setUpGlobal() {
@@ -42,40 +42,38 @@ public class GlobalMappingFunctionModelTest {
     @Test
     public void testMappingFactors() {
         
-        // Site (NRAO, Green Bank, WV): latitude:  0.6708665767 radians
-        //                              longitude: -1.393397187 radians
-        //                              height:    844.715 m
+        // Site (Le Mans, France):      latitude:  48.0°
+        //                              longitude: 0.20°
+        //                              height:    68 m
         //
-        // Date: MJD 55055 -> 12 August 2009 at 0h UT
+        // Date: 1st January 1994 at 0h UT
         //
-        // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-        //         IERS Technical Note No. 36, BKG (2010)
+        // Ref:    Mercier F., Perosanz F., Mesures GNSS, Résolution des ambiguités.
         //
-        // Expected mapping factors : hydrostatic -> 3.425246 (Ref)
-        //                                    wet -> 3.449589 (Ref)
+        // Expected mapping factors : hydrostatic -> 10.16 (Ref)
+        //                                    wet -> 10.75 (Ref)
 
-        final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(1994, 1, 1, TimeScalesFactory.getUTC());
         
-        final double latitude    = 0.6708665767;
-        final double longitude   = -1.393397187;
-        final double height      = 844.715;
+        final double latitude    = FastMath.toRadians(48.0);
+        final double height      = 68.0;
 
-        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
-        final double expectedHydro = 3.425246;
-        final double expectedWet   = 3.449589;
+        final double elevation     = FastMath.toRadians(5.0);
+        final double expectedHydro = 10.16;
+        final double expectedWet   = 10.75;
 
-        final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
+        final MappingFunction model = new NiellMappingFunctionModel(latitude);
         
         final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
         
-        Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
-        Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
+        Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
+        Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
     }
 
     @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction model = new GlobalMappingFunctionModel(FastMath.toRadians(45.0), FastMath.toRadians(45.0));
+        MappingFunction model = new NiellMappingFunctionModel(FastMath.toRadians(45.0));
         double[] lastFactors = new double[] {
             Double.MAX_VALUE,
             Double.MAX_VALUE

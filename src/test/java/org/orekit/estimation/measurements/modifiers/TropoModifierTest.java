@@ -46,9 +46,9 @@ import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifi
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
-import org.orekit.models.earth.NiellMappingFunctionModel;
-import org.orekit.models.earth.EstimatedTroposphericModel;
-import org.orekit.models.earth.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
+import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;

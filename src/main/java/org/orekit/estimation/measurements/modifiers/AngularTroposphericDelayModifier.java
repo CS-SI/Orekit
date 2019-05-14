@@ -25,7 +25,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
-import org.orekit.models.earth.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth;
+package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -52,7 +52,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class FieldViennaThreeModelTest {
+public class FieldViennaOneModelTest {
 
     private static double epsilon = 1e-6;
 
@@ -70,153 +70,50 @@ public class FieldViennaThreeModelTest {
     public void testMappingFactors() {
         doTestMappingFactors(Decimal64Field.getInstance());
     }
-    
+
     private <T extends RealFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
-        
         final T zero = field.getZero();
-
-        // Site:     latitude:  37.5°
-        //           longitude: 277.5°
-        //           height:    824 m
+        // Site (NRAO, Green Bank, WV): latitude:  38°
+        //                              longitude: 280°
+        //                              height:    824.17 m
         //
-        // Date:     25 November 2018 at 0h UT
+        // Date: MJD 55055 -> 12 August 2009 at 0h UT
         //
-        // Values: ah  = 0.00123462
-        //         aw  = 0.00047101
-        //         zhd = 2.1993 m
-        //         zwd = 0.0690 m
+        // Ref for the inputs:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
+        //                        IERS Technical Note No. 36, BKG (2010)
         //
-        // Values taken from: http://vmf.geo.tuwien.ac.at/trop_products/GRID/5x5/VMF3/VMF3_OP/2018/VMF3_20181125.H00
+        // Values: ah  = 0.00127683
+        //         aw  = 0.00060955
+        //         zhd = 2.0966 m
+        //         zwd = 0.2140 m
         //
-        // Expected mapping factors : hydrostatic -> 1.621024
-        //                                    wet -> 1.623023
+        // Values taken from: http://vmf.geo.tuwien.ac.at/trop_products/GRID/2.5x2/VMF1/VMF1_OP/2009/VMFG_20090812.H00
         //
-        // Expected outputs are obtained by performing the Matlab script vmf3.m provided by TU WIEN:
+        // Expected mapping factors : hydrostatic -> 3.425088
+        //                                    wet -> 3.448300
+        //
+        // Expected outputs are obtained by performing the Matlab script vmf1_ht.m provided by TU WIEN:
         // http://vmf.geo.tuwien.ac.at/codes/
         //
 
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 11, 25, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createMJDDate(55055, zero, TimeScalesFactory.getUTC());
         
-        final double latitude    = FastMath.toRadians(37.5);
-        final double longitude   = FastMath.toRadians(277.5);
-        final double height      = 824.0;
+        final double latitude    = FastMath.toRadians(38.0);
+        final double height      = 824.17;
 
-        final double elevation     = FastMath.toRadians(38.0);
-        final double expectedHydro = 1.621024;
-        final double expectedWet   = 1.623023;
+        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
+        final double expectedHydro = 3.425088;
+        final double expectedWet   = 3.448300;
         
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
+        final double[] a = { 0.00127683, 0.00060955 };
+        final double[] z = {2.0966, 0.2140};
         
-        final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
+        final ViennaOneModel model = new ViennaOneModel(a, z, latitude);
         
-        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height),
-                                                         model.getParameters(field), date);
+        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height), model.getParameters(field), date);
         
-        Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
-        Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
-    }
-
-    @Test
-    public void testLowElevation() {
-        doTestLowElevation(Decimal64Field.getInstance());        
-    }
-
-    private <T extends RealFieldElement<T>> void doTestLowElevation(final Field<T> field) {
-        
-        final T zero = field.getZero();
-
-        // Site:     latitude:  37.5°
-        //           longitude: 277.5°
-        //           height:    824 m
-        //
-        // Date:     25 November 2018 at 0h UT
-        //
-        // Values: ah  = 0.00123462
-        //         aw  = 0.00047101
-        //         zhd = 2.1993 m
-        //         zwd = 0.0690 m
-        //
-        // Values taken from: http://vmf.geo.tuwien.ac.at/trop_products/GRID/5x5/VMF3/VMF3_OP/2018/VMF3_20181125.H00
-        //
-        // Expected mapping factors : hydrostatic -> 10.132802
-        //                                    wet -> 10.879154
-        //
-        // Expected outputs are obtained by performing the Matlab script vmf3.m provided by TU WIEN:
-        // http://vmf.geo.tuwien.ac.at/codes/
-        //
-
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 11, 25, TimeScalesFactory.getUTC());
-        
-        final double latitude    = FastMath.toRadians(37.5);
-        final double longitude   = FastMath.toRadians(277.5);
-        final double height      = 824.0;
-
-        final double elevation     = FastMath.toRadians(5.0);
-        final double expectedHydro = 10.132802;
-        final double expectedWet   = 10.879154;
-        
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-        
-        final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
-        
-        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height),
-                                                         model.getParameters(field), date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
-        Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
-    }
-
-    @Test
-    public void testHightElevation() {
-        doTestHightElevation(Decimal64Field.getInstance());
-    }
-
-    private <T extends RealFieldElement<T>> void doTestHightElevation(final Field<T> field) {
-
-        final T zero = field.getZero();
-
-        // Site:     latitude:  37.5°
-        //           longitude: 277.5°
-        //           height:    824 m
-        //
-        // Date:     25 November 2018 at 0h UT
-        //
-        // Values: ah  = 0.00123462
-        //         aw  = 0.00047101
-        //         zhd = 2.1993 m
-        //         zwd = 0.0690 m
-        //
-        // Values taken from: http://vmf.geo.tuwien.ac.at/trop_products/GRID/5x5/VMF3/VMF3_OP/2018/VMF3_20181125.H00
-        //
-        // Expected mapping factors : hydrostatic -> 1.003810
-        //                                    wet -> 1.003816
-        //
-        // Expected outputs are obtained by performing the Matlab script vmf3.m provided by TU WIEN:
-        // http://vmf.geo.tuwien.ac.at/codes/
-        //
-
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 11, 25, TimeScalesFactory.getUTC());
-        
-        final double latitude    = FastMath.toRadians(37.5);
-        final double longitude   = FastMath.toRadians(277.5);
-        final double height      = 824.0;
-
-        final double elevation     = FastMath.toRadians(85.0);
-        final double expectedHydro = 1.003810;
-        final double expectedWet   = 1.003816;
-        
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-        
-        final ViennaThreeModel model = new ViennaThreeModel(a, z, latitude, longitude);
-        
-        final T[] computedMapping = model.mappingFactors(zero.add(elevation), zero.add(height),
-                                                         model.getParameters(field), date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
-        Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
+        Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 4.1e-6);
+        Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
     }
 
     @Test
@@ -229,11 +126,10 @@ public class FieldViennaThreeModelTest {
         final double elevation = 10d;
         final double height = 100d;
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        final double[] a = { 0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-        ViennaThreeModel model = new ViennaThreeModel(a, z, FastMath.toRadians(37.5), FastMath.toRadians(277.5));
-        final T path = model.pathDelay(zero.add(FastMath.toRadians(elevation)), zero.add(height),
-                                       model.getParameters(field), date);
+        final double[] a = { 0.00127683, 0.00060955 };
+        final double[] z = {2.0966, 0.2140};
+        ViennaOneModel model = new ViennaOneModel(a, z, FastMath.toRadians(45.0));
+        final T path = model.pathDelay(zero.add(FastMath.toRadians(elevation)), zero.add(height), model.getParameters(field), date);
         Assert.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
     }
@@ -246,14 +142,13 @@ public class FieldViennaThreeModelTest {
     private <T extends RealFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        final double[] a = { 0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-        ViennaThreeModel model = new ViennaThreeModel(a, z, FastMath.toRadians(37.5), FastMath.toRadians(277.5));
+        final double[] a = { 0.00127683, 0.00060955 };
+        final double[] z = {2.0966, 0.2140};
+        ViennaOneModel model = new ViennaOneModel(a, z, FastMath.toRadians(45.0));
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), zero.add(350),
-                                            model.getParameters(field), date);
+            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), zero.add(350), model.getParameters(field), date);
             Assert.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
@@ -280,7 +175,7 @@ public class FieldViennaThreeModelTest {
         // Tropospheric model
         final double[] a = { 0.00127683, 0.00060955 };
         final double[] z = {2.0966, 0.2140};
-        final DiscreteTroposphericModel model = new ViennaThreeModel(a, z, latitude, longitude);
+        final DiscreteTroposphericModel model = new ViennaOneModel(a, z, latitude);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -370,7 +265,7 @@ public class FieldViennaThreeModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDelay[i + 1], refDeriv[0][i], 6.2e-12);
+            Assert.assertEquals(compDelay[i + 1], refDeriv[0][i], 3.0e-11);
         }
     }
 

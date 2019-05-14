@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth;
+package org.orekit.models.earth.troposphere;
 
 /** Enumerate for Vienna tropospheric model 1 and 3.
  * This enumerate is used for the coefficients loader.
