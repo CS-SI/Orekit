@@ -26,7 +26,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
-import org.orekit.models.earth.IonosphericModel;
+import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;

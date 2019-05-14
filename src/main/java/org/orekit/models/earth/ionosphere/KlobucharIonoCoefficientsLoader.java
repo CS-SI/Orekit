@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.orekit.models.earth;
+package org.orekit.models.earth.ionosphere;
 
 import java.io.BufferedReader;
 import java.io.IOException;

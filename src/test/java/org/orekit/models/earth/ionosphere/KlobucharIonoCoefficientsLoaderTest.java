@@ -15,7 +15,7 @@
  * limitations under the License.
  */
  
-package org.orekit.models.earth;
+package org.orekit.models.earth.ionosphere;
 
 import org.junit.Assert;
 import org.junit.Test;
