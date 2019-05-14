@@ -22,7 +22,7 @@ import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.Phase;
+import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical phase measurement with ambiguity.

@@ -201,7 +201,7 @@
       * position
       * inter-satellites range (one way and two way)
       * GNSS code
-      * GNSS phase
+      * GNSS phase with integer ambiguity resolution (not complete yet and experimental)
 
     * possibility to add custom measurements
     * several predefined modifiers
