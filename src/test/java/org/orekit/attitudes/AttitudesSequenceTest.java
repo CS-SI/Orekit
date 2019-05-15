@@ -442,6 +442,9 @@ public class AttitudesSequenceTest {
 
     }
 
+    /**
+     * this test have been completed to test the issue 552 fix
+     */
     @Test
     public void testResetDuringTransitionForward() {
         //  Initial state definition : date, orbit
@@ -487,6 +490,7 @@ public class AttitudesSequenceTest {
 
         // check that if we restart a forward propagation from an intermediate state
         // we properly get an interpolated attitude despite we missed the event trigger
+
         final AbsoluteDate midTransition = nadirToTarget.get(0).shiftedBy(0.5 * transitionTime);
         SpacecraftState state   = propagator.propagate(midTransition.shiftedBy(-60), midTransition);
         Rotation nadirR  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
@@ -498,22 +502,24 @@ public class AttitudesSequenceTest {
         
         // check that if we restart a forward propagation from an intermediate state
         // we properly get the "after" attitude law despite we missed the event trigger
+        // This check have been added to the test after the issue #552 fix
+        
         final AbsoluteDate afterTransition = midTransition.shiftedBy(transitionTime);
         state = propagator.propagate(midTransition, afterTransition);
         targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
 
         Assert.assertEquals(targetR.getQ0(),
         					state.getAttitude().getRotation().getQ0(),
-        					0.001);
+        					1.0e-16);
         Assert.assertEquals(targetR.getQ1(),
 							state.getAttitude().getRotation().getQ1(),
-							0.001);
+							1.0e-16);
         Assert.assertEquals(targetR.getQ2(),
 							state.getAttitude().getRotation().getQ2(),
-							0.001);
+							1.0e-16);
         Assert.assertEquals(targetR.getQ3(),
 							state.getAttitude().getRotation().getQ3(),
-							0.001);
+							1.0e-16);
     }
 
     @Test
