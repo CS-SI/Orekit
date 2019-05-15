@@ -44,6 +44,8 @@ import org.orekit.utils.PVCoordinates;
  *       GLONASS Interface Control Document</a>
  *
  * @author Bryan Cazabonne
+ * @since 10.0
+ *
  */
 public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
 
@@ -454,8 +456,8 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     private DerivativeStructure getdTpr(final AbsoluteDate date) {
         final GLONASSDate tEnd = new GLONASSDate(date);
         final GLONASSDate tSta = new GLONASSDate(glonassOrbit.getDate());
-        final int n  = tEnd.getNa();
-        final int na = tSta.getNa();
+        final int n  = tEnd.getDayNumber();
+        final int na = tSta.getDayNumber();
         final double deltaN;
         if (na == 27) {
             final double ratio = (n - na) / 1460;
@@ -464,7 +466,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
             final double ratio = (n - na) / 1461;
             deltaN = n - na - FastMath.round(ratio) * 1461;
         }
-        final DerivativeStructure ti = factory.variable(0, tEnd.getSecInNa());
+        final DerivativeStructure ti = factory.variable(0, tEnd.getSecInDay());
 
         return ti.subtract(glonassOrbit.getTime()).add(86400 * deltaN);
     }

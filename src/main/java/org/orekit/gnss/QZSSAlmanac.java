@@ -25,6 +25,7 @@ import org.orekit.time.GNSSDate;
  * This class holds a QZSS almanac as read from YUMA files.
  *
  * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
 public class QZSSAlmanac implements QZSSOrbitalElements  {
@@ -114,7 +115,6 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
 
     /**
      * Gets the source of this QZSS almanac.
-     * <p>Source shall be YUMA.</p>
      *
      * @return the source of this QZSS almanac
      */

@@ -25,6 +25,7 @@ import org.orekit.time.GLONASSDate;
  * Class for GLONASS ephemeris used by the {@link GLONASSNumericalPropagator}.
  *
  * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
 public class GLONASSEphemeris implements GLONASSOrbitalElements {

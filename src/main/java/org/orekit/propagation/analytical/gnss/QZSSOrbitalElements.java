@@ -17,13 +17,14 @@
 package org.orekit.propagation.analytical.gnss;
 
 /** This interface provides the minimal set of orbital elements needed by the {@link QZSSPropagator}.
-*
-* @see <a href="http://qzss.go.jp/en/technical/download/pdf/ps-is-qzss/is-qzss-pnt-003.pdf?t=1549268771755">
-*       QZSS Interface Specification</a>
-*
-* @author Bryan Cazabonne
-*
-*/
+ *
+ * @see <a href="http://qzss.go.jp/en/technical/download/pdf/ps-is-qzss/is-qzss-pnt-003.pdf?t=1549268771755">
+ *       QZSS Interface Specification</a>
+ *
+ * @author Bryan Cazabonne
+ * @since 10.0
+ *
+ */
 public interface QZSSOrbitalElements extends GNSSOrbitalElements {
 
     // Constants

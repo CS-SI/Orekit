@@ -201,7 +201,7 @@ public class GNSSDate implements Serializable, TimeStamped {
     private TimeScale getTimeScale(final SatelliteSystem satellite) {
         switch (satellite) {
             case GPS     : return TimeScalesFactory.getGPS();
-            case GALILEO : return TimeScalesFactory.getUTC();
+            case GALILEO : return TimeScalesFactory.getGST();
             case QZSS    : return TimeScalesFactory.getQZSS();
             case BEIDOU  : return TimeScalesFactory.getBDT();
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);

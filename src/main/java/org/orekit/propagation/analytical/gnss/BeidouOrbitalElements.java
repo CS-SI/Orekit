@@ -17,11 +17,12 @@
 package org.orekit.propagation.analytical.gnss;
 
 /** This interface provides the minimal set of orbital elements needed by the {@link BeidouPropagator}.
-*
-* @see <a href="http://www2.unb.ca/gge/Resources/beidou_icd_english_ver2.0.pdf">Beidou Interface Control Document</a>
-* @author Bryan Cazabonne
-*
-*/
+ *
+ * @see <a href="http://www2.unb.ca/gge/Resources/beidou_icd_english_ver2.0.pdf">Beidou Interface Control Document</a>
+ * @author Bryan Cazabonne
+ * @since 10.0
+ *
+ */
 public interface BeidouOrbitalElements extends GNSSOrbitalElements {
 
     // Constants

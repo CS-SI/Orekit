@@ -33,7 +33,7 @@ public class GalileoPropagator extends AbstractGNSSPropagator {
 
     // Constants
     /** Value of the earth's rotation rate in rad/s. */
-    private static final double GALILEO_AV = 7.2921150e-5;
+    private static final double GALILEO_AV = 7.2921151467e-5;
 
     /** Duration of the Galileo cycle in seconds. */
     private static final double GALILEO_CYCLE_DURATION = GalileoOrbitalElements.GALILEO_WEEK_IN_SECONDS *

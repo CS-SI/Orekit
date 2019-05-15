@@ -27,6 +27,7 @@ import org.orekit.utils.IERSConventions;
  * @see <a href="http://www2.unb.ca/gge/Resources/beidou_icd_english_ver2.0.pdf">Beidou Interface Control Document</a>
  *
  * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
 public class BeidouPropagator extends AbstractGNSSPropagator {

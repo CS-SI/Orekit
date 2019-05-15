@@ -17,13 +17,14 @@
 package org.orekit.propagation.analytical.gnss;
 
 /** This interface provides the minimal set of orbital elements needed by the {@link GalileoPropagator}.
-*
-* @see <a href="https://www.gsc-europa.eu/system/files/galileo_documents/Galileo-OS-SIS-ICD.pdf">
-*         Galileo Interface Control Document</a>
-*
-* @author Bryan Cazabonne
-*
-*/
+ *
+ * @see <a href="https://www.gsc-europa.eu/system/files/galileo_documents/Galileo-OS-SIS-ICD.pdf">
+ *         Galileo Interface Control Document</a>
+ *
+ * @author Bryan Cazabonne
+ * @since 10.0
+ *
+ */
 public interface GalileoOrbitalElements extends GNSSOrbitalElements {
 
     // Constants
@@ -43,13 +44,14 @@ public interface GalileoOrbitalElements extends GNSSOrbitalElements {
      * Gets the Issue Of Data (IOD).
      *
      * @return the Issue Of Data (IOD)
-     * @since 9.3
      */
     default int getIODNav() {
         return 0;
     }
 
-    /** Get the estimated broadcast group delay differential.
+    /**
+     * Gets the estimated broadcast group delay differential.
+     *
      * @return the estimated broadcast group delay differential(s)
      */
     default double getBGD() {

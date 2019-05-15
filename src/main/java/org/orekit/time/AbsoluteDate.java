@@ -122,10 +122,9 @@ public class AbsoluteDate
     public static final AbsoluteDate CCSDS_EPOCH =
         new AbsoluteDate(DateComponents.CCSDS_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
 
-    /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 UTC. */
+    /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 GST. */
     public static final AbsoluteDate GALILEO_EPOCH =
-        new AbsoluteDate(DateComponents.GALILEO_EPOCH, new TimeComponents(0, 0, 32),
-                         TimeScalesFactory.getTAI());
+        new AbsoluteDate(DateComponents.GALILEO_EPOCH, TimeComponents.H00, TimeScalesFactory.getGST());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =

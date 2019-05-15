@@ -34,6 +34,7 @@ import org.orekit.time.TimeStamped;
  *       GLONASS Interface Control Document</a>
  *
  * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
 public interface GLONASSOrbitalElements extends TimeStamped {

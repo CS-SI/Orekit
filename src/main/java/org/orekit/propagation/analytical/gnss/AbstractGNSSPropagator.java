@@ -39,7 +39,6 @@ import org.orekit.utils.PVCoordinates;
  * for specific GNSS propagators.
  * </p>
  * @author Pascal Parraud
- * @author Bryan Cazabonne
  */
 public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagator {
 

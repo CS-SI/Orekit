@@ -28,6 +28,7 @@ import org.orekit.utils.IERSConventions;
  *       QZSS Interface Specification</a>
  *
  * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
 public class QZSSPropagator extends AbstractGNSSPropagator {

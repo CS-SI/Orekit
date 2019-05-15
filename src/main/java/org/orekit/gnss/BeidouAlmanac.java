@@ -28,6 +28,7 @@ import org.orekit.time.GNSSDate;
  *      Version 2.1, Table 5-12
  *
  * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
 public class BeidouAlmanac implements BeidouOrbitalElements {

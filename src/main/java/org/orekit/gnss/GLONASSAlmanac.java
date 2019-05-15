@@ -27,6 +27,7 @@ import org.orekit.time.TimeScalesFactory;
  * This class holds a GLONASS almanac as read from .agl files.
  *
  * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
 public class GLONASSAlmanac implements GLONASSOrbitalElements {
@@ -208,12 +209,12 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
     @Override
     public int getNa() {
         final GLONASSDate gloDate = new GLONASSDate(getDate());
-        return gloDate.getNa();
+        return gloDate.getDayNumber();
     }
 
     @Override
     public int getN4() {
         final GLONASSDate gloDate = new GLONASSDate(getDate());
-        return gloDate.getN4();
+        return gloDate.getIntervalNumber();
     }
 }

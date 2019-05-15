@@ -90,7 +90,7 @@ public class GalileoPropagatorTest {
 
         // Checks
         Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 2.4e-8);
-        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.4e-12);
+        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.7e-12);
     }
 
     @Test
@@ -137,7 +137,7 @@ public class GalileoPropagatorTest {
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
-        Assert.assertEquals(0.0, errorP, 7.3e-12);
+        Assert.assertEquals(0.0, errorP, 1.5e-11);
         Assert.assertEquals(0.0, errorV, 2.2e-7);
         Assert.assertEquals(0.0, errorA, 4.9e-8);
 
@@ -155,7 +155,7 @@ public class GalileoPropagatorTest {
         final Vector3D computedPos = pv.getPosition();
         // Expected position (reference from IGS file WUM0MGXULA_20191010500_01D_15M_ORB.sp3)
         final Vector3D expectedPos = new Vector3D(10487480.721, 17867448.753, -21131462.002);
-        Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 7.4);
+        Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 2.1);
     }
 
     private class GalileoEphemeris implements GalileoOrbitalElements {

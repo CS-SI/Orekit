@@ -21,9 +21,12 @@ import java.io.Serializable;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.utils.Constants;
 
-/** Container for date in GLONASS form.
+/**
+ * Container for date in GLONASS form.
  * @author Bryan Cazabonne
  * @see AbsoluteDate
+ * @see GLONASS Interface Control Document v1.0, 2016
+ * @since 10.0
  */
 public class GLONASSDate implements Serializable, TimeStamped {
 
@@ -98,21 +101,21 @@ public class GLONASSDate implements Serializable, TimeStamped {
     /** Get the number of seconds since N<sub>a</sub> start.
      * @return number of seconds since N<sub>a</sub> start
      */
-    public double getSecInNa() {
+    public double getSecInDay() {
         return secInNa;
     }
 
     /** Get the number of the current day in a four year interval.
      * @return the number of the current day in a four year interval
      */
-    public int getNa() {
+    public int getDayNumber() {
         return na;
     }
 
     /** Get the number of the current four year interval.
      * @return the number of the current four year interval
      */
-    public int getN4() {
+    public int getIntervalNumber() {
         return n4;
     }
 
@@ -130,8 +133,7 @@ public class GLONASSDate implements Serializable, TimeStamped {
         return gmst;
     }
 
-    /** Compute the Greenwich Mean Sidereal Time
-     * using the current Julian date JD0.
+    /** Compute the Greenwich Mean Sidereal Time using the current Julian date JD0.
      * @return the Greenwich Mean Sidereal Time (rad)
      */
     private double computeGMST() {
@@ -152,8 +154,7 @@ public class GLONASSDate implements Serializable, TimeStamped {
         return gTime;
     }
 
-    /** Computes the GLONASS date.
-     * Ref: GLONASS Interface Control Document v1.0, 2016, Appendix K
+    /** Compute the GLONASS date.
      * @return the date
      */
     private AbsoluteDate computeDate() {

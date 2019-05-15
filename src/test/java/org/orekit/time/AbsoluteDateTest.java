@@ -42,7 +42,7 @@ public class AbsoluteDateTest {
         Assert.assertEquals(-3506716800000l,   AbsoluteDate.MODIFIED_JULIAN_EPOCH.toDate(tt).getTime());
         Assert.assertEquals(-631152000000l,    AbsoluteDate.FIFTIES_EPOCH.toDate(tt).getTime());
         Assert.assertEquals(-378691200000l,    AbsoluteDate.CCSDS_EPOCH.toDate(tai).getTime());
-        Assert.assertEquals(935280032000l,     AbsoluteDate.GALILEO_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(935280019000l,     AbsoluteDate.GALILEO_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(315964819000l,     AbsoluteDate.GPS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(315964819000l,     AbsoluteDate.QZSS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(1136073633000l,     AbsoluteDate.BEIDOU_EPOCH.toDate(tai).getTime());
@@ -59,7 +59,7 @@ public class AbsoluteDateTest {
                             AbsoluteDate.FIFTIES_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1958-01-01T00:00:00.000",
                             AbsoluteDate.CCSDS_EPOCH.toString(TimeScalesFactory.getTAI()));
-        Assert.assertEquals("1999-08-22T00:00:00.000",
+        Assert.assertEquals("1999-08-21T23:59:47.000",
                             AbsoluteDate.GALILEO_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("1980-01-06T00:00:00.000",
                             AbsoluteDate.GPS_EPOCH.toString(TimeScalesFactory.getUTC()));

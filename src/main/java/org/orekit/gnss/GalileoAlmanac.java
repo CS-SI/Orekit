@@ -28,6 +28,7 @@ import org.orekit.time.GNSSDate;
  *      Interface Control Document, Table 75
  *
  * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
 public class GalileoAlmanac implements GalileoOrbitalElements {

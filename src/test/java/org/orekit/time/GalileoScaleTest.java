@@ -31,7 +31,7 @@ public class GalileoScaleTest {
         TimeScale scale = TimeScalesFactory.getGST();
         Assert.assertEquals("GST", scale.toString());
         AbsoluteDate t0 =
-            new AbsoluteDate(new DateComponents(1999, 8, 22), new TimeComponents(0, 0, 13), scale);
+            new AbsoluteDate(new DateComponents(1999, 8, 22), TimeComponents.H00, scale);
         Assert.assertEquals(AbsoluteDate.GALILEO_EPOCH, t0);
     }
 
