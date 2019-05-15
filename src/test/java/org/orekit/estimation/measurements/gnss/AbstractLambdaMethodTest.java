@@ -221,12 +221,7 @@ public abstract class AbstractLambdaMethodTest {
             zRef = zRef.multiply(gauss.z);
             Assert.assertEquals(0.0,
                                 zRef.subtract(getZTransformation(reducer)).getNorm(),
-                                Precision.SAFE_MIN);
-
-            // check Z and Z⁻¹
-            Assert.assertEquals(0.0,
-                                identity.subtract(getZTransformation(reducer).multiply(getZInverseTransformation(reducer))).getNorm(),
-                                Precision.SAFE_MIN);
+                                1.5e-15 * zRef.getNorm());
 
             // check diagonal part, which should not change
             Assert.assertEquals(0.0,
@@ -395,17 +390,17 @@ public abstract class AbstractLambdaMethodTest {
     }
 
     private RealMatrix getZTransformation(final AbstractLambdaMethod reducer) {
-        return dogetZs(reducer, "zTransformation");
+        return new QRDecomposer(1.0e-10).decompose(dogetZInverse(reducer)).getInverse();
     }
 
     private RealMatrix getZInverseTransformation(final AbstractLambdaMethod reducer) {
-        return dogetZs(reducer, "zInverseTransformation");
+        return dogetZInverse(reducer);
     }
 
-    private RealMatrix dogetZs(final AbstractLambdaMethod reducer, final String fieldName) {
+    private RealMatrix dogetZInverse(final AbstractLambdaMethod reducer) {
         try {
             final int n = getN(reducer);
-            final Field zField = AbstractLambdaMethod.class.getDeclaredField(fieldName);
+            final Field zField = AbstractLambdaMethod.class.getDeclaredField("zInverseTransformation");
             zField.setAccessible(true);
             final int[] z = (int[]) zField.get(reducer);
             final RealMatrix zM = MatrixUtils.createRealMatrix(n, n);

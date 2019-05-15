@@ -51,9 +51,6 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Diagonal matrix. */
     private double[] diag;
 
-    /** Z transformation matrix, in row order. */
-    private int[] zTransformation;
-
     /** Z⁻¹ transformation matrix, in row order. */
     private int[] zInverseTransformation;
 
@@ -101,7 +98,6 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         this.decorrelated           = floatAmbiguities.clone();
         this.low                    = new double[(n * (n - 1)) / 2];
         this.diag                   = new double[n];
-        this.zTransformation        = new int[n * n];
         this.zInverseTransformation = new int[n * n];
         this.maxSolutions           = nbSol;
         this.solutions              = new TreeSet<>();
@@ -112,7 +108,6 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
                 low[lIndex(i, j)] = globalCovariance.getEntry(indirection[i], indirection[j]);
             }
             diag[i] = globalCovariance.getEntry(indirection[i], indirection[i]);
-            zTransformation[zIndex(i, i)] = 1;
             zInverseTransformation[zIndex(i, i)] = 1;
         }
 
@@ -167,10 +162,8 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
                 low[lIndex(i, col)] -= mu * low[lIndex(i, row)];
             }
 
-            // update Z and Z⁻¹ transformations matrices
+            // update Z⁻¹ transformation matrix
             for (int i = 0; i < n; ++i) {
-                // post-multiplying Z by Zᵢⱼ = I - μ eᵢ eⱼᵀ
-                zTransformation[zIndex(i, col)]        -= mu * zTransformation[zIndex(i, row)];
                 // pre-multiplying Z⁻¹ by Zᵢⱼ⁻¹ = I + μ eᵢ eⱼᵀ
                 zInverseTransformation[zIndex(row, i)] += mu * zInverseTransformation[zIndex(col, i)];
             }
@@ -219,14 +212,8 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
             low[indexik1]      = tmp;
         }
 
-        // update Z and Z⁻¹ transformations matrices
+        // update Z⁻¹ transformation matrix
         for (int i = 0; i < n; ++i) {
-
-            final int indexik0               = zIndex(i, k0);
-            final int indexik1               = indexik0 + 1;
-            final int tmp1                   = zTransformation[indexik0];
-            zTransformation[indexik0]        = zTransformation[indexik1];
-            zTransformation[indexik1]        = tmp1;
 
             final int indexk0i               = zIndex(k0, i);
             final int indexk1i               = indexk0i + n;
