@@ -81,7 +81,7 @@ public abstract class AbstractLambdaMethodTest {
         RandomGenerator random = new Well19937a(0x1c68f36088a9133al);
         for (int k = 0; k < 1000; ++k) {
             // generate random test data
-            final int        n           = FastMath.max(2, 1 + random.nextInt(10));
+            final int        n           = FastMath.max(2, 1 + random.nextInt(20));
             final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
 
