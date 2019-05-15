@@ -29,11 +29,10 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.gnss.GLONASSEphemeris;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.GLONASSDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -141,131 +140,4 @@ public class GLONASSNumericalPropagatorTest {
         Assert.assertEquals(refPZ90.getZ().getReal(), comPZ90.getZ().getReal(), 1.0e-4);
     }
 
-    /** Internal class used to initialized the {@link GLONASSNumericalPropagator}. */
-    private static class GLONASSEphemeris implements GLONASSOrbitalElements {
-
-        private final int n4;
-        private final int nt;
-        private final double tb;
-        private final double x;
-        private final double xDot;
-        private final double xDotDot;
-        private final double y;
-        private final double yDot;
-        private final double yDotDot;
-        private final double z;
-        private final double zDot;
-        private final double zDotDot;
-        
-
-        public GLONASSEphemeris(final int n4, final int nt, final double tb,
-                                 final double x, final double xDot, final double xDotDot,
-                                 final double y, final double yDot, final double yDotDot,
-                                 final double z, final double zDot, final double zDotDot) {
-            this.n4 = n4;
-            this.nt = nt;
-            this.tb = tb;
-            this.x = x;
-            this.xDot = xDot;
-            this.xDotDot = xDotDot;
-            this.y = y;
-            this.yDot = yDot;
-            this.yDotDot = yDotDot;
-            this.z = z;
-            this.zDot = zDot;
-            this.zDotDot = zDotDot;
-        }
-
-        @Override
-        public AbsoluteDate getDate() {
-            return new GLONASSDate(nt, n4, tb).getDate();
-        }
-
-        @Override
-        public double getTime() {
-            return tb;
-        }
-
-        @Override
-        public double getLambda() {
-            // Not used by the Glonass numerical propagator -> set to 0 by default
-            return 0;
-        }
-
-        @Override
-        public double getE() {
-            // Not used by the Glonass numerical propagator -> set to 0 by default
-            return 0;
-        }
-
-        @Override
-        public double getPa() {
-            // Not used by the Glonass numerical propagator -> set to 0 by default
-            return 0;
-        }
-
-        @Override
-        public double getDeltaI() {
-            // Not used by the Glonass numerical propagator -> set to 0 by default
-            return 0;
-        }
-
-        @Override
-        public double getDeltaT() {
-            // Not used by the Glonass numerical propagator -> set to 0 by default
-            return 0;
-        }
-
-        @Override
-        public double getDeltaTDot() {
-            // Not used by the Glonass numerical propagator -> set to 0 by default
-            return 0;
-        }
-
-        @Override
-        public double getXDot() {
-            return xDot;
-        }
-
-        @Override
-        public double getX() {
-            return x;
-        }
-
-        @Override
-        public double getXDotDot() {
-            return xDotDot;
-        }
-
-        @Override
-        public double getYDot() {
-            return yDot;
-        }
-
-        @Override
-        public double getY() {
-            return y;
-        }
-
-        @Override
-        public double getYDotDot() {
-            return yDotDot;
-        }
-
-        @Override
-        public double getZDot() {
-            return zDot;
-        }
-
-        @Override
-        public double getZ() {
-            return z;
-        }
-
-        @Override
-        public double getZDotDot() {
-            return zDotDot;
-        }
-
-    }
 }

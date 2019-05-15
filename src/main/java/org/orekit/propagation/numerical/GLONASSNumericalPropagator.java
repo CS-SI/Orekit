@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.gnss.GLONASSEphemeris;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -143,7 +144,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
 
         // Required parameter
         /** The GLONASS orbital elements. */
-        private final GLONASSOrbitalElements orbit;
+        private final GLONASSEphemeris orbit;
 
         /** The 4th order Runge-Kutta integrator. */
         private final ClassicalRungeKuttaIntegrator integrator;
@@ -180,7 +181,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
          * @see #eci(Frame inertial)
          */
         public Builder(final ClassicalRungeKuttaIntegrator integrator,
-                       final GLONASSOrbitalElements glonassOrbElt,
+                       final GLONASSEphemeris glonassOrbElt,
                        final boolean isAccAvailable) {
             this.isAccAvailable = isAccAvailable;
             this.integrator     = integrator;

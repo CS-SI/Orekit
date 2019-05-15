@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.orekit.gnss.GLONASSAlmanac;
+import org.orekit.gnss.GLONASSEphemeris;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.TimeStamped;
 
@@ -25,8 +27,7 @@ import org.orekit.time.TimeStamped;
  * Because input data are different between numerical and analytical GLONASS propagators the
  * methods present in this interface are implemented by default.
  * Depending if the user wants to use a {@link GLONASSNumericalPropagator} or a {@link GLONASSAnalyticalPropagator}
- * he shall implements this interface and overrides the needed methods to build a new set of
- * GLONASS orbital elements.
+ * he can create an instance of a {@link GLONASSEphemeris} or {@link GLONASSAlmanac}.
  * </p>
  *
  * @see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
