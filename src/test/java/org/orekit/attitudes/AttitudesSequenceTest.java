@@ -495,7 +495,25 @@ public class AttitudesSequenceTest {
         Assert.assertEquals(0.5 * reorientationAngle,
                             Rotation.distance(state.getAttitude().getRotation(), nadirR),
                             0.03 * reorientationAngle);
+        
+        // check that if we restart a forward propagation from an intermediate state
+        // we properly get the "after" attitude law despite we missed the event trigger
+        final AbsoluteDate afterTransition = midTransition.shiftedBy(transitionTime);
+        state = propagator.propagate(midTransition, afterTransition);
+        targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
 
+        Assert.assertEquals(targetR.getQ0(),
+        					state.getAttitude().getRotation().getQ0(),
+        					0.001);
+        Assert.assertEquals(targetR.getQ1(),
+							state.getAttitude().getRotation().getQ1(),
+							0.001);
+        Assert.assertEquals(targetR.getQ2(),
+							state.getAttitude().getRotation().getQ2(),
+							0.001);
+        Assert.assertEquals(targetR.getQ3(),
+							state.getAttitude().getRotation().getQ3(),
+							0.001);
     }
 
     @Test
@@ -551,6 +569,7 @@ public class AttitudesSequenceTest {
         Assert.assertEquals(0.5 * reorientationAngle,
                             Rotation.distance(state.getAttitude().getRotation(), targetR),
                             0.03 * reorientationAngle);
+        
 
     }
 
