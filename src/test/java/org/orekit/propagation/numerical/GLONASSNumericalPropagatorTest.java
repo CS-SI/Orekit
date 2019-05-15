@@ -102,7 +102,7 @@ public class GLONASSNumericalPropagatorTest {
         final Vector3D refPZ90   = new Vector3D(2845455.9772, 2160954.3078, 5265993.2664);
 
         // Recomputed position in PZ-90.11
-        final Frame pz90 = FramesFactory.getPZ90(IERSConventions.IERS_2010, true);
+        final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
         final Frame itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008, IERSConventions.IERS_2010, true);
         final Vector3D comPZ90 = itrf2008.getTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
 
@@ -131,7 +131,7 @@ public class GLONASSNumericalPropagatorTest {
                         new Vector3D(2845455.9772, 2160954.3078, 5265993.2664));
 
         // Recomputed position in PZ-90.11
-        final Frame pz90 = FramesFactory.getPZ90(IERSConventions.IERS_2010, true);
+        final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
         final Frame itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008, IERSConventions.IERS_2010, true);
         final FieldVector3D<T> comPZ90 = itrf2008.getTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
 

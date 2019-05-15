@@ -532,7 +532,7 @@ public class FramesFactory {
             case TEME :
                 return getTEME();
             case PZ90_11 :
-                return getPZ90(IERSConventions.IERS_2010, true);
+                return getPZ9011(IERSConventions.IERS_2010, true);
             default :
                 // this should never happen
                 throw new OrekitInternalError(null);
@@ -1221,11 +1221,10 @@ public class FramesFactory {
         }
     }
 
-    /** Get the PZ-90 (Parameters of the Earth – 1990) reference frame.
+    /** Get the PZ-90.11 (Parametry Zemly  – 1990.11) reference frame.
      * <p>
-     * This implementation does not return directly the PZ-90 frame but
-     * the PZ-90.11 frame. The PZ-90.11 reference system was updated
-     * on all operational GLONASS satellites starting from 3:00 pm on December 31, 2013.
+     * The PZ-90.11 reference system was updated on all operational
+     * GLONASS satellites starting from 3:00 pm on December 31, 2013.
      * </p>
      * <p>
      * The transition between parent frame (ITRF-2008) and PZ-90.11 frame is performed using
@@ -1240,8 +1239,8 @@ public class FramesFactory {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
      */
-    public static FactoryManagedFrame getPZ90(final IERSConventions convention,
-                                              final boolean simpleEOP) {
+    public static FactoryManagedFrame getPZ9011(final IERSConventions convention,
+                                                final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -1252,7 +1251,7 @@ public class FramesFactory {
                 // it's the first time we need this frame, build it and store it
                 final Frame itrf = getITRF(ITRFVersion.ITRF_2008, convention, simpleEOP);
                 final HelmertTransformation pz90Raw = new HelmertTransformation(new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
-                                                                                +3., +1., -0., +0.019, -0.042, +0.002, 0., 0., 0., 0., 0., 0.);
+                                                                                +3.0, +1.0, -0.0, +0.019, -0.042, +0.002, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
                 frame = new FactoryManagedFrame(itrf, pz90Raw, false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
