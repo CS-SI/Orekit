@@ -62,7 +62,6 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -100,9 +99,11 @@ public class AttitudesSequenceTest {
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
         final EclipseDetector ed =
-                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                        new EclipseDetector(sun, 696000000.,
+                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                 0.0,
+                                                                 FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
                     public Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
@@ -199,7 +200,6 @@ public class AttitudesSequenceTest {
                                                                      FramesFactory.getEME2000(), initialDate,
                                                                      Constants.EIGEN5C_EARTH_MU);
 
-
         // Attitudes sequence definition
         EventsLogger logger = new EventsLogger();
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
@@ -207,9 +207,11 @@ public class AttitudesSequenceTest {
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
         final EclipseDetector ed =
-                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                new EclipseDetector(sun, 696000000.,
+                                    new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                         0.0,
+                                                         FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
                     int count = 0;
                     public Action eventOccurred(final SpacecraftState s,

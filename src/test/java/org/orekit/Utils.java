@@ -33,7 +33,7 @@ import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
-import org.orekit.models.earth.GlobalPressureTemperature2Model;
+import org.orekit.models.earth.weather.GlobalPressureTemperature2Model;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;

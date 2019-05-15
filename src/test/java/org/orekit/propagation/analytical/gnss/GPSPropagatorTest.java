@@ -317,7 +317,19 @@ public class GPSPropagatorTest {
         Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 3.2);
     }
 
-    
+    @Test
+    public void testIssue544() {
+        // Builds the GPSPropagator from the almanac
+        final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
+        // In order to test the issue, we volontary set a Double.NaN value in the date.
+        final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
+        final PVCoordinates pv0 = propagator.propagateInEcef(date0);
+        // Verify that an infinite loop did not occur
+        Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
+        Assert.assertEquals(Vector3D.NaN, pv0.getVelocity());
+        
+    }
+
     private class GPSEphemeris implements GPSOrbitalElements {
 
         private int prn;
@@ -463,4 +475,5 @@ public class GPSPropagatorTest {
         }
         
     }
+
 }

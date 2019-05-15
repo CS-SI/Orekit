@@ -28,6 +28,43 @@
       <action dev="bryan" type="add" issue="519">
         Added numerical and analytical GLONASS propagators.
       </action>
+      <action dev="luc" type="add" >
+        Added ambiguity resolution for phase measurements.
+        This feature is not complete yet and is considered experimental.
+      </action>
+      <action dev="bryan" type="add" issue="548">
+        Reorganized models package by adding new sub-packages.
+      </action>
+      <action dev="maxime" type="add" issue="546">
+        Updated Hipparchus dependency to version 1.5 in pom.xml file.
+      </action>
+      <action dev="maxime" type="fix" issue="514">
+        Deleted unused DerivativeStructure acceleration computation methods.
+        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests. 
+      </action>
+      <action dev="bryan" type="fix" issue="544" due-to="Josef Probst">
+        Fixed endless loop on GPSPropagator and (Field)KeplerianOrbit.
+      </action>
+      <action dev="maxime" type="add" issue="403">
+        Added tests for class UnivariateProcessNoise.
+        Working tests for non-Cartesian orbit propagation are still needed.
+      </action>
+      <action dev="maxime" type="fix" issue="514">
+        Deprecated unused DerivativeStructure acceleration computation methods.
+        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests. 
+      </action>
+      <action dev="luc" type="add" issue="536">
+        Take target radius into account in CircularFieldOfViewDetector and FieldOfViewDetector.
+      </action>
+      <action dev="maxime" type="fix" issue="539">
+        Fixed DTM2000.getDensity method, made it independent of user time zone.
+      </action>
+      <action dev="luc" type="add" issue="535">
+        Take occulting body flattening into account in eclipse detector.
+      </action>
+      <action dev="maxime" type="fix" issue="538" due-to="Dorian Gegout">
+        Fixed default method compareTo in interface ComparableMeasurement.
+      </action>
       <action dev="luc" type="add" issue="532">
         Added Shapiro effect modifier for Range and InterSatelliteRange measurements.
       </action>

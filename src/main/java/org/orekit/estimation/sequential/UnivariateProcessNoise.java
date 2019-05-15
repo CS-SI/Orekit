@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.CartesianDerivativesFilter;
 
 /** Provider for a temporal evolution of the process noise matrix.
  * All parameters (orbital or propagation) are time dependent and provided as {@link UnivariateFunction}.
@@ -184,40 +185,25 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         // Form the diagonal matrix in LOF frame and Cartesian formalism
         final RealMatrix lofCartesianProcessNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(lofOrbitalProcessNoiseValues);
 
-        // Get the rotation matrix from LOF to inertial frame
-        final double[][] lofToInertialRotation = lofType.rotationFromInertial(current.getPVCoordinates()).
-                                                 revert().getMatrix();
-
-        // Jacobian from LOF to inertial frame
-        final RealMatrix jacLofToInertial = MatrixUtils.createRealMatrix(6, 6);
-        jacLofToInertial.setSubMatrix(lofToInertialRotation, 0, 0);
-        jacLofToInertial.setSubMatrix(lofToInertialRotation, 3, 3);
-
-        // FIXME: Trying to fix the transform from LOF to inertial
-        //final Transform lofToInertial = lofType.transformFromInertial(current.getDate(), current.getPVCoordinates()).getInverse();
-        //final Vector3D OM = lofToInertial.getRotationRate().negate();
-        //final double[][] MOM = new double[3][3];
-        //MOM[0][1] = -OM.getZ();
-        //MOM[0][2] = OM.getY();
-        //MOM[1][0] = OM.getZ();
-        //MOM[1][2] = -OM.getX();
-        //MOM[2][0] = -OM.getY();
-        //MOM[2][1] = OM.getX();
-        //jacLofToInertial.setSubMatrix(MOM, 3, 0);
-        //debug
+        // Get the Jacobian from LOF to Inertial
+        final double[][] dLofdInertial = new double[6][6];
+        lofType.transformFromInertial(current.getDate(),
+                                      current.getPVCoordinates()).getInverse().getJacobian(CartesianDerivativesFilter.USE_PV,
+                                                                                           dLofdInertial);
+        final RealMatrix jacLofToInertial = MatrixUtils.createRealMatrix(dLofdInertial);
 
         // Jacobian of orbit parameters with respect to Cartesian parameters
         final double[][] dYdC = new double[6][6];
         current.getOrbit().getJacobianWrtCartesian(positionAngle, dYdC);
-        final RealMatrix jacParametersWrtCartesian = MatrixUtils.createRealMatrix(dYdC);
+        final RealMatrix jacOrbitWrtCartesian = MatrixUtils.createRealMatrix(dYdC);
 
         // Complete Jacobian of the transformation
-        final RealMatrix jacobian = jacParametersWrtCartesian.multiply(jacLofToInertial);
+        final RealMatrix jacobian = jacOrbitWrtCartesian.multiply(jacLofToInertial);
 
         // Return the orbital process noise matrix in inertial frame and proper orbit type
         final RealMatrix inertialOrbitalProcessNoiseMatrix = jacobian.
                          multiply(lofCartesianProcessNoiseMatrix).
-                         multiply(jacobian.transpose());
+                         multiplyTransposed(jacobian);
         return inertialOrbitalProcessNoiseMatrix;
     }
 

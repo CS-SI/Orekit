@@ -26,7 +26,7 @@
     <orekit.maven-bundle-plugin.version>4.1.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>3.0.0</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.14</orekit.checkstyle.version>
+    <orekit.checkstyle.version>8.18</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.8.0</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>3.0.1</orekit.maven-javadoc-plugin.version>
@@ -46,7 +46,7 @@
     <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
-    <orekit.hipparchus.version>1.5-SNAPSHOT</orekit.hipparchus.version>
+    <orekit.hipparchus.version>1.5</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>

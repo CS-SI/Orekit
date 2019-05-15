@@ -192,11 +192,19 @@
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
+    <Class name="org.orekit.estimation.measurements.gnss.AbstractLambdaReducer"/>
+    <Or>  
+      <Method name ="getDiagReference" params="" returns="double[]" />
+      <Method name ="getLowReference" params="" returns="double[]" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
     <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
     <Or>  
       <Method name="getGradient" params="" returns="double[]" />
       <Method name="getHessian" params="" returns="double[][]" />
-      </Or>
+    </Or>
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
