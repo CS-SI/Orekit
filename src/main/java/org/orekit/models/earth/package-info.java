@@ -23,6 +23,8 @@
  *
  * <ul>
  *   <li>Tropospheric Delay</li>
+ *   <li>Ionospheric Delay</li>
+ *   <li>Global weather</li>
  *   <li>Geomagnetic Field</li>
  *   <li>Geoid</li>
  *   <li>Atmospheric refraction</li>

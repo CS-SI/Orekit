@@ -25,6 +25,9 @@
         Added ambiguity resolution for phase measurements.
         This feature is not complete yet and is considered experimental.
       </action>
+      <action dev="bryan" type="add" issue="548">
+        Reorganized models package by adding new sub-packages.
+      </action>
       <action dev="maxime" type="add" issue="546">
         Updated Hipparchus dependency to version 1.5 in pom.xml file.
       </action>
