@@ -16,33 +16,34 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link GPSPropagator}.
+/** This interface provides the minimal set of orbital elements needed by the {@link QZSSPropagator}.
  *
- * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
- * @author Pascal Parraud
- * @since 8.0
+ * @see <a href="http://qzss.go.jp/en/technical/download/pdf/ps-is-qzss/is-qzss-pnt-003.pdf?t=1549268771755">
+ *       QZSS Interface Specification</a>
+ *
+ * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
-public interface GPSOrbitalElements extends GNSSOrbitalElements {
+public interface QZSSOrbitalElements extends GNSSOrbitalElements {
 
     // Constants
-    /** WGS 84 value of the Earth's universal gravitational parameter for GPS user in m³/s². */
-    double GPS_MU = 3.986005e+14;
+    /** WGS 84 value of the Earth's universal gravitational parameter for QZSS user in m³/s². */
+    double QZSS_MU = 3.986005e+14;
 
     /** Value of Pi for conversion from semicircles to radian. */
-    double GPS_PI = 3.1415926535898;
+    double QZSS_PI = 3.1415926535898;
 
-    /** Duration of the GPS week in seconds. */
-    double GPS_WEEK_IN_SECONDS = 604800.;
+    /** Duration of the QZSS week in seconds. */
+    double QZSS_WEEK_IN_SECONDS = 604800.;
 
-    /** Number of weeks in the GPS cycle. */
-    int GPS_WEEK_NB = 1024;
+    /** Number of weeks in the QZSS cycle. */
+    int QZSS_WEEK_NB = 1024;
 
     /**
      * Gets the Issue Of Data Clock (IODC).
      *
      * @return the Issue Of Data Clock (IODC)
-     * @since 9.3
      */
     default int getIODC() {
         return 0;
@@ -52,17 +53,15 @@ public interface GPSOrbitalElements extends GNSSOrbitalElements {
      * Gets the Issue Of Data Ephemeris (IODE).
      *
      * @return the Issue Of Data Ephemeris (IODE)
-     * @since 9.3
      */
     default int getIODE() {
         return 0;
     }
 
     /**
-     * Gets the estimated group delay differential TGD for L1-L2 correction.
+     * Gets the estimated group delay differential TGD between SV clock and L1C/A.
      *
-     * @return the estimated group delay differential TGD for L1-L2 correction (s)
-     * @since 9.3
+     * @return the estimated group delay differential TGD between SV clock and L1C/A (s)
      */
     default double getTGD() {
         return 0.0;

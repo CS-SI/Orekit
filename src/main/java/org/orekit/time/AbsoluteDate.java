@@ -78,8 +78,9 @@ import org.orekit.utils.Constants;
  * A few reference epochs which are commonly used in space systems have been defined. These
  * epochs can be used as the basis for offset computation. The supported epochs are:
  * {@link #JULIAN_EPOCH}, {@link #MODIFIED_JULIAN_EPOCH}, {@link #FIFTIES_EPOCH},
- * {@link #CCSDS_EPOCH}, {@link #GALILEO_EPOCH}, {@link #GPS_EPOCH}, {@link #J2000_EPOCH},
- * {@link #JAVA_EPOCH}. There are also two factory methods {@link #createJulianEpoch(double)}
+ * {@link #CCSDS_EPOCH}, {@link #GALILEO_EPOCH}, {@link #GPS_EPOCH}, {@link #QZSS_EPOCH}
+ * {@link #J2000_EPOCH}, {@link #JAVA_EPOCH}.
+ * There are also two factory methods {@link #createJulianEpoch(double)}
  * and {@link #createBesselianEpoch(double)} that can be used to compute other reference
  * epochs like J1900.0 or B1950.0.
  * In addition to these reference epochs, two other constants are defined for convenience:
@@ -121,14 +122,25 @@ public class AbsoluteDate
     public static final AbsoluteDate CCSDS_EPOCH =
         new AbsoluteDate(DateComponents.CCSDS_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
 
-    /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 UTC. */
+    /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 GST. */
     public static final AbsoluteDate GALILEO_EPOCH =
-        new AbsoluteDate(DateComponents.GALILEO_EPOCH, new TimeComponents(0, 0, 32),
-                         TimeScalesFactory.getTAI());
+        new AbsoluteDate(DateComponents.GALILEO_EPOCH, TimeComponents.H00, TimeScalesFactory.getGST());
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
     public static final AbsoluteDate GPS_EPOCH =
         new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, TimeScalesFactory.getGPS());
+
+    /** Reference epoch for QZSS weeks: 1980-01-06T00:00:00 QZSS time. */
+    public static final AbsoluteDate QZSS_EPOCH =
+        new AbsoluteDate(DateComponents.QZSS_EPOCH, TimeComponents.H00, TimeScalesFactory.getQZSS());
+
+    /** Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC. */
+    public static final AbsoluteDate BEIDOU_EPOCH =
+        new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, TimeScalesFactory.getBDT());
+
+    /** Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00 GLONASS time. */
+    public static final AbsoluteDate GLONASS_EPOCH =
+        new AbsoluteDate(DateComponents.GLONASS_EPOCH, TimeComponents.H00, TimeScalesFactory.getGLONASS());
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
      * @see #createJulianEpoch(double)

@@ -25,6 +25,13 @@
         Fix the bug of attitude transition if a reset occurs during the transition
         by adding margins to the reset of TimeSpanMap to keep the one corresponding to the "after" attitude law.
       </action>
+      <action dev="bryan" type="add" issue="522">
+        Generalized the GPSPropagator class to handle all GNSS constellations using
+        the same algorithm.
+      </action>
+      <action dev="bryan" type="add" issue="519">
+        Added numerical and analytical GLONASS propagators.
+      </action>
       <action dev="luc" type="add" >
         Added ambiguity resolution for phase measurements.
         This feature is not complete yet and is considered experimental.

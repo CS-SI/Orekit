@@ -19,16 +19,28 @@ package org.orekit.estimation.measurements.gnss;
 /** Decorrelation/reduction engine for {@link LambdaSolver LAMBDA method}.
  * <p>
  * This class implements PJG Teunissen Least Square Ambiguity Decorrelation
- * Adjustment (LAMBDA) method, as described in the 2005 paper <a
+ * Adjustment (LAMBDA) method, as described in both the 1996 paper <a
+ * href="https://www.researchgate.net/publication/2790708_The_LAMBDA_method_for_integer_ambiguity_estimation_implementation_aspects">
+ * The LAMBDA method for integer ambiguity estimation: implementation aspects</a> by
+ * Paul de Jonge and Christian Tiberius and on the 2005 paper <a
  * href="https://www.researchgate.net/publication/225518977_MLAMBDA_a_modified_LAMBDA_method_for_integer_least-squares_estimation">
  * A modified LAMBDA method for integer least-squares estimation</a> by X.-W Chang, X. Yang
  * and T. Zhou, Journal of Geodesy 79(9):552-565, DOI: 10.1007/s00190-005-0004-x
  * </p>
+ * <p>
+ * It slightly departs on the original LAMBDA method as it does implement
+ * the following improvements proposed in the de Jonge and Tiberius 1996 paper
+ * that vastly speed up the search:
+ * </p>
+ * <ul>
+ *   <li>alternate search starting from the middle and expanding outwards</li>
+ *   <li>automatic shrinking of ellipsoid during the search</li>
+ * </ul>
  * @see AmbiguitySolver
  * @author Luc Maisonobe
  * @since 10.0
  */
-class LambdaMethod extends AbstractLambdaMethod {
+public class LambdaMethod extends AbstractLambdaMethod {
 
     /** {@inheritDoc} */
     @Override

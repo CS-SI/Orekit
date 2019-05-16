@@ -272,7 +272,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(-3506716800000l, MJuEp.toDate(tt).getTime());
         Assert.assertEquals(-631152000000l, FiEp.toDate(tt).getTime());
         Assert.assertEquals(-378691200000l, CCSDS.toDate(tai).getTime());
-        Assert.assertEquals(935280032000l,  GaEp.toDate(tai).getTime());
+        Assert.assertEquals(935280019000l,  GaEp.toDate(tai).getTime());
         Assert.assertEquals(315964819000l,  GPSEp.toDate(tai).getTime());
         Assert.assertEquals(946728000000l,  JTTEP.toDate(tt).getTime());
 
@@ -288,7 +288,7 @@ public class FieldAbsoluteDateTest {
                             FieldAbsoluteDate.getFiftiesEpoch(field).toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1958-01-01T00:00:00.000",
                             FieldAbsoluteDate.getCCSDSEpoch(field).toString(TimeScalesFactory.getTAI()));
-        Assert.assertEquals("1999-08-22T00:00:00.000",
+        Assert.assertEquals("1999-08-21T23:59:47.000",
                             FieldAbsoluteDate.getGalileoEpoch(field).toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("1980-01-06T00:00:00.000",
                             FieldAbsoluteDate.getGPSEpoch(field).toString(TimeScalesFactory.getUTC()));

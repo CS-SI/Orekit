@@ -22,36 +22,39 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
 
 /**
- * This class aims at propagating a GPS orbit from {@link GPSOrbitalElements}.
+ * This class aims at propagating a QZSS orbit from {@link QZSSOrbitalElements}.
  *
- * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
- * @author Pascal Parraud
- * @since 8.0
+ * @see <a href="http://qzss.go.jp/en/technical/download/pdf/ps-is-qzss/is-qzss-pnt-003.pdf?t=1549268771755">
+ *       QZSS Interface Specification</a>
+ *
+ * @author Bryan Cazabonne
+ * @since 10.0
+ *
  */
-public class GPSPropagator extends AbstractGNSSPropagator {
+public class QZSSPropagator extends AbstractGNSSPropagator {
 
     // Constants
     /** WGS 84 value of the earth's rotation rate in rad/s. */
-    private static final double GPS_AV = 7.2921151467e-5;
+    private static final double QZSS_AV = 7.2921151467e-5;
 
-    /** Duration of the GPS cycle in seconds. */
-    private static final double GPS_CYCLE_DURATION = GPSOrbitalElements.GPS_WEEK_IN_SECONDS *
-                                                     GPSOrbitalElements.GPS_WEEK_NB;
+    /** Duration of the QZSS cycle in seconds. */
+    private static final double QZSS_CYCLE_DURATION = QZSSOrbitalElements.QZSS_WEEK_IN_SECONDS *
+                                                      QZSSOrbitalElements.QZSS_WEEK_NB;
 
     // Fields
-    /** The GPS orbital elements used. */
-    private final GPSOrbitalElements gpsOrbit;
+    /** The QZSS orbital elements used. */
+    private final QZSSOrbitalElements qzssOrbit;
 
     /**
-     * This nested class aims at building a GPSPropagator.
+     * This nested class aims at building a QZSSPropagator.
      * <p>It implements the classical builder pattern.</p>
      *
      */
     public static class Builder {
 
         // Required parameter
-        /** The GPS orbital elements. */
-        private final GPSOrbitalElements orbit;
+        /** The QZSS orbital elements. */
+        private final QZSSOrbitalElements orbit;
 
         // Optional parameters
         /** The attitude provider. */
@@ -64,7 +67,7 @@ public class GPSPropagator extends AbstractGNSSPropagator {
         private Frame ecef = null;
 
         /** Initializes the builder.
-         * <p>The GPS orbital elements is the only requested parameter to build a GPSPropagator.</p>
+         * <p>The QZSS orbital elements is the only requested parameter to build a QZSSPropagator.</p>
          * <p>The attitude provider is set by default to the
          *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
          * The mass is set by default to the
@@ -75,14 +78,14 @@ public class GPSPropagator extends AbstractGNSSPropagator {
          *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
          * </p>
          *
-         * @param gpsOrbElt the GPS orbital elements to be used by the GPSpropagator.
+         * @param qzssOrbElt the QZSS orbital elements to be used by the QZSSpropagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
          */
-        public Builder(final GPSOrbitalElements gpsOrbElt) {
-            this.orbit = gpsOrbElt;
+        public Builder(final QZSSOrbitalElements qzssOrbElt) {
+            this.orbit = qzssOrbElt;
             this.eci   = FramesFactory.getEME2000();
             this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         }
@@ -129,10 +132,10 @@ public class GPSPropagator extends AbstractGNSSPropagator {
 
         /** Finalizes the build.
          *
-         * @return the built GPSPropagator
+         * @return the built QZSSPropagator
          */
-        public GPSPropagator build() {
-            return new GPSPropagator(this);
+        public QZSSPropagator build() {
+            return new QZSSPropagator(this);
         }
     }
 
@@ -141,21 +144,21 @@ public class GPSPropagator extends AbstractGNSSPropagator {
      *
      * @param builder the builder
      */
-    private GPSPropagator(final Builder builder) {
+    private QZSSPropagator(final Builder builder) {
         super(builder.orbit, builder.attitudeProvider,
               builder.eci, builder.ecef, builder.mass,
-              GPS_AV, GPS_CYCLE_DURATION, GPSOrbitalElements.GPS_MU);
-        // Stores the GPS orbital elements
-        this.gpsOrbit = builder.orbit;
+              QZSS_AV, QZSS_CYCLE_DURATION, QZSSOrbitalElements.QZSS_MU);
+        // Stores the QZSS orbital elements
+        this.qzssOrbit = builder.orbit;
     }
 
     /**
-     * Gets the underlying GPS orbital elements.
+     * Gets the underlying QZSS orbital elements.
      *
-     * @return the underlying GPS orbital elements
+     * @return the underlying QZSS orbital elements
      */
-    public GPSOrbitalElements getGPSOrbitalElements() {
-        return gpsOrbit;
+    public QZSSOrbitalElements getQZSSOrbitalElements() {
+        return qzssOrbit;
     }
 
 }

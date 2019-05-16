@@ -17,133 +17,133 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.GalileoOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 
-
 /**
- * This class holds a GPS almanac as read from SEM or YUMA files.
+ * Class for Galileo almanac.
  *
- * <p>Depending on the source (SEM or YUMA), some fields may be filled in or not.
- * An almanac read from a YUMA file doesn't hold SVN number, average URA and satellite
- * configuration.</p>
+ * @see European GNSS (Galileo) Open Service, Signal In Space,
+ *      Interface Control Document, Table 75
  *
- * @author Pascal Parraud
- * @since 8.0
+ * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
-public class GPSAlmanac implements GPSOrbitalElements {
+public class GalileoAlmanac implements GalileoOrbitalElements {
 
-    // Fields
-    /** Source of the almanac. */
-    private final String src;
+    // Nominal parameters
+    /** Nominal inclination (Ref: Galileo ICD - Table 75). */
+    private static final double I0 = FastMath.toRadians(56.0);
+
+    /** Nominal semi-major axis in meters (Ref: Galileo ICD - Table 75). */
+    private static final double A0 = 29600000;
+
     /** PRN number. */
     private final int prn;
-    /** SVN number. */
-    private final int svn;
-    /** Health status. */
-    private final int health;
-    /** Average URA. */
-    private final int ura;
-    /** Satellite configuration. */
-    private final int config;
-    /** GPS week. */
+
+    /** Satellite E5a signal health status. */
+    private final int healthE5a;
+
+    /** Satellite E5b signal health status. */
+    private final int healthE5b;
+
+    /** Satellite E1-B/C signal health status. */
+    private final int healthE1;
+
+    /** Galileo week. */
     private final int week;
+
     /** Time of applicability. */
     private final double toa;
+
     /** Semi-major axis. */
     private final double sma;
+
     /** Eccentricity. */
     private final double ecc;
+
     /** Inclination. */
     private final double inc;
+
     /** Longitude of Orbital Plane. */
     private final double om0;
+
     /** Rate of Right Ascension. */
     private final double dom;
+
     /** Argument of perigee. */
     private final double aop;
+
     /** Mean anomaly. */
     private final double anom;
+
     /** Zeroth order clock correction. */
     private final double af0;
+
     /** First order clock correction. */
     private final double af1;
 
+    /** Almanac Issue Of Data. */
+    private final int iod;
+
     /**
-     * Constructor.
+     * Build a new almanac.
      *
-     * @param source the source of the almanac (SEM, YUMA, user defined)
      * @param prn the PRN number
-     * @param svn the SVN number
-     * @param week the GPS week
-     * @param toa the Time of Applicability
-     * @param sqa the Square Root of Semi-Major Axis (m^1/2)
+     * @param week the Galileo week
+     * @param toa the Almanac Time of Applicability (s)
+     * @param dsqa difference between the square root of the semi-major axis
+     *        and the square root of the nominal semi-major axis
      * @param ecc the eccentricity
-     * @param inc the inclination (rad)
+     * @param dinc the correction of orbit reference inclination at reference time (rad)
+     * @param iod the issue of data
      * @param om0 the geographic longitude of the orbital plane at the weekly epoch (rad)
      * @param dom the Rate of Right Ascension (rad/s)
      * @param aop the Argument of Perigee (rad)
      * @param anom the Mean Anomaly (rad)
      * @param af0 the Zeroth Order Clock Correction (s)
      * @param af1 the First Order Clock Correction (s/s)
-     * @param health the Health status
-     * @param ura the average URA
-     * @param config the satellite configuration
+     * @param healthE5a the E5a signal health status
+     * @param healthE5b the E5b signal health status
+     * @param healthE1 the E1-B/C signal health status
      */
-    public GPSAlmanac(final String source, final int prn, final int svn,
-                      final int week, final double toa,
-                      final double sqa, final double ecc, final double inc,
-                      final double om0, final double dom, final double aop,
-                      final double anom, final double af0, final double af1,
-                      final int health, final int ura, final int config) {
-        this.src = source;
+    public GalileoAlmanac(final int prn, final int week, final double toa,
+                          final double dsqa, final double ecc, final double dinc,
+                          final int iod, final double om0, final double dom,
+                          final double aop, final double anom, final double af0,
+                          final double af1, final int healthE5a, final int healthE5b,
+                          final int healthE1) {
         this.prn = prn;
-        this.svn = svn;
         this.week = week;
         this.toa = toa;
-        this.sma = sqa * sqa;
         this.ecc = ecc;
-        this.inc = inc;
+        this.inc = I0 + dinc;
+        this.iod = iod;
         this.om0 = om0;
         this.dom = dom;
         this.aop = aop;
         this.anom = anom;
         this.af0 = af0;
         this.af1 = af1;
-        this.health = health;
-        this.ura = ura;
-        this.config = config;
+        this.healthE1 = healthE1;
+        this.healthE5a = healthE5a;
+        this.healthE5b = healthE5b;
+
+        // semi-major axis computation
+        final double sqa = dsqa + FastMath.sqrt(A0);
+        this.sma = sqa * sqa;
     }
 
     @Override
     public AbsoluteDate getDate() {
-        return new GNSSDate(week, toa * 1000., SatelliteSystem.GPS).getDate();
-    }
-
-    /**
-     * Gets the source of this GPS almanac.
-     * <p>Sources can be SEM or YUMA, when the almanac is read from a file.</p>
-     *
-     * @return the source of this GPS almanac
-     */
-    public String getSource() {
-        return src;
+        return new GNSSDate(week, toa * 1000., SatelliteSystem.GALILEO).getDate();
     }
 
     @Override
     public int getPRN() {
         return prn;
-    }
-
-    /**
-     * Gets the satellite "SVN" reference number.
-     *
-     * @return the satellite "SVN" reference number
-     */
-    public int getSVN() {
-        return svn;
     }
 
     @Override
@@ -164,7 +164,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
     @Override
     public double getMeanMotion() {
         final double absA = FastMath.abs(sma);
-        return FastMath.sqrt(GPS_MU / absA) / absA;
+        return FastMath.sqrt(GALILEO_MU / absA) / absA;
     }
 
     @Override
@@ -242,31 +242,37 @@ public class GPSAlmanac implements GPSOrbitalElements {
         return af1;
     }
 
-    /**
-     * Gets the Health status.
-     *
-     * @return the Health status
+    /** Get the Issue of Data (IOD).
+     * @return the Issue Of Data
      */
-    public int getHealth() {
-        return health;
+    public int getIOD() {
+        return iod;
     }
 
     /**
-     * Gets the average URA number.
+     * Gets the E1-B/C signal health status.
      *
-     * @return the average URA number
+     * @return the E1-B/C signal health status
      */
-    public int getURA() {
-        return ura;
+    public int getHealthE1() {
+        return healthE1;
     }
 
     /**
-     * Gets the satellite configuration.
+     * Gets the E5a signal health status.
      *
-     * @return the satellite configuration
+     * @return the E5a signal health status
      */
-    public int getSatConfiguration() {
-        return config;
+    public int getHealthE5a() {
+        return healthE5a;
+    }
+    /**
+     * Gets the E5b signal health status.
+     *
+     * @return the E5b signal health status
+     */
+    public int getHealthE5b() {
+        return healthE5b;
     }
 
 }

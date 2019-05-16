@@ -65,10 +65,10 @@ class AlternatingSampler {
     private final long sign;
 
     /** Minimum number to generate. */
-    private final long min;
+    private long min;
 
     /** Maximum number to generate. */
-    private final long max;
+    private long max;
 
     /** Previous generated number in A001057. */
     private long k1;
@@ -95,12 +95,32 @@ class AlternatingSampler {
         this.a      = a;
         this.offset = (long) FastMath.rint(a);
         this.sign   = offset <= a ? +1 : -1;
-        this.min    = (long) FastMath.ceil(a - r);
-        this.max    = (long) FastMath.floor(a + r);
+        setRadius(r);
 
         this.k1      = 0;
         this.k0      = 0;
         this.current = offset;
+    }
+
+    /** Reset the range radius.
+     * <p>
+     * Resetting radius is allowed during sampling, it simply changes
+     * the boundaries used when calling {@link #inRange()}. Resetting
+     * the radius does not change the sampling itself, neither the
+     * {@link #getCurrent() current} value nor the {@link #generateNext()
+     * next generated} ones.
+     * </p>
+     * <p>
+     * A typical use case for calling {@link #setRadius(double)} during
+     * sampling is to reduce sampling interval. It is used to shrink
+     * the search ellipsoid on the fly in LAMBDA-based methods in order
+     * to speed-up search.
+     * </p>
+     * @param r range radius
+     */
+    public void setRadius(final double r) {
+        this.min = (long) FastMath.ceil(a - r);
+        this.max = (long) FastMath.floor(a + r);
     }
 
     /** Get the range midpoint.
