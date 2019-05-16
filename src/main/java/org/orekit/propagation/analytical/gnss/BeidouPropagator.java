@@ -22,36 +22,38 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
 
 /**
- * This class aims at propagating a GPS orbit from {@link GPSOrbitalElements}.
+ * This class aims at propagating a Beidou orbit from {@link BeidouOrbitalElements}.
  *
- * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
- * @author Pascal Parraud
- * @since 8.0
+ * @see <a href="http://www2.unb.ca/gge/Resources/beidou_icd_english_ver2.0.pdf">Beidou Interface Control Document</a>
+ *
+ * @author Bryan Cazabonne
+ * @since 10.0
+ *
  */
-public class GPSPropagator extends AbstractGNSSPropagator {
+public class BeidouPropagator extends AbstractGNSSPropagator {
 
     // Constants
-    /** WGS 84 value of the earth's rotation rate in rad/s. */
-    private static final double GPS_AV = 7.2921151467e-5;
+    /** Value of the earth's rotation rate in rad/s. */
+    private static final double BEIDOU_AV = 7.2921150e-5;
 
-    /** Duration of the GPS cycle in seconds. */
-    private static final double GPS_CYCLE_DURATION = GPSOrbitalElements.GPS_WEEK_IN_SECONDS *
-                                                     GPSOrbitalElements.GPS_WEEK_NB;
+    /** Duration of the Beidou cycle in seconds. */
+    private static final double BEIDOU_CYCLE_DURATION = BeidouOrbitalElements.BEIDOU_WEEK_IN_SECONDS *
+                                                        BeidouOrbitalElements.BEIDOU_WEEK_NB;
 
     // Fields
-    /** The GPS orbital elements used. */
-    private final GPSOrbitalElements gpsOrbit;
+    /** The Beidou orbital elements used. */
+    private final BeidouOrbitalElements bdsOrbit;
 
     /**
-     * This nested class aims at building a GPSPropagator.
+     * This nested class aims at building a BeidouPropagator.
      * <p>It implements the classical builder pattern.</p>
      *
      */
     public static class Builder {
 
         // Required parameter
-        /** The GPS orbital elements. */
-        private final GPSOrbitalElements orbit;
+        /** The Beidou orbital elements. */
+        private final BeidouOrbitalElements orbit;
 
         // Optional parameters
         /** The attitude provider. */
@@ -64,7 +66,7 @@ public class GPSPropagator extends AbstractGNSSPropagator {
         private Frame ecef = null;
 
         /** Initializes the builder.
-         * <p>The GPS orbital elements is the only requested parameter to build a GPSPropagator.</p>
+         * <p>The Beidou orbital elements is the only requested parameter to build a BeidouPropagator.</p>
          * <p>The attitude provider is set by default to the
          *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
          * The mass is set by default to the
@@ -75,14 +77,14 @@ public class GPSPropagator extends AbstractGNSSPropagator {
          *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
          * </p>
          *
-         * @param gpsOrbElt the GPS orbital elements to be used by the GPSpropagator.
+         * @param bdsOrbElt the Beidou orbital elements to be used by the Beidou propagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
          */
-        public Builder(final GPSOrbitalElements gpsOrbElt) {
-            this.orbit = gpsOrbElt;
+        public Builder(final BeidouOrbitalElements bdsOrbElt) {
+            this.orbit = bdsOrbElt;
             this.eci   = FramesFactory.getEME2000();
             this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         }
@@ -117,7 +119,7 @@ public class GPSPropagator extends AbstractGNSSPropagator {
             return this;
         }
 
-        /** Sets the Earth Centered Earth Fixed frame assimilated to the WGS84 ECEF.
+        /** Sets the Earth Centered Earth Fixed frame.
          *
          * @param bodyFixed the ECEF frame
          * @return the updated builder
@@ -129,10 +131,10 @@ public class GPSPropagator extends AbstractGNSSPropagator {
 
         /** Finalizes the build.
          *
-         * @return the built GPSPropagator
+         * @return the built BeidouPropagator
          */
-        public GPSPropagator build() {
-            return new GPSPropagator(this);
+        public BeidouPropagator build() {
+            return new BeidouPropagator(this);
         }
     }
 
@@ -141,21 +143,21 @@ public class GPSPropagator extends AbstractGNSSPropagator {
      *
      * @param builder the builder
      */
-    private GPSPropagator(final Builder builder) {
+    private BeidouPropagator(final Builder builder) {
         super(builder.orbit, builder.attitudeProvider,
               builder.eci, builder.ecef, builder.mass,
-              GPS_AV, GPS_CYCLE_DURATION, GPSOrbitalElements.GPS_MU);
-        // Stores the GPS orbital elements
-        this.gpsOrbit = builder.orbit;
+              BEIDOU_AV, BEIDOU_CYCLE_DURATION, BeidouOrbitalElements.BEIDOU_MU);
+        // Stores the Beidou orbital elements
+        this.bdsOrbit = builder.orbit;
     }
 
     /**
-     * Gets the underlying GPS orbital elements.
+     * Get the underlying Beidou orbital elements.
      *
-     * @return the underlying GPS orbital elements
+     * @return the underlying Beidou orbital elements
      */
-    public GPSOrbitalElements getGPSOrbitalElements() {
-        return gpsOrbit;
+    public BeidouOrbitalElements getBeidouOrbitalElements() {
+        return bdsOrbit;
     }
 
 }

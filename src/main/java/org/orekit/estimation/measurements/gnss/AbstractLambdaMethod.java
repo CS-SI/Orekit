@@ -34,7 +34,7 @@ import org.hipparchus.util.FastMath;
  * @author Luc Maisonobe
  * @since 10.0
  */
-abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
+public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     /** Margin factor to apply to estimated search limit parameter. */
     private static final double CHI2_MARGIN_FACTOR = 1.1;
@@ -50,9 +50,6 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     /** Diagonal matrix. */
     private double[] diag;
-
-    /** Z transformation matrix, in row order. */
-    private int[] zTransformation;
 
     /** Z⁻¹ transformation matrix, in row order. */
     private int[] zInverseTransformation;
@@ -101,7 +98,6 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         this.decorrelated           = floatAmbiguities.clone();
         this.low                    = new double[(n * (n - 1)) / 2];
         this.diag                   = new double[n];
-        this.zTransformation        = new int[n * n];
         this.zInverseTransformation = new int[n * n];
         this.maxSolutions           = nbSol;
         this.solutions              = new TreeSet<>();
@@ -112,7 +108,6 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
                 low[lIndex(i, j)] = globalCovariance.getEntry(indirection[i], indirection[j]);
             }
             diag[i] = globalCovariance.getEntry(indirection[i], indirection[i]);
-            zTransformation[zIndex(i, i)] = 1;
             zInverseTransformation[zIndex(i, i)] = 1;
         }
 
@@ -167,10 +162,8 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
                 low[lIndex(i, col)] -= mu * low[lIndex(i, row)];
             }
 
-            // update Z and Z⁻¹ transformations matrices
+            // update Z⁻¹ transformation matrix
             for (int i = 0; i < n; ++i) {
-                // post-multiplying Z by Zᵢⱼ = I - μ eᵢ eⱼᵀ
-                zTransformation[zIndex(i, col)]        -= mu * zTransformation[zIndex(i, row)];
                 // pre-multiplying Z⁻¹ by Zᵢⱼ⁻¹ = I + μ eᵢ eⱼᵀ
                 zInverseTransformation[zIndex(row, i)] += mu * zInverseTransformation[zIndex(col, i)];
             }
@@ -219,14 +212,8 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
             low[indexik1]      = tmp;
         }
 
-        // update Z and Z⁻¹ transformations matrices
+        // update Z⁻¹ transformation matrix
         for (int i = 0; i < n; ++i) {
-
-            final int indexik0               = zIndex(i, k0);
-            final int indexik1               = indexik0 + 1;
-            final int tmp1                   = zTransformation[indexik0];
-            zTransformation[indexik0]        = zTransformation[indexik1];
-            zTransformation[indexik1]        = tmp1;
 
             final int indexk0i               = zIndex(k0, i);
             final int indexk1i               = indexk0i + n;
@@ -297,7 +284,7 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         final double[] offsets = new double[n];
         final double[] left    = new double[n];
         final double[] right   = new double[n];
-        final double   chi2    = estimateChi2(fixed, offsets);
+        double chi2 = estimateChi2(fixed, offsets);
 
         final AlternatingSampler[] samplers = new AlternatingSampler[n];
 
@@ -310,8 +297,22 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
                 // all ambiguities have been fixed
                 final double squaredNorm = chi2 - diag[0] * (right[0] - left[0]);
                 solutions.add(new IntegerLeastSquareSolution(fixed, squaredNorm));
-                if (solutions.size() > maxSolutions) {
-                    solutions.remove(solutions.last());
+                if (solutions.size() >= maxSolutions) {
+
+                    // shrink the ellipsoid
+                    chi2 = squaredNorm;
+                    right[n - 1] = chi2 / diag[n - 1];
+                    for (int i = n - 1; i > 0; --i) {
+                        samplers[i].setRadius(FastMath.sqrt(right[i]));
+                        right[i - 1] = diag[i] / diag[i - 1] * (right[i] - left[i]);
+                    }
+                    samplers[0].setRadius(FastMath.sqrt(right[0]));
+
+                    if (solutions.size() > maxSolutions) {
+                        // remove spurious solutions
+                        solutions.remove(solutions.last());
+                    }
+
                 }
 
                 ++index;
@@ -408,7 +409,8 @@ abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
         while (squaredNorms.size() < maxSolutions) {
             // add a series of grid points, each shifted from center along a different axis
-            for (int i = 0; i < n; ++i) {
+            final int remaining = FastMath.min(n, maxSolutions - squaredNorms.size());
+            for (int i = 0; i < remaining; ++i) {
                 final long saved = fixed[i];
                 samplers[i].generateNext();
                 fixed[i] = samplers[i].getCurrent();

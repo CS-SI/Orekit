@@ -17,57 +17,59 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.QZSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 
-
 /**
- * This class holds a GPS almanac as read from SEM or YUMA files.
+ * This class holds a QZSS almanac as read from YUMA files.
  *
- * <p>Depending on the source (SEM or YUMA), some fields may be filled in or not.
- * An almanac read from a YUMA file doesn't hold SVN number, average URA and satellite
- * configuration.</p>
- *
- * @author Pascal Parraud
- * @since 8.0
+ * @author Bryan Cazabonne
+ * @since 10.0
  *
  */
-public class GPSAlmanac implements GPSOrbitalElements {
+public class QZSSAlmanac implements QZSSOrbitalElements  {
 
     // Fields
     /** Source of the almanac. */
     private final String src;
+
     /** PRN number. */
     private final int prn;
-    /** SVN number. */
-    private final int svn;
+
     /** Health status. */
     private final int health;
-    /** Average URA. */
-    private final int ura;
-    /** Satellite configuration. */
-    private final int config;
-    /** GPS week. */
+
+    /** QZSS week. */
     private final int week;
+
     /** Time of applicability. */
     private final double toa;
+
     /** Semi-major axis. */
     private final double sma;
+
     /** Eccentricity. */
     private final double ecc;
+
     /** Inclination. */
     private final double inc;
+
     /** Longitude of Orbital Plane. */
     private final double om0;
+
     /** Rate of Right Ascension. */
     private final double dom;
+
     /** Argument of perigee. */
     private final double aop;
+
     /** Mean anomaly. */
     private final double anom;
+
     /** Zeroth order clock correction. */
     private final double af0;
+
     /** First order clock correction. */
     private final double af1;
 
@@ -76,8 +78,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
      *
      * @param source the source of the almanac (SEM, YUMA, user defined)
      * @param prn the PRN number
-     * @param svn the SVN number
-     * @param week the GPS week
+     * @param week the QZSS week
      * @param toa the Time of Applicability
      * @param sqa the Square Root of Semi-Major Axis (m^1/2)
      * @param ecc the eccentricity
@@ -89,18 +90,15 @@ public class GPSAlmanac implements GPSOrbitalElements {
      * @param af0 the Zeroth Order Clock Correction (s)
      * @param af1 the First Order Clock Correction (s/s)
      * @param health the Health status
-     * @param ura the average URA
-     * @param config the satellite configuration
      */
-    public GPSAlmanac(final String source, final int prn, final int svn,
-                      final int week, final double toa,
-                      final double sqa, final double ecc, final double inc,
-                      final double om0, final double dom, final double aop,
-                      final double anom, final double af0, final double af1,
-                      final int health, final int ura, final int config) {
+    public QZSSAlmanac(final String source, final int prn,
+                       final int week, final double toa,
+                       final double sqa, final double ecc, final double inc,
+                       final double om0, final double dom, final double aop,
+                       final double anom, final double af0, final double af1,
+                       final int health) {
         this.src = source;
         this.prn = prn;
-        this.svn = svn;
         this.week = week;
         this.toa = toa;
         this.sma = sqa * sqa;
@@ -113,20 +111,12 @@ public class GPSAlmanac implements GPSOrbitalElements {
         this.af0 = af0;
         this.af1 = af1;
         this.health = health;
-        this.ura = ura;
-        this.config = config;
-    }
-
-    @Override
-    public AbsoluteDate getDate() {
-        return new GNSSDate(week, toa * 1000., SatelliteSystem.GPS).getDate();
     }
 
     /**
-     * Gets the source of this GPS almanac.
-     * <p>Sources can be SEM or YUMA, when the almanac is read from a file.</p>
+     * Gets the source of this QZSS almanac.
      *
-     * @return the source of this GPS almanac
+     * @return the source of this QZSS almanac
      */
     public String getSource() {
         return src;
@@ -135,15 +125,6 @@ public class GPSAlmanac implements GPSOrbitalElements {
     @Override
     public int getPRN() {
         return prn;
-    }
-
-    /**
-     * Gets the satellite "SVN" reference number.
-     *
-     * @return the satellite "SVN" reference number
-     */
-    public int getSVN() {
-        return svn;
     }
 
     @Override
@@ -164,7 +145,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
     @Override
     public double getMeanMotion() {
         final double absA = FastMath.abs(sma);
-        return FastMath.sqrt(GPS_MU / absA) / absA;
+        return FastMath.sqrt(QZSS_MU / absA) / absA;
     }
 
     @Override
@@ -242,6 +223,11 @@ public class GPSAlmanac implements GPSOrbitalElements {
         return af1;
     }
 
+    @Override
+    public AbsoluteDate getDate() {
+        return new GNSSDate(week, toa * 1000., SatelliteSystem.QZSS).getDate();
+    }
+
     /**
      * Gets the Health status.
      *
@@ -249,24 +235,6 @@ public class GPSAlmanac implements GPSOrbitalElements {
      */
     public int getHealth() {
         return health;
-    }
-
-    /**
-     * Gets the average URA number.
-     *
-     * @return the average URA number
-     */
-    public int getURA() {
-        return ura;
-    }
-
-    /**
-     * Gets the satellite configuration.
-     *
-     * @return the satellite configuration
-     */
-    public int getSatConfiguration() {
-        return config;
     }
 
 }
