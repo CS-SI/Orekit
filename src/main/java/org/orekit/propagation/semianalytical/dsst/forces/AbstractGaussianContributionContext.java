@@ -24,8 +24,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * <p>
  * It performs parameters initialization at each integration step for the Gaussian contributions
  * </p>
- *
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public class AbstractGaussianContributionContext extends ForceModelContext {
 

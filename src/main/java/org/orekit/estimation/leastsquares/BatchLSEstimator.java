@@ -45,12 +45,19 @@ import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
 import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 
 /** Least squares estimator for orbit determination.
+ * <p>
+ * Since 10.0, the least squares estimator can be used with both
+ * {@link NumericalPropagator numerical} and {@link DSSTPropagator DSST}
+ * orbit propagators.
+ * </p>
  * @author Luc Maisonobe
  * @since 8.0
  */

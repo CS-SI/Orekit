@@ -57,6 +57,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Romain Gerbaud
  * @author Maxime Journot
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public class DSSTKalmanModel implements KalmanODModel {
 

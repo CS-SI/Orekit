@@ -23,8 +23,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * <p>
  * It performs parameters initialization at each integration step for the central body attraction.
  * <p>
- *
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public class DSSTNewtonianAttractionContext extends ForceModelContext {
 
@@ -37,7 +37,7 @@ public class DSSTNewtonianAttractionContext extends ForceModelContext {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters values of the force model parameters
      */
-    DSSTNewtonianAttractionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
+    public DSSTNewtonianAttractionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         super(auxiliaryElements);
         this.gm = parameters[0];

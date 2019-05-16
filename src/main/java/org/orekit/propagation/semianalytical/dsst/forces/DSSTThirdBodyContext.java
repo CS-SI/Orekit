@@ -34,8 +34,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * It performs parameters initialization at each integration step for the third
  * body attraction perturbation.
  * <p>
- *
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 class DSSTThirdBodyContext extends ForceModelContext {
 

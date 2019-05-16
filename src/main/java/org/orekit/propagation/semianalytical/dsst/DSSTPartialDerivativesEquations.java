@@ -49,6 +49,7 @@ import org.orekit.utils.ParameterDriversList;
  * select it by calling {@link ParameterDriver#setSelected(boolean) setSelected(true)}.
  * </p>
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public class DSSTPartialDerivativesEquations implements AdditionalEquations {
 

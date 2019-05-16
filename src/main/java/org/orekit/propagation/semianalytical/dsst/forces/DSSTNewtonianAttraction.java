@@ -43,6 +43,7 @@ import org.orekit.utils.ParameterDriver;
 /** Force model for Newtonian central body attraction for the {@link DSSTPropagator DSST propagator}.
  *  @author Bryan Cazabonne
  *  @author Luc Maisonobe
+ *  @since 10.0
  */
 public class DSSTNewtonianAttraction implements DSSTForceModel {
 

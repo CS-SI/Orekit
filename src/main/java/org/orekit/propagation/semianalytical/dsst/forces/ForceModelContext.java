@@ -20,6 +20,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
 /** Base class for dsst force models attributes containers.
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public abstract class ForceModelContext {
 

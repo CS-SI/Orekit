@@ -39,6 +39,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 /** Converter for states and parameters arrays.
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 class DSSTDSConverter extends AbstractDSConverter {
 

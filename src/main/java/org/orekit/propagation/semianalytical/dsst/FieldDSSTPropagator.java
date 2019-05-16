@@ -121,6 +121,7 @@ import org.orekit.utils.ParameterObserver;
  * @see DSSTForceModel
  * @author Romain Di Costanzo
  * @author Pascal Parraud
+ * @since 10.0
  */
 public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbstractIntegratedPropagator<T>  {
 

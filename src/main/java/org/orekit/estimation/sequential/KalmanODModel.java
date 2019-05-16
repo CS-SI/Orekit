@@ -24,6 +24,7 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 /** Interface for models used in the Kalman orbit determination process.
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public interface KalmanODModel extends KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 

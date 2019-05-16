@@ -24,8 +24,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * <p>
  * It performs parameters initialization at each integration step for the central body attraction.
  * <p>
- *
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
 

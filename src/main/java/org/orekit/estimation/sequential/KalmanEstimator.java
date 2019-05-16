@@ -74,7 +74,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  */
 public class KalmanEstimator {
 
-    /** Builders for numerical (or DSST) propagators. */
+    /** Builders for orbit propagators. */
     private List<IntegratedPropagatorBuilder> propagatorBuilders;
 
     /** Reference date. */

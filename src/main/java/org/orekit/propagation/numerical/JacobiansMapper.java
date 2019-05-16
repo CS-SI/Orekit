@@ -74,7 +74,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    protected double[][] getJacobianConversion(final SpacecraftState state) {
+    protected double[][] getConversionJacobian(final SpacecraftState state) {
 
         final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
 
@@ -98,7 +98,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
                              final double[][] dY1dP, final double[] p) {
 
         // set up a converter
-        final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getJacobianConversion(state), false);
+        final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getConversionJacobian(state), false);
         final DecompositionSolver solver = new QRDecomposition(dY1dC1).getSolver();
 
         // convert the provided state Jacobian
@@ -130,7 +130,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0) {
 
         // get the conversion Jacobian
-        final double[][] dYdC = getJacobianConversion(state);
+        final double[][] dYdC = getConversionJacobian(state);
 
         // extract the additional state
         final double[] p = state.getAdditionalState(name);
@@ -158,7 +158,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
         if (parameters.getNbParams() != 0) {
 
             // get the conversion Jacobian
-            final double[][] dYdC = getJacobianConversion(state);
+            final double[][] dYdC = getConversionJacobian(state);
 
             // extract the additional state
             final double[] p = state.getAdditionalState(name);

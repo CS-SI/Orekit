@@ -59,6 +59,8 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
+ * @since 10.0
+ *
  */
 public class DSSTBatchLSModel implements BatchLSODModel {
 

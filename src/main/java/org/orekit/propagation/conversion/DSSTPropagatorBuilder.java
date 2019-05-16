@@ -41,6 +41,7 @@ import org.orekit.utils.ParameterDriversList;
 
 /** Builder for DSST propagator.
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
 

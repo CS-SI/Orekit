@@ -23,6 +23,7 @@ import org.orekit.utils.ParameterDriversList;
 
 /** Base class for jacobian mapper.
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public abstract class AbstractJacobiansMapper {
 
@@ -78,7 +79,7 @@ public abstract class AbstractJacobiansMapper {
      * @param state spacecraft state
      * @return conversion Jacobian
      */
-    protected abstract double[][] getJacobianConversion(SpacecraftState state);
+    protected abstract double[][] getConversionJacobian(SpacecraftState state);
 
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.
      * @param state spacecraft state

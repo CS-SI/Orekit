@@ -28,6 +28,7 @@ import org.orekit.utils.ParameterDriversList;
 
 /** Base class for orbit determination model builders.
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public interface IntegratedPropagatorBuilder extends PropagatorBuilder {
 

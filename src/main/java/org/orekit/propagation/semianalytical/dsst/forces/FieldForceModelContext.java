@@ -21,6 +21,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 
 /** Base class for dsst force models parameter containers.
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
 

@@ -79,7 +79,6 @@ public interface DSSTForceModel {
      *  <p>
      *  This method aims at being called at the very beginning of a propagation.
      *  </p>
-<<<<<<< HEAD
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param type type of the elements used during the propagation
@@ -129,12 +128,13 @@ public interface DSSTForceModel {
                                 AuxiliaryElements auxiliaryElements, double[] parameters);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
-    *  @param <T> type of the elements
-    *  @param state current state information: date, kinematics, attitude
-    *  @param auxiliaryElements auxiliary elements related to the current orbit
-    *  @param parameters values of the force model parameters
-    *  @return the mean element rates dai/dt
-    */
+     *
+     *  @param <T> type of the elements
+     *  @param state current state information: date, kinematics, attitude
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters values of the force model parameters
+     *  @return the mean element rates dai/dt
+     */
     <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
                                                            FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
 

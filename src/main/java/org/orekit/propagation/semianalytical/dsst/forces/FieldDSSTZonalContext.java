@@ -31,8 +31,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * It performs parameters initialization at each integration step for the Zonal contribution
  * to the central body gravitational perturbation.
  * <p>
- *
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 

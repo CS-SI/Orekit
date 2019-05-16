@@ -33,8 +33,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * It performs parameters initialization at each integration step for the Tesseral contribution
  * to the central body gravitational perturbation.
  * <p>
- *
  * @author Bryan Cazabonne
+ * @since 10.0
  */
 class DSSTTesseralContext extends ForceModelContext {
 

@@ -26,6 +26,8 @@ import org.orekit.utils.ParameterDriversList;
 /** Interface for models used in the batch least squares orbit determination process.
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
+ * @since 10.0
+ *
  */
 public interface BatchLSODModel extends MultivariateJacobianFunction {
 
