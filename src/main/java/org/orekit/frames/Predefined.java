@@ -252,7 +252,10 @@ public enum Predefined {
     MOD_CONVENTIONS_1996("MOD/1996"),
 
     /** TEME frame. */
-    TEME("TEME");
+    TEME("TEME"),
+
+    /** PZ-90.11 frame. */
+    PZ90_11("PZ90.11");
 
     /** Name fo the frame. */
     private final String name;

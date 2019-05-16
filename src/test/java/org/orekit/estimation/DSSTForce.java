@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation;
 
-import org.orekit.forces.drag.atmosphere.HarrisPriester;
+import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;

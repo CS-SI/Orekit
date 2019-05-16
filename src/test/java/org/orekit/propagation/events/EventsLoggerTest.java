@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -37,6 +38,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class EventsLoggerTest {
@@ -52,7 +54,6 @@ public class EventsLoggerTest {
     @Test
     public void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
-        @SuppressWarnings("unchecked")
         EventDetector monitored = ((AbstractDetector<?>) logger.monitorDetector(umbraDetector)).
                 withMaxIter(200);
         Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
@@ -163,8 +164,12 @@ public class EventsLoggerTest {
     private EventDetector buildDetector(final boolean totalEclipse) {
 
         EclipseDetector detector =
-                new EclipseDetector(60., 1.e-3, CelestialBodyFactory.getSun(), 696000000,
-                                   CelestialBodyFactory.getEarth(), 6400000);
+                new EclipseDetector(CelestialBodyFactory.getSun(), 696000000,
+                                    new OneAxisEllipsoid(6400000,
+                                                         0.0,
+                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                withMaxCheck(60.0).
+                withThreshold(1.0e-3);
 
         if (totalEclipse) {
             detector = detector.withUmbra();

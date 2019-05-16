@@ -24,7 +24,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.Atmosphere;
+import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;

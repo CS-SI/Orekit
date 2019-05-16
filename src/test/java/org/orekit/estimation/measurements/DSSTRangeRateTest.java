@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
-import org.orekit.models.earth.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;

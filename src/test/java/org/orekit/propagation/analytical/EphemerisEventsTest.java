@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -43,6 +44,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 public class EphemerisEventsTest {
 
@@ -108,9 +110,12 @@ public class EphemerisEventsTest {
         double sunRadius = 696000000.;
         double earthRadius = 6400000.;
 
-        EclipseDetector ecl = new EclipseDetector(60., 1.e-3,
-                                                  CelestialBodyFactory.getSun(), sunRadius,
-                                                  CelestialBodyFactory.getEarth(), earthRadius).
+        EclipseDetector ecl = new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                                  new OneAxisEllipsoid(earthRadius,
+                                                                       0.0,
+                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
+                              withMaxCheck(60.0).
+                              withThreshold(1.0e-3).
                               withHandler(new EventHandler<EclipseDetector>() {
                                 public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
                                                             boolean increasing)

@@ -17,8 +17,6 @@
 package org.orekit.forces.drag;
 
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -26,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -58,9 +55,6 @@ public class IsotropicDrag implements DragSensitive {
     /** Cross section (m²). */
     private final double crossSection;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Constructor with drag coefficient min/max set to ±∞.
      * @param crossSection Surface (m²)
      * @param dragCoeff drag coefficient
@@ -89,7 +83,6 @@ public class IsotropicDrag implements DragSensitive {
             throw new OrekitInternalError(oe);
         }
         this.crossSection = crossSection;
-        this.factory      = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
@@ -121,24 +114,4 @@ public class IsotropicDrag implements DragSensitive {
         return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff).multiply(crossSection / 2)).divide(mass),
                                    relativeVelocity);
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                               final Rotation rotation, final double mass,
-                                                               final double density, final Vector3D relativeVelocity,
-                                                               final double[] parameters,
-                                                               final String paramName) {
-
-        if (!DRAG_COEFFICIENT.equals(paramName)) {
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName, DRAG_COEFFICIENT);
-        }
-
-        final DerivativeStructure dragCoeffDS = factory.variable(0, parameters[0]);
-
-        return new FieldVector3D<>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
-                                   relativeVelocity);
-
-    }
-
 }
