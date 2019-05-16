@@ -387,9 +387,9 @@ public class AttitudesSequence implements AttitudeProvider {
             if (activated.getTransitions().size() > 1) {
                 // remove transitions that will be overridden during upcoming propagation
                 if (forward) {
-                    activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate());
+                    activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate().shiftedBy(transitionTime));
                 } else {
-                    activated = activated.extractRange(s0.getDate(), AbsoluteDate.FUTURE_INFINITY);
+                    activated = activated.extractRange(s0.getDate().shiftedBy(-transitionTime), AbsoluteDate.FUTURE_INFINITY);
                 }
             }
 
