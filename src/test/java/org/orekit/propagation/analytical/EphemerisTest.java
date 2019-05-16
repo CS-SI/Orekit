@@ -181,7 +181,7 @@ public class EphemerisTest {
         // Propagate
         AbsoluteDate endDate = initialDate.shiftedBy(2*86400.0);
         SpacecraftState stateBefore = ephemeris.getInitialState();
-        SpacecraftState stateTransition = ephemeris.propagate(switchDate.shiftedBy(transitionTime/2));
+        ephemeris.propagate(switchDate.shiftedBy(transitionTime/2));
         SpacecraftState stateAfter = ephemeris.propagate(endDate);
         
         
