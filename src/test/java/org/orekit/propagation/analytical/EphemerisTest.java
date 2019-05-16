@@ -144,8 +144,8 @@ public class EphemerisTest {
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);        
 
         // Define attitude laws
-        AttitudeProvider before = new CelestialBodyPointed(FramesFactory.getGCRF(), CelestialBodyFactory.getSun(), Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
-        AttitudeProvider after = new CelestialBodyPointed(FramesFactory.getGCRF(), CelestialBodyFactory.getEarth(), Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
+        AttitudeProvider before = new CelestialBodyPointed(FramesFactory.getICRF(), CelestialBodyFactory.getSun(), Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
+        AttitudeProvider after = new CelestialBodyPointed(FramesFactory.getICRF(), CelestialBodyFactory.getEarth(), Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
 
         // Define attitude sequence
         AbsoluteDate switchDate = initialDate.shiftedBy(86400.0);
