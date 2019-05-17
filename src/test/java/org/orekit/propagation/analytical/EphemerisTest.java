@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -24,12 +25,19 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudesSequence;
+import org.orekit.attitudes.CelestialBodyPointed;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
@@ -42,10 +50,17 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 public class EphemerisTest {
 
@@ -108,6 +123,88 @@ public class EphemerisTest {
             Assert.assertEquals("QSW Unmatched Attitude at: " + currentDate, 0.0, attitudeDelta, attitudeTolerance);
         }
 
+    }
+    
+    @Test
+    public void testAttitudeSequenceTransition() {
+    	        
+        // Initialize the orbit
+    	final AbsoluteDate initialDate = new AbsoluteDate(2003, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
+        final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);
+        final Vector3D velocity  = new Vector3D(1151.00321021175, -2851.14864755189, -2.02133248357321);
+        final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
+                                                      FramesFactory.getGCRF(), initialDate,
+                                                      Constants.WGS84_EARTH_MU);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);        
+
+        // Define attitude laws
+        AttitudeProvider before = new CelestialBodyPointed(FramesFactory.getICRF(), CelestialBodyFactory.getSun(), Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
+        AttitudeProvider after = new CelestialBodyPointed(FramesFactory.getICRF(), CelestialBodyFactory.getEarth(), Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
+
+        // Define attitude sequence
+        AbsoluteDate switchDate = initialDate.shiftedBy(86400.0);
+        double transitionTime = 600;
+        DateDetector switchDetector = new DateDetector(switchDate).withHandler(new ContinueOnEvent<DateDetector>());
+
+        AttitudesSequence attitudeSequence = new AttitudesSequence();
+        attitudeSequence.resetActiveProvider(before);
+        attitudeSequence.addSwitchingCondition(before, after, switchDetector, true, false, transitionTime, AngularDerivativesFilter.USE_RR, null);
+
+        NumericalPropagator propagator = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 1e-9, 1e-9));
+        propagator.setInitialState(initialState);
+        
+        // Propagate and build ephemeris
+        final List<SpacecraftState> propagatedStates = new ArrayList<>();
+
+        propagator.setMasterMode(60, new OrekitFixedStepHandler() {
+          @Override
+          public void handleStep(SpacecraftState currentState,
+                                 boolean isLast)
+            throws OrekitException
+          {
+            propagatedStates.add(currentState);
+          }              
+        });
+        propagator.propagate(initialDate.shiftedBy(2*86400.0));
+        final Ephemeris ephemeris = new Ephemeris(propagatedStates, 8);
+
+        // Add attitude switch event to ephemeris
+        ephemeris.setAttitudeProvider(attitudeSequence);
+        attitudeSequence.registerSwitchEvents(ephemeris);
+
+        // Propagate with a step during the transition
+        AbsoluteDate endDate = initialDate.shiftedBy(2*86400.0);
+        SpacecraftState stateBefore = ephemeris.getInitialState();
+        ephemeris.propagate(switchDate.shiftedBy(transitionTime/2));
+        SpacecraftState stateAfter = ephemeris.propagate(endDate);
+        
+        
+        // Check that the attitudes are correct
+        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ0(),
+        		stateBefore.getAttitude().getRotation().getQ0(),
+        		1.0E-16);
+        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ1(),
+        		stateBefore.getAttitude().getRotation().getQ1(),
+        		1.0E-16);
+        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ2(),
+        		stateBefore.getAttitude().getRotation().getQ2(),
+        		1.0E-16);
+        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ3(),
+        		stateBefore.getAttitude().getRotation().getQ3(),
+        		1.0E-16);
+
+        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ0(),
+        		stateAfter.getAttitude().getRotation().getQ0(),
+        		1.0E-16);
+        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ1(),
+        		stateAfter.getAttitude().getRotation().getQ1(),
+        		1.0E-16);
+        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ2(),
+        		stateAfter.getAttitude().getRotation().getQ2(),
+        		1.0E-16);
+        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
+        		stateAfter.getAttitude().getRotation().getQ3(),
+        		1.0E-16);
     }
 
     @Test
