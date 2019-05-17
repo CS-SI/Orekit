@@ -24,6 +24,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
@@ -43,10 +44,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.DTM2000;
-import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.Relativity;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -56,6 +54,8 @@ import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.atmosphere.DTM2000;
+import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -71,7 +71,6 @@ import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldAdditionalEquations;
@@ -116,23 +115,6 @@ public class FieldNumericalPropagatorTest {
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add((10.0))));
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedMethods() {
-        doTestDeprecatedMethods(Decimal64Field.getInstance());
-    }
-
-    @Deprecated
-    private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestDeprecatedMethods(Field<T> field)
-        {
-        FieldNumericalPropagator<T>  propagator = createPropagator(field);
-        propagator.addForceModel(new Relativity(mu));
-        Assert.assertEquals(2, propagator.getAllForceModels().size());
-        Assert.assertEquals(1, propagator.getForceModels().size());
-        Assert.assertSame(propagator.getAllForceModels().get(0), propagator.getForceModels().get(0));
-        Assert.assertSame(propagator.getAllForceModels().get(1), propagator.getNewtonianAttractionForceModel());
     }
 
     @Test

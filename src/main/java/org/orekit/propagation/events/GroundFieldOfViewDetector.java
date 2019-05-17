@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -29,8 +30,8 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * <p> If you only want to compute access times then you should probably use
  * {@link ElevationDetector}.
  *
- * <p>The default implementation behavior is to {@link org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE
- * continue} propagation at FOV entry and to {@link org.orekit.propagation.events.handlers.EventHandler.Action#STOP
+ * <p>The default implementation behavior is to {@link Action#CONTINUE
+ * continue} propagation at FOV entry and to {@link Action#STOP
  * stop} propagation at FOV exit. This can be changed by calling {@link
  * #withHandler(EventHandler)} after construction.</p>
  *
@@ -42,9 +43,6 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * @since 7.1
  */
 public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfViewDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160114L;
 
     /** the reference frame attached to the sensor. */
     private final Frame frame;

@@ -182,34 +182,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
      * <p>
-     * This method is equivalent to call {@link #setInitialJacobians(SpacecraftState,
-     * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
-     * to a zero matrix.
-     * </p>
-     * <p>
-     * The force models parameters for which partial derivatives are desired,
-     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
-     * before this method is called, so proper matrices dimensions are used.
-     * </p>
-     * @param s0 initial state
-     * @param stateDimension state dimension, must be either 6 for orbit only or 7 for orbit and mass
-     * @return state with initial Jacobians added
-     * @see #getSelectedParameters()
-     * @deprecated as of 9.0, replaced by {@link #setInitialJacobians(SpacecraftState)}
-     */
-    @Deprecated
-    public SpacecraftState setInitialJacobians(final SpacecraftState s0, final int stateDimension) {
-        freezeParametersSelection();
-        final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        final double[][] dYdP  = new double[stateDimension][selected.getNbParams()];
-        for (int i = 0; i < stateDimension; ++i) {
-            dYdY0[i][i] = 1.0;
-        }
-        return setInitialJacobians(s0, dYdY0, dYdP);
-    }
-
-    /** Set the initial value of the Jacobian with respect to state and parameter.
-     * <p>
      * The returned state must be added to the propagator (it is not done
      * automatically, as the user may need to add more states to it).
      * </p>
@@ -262,7 +234,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
      * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
      * with the same name as the instance
-          * @see #setInitialJacobians(SpacecraftState, int)
+     * @see #setInitialJacobians(SpacecraftState)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
     public JacobiansMapper getMapper() {

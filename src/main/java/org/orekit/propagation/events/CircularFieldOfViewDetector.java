@@ -17,6 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
+import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -24,23 +26,25 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor Field Of View.
  * <p>This class handle fields of view with a circular boundary.</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
- * propagation at FOV entry and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at FOV entry and to {@link Action#STOP stop} propagation
  * at FOV exit. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see FieldOfViewDetector
+ * @see VisibilityTrigger
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldOfViewDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
-
     /** Position/velocity provider of the considered target. */
     private final PVCoordinatesProvider targetPVProvider;
+
+    /** Radius of the target, considered to be a spherical body (m). */
+    private final double radiusTarget;
+
+    /** Visibility trigger for spherical bodies. */
+    private final VisibilityTrigger trigger;
 
     /** Direction of the FOV center. */
     private final Vector3D center;
@@ -61,8 +65,26 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
                                        final PVCoordinatesProvider pvTarget,
                                        final Vector3D center,
                                        final double halfAperture) {
+        this(maxCheck, pvTarget, 0.0, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV, center, halfAperture);
+    }
+
+    /** Build a new instance.
+     * <p>The maximal interval between distance to FOV boundary checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param maxCheck maximal interval in seconds
+     * @param pvTarget Position/velocity provider of the considered target
+     * @param radiusTarget radius of the target, considered to be a spherical body (m)
+     * @param trigger visibility trigger for spherical bodie
+     * @param center Direction of the FOV center, in spacecraft frame
+     * @param halfAperture FOV half aperture angle
+     * @since 10.0
+     */
+    public CircularFieldOfViewDetector(final double maxCheck,
+                                       final PVCoordinatesProvider pvTarget, final double radiusTarget,
+                                       final VisibilityTrigger trigger,  final Vector3D center, final double halfAperture) {
         this(maxCheck, 1.0e-3, DEFAULT_MAX_ITER, new StopOnDecreasing<CircularFieldOfViewDetector>(),
-             pvTarget, center, halfAperture);
+             pvTarget, radiusTarget, trigger, center, halfAperture);
     }
 
     /** Private constructor with full parameters.
@@ -76,17 +98,20 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param pvTarget Position/velocity provider of the considered target
+     * @param radiusTarget radius of the target, considered to be a spherical body (m)
+     * @param trigger visibility trigger for spherical bodie
      * @param center Direction of the FOV center, in spacecraft frame
      * @param halfAperture FOV half aperture angle
      * @since 6.1
      */
     private CircularFieldOfViewDetector(final double maxCheck, final double threshold,
                                         final int maxIter, final EventHandler<? super CircularFieldOfViewDetector> handler,
-                                        final PVCoordinatesProvider pvTarget,
-                                        final Vector3D center,
-                                        final double halfAperture) {
+                                        final PVCoordinatesProvider pvTarget, final double radiusTarget,
+                                        final VisibilityTrigger trigger, final Vector3D center, final double halfAperture) {
         super(maxCheck, threshold, maxIter, handler);
         this.targetPVProvider = pvTarget;
+        this.radiusTarget     = radiusTarget;
+        this.trigger          = trigger;
         this.center           = center;
         this.halfAperture     = halfAperture;
     }
@@ -96,7 +121,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
     protected CircularFieldOfViewDetector create(final double newMaxCheck, final double newThreshold,
                                                  final int newMaxIter, final EventHandler<? super CircularFieldOfViewDetector> newHandler) {
         return new CircularFieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                               targetPVProvider, center, halfAperture);
+                                               targetPVProvider, radiusTarget, trigger, center, halfAperture);
     }
 
     /** Get the position/velocity provider of the target .
@@ -123,7 +148,8 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
     /** {@inheritDoc}
      * <p>
      * The g function value is the difference between FOV half aperture and the
-     * absolute value of the angle between target direction and field of view center.
+     * absolute value of the angle between target direction and field of view center,
+     * plus or minus the target angular radius depending on the {@link VisibilityTrigger}.
      * It is positive inside the FOV and negative outside.
      * </p>
      */
@@ -133,11 +159,12 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
         final Vector3D targetPosInert = new Vector3D(1, targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                            -1, s.getPVCoordinates().getPosition());
         final Vector3D targetPosSat = s.getAttitude().getRotation().applyTo(targetPosInert);
+        final double angularRadius = FastMath.asin(radiusTarget / targetPosSat.getNorm());
 
         // Target is in the field of view if the absolute value that angle is smaller than FOV half aperture.
         // g function value is the difference between FOV half aperture and the absolute value of the angle between
         // target direction and field of view center. It is positive inside the FOV and negative outside.
-        return halfAperture - Vector3D.angle(targetPosSat, center);
+        return halfAperture - Vector3D.angle(targetPosSat, center) - FastMath.copySign(angularRadius, trigger.getSign());
     }
 
 }

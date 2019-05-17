@@ -788,7 +788,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         T term = E;
         double d    = 0;
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (T x0 = E.getField().getZero().add(Double.NaN); x.getReal() != x0.getReal();) {
+        for (T x0 = E.getField().getZero().add(Double.NaN); !Double.valueOf(x.getReal()).equals(Double.valueOf(x0.getReal()));) {
             d += 2;
             term = term.multiply(mE2.divide(d * (d + 1)));
             x0 = x;
@@ -861,104 +861,6 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     public static <T extends RealFieldElement<T>> T ellipticEccentricToMean(final T E, final T e) {
         return E.subtract(e.multiply(E.sin()));
-    }
-
-    /** Compute position from elliptic Keplerian parameters.
-     * @param a semi-major axis (m)
-     * @param e eccentricity
-     * @param i inclination (rad)
-     * @param pa Perigee Argument (rad)
-     * @param raan Right Ascension of Ascending Node (rad)
-     * @param v true anomaly (rad)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the fiels elements
-     * @return position vector
-     * @deprecated as of 9.3 replaced with {@link #FieldKeplerianOrbit(RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> ellipticKeplerianToPosition(final T a, final T e, final T i,
-                                                                                               final T pa, final T raan, final T v,
-                                                                                               final double mu) {
-
-        // preliminary variables
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T cosPa   = pa.cos();
-        final T sinPa   = pa.sin();
-        final T cosI    = i.cos();
-        final T sinI    = i.sin();
-        final T crcp    = cosRaan.multiply(cosPa);
-        final T crsp    = cosRaan.multiply(sinPa);
-        final T srcp    = sinRaan.multiply(cosPa);
-        final T srsp    = sinRaan.multiply(sinPa);
-
-        // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
-
-        // elliptic eccentric anomaly
-        final T uME2   = e.negate().add(1).multiply(e.add(1));
-        final T s1Me2  = uME2.sqrt();
-        final T E      = (a.getReal() < 0) ? trueToHyperbolicEccentric(v, e) : trueToEllipticEccentric(v, e);
-        final T cosE   = E.cos();
-        final T sinE   = E.sin();
-
-        // coordinates of position in the orbital plane
-        final T x      = a.multiply(cosE.subtract(e));
-        final T y      = a.multiply(sinE).multiply(s1Me2);
-
-        return new FieldVector3D<>(x, p, y, q);
-
-    }
-
-    /** Compute position from hyperbolic Keplerian parameters.
-     * @param a semi-major axis (m)
-     * @param e eccentricity
-     * @param i inclination (rad)
-     * @param pa Perigee Argument (rad)
-     * @param raan Right Ascension of Ascending Node (rad)
-     * @param v true anomaly (rad)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the fiels elements
-     * @return position vector
-     * @deprecated as of 9.3 replaced with {@link #FieldKeplerianOrbit(RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> hyperbolicKeplerianToPosition(final T a, final T e, final T i,
-                                                                                                 final T pa, final T raan, final T v,
-                                                                                                 final double mu) {
-
-        // preliminary variables
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T cosPa   = pa.cos();
-        final T sinPa   = pa.sin();
-        final T cosI    = i.cos();
-        final T sinI    = i.sin();
-        final T crcp    = cosRaan.multiply(cosPa);
-        final T crsp    = cosRaan.multiply(sinPa);
-        final T srcp    = sinRaan.multiply(cosPa);
-        final T srsp    = sinRaan.multiply(sinPa);
-
-        // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
-
-
-        // coordinates of position in the orbital plane
-        final T sinV      = v.sin();
-        final T cosV      = v.cos();
-        final T f         = a.multiply(e.multiply(e).negate().add(1));
-        final T posFactor = f.divide(e.multiply(cosV).add(1));
-        final T x         = posFactor.multiply(cosV);
-        final T y         = posFactor.multiply(sinV);
-
-        return new FieldVector3D<>(x, p, y, q);
-
     }
 
     /** {@inheritDoc} */

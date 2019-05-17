@@ -51,7 +51,6 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -783,21 +782,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final ODEStateAndDerivative s, final boolean increasing) {
-            final EventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
-                                                                                         s.getCompleteState(),
-                                                                                         s.getCompleteDerivative()),
-                                                                        increasing);
-
-            switch (whatNext) {
-                case STOP :
-                    return Action.STOP;
-                case RESET_STATE :
-                    return Action.RESET_STATE;
-                case RESET_DERIVATIVES :
-                    return Action.RESET_DERIVATIVES;
-                default :
-                    return Action.CONTINUE;
-            }
+            return detector.eventOccurred(
+                    getCompleteState(
+                            s.getTime(),
+                            s.getCompleteState(),
+                            s.getCompleteDerivative()),
+                    increasing);
         }
 
         /** {@inheritDoc} */

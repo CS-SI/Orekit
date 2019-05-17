@@ -16,12 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.RegionFactory;
 import org.hipparchus.geometry.spherical.twod.S2Point;
@@ -34,7 +28,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -89,46 +82,6 @@ public class GeographicZoneDetectorTest {
 
         propagator.propagate(date.shiftedBy(10 * Constants.JULIAN_DAY));
         Assert.assertEquals(26, logger.getLoggedEvents().size());
-
-    }
-
-    @Test
-    public void testSerialization()
-      throws IOException, ClassNotFoundException, OrekitException {
-
-        final double r = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
-        final BodyShape earth = new OneAxisEllipsoid(r, Constants.WGS84_EARTH_FLATTENING,
-                                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-
-        GeographicZoneDetector d =
-                new GeographicZoneDetector(20.0, 1.e-3, earth, buildFrance(), FastMath.toRadians(0.5)).
-                withMargin(FastMath.toRadians(0.75)).
-                withHandler(new ContinueOnEvent<GeographicZoneDetector>());
-
-        Assert.assertEquals(r, ((OneAxisEllipsoid) d.getBody()).getEquatorialRadius(), 1.0e-12);
-        Assert.assertEquals(0.75, FastMath.toDegrees(d.getMargin()), 1.0e-12);
-        Assert.assertEquals(5.6807e11, d.getZone().getSize() * r * r, 1.0e9);
-        Assert.assertEquals(4.0289e6,  d.getZone().getBoundarySize() * r, 1.0e3);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(d);
-
-        Assert.assertTrue(bos.size() > 2100);
-        Assert.assertTrue(bos.size() < 2200);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        GeographicZoneDetector deserialized  = (GeographicZoneDetector) ois.readObject();
-
-        Assert.assertEquals(d.getZone().getSize(),         deserialized.getZone().getSize(),         1.0e-3);
-        Assert.assertEquals(d.getZone().getBoundarySize(), deserialized.getZone().getBoundarySize(), 1.0e-3);
-        Assert.assertEquals(d.getZone().getTolerance(),    deserialized.getZone().getTolerance(),    1.0e-15);
-        Assert.assertEquals(d.getMaxCheckInterval(),       deserialized.getMaxCheckInterval(),       1.0e-15);
-        Assert.assertEquals(d.getThreshold(),              deserialized.getThreshold(),              1.0e-15);
-        Assert.assertEquals(d.getMaxIterationCount(),      deserialized.getMaxIterationCount());
-
-        Assert.assertTrue(new RegionFactory<Sphere2D>().difference(d.getZone(), deserialized.getZone()).isEmpty());
 
     }
 

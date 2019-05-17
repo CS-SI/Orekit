@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,11 +26,12 @@ public class EventHandlerTest {
     public void testEnums() {
         // this test is here only for test coverage ...
 
-        Assert.assertEquals(4, EventHandler.Action.values().length);
-        Assert.assertSame(EventHandler.Action.STOP,              EventHandler.Action.valueOf("STOP"));
-        Assert.assertSame(EventHandler.Action.RESET_STATE,       EventHandler.Action.valueOf("RESET_STATE"));
-        Assert.assertSame(EventHandler.Action.RESET_DERIVATIVES, EventHandler.Action.valueOf("RESET_DERIVATIVES"));
-        Assert.assertSame(EventHandler.Action.CONTINUE,          EventHandler.Action.valueOf("CONTINUE"));
+        Assert.assertEquals(5, Action.values().length);
+        Assert.assertSame(Action.STOP,              Action.valueOf("STOP"));
+        Assert.assertSame(Action.RESET_STATE,       Action.valueOf("RESET_STATE"));
+        Assert.assertSame(Action.RESET_DERIVATIVES, Action.valueOf("RESET_DERIVATIVES"));
+        Assert.assertSame(Action.RESET_EVENTS,      Action.valueOf("RESET_EVENTS"));
+        Assert.assertSame(Action.CONTINUE,          Action.valueOf("CONTINUE"));
 
     }
 

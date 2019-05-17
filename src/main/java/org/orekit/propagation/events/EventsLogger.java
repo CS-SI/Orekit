@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -43,10 +43,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Luc Maisonobe
  */
-public class EventsLogger implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -8643810076248572648L;
+public class EventsLogger {
 
     /** List of occurred events. */
     private final List<LoggedEvent> log;
@@ -105,10 +102,7 @@ public class EventsLogger implements Serializable {
     }
 
     /** Class for logged events entries. */
-    public static class LoggedEvent implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131202L;
+    public static class LoggedEvent {
 
         /** Event detector triggered. */
         private final EventDetector detector;
@@ -160,9 +154,6 @@ public class EventsLogger implements Serializable {
      * @param <T> class type for the generic version
      */
     private class LoggingWrapper<T extends EventDetector> extends AbstractDetector<LoggingWrapper<T>> {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131118L;
 
         /** Wrapped events detector. */
         private final T detector;

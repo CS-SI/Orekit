@@ -17,8 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.

@@ -28,17 +28,13 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TurnAroundRange;
-import org.orekit.models.earth.DiscreteTroposphericModel;
-import org.orekit.models.earth.TroposphericModel;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 /** Class modifying theoretical turn-around TurnAroundRange measurement with tropospheric delay.
  * The effect of tropospheric correction on the TurnAroundRange is directly computed
@@ -149,28 +145,6 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         return zero;
     }
 
-    /** Compute the Jacobian of the delay term wrt state.
-    *
-    * @param station station
-    * @param refstate reference spacecraft state
-    *
-    * @return Jacobian of the delay wrt state
-    */
-    private double[][] rangeErrorJacobianState(final GroundStation station, final SpacecraftState refstate) {
-        final double[][] finiteDifferencesJacobian =
-                        Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) {
-                                // evaluate target's elevation with a changed target position
-                                final double value = rangeErrorTroposphericModel(station, state);
-
-                                return new double[] {value };
-                            }
-                        }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
-                        PositionAngle.TRUE, 15.0, 3).value(refstate);
-
-        return finiteDifferencesJacobian;
-    }
-
     /** Compute the Jacobian of the delay term wrt state using
     * automatic differentiation.
     *
@@ -260,17 +234,8 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final double[] masterDerivatives = masterDSDelay.getAllDerivatives();
         final double[] slaveDerivatives  = masterDSDelay.getAllDerivatives();
 
-        double[][] masterDjac = new double[1][6];
-        double[][] slaveDjac  = new double[1][6];
-        // This implementation will disappear when the implementations of TroposphericModel
-        // will directly be implementations of DiscreteTroposphericModel
-        if (tropoModel instanceof TroposphericModel) {
-            masterDjac = rangeErrorJacobianState(masterStation, state);
-            slaveDjac  = rangeErrorJacobianState(slaveStation, state);
-        } else {
-            masterDjac = rangeErrorJacobianState(masterDerivatives, converter.getFreeStateParameters());
-            slaveDjac  = rangeErrorJacobianState(slaveDerivatives, converter.getFreeStateParameters());
-        }
+        final double[][] masterDjac = rangeErrorJacobianState(masterDerivatives, converter.getFreeStateParameters());
+        final double[][] slaveDjac  = rangeErrorJacobianState(slaveDerivatives, converter.getFreeStateParameters());
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {

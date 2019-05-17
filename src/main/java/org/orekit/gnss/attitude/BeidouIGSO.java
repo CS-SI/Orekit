@@ -31,9 +31,6 @@ import org.orekit.utils.ExtendedPVCoordinatesProvider;
  */
 public class BeidouIGSO extends BeidouMeo {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20181001L;
-
     /** Simple constructor.
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider

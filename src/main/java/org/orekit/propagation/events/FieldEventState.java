@@ -23,12 +23,11 @@ import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -445,9 +444,9 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
      * @return the user's requested action and the new state if the action is {@link
-     * org.orekit.propagation.events.handlers.FieldEventHandler.Action#RESET_STATE}. Otherwise
+     * Action#RESET_STATE}. Otherwise
      * the new state is {@code state}. The stop time indicates what time propagation should
-     * stop if the action is {@link org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP}.
+     * stop if the action is {@link Action#STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
      */
@@ -456,9 +455,9 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final FieldEventHandler.Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = detector.eventOccurred(state, increasing == forward);
         final FieldSpacecraftState<T> newState;
-        if (action == FieldEventHandler.Action.RESET_STATE) {
+        if (action == Action.RESET_STATE) {
             newState = detector.resetState(state);
         } else {
             newState = state;
@@ -549,7 +548,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
     public static class EventOccurrence<T extends RealFieldElement<T>> {
 
         /** User requested action. */
-        private final FieldEventHandler.Action action;
+        private final Action action;
         /** New state for a reset action. */
         private final FieldSpacecraftState<T> newState;
         /** The time to stop propagation if the action is a stop event. */
@@ -564,7 +563,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
          * @param stopDate to stop propagation if the action is {@link Action#STOP}. Used
          *                 to move the stop time to just after the root.
          */
-        EventOccurrence(final FieldEventHandler.Action action,
+        EventOccurrence(final Action action,
                         final FieldSpacecraftState<T> newState,
                         final FieldAbsoluteDate<T> stopDate) {
             this.action = action;
@@ -577,7 +576,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
          *
          * @return the action.
          */
-        public FieldEventHandler.Action getAction() {
+        public Action getAction() {
             return action;
         }
 

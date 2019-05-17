@@ -16,23 +16,19 @@
  */
 package org.orekit.propagation.events.handlers;
 
-import java.io.Serializable;
-
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
 
 /**
- * Event handler which will always return {@link EventHandler.Action#CONTINUE continue} as a state.
+ * Event handler which will always return {@link Action#CONTINUE continue} as a state.
  * @author Hank Grabowski
  *
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class ContinueOnEvent<T extends EventDetector> implements EventHandler<T>, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160321L;
+public class ContinueOnEvent<T extends EventDetector> implements EventHandler<T> {
 
     /**
      * Specific implementation of the eventOccurred interface.
@@ -40,7 +36,7 @@ public class ContinueOnEvent<T extends EventDetector> implements EventHandler<T>
      * @param s SpaceCraft state to be used in the evaluation
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
-     * @return {@link EventHandler.Action#CONTINUE continue} under all circumstances
+     * @return {@link Action#CONTINUE continue} under all circumstances
      */
     @Override
     public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {

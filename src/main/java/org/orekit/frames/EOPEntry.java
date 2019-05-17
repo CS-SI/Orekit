@@ -64,30 +64,6 @@ public class EOPEntry implements TimeStamped, Serializable {
     private final ITRFVersion itrfType;
 
     /** Simple constructor.
-     * <p>
-     * This constructor uses {@link ITRFVersion#ITRF_2014} by default.
-     * </p>
-     * @param mjd entry date (modified Julian day, 00h00 UTC scale)
-     * @param dt UT1-UTC in seconds
-     * @param lod length of day
-     * @param x X component of pole motion
-     * @param y Y component of pole motion
-     * @param ddPsi correction for nutation in longitude δΔΨ
-     * @param ddEps correction for nutation in obliquity δΔε
-     * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
-     * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
-          * @deprecated as of 9.2 replaced with {@link #EOPEntry(int, double, double,
-     * double, double, double, double, double, double, ITRFVersion)
-     */
-    @Deprecated
-    public EOPEntry(final int mjd, final double dt, final double lod,
-                    final double x, final double y,
-                    final double ddPsi, final double ddEps,
-                    final double dx, final double dy) {
-        this(mjd, dt, lod, x, y, ddPsi, ddEps, dx, dy, ITRFVersion.ITRF_2014);
-    }
-
-    /** Simple constructor.
      * @param mjd entry date (modified Julian day, 00h00 UTC scale)
      * @param dt UT1-UTC in seconds
      * @param lod length of day

@@ -88,8 +88,7 @@ discrete events. Here is a short list of the features offered by the library:</p
               <li>central attraction</li>
               <li>gravity models including time-dependent like trends and pulsations (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
               EGM and GRGS gravity field files formats, even compressed)</li>
-              <li>atmospheric drag (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models),
-              and Marshall solar Activity Future Estimation, optionally with lift component</li>
+              <li>atmospheric drag</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses</li>
               <li>solid tides, with or without solid pole tide</li>
@@ -150,7 +149,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>latitude, longitude extremum</li>
           <li>elevation extremum</li>
           <li>anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric</li>
-          <li>moving target detection in spacecraft sensor Field Of View (any shape, with special case for circular)</li>
+          <li>moving target detection (with optional radius) in spacecraft sensor Field Of View (any shape, with special case for circular)</li>
           <li>spacecraft detection in ground based Field Of View (any shape)</li>
           <li>sensor Field Of View (any shape) overlapping complex geographic zone</li>
           <li>complex geographic zone traversal</li>
@@ -227,7 +226,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>position</li>
           <li>inter-satellites range (one way and two way)</li>
           <li>GNSS code</li>
-          <li>GNSS phase</li>
+          <li>GNSS phase with integer ambiguity resolution (not complete yet and experimental)</li>
         </ul>
       </li>
       <li>possibility to add custom measurements</li>
@@ -239,6 +238,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>biases</li>
           <li>delays</li>
           <li>Antenna Phase Center</li>
+          <li>Shapiro relativistic effect</li>
         </ul>
       </li>
       <li>possibility to add custom measurement modifiers (even for predefined events)</li>
@@ -272,6 +272,8 @@ discrete events. Here is a short list of the features offered by the library:</p
   </li>
   <li>Earth models
     <ul>
+      <li>atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and
+          simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component</li>
       <li>tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)</li>
       <li>tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)</li>
       <li>tropospheric model for laser ranging (Marini-Murray)</li>

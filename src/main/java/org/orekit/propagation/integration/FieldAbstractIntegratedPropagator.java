@@ -53,7 +53,6 @@ import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -798,21 +797,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc} */
         public Action eventOccurred(final FieldODEStateAndDerivative<T> s, final boolean increasing) {
-            final FieldEventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
-                                                                                              s.getCompleteState(),
-                                                                                              s.getCompleteDerivative()),
-                                                                        increasing);
-
-            switch (whatNext) {
-                case STOP :
-                    return Action.STOP;
-                case RESET_STATE :
-                    return Action.RESET_STATE;
-                case RESET_DERIVATIVES :
-                    return Action.RESET_DERIVATIVES;
-                default :
-                    return Action.CONTINUE;
-            }
+            return detector.eventOccurred(
+                    getCompleteState(
+                            s.getTime(),
+                            s.getCompleteState(),
+                            s.getCompleteDerivative()),
+                    increasing);
         }
 
         /** {@inheritDoc} */

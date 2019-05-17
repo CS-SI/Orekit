@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -24,7 +25,7 @@ import org.orekit.time.AbsoluteDate;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public abstract class AbstractDetector<T extends EventDetector> implements EventDetector {
+public abstract class AbstractDetector<T extends AbstractDetector<T>> implements EventDetector {
 
     /** Default maximum checking interval (s). */
     public static final double DEFAULT_MAXCHECK = 600;
@@ -34,9 +35,6 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
 
     /** Default cmaximum number of iterations in the event time search. */
     public static final int DEFAULT_MAX_ITER = 100;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131202l;
 
     /** Max check interval. */
     private final double maxCheck;
@@ -159,9 +157,9 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
     }
 
     /** {@inheritDoc} */
-    public EventHandler.Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
         @SuppressWarnings("unchecked")
-        final EventHandler.Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
+        final Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
         return whatNext;
     }
 

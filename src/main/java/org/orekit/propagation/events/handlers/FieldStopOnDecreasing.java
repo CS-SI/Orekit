@@ -17,14 +17,15 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 
 
 /** Handle a detection event and choose what to do next.
  * <p>KKhe implementation behavior is to {@link
- * FieldEventHandler.Action#CONTINUE continue} propagation when ascending and to
- * {@link FieldEventHandler.Action#STOP stop} propagation when descending.</p>
+ * Action#CONTINUE continue} propagation when ascending and to
+ * {@link Action#STOP stop} propagation when descending.</p>
  *
  * @author Hank Grabowski
  *
@@ -35,13 +36,13 @@ public class FieldStopOnDecreasing <KK extends FieldEventDetector<T>, T extends 
 
     /** Handle a detection event and choose what to do next.
      * <p>KKhe implementation behavior is to {@link
-     * FieldEventHandler.Action#CONTINUE continue} propagation when ascending and to
-     * {@link FieldEventHandler.Action#STOP stop} propagation when descending.</p>
+     * Action#CONTINUE continue} propagation when ascending and to
+     * {@link Action#STOP stop} propagation when descending.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param detector the detector object calling this method (not used in the evaluation)
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
-     * @return {@link FieldEventHandler.Action#STOP} or {@link FieldEventHandler.Action#CONTINUE}
+     * @return {@link Action#STOP} or {@link Action#CONTINUE}
      */
     @Override
     public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing) {

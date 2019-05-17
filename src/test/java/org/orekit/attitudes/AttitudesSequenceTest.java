@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Decimal64Field;
@@ -61,7 +62,6 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -99,14 +99,15 @@ public class AttitudesSequenceTest {
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
         final EclipseDetector ed =
-                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                        new EclipseDetector(sun, 696000000.,
+                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                 0.0,
+                                                                 FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
-                    private static final long serialVersionUID = 1L;
-                    public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
+                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
-                        return EventHandler.Action.RESET_STATE;
+                        return Action.RESET_STATE;
                     }
                 });
         final EventDetector monitored = logger.monitorDetector(ed);
@@ -199,7 +200,6 @@ public class AttitudesSequenceTest {
                                                                      FramesFactory.getEME2000(), initialDate,
                                                                      Constants.EIGEN5C_EARTH_MU);
 
-
         // Attitudes sequence definition
         EventsLogger logger = new EventsLogger();
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
@@ -207,13 +207,14 @@ public class AttitudesSequenceTest {
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
         final EclipseDetector ed =
-                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                new EclipseDetector(sun, 696000000.,
+                                    new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                         0.0,
+                                                         FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
-                    private static final long serialVersionUID = 1L;
                     int count = 0;
-                    public EventHandler.Action eventOccurred(final SpacecraftState s,
+                    public Action eventOccurred(final SpacecraftState s,
                                                              final EclipseDetector d,
                                                              final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
@@ -441,6 +442,9 @@ public class AttitudesSequenceTest {
 
     }
 
+    /**
+     * this test have been completed to test the issue 552 fix
+     */
     @Test
     public void testResetDuringTransitionForward() {
         //  Initial state definition : date, orbit
@@ -486,6 +490,7 @@ public class AttitudesSequenceTest {
 
         // check that if we restart a forward propagation from an intermediate state
         // we properly get an interpolated attitude despite we missed the event trigger
+
         final AbsoluteDate midTransition = nadirToTarget.get(0).shiftedBy(0.5 * transitionTime);
         SpacecraftState state   = propagator.propagate(midTransition.shiftedBy(-60), midTransition);
         Rotation nadirR  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
@@ -494,7 +499,27 @@ public class AttitudesSequenceTest {
         Assert.assertEquals(0.5 * reorientationAngle,
                             Rotation.distance(state.getAttitude().getRotation(), nadirR),
                             0.03 * reorientationAngle);
+        
+        // check that if we restart a forward propagation from an intermediate state
+        // we properly get the "after" attitude law despite we missed the event trigger
+        // This check have been added to the test after the issue #552 fix
+        
+        final AbsoluteDate afterTransition = midTransition.shiftedBy(transitionTime);
+        state = propagator.propagate(midTransition, afterTransition);
+        targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
 
+        Assert.assertEquals(targetR.getQ0(),
+        					state.getAttitude().getRotation().getQ0(),
+        					1.0e-16);
+        Assert.assertEquals(targetR.getQ1(),
+							state.getAttitude().getRotation().getQ1(),
+							1.0e-16);
+        Assert.assertEquals(targetR.getQ2(),
+							state.getAttitude().getRotation().getQ2(),
+							1.0e-16);
+        Assert.assertEquals(targetR.getQ3(),
+							state.getAttitude().getRotation().getQ3(),
+							1.0e-16);
     }
 
     @Test
@@ -550,6 +575,7 @@ public class AttitudesSequenceTest {
         Assert.assertEquals(0.5 * reorientationAngle,
                             Rotation.distance(state.getAttitude().getRotation(), targetR),
                             0.03 * reorientationAngle);
+        
 
     }
 

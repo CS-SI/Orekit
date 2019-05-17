@@ -59,40 +59,40 @@ public class GeoMagneticFieldTest {
 
     // test results for test values provided as part of the WMM2015 Report
     private final double[][] wmmTestValues = {
-        // Date  Alt  Lat  Lon        X        Y         Z        H        F       I      D
-        //        km  deg  deg       nT       nT        nT       nT       nT     deg    deg
-        {2015.0,   0,  80,   0,  6627.1,  -445.9,  54432.3,  6642.1, 54836.0,  83.04, -3.85},
-        {2015.0,   0,   0, 120, 39518.2,   392.9, -11252.4, 39520.2, 41090.9, -15.89,  0.57},
-        {2015.0,   0, -80, 240,  5797.3, 15761.1, -52919.1, 16793.5, 55519.8, -72.39, 69.81},
-        {2015.0, 100,  80,   0,  6314.3,  -471.6,  52269.8,  6331.9, 52652.0,  83.09, -4.27},
-        {2015.0, 100,   0, 120, 37535.6,   364.4, -10773.4, 37537.3, 39052.7, -16.01,  0.56},
-        {2015.0, 100, -80, 240,  5613.1, 14791.5, -50378.6, 15820.7, 52804.4, -72.57, 69.22},
-        {2017.5,   0,  80,   0,  6599.4,  -317.1,  54459.2,  6607.0, 54858.5,  83.08, -2.75},
-        {2017.5,   0,   0, 120, 39571.4,   222.5, -11030.1, 39572.0, 41080.5, -15.57,  0.32},
-        {2017.5,   0, -80, 240,  5873.8, 15781.4, -52687.9, 16839.1, 55313.4, -72.28, 69.58},
-        {2017.5, 100,  80,   0,  6290.5,  -348.5,  52292.7,  6300.1, 52670.9,  83.13, -3.17},
-        {2017.5, 100,   0, 120, 37585.5,   209.5, -10564.2, 37586.1, 39042.5, -15.70,  0.32},
-        {2017.5, 100, -80, 240,  5683.5, 14808.8, -50163.0, 15862.0, 52611.1, -72.45, 69.00}
+        // Date    Alt             Lat                       Lon                X        Y         Z        H        F              I                            D
+        //          m              rad                       rad               nT       nT        nT       nT       nT             rad                          rad
+        {2015.0,      0,  FastMath.toRadians(80),   FastMath.toRadians(0),  6627.1,  -445.9,  54432.3,  6642.1, 54836.0,  FastMath.toRadians(83.04), FastMath.toRadians(-3.85)},
+        {2015.0,      0,   FastMath.toRadians(0), FastMath.toRadians(120), 39518.2,   392.9, -11252.4, 39520.2, 41090.9, FastMath.toRadians(-15.89),  FastMath.toRadians(0.57)},
+        {2015.0,      0, FastMath.toRadians(-80), FastMath.toRadians(240),  5797.3, 15761.1, -52919.1, 16793.5, 55519.8, FastMath.toRadians(-72.39), FastMath.toRadians(69.81)},
+        {2015.0, 100000,  FastMath.toRadians(80),   FastMath.toRadians(0),  6314.3,  -471.6,  52269.8,  6331.9, 52652.0,  FastMath.toRadians(83.09), FastMath.toRadians(-4.27)},
+        {2015.0, 100000,   FastMath.toRadians(0), FastMath.toRadians(120), 37535.6,   364.4, -10773.4, 37537.3, 39052.7, FastMath.toRadians(-16.01),  FastMath.toRadians(0.56)},
+        {2015.0, 100000, FastMath.toRadians(-80), FastMath.toRadians(240),  5613.1, 14791.5, -50378.6, 15820.7, 52804.4, FastMath.toRadians(-72.57), FastMath.toRadians(69.22)},
+        {2017.5,      0,  FastMath.toRadians(80),   FastMath.toRadians(0),  6599.4,  -317.1,  54459.2,  6607.0, 54858.5,  FastMath.toRadians(83.08), FastMath.toRadians(-2.75)},
+        {2017.5,      0,   FastMath.toRadians(0), FastMath.toRadians(120), 39571.4,   222.5, -11030.1, 39572.0, 41080.5, FastMath.toRadians(-15.57),  FastMath.toRadians(0.32)},
+        {2017.5,      0, FastMath.toRadians(-80), FastMath.toRadians(240),  5873.8, 15781.4, -52687.9, 16839.1, 55313.4, FastMath.toRadians(-72.28), FastMath.toRadians(69.58)},
+        {2017.5, 100000,  FastMath.toRadians(80),   FastMath.toRadians(0),  6290.5,  -348.5,  52292.7,  6300.1, 52670.9, FastMath.toRadians( 83.13), FastMath.toRadians(-3.17)},
+        {2017.5, 100000,   FastMath.toRadians(0), FastMath.toRadians(120), 37585.5,   209.5, -10564.2, 37586.1, 39042.5, FastMath.toRadians(-15.70),  FastMath.toRadians(0.32)},
+        {2017.5, 100000, FastMath.toRadians(-80), FastMath.toRadians(240),  5683.5, 14808.8, -50163.0, 15862.0, 52611.1, FastMath.toRadians(-72.45), FastMath.toRadians(69.00)}
     };
 
     // test results for test values provided as part of the WMM2015 Report
     // the results for the IGRF12 model have been obtained from the NOAA
     // online calculator: http://www.ngdc.noaa.gov/geomag-web/#igrfwmm
     private final double[][] igrfTestValues = {
-        // Date  Alt  Lat  Lon        X        Y         Z        H        F       I      D
-        //        km  deg  deg       nT       nT        nT       nT       nT     deg    deg
-        {2015.0,   0,  80,   0,  6630.9,  -447.2,  54434.5,  6645.9, 54838.7,  83.039, -3.858},
-        {2015.0,   0,   0, 120, 39519.3,   388.6, -11251.7, 39521.3, 41091.7, -15.891,  0.563},
-        {2015.0,   0, -80, 240,  5808.8, 15754.8, -52945.5, 16791.5, 55544.4, -72.403, 69.761},
-        {2015.0, 100,  80,   0,  6317.2,  -472.6,  52272.0,  6334.9, 52654.5,  83.090, -4.278},
-        {2015.0, 100,   0, 120, 37536.9,   361.2, -10773.1, 37538.6, 39053.9, -16.012,  0.551},
-        {2015.0, 100, -80, 240,  5622.8, 14786.8, -50401.4, 15819.8, 52825.8, -72.574, 69.180},
-        {2017.5,   0,  80,   0,  6601.0,  -316.4,  54455.5,  6608.5, 54855.0,  83.080, -2.744},
-        {2017.5,   0,   0, 120, 39568.1,   225.0, -11041.4, 39568.7, 41080.3, -15.591,  0.325},
-        {2017.5,   0, -80, 240,  5894.7, 15768.1, -52696.8, 16833.9, 55320.2, -72.283, 69.502},
-        {2017.5, 100,  80,   0,  6291.6,  -347.2,  52289.9,  6301.2, 52668.2,  83.128, -3.158},
-        {2017.5, 100,   0, 120, 37583.0,   212.3, -10575.1, 37583.6, 39043.0, -15.715,  0.323},
-        {2017.5, 100, -80, 240,  5702.0, 14797.8, -50170.0, 15858.3, 52616.7, -72.458, 68.927}
+        // Date     Alt              Lat                       Lon             X        Y         Z        H        F                 I                           D
+        //            m              rad                       rad            nT       nT        nT       nT       nT                rad                         rad
+        {2015.0,      0,  FastMath.toRadians(80),   FastMath.toRadians(0),  6630.9,  -447.2,  54434.5,  6645.9, 54838.7,  FastMath.toRadians(83.039), FastMath.toRadians(-3.858)},
+        {2015.0,      0,   FastMath.toRadians(0), FastMath.toRadians(120), 39519.3,   388.6, -11251.7, 39521.3, 41091.7, FastMath.toRadians(-15.891),  FastMath.toRadians(0.563)},
+        {2015.0,      0, FastMath.toRadians(-80), FastMath.toRadians(240),  5808.8, 15754.8, -52945.5, 16791.5, 55544.4, FastMath.toRadians(-72.403), FastMath.toRadians(69.761)},
+        {2015.0, 100000,  FastMath.toRadians(80),   FastMath.toRadians(0),  6317.2,  -472.6,  52272.0,  6334.9, 52654.5, FastMath.toRadians(83.090),  FastMath.toRadians(-4.278)},
+        {2015.0, 100000,   FastMath.toRadians(0), FastMath.toRadians(120), 37536.9,   361.2, -10773.1, 37538.6, 39053.9, FastMath.toRadians(-16.012),  FastMath.toRadians(0.551)},
+        {2015.0, 100000, FastMath.toRadians(-80), FastMath.toRadians(240),  5622.8, 14786.8, -50401.4, 15819.8, 52825.8, FastMath.toRadians(-72.574), FastMath.toRadians(69.180)},
+        {2017.5,      0,  FastMath.toRadians(80),   FastMath.toRadians(0),  6601.0,  -316.4,  54455.5,  6608.5, 54855.0,  FastMath.toRadians(83.080), FastMath.toRadians(-2.744)},
+        {2017.5,      0,   FastMath.toRadians(0), FastMath.toRadians(120), 39568.1,   225.0, -11041.4, 39568.7, 41080.3, FastMath.toRadians(-15.591),  FastMath.toRadians(0.325)},
+        {2017.5,      0, FastMath.toRadians(-80), FastMath.toRadians(240),  5894.7, 15768.1, -52696.8, 16833.9, 55320.2, FastMath.toRadians(-72.283), FastMath.toRadians(69.502)},
+        {2017.5, 100000,  FastMath.toRadians(80),   FastMath.toRadians(0),  6291.6,  -347.2,  52289.9,  6301.2, 52668.2,  FastMath.toRadians(83.128), FastMath.toRadians(-3.158)},
+        {2017.5, 100000,   FastMath.toRadians(0), FastMath.toRadians(120), 37583.0,   212.3, -10575.1, 37583.6, 39043.0, FastMath.toRadians(-15.715),  FastMath.toRadians(0.323)},
+        {2017.5, 100000, FastMath.toRadians(-80), FastMath.toRadians(240),  5702.0, 14797.8, -50170.0, 15858.3, 52616.7, FastMath.toRadians(-72.458), FastMath.toRadians(68.927)}
     };
 
     /**
@@ -112,13 +112,13 @@ public class GeoMagneticFieldTest {
     public void testInterpolationYYY5() {
         double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2005);
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
-        GeoMagneticElements e = field.calculateField(1.2, 0.7, -2.5);
-        Assert.assertEquals(-6.0032, e.getDeclination(), 1.0e-4);
+        GeoMagneticElements e = field.calculateField(FastMath.toRadians(1.2), FastMath.toRadians(0.7), -2500);
+        Assert.assertEquals(FastMath.toRadians(-6.0032), e.getDeclination(), 1.0e-4);
 
         decimalYear = GeoMagneticField.getDecimalYear(2, 1, 2005);
         field = GeoMagneticFieldFactory.getIGRF(decimalYear);
-        e = field.calculateField(1.2, 0.7, -2.5);
-        Assert.assertEquals(-6.0029, e.getDeclination(), 1.0e-4);
+        e = field.calculateField(FastMath.toRadians(1.2), FastMath.toRadians(0.7), -2500);
+        Assert.assertEquals(FastMath.toRadians(-6.0029), e.getDeclination(), 1.0e-4);
     }
 
     @Test
@@ -130,10 +130,10 @@ public class GeoMagneticFieldTest {
         Assert.assertNotEquals(field1.getEpoch(), field2.getEpoch());
 
         GeoMagneticElements e1 = field1.calculateField(0, 0, 0);
-        Assert.assertEquals(-6.1068, e1.getDeclination(), 1.0e-4);
+        Assert.assertEquals(FastMath.toRadians(-6.1068), e1.getDeclination(), 1.0e-4);
 
         GeoMagneticElements e2 = field2.calculateField(0, 0, 0);
-        Assert.assertEquals(-6.1064, e2.getDeclination(), 1.0e-4);
+        Assert.assertEquals(FastMath.toRadians(-6.1064), e2.getDeclination(), 1.0e-4);
     }
 
     @Test
@@ -142,7 +142,7 @@ public class GeoMagneticFieldTest {
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
 
         GeoMagneticElements e = field.calculateField(0, 0, 0);
-        Assert.assertEquals(-4.7446, e.getDeclination(), 1.0e-4);
+        Assert.assertEquals(FastMath.toRadians(-4.7446), e.getDeclination(), 1.0e-4);
     }
 
     @Test
@@ -150,8 +150,8 @@ public class GeoMagneticFieldTest {
         double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2020);
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
 
-        GeoMagneticElements eClose = field.calculateField(89.999999, 0, 0);
-        GeoMagneticElements ePole  = field.calculateField(90.0,      0, 0);
+        GeoMagneticElements eClose = field.calculateField(FastMath.toRadians(89.999999), 0, 0);
+        GeoMagneticElements ePole  = field.calculateField(FastMath.toRadians(90.0),      0, 0);
         Assert.assertEquals("" + (eClose.getDeclination()-         ePole.getDeclination()),         eClose.getDeclination(),         ePole.getDeclination(),         7.0e-7);
         Assert.assertEquals("" + (eClose.getInclination()-         ePole.getInclination()),         eClose.getInclination(),         ePole.getInclination(),         3.0e-7);
         Assert.assertEquals("" + (eClose.getTotalIntensity()-      ePole.getTotalIntensity()),      eClose.getTotalIntensity(),      ePole.getTotalIntensity(),      2.0e-4);
@@ -207,11 +207,11 @@ public class GeoMagneticFieldTest {
         // the results have been obtained from the NOAA online calculator:
         // http://www.ngdc.noaa.gov/geomag-web/#igrfwmm
         final double[][] testValues = {
-            // Date  Alt  Lat  Lon        X        Y         Z        H        F       I      D
-            //        km  deg  deg       nT       nT        nT       nT       nT     deg    deg
-            {2015.0, 100,  80,   0,  6314.2,  -471.6,  52269.1,  6331.8, 52651.2,  83.093, -4.271},
-            {2015.0, 100,   0, 120, 37534.4,   364.3, -10773.1, 37536.2, 39051.6, -16.013,  0.556},
-            {2015.0, 100, -80, 240,  5613.2, 14791.9, -50379.6, 15821.1, 52805.4, -72.565, 69.219}
+            // Date     Alt              Lat                       Lon             X        Y         Z        H        F                  I                            D
+            //            m              rad                       rad            nT       nT        nT       nT       nT                 rad                         rad
+            {2015.0, 100000,  FastMath.toRadians(80),   FastMath.toRadians(0),  6314.2,  -471.6,  52269.1,  6331.8, 52651.2,  FastMath.toRadians(83.093), FastMath.toRadians(-4.271)},
+            {2015.0, 100000,   FastMath.toRadians(0), FastMath.toRadians(120), 37534.4,   364.3, -10773.1, 37536.2, 39051.6, FastMath.toRadians(-16.013),  FastMath.toRadians(0.556)},
+            {2015.0, 100000, FastMath.toRadians(-80), FastMath.toRadians(240),  5613.2, 14791.9, -50379.6, 15821.1, 52805.4, FastMath.toRadians(-72.565), FastMath.toRadians(69.219)}
         };
 
         final Geoid geoid = new Geoid(potential, WGS84);
@@ -221,12 +221,12 @@ public class GeoMagneticFieldTest {
         for (int i = 0; i < testValues.length; i++) {
             final AbsoluteDate date = new AbsoluteDate(2015, 1, 1, TimeScalesFactory.getUTC());
             final GeoMagneticField model = GeoMagneticFieldFactory.getWMM(testValues[i][0]);
-            final double undulation = geoid.getUndulation(FastMath.toRadians(testValues[i][2]),
-                                                          FastMath.toRadians(testValues[i][3]),
+            final double undulation = geoid.getUndulation(testValues[i][2],
+                                                          testValues[i][3],
                                                           date);
             final GeoMagneticElements result = model.calculateField(testValues[i][2],
                                                                     testValues[i][3],
-                                                                    testValues[i][1] + undulation/1000d);
+                                                                    testValues[i][1] + undulation);
 
             // X
             Assert.assertEquals(testValues[i][4], result.getFieldVector().getX(), eps);
@@ -380,14 +380,15 @@ public class GeoMagneticFieldTest {
             final GeoMagneticField field = GeoMagneticFieldFactory.getField(type, year);
 
             double height = Double.valueOf(heightStr.substring(1));
-            if (heightStr.startsWith("M")) {
-                // convert from m to km
-                height /= 1000d;
+            if (heightStr.startsWith("K")) {
+                // convert from km to m
+                height *= 1000d;
             } else if (heightStr.startsWith("F")) {
-                // convert from feet to km
-                height *= 3.048e-4;
+                // convert from feet to m
+                height *= 0.3048;
             }
 
+            // Calculate the magnetic field with SI base unit inputs
             final GeoMagneticElements ge = field.calculateField(lat, lon, height);
             final String validateLine = outReader.readLine();
             // geocentric altitude is not yet supported, ignore by now
@@ -428,17 +429,17 @@ public class GeoMagneticFieldTest {
             if (d < 0) {
                 deg = -deg;
             }
-            return deg;
+            return FastMath.toRadians(deg);
         } else {
-            return Double.valueOf(str);
+            return FastMath.toRadians(Double.valueOf(str));
         }
     }
 
-    private double getDegree(final String degree, final String minute) {
+    private double getRadians(final String degree, final String minute) {
         double result = Double.valueOf(degree.substring(0, degree.length() - 1));
         final double min = Double.valueOf(minute.substring(0, minute.length() - 1)) / 60d;
         result += (result < 0) ? -min : min;
-        return result;
+        return FastMath.toRadians(result);
     }
 
     @SuppressWarnings("unused")
@@ -454,8 +455,8 @@ public class GeoMagneticFieldTest {
         final String latStr = st.nextToken();
         final String lonStr = st.nextToken();
 
-        final double dec = getDegree(st.nextToken(), st.nextToken());
-        final double inc = getDegree(st.nextToken(), st.nextToken());
+        final double dec = getRadians(st.nextToken(), st.nextToken());
+        final double inc = getRadians(st.nextToken(), st.nextToken());
 
         final double h = Double.valueOf(st.nextToken());
         final double x = Double.valueOf(st.nextToken());

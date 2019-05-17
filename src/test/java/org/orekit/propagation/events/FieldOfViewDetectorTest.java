@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -45,6 +46,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -224,6 +226,83 @@ public class FieldOfViewDetectorTest {
         //verify
         // check we have an entry and an exit event.
         Assert.assertEquals(2, actual.size());
+    }
+
+    @Test
+    public void testRadius() {
+
+        // Definition of initial conditions with position and velocity
+        //------------------------------------------------------------
+
+        // Extrapolator definition
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, earthCenterAttitudeLaw);
+
+        // Event definition : square field of view, along X axis, aperture 68°
+        final double halfAperture = FastMath.toRadians(0.5 * 68.0);
+        final double maxCheck  = 60.;
+        final double threshold = 1.0e-10;
+        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final Vector3D center = Vector3D.PLUS_I;
+        final Vector3D axis1  = Vector3D.PLUS_K;
+        final Vector3D axis2  = Vector3D.PLUS_J;
+        final double aperture1 = halfAperture;
+        final double aperture2 = halfAperture;
+        final FieldOfView fov  = new FieldOfView(center, axis1, aperture1, axis2, aperture2, 0.0);
+
+        final EventDetector sunCenter =
+                        new FieldOfViewDetector(sun, fov).
+                        withMaxCheck(maxCheck).
+                        withThreshold(threshold).
+                        withHandler(new ContinueOnEvent<>());
+
+        final EventDetector sunFull =
+                        new FieldOfViewDetector(sun, Constants.SUN_RADIUS,
+                                                VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV,
+                                                fov).
+                        withMaxCheck(maxCheck).
+                        withThreshold(threshold).
+                        withHandler(new ContinueOnEvent<>());
+
+        final EventDetector sunPartial =
+                        new FieldOfViewDetector(sun, Constants.SUN_RADIUS,
+                                                VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV,
+                                                fov).
+                        withMaxCheck(maxCheck).
+                        withThreshold(threshold).
+                        withHandler(new ContinueOnEvent<>());
+
+        Assert.assertSame(sun, ((FieldOfViewDetector) sunCenter).getPVTarget());
+        Assert.assertEquals(0, ((FieldOfViewDetector) sunCenter).getFieldOfView().getMargin(), 1.0e-15);
+        double eta = FastMath.acos(FastMath.sin(aperture1) * FastMath.sin(aperture2));
+        double theoreticalArea = MathUtils.TWO_PI - 4 * eta;
+        Assert.assertEquals(theoreticalArea,
+                            ((FieldOfViewDetector) sunCenter).getFieldOfView().getZone().getSize(),
+                            1.0e-15);
+
+        // Add event to be detected
+        EventsLogger logger = new EventsLogger();
+        propagator.addEventDetector(logger.monitorDetector(sunCenter));
+        propagator.addEventDetector(logger.monitorDetector(sunFull));
+        propagator.addEventDetector(logger.monitorDetector(sunPartial));
+
+        // Extrapolate from the initial to the final date
+        propagator.propagate(initDate.shiftedBy(6000.));
+
+        List<LoggedEvent>  events = logger.getLoggedEvents();
+        Assert.assertEquals(6, events.size());
+        Assert.assertSame(sunPartial, events.get(0).getEventDetector());
+        Assert.assertEquals(460.884444, events.get(0).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assert.assertSame(sunCenter, events.get(1).getEventDetector());
+        Assert.assertEquals(488.299210, events.get(1).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assert.assertSame(sunFull, events.get(2).getEventDetector());
+        Assert.assertEquals(517.527656, events.get(2).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assert.assertSame(sunFull, events.get(3).getEventDetector());
+        Assert.assertEquals(1749.292351, events.get(3).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assert.assertSame(sunCenter, events.get(4).getEventDetector());
+        Assert.assertEquals(1798.478948, events.get(4).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assert.assertSame(sunPartial, events.get(5).getEventDetector());
+        Assert.assertEquals(1845.966183, events.get(5).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+
     }
 
     @Before

@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
-import org.orekit.models.earth.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -130,7 +130,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.4e-9, 2.8e-8, 7.6e-7, 7.5e-5, 2.6e-4, 0.5e-2);
+                                    3.1e-8, 9.9e-8, 1.8e-6, 7.5e-5, 2.6e-4, 0.5e-2);
     }
 
     /**

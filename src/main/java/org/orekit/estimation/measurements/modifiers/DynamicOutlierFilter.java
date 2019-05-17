@@ -51,14 +51,14 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
      * @return The current value of sigma
      */
     public double[] getSigma() {
-        return sigma;
+        return sigma == null ? null : sigma.clone();
     }
 
     /** Set the current value of sigma.
      * @param sigma The value of sigma to set
      */
     public void setSigma(final double[] sigma) {
-        this.sigma = sigma;
+        this.sigma = sigma == null ? null : sigma.clone();
     }
 
     /** {@inheritDoc} */

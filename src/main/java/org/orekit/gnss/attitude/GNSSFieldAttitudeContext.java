@@ -48,8 +48,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * to {@link GNSSAttitudeProvider#getAttitude(org.orekit.utils.FieldPVCoordinatesProvider,
  * org.orekit.time.FieldAbsoluteDate, org.orekit.frames.Frame)) getAttitude}. It allows
  * the various {@link GNSSAttitudeProvider} implementations to be immutable as they
- * do not store any state, and hence to be thread-safe, reentrant and naturally
- * serializable (so for example ephemeris built from them are also serializable).
+ * do not store any state, and hence to be thread-safe and reentrant.
  * </p>
  *
  * @author Luc Maisonobe

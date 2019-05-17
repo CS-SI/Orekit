@@ -28,17 +28,13 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
-import org.orekit.models.earth.DiscreteTroposphericModel;
-import org.orekit.models.earth.TroposphericModel;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 /** Class modifying theoretical range-rate measurements with tropospheric delay.
  * The effect of tropospheric correction on the range-rate is directly computed
@@ -199,28 +195,6 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
         return zero;
     }
 
-    /** Compute the Jacobian of the delay term wrt state.
-    *
-    * @param station station
-    * @param refstate spacecraft state
-    * @return Jacobian of the delay wrt state
-    */
-    private double[][] rangeRateErrorJacobianState(final GroundStation station,
-                                                   final SpacecraftState refstate) {
-        final double[][] finiteDifferencesJacobian =
-                        Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) {
-                                // evaluate target's elevation with a changed target position
-                                final double value = rangeRateErrorTroposphericModel(station, state);
-
-                                return new double[] {value };
-                            }
-                        }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
-                        PositionAngle.TRUE, 15.0, 3).value(refstate);
-
-        return finiteDifferencesJacobian;
-    }
-
     /** Compute the Jacobian of the delay term wrt state using
     * automatic differentiation.
     *
@@ -307,14 +281,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
         final DerivativeStructure dsDelay = rangeRateErrorTroposphericModel(station, dsState, dsParameters);
         final double[] derivatives = dsDelay.getAllDerivatives();
 
-        double[][] djac = new double[1][6];
-        // This implementation will disappear when the implementations of TroposphericModel
-        // will directly be implementations of DiscreteTroposphericModel
-        if (tropoModel instanceof TroposphericModel) {
-            djac = rangeRateErrorJacobianState(station, state);
-        } else {
-            djac = rangeRateErrorJacobianState(derivatives, converter.getFreeStateParameters());
-        }
+        final double[][] djac = rangeRateErrorJacobianState(derivatives, converter.getFreeStateParameters());
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {

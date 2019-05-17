@@ -661,4 +661,14 @@ public class SpacecraftState
 
     }
 
+    @Override
+    public String toString() {
+        return "SpacecraftState{" +
+                "orbit=" + orbit +
+                ", attitude=" + attitude +
+                ", mass=" + mass +
+                ", additional=" + additional +
+                '}';
+    }
+
 }

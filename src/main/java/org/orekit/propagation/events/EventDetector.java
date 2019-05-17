@@ -16,10 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
-
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
@@ -45,7 +43,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface EventDetector extends Serializable {
+public interface EventDetector {
 
     /** Initialize event handler at the start of a propagation.
      * <p>

@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -137,11 +138,6 @@ public class ElevationDetectorTest {
 
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
-        }
-
-        @Deprecated
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target) {
         }
 
     }

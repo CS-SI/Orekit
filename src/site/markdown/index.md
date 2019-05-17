@@ -77,9 +77,7 @@
       * gravity models including time-dependent like trends and pulsations
         (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
         EGM and GRGS gravity field files formats, even compressed)
-      * atmospheric drag (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000,
-        Harris-Priester and simple exponential models),
-        and Marshall solar Activity Future Estimation, optionally with lift component
+      * atmospheric drag
       * third body attraction (with data for Sun, Moon and all solar systems planets)
       * radiation pressure with eclipses
       * solid tides, with or without solid pole tide
@@ -137,7 +135,7 @@
       * latitude, longitude extremum
       * elevation extremum
       * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
-      * moving target detection in spacecraft sensor Field Of View (any shape, with special case for circular)
+      * moving target detection (with optional radius) in spacecraft sensor Field Of View (any shape, with special case for circular)
       * spacecraft detection in ground based Field Of View (any shape)
       * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal
@@ -203,7 +201,7 @@
       * position
       * inter-satellites range (one way and two way)
       * GNSS code
-      * GNSS phase
+      * GNSS phase with integer ambiguity resolution (not complete yet and experimental)
 
     * possibility to add custom measurements
     * several predefined modifiers
@@ -214,6 +212,7 @@
       * biases
       * delays
       * Antenna Phase Center
+      * Shapiro relativistic effect
 
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
@@ -241,6 +240,7 @@
 
   * Earth models
   
+    * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
     * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
