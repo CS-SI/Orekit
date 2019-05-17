@@ -24,6 +24,10 @@
       <action dev="petrus" type="add" issue="518">
         Changing AbstractGNSSAttitudeProvider from public to package-private.
       </action>
+      <action dev="romaric" type="fix" issue="551">
+        Fix the bug of attitude transition with analytical propagator 
+        by refreshing the attitude after the events triggering
+      </action>
       <action dev="romaric" type="fix" issue="552">
         Fix the bug of attitude transition if a reset occurs during the transition
         by adding margins to the reset of TimeSpanMap to keep the one corresponding to the "after" attitude law.
