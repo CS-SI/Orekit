@@ -166,7 +166,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 state = acceptStep(interpolator, target, epsilon);
                 
                 // Update the potential changes in the spacecraft state due to the events
-                // mainly the potential attitude transition
+                // especially the potential attitude transition
                 state = updateAdditionalStates(basicPropagate(state.getDate()));
 
             } while (!isLastStep);
