@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="petrus" type="add" issue="518">
+        Changing AbstractGNSSAttitudeProvider from public to package-private.
+      </action>
       <action dev="romaric" type="fix" issue="552">
         Fix the bug of attitude transition if a reset occurs during the transition
         by adding margins to the reset of TimeSpanMap to keep the one corresponding to the "after" attitude law.
