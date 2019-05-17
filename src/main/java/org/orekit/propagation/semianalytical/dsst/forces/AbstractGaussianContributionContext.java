@@ -27,7 +27,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class AbstractGaussianContributionContext extends ForceModelContext {
+class AbstractGaussianContributionContext extends ForceModelContext {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
@@ -69,7 +69,7 @@ public class AbstractGaussianContributionContext extends ForceModelContext {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters parameters values of the force model parameters
      */
-    public AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
+    AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         super(auxiliaryElements);
 

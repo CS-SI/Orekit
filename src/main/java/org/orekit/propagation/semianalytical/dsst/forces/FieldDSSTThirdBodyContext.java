@@ -36,7 +36,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
+class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
 
     /** Max power for summation. */
     private static final int    MAX_POWER = 22;
@@ -131,7 +131,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      * @param thirdBody body the 3rd body to consider
      * @param parameters values of the force model parameters
      */
-    public FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> auxiliaryElements,
+    FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                      final CelestialBody thirdBody,
                                      final T[] parameters) {
 

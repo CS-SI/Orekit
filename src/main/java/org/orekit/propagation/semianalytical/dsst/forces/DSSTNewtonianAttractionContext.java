@@ -26,7 +26,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTNewtonianAttractionContext extends ForceModelContext {
+class DSSTNewtonianAttractionContext extends ForceModelContext {
 
     /** Standard gravitational parameter μ for the body in m³/s². */
     private final double gm;
@@ -37,7 +37,7 @@ public class DSSTNewtonianAttractionContext extends ForceModelContext {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters values of the force model parameters
      */
-    public DSSTNewtonianAttractionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
+    DSSTNewtonianAttractionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         super(auxiliaryElements);
         this.gm = parameters[0];

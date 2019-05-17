@@ -27,7 +27,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
+class FieldDSSTNewtonianAttractionContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
 
     /** Standard gravitational parameter μ for the body in m³/s². */
     private final T gm;

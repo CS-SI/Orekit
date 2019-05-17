@@ -23,7 +23,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
+abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
 
     /** Common parameters used by all DSST forces. */
     private final FieldAuxiliaryElements<T> auxiliaryElements;

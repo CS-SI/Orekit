@@ -22,7 +22,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public abstract class ForceModelContext {
+abstract class ForceModelContext {
 
     /** Common parameters used by all DSST forces. */
     private final AuxiliaryElements auxiliaryElements;

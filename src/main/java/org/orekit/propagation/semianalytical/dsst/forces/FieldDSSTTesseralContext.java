@@ -37,7 +37,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Retrograde factor I.
      *  <p>
@@ -130,7 +130,7 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      * @param bodyPeriod central body rotation period (seconds)
      * @param parameters values of the force model parameters
      */
-    public FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> auxiliaryElements,
+    FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                     final Frame centralBodyFrame,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final int maxFrequencyShortPeriodics,

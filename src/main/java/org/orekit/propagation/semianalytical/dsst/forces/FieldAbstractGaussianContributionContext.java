@@ -28,7 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
@@ -70,7 +70,7 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters parameters values of the force model parameters
      */
-    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
+    FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
 
         super(auxiliaryElements);
 

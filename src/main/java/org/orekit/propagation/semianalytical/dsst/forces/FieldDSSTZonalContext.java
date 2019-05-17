@@ -30,7 +30,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
     // Common factors for potential computation
     /** A = sqrt(μ * a). */
@@ -91,7 +91,7 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
      * @param provider provider for spherical harmonics
      * @param parameters values of the force model parameters
      */
-    public FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
+    FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                  final UnnormalizedSphericalHarmonicsProvider provider,
                                  final T[] parameters) {
 
