@@ -56,6 +56,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.ElevationDetector;
@@ -577,6 +578,76 @@ public class AttitudesSequenceTest {
                             0.03 * reorientationAngle);
         
 
+    }
+    
+    /**
+     * Test for the issue 551 fix
+     */
+    @Test 
+    public void testAnalyticalPropagatorTransition() {
+    	// Define initial state
+        final AbsoluteDate initialDate = new AbsoluteDate(2017, 03, 27, 0, 0, 00.000, TimeScalesFactory.getUTC());
+        final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);
+        final Vector3D velocity  = new Vector3D(1151.00321021175, -2851.14864755189, -2.02133248357321);
+        final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
+                                                      FramesFactory.getGCRF(), initialDate,
+                                                      Constants.WGS84_EARTH_MU);    
+        
+        // Define attitude laws
+        final AttitudeProvider before = new InertialProvider(new Rotation(0, 0, 0, 1, false));
+        final AttitudeProvider current = new InertialProvider(Rotation.IDENTITY);
+        final AttitudeProvider after = new InertialProvider(new Rotation(0, 0, 0, -1, false));
+
+        // Define attitude sequence
+        final AbsoluteDate forwardSwitchDate = initialDate.shiftedBy(600);
+        final AbsoluteDate backwardSwitchDate = initialDate.shiftedBy(-600);
+        final DateDetector forwardSwitchDetector = new DateDetector(forwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
+        final DateDetector backwardSwitchDetector = new DateDetector(backwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
+        
+        // Initialize the attitude sequence
+        final AttitudesSequence attitudeSequence = new AttitudesSequence();
+        attitudeSequence.resetActiveProvider(current);
+        attitudeSequence.addSwitchingCondition(before, current, backwardSwitchDetector, true, true, 60, AngularDerivativesFilter.USE_RR, null);
+        attitudeSequence.addSwitchingCondition(current, after, forwardSwitchDetector, true, true, 60, AngularDerivativesFilter.USE_RR, null);
+        
+        // Initialize analytical propagator
+        Propagator propagator = new KeplerianPropagator(initialOrbit);
+        propagator.setAttitudeProvider(attitudeSequence);
+        attitudeSequence.registerSwitchEvents(propagator);
+        
+        SpacecraftState stateAfter = propagator.propagate(initialDate, initialDate.shiftedBy(1200));
+        SpacecraftState stateBefore = propagator.propagate(initialDate, initialDate.shiftedBy(-1200));
+        
+        // Check that the dates are correct
+        Assert.assertEquals(1200, stateAfter.getDate().durationFrom(initialDate), 1.0E-3);
+        Assert.assertEquals(-1200, stateBefore.getDate().durationFrom(initialDate), 1.0E-3);
+        
+        // Check that the attitudes are correct
+        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ0(),
+        		stateBefore.getAttitude().getRotation().getQ0(),
+        		1.0E-16);
+        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ1(),
+        		stateBefore.getAttitude().getRotation().getQ1(),
+        		1.0E-16);
+        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ2(),
+        		stateBefore.getAttitude().getRotation().getQ2(),
+        		1.0E-16);
+        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ3(),
+        		stateBefore.getAttitude().getRotation().getQ3(),
+        		1.0E-16);
+
+        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ0(),
+        		stateAfter.getAttitude().getRotation().getQ0(),
+        		1.0E-16);
+        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ1(),
+        		stateAfter.getAttitude().getRotation().getQ1(),
+        		1.0E-16);
+        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ2(),
+        		stateAfter.getAttitude().getRotation().getQ2(),
+        		1.0E-16);
+        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
+        		stateAfter.getAttitude().getRotation().getQ3(),
+        		1.0E-16);
     }
 
     private static class Handler implements AttitudesSequence.SwitchHandler {
