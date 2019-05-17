@@ -17,8 +17,6 @@
 package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +55,6 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -65,12 +62,9 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianContribution;
-import org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianContributionContext;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.forces.FieldAbstractGaussianContributionContext;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -235,116 +229,6 @@ public class FieldDSSTSolarRadiationPressureTest {
         Assert.assertEquals(-3.0648619902684686E-9,  y[3].getReal(), 0.9e-21);
         Assert.assertEquals(-4.9023731169635814E-9,  y[4].getReal(), 1.1e-19);
         Assert.assertEquals(-2.385357916413363E-9,   y[5].getReal(), 1.3e-20);
-    }
-
-    @Test
-    public void testGetLLimits() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-
-        // Access to private methods, both double and RealFieldElement versions
-        Method limitsDS;
-        Method limits;
-        
-        limitsDS = AbstractGaussianContribution.class.getDeclaredMethod("getLLimits",
-                                                                       FieldSpacecraftState.class,
-                                                                       FieldAbstractGaussianContributionContext.class);
-        limits   = AbstractGaussianContribution.class.getDeclaredMethod("getLLimits",
-                                                                        SpacecraftState.class,
-                                                                        AbstractGaussianContributionContext.class);
-        
-        limitsDS.setAccessible(true);
-        limits.setAccessible(true);
-
-        // Spacecraft State
-        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
-        Orbit initialOrbit = new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                                provider.getMu());
-        final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initialOrbit);
-        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
-        
-        final SpacecraftState state = new SpacecraftState(orbit);        
-        
-        // Force Model
-        final DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            provider.getMu());
-        
-        // Converter for derivatives
-        final DSSTDSConverter converter = new DSSTDSConverter(state, InertialProvider.EME2000_ALIGNED);
-        
-        // Field parameters
-        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(srp);
-        final DerivativeStructure[] parameters = converter.getParameters(dsState, srp);
-        final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
-        final FieldAbstractGaussianContributionContext<DerivativeStructure> context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
-        
-        // Compute values using getLLimits method
-        DerivativeStructure[] methodLimits = (DerivativeStructure[]) limitsDS.invoke(srp, dsState, context);
-        final double[] limitsInf           = methodLimits[0].getAllDerivatives();
-        final double[] limitsSup           = methodLimits[1].getAllDerivatives();
-          
-        // Compute reference values using finite differences
-        double[][] refLimits = new double[2][6];
-        double dP = 0.001;
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
-        for (int i = 0; i < 6; ++i) {
-            
-            SpacecraftState stateM4 = shiftState(state, orbitType, -4 * steps[i], i);
-            AuxiliaryElements auxiliaryElementsM4         = new AuxiliaryElements(stateM4.getOrbit(), 1);
-            AbstractGaussianContributionContext contextM4 = new AbstractGaussianContributionContext(auxiliaryElementsM4, srp.getParameters());
-            double[] M4h = (double[]) limits.invoke(srp, stateM4, contextM4);
-            
-            SpacecraftState stateM3 = shiftState(state, orbitType, -3 * steps[i], i);
-            AuxiliaryElements auxiliaryElementsM3         = new AuxiliaryElements(stateM3.getOrbit(), 1);
-            AbstractGaussianContributionContext contextM3 = new AbstractGaussianContributionContext(auxiliaryElementsM3, srp.getParameters());
-            double[] M3h = (double[]) limits.invoke(srp, stateM3, contextM3);
-            
-            SpacecraftState stateM2 = shiftState(state, orbitType, -2 * steps[i], i);
-            AuxiliaryElements auxiliaryElementsM2         = new AuxiliaryElements(stateM2.getOrbit(), 1);
-            AbstractGaussianContributionContext contextM2 = new AbstractGaussianContributionContext(auxiliaryElementsM2, srp.getParameters());
-            double[] M2h = (double[]) limits.invoke(srp, stateM2, contextM2);
-            
-            SpacecraftState stateM1 = shiftState(state, orbitType, -1 * steps[i], i);
-            AuxiliaryElements auxiliaryElementsM1         = new AuxiliaryElements(stateM1.getOrbit(), 1);
-            AbstractGaussianContributionContext contextM1 = new AbstractGaussianContributionContext(auxiliaryElementsM1, srp.getParameters());
-            double[] M1h = (double[]) limits.invoke(srp, stateM1, contextM1);
-            
-            SpacecraftState stateP1 = shiftState(state, orbitType,  1 * steps[i], i);
-            AuxiliaryElements auxiliaryElementsP1         = new AuxiliaryElements(stateP1.getOrbit(), 1);
-            AbstractGaussianContributionContext contextP1 = new AbstractGaussianContributionContext(auxiliaryElementsP1, srp.getParameters());
-            double[] P1h = (double[]) limits.invoke(srp, stateP1, contextP1);
-            
-            SpacecraftState stateP2 = shiftState(state, orbitType,  2 * steps[i], i);
-            AuxiliaryElements auxiliaryElementsP2         = new AuxiliaryElements(stateP2.getOrbit(), 1);
-            AbstractGaussianContributionContext contextP2 = new AbstractGaussianContributionContext(auxiliaryElementsP2, srp.getParameters());
-            double[] P2h = (double[]) limits.invoke(srp, stateP2, contextP2);
-            
-            SpacecraftState stateP3 = shiftState(state, orbitType,  3 * steps[i], i);
-            AuxiliaryElements auxiliaryElementsP3         = new AuxiliaryElements(stateP3.getOrbit(), 1);
-            AbstractGaussianContributionContext contextP3 = new AbstractGaussianContributionContext(auxiliaryElementsP3, srp.getParameters());
-            double[] P3h = (double[]) limits.invoke(srp, stateP3, contextP3);
-            
-            SpacecraftState stateP4 = shiftState(state, orbitType,  4 * steps[i], i);
-            AuxiliaryElements auxiliaryElementsP4         = new AuxiliaryElements(stateP4.getOrbit(), 1);
-            AbstractGaussianContributionContext contextP4 = new AbstractGaussianContributionContext(auxiliaryElementsP4, srp.getParameters());
-            double[] P4h = (double[]) limits.invoke(srp, stateP4, contextP4);
-            
-            fillJacobianColumn(refLimits, i, orbitType, steps[i],
-                               M4h, M3h, M2h, M1h, P1h, P2h, P3h, P4h);
-            
-        }
-
-            for (int j = 0; j < 6; ++j) {
-                // We don't want to divide by 0
-                if(refLimits[0][j] != 0 && refLimits[1][j] != 0) {
-                    double errorInf = FastMath.abs((refLimits[0][j] - limitsInf[j + 1]) / refLimits[0][j]);
-                    double errorSup = FastMath.abs((refLimits[1][j] - limitsSup[j + 1]) / refLimits[1][j]);
-                    Assert.assertEquals(0, errorInf, 6.0e-2);
-                    Assert.assertEquals(0, errorSup, 6.0e-2);
-                }
-            }
-
     }
     
     @Test
