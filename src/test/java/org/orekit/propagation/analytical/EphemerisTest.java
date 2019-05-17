@@ -34,7 +34,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.CelestialBodyPointed;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
@@ -178,10 +177,10 @@ public class EphemerisTest {
         ephemeris.setAttitudeProvider(attitudeSequence);
         attitudeSequence.registerSwitchEvents(ephemeris);
 
-        // Propagate
+        // Propagate with a step during the transition
         AbsoluteDate endDate = initialDate.shiftedBy(2*86400.0);
         SpacecraftState stateBefore = ephemeris.getInitialState();
-        SpacecraftState stateTransition = ephemeris.propagate(switchDate.shiftedBy(transitionTime/2));
+        ephemeris.propagate(switchDate.shiftedBy(transitionTime/2));
         SpacecraftState stateAfter = ephemeris.propagate(endDate);
         
         
