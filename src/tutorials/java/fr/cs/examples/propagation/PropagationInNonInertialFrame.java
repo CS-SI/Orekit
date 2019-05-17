@@ -41,12 +41,15 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-// The goal of this tutorial is to introduce users to orbital integration using
-// SingleBodyAttraction. This class should replace all the different kinds of 
-// point mass interactions (ThirdBodyAttraction, NewtonianAttraction) in the future. 
-// Using SingleBodyAttraction and InertiaForces will enable a richer modelization, 
-// allowing the user to compute the motion in a reference frame that is not necessarily
-// centered on the main attractor and does not necessarily possess inertial axis. 
+/** The goal of this tutorial is to introduce users to orbital integration using SingleBodyAttraction. <br>
+* This class should replace all the different kinds of 
+* point mass interactions (ThirdBodyAttraction, NewtonianAttraction) in the future. <br> 
+* Using SingleBodyAttraction and InertiaForces will enable a richer modelling, 
+* allowing the user to compute the motion in a reference frame that is not necessarily
+* centered on the main attractor and does not necessarily possess inertial axis.
+* @since 10.0 
+* @author Laurene Beauvalet
+*/
 public class PropagationInNonInertialFrame {
     public static void main(String[] args) throws OrekitException {
         
@@ -100,7 +103,6 @@ public class PropagationInNonInertialFrame {
         // We transform the coordinates from its initial frame to the integration frame. 
         // Here this step is superfluous since the coordinates are already given in the L2 frame, 
         // but we keep it as indication for the user.  
-     
         final AbsolutePVCoordinates initialAbsPV =
             new AbsolutePVCoordinates(integrationFrame, initialDate,
                                       initialConditions);

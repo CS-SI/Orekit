@@ -210,7 +210,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      */
     private static void ensureIdenticalFrames(final AbsolutePVCoordinates absPv1, final AbsolutePVCoordinates absPv2)
         throws OrekitIllegalArgumentException {
-        if (!absPv1.frame.equals(absPv2.frame.isPseudoInertial())) {
+        if (!absPv1.frame.equals(absPv2.frame)) {
             throw new OrekitIllegalArgumentException(OrekitMessages.INCOMPATIBLE_FRAMES,
                                                      absPv1.frame.getName(), absPv2.frame.getName());
         }
