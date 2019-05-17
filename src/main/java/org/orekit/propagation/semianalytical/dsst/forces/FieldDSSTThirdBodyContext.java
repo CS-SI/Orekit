@@ -152,7 +152,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
 
         // Keplerian period
         final T a = auxiliaryElements.getSma();
-        period = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
+        period = (a.getReal() < 0) ? zero.add(Double.POSITIVE_INFINITY) : a.multiply(2.0 * FastMath.PI).multiply(a.divide(mu).sqrt());
 
         // Distance from center of mass of the central body to the 3rd body
         final FieldVector3D<T> bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();

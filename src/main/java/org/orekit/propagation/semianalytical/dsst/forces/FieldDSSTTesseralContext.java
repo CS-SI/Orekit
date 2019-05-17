@@ -154,7 +154,7 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         // Keplerian period
         final T a = auxiliaryElements.getSma();
-        period = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
+        period = (a.getReal() < 0) ? zero.add(Double.POSITIVE_INFINITY) : a.multiply(2.0 * FastMath.PI).multiply(a.divide(mu).sqrt());
 
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 
