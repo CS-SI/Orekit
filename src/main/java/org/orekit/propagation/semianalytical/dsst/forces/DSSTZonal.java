@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -68,6 +69,7 @@ import org.orekit.utils.TimeSpanMap;
  *
  *   @author Romain Di Costanzo
  *   @author Pascal Parraud
+ *   @author Bryan Cazabonne (field translation)
  */
 public class DSSTZonal implements DSSTForceModel {
 
@@ -102,6 +104,9 @@ public class DSSTZonal implements DSSTForceModel {
      * </p>
      */
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
+    /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
+    private final TreeMap<NSKey, Double> Vns;
 
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -161,6 +166,9 @@ public class DSSTZonal implements DSSTForceModel {
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
                                                 0.0, Double.POSITIVE_INFINITY);
+
+        // Vns coefficients
+        this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
@@ -1769,7 +1777,7 @@ public class DSSTZonal implements DSSTForceModel {
             // Qns coefficients
             final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), nMax, nMax);
 
-            this.lnsCoef = new LnsCoefficients(nMax, nMax, Qns, context.getVns(), context.getRoa());
+            this.lnsCoef = new LnsCoefficients(nMax, nMax, Qns, Vns, context.getRoa());
             this.nMax = nMax;
             this.sMax = sMax;
             this.jMax = jMax;
@@ -2583,7 +2591,7 @@ public class DSSTZonal implements DSSTForceModel {
             // Qns coefficients
             final T[][] Qns = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), nMax, nMax);
 
-            this.lnsCoef = new FieldLnsCoefficients<>(nMax, nMax, Qns, context.getVns(), context.getRoa(), field);
+            this.lnsCoef = new FieldLnsCoefficients<>(nMax, nMax, Qns, Vns, context.getRoa(), field);
             this.nMax = nMax;
             this.sMax = sMax;
             this.jMax = jMax;
@@ -3502,11 +3510,11 @@ public class DSSTZonal implements DSSTForceModel {
             // Gs and Hs coefficients
             final double[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), maxEccPowMeanElements);
             // Qns coefficients
-            final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), context.getMaxDegree(), maxEccPowMeanElements);
+            final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), maxDegree, maxEccPowMeanElements);
 
-            final double[] roaPow = new double[context.getMaxDegree() + 1];
+            final double[] roaPow = new double[maxDegree + 1];
             roaPow[0] = 1.;
-            for (int i = 1; i <= context.getMaxDegree(); i++) {
+            for (int i = 1; i <= maxDegree; i++) {
                 roaPow[i] = context.getRoa() * roaPow[i - 1];
             }
 
@@ -3544,7 +3552,7 @@ public class DSSTZonal implements DSSTForceModel {
                 // Kronecker symbol (2 - delta(0,s))
                 final double d0s = (s == 0) ? 1 : 2;
 
-                for (int n = s + 2; n <= context.getMaxDegree(); n++) {
+                for (int n = s + 2; n <= maxDegree; n++) {
                     // (n - s) must be even
                     if ((n - s) % 2 == 0) {
 
@@ -3552,7 +3560,7 @@ public class DSSTZonal implements DSSTForceModel {
                         final double kns   = hansen.getHansenObjects()[s].getValue(-n - 1, context.getX());
                         final double dkns  = hansen.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
 
-                        final double vns   = context.getVns().get(new NSKey(n, s));
+                        final double vns   = Vns.get(new NSKey(n, s));
                         final double coef0 = d0s * roaPow[n] * vns * -harmonics.getUnnormalizedCnm(n, 0);
                         final double coef1 = coef0 * Qns[n][s];
                         final double coef2 = coef1 * kns;
@@ -3696,11 +3704,11 @@ public class DSSTZonal implements DSSTForceModel {
             // Gs and Hs coefficients
             final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), maxEccPowMeanElements, field);
             // Qns coefficients
-            final T[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), context.getMaxDegree(), maxEccPowMeanElements);
+            final T[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), maxDegree, maxEccPowMeanElements);
 
-            final T[] roaPow = MathArrays.buildArray(field, context.getMaxDegree() + 1);
+            final T[] roaPow = MathArrays.buildArray(field, maxDegree + 1);
             roaPow[0] = zero.add(1.);
-            for (int i = 1; i <= context.getMaxDegree(); i++) {
+            for (int i = 1; i <= maxDegree; i++) {
                 roaPow[i] = roaPow[i - 1].multiply(context.getRoa());
             }
 
@@ -3738,7 +3746,7 @@ public class DSSTZonal implements DSSTForceModel {
                 // Kronecker symbol (2 - delta(0,s))
                 final T d0s = zero.add((s == 0) ? 1 : 2);
 
-                for (int n = s + 2; n <= context.getMaxDegree(); n++) {
+                for (int n = s + 2; n <= maxDegree; n++) {
                     // (n - s) must be even
                     if ((n - s) % 2 == 0) {
 
@@ -3746,7 +3754,7 @@ public class DSSTZonal implements DSSTForceModel {
                         final T kns   = (T) hansen.getHansenObjects()[s].getValue(-n - 1, context.getX());
                         final T dkns  = (T) hansen.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
 
-                        final double vns   = context.getVns().get(new NSKey(n, s));
+                        final double vns   = Vns.get(new NSKey(n, s));
                         final T coef0 = d0s.multiply(roaPow[n]).multiply(vns).multiply(-harmonics.getUnnormalizedCnm(n, 0));
                         final T coef1 = coef0.multiply(Qns[n][s]);
                         final T coef2 = coef1.multiply(kns);
@@ -3757,11 +3765,11 @@ public class DSSTZonal implements DSSTForceModel {
                         // Compute U
                         U = U.add(coef3);
                         // Compute dU / da :
-                        dUda = dUda.add(coef3.multiply(n + 1));
+                        dUda  = dUda.add(coef3.multiply(n + 1));
                         // Compute dU / dEx
-                        dUdk = dUdk.add(coef1.multiply(dGsdk.multiply(kns).add(auxiliaryElements.getK().multiply(context.getXXX()).multiply(dkns).multiply(gs))));
+                        dUdk  = dUdk.add(coef1.multiply(dGsdk.multiply(kns).add(auxiliaryElements.getK().multiply(context.getXXX()).multiply(dkns).multiply(gs))));
                         // Compute dU / dEy
-                        dUdh = dUdh.add(coef1.multiply(dGsdh.multiply(kns).add(auxiliaryElements.getH().multiply(context.getXXX()).multiply(dkns).multiply(gs))));
+                        dUdh  = dUdh.add(coef1.multiply(dGsdh.multiply(kns).add(auxiliaryElements.getH().multiply(context.getXXX()).multiply(dkns).multiply(gs))));
                         // Compute dU / dAlpha
                         dUdAl = dUdAl.add(coef2.multiply(dGsdAl));
                         // Compute dU / dBeta
@@ -3775,9 +3783,9 @@ public class DSSTZonal implements DSSTForceModel {
             // Multiply by -(μ / a)
             U = U.multiply(context.getMuoa().negate());
 
-            dUda = dUda.multiply(context.getMuoa().divide(auxiliaryElements.getSma()));
-            dUdk = dUdk.multiply(context.getMuoa()).negate();
-            dUdh = dUdh.multiply(context.getMuoa()).negate();
+            dUda  = dUda.multiply(context.getMuoa().divide(auxiliaryElements.getSma()));
+            dUdk  = dUdk.multiply(context.getMuoa()).negate();
+            dUdh  = dUdh.multiply(context.getMuoa()).negate();
             dUdAl = dUdAl.multiply(context.getMuoa()).negate();
             dUdBe = dUdBe.multiply(context.getMuoa()).negate();
             dUdGa = dUdGa.multiply(context.getMuoa()).negate();

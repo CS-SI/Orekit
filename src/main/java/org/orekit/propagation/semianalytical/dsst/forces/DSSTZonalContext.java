@@ -16,13 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.TreeMap;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
 /**
  * This class is a container for the common parameters used in {@link DSSTZonal}.
@@ -35,16 +31,9 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.
  */
 class DSSTZonalContext extends ForceModelContext {
 
-    /** Maximal degree to consider for harmonics potential. */
-    private final int maxDegree;
-
-    /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
-    private final TreeMap<NSKey, Double> Vns;
-
+    // Common factors for potential computation
     /** A = sqrt(μ * a). */
     private final double A;
-
-    // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private double X;
     /** &Chi;². */
@@ -106,11 +95,6 @@ class DSSTZonalContext extends ForceModelContext {
                      final double[] parameters) {
 
         super(auxiliaryElements);
-
-        this.maxDegree = provider.getMaxDegree();
-
-        // Vns coefficients
-        this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
         final double mu = parameters[0];
 
@@ -243,20 +227,6 @@ class DSSTZonalContext extends ForceModelContext {
      */
     public double getRoa() {
         return roa;
-    }
-
-    /** Get the maximal degree to consider for harmonics potential.
-     * @return maxDegree
-     */
-    public int getMaxDegree() {
-        return maxDegree;
-    }
-
-    /** Get the V<sub>ns</sub> coefficients.
-     * @return Vns
-     */
-    public TreeMap<NSKey, Double> getVns() {
-        return Vns;
     }
 
     /** Get the Keplerian period.

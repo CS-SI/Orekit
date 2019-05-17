@@ -24,10 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
@@ -102,6 +105,12 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Maximum power for eccentricity used in short periodic computation. */
     private static final int    MAX_ECCPOWER_SP = 4;
 
+    /** Max power for summation. */
+    private static final int    MAX_POWER = 22;
+
+    /** V<sub>ns</sub> coefficients. */
+    private final TreeMap<NSKey, Double> Vns;
+
     /** Max frequency of F. */
     private int    maxFreqF;
 
@@ -129,6 +138,12 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
+    /** Factory for the DerivativeStructure instances. */
+    private DSFactory factory;
+
+    /** Factory for the DerivativeStructure instances. */
+    private Map<Field<?>, FDSFactory<?>> fieldFactory;
+
     /** Flag for force model initialization with field elements. */
     private boolean pendingInitialization;
 
@@ -146,11 +161,13 @@ public class DSSTThirdBody implements DSSTForceModel {
                                                 0.0, Double.POSITIVE_INFINITY);
 
         this.body = body;
+        this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);
 
         pendingInitialization = true;
 
         fieldShortPeriods = new HashMap<>();
         fieldHansen       = new HashMap<>();
+        fieldFactory      = new HashMap<>();
     }
 
     /** Get third body.
@@ -183,6 +200,8 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         hansen = new HansenObjects();
 
+        factory = new DSFactory(1, 1);
+
         final int jMax = maxFreqF;
         shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
                                                               maxFreqF, body.getName(),
@@ -209,6 +228,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             maxFieldFreqF = context.getMaxFreqF();
 
+            fieldFactory.put(field, new FDSFactory<>(field, 1, 1));
             fieldHansen.put(field, new FieldHansenObjects<>(field));
 
             pendingInitialization = false;
@@ -1447,7 +1467,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
             final DerivativeStructure jac =
-                    JacobiPolynomials.getValue(l, absJmS, absJpS, context.getFactory().variable(0, context.getX()));
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, factory.variable(0, context.getX()));
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);
@@ -1640,8 +1660,10 @@ public class DSSTThirdBody implements DSSTForceModel {
             //-b<sup>|j-s|</sup>
             final T coef2 = btjms[absJmS].multiply(sign);
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> fdsf = (FDSFactory<T>) fieldFactory.get(field);
             final FieldDerivativeStructure<T> jac =
-                    JacobiPolynomials.getValue(l, absJmS, absJpS, context.getFactory().variable(0, context.getX()));
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, fdsf.variable(0, context.getX()));
 
             // the derivative of coef1 by c
             final T dcoef1dc = coef1.negate().multiply(2.).multiply(c).multiply(opc2tn[1].reciprocal().multiply(n).add(omc2tn[1].reciprocal().multiply(l)));
@@ -1739,7 +1761,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                     if ( (n - s) % 2 == 0 ) {
                         // Kronecker symbol (2 - delta(0,s))
                         final double delta0s = (s == 0) ? 1. : 2.;
-                        final double vns   = context.getVns().get(new NSKey(n, s));
+                        final double vns   = Vns.get(new NSKey(n, s));
                         final double coef0 = delta0s * context.getAoR3Pow()[n] * vns * context.getMuoR3();
                         final double coef1 = coef0 * context.getQns()[n][s];
                         // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
@@ -1860,7 +1882,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                     if ( (n - s) % 2 == 0 ) {
                         // Kronecker symbol (2 - delta(0,s))
                         final T delta0s = (s == 0) ? zero.add(1.) : zero.add(2.);
-                        final T vns   = zero.add(context.getVns().get(new NSKey(n, s)));
+                        final double vns = Vns.get(new NSKey(n, s));
                         final T coef0 = context.getAoR3Pow()[n].multiply(vns).multiply(context.getMuoR3()).multiply(delta0s);
                         final T coef1 = coef0.multiply(context.getQns()[n][s]);
                         // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
@@ -3495,7 +3517,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                         final double kns   = hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
                         final double dkns  = hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
 
-                        final double vns   = context.getVns().get(new NSKey(n, s));
+                        final double vns   = Vns.get(new NSKey(n, s));
                         final double coef0 = delta0s * context.getAoR3Pow()[n] * vns;
                         final double coef1 = coef0 * context.getQns()[n][s];
                         final double coef2 = coef1 * kns;
@@ -3672,7 +3694,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                         final T kns   = (T) hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
                         final T dkns  = (T) hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
 
-                        final T vns   = zero.add(context.getVns().get(new NSKey(n, s)));
+                        final double vns = Vns.get(new NSKey(n, s));
                         final T coef0 = delta0s.multiply(vns).multiply(context.getAoR3Pow()[n]);
                         final T coef1 = coef0.multiply(context.getQns()[n][s]);
                         final T coef2 = coef1.multiply(kns);

@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -66,7 +65,7 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
     /** A = sqrt(μ * a). */
-    private final T A;
+    private T A;
 
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
@@ -104,10 +103,10 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
     private T e2;
 
     /** Keplerian mean motion. */
-    private final T n;
+    private T n;
 
     /** Keplerian period. */
-    private final T period;
+    private T period;
 
     /** Maximum power of the eccentricity to use in summation over s. */
     private int maxEccPow;
@@ -115,14 +114,8 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
     /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
     private int maxHansen;
 
-    /** Maximal order to consider for harmonics potential. */
-    private final int maxOrder;
-
     /** Ratio of satellite period to central body rotation period. */
     private T ratio;
-
-    /** Factory for the DerivativeStructure instances. */
-    private final FDSFactory<T> factory;
 
     /** List of resonant orders. */
     private final List<Integer> resOrders;
@@ -151,10 +144,7 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         this.maxEccPow = 0;
         this.maxHansen = 0;
-        this.maxOrder  = provider.getMaxOrder();
         this.resOrders = new ArrayList<Integer>();
-
-        this.factory = new FDSFactory<>(field, 1, 1);
 
         final T mu = parameters[0];
 
@@ -230,7 +220,7 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         // Search the resonant orders in the tesseral harmonic field
         resOrders.clear();
-        for (int m = 1; m <= maxOrder; m++) {
+        for (int m = 1; m <= provider.getMaxOrder(); m++) {
             final T resonance = ratio.multiply(m);
             final int jComputedRes = (int) FastMath.round(resonance);
             if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance.subtract(jComputedRes)).getReal() <= tolerance.getReal()) {
@@ -363,14 +353,6 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
     public T getMeanMotion() {
         return n;
     }
-
-    /** Factory for the DerivativeStructure instances.
-     * @return factory
-     */
-    public FDSFactory<T> getFactory() {
-        return factory;
-    }
-
 
     /** Get the ratio of satellite period to central body rotation period.
      * @return ratio

@@ -16,18 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.TreeMap;
-
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 
@@ -128,12 +124,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     /** Keplerian period. */
     private final T period;
 
-    /** V<sub>ns</sub> coefficients. */
-    private final TreeMap<NSKey, Double> Vns;
-
-    /** Factory for the DerivativeStructure instances. */
-    private final FDSFactory<T> factory;
-
     /**
      * Simple constructor.
      *
@@ -155,8 +145,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 
         this.gm = parameters[0];
-        this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
-        this.factory = new FDSFactory<>(field, 1, 1);
 
         // Keplerian mean motion
         final T absA = FastMath.abs(auxiliaryElements.getSma());
@@ -267,7 +255,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         // allocate the array aoR3Pow
         aoR3Pow = MathArrays.buildArray(field, maxAR3Pow + 1);
 
-        aoR3Pow[0] = zero.add(1.);
+        aoR3Pow[0] = field.getOne();
         for (int i = 1; i <= maxAR3Pow; i++) {
             aoR3Pow[i] = aoR3.multiply(aoR3Pow[i - 1]);
         }
@@ -476,20 +464,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      */
     public T[][] getQns() {
         return Qns;
-    }
-
-    /** Get the factory for the DerivativeStructure instances.
-     * @return factory
-     */
-    public FDSFactory<T> getFactory() {
-        return factory;
-    }
-
-    /** Get the V<sub>ns</sub> coefficients.
-     * @return Vns
-     */
-    public TreeMap<NSKey, Double> getVns() {
-        return Vns;
     }
 
 }

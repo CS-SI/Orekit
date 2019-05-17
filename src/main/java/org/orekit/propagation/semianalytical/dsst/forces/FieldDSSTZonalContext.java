@@ -16,13 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.TreeMap;
-
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
 /**
@@ -36,16 +32,9 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  */
 public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
-    /** Maximal degree to consider for harmonics potential. */
-    private final int maxDegree;
-
-    /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
-    private final TreeMap<NSKey, Double> Vns;
-
+    // Common factors for potential computation
     /** A = sqrt(μ * a). */
     private final T A;
-
-    // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private T X;
     /** &Chi;². */
@@ -107,11 +96,6 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
                                  final T[] parameters) {
 
         super(auxiliaryElements);
-
-        this.maxDegree = provider.getMaxDegree();
-
-        // Vns coefficients
-        this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
         final T mu = parameters[0];
 
@@ -245,20 +229,6 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
      */
     public T getRoa() {
         return roa;
-    }
-
-    /** Get the maximal degree to consider for harmonics potential.
-     * @return maxDegree
-     */
-    public int getMaxDegree() {
-        return maxDegree;
-    }
-
-    /** Get the V<sub>ns</sub> coefficients.
-     * @return Vns
-     */
-    public TreeMap<NSKey, Double> getVns() {
-        return Vns;
     }
 
     /** Get the Keplerian period.

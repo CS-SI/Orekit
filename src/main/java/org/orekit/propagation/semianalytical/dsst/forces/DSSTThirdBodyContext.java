@@ -16,16 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.TreeMap;
-
-import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 
 /**
@@ -125,12 +121,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
     /** Keplerian period. */
     private final double period;
 
-    /** V<sub>ns</sub> coefficients. */
-    private final TreeMap<NSKey, Double> Vns;
-
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /**
      * Simple constructor.
      *
@@ -145,8 +135,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
         final double mu = parameters[1];
         A = FastMath.sqrt(mu * auxiliaryElements.getSma());
         this.gm = parameters[0];
-        this.factory = new DSFactory(1, 1);
-        this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
 
         // Keplerian Mean Motion
         final double absA = FastMath.abs(auxiliaryElements.getSma());
@@ -470,20 +458,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
      */
     public double[][] getQns() {
         return Qns;
-    }
-
-    /** Get the factory for the DerivativeStructure instances.
-     * @return factory
-     */
-    public DSFactory getFactory() {
-        return factory;
-    }
-
-    /** Get the V<sub>ns</sub> coefficients.
-     * @return Vns
-     */
-    public TreeMap<NSKey, Double> getVns() {
-        return Vns;
     }
 
 }

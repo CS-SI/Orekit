@@ -19,7 +19,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -64,7 +63,7 @@ class DSSTTesseralContext extends ForceModelContext {
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
     /** A = sqrt(μ * a). */
-    private final double A;
+    private double A;
 
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
@@ -108,22 +107,13 @@ class DSSTTesseralContext extends ForceModelContext {
     private int maxHansen;
 
     /** Keplerian mean motion. */
-    private final double n;
+    private double n;
 
     /** Keplerian period. */
-    private final double period;
-
-    /** Maximal degree to consider for harmonics potential. */
-    private final int maxDegree;
-
-    /** Maximal order to consider for harmonics potential. */
-    private final int maxOrder;
+    private double period;
 
     /** Ratio of satellite period to central body rotation period. */
     private double ratio;
-
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
 
     /** List of resonant orders. */
     private final List<Integer> resOrders;
@@ -149,9 +139,6 @@ class DSSTTesseralContext extends ForceModelContext {
 
         this.maxEccPow = 0;
         this.maxHansen = 0;
-        this.maxDegree = provider.getMaxDegree();
-        this.maxOrder  = provider.getMaxOrder();
-        this.factory   = new DSFactory(1, 1);
         this.resOrders = new ArrayList<Integer>();
 
         final double mu = parameters[0];
@@ -228,7 +215,7 @@ class DSSTTesseralContext extends ForceModelContext {
 
         // Search the resonant orders in the tesseral harmonic field
         resOrders.clear();
-        for (int m = 1; m <= maxOrder; m++) {
+        for (int m = 1; m <= provider.getMaxOrder(); m++) {
             final double resonance = ratio * m;
             final int jComputedRes = (int) FastMath.round(resonance);
             if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance - jComputedRes) <= tolerance) {
@@ -360,20 +347,6 @@ class DSSTTesseralContext extends ForceModelContext {
      */
     public double getMeanMotion() {
         return n;
-    }
-
-    /** Get the maximal degree to consider for harmonics potential.
-     * @return maxDegree
-     */
-    public int getMaxDegree() {
-        return maxDegree;
-    }
-
-    /** Factory for the DerivativeStructure instances.
-     * @return factory
-     */
-    public DSFactory getFactory() {
-        return factory;
     }
 
     /** Get the ratio of satellite period to central body rotation period.
