@@ -21,6 +21,44 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="maxime" type="add" issue="549">
+        Deleted deprecated methods in EclipseDetector.
+      </action>
+      <action dev="petrus" type="add" issue="518">
+        Changing AbstractGNSSAttitudeProvider from public to package-private.
+      </action>
+      <action dev="romaric" type="fix" issue="551">
+        Fix the bug of attitude transition with analytical propagator 
+        by refreshing the attitude after the events triggering
+      </action>
+      <action dev="romaric" type="fix" issue="552">
+        Fix the bug of attitude transition if a reset occurs during the transition
+        by adding margins to the reset of TimeSpanMap to keep the one corresponding to the "after" attitude law.
+      </action>
+      <action dev="bryan" type="add" issue="522">
+        Generalized the GPSPropagator class to handle all GNSS constellations using
+        the same algorithm.
+      </action>
+      <action dev="bryan" type="add" issue="519">
+        Added numerical and analytical GLONASS propagators.
+      </action>
+      <action dev="luc" type="add" >
+        Added ambiguity resolution for phase measurements.
+        This feature is not complete yet and is considered experimental.
+      </action>
+      <action dev="bryan" type="add" issue="548">
+        Reorganized models package by adding new sub-packages.
+      </action>
+      <action dev="maxime" type="add" issue="546">
+        Updated Hipparchus dependency to version 1.5 in pom.xml file.
+      </action>
+      <action dev="maxime" type="fix" issue="514">
+        Deleted unused DerivativeStructure acceleration computation methods.
+        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests. 
+      </action>
+      <action dev="bryan" type="fix" issue="544" due-to="Josef Probst">
+        Fixed endless loop on GPSPropagator and (Field)KeplerianOrbit.
+      </action>
       <action dev="maxime" type="add" issue="403">
         Added tests for class UnivariateProcessNoise.
         Working tests for non-Cartesian orbit propagation are still needed.

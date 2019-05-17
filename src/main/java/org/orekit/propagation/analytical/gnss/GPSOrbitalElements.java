@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import org.orekit.time.TimeStamped;
-
-
 /** This interface provides the minimal set of orbital elements needed by the {@link GPSPropagator}.
  *
  * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
@@ -26,7 +23,7 @@ import org.orekit.time.TimeStamped;
  * @since 8.0
  *
  */
-public interface GPSOrbitalElements extends TimeStamped {
+public interface GPSOrbitalElements extends GNSSOrbitalElements {
 
     // Constants
     /** WGS 84 value of the Earth's universal gravitational parameter for GPS user in m³/s². */
@@ -40,132 +37,6 @@ public interface GPSOrbitalElements extends TimeStamped {
 
     /** Number of weeks in the GPS cycle. */
     int GPS_WEEK_NB = 1024;
-
-    /**
-     * Gets the PRN number of the GPS satellite.
-     *
-     * @return the PRN number of the GPS satellite
-     */
-    int getPRN();
-
-    /**
-     * Gets the Reference Week of the GPS orbit.
-     *
-     * @return the Reference Week of the GPS orbit within [0, 1024[
-     */
-    int getWeek();
-
-    /**
-     * Gets the Reference Time of the GPS orbit as a duration from week start.
-     *
-     * @return the Reference Time of the GPS orbit (s)
-     */
-    double getTime();
-
-    /**
-     * Gets the Semi-Major Axis.
-     *
-     * @return the Semi-Major Axis (m)
-     */
-    double getSma();
-
-    /**
-     * Gets the Mean Motion.
-     *
-     * @return the Mean Motion (rad/s)
-     */
-    double getMeanMotion();
-
-    /**
-     * Gets the Eccentricity.
-     *
-     * @return the Eccentricity
-     */
-    double getE();
-
-    /**
-     * Gets the Inclination Angle at Reference Time.
-     *
-     * @return the Inclination Angle at Reference Time (rad)
-     */
-    double getI0();
-
-    /**
-     * Gets the Rate of Inclination Angle.
-     *
-     * @return the Rate of Inclination Angle (rad/s)
-     */
-    double getIDot();
-
-    /**
-     * Gets the Longitude of Ascending Node of Orbit Plane at Weekly Epoch.
-     *
-     * @return the Longitude of Ascending Node of Orbit Plane at Weekly Epoch (rad)
-     */
-    double getOmega0();
-
-    /**
-     * Gets the Rate of Right Ascension.
-     *
-     * @return the Rate of Right Ascension (rad/s)
-     */
-    double getOmegaDot();
-
-    /**
-     * Gets the Argument of Perigee.
-     *
-     * @return the Argument of Perigee (rad)
-     */
-    double getPa();
-
-    /**
-     * Gets the Mean Anomaly at Reference Time.
-     *
-     * @return the Mean Anomaly at Reference Time (rad)
-     */
-    double getM0();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude (rad)
-     */
-    double getCuc();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude (rad)
-     */
-    double getCus();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius (m)
-     */
-    double getCrc();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Orbit Radius.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Orbit Radius (m)
-     */
-    double getCrs();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination (rad)
-     */
-    double getCic();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination (rad)
-     */
-    double getCis();
 
     /**
      * Gets the Issue Of Data Clock (IODC).
@@ -185,58 +56,6 @@ public interface GPSOrbitalElements extends TimeStamped {
      */
     default int getIODE() {
         return 0;
-    }
-
-    /**
-     * Gets the Zeroth Order Clock Correction.
-     *
-     * @return the Zeroth Order Clock Correction (s)
-     * @see #getAf1()
-     * @see #getAf2()
-     * @see #getToc()
-     * @since 9.3
-     */
-    default double getAf0() {
-        return 0.0;
-    }
-
-    /**
-     * Gets the First Order Clock Correction.
-     *
-     * @return the First Order Clock Correction (s/s)
-     * @see #getAf0()
-     * @see #getAf2()
-     * @see #getToc()
-     * @since 9.3
-     */
-    default double getAf1() {
-        return 0.0;
-    }
-
-    /**
-     * Gets the Second Order Clock Correction.
-     *
-     * @return the Second Order Clock Correction (s/s²)
-     * @see #getAf0()
-     * @see #getAf1()
-     * @see #getToc()
-     * @since 9.3
-     */
-    default double getAf2() {
-        return 0.0;
-    }
-
-    /**
-     * Gets the clock correction reference time toc.
-     *
-     * @return the clock correction reference time (s)
-     * @see #getAf0()
-     * @see #getAf1()
-     * @see #getAf2()
-     * @since 9.3
-     */
-    default double getToc() {
-        return 0.0;
     }
 
     /**

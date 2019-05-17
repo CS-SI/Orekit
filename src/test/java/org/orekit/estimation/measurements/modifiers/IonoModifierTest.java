@@ -47,7 +47,7 @@ import org.orekit.estimation.measurements.modifiers.AngularIonosphericDelayModif
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeIonosphericDelayModifier;
-import org.orekit.models.earth.KlobucharIonoModel;
+import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;

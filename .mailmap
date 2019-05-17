@@ -1,21 +1,49 @@
-Bruno Revelin <bruno.revelin@c-s.fr>              Bruno Revelin <Bruno.Revelin@c-s.fr>
-Evan Ward <evan.ward@nrl.navy.mil>                Evan Ward <evan.ward@nrl.navy.mil>
-Evan Ward <evan.ward@nrl.navy.mil>                Evan Ward <nomail@nowhere.org>
-Fabien Maussion <fabien@orekit.org>               Fabien Maussion <fabien@orekit.org>
-Francesco Rocca <francesco.rocca@telespazio.com>  Francesco Rocca <>
-Luc Maisonobe <luc@orekit.org>                    Luc Maisonobe <Luc.Maisonobe@free.fr>
-Luc Maisonobe <luc@orekit.org>                    Luc Maisonobe <Luc.Maisonobe@orekit.org>
-Luc Maisonobe <luc@orekit.org>                    Luc Maisonobe <luc@orekit.org>
-Luc Maisonobe <luc@orekit.org>                    maisonobe <maisonobe@users.noreply.github.com>
-Pascal Parraud <pascal@orekit.org>                Pascal Parraud <pascal@orekit.org>
-Romain di Costanzo <romain.di-costanzo@c-s.fr>    rdicosta <romain.di-costanzo@c-s.fr>
-Steven <sljkwsk@yahoo.com>                        Steven <sljkwsk@yahoo.com>
-Thierry Ceolin <thierry.ceolin@c-s.fr>            Thierry Ceolin <thierry@orekit.org>
-Thierry Ceolin <thierry.ceolin@c-s.fr>            thierry ceolin <thierry@orekit.org>
-Thierry Ceolin <thierry.ceolin@c-s.fr>            thierry ceolin <thierry.ceolin@c-s.fr>
-Thomas Neidhart <thomas.neidhart@gmail.com>       Thomas Neidhart <thomas.neidhart@gmail.com>
-Véronique Pommier-Maurussane <vero@orekit.org>    Véronique Pommier-Maurussane <vero@orekit.org>
-Nicolas Bernard <nicolas.bernard@c-s.fr>          Nicola Bernard <nicolas.bernard@c-s.fr>
-Romain di Costanzo <romain.di-costanzo@c-s.fr>    Romain Di Costanzo <romain.di-costanzo@c-s.fr>
-Joris Olympio <joris.olympio@c-s.fr>              jolympio <joris.olympio@c-s.fr>
-Piotr Listkiewicz <piotr.listkiewicz@gmail.com>   liscju <piotr.listkiewicz@gmail.com>
+Albert Alcarraz García <albert.alcarraz-garcia@c-s.fr> Albert Alcarraz García <albert.alcarraz-garcia@c-s.fr>
+Andrea Antolino <andrea.antolino@c-s.fr>               Andrea Antolino <Andrea.Antolino@c-s.fr>
+Andrea Antolino <andrea.antolino@c-s.fr>               Andrea Antolino <andrea.antolino@c-s.fr>
+Bruno Revelin <bruno.revelin@c-s.fr>                   Bruno Revelin <Bruno.Revelin@c-s.fr>
+Bryan Cazabonne <bryan.cazabonne@c-s.fr>               Bryan <bryan.cazabonne@c-s.com>
+Bryan Cazabonne <bryan.cazabonne@c-s.fr>               Bryan Cazabonne <bryan.cazabonne@c-s.fr>
+Daniel De Sousa <dan.desousa@gmail.com>                Daniel De Sousa <dan.desousa@gmail.com>
+Evan Ward <evan.ward@nrl.navy.mil>                     Evan Ward <evan.ward@nrl.navy.mil>
+Evan Ward <evan.ward@nrl.navy.mil>                     Evan Ward <nomail@nowhere.org>
+Fabien Maussion <fabien@orekit.org>                    Fabien Maussion <fabien@orekit.org>
+Francesco Rocca <francesco.rocca@telespazio.com>       Francesco Rocca <>
+Greg Carbott <gregory.carbott@nrl.navy.mil>            Greg Carbott <gregory.carbott@nrl.navy.mil>
+Guilhem Bonnefille <guilhem.bonnefille@c-s.fr>         Guilhem Bonnefille <guilhem.bonnefille@c-s.fr>
+Guylaine Prat <guylaine.prat@c-s.fr>                   Guylaine Prat <guylaine.prat@c-s.fr>
+Hank Grabowski <hank@applieddefense.com>               Hank Grabowski <hank@applieddefense.com>
+Joris Olympio <joris.olympio@c-s.fr>                   Joris Olympio <joris.olympio@c-s.fr>
+Joris Olympio <joris.olympio@c-s.fr>                   jolympio <joris.olympio@c-s.fr>
+Luc Maisonobe <luc@orekit.org>                         Luc Maisonobe <Luc.Maisonobe@free.fr>
+Luc Maisonobe <luc@orekit.org>                         Luc Maisonobe <Luc.Maisonobe@orekit.org>
+Luc Maisonobe <luc@orekit.org>                         Luc Maisonobe <luc@orekit.org>
+Luc Maisonobe <luc@orekit.org>                         maisonobe <maisonobe@users.noreply.github.com>
+Lucian Barbulescu <lucian.barbulescu@c-s.ro>           Lucian Barbulescu <lucian.barbulescu@c-s.ro>
+Madalin Mamuleanu <mamuleanu.madalin@gmail.com>        Madalin Mamuleanu <mamuleanu.madalin@gmail.com>
+MaksimP <maksimp86@mail.ru>                            MaksimP <maksimp86@mail.ru>
+Maxime Journot <maxime.journot@c-s.fr>                 Maxime Journot <Maxime.Journot@c-s.fr>
+Maxime Journot <maxime.journot@c-s.fr>                 Maxime Journot <maxime.journot@c-s.fr>
+Nicolas Bernard <nicolas.bernard@c-s.fr>               Nicola Bernard <nicolas.bernard@c-s.fr>
+Nicolas Bernard <nicolas.bernard@c-s.fr>               Nicolas Bernard <nicolas.bernard@c-s.fr>
+Pascal Parraud <pascal@orekit.org>                     Pascal Parraud <pascal@orekit.org>
+Pavel Bludov <pbludov@gmail.com>                       Pavel Bludov <pbludov@gmail.com>
+Piotr Listkiewicz <piotr.listkiewicz@gmail.com>        Piotr Listkiewicz <piotr.listkiewicz@gmail.com>
+Piotr Listkiewicz <piotr.listkiewicz@gmail.com>        liscju <piotr.listkiewicz@gmail.com>
+rnveach <rveach02@gmail.com>                           rnveach <rveach02@gmail.com>
+Robert Painsi <robertpainsi@gmail.com>                 Robert Painsi <robertpainsi@gmail.com>
+Romain di Costanzo <romain.di-costanzo@c-s.fr>         Romain Di Costanzo <romain.di-costanzo@c-s.fr>
+Romain di Costanzo <romain.di-costanzo@c-s.fr>         rdicosta <romain.di-costanzo@c-s.fr>
+Roman Ivanov <ivanov-jr@mail.ru>                       Roman Ivanov <ivanov-jr@mail.ru>
+Sébastien Dinot <sebastien.dinot@c-s.fr>               Sebastien Dinot <sebastien.dinot@c-s.fr>
+Sébastien Dinot <sebastien.dinot@c-s.fr>               Sebastien Dinot <sebastien@dinot.net>
+Sébastien Dinot <sebastien.dinot@c-s.fr>               Sébastien Dinot <Sebastien.Dinot@c-s.fr>
+Sébastien Dinot <sebastien.dinot@c-s.fr>               Sébastien Dinot <sebastien.dinot@c-s.fr>
+Steven <sljkwsk@yahoo.com>                             Steven <sljkwsk@yahoo.com>
+Steven Ports <steven.ports@c-s.fr>                     Steven Ports <steven.ports@c-s.fr>
+Thierry Ceolin <thierry.ceolin@c-s.fr>                 Thierry Ceolin <thierry@orekit.org>
+Thierry Ceolin <thierry.ceolin@c-s.fr>                 thierry ceolin <thierry.ceolin@c-s.fr>
+Thierry Ceolin <thierry.ceolin@c-s.fr>                 thierry ceolin <thierry@orekit.org>
+Thomas Neidhart <thomas.neidhart@gmail.com>            Thomas Neidhart <thomas.neidhart@gmail.com>
+Véronique Pommier-Maurussane <vero@orekit.org>         Véronique Pommier-Maurussane <vero@orekit.org>
+Yannick Jeandroz <yannick.jeandroz@airbus.com>         Yannick Jeandroz <yannick.jeandroz@airbus.com>

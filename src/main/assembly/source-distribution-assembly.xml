@@ -6,10 +6,11 @@
   <fileSets>
     <fileSet>
       <includes>
-       <include>README.txt</include>
+       <include>README.md</include>
        <include>LICENSE.txt</include>
        <include>NOTICE.txt</include>
        <include>BUILDING.txt</include>
+       <include>CONTRIBUTING.md</include>
        <include>pom.xml</include>
        <include>build.xml</include>
        <include>checkstyle.xml</include>
