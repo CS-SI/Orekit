@@ -40,7 +40,7 @@
 
     class DSSTPropagator {
       +void setInitialState(SpacecraftState state)
-      +void setInitialState(SpacecraftState state, boolean isOsculating)
+      +void setInitialState(SpacecraftState state, PropagationType type)
       +void addForceModel(DSSTForceModel model)
       +void removeForceModels()
       +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
@@ -53,10 +53,10 @@
       class AuxiliaryElements
 
       interface DSSTForceModel {
-        +void initialize(AuxiliaryElements auxiliary)
-        +void initializeStep(AuxiliaryElements auxiliary)
-        +double[] getMeanElementRate(SpacecraftState state)
-        +void updateShortPeriodTerms(SpacecraftState ... meanStates)
+        +void initialize(AuxiliaryElements auxiliary, PropagationType type, double[] parameters)
+        +double[] getMeanElementRate(SpacecraftState state, AuxiliaryElements auxiliary, double[] parameters)
+        +void updateShortPeriodTerms(double[] parameters, SpacecraftState ... meanStates)
+        +EventDetector[] getEventsDetectors()
       }
 
       DSSTForceModel -right->  AuxiliaryElements
