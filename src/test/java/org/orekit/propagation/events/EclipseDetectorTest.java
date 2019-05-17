@@ -160,21 +160,6 @@ public class EclipseDetectorTest {
         Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 2.0e-6);
     }
 
-    @Deprecated
-    @Test
-    public void testDEprecatedConstructor() {
-        EclipseDetector e = new EclipseDetector(sun, sunRadius,
-                                                CelestialBodyFactory.getEarth(),
-                                                earth.getEquatorialRadius()).
-                            withMaxCheck(60.0).
-                            withThreshold(1.0e-3).
-                            withPenumbra();
-        Assert.assertFalse(e.getTotalEclipse());
-        propagator.addEventDetector(e);
-        final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 2.0e-6);
-    }
-
     @Test
     public void testWithMethods() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
