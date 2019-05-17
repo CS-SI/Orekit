@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="maxime" type="add" issue="549">
+        Deleted deprecated methods in EclipseDetector.
+      </action>
       <action dev="romaric" type="fix" issue="553">
         Fix the bug of attitude transition with Ephemeris propagator
         by adding a way for the LocalPVProvider to get the attitude at the end of the transition
