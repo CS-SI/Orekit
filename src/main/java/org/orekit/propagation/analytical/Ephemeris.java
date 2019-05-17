@@ -299,8 +299,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
             if (FastMath.abs(dt) > closeEnoughTimeInSec) {
             	
-//                throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, FastMath.abs(dt), 0.0,
-//                                          closeEnoughTimeInSec);
+            	// used in case of attitude transition, the attitude computed is not at the current date.
             	Ephemeris ephemeris = new Ephemeris(states, interpolationPoints, extrapolationThreshold);
             	return ephemeris.getPVCoordinates(date, f);
             	

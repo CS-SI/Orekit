@@ -177,7 +177,7 @@ public class EphemerisTest {
         ephemeris.setAttitudeProvider(attitudeSequence);
         attitudeSequence.registerSwitchEvents(ephemeris);
 
-        // Propagate
+        // Propagate with a step during the transition
         AbsoluteDate endDate = initialDate.shiftedBy(2*86400.0);
         SpacecraftState stateBefore = ephemeris.getInitialState();
         ephemeris.propagate(switchDate.shiftedBy(transitionTime/2));
