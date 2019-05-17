@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="maxime" type="add" issue="549">
+        Deleted deprecated methods in EclipseDetector.
+      </action>
       <action dev="petrus" type="add" issue="518">
         Changing AbstractGNSSAttitudeProvider from public to package-private.
       </action>
