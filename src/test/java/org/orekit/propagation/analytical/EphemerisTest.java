@@ -127,12 +127,7 @@ public class EphemerisTest {
     
     @Test
     public void testAttitudeSequenceTransition() {
-    	
-    	// Load Orekit data
-//        DataProvidersManager.getInstance().clearProviders();
-//        File f = new File("src/test/resources/celestial-body");
-//        DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(f));
-        
+    	        
         // Initialize the orbit
     	final AbsoluteDate initialDate = new AbsoluteDate(2003, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);

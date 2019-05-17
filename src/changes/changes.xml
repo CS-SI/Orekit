@@ -21,10 +21,6 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
-      <action dev="romaric" type="fix" issue="553">
-        Add an event detector based on the geomagnetic field for a given intensity
-        at the satellite altitude or at sea level and the associated tests
-      </action>
       <action dev="maxime" type="add" issue="549">
         Deleted deprecated methods in EclipseDetector.
       </action>
