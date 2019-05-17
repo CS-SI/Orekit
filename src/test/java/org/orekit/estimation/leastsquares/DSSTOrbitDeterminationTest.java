@@ -109,7 +109,13 @@ import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
+import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
+import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
+import org.orekit.models.earth.troposphere.MappingFunction;
+import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -138,7 +144,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DSSTOrbitDeterminationTest {
-    
+
     @Test
     // Orbit determination using only mean elements for Lageos2 based on SLR (range) measurements
     // For better accuracy, adding short period terms is necessary
@@ -147,7 +153,7 @@ public class DSSTOrbitDeterminationTest {
                OrekitException, ParseException {
 
         // input in tutorial resources directory/output
-        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/dsst_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data access
@@ -200,7 +206,7 @@ public class DSSTOrbitDeterminationTest {
                OrekitException, ParseException {
 
         // input in tutorial resources directory/output
-        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
+        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/dsst_od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data access
@@ -212,12 +218,12 @@ public class DSSTOrbitDeterminationTest {
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 166;
-        final double velocityAccuracy = 0.26;
+        final double distanceAccuracy = 59;
+        final double velocityAccuracy = 0.23;
 
         //test on the convergence
-        final int numberOfIte  = 3;
-        final int numberOfEval = 6;
+        final int numberOfIte  = 2;
+        final int numberOfEval = 3;
 
         Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
@@ -232,11 +238,11 @@ public class DSSTOrbitDeterminationTest {
 
         //test on statistic for the range residuals
         final long nbRange = 4009;
-        final double[] RefStatRange = { -28.544, 34.813, 0.0, 12.42 };
+        final double[] RefStatRange = { -83.945, 59.365, 0.0, 20.857 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              0.2);
+        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              0.23);
         Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
@@ -457,7 +463,6 @@ public class DSSTOrbitDeterminationTest {
                             positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
                             estimator.getPhysicalCovariances(1.0e-10));
     } 
-    
 
     /** Create a propagator builder from input parameters
      * @param parser input file parser
@@ -475,12 +480,23 @@ public class DSSTOrbitDeterminationTest {
                                                           final Orbit orbit)
         throws NoSuchElementException {
 
-        final double minStep = 6000;
-        final double maxStep = 86400;
+        final double minStep;
+        if (!parser.containsKey(ParameterKey.PROPAGATOR_MIN_STEP)) {
+            minStep = 6000.0;
+        } else {
+            minStep = parser.getDouble(ParameterKey.PROPAGATOR_MIN_STEP);
+        }
+
+        final double maxStep;
+        if (!parser.containsKey(ParameterKey.PROPAGATOR_MAX_STEP)) {
+            maxStep = 86400.0;
+        } else {
+            maxStep = parser.getDouble(ParameterKey.PROPAGATOR_MAX_STEP);
+        }
 
         final double dP;
         if (!parser.containsKey(ParameterKey.PROPAGATOR_POSITION_ERROR)) {
-            dP = 10;
+            dP = 10.0;
         } else {
             dP = parser.getDouble(ParameterKey.PROPAGATOR_POSITION_ERROR);
         }
@@ -830,6 +846,12 @@ public class DSSTOrbitDeterminationTest {
         final double[]  stationElevationBiasMax           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
         final boolean[] stationAzElBiasesEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
         final boolean[] stationElevationRefraction        = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
+        final boolean[] stationTroposphericModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
+        final double[]  stationTroposphericZenithDelay    = parser.getDoubleArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY);
+        final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
+        final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
+        final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
+        final boolean[] stationWeatherEstimated           = parser.getBooleanArray(ParameterKey.GROUND_STATION_WEATHER_ESTIMATED);
         final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
@@ -997,11 +1019,43 @@ public class DSSTOrbitDeterminationTest {
             //Tropospheric correction
             final RangeTroposphericDelayModifier rangeTroposphericCorrection;
             if (stationRangeTropospheric[i]) {
-                rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+
+                MappingFunction mappingModel = null;
+                if (stationGlobalMappingFunction[i]) {
+                    mappingModel = new GlobalMappingFunctionModel(stationLatitudes[i],
+                                                                  stationLongitudes[i]);
+                } else if (stationNiellMappingFunction[i]) {
+                    mappingModel = new NiellMappingFunctionModel(stationLatitudes[i]);
+                }
+
+                DiscreteTroposphericModel troposphericModel;
+                if (stationTroposphericModelEstimated[i] && mappingModel != null) {
+
+                    if(stationWeatherEstimated[i]) {
+                        final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
+                                                                                                          stationLongitudes[i],
+                                                                                                          body.getBodyFrame());
+                        weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
+                                                                                      TimeScalesFactory.getUTC()));
+                        final double temperature = weather.getTemperature();
+                        final double pressure    = weather.getPressure();
+                        troposphericModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                           stationTroposphericZenithDelay[i]);
+                    } else {
+                        troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);   
+                    }
+
+                    ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
+                    totalDelay.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                } else {
+                    troposphericModel = SaastamoinenModel.getStandardModel();
+                }
+
+                rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);
             } else {
                 rangeTroposphericCorrection = null;
             }
-
 
         stations.put(stationNames[i], new StationData(station,
                                                       rangeSigma,     rangeBias,
