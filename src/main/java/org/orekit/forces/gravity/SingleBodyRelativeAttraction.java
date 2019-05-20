@@ -131,7 +131,7 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
         return new ParameterDriver[] {
-            gmDriver  
+            gmDriver
         };
     }
 
