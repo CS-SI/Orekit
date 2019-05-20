@@ -190,6 +190,12 @@ public enum OrekitMessages implements Localizable {
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
     OUT_OF_RANGE_LATITUDE("out of range latitude: {0}, [{1}, {2}]"),
     ORBIT_TYPE_NOT_ALLOWED("orbit type {0} not allowed here, allowed types: {1}"),
+    NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES("non pseudo-inertial frame {0} is not suitable as reference for inertial forces"),
+    METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY("method not available in the absence of a central body"),
+    INCOMPATIBLE_FRAMES("operation not available between frames {0} and {1}"),
+    UNDEFINED_ORBIT("orbit not defined, state rather contains an absolute position-velocity-acceleration"),
+    UNDEFINED_ABSOLUTE_PVCOORDINATES("absolute position-velocity-acceleration not defined, state rather contains an orbit"),
+    INERTIAL_FORCE_MODEL_MISSING("an inertial force model has to be used when propagating in non-inertial frame {0}"),
     NO_SEM_ALMANAC_AVAILABLE("no SEM almanac file found"),
     NOT_A_SUPPORTED_SEM_ALMANAC_FILE("file {0} is not a supported SEM almanac file"),
     NO_YUMA_ALMANAC_AVAILABLE("no Yuma almanac file found"),
@@ -225,7 +231,6 @@ public enum OrekitMessages implements Localizable {
     NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE("file {0} does not contain Vienna coefficients ah, aw, zh or zw"),
     IRREGULAR_OR_INCOMPLETE_GRID("irregular or incomplete grid in file {0}"),
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}");
-
 
     // CHECKSTYLE: resume JavadocVariable check
 

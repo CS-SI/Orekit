@@ -21,6 +21,28 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="romaric" type="add">
+        Add a events detector based on the geomagnetic field intensity at the satellite altitude
+        or at sea level above the satellite, and the associated tests
+      </action>
+      <action dev="maxime" type="add" issue="549">
+        Deleted deprecated methods in EclipseDetector.
+      </action>
+      <action dev="romaric" type="fix" issue="553">
+        Fix the bug of attitude transition with Ephemeris propagator
+        by adding a way for the LocalPVProvider to get the attitude at the end of the transition
+      </action>
+      <action dev="petrus" type="add" issue="518">
+        Changing AbstractGNSSAttitudeProvider from public to package-private.
+      </action>
+      <action dev="romaric" type="fix" issue="551">
+        Fix the bug of attitude transition with analytical propagator 
+        by refreshing the attitude after the events triggering
+      </action>
+      <action dev="romaric" type="fix" issue="552">
+        Fix the bug of attitude transition if a reset occurs during the transition
+        by adding margins to the reset of TimeSpanMap to keep the one corresponding to the "after" attitude law.
+      </action>
       <action dev="bryan" type="add" issue="522">
         Generalized the GPSPropagator class to handle all GNSS constellations using
         the same algorithm.

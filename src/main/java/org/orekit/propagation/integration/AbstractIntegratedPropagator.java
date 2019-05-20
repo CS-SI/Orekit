@@ -44,7 +44,6 @@ import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
@@ -137,7 +136,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation
+     * @param orbitType orbit type to use for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     protected void setOrbitType(final OrbitType orbitType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
@@ -146,7 +146,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Get propagation parameter type.
-     * @return orbit type used for propagation
+     * @return orbit type used for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     protected OrbitType getOrbitType() {
         return stateMapper.getOrbitType();
@@ -431,10 +432,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
 
 
-            // set propagation orbit type
-            final Orbit initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
             if (Double.isNaN(getMu())) {
-                setMu(initialOrbit.getMu());
+                setMu(getInitialState().getMu());
             }
 
             if (getInitialState().getMass() <= 0.0) {
@@ -473,6 +472,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                         mathFinalState.getPrimaryState(),
                                                         mathFinalState.getPrimaryDerivative(),
                                                         propagationType);
+
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
                 final double[] secondary = mathFinalState.getSecondaryState(i + 1);

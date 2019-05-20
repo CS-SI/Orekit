@@ -409,6 +409,24 @@ OUT_OF_RANGE_LATITUDE = latitudine în afara domeniului de definiție: {0}, [{1}
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = tipul de orbită {0} nu este permis aici, tipuri permise: {1}
 
+# non pseudo-inertial frame {0} is not suitable as reference for inertial forces
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
+
+# method not available in the absence of a central body
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = <MISSING TRANSLATION>
+
+# operation not available between frames {0} and {1}
+INCOMPATIBLE_FRAMES = <MISSING TRANSLATION>
+
+# orbit not defined, state rather contains an absolute position-velocity-acceleration
+UNDEFINED_ORBIT = <MISSING TRANSLATION>
+
+# absolute position-velocity-acceleration not defined, state rather contains an orbit
+UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
+
+# an inertial force model has to be used when propagating in non-inertial frame {0}
+INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>
+
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = niciun fișier SEM almanah nu a fost găsit
 

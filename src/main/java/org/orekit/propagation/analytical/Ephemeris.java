@@ -123,7 +123,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             s0.ensureCompatibleAdditionalStates(state);
         }
 
-        pvProvider = new LocalPVProvider();
+        pvProvider = new LocalPVProvider(states, interpolationPoints, extrapolationThreshold);
 
         // user needs to explicitly set attitude provider if they want to use one
         setAttitudeProvider(null);
@@ -265,6 +265,28 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         /** Current state. */
         private SpacecraftState currentState;
 
+        /** List of spacecraft states. */
+        private List<SpacecraftState> states;
+
+        /** Interpolation points number. */
+        private int interpolationPoints;
+
+        /** Extrapolation threshold. */
+        private double extrapolationThreshold;
+
+        /** Constructor.
+         * @param states list of spacecraft states
+         * @param interpolationPoints interpolation points number
+         * @param extrapolationThreshold extrapolation threshold value
+         */
+        LocalPVProvider(final List<SpacecraftState> states, final int interpolationPoints,
+                     final double extrapolationThreshold) {
+
+            this.states = states;
+            this.interpolationPoints = interpolationPoints;
+            this.extrapolationThreshold = extrapolationThreshold;
+        }
+
         /** Get the current state.
          * @return current state
          */
@@ -285,11 +307,13 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             final double closeEnoughTimeInSec = 1e-9;
 
             if (FastMath.abs(dt) > closeEnoughTimeInSec) {
-                throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, FastMath.abs(dt), 0.0,
-                                          closeEnoughTimeInSec);
+
+                // used in case of attitude transition, the attitude computed is not at the current date.
+                final Ephemeris ephemeris = new Ephemeris(states, interpolationPoints, extrapolationThreshold);
+                return ephemeris.getPVCoordinates(date, f);
             }
 
-            return getCurrentState().getPVCoordinates(f);
+            return currentState.getPVCoordinates(f);
 
         }
 

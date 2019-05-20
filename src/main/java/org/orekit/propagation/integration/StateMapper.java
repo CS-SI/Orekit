@@ -57,7 +57,8 @@ public abstract class StateMapper {
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
-     * @param orbitType orbit type to use for mapping
+     * @param orbitType orbit type to use for mapping, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      * @param positionAngleType angle type to use for propagation
      * @param attitudeProvider attitude provider
      * @param frame inertial frame
