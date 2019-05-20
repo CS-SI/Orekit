@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -242,8 +242,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     public PVCoordinatesProvider toTaylorProvider() {
         return new PVCoordinatesProvider() {
             /** {@inheritDoc} */
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f)
-                throws OrekitException {
+            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
                 final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
                 final Transform                transform = frame.getTransformTo(f, d);
                 return transform.transformPVCoordinates(shifted);
@@ -271,8 +270,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @exception OrekitException if transformation between frames cannot be computed
      * @see #getPVCoordinates()
      */
-    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
         // If output frame requested is the same as definition frame,
         // PV coordinates are returned directly
         if (outputFrame == frame) {
@@ -285,14 +283,12 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     }
 
     @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
     }
 
     @Override
-    public AbsolutePVCoordinates interpolate(final AbsoluteDate date, final Stream<AbsolutePVCoordinates> sample)
-        throws OrekitException {
+    public AbsolutePVCoordinates interpolate(final AbsoluteDate date, final Stream<AbsolutePVCoordinates> sample) {
         return interpolate(getFrame(), date, CartesianDerivativesFilter.USE_PVA, sample);
     }
 

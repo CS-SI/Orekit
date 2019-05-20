@@ -215,10 +215,8 @@ public class SpacecraftState
     /** Build a spacecraft state from orbit only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final AbsolutePVCoordinates absPva)
-        throws OrekitException {
+    public SpacecraftState(final AbsolutePVCoordinates absPva) {
         this(absPva,
              new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, null);
@@ -240,10 +238,8 @@ public class SpacecraftState
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass)
-        throws OrekitException {
+    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass) {
         this(absPva,
              new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, null);
@@ -265,10 +261,8 @@ public class SpacecraftState
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
      * @param additional additional states
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Map<String, double[]> additional)
-        throws OrekitException {
+    public SpacecraftState(final AbsolutePVCoordinates absPva, final Map<String, double[]> additional) {
         this(absPva,
              new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, additional);
@@ -292,10 +286,8 @@ public class SpacecraftState
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
      * @param additional additional states
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final Map<String, double[]> additional)
-        throws OrekitException {
+    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final Map<String, double[]> additional) {
         this(absPva,
              new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);

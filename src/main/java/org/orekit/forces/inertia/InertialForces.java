@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,8 +91,7 @@ public class InertialForces extends AbstractForceModel  {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final Transform inertToStateFrame = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
         final Vector3D  a1                = inertToStateFrame.getCartesian().getAcceleration();
@@ -116,8 +115,7 @@ public class InertialForces extends AbstractForceModel  {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
 
         final FieldTransform<T> inertToStateFrame = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
         final FieldVector3D<T>  a1                = inertToStateFrame.getCartesian().getAcceleration();
@@ -159,8 +157,7 @@ public class InertialForces extends AbstractForceModel  {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver getParameterDriver(final String name)
-        throws OrekitException {
+    public ParameterDriver getParameterDriver(final String name) {
         throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, "<none>");
     }
 

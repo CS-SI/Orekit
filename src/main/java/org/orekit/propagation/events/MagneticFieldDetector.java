@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,10 +71,9 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param type the magnetic field model
      * @param body the body
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @throws OrekitException in case of exception
      */
     public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body)
-        throws OrekitIllegalArgumentException, OrekitException {
+        throws OrekitIllegalArgumentException {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, type, body, false);
     }
 
@@ -87,10 +86,9 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @throws OrekitException in case of exception
      */
     public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
-        throws OrekitIllegalArgumentException, OrekitException {
+        throws OrekitIllegalArgumentException {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, type, body, seaLevel);
     }
 
@@ -102,11 +100,10 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @throws OrekitException in case of exception
      */
     public MagneticFieldDetector(final double maxCheck, final double threshold, final double limit,
                                  final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
-        throws OrekitIllegalArgumentException, OrekitException {
+        throws OrekitIllegalArgumentException {
         this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<MagneticFieldDetector>(),
              limit, type, body, seaLevel);
     }
@@ -126,12 +123,11 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @exception OrekitException in case of orekit exception
      */
     private MagneticFieldDetector(final double maxCheck, final double threshold,
                                   final int maxIter, final EventHandler<? super MagneticFieldDetector> handler,
                                   final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
-        throws OrekitIllegalArgumentException, OrekitException {
+        throws OrekitIllegalArgumentException {
 
         super(maxCheck, threshold, maxIter, handler);
 
@@ -154,9 +150,8 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
         }
     }
 
-    /** {@inheritDoc}
-     * @throws OrekitException */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+    /** {@inheritDoc} */
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
         this.currentYear = s0.getDate().getComponents(timeScale).getDate().getYear();
         this.field = GeoMagneticFieldFactory.getField(type, currentYear);

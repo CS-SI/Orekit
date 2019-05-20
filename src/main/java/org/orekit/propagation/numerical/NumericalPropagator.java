@@ -410,8 +410,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot)
-            throws OrekitException {
+        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot) {
             if (getOrbitType() == null) {
                 // propagation uses absolute position-velocity-acceleration
                 final Vector3D p = state.getAbsPVA().getPosition();
@@ -667,8 +666,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected void beforeIntegration(final SpacecraftState initialState, final AbsoluteDate tEnd)
-        throws OrekitException {
+    protected void beforeIntegration(final SpacecraftState initialState, final AbsoluteDate tEnd) {
 
         if (!getFrame().isPseudoInertial()) {
 
