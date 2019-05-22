@@ -1,28 +1,25 @@
 package org.orekit.bodies;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
+import org.orekit.utils.LagrangianPoints;
 
 public class CR3BPSystemTest {
 
     @Test
     public void testCR3BPSystem() {
 	Utils.setDataRoot("regular-data");
-
-	final double lDim = CR3BPFactory.getSunEarthCR3BP().getLdim();
+	final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+	final double lDim = syst.getLdim();
 	Assert.assertNotNull(lDim);
 	
-	final double vDim = CR3BPFactory.getSunEarthCR3BP().getVdim();
+	final double vDim = syst.getVdim();
 	Assert.assertNotNull(vDim);
 	
-	final double tDim = CR3BPFactory.getSunEarthCR3BP().getTdim();
+	final double tDim = syst.getTdim();
 	Assert.assertNotNull(tDim);
     }
     
@@ -32,6 +29,14 @@ public class CR3BPSystemTest {
 
 	final double bary = CR3BPFactory.getSunEarthCR3BP().getBarycenter();
 	Assert.assertNotNull(bary);
+    }
+    
+    @Test
+    public void testgetRotatingFrame() {
+    Utils.setDataRoot("regular-data");
+
+    final Frame baryFrame = CR3BPFactory.getSunEarthCR3BP().getRotatingFrame();
+    Assert.assertNotNull(baryFrame);
     }
     
     @Test
@@ -54,7 +59,7 @@ public class CR3BPSystemTest {
     public void testgetMu() {
 	Utils.setDataRoot("regular-data");
 
-	final double mu = CR3BPFactory.getSunEarthCR3BP().getMu();
+	final double mu = CR3BPFactory.getSunJupiterCR3BP().getMu();
 	Assert.assertNotNull(mu);
     }
     
@@ -67,42 +72,34 @@ public class CR3BPSystemTest {
     }
     
     @Test
-    public void testgetLFrame() {
-	Utils.setDataRoot("regular-data");
-
-	
-	final Frame l2Frame = CR3BPFactory.getEarthMoonCR3BP().getL2Frame();
-	Assert.assertNotNull(l2Frame);
-	
-	final Frame l3Frame = CR3BPFactory.getSunEarthCR3BP().getL3Frame();
-	Assert.assertNotNull(l3Frame);	
-    }
-    
-    @Test
-    public void testLOrientation() {
-
-        final AbsoluteDate date0 = new AbsoluteDate(2000, 01, 1, 11, 58, 20.000,
-                                                   TimeScalesFactory.getUTC());
-        final CelestialBody sun     = CelestialBodyFactory.getSun();
-        final CelestialBody earth   = CelestialBodyFactory.getEarth();
-        final Frame l1Frame = CR3BPFactory.getSunEarthCR3BP().getL1Frame();
-        for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
-            final AbsoluteDate date              = date0.shiftedBy(dt);
-            final Vector3D     sunPositionInL1   = sun.getPVCoordinates(date, l1Frame).getPosition();
-            final Vector3D     earthPositionInL1 = earth.getPVCoordinates(date, l1Frame).getPosition();
-            Assert.assertEquals(FastMath.PI, Vector3D.angle(sunPositionInL1,   Vector3D.MINUS_I), 3.0e-14);
-            Assert.assertEquals(FastMath.PI, Vector3D.angle(earthPositionInL1, Vector3D.MINUS_I), 3.0e-14);
-        }
-    }
-    
-    @Test
     public void testgetLPos() {
 	Utils.setDataRoot("regular-data");
-
-	final Vector3D l4Position = CR3BPFactory.getSunEarthCR3BP().getL4Position();
-	Assert.assertNotNull(l4Position);
 	
-	final Vector3D l5Position = CR3BPFactory.getSunEarthCR3BP().getL5Position();
-	Assert.assertNotNull(l5Position);
+	final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+	
+	final Vector3D l1Position = syst.getLPosition(LagrangianPoints.L1);
+    Assert.assertEquals(3.23E8, l1Position.getX(),3E6);
+    Assert.assertEquals(0.0, l1Position.getY(),1E3);
+    Assert.assertEquals(0.0, l1Position.getZ(),1E3);
+    
+    final Vector3D l2Position = syst.getLPosition(LagrangianPoints.L2);
+    Assert.assertEquals(4.45E8, l2Position.getX(),3E6);
+    Assert.assertEquals(0.0, l2Position.getY(),1E3);
+    Assert.assertEquals(0.0, l2Position.getZ(),1E3);
+    
+    final Vector3D l3Position = syst.getLPosition(LagrangianPoints.L3);
+    Assert.assertEquals(-3.86E8, l3Position.getX(),3E6);
+    Assert.assertEquals(0.0, l3Position.getY(),1E3);
+    Assert.assertEquals(0.0, l3Position.getZ(),1E3);
+
+	final Vector3D l4Position = syst.getLPosition(LagrangianPoints.L4);
+    Assert.assertEquals(1.87E8, l4Position.getX(),3E6);
+    Assert.assertEquals(3.32E8, l4Position.getY(),3E6);
+    Assert.assertEquals(0.0, l4Position.getZ(),1E3);
+	
+	final Vector3D l5Position = syst.getLPosition(LagrangianPoints.L5);
+    Assert.assertEquals(1.87E8, l5Position.getX(),3E6);
+    Assert.assertEquals(-3.32E8, l5Position.getY(),3E6);
+    Assert.assertEquals(0.0, l5Position.getZ(),1E3);
     }
 }
