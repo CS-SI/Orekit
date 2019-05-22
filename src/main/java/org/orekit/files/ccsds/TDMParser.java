@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -242,10 +243,10 @@ public class TDMParser extends DefaultHandler {
         // If it is obvious and was not formerly specified
         // Then, use a different parsing method for each file format
         if (TDMFileFormat.UNKNOWN.equals(fileFormat)) {
-            if (fileName.toLowerCase().endsWith(".txt")) {
+            if (fileName.toLowerCase(Locale.US).endsWith(".txt")) {
                 // Keyvalue format case
                 return this.withFileFormat(TDMFileFormat.KEYVALUE).parse(stream, fileName);
-            } else if (fileName.toLowerCase().endsWith(".xml")) {
+            } else if (fileName.toLowerCase(Locale.US).endsWith(".xml")) {
                 // XML format case
                 return this.withFileFormat(TDMFileFormat.XML).parse(stream, fileName);
             } else {

@@ -228,8 +228,8 @@ public class AntexLoaderTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.MISMATCHED_FREQUENCIES, oe.getSpecifier());
             Assert.assertEquals(88, ((Integer) oe.getParts()[1]).intValue());
-            Assert.assertEquals("E01", (String) oe.getParts()[2]);
-            Assert.assertEquals("E06", (String) oe.getParts()[3]);
+            Assert.assertEquals("E01", "" + oe.getParts()[2]);
+            Assert.assertEquals("E06", "" + oe.getParts()[3]);
         }
     }
 
