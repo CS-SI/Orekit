@@ -308,6 +308,8 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
                     // simple special case, v₂ is redundant with v₁, we just ignore it
                     // use the simplest Ω: orthogonal to both v₁ and c₁
                     omega = new FieldVector3D<>(v12.reciprocal(), v1.crossProduct(c1));
+                } else {
+                    throw miae;
                 }
             } else {
                 throw miae;

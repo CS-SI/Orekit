@@ -22,6 +22,9 @@
   <body>
     <release version="10.0" date="TBD" description="TBD">
       <action dev="evan" type="fix">
+        Fix some possible NPEs in AntexLoader, FieldAngularCoordinates.
+      </action>
+      <action dev="evan" type="fix">
         Fix locale dependent comparisons in SP3File, TDMParser, and YUMAParser.
       </action>
       <action dev="evan" type="fix">
