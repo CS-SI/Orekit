@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.hipparchus.RealFieldElement;
@@ -282,10 +283,9 @@ public class DTM2000 implements Atmosphere {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, DTM2000);
         }
 
-        BufferedReader r = null;
-        try {
+        try (BufferedReader r = new BufferedReader(
+                new InputStreamReader(in, StandardCharsets.UTF_8))) {
 
-            r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
             r.readLine();
             r.readLine();
             for (String line = r.readLine(); line != null; line = r.readLine()) {
@@ -311,14 +311,6 @@ public class DTM2000 implements Atmosphere {
             }
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } finally {
-            if (r != null) {
-                try {
-                    r.close();
-                } catch (IOException ioe) {
-                    throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-                }
-            }
         }
     }
 
