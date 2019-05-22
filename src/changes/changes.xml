@@ -22,6 +22,9 @@
   <body>
     <release version="10.0" date="TBD" description="TBD">
       <action dev="evan" type="fix">
+        Fix locale dependent comparisons in SP3File, TDMParser, and YUMAParser.
+      </action>
+      <action dev="evan" type="fix">
         Ensure opened streams are closed in ZipJarCrawler, DTM2000, IERSConventions, and
         OceanLoadDeformationCoefficients.
       </action>
