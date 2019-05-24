@@ -203,7 +203,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Get the central attraction coefficient μ.
      * @return mu central attraction coefficient (m³/s²)
-     * @see #setMu(double)
+     * @see #setMu(RealFieldElement)
      */
     public T getMu() {
         return stateMapper.getMu();
@@ -303,7 +303,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -317,7 +317,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setMasterMode(final FieldOrekitStepHandler<T> handler) {
@@ -331,7 +331,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {

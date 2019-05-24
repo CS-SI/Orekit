@@ -65,8 +65,8 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULTMAXCHECK}) and convergence threshold ({@link
-     * #DEFAULTTHRESHOLD}).</p>
+     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * #DEFAULT_THRESHOLD}).</p>
      * @param limit the threshold value of magnetic field at see level
      * @param type the magnetic field model
      * @param body the body
@@ -79,8 +79,8 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULTMAXCHECK}) and convergence threshold ({@link
-     * #DEFAULTTHRESHOLD}).</p>
+     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * #DEFAULT_THRESHOLD}).</p>
      * @param limit the threshold value of magnetic field at see level
      * @param type the magnetic field model
      * @param body the body

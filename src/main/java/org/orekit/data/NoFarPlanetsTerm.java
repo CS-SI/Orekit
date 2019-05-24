@@ -19,7 +19,6 @@ package org.orekit.data;
 import org.hipparchus.RealFieldElement;
 
 /** Class for terms that do not depend on far planets and some other elements.
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
 class NoFarPlanetsTerm extends SeriesTerm {

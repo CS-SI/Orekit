@@ -45,8 +45,8 @@ import org.orekit.utils.ParameterDriversList;
  * The partial derivatives with respect to force models parameters has a dimension
  * equal to the number of selected parameters. Parameters selection is implemented at
  * {@link DSSTForceModel DSST force models} level. Users must retrieve a {@link ParameterDriver
- * parameter driver} using {@link DSSTForceModel#getParameterDriver(String)} and then
- * select it by calling {@link ParameterDriver#setSelected(boolean) setSelected(true)}.
+ * parameter driver} by looping on all drivers using {@link DSSTForceModel#getParametersDrivers()}
+ * and then select it by calling {@link ParameterDriver#setSelected(boolean) setSelected(true)}.
  * </p>
  * @author Bryan Cazabonne
  * @since 10.0
@@ -231,7 +231,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
      * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
      * with the same name as the instance
-     * @see #setInitialJacobians(SpacecraftState, int)
+     * @see #setInitialJacobians(SpacecraftState)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
     public DSSTJacobiansMapper getMapper() {

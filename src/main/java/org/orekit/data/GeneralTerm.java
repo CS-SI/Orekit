@@ -19,7 +19,6 @@ package org.orekit.data;
 import org.hipparchus.RealFieldElement;
 
 /** Class for general terms.
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
 class GeneralTerm extends SeriesTerm {

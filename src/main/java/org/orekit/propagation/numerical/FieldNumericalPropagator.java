@@ -64,7 +64,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * <p>The configuration parameters that can be set are:</p>
  * <ul>
  *   <li>the initial spacecraft state ({@link #setInitialState(FieldSpacecraftState)})</li>
- *   <li>the central attraction coefficient ({@link #setMu(double)})</li>
+ *   <li>the central attraction coefficient ({@link #setMu(RealFieldElement)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
@@ -207,7 +207,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * a Keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
      * @see #removeForceModels()
-     * @see #setMu(double)
+     * @see #setMu(RealFieldElement)
      */
     public void addForceModel(final ForceModel model) {
 
@@ -263,7 +263,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @return list of perturbing force models, with Newtonian attraction being the
      * last one
      * @see #addForceModel(ForceModel)
-     * @see #setMu(double)
+     * @see #setMu(RealFieldElement)
      * @since 9.1
      */
     public List<ForceModel> getAllForceModels() {

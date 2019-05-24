@@ -548,7 +548,7 @@ public class SpacecraftState
      * @exception OrekitIllegalStateException if position-velocity-acceleration is null,
      * which mean the state rather contains an {@link Orbit}
      * @see #isOrbitDefined()
-     * @seet {@link #getOrbit()}
+     * @see #getOrbit()
      */
     public AbsolutePVCoordinates getAbsPVA() throws OrekitIllegalStateException {
         if (absPva == null) {

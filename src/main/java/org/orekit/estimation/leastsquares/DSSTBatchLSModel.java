@@ -51,7 +51,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
- * org.hipparchus.fitting.leastsquares.LeastSquaresProblem
+ * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem
  * least squares problems}.
  * <p>
  * This class is an adaption of the {@link BatchLSModel} class

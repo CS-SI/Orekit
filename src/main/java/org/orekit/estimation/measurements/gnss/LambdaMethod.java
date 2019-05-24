@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-/** Decorrelation/reduction engine for {@link LambdaSolver LAMBDA method}.
+/** Decorrelation/reduction engine for LAMBDA method.
  * <p>
  * This class implements PJG Teunissen Least Square Ambiguity Decorrelation
  * Adjustment (LAMBDA) method, as described in both the 1996 paper <a

@@ -25,7 +25,7 @@ import org.orekit.utils.Constants;
  * Container for date in GLONASS form.
  * @author Bryan Cazabonne
  * @see AbsoluteDate
- * @see GLONASS Interface Control Document v1.0, 2016
+ * @see "GLONASS Interface Control Document v1.0, 2016"
  * @since 10.0
  */
 public class GLONASSDate implements Serializable, TimeStamped {

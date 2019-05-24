@@ -24,8 +24,8 @@ import org.orekit.time.GNSSDate;
 /**
  * Class for Galileo almanac.
  *
- * @see European GNSS (Galileo) Open Service, Signal In Space,
- *      Interface Control Document, Table 75
+ * @see "European GNSS (Galileo) Open Service, Signal In Space,
+ *      Interface Control Document, Table 75"
  *
  * @author Bryan Cazabonne
  * @since 10.0
