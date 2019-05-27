@@ -41,7 +41,16 @@ pipeline {
                 }
             }
             junit testResults: '**/target/surefire-reports/*.xml'
-            jacoco execPattern:'target/**.exec', classPattern: '**/classes', sourcePattern: '**/src/main/java'
+            jacoco execPattern: 'target/**.exec',
+                   classPattern: '**/classes',
+                   sourcePattern: '**/src/main/java',
+                   changeBuildStatus: true,
+                   maximumBranchCoverage: '85', minimumBranchCoverage: '80',
+                   maximumClassCoverage: '100', minimumClassCoverage: '95',
+                   maximumComplexityCoverage: '85', minimumComplexityCoverage: '80',
+                   maximumInstructionCoverage: '90', minimumInstructionCoverage: '85',
+                   maximumLineCoverage: '90', minimumLineCoverage: '85',
+                   maximumMethodCoverage: '95', minimumMethodCoverage: '90'
             recordIssues enabledForFailure: true, tools: [mavenConsole(), java(), javaDoc()]
             recordIssues enabledForFailure: true, tool:  checkStyle()
             recordIssues enabledForFailure: true, tool:  spotBugs()
