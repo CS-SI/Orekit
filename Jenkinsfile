@@ -45,12 +45,12 @@ pipeline {
                    classPattern: '**/classes',
                    sourcePattern: '**/src/main/java',
                    changeBuildStatus: true,
-                   maximumBranchCoverage: '85', minimumBranchCoverage: '80',
-                   maximumClassCoverage: '100', minimumClassCoverage: '95',
-                   maximumComplexityCoverage: '85', minimumComplexityCoverage: '80',
-                   maximumInstructionCoverage: '90', minimumInstructionCoverage: '85',
-                   maximumLineCoverage: '90', minimumLineCoverage: '85',
-                   maximumMethodCoverage: '95', minimumMethodCoverage: '90'
+                   minimumBranchCoverage: '85',
+                   minimumClassCoverage: '100',
+                   minimumComplexityCoverage: '85',
+                   minimumInstructionCoverage: '90',
+                   minimumLineCoverage: '90',
+                   minimumMethodCoverage: '95'
             recordIssues enabledForFailure: true, tools: [mavenConsole(), java(), javaDoc()]
             recordIssues enabledForFailure: true, tool:  checkStyle()
             recordIssues enabledForFailure: true, tool:  spotBugs()
