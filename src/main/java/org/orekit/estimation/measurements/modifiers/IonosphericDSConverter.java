@@ -208,7 +208,7 @@ public class IonosphericDSConverter {
     }
 
     /** Get the ionospheric model parameters.
-     * @param state state as returned by {@link #getState(DiscreteIonosphericModel)}
+     * @param state state as returned by {@link #getState(IonosphericModel)}
      * @param ionoModel ionospheric model associated with the parameters
      * @return ionospheric model parameters
      */
