@@ -2320,18 +2320,14 @@ public class DSSTOrbitDetermination {
                 final double[] beta  = new double[] {1.3085E5, -4.1723E4, -1.4859E6, -3.7966E6};
 
                 // load Klobuchar model for the L1 frequency
-                final IonosphericModel l1Model   = new KlobucharIonoModel(alpha, beta);
+                final IonosphericModel model = new KlobucharIonoModel(alpha, beta);
 
-                // scale for current frequency
-                final double fL1   = Frequency.G01.getMHzFrequency();
-                final double f     = frequency.getMHzFrequency();
-                final double ratio = (fL1 * fL1) / (f * f);
-                final IonosphericModel scaledModel = (date, geo, elevation, azimuth) ->
-                                                     ratio * l1Model.pathDelay(date, geo, elevation, azimuth);
+                // frequency
+                final double f = frequency.getMHzFrequency();
 
                 // create modifiers
-                rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(scaledModel));
-                rangeRateModifiers.get(frequency).put(dc, new RangeRateIonosphericDelayModifier(scaledModel, twoWay));
+                rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(model, f));
+                rangeRateModifiers.get(frequency).put(dc, new RangeRateIonosphericDelayModifier(model, f, twoWay));
 
             }
 
