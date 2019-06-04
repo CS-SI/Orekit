@@ -16,6 +16,8 @@
  */
 package org.orekit.bodies;
 
+import org.orekit.utils.CR3BPConstants;
+
 /**
  * Factory class creating predefined CR3BP system using CR3BPSystem class. For example, Earth-Moon CR3BP
  * System.
@@ -36,29 +38,30 @@ public class CR3BPFactory {
      * @return Sun-Jupiter CR3BP system
      */
     public static CR3BPSystem getSunJupiterCR3BP() {
-        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getJupiter());
+        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getJupiter(), CR3BPConstants.JUPITER_SEMI_MAJOR_AXIS);
     }
 
     /** Get the Sun-Earth CR3BP singleton bodies pair.
      * @return Sun-Earth CR3BP system
      */
     public static CR3BPSystem getSunEarthCR3BP() {
-        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth());
+        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth(), CR3BPConstants.EARTH_MOON_BARYCENTER_SEMI_MAJOR_AXIS);
     }
 
     /** Get the Earth-Moon CR3BP singleton bodies pair.
      * @return Earth-Moon CR3BP system
      */
     public static CR3BPSystem getEarthMoonCR3BP() {
-        return getSystem(CelestialBodyFactory.getEarth(), CelestialBodyFactory.getMoon());
+        return getSystem(CelestialBodyFactory.getEarth(), CelestialBodyFactory.getMoon(), CR3BPConstants.MOON_SEMI_MAJOR_AXIS);
     }
 
     /** Get the corresponding CR3BP System.
      * @param primaryBody Primary Body in the CR3BP System
      * @param secondaryBody Secondary Body in the CR3BP System
+     * @param a Semi-Major Axis of the secondary body
      * @return corresponding CR3BP System
      */
-    public static CR3BPSystem getSystem(final CelestialBody primaryBody, final CelestialBody secondaryBody) {
-        return new CR3BPSystem(primaryBody, secondaryBody);
+    public static CR3BPSystem getSystem(final CelestialBody primaryBody, final CelestialBody secondaryBody, final double a) {
+        return new CR3BPSystem(primaryBody, secondaryBody, a);
     }
 }

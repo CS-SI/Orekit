@@ -69,51 +69,32 @@ public class CR3BPSystem {
     /** Secondary body. */
     private CelestialBody secondaryBody;
 
-    /** Primary body GM. (m³/s²) */
-    private double mu1;
-
-    /** Secondary body GM. (m³/s²) */
-    private double mu2;
-
     /** Distance between the primary and the CR3BP System barycenter, meters. */
     private double barycenter;
 
     /** Simple constructor.
      * @param primaryBody Primary Body in the CR3BP System
      * @param secondaryBody Secondary Body in the CR3BP System
+     * @param a Semi-Major Axis of the secondary body
      */
-    public CR3BPSystem(final CelestialBody primaryBody, final CelestialBody secondaryBody) {
+    public CR3BPSystem(final CelestialBody primaryBody, final CelestialBody secondaryBody, final double a) {
 
         this.primaryBody = primaryBody;
         this.secondaryBody = secondaryBody;
 
         this.name = primaryBody.getName() + "_" + secondaryBody.getName();
 
-        this.mu1 = primaryBody.getGM();
-        this.mu2 = secondaryBody.getGM();
+        final double mu1 = primaryBody.getGM();
+        final double mu2 = secondaryBody.getGM();
 
-        switch (name) {
-            case "Sun_Jupiter":
-                lDim = 7.78340821E11;
-                vDim = 13064.059343815603;
-                tDim = 3.7434456486914164E8;
-                break;
-            case "Sun_Earth":
-                lDim = 1.4959262E11;
-                vDim = 29785.259280799997;
-                tDim = 3.1556487159820825E7;
-                break;
-            case "Earth_Moon":
-                lDim = 384399000.0;
-                vDim = 1024.5481799056872;
-                tDim = 2357380.742325712;
-                break;
-            default:
-                break;
-        }
+        this.lDim = a;
 
         this.mu = mu2 / (mu1 + mu2);
         this.barycenter = lDim * mu;
+
+        this.vDim = FastMath.sqrt(mu1 / (lDim - barycenter));
+        this.tDim = 2 * FastMath.PI * lDim / vDim;
+
     }
 
     /** Get the CR3BP mass ratio of the system mu2/(mu1+mu2).
