@@ -27,26 +27,6 @@ public class GLONASSOrbitalElementsTest {
     public void testDefaultMethods() {
         GLONASSOrbitalElements goe = new GLONASSOrbitalElements() {
             public AbsoluteDate getDate() { return null; }
-            public int    getNa()        { return 0; }
-            public int    getN4()        { return 0; }
-            public double getTime()      { return 0.0; }
-            public double getLambda()    { return 0.0; }
-            public double getE()         { return 0.0; }
-            public double getPa()        { return 0.0; }
-            public double getDeltaI()    { return 0.0; }
-            public double getDeltaT()    { return 0.0; }
-            public double getDeltaTDot() { return 0.0; }
-            public double getGammaN()    { return 0.0; }
-            public double getTN()        { return 0.0; }
-            public double getXDot()      { return 0.0; }
-            public double getYDot()      { return 0.0; }
-            public double getZDot()      { return 0.0; }
-            public double getX()         { return 0.0; }
-            public double getY()         { return 0.0; }
-            public double getZ()         { return 0.0; }
-            public double getXDotDot()   { return 0.0; }
-            public double getYDotDot()   { return 0.0; }
-            public double getZDotDot()   { return 0.0; }
         };
         Assert.assertEquals(0,   goe.getIOD());
         Assert.assertEquals(0,   goe.getNa());

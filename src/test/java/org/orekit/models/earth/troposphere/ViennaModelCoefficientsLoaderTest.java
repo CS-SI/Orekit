@@ -51,6 +51,8 @@ public class ViennaModelCoefficientsLoaderTest {
         
         Assert.assertEquals(2.3131, delays[0], epsilon);
         Assert.assertEquals(0.3086, delays[1], epsilon);
+
+        Assert.assertEquals("VMFG_20181119.H18", tropoLoader.getSupportedNames());
     }
 
     @Test
@@ -76,6 +78,8 @@ public class ViennaModelCoefficientsLoaderTest {
         
         Assert.assertEquals(2.3203, delays[0], epsilon);
         Assert.assertEquals(0.0191, delays[1], epsilon);
+
+        Assert.assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
     }
 
     @Test
@@ -101,6 +105,8 @@ public class ViennaModelCoefficientsLoaderTest {
         
         Assert.assertEquals(2.3117, delays[0], epsilon);
         Assert.assertEquals(0.2239, delays[1], epsilon);
+
+        Assert.assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
     }
 
     @Test

@@ -41,7 +41,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class BeidouPropagatorTest {
 
-    private static BeidouOrbitalElements almanac;
+    private static BeidouAlmanac almanac;
 
     @BeforeClass
     public static void setUpBeforeClass() {
@@ -57,6 +57,11 @@ public class BeidouPropagatorTest {
     public void testBeidouCycle() {
         // Builds the BeiDou propagator from the almanac
         final BeidouPropagator propagator = new BeidouPropagator.Builder(almanac).build();
+        // Intermediate verification
+        Assert.assertEquals(18,           almanac.getPRN());
+        Assert.assertEquals(0,            almanac.getHealth());
+        Assert.assertEquals(0.0001096725, almanac.getAf0(), 1.0e-15);
+        Assert.assertEquals(7.27596e-12,  almanac.getAf1(), 1.0e-15);
         // Propagate at the BeiDou date and one BeiDou cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();

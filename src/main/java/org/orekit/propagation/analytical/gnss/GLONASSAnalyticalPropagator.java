@@ -426,7 +426,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         DerivativeStructure term = E;
         DerivativeStructure d    = E.getField().getZero();
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (DerivativeStructure x0 = d.add(Double.NaN); x.getValue() != x0.getValue();) {
+        for (DerivativeStructure x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(Double.valueOf(x0.getValue()));) {
             d = d.add(2);
             term = term.multiply(mE2.divide(d.multiply(d.add(1))));
             x0 = x;
@@ -484,6 +484,13 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
 
         // Zero
         final DerivativeStructure zero = tDR.getField().getZero();
+
+        // If one of the input parameter is equal to Double.NaN, an infinite loop can occur.
+        // In that case, we do not compute the value of the semi major axis.
+        // We decided to return a Double.NaN value instead.
+        if (Double.isNaN(tDR.getValue()) || Double.isNaN(i.getValue()) || Double.isNaN(e.getValue())) {
+            return zero.add(Double.NaN);
+        }
 
         // Common parameters
         final DerivativeStructure sinI         = FastMath.sin(i);
