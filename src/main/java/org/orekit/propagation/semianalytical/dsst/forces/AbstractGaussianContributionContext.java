@@ -55,9 +55,6 @@ class AbstractGaussianContributionContext extends ForceModelContext {
     /** Keplerian mean motion. */
     private final double n;
 
-    /** Keplerian period. */
-    private final double period;
-
     /** Central attraction coefficient. */
     private double mu;
 
@@ -79,10 +76,6 @@ class AbstractGaussianContributionContext extends ForceModelContext {
         // Keplerian Mean Motion
         final double absA = FastMath.abs(auxiliaryElements.getSma());
         n = FastMath.sqrt(mu / absA) / absA;
-
-        // Keplerian period
-        final double a = auxiliaryElements.getSma();
-        period = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
 
         // sqrt(μ * a)
         A = FastMath.sqrt(mu * auxiliaryElements.getSma());
@@ -106,13 +99,6 @@ class AbstractGaussianContributionContext extends ForceModelContext {
      */
     public double getMu() {
         return mu;
-    }
-
-    /** Get A = sqrt(μ * a).
-     * @return A
-     */
-    public double getA() {
-        return A;
     }
 
     /** Get ooA = 1 / A.
@@ -155,15 +141,6 @@ class AbstractGaussianContributionContext extends ForceModelContext {
      */
     public double getOoMU() {
         return ooMu;
-    }
-
-    /** Get the Keplerian period.
-     * <p>The Keplerian period is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
-     */
-    public double getKeplerianPeriod() {
-        return period;
     }
 
     /** Get the Keplerian mean motion.

@@ -103,9 +103,6 @@ class DSSTTesseralContext extends ForceModelContext {
     /** Maximum power of the eccentricity to use in summation over s. */
     private int maxEccPow;
 
-    /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
-    private int maxHansen;
-
     /** Keplerian mean motion. */
     private double n;
 
@@ -138,7 +135,6 @@ class DSSTTesseralContext extends ForceModelContext {
         super(auxiliaryElements);
 
         this.maxEccPow = 0;
-        this.maxHansen = 0;
         this.resOrders = new ArrayList<Integer>();
 
         final double mu = parameters[0];
@@ -203,9 +199,6 @@ class DSSTTesseralContext extends ForceModelContext {
             maxEccPow = 20;
         }
 
-        // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
-        maxHansen = maxEccPow / 2;
-
         // Ratio of satellite to central body periods to define resonant terms
         ratio = period / bodyPeriod;
 
@@ -224,13 +217,6 @@ class DSSTTesseralContext extends ForceModelContext {
             }
         }
 
-    }
-
-    /** Get A = sqrt(μ * a).
-     * @return A
-     */
-    public double getA() {
-        return A;
     }
 
     /** Get the list of resonant orders.
@@ -322,13 +308,6 @@ class DSSTTesseralContext extends ForceModelContext {
      */
     public int getMaxEccPow() {
         return maxEccPow;
-    }
-
-    /** Get the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
-     * @return maxHansen
-     */
-    public int getMaxHansen() {
-        return maxHansen;
     }
 
     /** Get the Keplerian period.
