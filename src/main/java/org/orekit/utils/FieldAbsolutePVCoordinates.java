@@ -19,29 +19,31 @@ package org.orekit.utils;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
-import org.orekit.time.TimeStamped;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolable;
+import org.orekit.time.FieldTimeStamped;
 
-/** Position - Velocity - Acceleration linked to a date and a frame.
+/** Field implementation of AbsolutePVCoordinates.
+ * @link AbsolutePVCoordinates
+ * @author Vincent Mouraux
  */
-public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
-    implements TimeStamped, TimeInterpolable<AbsolutePVCoordinates>,
-               Serializable, PVCoordinatesProvider {
+public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
+    implements FieldTimeStamped<T>, FieldTimeInterpolable<FieldAbsolutePVCoordinates<T>, T>,
+               Serializable, FieldPVCoordinatesProvider<T> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20150824L;
+    private static final long serialVersionUID = 20190604L;
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
@@ -53,8 +55,8 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param velocity the velocity vector (m/s)
      * @param acceleration the acceleration vector (m/sÂý)
      */
-    public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
-                                 final Vector3D position, final Vector3D velocity, final Vector3D acceleration) {
+    public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
+                                 final FieldVector3D<T> position, final FieldVector3D<T> velocity, final FieldVector3D<T> acceleration) {
         super(date, position, velocity, acceleration);
         this.frame = frame;
     }
@@ -65,96 +67,96 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      */
-    public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
-                                 final Vector3D position,
-                                 final Vector3D velocity) {
-        this(frame, date, position, velocity, Vector3D.ZERO);
+    public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
+                                 final FieldVector3D<T> position,
+                                 final FieldVector3D<T> velocity) {
+        this(frame, date, position, velocity, FieldVector3D.getZero(date.getField()));
     }
 
-    /** Build from frame, date and PVA coordinates.
+    /** Build from frame, date and FieldPVA coordinates.
      * @param frame the frame in which the coordinates are defined
      * @param date date of the coordinates
      * @param pva TimeStampedPVCoordinates
      */
-    public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date, final PVCoordinates pva) {
+    public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date, final FieldPVCoordinates<T> pva) {
         super(date, pva);
         this.frame = frame;
     }
 
-    /** Build from frame and TimeStampedPVCoordinates.
+    /** Build from frame and TimeStampedFieldPVCoordinates.
      * @param frame the frame in which the coordinates are defined
-     * @param pva TimeStampedPVCoordinates
+     * @param pva TimeStampedFieldPVCoordinates
      */
-    public AbsolutePVCoordinates(final Frame frame, final TimeStampedPVCoordinates pva) {
+    public FieldAbsolutePVCoordinates(final Frame frame, final TimeStampedFieldPVCoordinates<T> pva) {
         super(pva.getDate(), pva);
         this.frame = frame;
     }
 
     /** Multiplicative constructor
-     * <p>Build a AbsolutePVCoordinates from another one and a scale factor.</p>
-     * <p>The TimeStampedPVCoordinates built will be a * AbsPva</p>
+     * <p>Build a FieldAbsolutePVCoordinates from another one and a scale factor.</p>
+     * <p>The TimeStampedFieldPVCoordinates built will be a * AbsPva</p>
      * @param date date of the built coordinates
      * @param a scale factor
-     * @param AbsPva base (unscaled) AbsolutePVCoordinates
+     * @param AbsPva base (unscaled) FieldAbsolutePVCoordinates
      */
-    public AbsolutePVCoordinates(final AbsoluteDate date,
-                                 final double a, final AbsolutePVCoordinates AbsPva) {
+    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
+                                 final T a, final FieldAbsolutePVCoordinates<T> AbsPva) {
         super(date, a, AbsPva);
         this.frame = AbsPva.frame;
     }
 
     /** Subtractive constructor
-     * <p>Build a relative AbsolutePVCoordinates from a start and an end position.</p>
-     * <p>The AbsolutePVCoordinates built will be end - start.</p>
+     * <p>Build a relative FieldAbsolutePVCoordinates from a start and an end position.</p>
+     * <p>The FieldAbsolutePVCoordinates built will be end - start.</p>
      * <p>In case start and end use two different pseudo-inertial frames,
-     * the new AbsolutePVCoordinates arbitrarily be defined in the start frame. </p>
+     * the new FieldAbsolutePVCoordinates arbitrarily be defined in the start frame. </p>
      * @param date date of the built coordinates
-     * @param start Starting AbsolutePVCoordinates
-     * @param end ending AbsolutePVCoordinates
+     * @param start Starting FieldAbsolutePVCoordinates
+     * @param end ending FieldAbsolutePVCoordinates
      */
-    public AbsolutePVCoordinates(final AbsoluteDate date,
-                                 final AbsolutePVCoordinates start, final AbsolutePVCoordinates end) {
+    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
+                                 final FieldAbsolutePVCoordinates<T> start, final FieldAbsolutePVCoordinates<T> end) {
         super(date, start, end);
         ensureIdenticalFrames(start, end);
         this.frame = start.frame;
     }
 
     /** Linear constructor
-     * <p>Build a AbsolutePVCoordinates from two other ones and corresponding scale factors.</p>
-     * <p>The AbsolutePVCoordinates built will be a1 * u1 + a2 * u2</p>
-     * <p>In case the AbsolutePVCoordinates use different pseudo-inertial frames,
-     * the new AbsolutePVCoordinates arbitrarily be defined in the first frame. </p>
+     * <p>Build a FieldAbsolutePVCoordinates from two other ones and corresponding scale factors.</p>
+     * <p>The FieldAbsolutePVCoordinates built will be a1 * u1 + a2 * u2</p>
+     * <p>In case the FieldAbsolutePVCoordinates use different pseudo-inertial frames,
+     * the new FieldAbsolutePVCoordinates arbitrarily be defined in the first frame. </p>
      * @param date date of the built coordinates
      * @param a1 first scale factor
-     * @param absPv1 first base (unscaled) AbsolutePVCoordinates
+     * @param absPv1 first base (unscaled) FieldAbsolutePVCoordinates
      * @param a2 second scale factor
-     * @param absPv2 second base (unscaled) AbsolutePVCoordinates
+     * @param absPv2 second base (unscaled) FieldAbsolutePVCoordinates
      */
-    public AbsolutePVCoordinates(final AbsoluteDate date,
-                                 final double a1, final AbsolutePVCoordinates absPv1,
-                                 final double a2, final AbsolutePVCoordinates absPv2) {
+    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
+                                 final T a1, final FieldAbsolutePVCoordinates<T> absPv1,
+                                 final T a2, final FieldAbsolutePVCoordinates<T> absPv2) {
         super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates());
         ensureIdenticalFrames(absPv1, absPv2);
         this.frame = absPv1.getFrame();
     }
 
     /** Linear constructor
-     * <p>Build a AbsolutePVCoordinates from three other ones and corresponding scale factors.</p>
-     * <p>The AbsolutePVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
-     * <p>In case the AbsolutePVCoordinates use different pseudo-inertial frames,
-     * the new AbsolutePVCoordinates arbitrarily be defined in the first frame. </p>
+     * <p>Build a FieldAbsolutePVCoordinates from three other ones and corresponding scale factors.</p>
+     * <p>The FieldAbsolutePVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
+     * <p>In case the FieldAbsolutePVCoordinates use different pseudo-inertial frames,
+     * the new FieldAbsolutePVCoordinates arbitrarily be defined in the first frame. </p>
      * @param date date of the built coordinates
      * @param a1 first scale factor
-     * @param absPv1 first base (unscaled) AbsolutePVCoordinates
+     * @param absPv1 first base (unscaled) FieldAbsolutePVCoordinates
      * @param a2 second scale factor
-     * @param absPv2 second base (unscaled) AbsolutePVCoordinates
+     * @param absPv2 second base (unscaled) FieldAbsolutePVCoordinates
      * @param a3 third scale factor
-     * @param absPv3 third base (unscaled) AbsolutePVCoordinates
+     * @param absPv3 third base (unscaled) FieldAbsolutePVCoordinates
      */
-    public AbsolutePVCoordinates(final AbsoluteDate date,
-                                 final double a1, final AbsolutePVCoordinates absPv1,
-                                 final double a2, final AbsolutePVCoordinates absPv2,
-                                 final double a3, final AbsolutePVCoordinates absPv3) {
+    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
+                                 final T a1, final FieldAbsolutePVCoordinates<T> absPv1,
+                                 final T a2, final FieldAbsolutePVCoordinates<T> absPv2,
+                                 final T a3, final FieldAbsolutePVCoordinates<T> absPv3) {
         super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates(),
                 a3, absPv3.getPVCoordinates());
         ensureIdenticalFrames(absPv1, absPv2);
@@ -163,25 +165,25 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     }
 
     /** Linear constructor
-     * <p>Build a AbsolutePVCoordinates from four other ones and corresponding scale factors.</p>
-     * <p>The AbsolutePVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
-     * <p>In case the AbsolutePVCoordinates use different pseudo-inertial frames,
+     * <p>Build a FieldAbsolutePVCoordinates from four other ones and corresponding scale factors.</p>
+     * <p>The FieldAbsolutePVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
+     * <p>In case the FieldAbsolutePVCoordinates use different pseudo-inertial frames,
      * the new AbsolutePVCoordinates arbitrarily be defined in the first frame. </p>
      * @param date date of the built coordinates
      * @param a1 first scale factor
-     * @param absPv1 first base (unscaled) AbsolutePVCoordinates
+     * @param absPv1 first base (unscaled) FieldAbsolutePVCoordinates
      * @param a2 second scale factor
-     * @param absPv2 second base (unscaled) AbsolutePVCoordinates
+     * @param absPv2 second base (unscaled) FieldAbsolutePVCoordinates
      * @param a3 third scale factor
-     * @param absPv3 third base (unscaled) AbsolutePVCoordinates
+     * @param absPv3 third base (unscaled) FieldAbsolutePVCoordinates
      * @param a4 fourth scale factor
-     * @param absPv4 fourth base (unscaled) AbsolutePVCoordinates
+     * @param absPv4 fourth base (unscaled) FieldAbsolutePVCoordinates
      */
-    public AbsolutePVCoordinates(final AbsoluteDate date,
-                                 final double a1, final AbsolutePVCoordinates absPv1,
-                                 final double a2, final AbsolutePVCoordinates absPv2,
-                                 final double a3, final AbsolutePVCoordinates absPv3,
-                                 final double a4, final AbsolutePVCoordinates absPv4) {
+    public FieldAbsolutePVCoordinates(final FieldAbsoluteDate<T> date,
+                                 final T a1, final FieldAbsolutePVCoordinates<T> absPv1,
+                                 final T a2, final FieldAbsolutePVCoordinates<T> absPv2,
+                                 final T a3, final FieldAbsolutePVCoordinates<T> absPv3,
+                                 final T a4, final FieldAbsolutePVCoordinates<T> absPv4) {
         super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates(),
                 a3, absPv3.getPVCoordinates(), a4, absPv4.getPVCoordinates());
         ensureIdenticalFrames(absPv1, absPv2);
@@ -190,7 +192,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         this.frame = absPv1.getFrame();
     }
 
-    /** Builds a AbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a FieldAbsolutePVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.
@@ -199,18 +201,19 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
      */
-    public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
-            final FieldVector3D<DerivativeStructure> p) {
+    public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
+            final FieldVector3D<FieldDerivativeStructure<T>> p) {
         super(date, p);
         this.frame = frame;
     }
 
-    /** Ensure that the frames from two AbsolutePVCoordinates are identical.
-     * @param absPv1 first AbsolutePVCoordinates
-     * @param absPv2 first AbsolutePVCoordinates
+    /** Ensure that the frames from two FieldAbsolutePVCoordinates are identical.
+     * @param absPv1 first FieldAbsolutePVCoordinates
+     * @param absPv2 first FieldAbsolutePVCoordinates
+     * @param <T> the type of the field elements
      * @throws OrekitIllegalArgumentException if frames are different
      */
-    private static void ensureIdenticalFrames(final AbsolutePVCoordinates absPv1, final AbsolutePVCoordinates absPv2)
+    private static <T extends RealFieldElement<T>> void ensureIdenticalFrames(final FieldAbsolutePVCoordinates<T> absPv1, final FieldAbsolutePVCoordinates<T> absPv2)
         throws OrekitIllegalArgumentException {
         if (!absPv1.frame.equals(absPv2.frame)) {
             throw new OrekitIllegalArgumentException(OrekitMessages.INCOMPATIBLE_FRAMES,
@@ -228,9 +231,9 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
-    public AbsolutePVCoordinates shiftedBy(final double dt) {
-        final TimeStampedPVCoordinates spv = super.shiftedBy(dt);
-        return new AbsolutePVCoordinates(frame, spv);
+    public FieldAbsolutePVCoordinates<T> shiftedBy(final T dt) {
+        final TimeStampedFieldPVCoordinates<T> spv = super.shiftedBy(dt);
+        return new FieldAbsolutePVCoordinates<>(frame, spv);
     }
 
     /** Create a local provider using simply Taylor expansion through {@link #shiftedBy(double)}.
@@ -241,12 +244,12 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * </p>
      * @return provider based on Taylor expansion, for small time shifts around instance date
      */
-    public PVCoordinatesProvider toTaylorProvider() {
-        return new PVCoordinatesProvider() {
+    public FieldPVCoordinatesProvider<T> toTaylorProvider() {
+        return new FieldPVCoordinatesProvider<T>() {
             /** {@inheritDoc} */
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
-                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
-                final Transform                transform = frame.getTransformTo(f, d);
+            public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> d,  final Frame f) {
+                final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));
+                final FieldTransform<T>                transform = frame.getTransformTo(f, d);
                 return transform.transformPVCoordinates(shifted);
             }
         };
@@ -259,20 +262,20 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         return frame;
     }
 
-    /** Get the TimeStampedPVCoordinates.
-     * @return TimeStampedPVCoordinates
+    /** Get the TimeStampedFieldPVCoordinates.
+     * @return TimeStampedFieldPVCoordinates
      */
-    public TimeStampedPVCoordinates getPVCoordinates() {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
         return this;
     }
 
-    /** Get the TimeStampedPVCoordinates in a specified frame.
+    /** Get the TimeStampedFieldPVCoordinates in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
-     * @return TimeStampedPVCoordinates
+     * @return TimeStampedFieldPVCoordinates
      * @exception OrekitException if transformation between frames cannot be computed
      * @see #getPVCoordinates()
      */
-    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
         // If output frame requested is the same as definition frame,
         // PV coordinates are returned directly
         if (outputFrame == frame) {
@@ -280,17 +283,17 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         }
 
         // Else, PV coordinates are transformed to output frame
-        final Transform t = frame.getTransformTo(outputFrame, getDate());
+        final FieldTransform<T> t = frame.getTransformTo(outputFrame, getDate());
         return t.transformPVCoordinates(getPVCoordinates());
     }
 
     @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame outputFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
     }
 
     @Override
-    public AbsolutePVCoordinates interpolate(final AbsoluteDate date, final Stream<AbsolutePVCoordinates> sample) {
+    public FieldAbsolutePVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldAbsolutePVCoordinates<T>> sample) {
         return interpolate(getFrame(), date, CartesianDerivativesFilter.USE_PVA, sample);
     }
 
@@ -312,24 +315,25 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param date interpolation date
      * @param filter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
+     * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      * @exception OrekitIllegalArgumentException if some elements in the sample do not
      * have the same defining frame as other
      */
-    public static AbsolutePVCoordinates interpolate(final Frame frame, final AbsoluteDate date,
+    public static <T extends RealFieldElement<T>> FieldAbsolutePVCoordinates<T> interpolate(final Frame frame, final FieldAbsoluteDate<T> date,
                                                     final CartesianDerivativesFilter filter,
-                                                    final Stream<AbsolutePVCoordinates> sample) {
+                                                    final Stream<FieldAbsolutePVCoordinates<T>> sample) {
 
 
         // set up an interpolator taking derivatives into account
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
+        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
 
         // add sample points
         switch (filter) {
             case USE_P :
                 // populate sample with position data, ignoring velocity
                 sample.forEach(pv -> {
-                    final Vector3D position = pv.getPosition();
+                    final FieldVector3D<T> position = pv.getPosition();
                     interpolator.addSamplePoint(pv.getDate().durationFrom(date),
                                                 position.toArray());
                 });
@@ -337,8 +341,8 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
             case USE_PV :
                 // populate sample with position and velocity data
                 sample.forEach(pv -> {
-                    final Vector3D position = pv.getPosition();
-                    final Vector3D velocity = pv.getVelocity();
+                    final FieldVector3D<T> position = pv.getPosition();
+                    final FieldVector3D<T> velocity = pv.getVelocity();
                     interpolator.addSamplePoint(pv.getDate().durationFrom(date),
                                                 position.toArray(), velocity.toArray());
                 });
@@ -346,9 +350,9 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
             case USE_PVA :
                 // populate sample with position, velocity and acceleration data
                 sample.forEach(pv -> {
-                    final Vector3D position     = pv.getPosition();
-                    final Vector3D velocity     = pv.getVelocity();
-                    final Vector3D acceleration = pv.getAcceleration();
+                    final FieldVector3D<T> position     = pv.getPosition();
+                    final FieldVector3D<T> velocity     = pv.getVelocity();
+                    final FieldVector3D<T> acceleration = pv.getAcceleration();
                     interpolator.addSamplePoint(pv.getDate().durationFrom(date),
                                                 position.toArray(), velocity.toArray(), acceleration.toArray());
                 });
@@ -359,65 +363,18 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         }
 
         // interpolate
-        final double[][] p = interpolator.derivatives(0.0, 2);
+        final T[][] p = interpolator.derivatives(date.getField().getZero(), 2);
 
         // build a new interpolated instance
-        return new AbsolutePVCoordinates(frame, date, new Vector3D(p[0]), new Vector3D(p[1]), new Vector3D(p[2]));
-
+        return new FieldAbsolutePVCoordinates<>(frame, date, new FieldVector3D<>(p[0]), new FieldVector3D<>(p[1]), new FieldVector3D<>(p[2]));
     }
 
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
+    /**
+     * Converts to an AbsolutePVCoordinates instance.
+     * @return AbsolutePVCoordinates with same properties
      */
-    private Object writeReplace() {
-        return new DTO(this);
+    public AbsolutePVCoordinates toAbsolutePVCoordinates() {
+        return new AbsolutePVCoordinates(frame, this.getDate()
+            .toAbsoluteDate(), this.getPVCoordinates().toPVCoordinates());
     }
-
-    /** Internal class used only for serialization. */
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20150916L;
-
-        /** Double values. */
-        private double[] d;
-
-        /** Frame in which acoordinates are defined. */
-        private final Frame frame;
-
-        /** Simple constructor.
-         * @param absPva instance to serialize
-         */
-        private DTO(final AbsolutePVCoordinates absPva) {
-
-            // decompose date
-            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
-
-            this.d = new double[] {
-                epoch, offset,
-                absPva.getPosition().getX(),     absPva.getPosition().getY(),     absPva.getPosition().getZ(),
-                absPva.getVelocity().getX(),     absPva.getVelocity().getY(),     absPva.getVelocity().getZ(),
-                absPva.getAcceleration().getX(), absPva.getAcceleration().getY(), absPva.getAcceleration().getZ()
-            };
-            this.frame = absPva.frame;
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link AbsolutePVCoordinates}.
-         * @return replacement {@link AbsolutePVCoordinates}
-         */
-        private Object readResolve() {
-            return new AbsolutePVCoordinates(frame,
-                                             AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
-                                             new Vector3D(d[2], d[3], d[ 4]),
-                                             new Vector3D(d[5], d[6], d[ 7]),
-                                             new Vector3D(d[8], d[9], d[10]));
-        }
-
-    }
-
 }
-
-
-

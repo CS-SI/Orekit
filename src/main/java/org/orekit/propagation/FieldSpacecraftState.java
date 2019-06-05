@@ -30,11 +30,13 @@ import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -45,6 +47,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
@@ -72,6 +75,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
+ * @author Vincent Mouraux
  */
 public class FieldSpacecraftState <T extends RealFieldElement<T>>
     implements FieldTimeStamped<T>, FieldTimeShiftable<FieldSpacecraftState<T>, T>, FieldTimeInterpolable<FieldSpacecraftState<T>, T> {
@@ -87,6 +91,9 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
 
     /** Orbital state. */
     private final FieldOrbit<T> orbit;
+
+    /** Trajectory state, when it is not an orbit. */
+    private final FieldAbsolutePVCoordinates<T> absPva;
 
     /** FieldAttitude<T>. */
     private final FieldAttitude<T> attitude;
@@ -193,7 +200,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         this.orbit      = orbit;
         this.attitude   = attitude;
         this.mass       = mass;
-
+        this.absPva     = null;
 
         if (additional == null) {
             this.additional = Collections.emptyMap();
@@ -206,7 +213,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         }
     }
 
-    /** Convert a {@link SpacecraftState}.
+    /** Convert a {@link FieldSpacecraftState}.
      * @param field field to which the elements belong
      * @param state state to convert
      */
@@ -236,7 +243,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
                                                                    dateF, field.getZero().add(state.getMu()), state.getFrame());
         this.attitude = new FieldAttitude<>(field, state.getAttitude());
         this.mass     = field.getZero().add(state.getMass());
-
+        this.absPva     = null;
         final Map<String, double[]> additionalD = state.getAdditionalStates();
         if (additionalD.isEmpty()) {
             this.additional = Collections.emptyMap();
@@ -251,6 +258,113 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
             }
         }
 
+    }
+
+    /** Build a spacecraft state from orbit only.
+     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
+     * @param absPva position-velocity-acceleration
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva) {
+        this(absPva,
+             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             absPva.getDate().getField().getZero().add(DEFAULT_MASS), null);
+    }
+
+    /** Build a spacecraft state from orbit and attitude provider.
+     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
+     * @param absPva position-velocity-acceleration
+     * @param attitude attitude
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
+        throws IllegalArgumentException {
+        this(absPva, attitude, absPva.getDate().getField().getZero().add(DEFAULT_MASS), null);
+    }
+
+    /** Create a new instance from orbit and mass.
+     * <p>Attitude law is set to an unspecified default attitude.</p>
+     * @param absPva position-velocity-acceleration
+     * @param mass the mass (kg)
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass) {
+        this(absPva,
+             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             mass, null);
+    }
+
+    /** Build a spacecraft state from orbit, attitude provider and mass.
+     * @param absPva position-velocity-acceleration
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude, final T mass)
+        throws IllegalArgumentException {
+        this(absPva, attitude, mass, null);
+    }
+
+    /** Build a spacecraft state from orbit only.
+     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
+     * @param absPva position-velocity-acceleration
+     * @param additional additional states
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final Map<String, T[]> additional) {
+        this(absPva,
+             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
+    }
+
+    /** Build a spacecraft state from orbit and attitude provider.
+     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
+     * @param absPva position-velocity-acceleration
+     * @param attitude attitude
+     * @param additional additional states
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude, final Map<String, T[]> additional)
+        throws IllegalArgumentException {
+        this(absPva, attitude, absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
+    }
+
+    /** Create a new instance from orbit and mass.
+     * <p>Attitude law is set to an unspecified default attitude.</p>
+     * @param absPva position-velocity-acceleration
+     * @param mass the mass (kg)
+     * @param additional additional states
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass, final Map<String, T[]> additional) {
+        this(absPva,
+             new LofOffset(absPva.getFrame(), LOFType.VVLH).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             mass, additional);
+    }
+
+    /** Build a spacecraft state from orbit, attitude provider and mass.
+     * @param absPva position-velocity-acceleration
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     * @param additional additional states (may be null if no additional states are available)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     */
+    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
+                           final T mass, final Map<String, T[]> additional)
+        throws IllegalArgumentException {
+        checkConsistency(absPva, attitude);
+        this.orbit      = null;
+        this.absPva     = absPva;
+        this.attitude   = attitude;
+        this.mass       = mass;
+        if (additional == null) {
+            this.additional = Collections.emptyMap();
+        } else {
+            this.additional = new HashMap<String, T[]>(additional.size());
+            for (final Map.Entry<String, T[]> entry : additional.entrySet()) {
+                this.additional.put(entry.getKey(), entry.getValue().clone());
+            }
+        }
     }
 
     /** Add an additional state.
@@ -276,7 +390,10 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         final Map<String, T[]> newMap = new HashMap<String, T[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
-        return new FieldSpacecraftState<>(orbit, attitude, mass, newMap);
+        if (absPva == null)
+            return new FieldSpacecraftState<>(orbit, attitude, mass, newMap);
+        else
+            return new FieldSpacecraftState<>(absPva, attitude, mass, newMap);
     }
 
     /** Check orbit and attitude dates are equal.
@@ -301,6 +418,41 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         }
     }
 
+    /** Check if the state contains an orbit part.
+     * <p>
+     * A state contains either an {@link FieldAbsolutePVCoordinates absolute
+     * position-velocity-acceleration} or an {@link FieldOrbit orbit}.
+     * </p>
+     * @return true if state contains an orbit (in which case {@link #getOrbit()}
+     * will not throw an exception), or false if the state contains an
+     * absolut position-velocity-acceleration (in which case {@link #getAbsPVA()}
+     * will not throw an exception)
+     */
+    public boolean isOrbitDefined() {
+        return orbit != null;
+    }
+
+    /**
+     * Check FieldAbsolutePVCoordinates and attitude dates are equal.
+     * @param absPva   position-velocity-acceleration
+     * @param attitude attitude
+     * @param <T>      the type of the field elements
+     * @exception IllegalArgumentException if orbit and attitude dates are not equal
+     */
+    private static <T extends RealFieldElement<T>> void checkConsistency(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
+        throws IllegalArgumentException {
+        if (FastMath.abs(absPva.getDate().durationFrom(attitude.getDate())).getReal() >
+            DATE_INCONSISTENCY_THRESHOLD) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
+                                                     absPva.getDate(), attitude.getDate());
+        }
+        if (absPva.getFrame() != attitude.getReferenceFrame()) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
+                                                     absPva.getFrame().getName(),
+                                                     attitude.getReferenceFrame().getName());
+        }
+    }
+
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
@@ -313,7 +465,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * <p>
      * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
-     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * org.orekit.propagation.numerical.FieldNumericalPropagator numerical
      * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
      * Sun and Moon third bodies attractions, drag and solar radiation pressure.
      * Beware that these results will be different for other orbits.
@@ -349,7 +501,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * <p>
      * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
-     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * org.orekit.propagation.numerical.FieldNumericalPropagator numerical
      * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
      * Sun and Moon third bodies attractions, drag and solar radiation pressure.
      * Beware that these results will be different for other orbits.
@@ -369,11 +521,15 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * except for the mass which stay unchanged
      */
     public FieldSpacecraftState<T> shiftedBy(final T dt) {
-        return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                                          mass, additional);
+        if (absPva == null)
+            return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
+                    mass, additional);
+        else
+            return new FieldSpacecraftState<>(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
+                    mass, additional);
     }
 
-    /** Get an interpolated instance.
+    /** {@inheritDoc}
      * <p>
      * The additional states that are interpolated are the ones already present
      * in the instance. The sample instances must therefore have at least the same
@@ -381,20 +537,33 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * but the extra ones will be ignored.
      * </p>
      * <p>
+     * The instance and all the sample instances <em>must</em> be based on similar
+     * trajectory data, i.e. they must either all be based on orbits or all be based
+     * on absolute position-velocity-acceleration. Any inconsistency will trigger
+     * an {@link OrekitIllegalStateException}.
+     * </p>
+     * <p>
      * As this implementation of interpolation is polynomial, it should be used only
      * with small samples (about 10-20 points) in order to avoid <a
      * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
      * and numerical problems (including NaN appearing).
      * </p>
-     * @param date interpolation date
-     * @param sample sample points on which interpolation should be done
-     * @return a new instance, interpolated at specified date
+     * @exception OrekitIllegalStateException if some instances are not based on
+     * similar trajectory data
      */
     public FieldSpacecraftState<T> interpolate(final FieldAbsoluteDate<T> date,
                                                final Stream<FieldSpacecraftState<T>> sample) {
 
         // prepare interpolators
-        final List<FieldOrbit<T>> orbits = new ArrayList<>();
+        final List<FieldOrbit<T>> orbits;
+        final List<FieldAbsolutePVCoordinates<T>> absPvas;
+        if (isOrbitDefined()) {
+            orbits  = new ArrayList<FieldOrbit<T>>();
+            absPvas = null;
+        } else {
+            orbits  = null;
+            absPvas = new ArrayList<FieldAbsolutePVCoordinates<T>>();
+        }
         final List<FieldAttitude<T>> attitudes = new ArrayList<>();
         final FieldHermiteInterpolator<T> massInterpolator = new FieldHermiteInterpolator<>();
         final Map<String, FieldHermiteInterpolator<T>> additionalInterpolators =
@@ -406,7 +575,11 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         // extract sample data
         sample.forEach(state -> {
             final T deltaT = state.getDate().durationFrom(date);
-            orbits.add(state.getOrbit());
+            if (isOrbitDefined()) {
+                orbits.add(state.getOrbit());
+            } else {
+                absPvas.add(state.getAbsPVA());
+            }
             attitudes.add(state.getAttitude());
             final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
             mm[0] = state.getMass();
@@ -418,7 +591,15 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         });
 
         // perform interpolations
-        final FieldOrbit<T> interpolatedOrbit       = orbit.interpolate(date, orbits);
+        final FieldOrbit<T> interpolatedOrbit;
+        final FieldAbsolutePVCoordinates<T> interpolatedAbsPva;
+        if (isOrbitDefined()) {
+            interpolatedOrbit  = orbit.interpolate(date, orbits);
+            interpolatedAbsPva = null;
+        } else {
+            interpolatedOrbit  = null;
+            interpolatedAbsPva = absPva.interpolate(date, absPvas);
+        }
         final FieldAttitude<T> interpolatedAttitude = attitude.interpolate(date, attitudes);
         final T interpolatedMass       = massInterpolator.value(orbit.getA().getField().getZero())[0];
         final Map<String, T[]> interpolatedAdditional;
@@ -432,15 +613,52 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         }
 
         // create the complete interpolated state
-        return new FieldSpacecraftState<>(interpolatedOrbit, interpolatedAttitude,
-                                          interpolatedMass, interpolatedAdditional);
+        if (isOrbitDefined()) {
+            return new FieldSpacecraftState<>(interpolatedOrbit, interpolatedAttitude,
+                                       interpolatedMass, interpolatedAdditional);
+        } else {
+            return new FieldSpacecraftState<>(interpolatedAbsPva, interpolatedAttitude,
+                                       interpolatedMass, interpolatedAdditional);
+        }
 
     }
 
-    /** Gets the current orbit.
-     * @return the orbit
+    /** Get the absolute position-velocity-acceleration.
+     * <p>
+     * A state contains either an {@link FieldAbsolutePVCoordinates absolute
+     * position-velocity-acceleration} or an {@link FieldOrbit orbit}. Which
+     * one is present can be checked using {@link #isOrbitDefined()}.
+     * </p>
+     * @return absolute position-velocity-acceleration
+     * @exception OrekitIllegalStateException if position-velocity-acceleration is null,
+     * which mean the state rather contains an {@link FieldOrbit}
+     * @see #isOrbitDefined()
+     * @see #getOrbit()
      */
-    public FieldOrbit<T> getOrbit() {
+    public FieldAbsolutePVCoordinates<T> getAbsPVA() throws OrekitIllegalStateException {
+        if (absPva == null) {
+            throw new OrekitIllegalStateException(OrekitMessages.UNDEFINED_ABSOLUTE_PVCOORDINATES);
+        }
+        return absPva;
+    }
+
+    /** Get the current orbit.
+     * <p>
+     * A state contains either an {@link FieldAbsolutePVCoordinates absolute
+     * position-velocity-acceleration} or an {@link FieldOrbit orbit}. Which
+     * one is present can be checked using {@link #isOrbitDefined()}.
+     * </p>
+     * @return the orbit
+     * @exception OrekitIllegalStateException if orbit is null,
+     * which means the state rather contains an {@link FieldAbsolutePVCoordinates absolute
+     * position-velocity-acceleration}
+     * @see #isOrbitDefined()
+     * @see #getAbsPVA()
+     */
+    public FieldOrbit<T> getOrbit() throws OrekitIllegalStateException {
+        if (orbit == null) {
+            throw new OrekitIllegalStateException(OrekitMessages.UNDEFINED_ORBIT);
+        }
         return orbit;
     }
 
@@ -448,15 +666,16 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @return date
      */
     public FieldAbsoluteDate<T> getDate() {
-        return orbit.getDate();
+        return (absPva == null) ? orbit.getDate() : absPva.getDate();
     }
 
-    /** Get the inertial frame.
-     * @return the frame
+    /** Get the defining frame.
+     * @return the frame in which state is defined
      */
     public Frame getFrame() {
-        return orbit.getFrame();
+        return (absPva == null) ? orbit.getFrame() : absPva.getFrame();
     }
+
 
     /** Check if an additional state is available.
      * @param name name of the additional state
@@ -543,105 +762,128 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     }
 
     /** Get the central attraction coefficient.
-     * @return mu central attraction coefficient (m^3/s^2)
+     * @return mu central attraction coefficient (m^3/s^2), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather than an orbit
      */
     public T getMu() {
-        return orbit.getMu();
+        return (absPva == null) ? orbit.getMu() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the Keplerian period.
      * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return Keplerian period in seconds
+     * @return keplerian period in seconds, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      */
     public T getKeplerianPeriod() {
-        return orbit.getKeplerianPeriod();
+        return (absPva == null) ? orbit.getKeplerianPeriod() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the Keplerian mean motion.
      * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return Keplerian mean motion in radians per second
+     * @return keplerian mean motion in radians per second, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      */
     public T getKeplerianMeanMotion() {
-        return orbit.getKeplerianMeanMotion();
+        return (absPva == null) ? orbit.getKeplerianMeanMotion() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the semi-major axis.
-     * @return semi-major axis (m)
+     * @return semi-major axis (m), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      */
     public T getA() {
-        return orbit.getA();
+        return (absPva == null) ? orbit.getA() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the first component of the eccentricity vector (as per equinoctial parameters).
-     * @return e cos(ω + Ω), first component of eccentricity vector
+     * @return e cos(ω + Ω), first component of eccentricity vector, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getE()
      */
     public T getEquinoctialEx() {
-        return orbit.getEquinoctialEx();
+        return (absPva == null) ? orbit.getEquinoctialEx() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the second component of the eccentricity vector (as per equinoctial parameters).
-     * @return e sin(ω + Ω), second component of the eccentricity vector
+     * @return e sin(ω + Ω), second component of the eccentricity vector, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getE()
      */
     public T getEquinoctialEy() {
-        return orbit.getEquinoctialEy();
+        return (absPva == null) ? orbit.getEquinoctialEy() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the first component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) cos(Ω), first component of the inclination vector
+     * @return tan(i/2) cos(Ω), first component of the inclination vector, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getI()
      */
     public T getHx() {
-        return orbit.getHx();
+        return (absPva == null) ? orbit.getHx() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the second component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) sin(Ω), second component of the inclination vector
+     * @return tan(i/2) sin(Ω), second component of the inclination vector, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getI()
      */
     public T getHy() {
-        return orbit.getHy();
+        return (absPva == null) ? orbit.getHy() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the true latitude argument (as per equinoctial parameters).
-     * @return v + ω + Ω true latitude argument (rad)
+     * @return v + ω + Ω true longitude argument (rad), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getLE()
      * @see #getLM()
      */
     public T getLv() {
-        return orbit.getLv();
+        return (absPva == null) ? orbit.getLv() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the eccentric latitude argument (as per equinoctial parameters).
-     * @return E + ω + Ω eccentric latitude argument (rad)
+     * @return E + ω + Ω eccentric longitude argument (rad), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getLv()
      * @see #getLM()
      */
     public T getLE() {
-        return orbit.getLE();
+        return (absPva == null) ? orbit.getLE() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
-    /** Get the mean latitude argument (as per equinoctial parameters).
-     * @return M + ω + Ω mean latitude argument (rad)
+    /** Get the mean longitude argument (as per equinoctial parameters).
+     * @return M + ω + Ω mean latitude argument (rad), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getLv()
      * @see #getLE()
      */
     public T getLM() {
-        return orbit.getLM();
+        return (absPva == null) ? orbit.getLM() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     // Additional orbital elements
 
     /** Get the eccentricity.
-     * @return eccentricity
+     * @return eccentricity, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getEquinoctialEx()
      * @see #getEquinoctialEy()
      */
     public T getE() {
-        return orbit.getE();
+        return (absPva == null) ? orbit.getE() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the inclination.
@@ -650,32 +892,36 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @see #getHy()
      */
     public T getI() {
-        return orbit.getI();
+        return (absPva == null) ? orbit.getI() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in orbit definition frame.
+     * <p>
      * Compute the position and velocity of the satellite. This method caches its
      * results, and recompute them only when the method is called with a new value
      * for mu. The result is provided as a reference to the internally cached
      * {@link TimeStampedFieldPVCoordinates}, so the caller is responsible to copy it in a separate
      * {@link TimeStampedFieldPVCoordinates} if it needs to keep the value for a while.
+     * </p>
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
-        return orbit.getPVCoordinates();
+        return (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in given output frame.
+     * <p>
      * Compute the position and velocity of the satellite. This method caches its
      * results, and recompute them only when the method is called with a new value
      * for mu. The result is provided as a reference to the internally cached
      * {@link TimeStampedFieldPVCoordinates}, so the caller is responsible to copy it in a separate
      * {@link TimeStampedFieldPVCoordinates} if it needs to keep the value for a while.
+     * </p>
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
      */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
-        return orbit.getPVCoordinates(outputFrame);
+    public TimeStampedFieldPVCoordinates<T>getPVCoordinates(final Frame outputFrame) {
+        return (absPva == null) ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
     }
 
     /** Get the attitude.
@@ -710,7 +956,14 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
                 map.put(entry.getKey(), array);
             }
         }
-        return new SpacecraftState(orbit.toOrbit(), attitude.toAttitude(), mass.getReal(), map);
+        if (isOrbitDefined()) {
+            return new SpacecraftState(orbit.toOrbit(), attitude.toAttitude(),
+                                       mass.getReal(), map);
+        } else {
+            return new SpacecraftState(absPva.toAbsolutePVCoordinates(),
+                                       attitude.toAttitude(), mass.getReal(),
+                                       map);
+        }
     }
 
     @Override
