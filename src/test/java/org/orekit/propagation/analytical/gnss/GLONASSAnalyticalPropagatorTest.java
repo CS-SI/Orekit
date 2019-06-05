@@ -95,7 +95,7 @@ public class GLONASSAnalyticalPropagatorTest {
 
         // Get PVCoordinates at the date in the ECEF
         final PVCoordinates pvFinal2 = propagator.getPVCoordinates(target, propagator.getECEF());
-        Assert.assertEquals(0., pvFinal.getPosition().distance(pvFinal2.getPosition()), 3.3e-8);
+        Assert.assertEquals(0., pvFinal.getPosition().distance(pvFinal2.getPosition()), 1.9e-8);
     }
 
     @Test
@@ -113,8 +113,8 @@ public class GLONASSAnalyticalPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
-        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
+        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 1.9e-8);
+        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.8e-12);
     }
 
     @Test
@@ -143,7 +143,7 @@ public class GLONASSAnalyticalPropagatorTest {
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
-        Assert.assertEquals(0.0, errorP, 3.8e-9);
+        Assert.assertEquals(0.0, errorP, 1.9e-9);
         Assert.assertEquals(0.0, errorV, 3.2e-3);
         Assert.assertEquals(0.0, errorA, 7.0e-4);
 

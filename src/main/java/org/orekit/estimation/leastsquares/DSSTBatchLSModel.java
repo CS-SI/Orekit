@@ -125,21 +125,21 @@ public class DSSTBatchLSModel implements BatchLSODModel {
     private PropagationType stateType;
 
     /** Simple constructor.
-     * @param builders builders to use for propagation
+     * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
-    public DSSTBatchLSModel(final IntegratedPropagatorBuilder[] builders,
+    public DSSTBatchLSModel(final IntegratedPropagatorBuilder[] propagatorBuilders,
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
                      final ModelObserver observer,
                      final PropagationType propagationType,
                      final PropagationType stateType) {
 
-        this.builders                        = builders;
+        this.builders                        = propagatorBuilders.clone();
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
