@@ -150,15 +150,19 @@ public class STMEquations
         return name;
     }
 
+    /** Method returning the STM.
+     * @param s Initial state of the system
+     * @return phiM State Transition Matrix
+     */
     public RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
-    	final double[][] phi2dA = new double[6][6];
-    	final double[] stm= s.getAdditionalState(getName());
+        final double[][] phi2dA = new double[6][6];
+        final double[] stm = s.getAdditionalState(getName());
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
                 phi2dA[i][j] = stm[6 * i + j];
             }
         }
-    	final RealMatrix phiM = new Array2DRowRealMatrix(phi2dA, false);
-    	return phiM;
+        final RealMatrix phiM = new Array2DRowRealMatrix(phi2dA, false);
+        return phiM;
     }
 }
