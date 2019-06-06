@@ -30,6 +30,7 @@ import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
@@ -48,6 +49,7 @@ import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
@@ -219,45 +221,77 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      */
     public FieldSpacecraftState(final Field<T> field, final SpacecraftState state) {
 
-        final double[] stateD    = new double[6];
-        final double[] stateDotD = state.getOrbit().hasDerivatives() ? new double[6] : null;
-        state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateD, stateDotD);
-        final T[] stateF    = MathArrays.buildArray(field, 6);
-        for (int i = 0; i < stateD.length; ++i) {
-            stateF[i]    = field.getZero().add(stateD[i]);
-        }
-        final T[] stateDotF;
-        if (stateDotD == null) {
-            stateDotF = null;
-        } else {
-            stateDotF = MathArrays.buildArray(field, 6);
-            for (int i = 0; i < stateDotD.length; ++i) {
-                stateDotF[i] = field.getZero().add(stateDotD[i]);
+        if (state.isOrbitDefined()) {
+            final double[] stateD    = new double[6];
+            final double[] stateDotD = state.getOrbit().hasDerivatives() ? new double[6] : null;
+            state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateD, stateDotD);
+            final T[] stateF    = MathArrays.buildArray(field, 6);
+            for (int i = 0; i < stateD.length; ++i) {
+                stateF[i]    = field.getZero().add(stateD[i]);
             }
-        }
-
-        final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
-
-        this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF,
-                                                                   PositionAngle.TRUE,
-                                                                   dateF, field.getZero().add(state.getMu()), state.getFrame());
-        this.attitude = new FieldAttitude<>(field, state.getAttitude());
-        this.mass     = field.getZero().add(state.getMass());
-        this.absPva     = null;
-        final Map<String, double[]> additionalD = state.getAdditionalStates();
-        if (additionalD.isEmpty()) {
-            this.additional = Collections.emptyMap();
-        } else {
-            this.additional = new HashMap<String, T[]>(additionalD.size());
-            for (final Map.Entry<String, double[]> entry : additionalD.entrySet()) {
-                final T[] array = MathArrays.buildArray(field, entry.getValue().length);
-                for (int k = 0; k < array.length; ++k) {
-                    array[k] = field.getZero().add(entry.getValue()[k]);
+            final T[] stateDotF;
+            if (stateDotD == null) {
+                stateDotF = null;
+            } else {
+                stateDotF = MathArrays.buildArray(field, 6);
+                for (int i = 0; i < stateDotD.length; ++i) {
+                    stateDotF[i] = field.getZero().add(stateDotD[i]);
                 }
-                this.additional.put(entry.getKey(), array);
+            }
+
+            final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
+
+            this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF,
+                                                                       PositionAngle.TRUE,
+                                                                       dateF, field.getZero().add(state.getMu()), state.getFrame());
+            this.attitude = new FieldAttitude<>(field, state.getAttitude());
+            this.mass     = field.getZero().add(state.getMass());
+            this.absPva     = null;
+            final Map<String, double[]> additionalD = state.getAdditionalStates();
+            if (additionalD.isEmpty()) {
+                this.additional = Collections.emptyMap();
+            } else {
+                this.additional = new HashMap<String, T[]>(additionalD.size());
+                for (final Map.Entry<String, double[]> entry : additionalD.entrySet()) {
+                    final T[] array = MathArrays.buildArray(field, entry.getValue().length);
+                    for (int k = 0; k < array.length; ++k) {
+                        array[k] = field.getZero().add(entry.getValue()[k]);
+                    }
+                    this.additional.put(entry.getKey(), array);
+                }
+            }
+
+        } else {
+            final T zero = field.getZero();
+            final T x = zero.add(state.getPVCoordinates().getPosition().getX());
+            final T y = zero.add(state.getPVCoordinates().getPosition().getY());
+            final T z = zero.add(state.getPVCoordinates().getPosition().getZ());
+            final T vx = zero.add(state.getPVCoordinates().getVelocity().getX());
+            final T vy = zero.add(state.getPVCoordinates().getVelocity().getY());
+            final T vz = zero.add(state.getPVCoordinates().getVelocity().getZ());
+            final T ax = zero.add(state.getPVCoordinates().getAcceleration().getX());
+            final T ay = zero.add(state.getPVCoordinates().getAcceleration().getY());
+            final T az = zero.add(state.getPVCoordinates().getAcceleration().getZ());
+            final FieldPVCoordinates<T> pva_f = new FieldPVCoordinates<>(new FieldVector3D<>(x, y, z), new FieldVector3D<>(vx, vy, vz), new FieldVector3D<>(ax, ay, az));
+            final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
+            this.orbit = null;
+            this.attitude = new FieldAttitude<>(field, state.getAttitude());
+            this.mass     = field.getZero().add(state.getMass());
+            this.absPva   = new FieldAbsolutePVCoordinates<>(state.getFrame(), dateF, pva_f);
+            final Map<String, double[]> additionalD = state.getAdditionalStates();
+            if (additionalD.isEmpty()) {
+                this.additional = Collections.emptyMap();
+            } else {
+                this.additional = new HashMap<String, T[]>(additionalD.size());
+                for (final Map.Entry<String, double[]> entry : additionalD.entrySet()) {
+                    final T[] array = MathArrays.buildArray(field, entry.getValue().length);
+                    for (int k = 0; k < array.length; ++k) {
+                        array[k] = field.getZero().add(entry.getValue()[k]);
+                    }
+                    this.additional.put(entry.getKey(), array);
+                }
             }
         }
-
     }
 
     /** Build a spacecraft state from orbit only.
@@ -485,8 +519,13 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * except for the mass which stay unchanged
      */
     public FieldSpacecraftState<T> shiftedBy(final double dt) {
-        return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                                          mass, additional);
+        if (absPva == null) {
+            return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
+                    mass, additional);
+        } else {
+            return new FieldSpacecraftState<>(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
+                    mass, additional);
+        }
     }
 
     /** Get a time-shifted state.
@@ -521,12 +560,13 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * except for the mass which stay unchanged
      */
     public FieldSpacecraftState<T> shiftedBy(final T dt) {
-        if (absPva == null)
+        if (absPva == null) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
                     mass, additional);
-        else
+        } else {
             return new FieldSpacecraftState<>(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
                     mass, additional);
+        }
     }
 
     /** {@inheritDoc}
@@ -749,16 +789,16 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         return Collections.unmodifiableMap(additional);
     }
 
-    /** Compute the transform from orbite/attitude reference frame to spacecraft frame.
+    /** Compute the transform from state defining frame to spacecraft frame.
      * <p>The spacecraft frame origin is at the point defined by the orbit,
      * and its orientation is defined by the attitude.</p>
      * @return transform from specified frame to current spacecraft frame
      */
     public FieldTransform<T> toTransform() {
-        final FieldAbsoluteDate<T> date = orbit.getDate();
-        return new FieldTransform<>(date,
-                                    new FieldTransform<>(date, orbit.getPVCoordinates().negate()),
-                                    new FieldTransform<>(date, attitude.getOrientation()));
+        final TimeStampedFieldPVCoordinates<T> pv = getPVCoordinates();
+        return new FieldTransform<>(pv.getDate(),
+                                    new FieldTransform<>(pv.getDate(), pv.negate()),
+                                    new FieldTransform<>(pv.getDate(), attitude.getOrientation()));
     }
 
     /** Get the central attraction coefficient.
