@@ -50,7 +50,8 @@
       <Class name="~.*\.TIRFProvider$" />
       <Class name="~.*\.CartesianOrbit$" />
       <Class name="~.*\.EstimatedEarthFrameProvider$" />
-      <Class name="~.*\.GPSDate$" />
+      <Class name="~.*\.GNSSDate$" />
+      <Class name="~.*\.GLONASSDate$" />
       <Class name="~.*\.PositionAngleDetector$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
@@ -137,6 +138,41 @@
     <Or>
       <Local name="masterDjac" />
       <Local name="slaveDjac" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions$1"/>
+    <Method name="getEOPTidalCorrection" />
+    <Or>
+      <Local name="deciMilliS" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions$1"/>
+    <Method name="getXYSpXY2Function" />
+    <Or>
+      <Local name="fYCosOm" />
+      <Local name="fYCos2FDOm" />
+      <Local name="fST" />
+      <Local name="fST3" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions$2"/>
+    <Method name="getGASTFunction" />
+    <Or>
+      <Local name="microAS" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions$2"/>
+    <Method name="getSolidPoleTide" />
+    <Or>
+      <Local name="xp0" />
     </Or>
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>

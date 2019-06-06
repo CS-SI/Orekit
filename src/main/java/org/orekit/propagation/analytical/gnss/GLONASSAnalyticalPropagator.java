@@ -458,13 +458,11 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final GLONASSDate tSta = new GLONASSDate(glonassOrbit.getDate());
         final int n  = tEnd.getDayNumber();
         final int na = tSta.getDayNumber();
-        final double deltaN;
+        final int deltaN;
         if (na == 27) {
-            final double ratio = (n - na) / 1460;
-            deltaN = n - na - FastMath.round(ratio) * 1460;
+            deltaN = n - na - FastMath.round((float) (n - na) / 1460) * 1460;
         } else {
-            final double ratio = (n - na) / 1461;
-            deltaN = n - na - FastMath.round(ratio) * 1461;
+            deltaN = n - na - FastMath.round((float) (n - na) / 1461) * 1461;
         }
         final DerivativeStructure ti = factory.variable(0, tEnd.getSecInDay());
 
