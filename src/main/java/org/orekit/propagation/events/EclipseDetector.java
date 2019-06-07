@@ -42,7 +42,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
  * propagation when entering the eclipse and to {@link Action#STOP stop} propagation
  * when exiting the eclipse.
- * <br>This can be changed by calling {@link#withHandler(EventHandler)} after construction.
+ * <br>This can be changed by calling {@link #withHandler(EventHandler)} after construction.
  * </p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud

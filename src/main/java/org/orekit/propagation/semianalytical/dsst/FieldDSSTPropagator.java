@@ -308,12 +308,12 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * </p>
      * <p>
      * If neither {@link #setInterpolationGridToFixedNumberOfPoints(int)}
-     * nor {@link #setInterpolationGridToMaxTimeGap(double)} has been called,
+     * nor {@link #setInterpolationGridToMaxTimeGap(RealFieldElement)} has been called,
      * by default the propagator is set as to 3 interpolations points per step.
      * </p>
      * @param interpolationPoints number of interpolation points at
      * each integration step
-     * @see #setInterpolationGridToMaxTimeGap(double)
+     * @see #setInterpolationGridToMaxTimeGap(RealFieldElement)
      * @since 7.1
      */
     public void setInterpolationGridToFixedNumberOfPoints(final int interpolationPoints) {
@@ -327,7 +327,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * </p>
      * <p>
      * If neither {@link #setInterpolationGridToFixedNumberOfPoints(int)}
-     * nor {@link #setInterpolationGridToMaxTimeGap(double)} has been called,
+     * nor {@link #setInterpolationGridToMaxTimeGap(RealFieldElement)} has been called,
      * by default the propagator is set as to 3 interpolations points per step.
      * </p>
      * @param maxGap maximum time gap between interpolation points (seconds)
@@ -345,7 +345,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      *  </p>
      *  @param force perturbing {@link DSSTForceModel force} to add
      *  @see #removeForceModels()
-     *  @see #setMu(double)
+     *  @see #setMu(RealFieldElement)
      */
     public void addForceModel(final DSSTForceModel force) {
 
@@ -413,7 +413,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @return list of perturbing force models, with Newtonian attraction being the
      * last one
      * @see #addForceModel(DSSTForceModel)
-     * @see #setMu(double)
+     * @see #setMu(RealFieldElement)
      */
     public List<DSSTForceModel> getAllForceModels() {
         return Collections.unmodifiableList(forceModels);

@@ -24,8 +24,8 @@ import org.orekit.time.GNSSDate;
 /**
  * Class for BeiDou almanac.
  *
- * @see BeiDou Navigation Satellite System, Signal In Space, Interface Control Document,
- *      Version 2.1, Table 5-12
+ * @see "BeiDou Navigation Satellite System, Signal In Space, Interface Control Document,
+ *      Version 2.1, Table 5-12"
  *
  * @author Bryan Cazabonne
  * @since 10.0

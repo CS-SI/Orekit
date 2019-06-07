@@ -40,19 +40,16 @@ import org.orekit.utils.ParameterDriver;
  *  </p>
  *  <p>
  *  The propagator will call at the very beginning of a propagation the {@link
- *  #initialize(AuxiliaryElements, boolean)} method allowing preliminary computation
- *  such as truncation if needed.
+ *  #initialize(AuxiliaryElements, PropagationType, double[])} method allowing
+ *  preliminary computation such as truncation if needed.
  *  </p>
  *  <p>
  *  Then the propagator will call at each step:
  *  <ol>
- *  <li>the {@link #initializeStep(AuxiliaryElements)} method.
- *  The force model instance will extract all the elements needed before
- *  computing the mean element rates.</li>
- *  <li>the {@link #getMeanElementRate(SpacecraftState)} method.
+ *  <li>the {@link #getMeanElementRate(SpacecraftState, AuxiliaryElements, double[])} method.
  *  The force model instance will extract all the state data needed to compute
  *  the mean element rates that contribute to the mean state derivative.</li>
- *  <li>the {@link #updateShortPeriodTerms(SpacecraftState...)} method,
+ *  <li>the {@link #updateShortPeriodTerms(double[], SpacecraftState...)} method,
  *  if osculating parameters are desired, on a sample of points within the
  *  last step.</li>
  *  </ol>
@@ -165,7 +162,7 @@ public interface DSSTForceModel {
      * <p>
      * The {@link ShortPeriodTerms short period terms} that will be updated
      * are the ones that were returned during the call to {@link
-     * #initialize(AuxiliaryElements, boolean)}.
+     * #initialize(AuxiliaryElements, PropagationType, double[])}.
      * </p>
      * @param parameters values of the force model parameters
      * @param meanStates mean states information: date, kinematics, attitude
@@ -176,7 +173,7 @@ public interface DSSTForceModel {
      * <p>
      * The {@link ShortPeriodTerms short period terms} that will be updated
      * are the ones that were returned during the call to {@link
-     * #initialize(AuxiliaryElements, boolean)}.
+     * #initialize(AuxiliaryElements, PropagationType, double[])}.
      * </p>
      * @param <T> type of the elements
      * @param parameters values of the force model parameters

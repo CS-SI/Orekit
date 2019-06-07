@@ -2761,18 +2761,14 @@ public class KalmanOrbitDeterminationTest {
                 // load Klobuchar model for the L1 frequency
                 final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
                 loader.loadKlobucharIonosphericCoefficients(dc);
-                final IonosphericModel l1Model   = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
+                final IonosphericModel model = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
 
-                // scale for current frequency
-                final double fL1   = Frequency.G01.getMHzFrequency();
-                final double f     = frequency.getMHzFrequency();
-                final double ratio = (fL1 * fL1) / (f * f);
-                final IonosphericModel scaledModel = (date, geo, elevation, azimuth) ->
-                                                     ratio * l1Model.pathDelay(date, geo, elevation, azimuth);
+                // frequency
+                final double f = frequency.getMHzFrequency() * 1.0e6;
 
                 // create modifiers
-                rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(scaledModel));
-                rangeRateModifiers.get(frequency).put(dc, new RangeRateIonosphericDelayModifier(scaledModel, twoWay));
+                rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(model, f));
+                rangeRateModifiers.get(frequency).put(dc, new RangeRateIonosphericDelayModifier(model, f, twoWay));
 
             }
 

@@ -320,9 +320,9 @@ public class AntexLoader {
                             break;
                         case "END OF FREQUENCY" : {
                             final String endFrequency = parseString(line, 3, 3);
-                            if (!frequency.toString().equals(endFrequency)) {
+                            if (frequency == null || !frequency.toString().equals(endFrequency)) {
                                 throw new OrekitException(OrekitMessages.MISMATCHED_FREQUENCIES,
-                                                          name, lineNumber, frequency.toString(), endFrequency);
+                                                          name, lineNumber, frequency, endFrequency);
 
                             }
 

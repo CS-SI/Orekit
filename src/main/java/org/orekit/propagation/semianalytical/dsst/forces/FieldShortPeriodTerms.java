@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.hipparchus.RealFieldElement;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Additive short period terms contributing to the mean to osculating orbit mapping.
@@ -44,12 +43,12 @@ public interface FieldShortPeriodTerms <T extends RealFieldElement<T>> {
      * This prefix is used to identify the coefficients of the
      * current force model from the coefficients pertaining to
      * other force models. All the keys in the map returned by
-     * {@link #getCoefficients(AbsoluteDate, Set)}
+     * {@link #getCoefficients(FieldAbsoluteDate, Set)}
      * start with this prefix, which must be unique among all
      * providers.
      * </p>
      * @return the prefix for short periodic coefficients keys
-     * @see #getCoefficients(AbsoluteDate, Set)
+     * @see #getCoefficients(FieldAbsoluteDate, Set)
      */
     String getCoefficientsKeyPrefix();
 

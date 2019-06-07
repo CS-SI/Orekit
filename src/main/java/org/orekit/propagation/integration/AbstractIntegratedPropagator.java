@@ -137,7 +137,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation, null for
-     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates AbsolutePVCoordinates}
+     * rather than {@link org.orekit.orbits Orbit}
      */
     protected void setOrbitType(final OrbitType orbitType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
@@ -147,7 +148,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Get propagation parameter type.
      * @return orbit type used for propagation, null for
-     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates AbsolutePVCoordinates}
+     * rather than {@link org.orekit.orbits Orbit}
      */
     protected OrbitType getOrbitType() {
         return stateMapper.getOrbitType();
@@ -294,7 +296,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -308,7 +310,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -322,7 +324,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {
@@ -338,7 +340,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      *
      * <p>Note that this method has the side effect of replacing the step handlers of the
      * underlying integrator set up in the {@link #AbstractIntegratedPropagator(ODEIntegrator,
-     * boolean) constructor}.</p>
+     * PropagationType) constructor}.</p>
      */
     @Override
     public void setEphemerisMode(final OrekitStepHandler handler) {
@@ -743,7 +745,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Adapt an {@link org.orekit.propagation.events.EventDetector}
      * to Hipparchus {@link org.hipparchus.ode.events.ODEEventHandler} interface.
-     * @param <T> class type for the generic version
      * @author Fabien Maussion
      */
     private class AdaptedEventDetector implements ODEEventHandler {

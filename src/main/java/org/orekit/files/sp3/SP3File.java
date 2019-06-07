@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -81,7 +82,7 @@ public class SP3File implements EphemerisFile {
          * @return the type corresponding to the string
          */
         public static SP3OrbitType parseType(final String s) {
-            final String normalizedString = s.trim().toUpperCase();
+            final String normalizedString = s.trim().toUpperCase(Locale.US);
             if ("EST".equals(normalizedString)) {
                 return FIT;
             } else if ("BHN".equals(normalizedString)) {

@@ -46,7 +46,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAbstractPropagator;
@@ -203,7 +202,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Get the central attraction coefficient μ.
      * @return mu central attraction coefficient (m³/s²)
-     * @see #setMu(double)
+     * @see #setMu(RealFieldElement)
      */
     public T getMu() {
         return stateMapper.getMu();
@@ -303,7 +302,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -317,7 +316,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setMasterMode(final FieldOrekitStepHandler<T> handler) {
@@ -331,7 +330,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {
@@ -449,9 +448,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
 
             // set propagation orbit type
-            final FieldOrbit<T> initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
+            //final FieldOrbit<T> initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
             if (Double.isNaN(getMu().getReal())) {
-                setMu(initialOrbit.getMu());
+                setMu(getInitialState().getMu());
             }
             if (getInitialState().getMass().getReal() <= 0.0) {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,

@@ -50,7 +50,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
- * org.hipparchus.fitting.leastsquares.LeastSquaresProblem
+ * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem
  * least squares problems}.
  * @author Luc Maisonobe
  * @since 8.0
@@ -112,17 +112,17 @@ public class BatchLSModel implements BatchLSODModel {
     private RealMatrix jacobian;
 
     /** Simple constructor.
-     * @param builders builders to use for propagation
+     * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public BatchLSModel(final IntegratedPropagatorBuilder[] builders,
+    public BatchLSModel(final IntegratedPropagatorBuilder[] propagatorBuilders,
                  final List<ObservedMeasurement<?>> measurements,
                  final ParameterDriversList estimatedMeasurementsParameters,
                  final ModelObserver observer) {
 
-        this.builders                        = builders;
+        this.builders                        = propagatorBuilders.clone();
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());

@@ -79,6 +79,44 @@ public class FixedTroposphericModelTest {
     }
 
     @Test
+    public void testZenithDelay() {
+        // Zenith Delay
+        final double[] zenithDelay = model.computeZenithDelay(0d, model.getParameters(), AbsoluteDate.J2000_EPOCH);
+        Assert.assertEquals(2.5d, zenithDelay[0], epsilon);
+        Assert.assertEquals(0.0d, zenithDelay[1], epsilon);
+
+        // Compute delay using zenith delay and mapping factors
+        // For Fixed Troposheric model, the delay is not split into hydrostatic and non-hydrostatic parts
+        // In that respect, mapping function is equal to 1.0 for for both components and for any elevation angle
+        final double[] mapping = model.mappingFactors(0d, 0d, model.getParameters(), AbsoluteDate.J2000_EPOCH);
+        // Delay
+        final double delay = zenithDelay[0] * mapping[0] + zenithDelay[1] * mapping[1];
+        Assert.assertEquals(2.5d, delay, epsilon);
+    }
+
+    @Test
+    public void testFieldZenithDelay() {
+        doTestZenithDelay(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestZenithDelay(final Field<T> field) {
+        // Zero
+        final T zero = field.getZero();
+        // Zenith Delay
+        final T[] zenithDelay = model.computeZenithDelay(zero, model.getParameters(field), FieldAbsoluteDate.getJ2000Epoch(field));
+        Assert.assertEquals(2.5d, zenithDelay[0].getReal(), epsilon);
+        Assert.assertEquals(0.0d, zenithDelay[1].getReal(), epsilon);
+
+        // Compute delay using zenith delay and mapping factors
+        // For Fixed Troposheric model, the delay is not split into hydrostatic and non-hydrostatic parts
+        // In that respect, mapping function is equal to 1.0 for for both components and for any elevation angle
+        final T[] mapping = model.mappingFactors(zero, zero, model.getParameters(field), FieldAbsoluteDate.getJ2000Epoch(field));
+        // Delay
+        final T delay = zenithDelay[0].multiply(mapping[0]).add(zenithDelay[1].multiply(mapping[1]));
+        Assert.assertEquals(2.5d, delay.getReal(), epsilon);
+    }
+
+    @Test
     public void testSymmetry() {
         for (int elevation = 0; elevation < 90; elevation += 10) {
             final double delay1 = model.pathDelay(FastMath.toRadians(elevation), 100, null, AbsoluteDate.J2000_EPOCH);

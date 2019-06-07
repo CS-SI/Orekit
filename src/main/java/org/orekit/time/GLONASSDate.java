@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.utils.Constants;
 
@@ -25,7 +26,7 @@ import org.orekit.utils.Constants;
  * Container for date in GLONASS form.
  * @author Bryan Cazabonne
  * @see AbsoluteDate
- * @see GLONASS Interface Control Document v1.0, 2016
+ * @see "GLONASS Interface Control Document v1.0, 2016"
  * @since 10.0
  */
 public class GLONASSDate implements Serializable, TimeStamped {
@@ -67,7 +68,8 @@ public class GLONASSDate implements Serializable, TimeStamped {
         this.n4      = n4;
         this.secInNa = secInNa;
         // Compute JD0
-        this.jd0  = 1461 * (n4 - 1) + na + 2450082.5 - ((na - 3) / (25 + C1 + C2));
+        final int ratio = FastMath.round((float) (na - 3) / (25 + C1 + C2));
+        this.jd0  = 1461 * (n4 - 1) + na + 2450082.5 - ratio;
         // GMST
         this.gmst = computeGMST();
         this.date = computeDate();
@@ -87,7 +89,8 @@ public class GLONASSDate implements Serializable, TimeStamped {
         this.na = (int) (duration / 86400) + 1;
         this.secInNa = dateTime.getTime().getSecondsInLocalDay();
         // Compute JD0
-        this.jd0 = 1461 * (n4 - 1) + na + 2450082.5 - ((na - 3) / (25 + C1 + C2));
+        final int ratio = FastMath.round((float) (na - 3) / (25 + C1 + C2));
+        this.jd0 = 1461 * (n4 - 1) + na + 2450082.5 - ratio;
         // GMST
         this.gmst = computeGMST();
         this.date = date;

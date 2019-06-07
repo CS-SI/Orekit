@@ -76,11 +76,11 @@ public class GNSSDate implements Serializable, TimeStamped {
      * since week start.
      * </p>
      * <p>
-     * Many interfaces provide week number modulo {@link GNSSDateType#getRollOverCycle() cycle}. In order to cope with
-     * this, when the week number is smaller than {@link GNSSDateType#getRollOverCycle() cycle}, this constructor assumes a modulo operation
+     * Many interfaces provide week number modulo the constellation week cycle. In order to cope with
+     * this, when the week number is smaller than the week cycle, this constructor assumes a modulo operation
      * has been performed and it will fix the week number according to the reference date set up for
      * handling rollover (see {@link #setRolloverReference(DateComponents) setRolloverReference(reference)}).
-     * If the week number is {@link GNSSDateType#getRollOverCycle() cycle} or larger, it will be used without any correction.
+     * If the week number is equal to the week cycle or larger, it will be used without any correction.
      * </p>
      * @param weekNumber week number
      * @param milliInWeek number of milliseconds since week start
@@ -142,7 +142,7 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Set a reference date for ensuring continuity across GNSS week rollover.
      * <p>
      * Instance created using the {@link #GNSSDate(int, double, SatelliteSystem) GNSSDate(weekNumber, milliInWeek, system)}
-     * constructor and with a week number between 0 and {@link GNSSDateType#getRollOverCycle() cycleW} after this method has been called will
+     * constructor and with a week number between 0 and the constellation week cycle (cycleW) after this method has been called will
      * fix the week number to ensure they correspond to dates between {@code reference - cycleW / 2 weeks}
      * and {@code reference + cycleW / 2 weeks}.
      * </p>
@@ -173,7 +173,7 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Get the week number since the GNSS reference epoch.
      * <p>
      * The week number returned here has been fixed for GNSS week rollover, i.e.
-     * it may be larger than {@link GNSSDateType#getRollOverCycle()}.
+     * it may be larger than the corresponding week cycle of the constellation.
      * </p>
      * @return week number since since the GNSS reference epoch
      */

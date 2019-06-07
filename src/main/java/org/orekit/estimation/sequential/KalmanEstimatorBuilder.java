@@ -57,7 +57,7 @@ public class KalmanEstimatorBuilder {
 
     /** Construct a {@link KalmanEstimator} from the data in this builder.
      * <p>
-     * Before this method is called, {@link #addPropagationConfiguration(NumericalPropagatorBuilder,
+     * Before this method is called, {@link #addPropagationConfiguration(IntegratedPropagatorBuilder,
      * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
      * at least once, otherwise configuration is incomplete and an exception will be raised.
      * </p>
