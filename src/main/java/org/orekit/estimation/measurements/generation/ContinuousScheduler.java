@@ -42,8 +42,15 @@ import org.orekit.time.DatesSelector;
 public class ContinuousScheduler<T extends ObservedMeasurement<T>> extends AbstractScheduler<T> {
 
     /** Simple constructor.
+     * <p>
+     * BEWARE! Dates selectors often store internally the last selected dates, so they are not
+     * reusable across several {@link EventBasedScheduler instances}. A separate selector
+     * should be used for each scheduler.
+     * </p>
      * @param builder builder for individual measurements
-     * @param selector selector for dates
+     * @param selector selector for dates (beware that selectors are generally not
+     * reusable across several {@link EventBasedScheduler instances}, each selector should
+     * be dedicated to one scheduler
      */
     public ContinuousScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector) {
         super(builder, selector);
