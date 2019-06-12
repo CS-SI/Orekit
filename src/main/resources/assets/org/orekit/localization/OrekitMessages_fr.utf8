@@ -537,3 +537,9 @@ IRREGULAR_OR_INCOMPLETE_GRID = grille incomplète ou irrégulière dans le fichi
 
 # invalid satellite system {0}
 INVALID_SATELLITE_SYSTEM = le système satellite {0} est non valide
+
+# IONEX file {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILE_FOR_DATE = le fichier IONEX {0} ne contient pas de données de TEC pour la date {1}
+
+# number of maps {0} is inconsistent with header specification: {1}
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = le nombre de cartes {0} est incompatible avec les specifications de l''en-tête: {1}

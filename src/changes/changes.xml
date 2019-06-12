@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="bryan" type="add">
+        Add Global Ionosphere Map model.
+      </action>
       <action dev="maxime" type="add" issue="554">
         Added propagation in inertial frame.
       </action>
