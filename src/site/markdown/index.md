@@ -285,7 +285,7 @@
 Orekit is freely available both in source and binary formats, with all related
 documentation and tests.
 
-It is distributed under the [Apache License Version 2.0](./license.html). This
+It is distributed under the [Apache License Version 2.0](./licenses.html). This
 is a well known business-friendly license. This means anybody can use it to build
 any application, free or not. There are no strings attached to your own code.
 
