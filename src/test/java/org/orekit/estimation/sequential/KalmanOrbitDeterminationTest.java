@@ -1277,7 +1277,7 @@ public class KalmanOrbitDeterminationTest {
             final boolean cdEstimated = parser.getBoolean(ParameterKey.DRAG_CD_ESTIMATED);
 
             MarshallSolarActivityFutureEstimation msafe =
-                            new MarshallSolarActivityFutureEstimation("(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)",
+                            new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
             DataProvidersManager manager = DataProvidersManager.getInstance();
             manager.feed(msafe.getSupportedNames(), msafe);
