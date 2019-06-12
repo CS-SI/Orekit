@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="559">
+        Take into account changes in MSAFE files names published by NASA.
+      </action>
       <action dev="bryan" type="add">
         Add Global Ionosphere Map model.
       </action>

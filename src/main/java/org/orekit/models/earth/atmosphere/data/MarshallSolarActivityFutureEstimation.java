@@ -97,6 +97,12 @@ import org.orekit.utils.Constants;
  */
 public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM2000InputParameters, NRLMSISE00InputParameters {
 
+    /** Default regular expression for the supported name that work with all officially published files.
+     * @since 10.0
+     */
+    public static final String DEFAULT_SUPPORTED_NAMES =
+                    "\\p{Alpha}\\p{Lower}\\p{Lower}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}(?:f|F)10(?:_prd)?\\.(?:txt|TXT)";
+
     /** Strength level of activity. */
     public enum StrengthLevel {
 
@@ -141,9 +147,9 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** Simple constructor.
      * <p>
      * The original file names used by NASA Marshall space center are of the
-     * form: Dec2010F10.txt or Oct1999F10.TXT. So a recommended regular
+     * form: may2019f10_prd.txt or Oct1999F10.TXT. So a recommended regular
      * expression for the supported name that work with all published files is:
-     * "(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)"
+     * {@link #DEFAULT_SUPPORTED_NAMES}.
      * </p>
      * @param supportedNames regular expression for supported files names
      * @param strengthLevel selected strength level of activity
