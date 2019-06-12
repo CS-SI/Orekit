@@ -44,6 +44,7 @@ pipeline {
             jacoco execPattern: 'target/**.exec',
                    classPattern: '**/classes',
                    sourcePattern: '**/src/main/java',
+                   exclusionPattern: 'fr/cs/examples/**/*.class',
                    changeBuildStatus: true,
                    maximumBranchCoverage: '85', minimumBranchCoverage: '80',
                    maximumClassCoverage: '100', minimumClassCoverage: '95',
