@@ -54,7 +54,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Guillaume Obrecht
  *
  */
-public class testCaseRotatingEarth {
+public class TestCaseRotatingEarth {
 
     /**
      * @param args
