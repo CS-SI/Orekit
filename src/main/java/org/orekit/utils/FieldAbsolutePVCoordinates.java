@@ -34,7 +34,7 @@ import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeStamped;
 
 /** Field implementation of AbsolutePVCoordinates.
- * @link AbsolutePVCoordinates
+ * @see AbsolutePVCoordinates
  * @author Vincent Mouraux
  */
 public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
