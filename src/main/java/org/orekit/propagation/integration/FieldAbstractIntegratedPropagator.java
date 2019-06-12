@@ -46,7 +46,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAbstractPropagator;
@@ -449,9 +448,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
 
             // set propagation orbit type
-            final FieldOrbit<T> initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
+            //final FieldOrbit<T> initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
             if (Double.isNaN(getMu().getReal())) {
-                setMu(initialOrbit.getMu());
+                setMu(getInitialState().getMu());
             }
             if (getInitialState().getMass().getReal() <= 0.0) {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,

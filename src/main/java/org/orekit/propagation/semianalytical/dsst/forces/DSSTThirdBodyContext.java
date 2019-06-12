@@ -118,9 +118,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
     /** Keplerian mean motion. */
     private final double motion;
 
-    /** Keplerian period. */
-    private final double period;
-
     /**
      * Simple constructor.
      *
@@ -139,10 +136,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
         // Keplerian Mean Motion
         final double absA = FastMath.abs(auxiliaryElements.getSma());
         motion = FastMath.sqrt(mu / absA) / absA;
-
-        // Keplerian period
-        final double a = auxiliaryElements.getSma();
-        period = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
 
         // Distance from center of mass of the central body to the 3rd body
         final Vector3D bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
@@ -267,13 +260,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
         return A;
     }
 
-    /** Get distance from center of mass of the central body to the 3rd body.
-     * @return R3
-     */
-    public double getR3() {
-        return R3;
-    }
-
     /** Get direction cosine α for central body.
      * @return α
      */
@@ -321,20 +307,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
      */
     public double getX() {
         return X;
-    }
-
-    /** Get &Chi;².
-     * @return &Chi;².
-     */
-    public double getXX() {
-        return XX;
-    }
-
-    /** Get &Chi;³.
-     * @return &Chi;³
-     */
-    public double getXXX() {
-        return XXX;
     }
 
     /** Get m2aoA = -2 * a / A.
@@ -393,13 +365,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
         return kXXX;
     }
 
-    /** Get standard gravitational parameter μ for the body in m³/s².
-     *  @return gm
-     */
-    public double getGM() {
-        return gm;
-    }
-
     /** Get the value of max power for a/R3 in the serie expansion.
      * @return maxAR3Pow
      */
@@ -426,22 +391,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
      */
     public int getMaxFreqF() {
         return maxFreqF;
-    }
-
-    /** Get the value of max power for e in the serie expansion (for short periodics).
-     * @return maxEccPowShort
-     */
-    public int getMaxEccPowShort() {
-        return maxEccPowShort;
-    }
-
-    /** Get the Keplerian period.
-     * <p>The Keplerian period is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
-     */
-    public double getKeplerianPeriod() {
-        return period;
     }
 
     /** Get the Keplerian mean motion.

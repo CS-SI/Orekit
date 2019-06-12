@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.util.FastMath;
 
-
 /** Selector generating a continuous stream of dates separated by a constant step.
  * <p>
  * The dates can be aligned to whole steps in some time scale. So for example
@@ -30,9 +29,11 @@ import org.hipparchus.util.FastMath;
  * at whole minutes in UTC time.
  * </p>
  * <p>
- * This class stores internally the last selected dates, so it is <em>not</em>
- * thread-safe. A separate selector should be used for each thread in multi-threading
- * context.
+ * BEWARE! This class stores internally the last selected dates, so it is <em>neither</em>
+ * reusable across several {@link org.orekit.estimation.measurements.generation.EventBasedScheduler
+ * fixed step} or {@link org.orekit.estimation.measurements.generation.ContinuousScheduler
+ * continuous} schedulers, <em>nor</em> thread-safe. A separate selector should be used for each
+ * scheduler and for each thread in multi-threading context.
  * </p>
  * @author Luc Maisonobe
  * @since 9.3

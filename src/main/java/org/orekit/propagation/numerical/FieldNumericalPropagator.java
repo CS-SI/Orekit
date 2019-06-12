@@ -25,6 +25,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -46,6 +47,7 @@ import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -152,6 +154,9 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     /** Field used by this class.*/
     private final Field<T> field;
 
+    /** boolean to ignore or not the creation of a NewtonianAttraction. */
+    private boolean ignoreCentralAttraction = false;
+
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
@@ -176,12 +181,26 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         setPositionAngleType(PositionAngle.TRUE);
     }
 
+    public void setIgnoreCentralAttraction(final boolean ignoreCentralAttraction) {
+        this.ignoreCentralAttraction = ignoreCentralAttraction;
+    }
+
      /** Set the central attraction coefficient μ.
+      * <p>
+      * Setting the central attraction coefficient is
+      * equivalent to {@link #addForceModel(ForceModel) add}
+      * a {@link NewtonianAttraction} force model.
+      * </p>
      * @param mu central attraction coefficient (m³/s²)
      * @see #addForceModel(ForceModel)
+     * @see #getAllForceModels()
      */
     public void setMu(final T mu) {
-        addForceModel(new NewtonianAttraction(mu.getReal()));
+        if (ignoreCentralAttraction) {
+            superSetMu(mu);
+        } else {
+            addForceModel(new NewtonianAttraction(mu.getReal()));
+        }
     }
 
     /** Set the central attraction coefficient μ only in upper class.
@@ -281,6 +300,13 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @return orbit type used for propagation
      */
     public OrbitType getOrbitType() {
+        return superGetOrbitType();
+    }
+
+    /** Get propagation parameter type.
+     * @return orbit type used for propagation
+     */
+    private OrbitType superGetOrbitType() {
         return super.getOrbitType();
     }
 
@@ -364,15 +390,48 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             if (mass.getReal() <= 0.0) {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
-            final FieldOrbit<T> orbit       = super.getOrbitType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
-            final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
-            return new FieldSpacecraftState<>(orbit, attitude, mass);
+
+            if (superGetOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                final FieldVector3D<T> p = new FieldVector3D<>(y[0],    y[1],    y[2]);
+                final FieldVector3D<T> v = new FieldVector3D<>(y[3],    y[4],    y[5]);
+                final FieldVector3D<T> a;
+                final FieldAbsolutePVCoordinates<T> absPva;
+                if (yDot == null) {
+                    absPva = new FieldAbsolutePVCoordinates<>(getFrame(), new TimeStampedFieldPVCoordinates<>(date, p, v, FieldVector3D.getZero(date.getField())));
+                } else {
+                    a = new FieldVector3D<>(yDot[3], yDot[4], yDot[5]);
+                    absPva = new FieldAbsolutePVCoordinates<>(getFrame(), new TimeStampedFieldPVCoordinates<>(date, p, v, a));
+                }
+
+                final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(absPva, date, getFrame());
+                return new FieldSpacecraftState<>(absPva, attitude, mass);
+            } else {
+                // propagation uses regular orbits
+                final FieldOrbit<T> orbit       = superGetOrbitType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
+                final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
+                return new FieldSpacecraftState<>(orbit, attitude, mass);
+            }
         }
 
         /** {@inheritDoc} */
         public void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y, final T[] yDot) {
-            super.getOrbitType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y, yDot);
-            y[6] = state.getMass();
+            if (superGetOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                final FieldVector3D<T> p = state.getAbsPVA().getPosition();
+                final FieldVector3D<T> v = state.getAbsPVA().getVelocity();
+                y[0] = p.getX();
+                y[1] = p.getY();
+                y[2] = p.getZ();
+                y[3] = v.getX();
+                y[4] = v.getY();
+                y[5] = v.getZ();
+                y[6] = state.getMass();
+            }
+            else {
+                superGetOrbitType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y, yDot);
+                y[6] = state.getMass();
+            }
         }
 
     }
@@ -388,8 +447,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         /** Derivatives array. */
         private final T[] yDot;
 
-        /** Current orbit. */
-        private FieldOrbit<T> orbit;
+        /** Current state. */
+        private FieldSpacecraftState<T> currentState;
 
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
         private T[][] jacobian;
@@ -403,6 +462,15 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             this.jacobian = MathArrays.buildArray(getField(),  6, 6);
             for (final ForceModel forceModel : forceModels) {
                 forceModel.getFieldEventsDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
+            }
+
+            if (superGetOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                // we can set Jacobian once and for all
+                for (int i = 0; i < jacobian.length; ++i) {
+                    Arrays.fill(jacobian[i], getField().getZero());
+                    jacobian[i][i] = getField().getOne();
+                }
             }
 
         }
@@ -421,15 +489,27 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         @Override
         public T[] computeDerivatives(final FieldSpacecraftState<T> state) {
             final T zero = state.getA().getField().getZero();
-            orbit = state.getOrbit();
+            currentState = state;
             Arrays.fill(yDot, zero);
-            orbit.getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+            if (superGetOrbitType() != null) {
+                // propagation uses regular orbits
+                currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+            }
 
             // compute the contributions of all perturbing forces,
             // using the Kepler contribution at the end since
             // NewtonianAttraction is always the last instance in the list
             for (final ForceModel forceModel : forceModels) {
                 forceModel.addContribution(state, this);
+            }
+
+            if (superGetOrbitType() == null) {
+                // position derivative is velocity, and was not added above in the force models
+                // (it is added when orbit type is non-null because NewtonianAttraction considers it)
+                final FieldVector3D<T> velocity = currentState.getPVCoordinates().getVelocity();
+                yDot[0] = yDot[0].add(velocity.getX());
+                yDot[1] = yDot[1].add(velocity.getY());
+                yDot[2] = yDot[2].add(velocity.getZ());
             }
 
             return yDot.clone();
@@ -439,7 +519,23 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         /** {@inheritDoc} */
         @Override
         public void addKeplerContribution(final T mu) {
-            orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
+            if (superGetOrbitType() == null) {
+
+                // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
+                if (mu.getReal() > 0) {
+                    // velocity derivative is Newtonian acceleration
+                    final FieldVector3D<T> position = currentState.getPVCoordinates().getPosition();
+                    final double r2         = position.getNormSq().getReal();
+                    final double coeff      = -mu.getReal() / (r2 * FastMath.sqrt(r2));
+                    yDot[3] = yDot[3].add(coeff * position.getX().getReal());
+                    yDot[4] = yDot[4].add(coeff * position.getY().getReal());
+                    yDot[5] = yDot[5].add(coeff * position.getZ().getReal());
+                }
+
+            } else {
+                // propagation uses regular orbits
+                currentState.getOrbit().addKeplerContribution(getPositionAngleType(), mu, yDot);
+            }
         }
 
         /** {@inheritDoc} */

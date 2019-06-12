@@ -30,9 +30,11 @@ import org.hipparchus.util.FastMath;
  * each burst will occur at whole hours in UTC time.
  * </p>
  * <p>
- * This class stores internally the last selected dates, so it is <em>not</em>
- * thread-safe. A separate selector should be used for each thread in multi-threading
- * context.
+ * BEWARE! This class stores internally the last selected dates, so it is <em>neither</em>
+ * reusable across several {@link org.orekit.estimation.measurements.generation.EventBasedScheduler
+ * fixed step} or {@link org.orekit.estimation.measurements.generation.ContinuousScheduler
+ * continuous} schedulers, <em>nor</em> thread-safe. A separate selector should be used for each
+ * scheduler and for each thread in multi-threading context.
  * </p>
  * @author Luc Maisonobe
  * @since 9.3

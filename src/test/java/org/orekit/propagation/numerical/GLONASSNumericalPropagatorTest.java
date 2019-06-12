@@ -16,12 +16,16 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,6 +35,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.GLONASSEphemeris;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -72,6 +77,12 @@ public class GLONASSNumericalPropagatorTest {
                                                      new TimeComponents(12300),
                                                      TimeScalesFactory.getGLONASS());
 
+        // Initial verifications
+        final GLONASSOrbitalElements poe = propagator.getGLONASSOrbitalElements();
+        Assert.assertEquals(0.0, poe.getXDotDot(), Precision.SAFE_MIN);
+        Assert.assertEquals(0.0, poe.getYDotDot(), Precision.SAFE_MIN);
+        Assert.assertEquals(0.0, poe.getZDotDot(), Precision.SAFE_MIN);
+        
         // Propagation
         final SpacecraftState finalState = propagator.propagate(target);
         final PVCoordinates pvFinal = propagator.getPVInPZ90(finalState);
@@ -138,6 +149,28 @@ public class GLONASSNumericalPropagatorTest {
         Assert.assertEquals(refPZ90.getX().getReal(), comPZ90.getX().getReal(), 1.0e-4);
         Assert.assertEquals(refPZ90.getY().getReal(), comPZ90.getY().getReal(), 1.0e-4);
         Assert.assertEquals(refPZ90.getZ().getReal(), comPZ90.getZ().getReal(), 1.0e-4);
+    }
+
+    @Test
+    public void testIssue544() {
+        try {
+            Method eMeSinEM = GLONASSNumericalPropagator.class.getDeclaredMethod("eMeSinE",
+                                                                                 Double.TYPE, Double.TYPE);
+            eMeSinEM.setAccessible(true);
+            final double value = (double) eMeSinEM.invoke(null, Double.NaN, Double.NaN);
+            // Verify that an infinite loop did not occur
+            Assert.assertTrue(Double.isNaN(value));
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
 }

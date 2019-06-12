@@ -76,8 +76,15 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
      * {@link Propagator#addEventDetector(EventDetector) added} to the propagator by this
      * constructor.
      * </p>
+     * <p>
+     * BEWARE! Dates selectors often store internally the last selected dates, so they are not
+     * reusable across several {@link EventBasedScheduler instances}. A separate selector
+     * should be used for each scheduler.
+     * </p>
      * @param builder builder for individual measurements
-     * @param selector selector for dates
+     * @param selector selector for dates (beware that selectors are generally not
+     * reusable across several {@link EventBasedScheduler instances}, each selector should
+     * be dedicated to one scheduler
      * @param propagator propagator associated with this scheduler
      * @param detector detector for checking measurements feasibility
      * @param signSemantic semantic of the detector g function sign to use

@@ -111,9 +111,6 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
     /** Maximum power of the eccentricity to use in summation over s. */
     private int maxEccPow;
 
-    /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
-    private int maxHansen;
-
     /** Ratio of satellite period to central body rotation period. */
     private T ratio;
 
@@ -143,7 +140,6 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
         final T zero = field.getZero();
 
         this.maxEccPow = 0;
-        this.maxHansen = 0;
         this.resOrders = new ArrayList<Integer>();
 
         final T mu = parameters[0];
@@ -208,9 +204,6 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
             maxEccPow = 20;
         }
 
-        // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
-        maxHansen = maxEccPow / 2;
-
         // Ratio of satellite to central body periods to define resonant terms
         ratio = period.divide(bodyPeriod);
 
@@ -229,13 +222,6 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
             }
         }
 
-    }
-
-    /** Get A = sqrt(μ * a).
-     * @return A
-     */
-    public T getA() {
-        return A;
     }
 
     /** Get the list of resonant orders.
@@ -327,13 +313,6 @@ class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForce
      */
     public int getMaxEccPow() {
         return maxEccPow;
-    }
-
-    /** Get the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
-     * @return maxHansen
-     */
-    public int getMaxHansen() {
-        return maxHansen;
     }
 
     /** Get the Keplerian period.

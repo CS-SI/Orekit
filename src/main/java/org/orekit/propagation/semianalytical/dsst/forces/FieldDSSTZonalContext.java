@@ -59,9 +59,6 @@ class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceMod
     /** Keplerian mean motion. */
     private final T n;
 
-    /** Keplerian period. */
-    private final T period;
-
     // Short period terms
     /** h * k. */
     private T hk;
@@ -102,10 +99,6 @@ class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceMod
         // Keplerian mean motion
         final T absA = FastMath.abs(auxiliaryElements.getSma());
         n = FastMath.sqrt(mu.divide(absA)).divide(absA);
-
-        // Keplerian period
-        final T a = auxiliaryElements.getSma();
-        period = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2.0 * FastMath.PI).multiply(a.divide(mu).sqrt());
 
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 
@@ -152,13 +145,6 @@ class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceMod
         // B * B
         BB = auxiliaryElements.getB().multiply(auxiliaryElements.getB());
 
-    }
-
-    /** Get A = sqrt(μ * a).
-     * @return A
-     */
-    public T getA() {
-        return A;
     }
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
@@ -231,15 +217,6 @@ class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceMod
         return roa;
     }
 
-    /** Get the Keplerian period.
-     * <p>The Keplerian period is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
-     */
-    public T getKeplerianPeriod() {
-        return period;
-    }
-
     /** Get the Keplerian mean motion.
      * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
@@ -275,13 +252,6 @@ class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldForceMod
      */
     public T getOON2A2() {
         return oon2a2;
-    }
-
-    /** Get 1 / (n² * a).
-     * @return oon2a
-     */
-    public T getOON2A() {
-        return oon2a;
     }
 
     /** Get χ³ / (n² * a).
