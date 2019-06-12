@@ -34,6 +34,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeStamped;
 
+/** Position - Velocity - Acceleration linked to a date and a frame.
+ */
 public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     implements TimeStamped, TimeInterpolable<AbsolutePVCoordinates>,
                Serializable, PVCoordinatesProvider {

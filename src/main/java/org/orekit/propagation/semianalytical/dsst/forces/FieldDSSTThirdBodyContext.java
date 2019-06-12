@@ -121,9 +121,6 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
     /** Keplerian mean motion. */
     private final T motion;
 
-    /** Keplerian period. */
-    private final T period;
-
     /**
      * Simple constructor.
      *
@@ -149,10 +146,6 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
         // Keplerian mean motion
         final T absA = FastMath.abs(auxiliaryElements.getSma());
         motion = FastMath.sqrt(mu.divide(absA)).divide(absA);
-
-        // Keplerian period
-        final T a = auxiliaryElements.getSma();
-        period = (a.getReal() < 0) ? zero.add(Double.POSITIVE_INFINITY) : a.multiply(2.0 * FastMath.PI).multiply(a.divide(mu).sqrt());
 
         // Distance from center of mass of the central body to the 3rd body
         final FieldVector3D<T> bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
@@ -273,13 +266,6 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
         return A;
     }
 
-    /** Get distance from center of mass of the central body to the 3rd body.
-     * @return R3
-     */
-    public T getR3() {
-        return R3;
-    }
-
     /** Get direction cosine α for central body.
      * @return α
      */
@@ -327,20 +313,6 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
      */
     public T getX() {
         return X;
-    }
-
-    /** Get &Chi;².
-     * @return &Chi;².
-     */
-    public T getXX() {
-        return XX;
-    }
-
-    /** Get &Chi;³.
-     * @return &Chi;³
-     */
-    public T getXXX() {
-        return XXX;
     }
 
     /** Get m2aoA = -2 * a / A.
@@ -399,13 +371,6 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
         return kXXX;
     }
 
-    /** Get standard gravitational parameter μ for the body in m³/s².
-     *  @return gm
-     */
-    public T getGM() {
-        return gm;
-    }
-
     /** Get the value of max power for a/R3 in the serie expansion.
      * @return maxAR3Pow
      */
@@ -432,22 +397,6 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
      */
     public int getMaxFreqF() {
         return maxFreqF;
-    }
-
-    /** Get the value of max power for e in the serie expansion (for short periodics).
-     * @return maxEccPowShort
-     */
-    public int getMaxEccPowShort() {
-        return maxEccPowShort;
-    }
-
-    /** Get the Keplerian period.
-     * <p>The Keplerian period is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
-     */
-    public T getKeplerianPeriod() {
-        return period;
     }
 
     /** Get the Keplerian mean motion.

@@ -522,13 +522,47 @@ public class DSSTKalmanModel implements KalmanODModel {
     /** {@inheritDoc} */
     @Override
     public RealVector getPhysicalEstimatedState() {
-        return unNormalizeStateVector(correctedEstimate.getState());
+        // Method {@link ParameterDriver#getValue()} is used to get
+        // the physical values of the state.
+        // The scales'array is used to get the size of the state vector
+        final RealVector physicalEstimatedState = new ArrayRealVector(scale.length);
+        int i = 0;
+        for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
+            physicalEstimatedState.setEntry(i++, driver.getValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
+            physicalEstimatedState.setEntry(i++, driver.getValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+            physicalEstimatedState.setEntry(i++, driver.getValue());
+        }
+
+        return physicalEstimatedState;
     }
 
     /** {@inheritDoc} */
     @Override
     public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
-        return unNormalizeCovarianceMatrix(correctedEstimate.getCovariance());
+        // Un-normalize the estimated covariance matrix (P) from Hipparchus and return it.
+        // The covariance P is an mxm matrix where m = nbOrb + nbPropag + nbMeas
+        // For each element [i,j] of P the corresponding normalized value is:
+        // Pn[i,j] = P[i,j] / (scale[i]*scale[j])
+        // Consequently: P[i,j] = Pn[i,j] * scale[i] * scale[j]
+
+        // Normalized covariance matrix
+        final RealMatrix normalizedP = correctedEstimate.getCovariance();
+
+        // Initialize physical covariance matrix
+        final int nbParams = normalizedP.getRowDimension();
+        final RealMatrix physicalP = MatrixUtils.createRealMatrix(nbParams, nbParams);
+
+        // Un-normalize the covairance matrix
+        for (int i = 0; i < nbParams; ++i) {
+            for (int j = 0; j < nbParams; ++j) {
+                physicalP.setEntry(i, j, normalizedP.getEntry(i, j) * scale[i] * scale[j]);
+            }
+        }
+        return physicalP;
     }
 
     /** {@inheritDoc} */
@@ -777,26 +811,6 @@ public class DSSTKalmanModel implements KalmanODModel {
 
     }
 
-    /** Un-normalize a state vector.
-     * A state vector S is of size m = nbOrb + nbPropag + nbMeas
-     * For each parameter i the normalized value of the state vector is:
-     * Sn[i] = S[i] / scale[i]
-     * @param normalizedStateVector The normalized state vector in input
-     * @return the "physical" state vector
-     */
-    private RealVector unNormalizeStateVector(final RealVector normalizedStateVector) {
-
-        // Initialize output matrix
-        final int nbParams = normalizedStateVector.getDimension();
-        final RealVector physicalStateVector = new ArrayRealVector(nbParams);
-
-        // Normalize the state matrix
-        for (int i = 0; i < nbParams; ++i) {
-            physicalStateVector.setEntry(i, normalizedStateVector.getEntry(i) * scale[i]);
-        }
-        return physicalStateVector;
-    }
-
     /** Normalize a covariance matrix.
      * The covariance P is an mxm matrix where m = nbOrb + nbPropag + nbMeas
      * For each element [i,j] of P the corresponding normalized value is:
@@ -819,30 +833,6 @@ public class DSSTKalmanModel implements KalmanODModel {
             }
         }
         return normalizedCovarianceMatrix;
-    }
-
-    /** Un-normalize a covariance matrix.
-     * The covariance P is an mxm matrix where m = nbOrb + nbPropag + nbMeas
-     * For each element [i,j] of P the corresponding normalized value is:
-     * Pn[i,j] = P[i,j] / (scale[i]*scale[j])
-     * @param normalizedCovarianceMatrix The normalized covariance matrix in input
-     * @return the "physical" covariance matrix
-     */
-    private RealMatrix unNormalizeCovarianceMatrix(final RealMatrix normalizedCovarianceMatrix) {
-
-        // Initialize output matrix
-        final int nbParams = normalizedCovarianceMatrix.getRowDimension();
-        final RealMatrix physicalCovarianceMatrix = MatrixUtils.createRealMatrix(nbParams, nbParams);
-
-        // Normalize the state matrix
-        for (int i = 0; i < nbParams; ++i) {
-            for (int j = 0; j < nbParams; ++j) {
-                physicalCovarianceMatrix.setEntry(i, j,
-                                                  normalizedCovarianceMatrix.getEntry(i, j) *
-                                                  (scale[i] * scale[j]));
-            }
-        }
-        return physicalCovarianceMatrix;
     }
 
     /** Set and apply a dynamic outlier filter on a measurement.<p>

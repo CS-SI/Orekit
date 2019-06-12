@@ -1947,7 +1947,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      * </p>
      * @author Lucian Barbulescu
      */
-    private class CjSjAlphaBetaKH {
+    private static class CjSjAlphaBetaKH {
 
         /** The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) series. */
         private final CjSjCoefficient cjsjkh;
@@ -2205,7 +2205,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      * </p>
      * @author Lucian Barbulescu
      */
-    private class FieldCjSjAlphaBetaKH <T extends RealFieldElement<T>> {
+    private static class FieldCjSjAlphaBetaKH <T extends RealFieldElement<T>> {
 
         /** The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) series. */
         private final FieldCjSjCoefficient<T> cjsjkh;
@@ -3785,7 +3785,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     }
 
     /** Computes init values of the Hansen Objects. */
-    private class HansenObjects {
+    private static class HansenObjects {
 
         /** Max power for summation. */
         private static final int    MAX_POWER = 22;
@@ -3821,7 +3821,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     }
 
     /** Computes init values of the Hansen Objects. */
-    private class FieldHansenObjects<T extends RealFieldElement<T>> {
+    private static class FieldHansenObjects<T extends RealFieldElement<T>> {
 
         /** Max power for summation. */
         private static final int    MAX_POWER = 22;

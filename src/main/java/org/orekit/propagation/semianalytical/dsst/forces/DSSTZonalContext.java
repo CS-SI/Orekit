@@ -58,9 +58,6 @@ class DSSTZonalContext extends ForceModelContext {
     /** Keplerian mean motion. */
     private final double n;
 
-    /** Keplerian period. */
-    private final double period;
-
     // Short period terms
     /** h * k. */
     private double hk;
@@ -101,10 +98,6 @@ class DSSTZonalContext extends ForceModelContext {
         // Keplerian Mean Motion
         final double absA = FastMath.abs(auxiliaryElements.getSma());
         n = FastMath.sqrt(mu / absA) / absA;
-
-        // Keplerian period
-        final double a = auxiliaryElements.getSma();
-        period = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
 
         A = FastMath.sqrt(mu * auxiliaryElements.getSma());
 
@@ -150,13 +143,6 @@ class DSSTZonalContext extends ForceModelContext {
         x2on2a2xp1 = xon2a2 * X / (X + 1);
         // B * B
         BB = auxiliaryElements.getB() * auxiliaryElements.getB();
-    }
-
-    /** Get A = sqrt(μ * a).
-     * @return A
-     */
-    public double getA() {
-        return A;
     }
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
@@ -229,15 +215,6 @@ class DSSTZonalContext extends ForceModelContext {
         return roa;
     }
 
-    /** Get the Keplerian period.
-     * <p>The Keplerian period is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
-     */
-    public double getKeplerianPeriod() {
-        return period;
-    }
-
     /** Get the Keplerian mean motion.
      * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
@@ -273,13 +250,6 @@ class DSSTZonalContext extends ForceModelContext {
      */
     public double getOON2A2() {
         return oon2a2;
-    }
-
-    /** Get 1 / (n² * a).
-     * @return oon2a
-     */
-    public double getOON2A() {
-        return oon2a;
     }
 
     /** Get χ³ / (n² * a).
