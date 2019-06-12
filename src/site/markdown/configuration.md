@@ -241,7 +241,7 @@ into `orekit-data` and add the following lines at the start of your program:
 This zip file contains JPL DE 430 ephemerides from 1990
 to 2069, IERS Earth orientation parameters from 1973 (both IAU-1980
 and IAU-2000), UTC-TAI history from 1972,
-Marshall Solar Activity Futur Estimation from 1999 to mid 2016,
+Marshall Solar Activity Futur Estimation from 1999,
 the Eigen 06S gravity field and the FES 2004 ocean tides model.
 
 ## Supported data types
