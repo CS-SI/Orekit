@@ -4,8 +4,6 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.io.File;
-
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.Decimal64Field;
@@ -16,8 +14,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataProvidersManager;
-import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
@@ -108,14 +104,9 @@ public class GlobalIonosphereMapModelTest {
     @Test
     public void testParser() {
 
-        File home = new File(System.getProperty("user.home"));
-        File orekitData = new File(home, "orekit-data");
-        DataProvidersManager manager = DataProvidersManager.getInstance();
-        manager.addProvider(new DirectoryCrawler(orekitData));
-
         // Commons parameters
         AbsoluteDate date = new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC());
-        final double latitude   = FastMath.toRadians(45.0);
+        final double latitude = FastMath.toRadians(45.0);
         
         double longitude1;
         double longitude2;
