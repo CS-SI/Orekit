@@ -142,7 +142,7 @@
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
   <Match>
-    <Class name="~.*\.IERSConventions$1"/>
+    <Class name="~.*\.IERSConventions\$1"/>
     <Method name="getEOPTidalCorrection" />
     <Or>
       <Local name="deciMilliS" />
@@ -150,30 +150,33 @@
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
   <Match>
-    <Class name="~.*\.IERSConventions$1"/>
+    <Class name="~.*\.IERSConventions\$1"/>
     <Method name="getXYSpXY2Function" />
     <Or>
       <Local name="fYCosOm" />
       <Local name="fYCos2FDOm" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$1"/>
+    <Method name="getXYSpXY2Function" />
+    <Or>
       <Local name="fST" />
       <Local name="fST3" />
     </Or>
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
   <Match>
-    <Class name="~.*\.IERSConventions$2"/>
+    <Class name="~.*\.IERSConventions\$2"/>
     <Method name="getGASTFunction" />
-    <Or>
-      <Local name="microAS" />
-    </Or>
+    <Local name="microAS" />
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
   <Match>
-    <Class name="~.*\.IERSConventions$2"/>
+    <Class name="~.*\.IERSConventions\$2"/>
     <Method name="getSolidPoleTide" />
-    <Or>
-      <Local name="xp0" />
-    </Or>
+    <Local name="xp0" />
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
 
@@ -248,7 +251,13 @@
     <Method name="&lt;init>"  params="double[],double[][]" returns="void" />
     <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
-  
+
+  <!-- The following is a false positive from SpotBugs -->
+  <Match>
+  	<Class name="org.orekit.estimation.measurements.gnss.IntegerLeastSquareSolution" />
+    <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
+  </Match>
+
   <!-- the following is an intended switch fall-through in the SP3Parser -->
   <Match>
     <Class name="~.*\.SP3Parser$"/>
