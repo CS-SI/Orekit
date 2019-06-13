@@ -714,6 +714,16 @@
     </profile>
     <profile>
       <id>release</id>
+      <distributionManagement>
+        <repository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+      </distributionManagement>
       <build>
         <plugins>
           <plugin>
@@ -783,6 +793,7 @@
               <gpgArguments>
                 <arg>--digest-algo=SHA512</arg>
               </gpgArguments>
+              <keyname>0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B</keyname>
             </configuration>
             <executions>
               <execution>
