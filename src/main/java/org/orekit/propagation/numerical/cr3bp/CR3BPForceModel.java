@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical.cr3bp.forces;
+package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.stream.Stream;
 
@@ -69,7 +69,7 @@ public class CR3BPForceModel extends AbstractForceModel {
 
         final double mu = parameters[0];
         final double d1 = mu;
-        final double d2 = 1 - mu;
+        final double d2 = 1.0 - mu;
 
         final double x = s.getPVCoordinates().getPosition().getX();
         final double y = s.getPVCoordinates().getPosition().getY();
@@ -82,16 +82,16 @@ public class CR3BPForceModel extends AbstractForceModel {
         final double r2 = FastMath.sqrt((x - d2) * (x - d2) + y * y + z * z);
 
         final double dUdX =
-            -(1 - mu) * (x + d1) / (r1 * r1 * r1) -
+            -(1.0 - mu) * (x + d1) / (r1 * r1 * r1) -
                             mu * (x - d2) / (r2 * r2 * r2) + x;
         final double dUdY =
-            -y * ((1 - mu) / (r1 * r1 * r1) + mu / (r2 * r2 * r2)) + y;
+            -y * ((1.0 - mu) / (r1 * r1 * r1) + mu / (r2 * r2 * r2)) + y;
         final double dUdZ =
-            -z * ((1 - mu) / (r1 * r1 * r1) + mu / (r2 * r2 * r2));
+            -z * ((1.0 - mu) / (r1 * r1 * r1) + mu / (r2 * r2 * r2));
 
-        final double accx = dUdX + 2 * vy;
+        final double accx = dUdX + 2.0 * vy;
 
-        final double accy = dUdY - 2 * vx;
+        final double accy = dUdY - 2.0 * vx;
 
         final double accz = dUdZ;
 
@@ -108,7 +108,7 @@ public class CR3BPForceModel extends AbstractForceModel {
 
         final T mu = parameters[0];
         final T d1 = mu;
-        final T d2 = mu.negate().add(1);
+        final T d2 = mu.negate().add(1.0);
 
         final T x = s.getPVCoordinates().getPosition().getX();
         final T y = s.getPVCoordinates().getPosition().getY();
@@ -118,32 +118,29 @@ public class CR3BPForceModel extends AbstractForceModel {
         final T vy = s.getPVCoordinates().getVelocity().getY();
 
         final T r1 =
-            ((d1.add(x)).multiply(d1.add(x)).add(y.multiply(y))
-                .add(z.multiply(z))).sqrt();
+            FastMath.sqrt((d1.add(x)).multiply(d1.add(x)).add(y.multiply(y))
+                .add(z.multiply(z)));
+
         final T r2 =
-            ((x.subtract(d2)).multiply(x.subtract(d2)).add(y.multiply(y))
-                .add(z.multiply(z))).sqrt();
+            FastMath.sqrt((x.subtract(d2)).multiply(x.subtract(d2))
+                .add(y.multiply(y)).add(z.multiply(z)));
 
         final T dUdX =
-            (r1.pow(3)).reciprocal().multiply(mu.negate().add(1))
-                .multiply(x.add(d1)).negate()
-                .subtract(((r2.pow(3)).reciprocal()).multiply(mu)
-                    .multiply(x.subtract(d2)))
-                .add(x);
+                       mu.negate().add(1.0).negate().multiply(x.add(d1)).divide(r1.multiply(r1).multiply(r1)).
+                       subtract(mu.multiply(x.subtract(d2)).divide(r2.multiply(r2).multiply(r2))).
+                       add(x);
 
         final T dUdY =
             y.negate()
-                .multiply((r1.pow(3).reciprocal()).multiply(mu.negate().add(1))
-                    .add(mu.multiply(r2.pow(3).reciprocal())))
-                .add(y);
+                .multiply(mu.negate().add(1.0).divide(r1.multiply(r1).multiply(r1)).add(mu.divide(r2.multiply(r2).multiply(r2)))).add(y);
 
         final T dUdZ =
-            z.negate().multiply((r1.pow(3).reciprocal())
-                .multiply(mu.negate().add(1)).add(mu.multiply(r2.pow(3))));
+                        z.negate().multiply(mu.negate().add(1.0).divide(r1.multiply(r1).multiply(r1))
+                                             .add(mu.divide(r2.multiply(r2).multiply(r2))));
 
-        final T accx = dUdX.add(vy.multiply(2));
+        final T accx = dUdX.add(vy.multiply(2.0));
 
-        final T accy = dUdY.subtract(vx.multiply(2));
+        final T accy = dUdY.subtract(vx.multiply(2.0));
 
         final T accz = dUdZ;
 

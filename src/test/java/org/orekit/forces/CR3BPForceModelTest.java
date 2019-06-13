@@ -1,16 +1,13 @@
 package org.orekit.forces;
 
-import java.io.File;
-import java.util.Locale;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
@@ -23,22 +20,18 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CR3BPFactory;
 import org.orekit.bodies.CR3BPSystem;
-import org.orekit.data.DataProvidersManager;
-import org.orekit.data.DirectoryCrawler;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.cr3bp.forces.CR3BPForceModel;
+import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
@@ -60,8 +53,8 @@ public class CR3BPForceModelTest {
         final PVCoordinates initialConditions =
             new PVCoordinates(new Vector3D(0.8, 0.2, 0.0),
                               new Vector3D(0.0, 0.0, 0.1));
-        final Frame Frame = syst.getRotatingFrame();
-
+        //final Frame Frame = syst.getRotatingFrame();
+        final Frame Frame = FramesFactory.getGCRF();      
         final AbsolutePVCoordinates initialAbsPV =
             new AbsolutePVCoordinates(Frame, initialDate, initialConditions);
 
@@ -124,61 +117,38 @@ public class CR3BPForceModelTest {
         DerivativeStructure fvx = factory.variable(3, 0.0);
         DerivativeStructure fvy = factory.variable(4, 0.0);
         DerivativeStructure fvz = factory.variable(5, 0.1);
-        DerivativeStructure mu  = factory.constant(syst.getMu());
         
         final FieldPVCoordinates<DerivativeStructure> initialConditions =
                         new FieldPVCoordinates<>(new FieldVector3D<>(fpx, fpy, fpz),
                                           new FieldVector3D<>(fvx, fvy, fvz));
-
-        final double minStep = 0.00001;
-        final double maxstep = 3600.0;
         
         Field<DerivativeStructure> field = fpx.getField();
         DerivativeStructure zero = field.getZero();
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
-        Frame EME = FramesFactory.getEME2000();
+        //final Frame frame = syst.getRotatingFrame();
+        final Frame frame = FramesFactory.getGCRF();  
+        
+        // PVCoordinates linked to a Frame and a Date                
+        final FieldAbsolutePVCoordinates<DerivativeStructure> initialAbsPV =
+            new FieldAbsolutePVCoordinates<>(frame, J2000, initialConditions);
 
-        FieldCartesianOrbit<DerivativeStructure> FKO = new FieldCartesianOrbit<>(initialConditions,
-                                                                                 EME,
-                                                                                 J2000,
-                                                                                 mu);
 
-        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(initialAbsPV);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.CARTESIAN;
         
-        final double positionTolerance = 0.01;
-        final double velocityTolerance = 0.01;
-        final double massTolerance = 1.0e-6;
-        final double[] vecAbsoluteTolerances =
-            {
-                positionTolerance, positionTolerance, positionTolerance,
-                velocityTolerance, velocityTolerance, velocityTolerance,
-                massTolerance
-            };
-        final double[] vecRelativeTolerances =
-            new double[vecAbsoluteTolerances.length];
+        ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator = new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(1.0));
 
-        AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<>(field,minStep, maxstep,
-                                        vecAbsoluteTolerances,
-                                        vecRelativeTolerances);
-        integrator.setInitialStepSize(zero.add(60));
-        AdaptiveStepsizeIntegrator RIntegrator =
-                        new DormandPrince853Integrator(minStep, maxstep,
-                                                       vecAbsoluteTolerances,
-                                                       vecRelativeTolerances);
-        RIntegrator.setInitialStepSize(60);
+        ClassicalRungeKuttaIntegrator RIntegrator = new ClassicalRungeKuttaIntegrator(1.0);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitType(null);
         FNP.setIgnoreCentralAttraction(true);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitType(null);
         NP.setIgnoreCentralAttraction(true);
         NP.setInitialState(iSR);
 
@@ -186,8 +156,9 @@ public class CR3BPForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
+        
 
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
@@ -196,12 +167,12 @@ public class CR3BPForceModelTest {
         Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
         Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
-
+        Assert.assertTrue(forceModel.dependsOnPositionOnly());
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
         GaussianRandomGenerator NGG = new GaussianRandomGenerator(RG);
         UncorrelatedRandomVectorGenerator URVG = new UncorrelatedRandomVectorGenerator(new double[] {0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 },
-                                                                                       new double[] {1e3, 0.01, 0.01, 0.01, 0.01, 0.01},
+                                                                                       new double[] {0.001, 0.001, 0.001, 0.001, 0.001, 0.001},
                                                                                        NGG);
         double px_R = fpx.getReal();
         double py_R = fpy.getReal();
@@ -224,20 +195,22 @@ public class CR3BPForceModelTest {
             final PVCoordinates shiftedConditions =
                             new PVCoordinates(new Vector3D(px_shift, py_shift, pz_shift),
                                               new Vector3D(vx_shift, vy_shift, vz_shift));
-
-            CartesianOrbit shiftedOrb = new CartesianOrbit(shiftedConditions,
-                                                           EME,
-                                                           J2000.toAbsoluteDate(),
-                                                           mu.getReal()
-                                                           );
-
-            SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
+            // PVCoordinates linked to a Frame and a Date                
+            final AbsolutePVCoordinates shiftedAbsPV =
+                new AbsolutePVCoordinates(frame, J2000.toAbsoluteDate(), shiftedConditions);
+            
+            SpacecraftState shift_iSR = new SpacecraftState(shiftedAbsPV);
+            
+            
 
             NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
 
             shift_NP.setInitialState(shift_iSR);
 
+            shift_NP.setOrbitType(null);
+            shift_NP.setIgnoreCentralAttraction(true);
             shift_NP.addForceModel(forceModel);
+            
 
             SpacecraftState finalState_shift = shift_NP.propagate(target.toAbsoluteDate());
 
@@ -276,14 +249,17 @@ public class CR3BPForceModelTest {
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            maxA = FastMath.max(maxA, FastMath.abs((ax_DS - ax) / ax));
-            maxA = FastMath.max(maxA, FastMath.abs((ay_DS - ay) / ay));
-            maxA = FastMath.max(maxA, FastMath.abs((az_DS - az) / az));
+            if (ax != 0 || ay !=0 || az != 0) { 
+                maxA = FastMath.max(maxA, FastMath.abs((ax_DS - ax) / ax));
+                maxA = FastMath.max(maxA, FastMath.abs((ay_DS - ay) / ay));
+                maxA = FastMath.max(maxA, FastMath.abs((az_DS - az) / az));
+            } else { 
+                maxA = 0;
+            }
         }
-        Assert.assertEquals(0, maxP, 5.0e-9);
-        Assert.assertEquals(0, maxV, 3.0e-10);
-        Assert.assertEquals(0, maxA, 8.0e-8);
-
+        Assert.assertEquals(0, maxP, 4.2e-11);
+        Assert.assertEquals(0, maxV, 1.4e-12);
+        Assert.assertEquals(0, maxA, 8.5e-12);
     }
     
     
@@ -291,24 +267,7 @@ public class CR3BPForceModelTest {
     @Before
     public void setUp() { 
         Utils.setDataRoot("regular-data");
-        
-     // configure Orekit data provider
-        File home = new File(System.getProperty("user.home"));
-        File orekitData = new File(home, "orekit-data");
-        if (!orekitData.exists()) {
-            System.err.format(Locale.US, "Failed to find %s folder%n",
-                              orekitData.getAbsolutePath());
-            System.err
-                .format(Locale.US,
-                        "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                        "orekit-data.zip",
-                        "https://www.orekit.org/forge/projects/orekit/files",
-                        home.getAbsolutePath());
-            System.exit(1);
-        }
-        DataProvidersManager manager = DataProvidersManager.getInstance();
-        manager.addProvider(new DirectoryCrawler(orekitData));
-        
+       
         this.syst = CR3BPFactory.getEarthMoonCR3BP();
     }
 }

@@ -3,108 +3,121 @@
                         "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
-    <module name="TreeWalker">
-        <module name="AvoidStarImport"/>
-        <module name="AvoidStaticImport"/>
-        <module name="ConstantName"/>
-        <module name="DeclarationOrder"/>
-        <module name="EqualsHashCode"/>
-        <module name="FallThrough"/>
-        <module name="FinalLocalVariable"/>
-        <module name="FinalParameters"/>
-        <module name="Regexp">
-            <property name="format" value="[ \t]+$"/>
-            <property name="illegalPattern" value="true"/>
-            <property name="message" value="Trailing whitespace"/>
-        </module>
-        <module name="Regexp">
-            <property name="format" value="System\.out\.println"/>
-            <property name="illegalPattern" value="true"/>
-            <property name="ignoreComments" value="true"/>
-        </module>
-        <module name="HiddenField">
-            <property name="ignoreConstructorParameter" value="true"/>
-            <property name="ignoreSetter" value="true"/>
-        </module>
-        <module name="HideUtilityClassConstructor"/>
-        <module name="IllegalCatch"/>
-        <module name="IllegalImport"/>
-        <module name="Indentation">
-            <property name="basicOffset" value="4"/>
-            <property name="caseIndent"  value="4"/>
-        </module>
-        <module name="JavadocMethod">
-            <property name="allowUndeclaredRTE" value="true"/>
-            <property name="allowMissingPropertyJavadoc" value="true"/>
-            <property name="validateThrows" value="false"/>
-        </module>
-        <module name="JavadocStyle"/>
-        <module name="JavadocVariable"/>
-        <module name="MissingSwitchDefault"/>
-        <module name="ModifierOrder"/>
-        <module name="MultipleStringLiterals">
-            <property name="ignoreStringsRegexp" value='^(("")|("."))$'/>
-        </module>
-        <module name="MultipleVariableDeclarations"/>
-        <module name="NoWhitespaceAfter"/>
-        <module name="NoWhitespaceBefore"/>
-        <module name="OperatorWrap">
-            <property name="option" value="eol"/>
-        </module>
-        <module name="RedundantModifier"/>
-        <module name="StringLiteralEquality"/>
-        <module name="TodoComment">
-            <property name="severity" value="warning"/>
-        </module>
-        <module name="UnnecessaryParentheses"/>
-        <module name="UnusedImports"/>
-        <module name="VisibilityModifier"/>
-        <module name="WhitespaceAfter"/>
-        <module name="WhitespaceAround">
-            <property name="tokens"
-                      value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN,
+	<module name="TreeWalker">
+		<module name="AvoidStarImport" />
+		<module name="AvoidStaticImport" />
+		<module name="ConstantName" />
+		<module name="DeclarationOrder" />
+		<module name="EqualsHashCode" />
+		<module name="FallThrough" />
+		<module name="FinalLocalVariable" />
+		<module name="FinalParameters" />
+		<module name="Regexp">
+			<property name="format" value="[ \t]+$" />
+			<property name="illegalPattern" value="true" />
+			<property name="message" value="Trailing whitespace" />
+		</module>
+		<module name="Regexp">
+			<property name="format" value="System\.out\.println" />
+			<property name="illegalPattern" value="true" />
+			<property name="ignoreComments" value="true" />
+		</module>
+		<module name="HiddenField">
+			<property name="ignoreConstructorParameter" value="true" />
+			<property name="ignoreSetter" value="true" />
+		</module>
+		<module name="HideUtilityClassConstructor" />
+		<module name="IllegalCatch" />
+		<module name="IllegalImport" />
+		<module name="Indentation">
+			<property name="basicOffset" value="4" />
+			<property name="caseIndent" value="4" />
+		</module>
+		<module name="JavadocMethod">
+			<property name="allowUndeclaredRTE" value="true" />
+			<property name="allowMissingPropertyJavadoc" value="true" />
+			<property name="validateThrows" value="false" />
+		</module>
+		<module name="JavadocStyle" />
+		<module name="JavadocVariable" />
+		<module name="MissingSwitchDefault" />
+		<module name="ModifierOrder" />
+		<module name="MultipleStringLiterals">
+			<property name="ignoreStringsRegexp" value='^(("")|("."))$' />
+		</module>
+		<module name="MultipleVariableDeclarations" />
+		<module name="NoWhitespaceAfter" />
+		<module name="NoWhitespaceBefore" />
+		<module name="OperatorWrap">
+			<property name="option" value="eol" />
+		</module>
+		<module name="RedundantModifier" />
+		<module name="StringLiteralEquality" />
+		<module name="TodoComment">
+			<property name="severity" value="warning" />
+		</module>
+		<module name="UnnecessaryParentheses" />
+		<module name="UnusedImports" />
+		<module name="VisibilityModifier" />
+		<module name="WhitespaceAfter" />
+		<module name="WhitespaceAround">
+			<property name="tokens"
+				value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN,
                              BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT,
                              LAND, LCURLY, LE, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE,
                              LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN,
                              LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT,
                              MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS,
                              PLUS_ASSIGN, QUESTION, RCURLY, SL, SLIST, SL_ASSIGN, SR,
-                             SR_ASSIGN, STAR, STAR_ASSIGN"/>
-        </module>
-        <module name="SuppressionCommentFilter">
-           <property name="offCommentFormat" value="CHECKSTYLE\: stop JavadocVariable check"/>
-            <property name="onCommentFormat"  value="CHECKSTYLE\: resume JavadocVariable check"/>
-            <property name="checkFormat"      value="JavadocVariable"/>
-        </module>
-        <module name="SuppressionCommentFilter">
-            <property name="offCommentFormat" value="CHECKSTYLE\: stop VisibilityModifier check"/>
-            <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifier check"/>
-            <property name="checkFormat"      value="VisibilityModifierCheck"/>
-        </module>
-        <module name="SuppressionCommentFilter">
-            <property name="offCommentFormat" value="CHECKSTYLE\: stop NoWhitespaceAfter check"/>
-            <property name="onCommentFormat"  value="CHECKSTYLE\: resume NoWhitespaceAfter check"/>
-            <property name="checkFormat"      value="NoWhitespaceAfter"/>
-        </module>
-        <module name="SuppressionCommentFilter">
-          <property name="offCommentFormat" value="CHECKSTYLE\: stop Indentation check"/>
-          <property name="onCommentFormat" value="CHECKSTYLE\: resume Indentation check"/>
-          <property name="checkFormat" value="IndentationCheck"/>
-        </module>
-        <module name="SuppressionCommentFilter">
-          <property name="offCommentFormat" value="CHECKSTYLE\: stop MultipleStringLiterals check"/>
-          <property name="onCommentFormat" value="CHECKSTYLE\: resume MultipleStringLiterals check"/>
-          <property name="checkFormat" value="MultipleStringLiteralsCheck"/>
-        </module>
-        <module name="SuppressionCommentFilter">
-          <property name="offCommentFormat" value="CHECKSTYLE\: stop IllegalCatch check"/>
-          <property name="onCommentFormat" value="CHECKSTYLE\: resume IllegalCatch check"/>
-          <property name="checkFormat" value="IllegalCatchCheck"/>
-        </module>
-    </module>
-    <module name="RegexpHeader">
-      <property name="headerFile" value="${checkstyle.header.file}" />
-    </module>
-    <module name="FileTabCharacter"/>
-    <module name="NewlineAtEndOfFile"/>
+                             SR_ASSIGN, STAR, STAR_ASSIGN" />
+		</module>
+		<module name="SuppressionCommentFilter">
+			<property name="offCommentFormat"
+				value="CHECKSTYLE\: stop JavadocVariable check" />
+			<property name="onCommentFormat"
+				value="CHECKSTYLE\: resume JavadocVariable check" />
+			<property name="checkFormat" value="JavadocVariable" />
+		</module>
+		<module name="SuppressionCommentFilter">
+			<property name="offCommentFormat"
+				value="CHECKSTYLE\: stop VisibilityModifier check" />
+			<property name="onCommentFormat"
+				value="CHECKSTYLE\: resume VisibilityModifier check" />
+			<property name="checkFormat" value="VisibilityModifierCheck" />
+		</module>
+		<module name="SuppressionCommentFilter">
+			<property name="offCommentFormat"
+				value="CHECKSTYLE\: stop NoWhitespaceAfter check" />
+			<property name="onCommentFormat"
+				value="CHECKSTYLE\: resume NoWhitespaceAfter check" />
+			<property name="checkFormat" value="NoWhitespaceAfter" />
+		</module>
+		<module name="SuppressionCommentFilter">
+			<property name="offCommentFormat"
+				value="CHECKSTYLE\: stop Indentation check" />
+			<property name="onCommentFormat"
+				value="CHECKSTYLE\: resume Indentation check" />
+			<property name="checkFormat" value="IndentationCheck" />
+		</module>
+		<module name="SuppressionCommentFilter">
+			<property name="offCommentFormat"
+				value="CHECKSTYLE\: stop MultipleStringLiterals check" />
+			<property name="onCommentFormat"
+				value="CHECKSTYLE\: resume MultipleStringLiterals check" />
+			<property name="checkFormat"
+				value="MultipleStringLiteralsCheck" />
+		</module>
+		<module name="SuppressionCommentFilter">
+			<property name="offCommentFormat"
+				value="CHECKSTYLE\: stop IllegalCatch check" />
+			<property name="onCommentFormat"
+				value="CHECKSTYLE\: resume IllegalCatch check" />
+			<property name="checkFormat" value="IllegalCatchCheck" />
+		</module>
+	</module>
+	<module name="RegexpHeader">
+		<property name="headerFile" value="${checkstyle.header.file}" />
+	</module>
+	<module name="FileTabCharacter" />
+	<module name="NewlineAtEndOfFile" />
 </module>

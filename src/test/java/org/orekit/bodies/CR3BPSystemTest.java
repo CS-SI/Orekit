@@ -78,28 +78,28 @@ public class CR3BPSystemTest {
 	final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 	
 	final Vector3D l1Position = syst.getLPosition(LagrangianPoints.L1);
-    Assert.assertEquals(3.23E8, l1Position.getX(),3E6);
-    Assert.assertEquals(0.0, l1Position.getY(),1E3);
-    Assert.assertEquals(0.0, l1Position.getZ(),1E3);
+    Assert.assertEquals(3.23E8, l1Position.getX() * syst.getLdim(),3E6);
+    Assert.assertEquals(0.0, l1Position.getY() * syst.getLdim(),1E3);
+    Assert.assertEquals(0.0, l1Position.getZ() * syst.getLdim(),1E3);
     
     final Vector3D l2Position = syst.getLPosition(LagrangianPoints.L2);
-    Assert.assertEquals(4.45E8, l2Position.getX(),3E6);
-    Assert.assertEquals(0.0, l2Position.getY(),1E3);
-    Assert.assertEquals(0.0, l2Position.getZ(),1E3);
+    Assert.assertEquals(4.45E8, l2Position.getX() * syst.getLdim(),3E6);
+    Assert.assertEquals(0.0, l2Position.getY() * syst.getLdim(),1E3);
+    Assert.assertEquals(0.0, l2Position.getZ() * syst.getLdim(),1E3);
     
     final Vector3D l3Position = syst.getLPosition(LagrangianPoints.L3);
-    Assert.assertEquals(-3.86E8, l3Position.getX(),3E6);
-    Assert.assertEquals(0.0, l3Position.getY(),1E3);
-    Assert.assertEquals(0.0, l3Position.getZ(),1E3);
+    Assert.assertEquals(-3.86E8, l3Position.getX() * syst.getLdim(),3E6);
+    Assert.assertEquals(0.0, l3Position.getY() * syst.getLdim(),1E3);
+    Assert.assertEquals(0.0, l3Position.getZ() * syst.getLdim(),1E3);
 
 	final Vector3D l4Position = syst.getLPosition(LagrangianPoints.L4);
-    Assert.assertEquals(1.87E8, l4Position.getX(),3E6);
-    Assert.assertEquals(3.32E8, l4Position.getY(),3E6);
-    Assert.assertEquals(0.0, l4Position.getZ(),1E3);
+    Assert.assertEquals(1.87E8, l4Position.getX() * syst.getLdim(),3E6);
+    Assert.assertEquals(3.32E8, l4Position.getY() * syst.getLdim(),3E6);
+    Assert.assertEquals(0.0, l4Position.getZ() * syst.getLdim(),1E3);
 	
 	final Vector3D l5Position = syst.getLPosition(LagrangianPoints.L5);
-    Assert.assertEquals(1.87E8, l5Position.getX(),3E6);
-    Assert.assertEquals(-3.32E8, l5Position.getY(),3E6);
-    Assert.assertEquals(0.0, l5Position.getZ(),1E3);
+    Assert.assertEquals(1.87E8, l5Position.getX() * syst.getLdim(),3E6);
+    Assert.assertEquals(-3.32E8, l5Position.getY() * syst.getLdim(),3E6);
+    Assert.assertEquals(0.0, l5Position.getZ() * syst.getLdim(),1E3);
     }
 }

@@ -196,7 +196,7 @@ public class CR3BPSystem {
                 r =
                     solver.solve(MAX_EVALUATIONS, l1Equation, searchInterval[0],
                                  searchInterval[1], AllowedSolution.ANY_SIDE);
-                lpos = new Vector3D(r * lDim, 0.0, 0.0);
+                lpos = new Vector3D(r, 0.0, 0.0);
                 break;
 
             case L2:
@@ -219,7 +219,7 @@ public class CR3BPSystem {
                 r =
                     solver.solve(MAX_EVALUATIONS, l2Equation, searchInterval[0],
                                  searchInterval[1], AllowedSolution.ANY_SIDE);
-                lpos = new Vector3D(r * lDim, 0.0, 0.0);
+                lpos = new Vector3D(r, 0.0, 0.0);
                 break;
 
             case L3:
@@ -242,19 +242,15 @@ public class CR3BPSystem {
                 r =
                     solver.solve(MAX_EVALUATIONS, l3Equation, searchInterval[0],
                                  searchInterval[1], AllowedSolution.ANY_SIDE);
-                lpos = new Vector3D(r * lDim, 0.0, 0.0);
+                lpos = new Vector3D(r, 0.0, 0.0);
                 break;
 
             case L4:
-                lpos =
-                    new Vector3D((0.5 - mu) * lDim, FastMath.sqrt(3) / 2 * lDim,
-                                 0);
+                lpos = new Vector3D(0.5 - mu, FastMath.sqrt(3) / 2, 0);
                 break;
 
             case L5:
-                lpos =
-                    new Vector3D((0.5 - mu) * lDim,
-                                 -FastMath.sqrt(3) / 2 * lDim, 0);
+                lpos = new Vector3D(0.5 - mu, -FastMath.sqrt(3) / 2, 0);
                 break;
             default:
                 lpos = new Vector3D(0, 0, 0);

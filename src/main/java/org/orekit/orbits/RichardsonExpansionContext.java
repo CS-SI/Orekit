@@ -100,6 +100,9 @@ public class RichardsonExpansionContext {
     /** Orbital Period of the Halo Orbit, seconds. */
     private double orbitalPeriod;
 
+    /** Lagrangian Point considered. */
+    private LagrangianPoints point;
+
     /** Simple Constructor.
      * @param cr3bpSystem CR3BP System considered
      * @param point Lagrangian Point considered
@@ -107,17 +110,19 @@ public class RichardsonExpansionContext {
     public RichardsonExpansionContext(final CR3BPSystem cr3bpSystem,
                                       final LagrangianPoints point) {
 
+        this.point = point;
+
         this.mu = cr3bpSystem.getMu();
 
         this.lDim = cr3bpSystem.getLdim();
 
-        this.gamma = getLPosition(cr3bpSystem, point);
+        this.gamma = getLPosition(cr3bpSystem);
 
-        final double c2 = getCn(2, point);
+        final double c2 = getCn(2);
 
-        final double c3 = getCn(3, point);
+        final double c3 = getCn(3);
 
-        final double c4 = getCn(4, point);
+        final double c4 = getCn(4);
 
         this.wp = FastMath.sqrt(0.5 * (2 - c2 + FastMath.sqrt(9 * c2 * c2 - 8 * c2)));
 
@@ -217,16 +222,13 @@ public class RichardsonExpansionContext {
 
     /** Calculate gamma.
      * @param syst CR3BP System considered
-     * @param point Lagrangian Point considered
      * @return gamma Distance between the Lagrangian point and its closest primary body, meters
     */
-    private double getLPosition(final CR3BPSystem syst, final LagrangianPoints point) {
+    private double getLPosition(final CR3BPSystem syst) {
 
         final double x;
 
         final double DCP;
-
-        final double xe;
 
         final double pos;
 
@@ -234,20 +236,17 @@ public class RichardsonExpansionContext {
             case L1:
                 x = syst.getLPosition(LagrangianPoints.L1).getX();
                 DCP = 1 - mu;
-                xe = x / lDim;
-                pos = DCP - xe;
+                pos = DCP - x;
                 break;
             case L2:
                 x = syst.getLPosition(LagrangianPoints.L2).getX();
                 DCP = 1 - mu;
-                xe = x / lDim;
-                pos = xe - DCP;
+                pos = x - DCP;
                 break;
             case L3:
                 x = syst.getLPosition(LagrangianPoints.L3).getX();
                 DCP = -mu;
-                xe = x / lDim;
-                pos = DCP - xe;
+                pos = DCP - x;
                 break;
             default:
                 pos = 0;
@@ -258,11 +257,9 @@ public class RichardsonExpansionContext {
 
     /** Calculate Cn Richardson Coefficient.
      * @param order Order 'n' of the coefficient needed.
-     * @param point Lagrangian Point considered
      * @return cn Cn Richardson Coefficient
     */
-    private double getCn(final double order,
-                         final LagrangianPoints point) {
+    private double getCn(final double order) {
         final double cn;
         switch (point) {
             case L1:
@@ -312,6 +309,8 @@ public class RichardsonExpansionContext {
         final double tau1 = wp * tau + phi;
 
         final double m;
+
+        final PVCoordinates pvf;
 
         if (type.equals("Northern")) {
             m = 1;
@@ -369,7 +368,18 @@ public class RichardsonExpansionContext {
                         2 * dm * d21 * ax * az * wp * nu * FastMath.sin(2 * tau1) -
                         3 * dm * (d32 * az * ax * ax - d31 * az * az * az) * wp * nu * FastMath.sin(3 * tau1);
 
-        return new PVCoordinates(new Vector3D(firstx  * gamma + 1 - mu - gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
+        switch (point) {
+            case L1:
+                pvf = new PVCoordinates(new Vector3D(firstx * gamma + 1 - mu - gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
+                break;
+            case L2:
+                pvf = new PVCoordinates(new Vector3D(firstx * gamma + 1 - mu + gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
+                break;
+            default:
+                pvf = new PVCoordinates(new Vector3D(firstx, firsty, firstz), new Vector3D(vx, vy, vz));
+                break;
+        }
+        return pvf;
     }
 
     /**

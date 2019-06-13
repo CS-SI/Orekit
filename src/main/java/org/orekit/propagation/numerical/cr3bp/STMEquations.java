@@ -90,32 +90,32 @@ public class STMEquations
         final double r1 = FastMath.sqrt((x + mu) * (x + mu) + y * y + z * z);
         final double r2 = FastMath.sqrt((x - (1 - mu)) * (x - (1 - mu)) + y * y + z * z);
 
-        u[0][0] = 1 - (1 - mu) * (1 / FastMath.pow(r1, 3) -
-            3 * (x + mu) * (x + mu) / FastMath.pow(r1, 5)) -
-            mu * (1 / FastMath.pow(r2, 3) -
-            3 * (x - (1 - mu)) * (x - (1 - mu)) / FastMath.pow(r2, 5));
+        u[0][0] = 1 - (1 - mu) * (1 / (r1 * r1 * r1) -
+            3 * (x + mu) * (x + mu) / (r1 * r1 * r1 * r1 * r1)) -
+            mu * (1 / (r2 * r2 * r2) -
+            3 * (x - (1 - mu)) * (x - (1 - mu)) / (r2 * r2 * r2 * r2 * r2));
 
-        u[1][1] = 1 - (1 - mu) * (1 / FastMath.pow(r1, 3) - 3 * y * y / FastMath.pow(r1, 5)) -
-            mu * (1 / FastMath.pow(r2, 3) - 3 * y * y / FastMath.pow(r2, 5));
+        u[1][1] = 1 - (1 - mu) * (1 / (r1 * r1 * r1) - 3 * y * y / (r1 * r1 * r1 * r1 * r1)) -
+            mu * (1 / (r2 * r2 * r2) - 3 * y * y / (r2 * r2 * r2 * r2 * r2));
 
-        u[2][2] = -(1 - mu) * (1 / FastMath.pow(r1, 3) - 3 * z * z / FastMath.pow(r1, 5)) -
-            mu * (1 / FastMath.pow(r2, 3) - 3 * z * z / FastMath.pow(r2, 5));
+        u[2][2] = -(1 - mu) * (1 / (r1 * r1 * r1) - 3 * z * z / (r1 * r1 * r1 * r1 * r1)) -
+            mu * (1 / (r2 * r2 * r2) - 3 * z * z / (r2 * r2 * r2 * r2 * r2));
 
         u[0][1] =
-            3 * (1 - mu) * y * (x + mu) / FastMath.pow(r1, 5) +
-                  3 * mu * y * (x - (1 - mu)) / FastMath.pow(r2, 5);
+            3 * (1 - mu) * y * (x + mu) / (r1 * r1 * r1 * r1 * r1) +
+                  3 * mu * y * (x - (1 - mu)) / (r2 * r2 * r2 * r2 * r2);
 
         u[1][0] = u[0][1];
 
         u[0][2] =
-            3 * (1 - mu) * z * (x + mu) / FastMath.pow(r1, 5) +
-                  3 * mu * z * (x - (1 - mu)) / FastMath.pow(r2, 5);
+            3 * (1 - mu) * z * (x + mu) / (r1 * r1 * r1 * r1 * r1) +
+                  3 * mu * z * (x - (1 - mu)) / (r2 * r2 * r2 * r2 * r2);
 
         u[2][0] = u[0][2];
 
         u[1][2] =
-            3 * (1 - mu) * y * z / FastMath.pow(r1, 5) +
-                  3 * mu * y * z / FastMath.pow(r2, 5);
+            3 * (1 - mu) * y * z / (r1 * r1 * r1 * r1 * r1) +
+                  3 * mu * y * z / (r2 * r2 * r2 * r2 * r2);
 
         u[2][1] = u[1][2];
 
@@ -151,7 +151,7 @@ public class STMEquations
     }
 
     /** Method returning the STM.
-     * @param s Initial state of the system
+     * @param s SpacecraftState of the system
      * @return phiM State Transition Matrix
      */
     public RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
