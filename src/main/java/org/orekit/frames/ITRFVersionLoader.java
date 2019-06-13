@@ -200,10 +200,12 @@ class ITRFVersionLoader {
                             }
                         }
                         // error if prefix contains / or \ since these will never match
+                        // CHECKSTYLE: stop MultipleStringLiterals check
                         if (prefix.contains("\\") || prefix.contains("/")) {
                             throw new OrekitException(
                                     OrekitMessages.ITRF_VERSIONS_PREFIX_ONLY, prefix);
                         }
+                        // CHECKSTYLE: resume MultipleStringLiterals check
                         // store the parsed entry
                         configurations.add(new ITRFVersionConfiguration(prefix, version, validityStart, validityEnd));
 

@@ -259,7 +259,7 @@ public class JupiterSwingBy {
             throws OrekitException {
             try {
                 outFile = new File(new File(System.getProperty("user.home")), fileName);
-                out = new PrintWriter(outFile);
+                out = new PrintWriter(outFile, "UTF-8");
                 outputFrame = frame;
             } catch (IOException ioe) {
                 throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
