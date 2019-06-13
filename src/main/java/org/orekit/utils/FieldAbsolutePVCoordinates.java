@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-import java.io.Serializable;
 import java.util.stream.Stream;
 
 import org.hipparchus.RealFieldElement;
@@ -35,15 +34,12 @@ import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeStamped;
 
 /** Field implementation of AbsolutePVCoordinates.
- * @link AbsolutePVCoordinates
+ * @see AbsolutePVCoordinates
  * @author Vincent Mouraux
  */
 public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
     implements FieldTimeStamped<T>, FieldTimeInterpolable<FieldAbsolutePVCoordinates<T>, T>,
-               Serializable, FieldPVCoordinatesProvider<T> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20190604L;
+               FieldPVCoordinatesProvider<T> {
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;

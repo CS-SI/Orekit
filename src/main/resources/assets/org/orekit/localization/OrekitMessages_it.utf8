@@ -538,3 +538,9 @@ IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
 
 # invalid satellite system {0}
 INVALID_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+
+# IONEX file {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
+
+# number of maps {0} is inconsistent with header specification: {1}
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = <MISSING TRANSLATION>

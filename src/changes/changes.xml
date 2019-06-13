@@ -10,160 +10,157 @@
 	OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
 	the specific language governing permissions and limitations under the License. -->
 <document>
-	<properties>
-		<title>Orekit Changes</title>
-	</properties>
-	<body>
-		<release version="10.0" date="TBD" description="TBD">
-			<action dev="evan" type="fix">
-				Fix some possible NPEs in AntexLoader, FieldAngularCoordinates.
-			</action>
-			<action dev="evan" type="fix">
-				Fix locale dependent comparisons in SP3File, TDMParser, and YUMAParser.
-			</action>
-			<action dev="evan" type="fix">
-				Ensure opened streams are closed in ZipJarCrawler, DTM2000,
-				IERSConventions, and
-				OceanLoadDeformationCoefficients.
-			</action>
-			<action dev="bryan" type="add">
-				Add DSST Orbit Determination for both Kalman Filter and Batch Least
-				Squares estimator.
-			</action>
-			<action dev="romaric" type="add">
-				Add a events detector based on the geomagnetic field intensity at the
-				satellite altitude
-				or at sea level above the satellite, and the associated tests
-			</action>
-			<action dev="maxime" type="add" issue="549">
-				Deleted deprecated methods in EclipseDetector.
-			</action>
-			<action dev="romaric" type="fix" issue="553">
-				Fix the bug of attitude transition with Ephemeris propagator
-				by adding a way for the LocalPVProvider to get the attitude at the end
-				of the transition
-			</action>
-			<action dev="petrus" type="add" issue="518">
-				Changing AbstractGNSSAttitudeProvider from public to package-private.
-			</action>
-			<action dev="romaric" type="fix" issue="551">
-				Fix the bug of attitude transition with analytical propagator
-				by refreshing the attitude after the events triggering
-			</action>
-			<action dev="romaric" type="fix" issue="552">
-				Fix the bug of attitude transition if a reset occurs during the
-				transition
-				by adding margins to the reset of TimeSpanMap to keep the one
-				corresponding to the "after" attitude law.
-			</action>
-			<action dev="bryan" type="add" issue="522">
-				Generalized the GPSPropagator class to handle all GNSS constellations using
-				the same algorithm.
-			</action>
-			<action dev="bryan" type="add" issue="519">
-				Added numerical and analytical GLONASS propagators.
-			</action>
-			<action dev="luc" type="add">
-				Added ambiguity resolution for phase measurements.
-				This feature is not complete yet and is considered experimental.
-			</action>
-			<action dev="bryan" type="add" issue="548">
-				Reorganized models package by adding new sub-packages.
-			</action>
-			<action dev="maxime" type="add" issue="546">
-				Updated Hipparchus dependency to version 1.5 in pom.xml file.
-			</action>
-			<action dev="maxime" type="fix" issue="514">
-				Deleted unused DerivativeStructure acceleration computation methods.
-				In interfaces radiationPressureAcceleration and dragAcceleration, and
-				all their implementations and their tests.
-			</action>
-			<action dev="bryan" type="fix" issue="544"
-				due-to="Josef Probst">
-				Fixed endless loop on GPSPropagator and (Field)KeplerianOrbit.
-			</action>
-			<action dev="maxime" type="add" issue="403">
-				Added tests for class UnivariateProcessNoise.
-				Working tests for non-Cartesian orbit propagation are still needed.
-			</action>
-			<action dev="maxime" type="fix" issue="514">
-				Deprecated unused DerivativeStructure acceleration computation methods.
-				In interfaces radiationPressureAcceleration and dragAcceleration, and
-				all their implementations and their tests.
-			</action>
-			<action dev="luc" type="add" issue="536">
-				Take target radius into account in CircularFieldOfViewDetector and
-				FieldOfViewDetector.
-			</action>
-			<action dev="maxime" type="fix" issue="539">
-				Fixed DTM2000.getDensity method, made it independent of user time zone.
-			</action>
-			<action dev="luc" type="add" issue="535">
-				Take occulting body flattening into account in eclipse detector.
-			</action>
-			<action dev="maxime" type="fix" issue="538"
-				due-to="Dorian Gegout">
-				Fixed default method compareTo in interface ComparableMeasurement.
-			</action>
-			<action dev="luc" type="add" issue="532">
-				Added Shapiro effect modifier for Range and InterSatelliteRange
-				measurements.
-			</action>
-			<action dev="evan" type="update" issue="389">
-				Fix type parametrization of AbstractDetector so that multiple with*
-				methods can be
-				called when the type parameter is '?'.
-			</action>
-			<action dev="evan" type="remove" issue="506">
-				Remove EventHandler.Action and FieldEventHandler.Action. Use
-				org.hipparchus.ode.events.Action instead.
-			</action>
-			<action dev="bryan" type="fix" issue="527">
-				Changed API for magnetic field model to a SI base unit API.
-			</action>
-			<action dev="evan" type="fix">
-				OrekitException preserves the stack trace when formatting the message throws
-				another exception.
-			</action>
-			<action dev="luc" type="remove" issue="530">
-				Event detectors, field of view and attitude providers are not
-				serializable anymore.
-			</action>
-			<action dev="bryan" type="update" issue="526">
-				Replaced private class BilinearInterpolatingFunction of Saastamoinen model
-				by the one of Hipparchus
-			</action>
-			<action dev="evan" type="add" issue="507">
-				Add Action.RESET_EVENTS to check all detectors for events without
-				recomputing the
-				propagation step.
-			</action>
-			<action dev="evan" type="add" issue="507">
-				Add Action.RESET_EVENTS to check all detectors for events without
-				recomputing the
-				propagation step.
-			</action>
-			<action dev="evan" type="add" issue="507">
-				Add toString() implementations to SpacecraftState,
-				RecordAndContinue.Event and
-				Field versions.
-			</action>
-			<action dev="evan" type="add" issue="507">
-				Add Field version of RecordAndContinue.
-			</action>
-			<action dev="evan" type="add" issue="507">
-				Add Field version of LatitudeCrossingDetector.
-			</action>
-			<action dev="luc" type="update">
-				Removed classes and methods deprecated in the 9.X series.
-			</action>
-			<action dev="luc" type="fix" issue="528"
-				due-to="Gowtham Sivaraman">
-				Fixed parsing of clock in SP3 files.
-			</action>
-		</release>
-		<release version="9.3.1" date="2019-03-16"
-			description="Version 9.3.1 is a minor version of Orekit.
+  <properties>
+    <title>Orekit Changes</title>
+  </properties>
+  <body>
+    <release version="10.0" date="TBD" description="TBD">
+       <action dev="pascal" type="fix" issue="558">
+        Fixes broken links on Maven site.
+      </action>
+      <action dev="luc" type="fix" issue="559">
+        Take into account changes in MSAFE files names published by NASA.
+      </action>
+      <action dev="bryan" type="add">
+        Add Global Ionosphere Map model.
+      </action>
+      <action dev="maxime" type="add" issue="554">
+        Added propagation in inertial frame.
+      </action>
+      <action dev="luc" type="fix" issue="557">
+        Improved documentation about DatesSelector not being reusable across several
+        schedulers during measurements generation.
+      </action>
+      <action dev="evan" type="fix">
+        Fix some possible NPEs in AntexLoader, FieldAngularCoordinates.
+      </action>
+      <action dev="evan" type="fix">
+        Fix locale dependent comparisons in SP3File, TDMParser, and YUMAParser.
+      </action>
+      <action dev="evan" type="fix">
+        Ensure opened streams are closed in ZipJarCrawler, DTM2000, IERSConventions, and
+        OceanLoadDeformationCoefficients.
+      </action>
+      <action dev="bryan" type="add">
+        Add DSST Orbit Determination for both Kalman Filter and Batch Least Squares estimator.
+      </action>
+      <action dev="romaric" type="add">
+        Add a events detector based on the geomagnetic field intensity at the satellite altitude
+        or at sea level above the satellite, and the associated tests
+      </action>
+      <action dev="maxime" type="add" issue="549">
+        Deleted deprecated methods in EclipseDetector.
+      </action>
+      <action dev="romaric" type="fix" issue="553">
+        Fix the bug of attitude transition with Ephemeris propagator
+        by adding a way for the LocalPVProvider to get the attitude at the end of the transition
+      </action>
+      <action dev="petrus" type="add" issue="518">
+        Changing AbstractGNSSAttitudeProvider from public to package-private.
+      </action>
+      <action dev="romaric" type="fix" issue="551">
+        Fix the bug of attitude transition with analytical propagator 
+        by refreshing the attitude after the events triggering
+      </action>
+      <action dev="romaric" type="fix" issue="552">
+        Fix the bug of attitude transition if a reset occurs during the transition
+        by adding margins to the reset of TimeSpanMap to keep the one corresponding to the "after" attitude law.
+      </action>
+      <action dev="bryan" type="add" issue="522">
+        Generalized the GPSPropagator class to handle all GNSS constellations using
+        the same algorithm.
+      </action>
+      <action dev="bryan" type="add" issue="519">
+        Added numerical and analytical GLONASS propagators.
+      </action>
+      <action dev="luc" type="add" >
+        Added ambiguity resolution for phase measurements.
+        This feature is not complete yet and is considered experimental.
+      </action>
+      <action dev="bryan" type="add" issue="548">
+        Reorganized models package by adding new sub-packages.
+      </action>
+      <action dev="maxime" type="add" issue="546">
+        Updated Hipparchus dependency to version 1.5 in pom.xml file.
+      </action>
+      <action dev="maxime" type="fix" issue="514">
+        Deleted unused DerivativeStructure acceleration computation methods.
+        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests. 
+      </action>
+      <action dev="bryan" type="fix" issue="544" due-to="Josef Probst">
+        Fixed endless loop on GPSPropagator and (Field)KeplerianOrbit.
+      </action>
+      <action dev="maxime" type="add" issue="403">
+        Added tests for class UnivariateProcessNoise.
+        Working tests for non-Cartesian orbit propagation are still needed.
+      </action>
+      <action dev="maxime" type="fix" issue="514">
+        Deprecated unused DerivativeStructure acceleration computation methods.
+        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests. 
+      </action>
+      <action dev="luc" type="add" issue="536">
+        Take target radius into account in CircularFieldOfViewDetector and FieldOfViewDetector.
+      </action>
+      <action dev="maxime" type="fix" issue="539">
+        Fixed DTM2000.getDensity method, made it independent of user time zone.
+      </action>
+      <action dev="luc" type="add" issue="535">
+        Take occulting body flattening into account in eclipse detector.
+      </action>
+      <action dev="maxime" type="fix" issue="538" due-to="Dorian Gegout">
+        Fixed default method compareTo in interface ComparableMeasurement.
+      </action>
+      <action dev="luc" type="add" issue="532">
+        Added Shapiro effect modifier for Range and InterSatelliteRange measurements.
+      </action>
+      <action dev="evan" type="update" issue="389">
+        Fix type parametrization of AbstractDetector so that multiple with* methods can be
+        called when the type parameter is '?'.
+      </action>
+      <action dev="evan" type="remove" issue="506">
+        Remove EventHandler.Action and FieldEventHandler.Action. Use
+        org.hipparchus.ode.events.Action instead.
+      </action>
+      <action dev="bryan" type="fix" issue="527">
+        Changed API for magnetic field model to a SI base unit API.
+      </action>
+      <action dev="evan" type="fix">
+        OrekitException preserves the stack trace when formatting the message throws
+        another exception.
+      </action>
+      <action dev="luc" type="remove" issue="530">
+        Event detectors, field of view and attitude providers are not serializable anymore.
+      </action>
+      <action dev="bryan" type="update" issue="526">
+        Replaced private class BilinearInterpolatingFunction of Saastamoinen model
+        by the one of Hipparchus
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add Action.RESET_EVENTS to check all detectors for events without recomputing the
+        propagation step.
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add Action.RESET_EVENTS to check all detectors for events without recomputing the
+        propagation step.
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add toString() implementations to SpacecraftState, RecordAndContinue.Event and
+        Field versions.
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add Field version of RecordAndContinue.
+      </action>
+      <action dev="evan" type="add" issue="507">
+        Add Field version of LatitudeCrossingDetector.
+      </action>
+      <action dev="luc" type="update">
+        Removed classes and methods deprecated in the 9.X series.
+      </action>
+      <action dev="luc" type="fix" issue="528" due-to="Gowtham Sivaraman">
+        Fixed parsing of clock in SP3 files.
+      </action>
+    </release>
+    <release version="9.3.1" date="2019-03-16" description="Version 9.3.1 is a minor version of Orekit.
     It fixes an issue with GPS week rollover.">
 			<action dev="luc" type="add" issue="534">
 				Handle GPS week rollover in GPSDate.

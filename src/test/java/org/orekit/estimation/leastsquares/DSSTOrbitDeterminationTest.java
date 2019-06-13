@@ -547,8 +547,8 @@ public class DSSTOrbitDeterminationTest {
             final boolean cdEstimated = parser.getBoolean(ParameterKey.DRAG_CD_ESTIMATED);
 
             MarshallSolarActivityFutureEstimation msafe =
-                            new MarshallSolarActivityFutureEstimation("(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)",
-            MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
+                            new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
+                                                                      MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
             DataProvidersManager manager = DataProvidersManager.getInstance();
             manager.feed(msafe.getSupportedNames(), msafe);
             Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);

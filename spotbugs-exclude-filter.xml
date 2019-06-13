@@ -64,125 +64,128 @@
 		<Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
 	</Match>
 
-	<!-- the following are in fact false positives from SpotBugs -->
-	<!-- their occurrence depends on the java compiler used -->
-	<Match>
-		<Class name="~.*\.EcksteinHechlerPropagator$" />
-		<Method name="computeMeanParameters" />
-		<Or>
-			<Local name="epsilon" />
-			<Local name="thresholdAngles" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.DTM2000$" />
-		<Method name="computation" />
-		<Or>
-			<Local name="zlb" />
-			<Local name="zlbre" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.SDP4$" />
-		<Method name="thetaG" />
-		<Or>
-			<Local name="omega_E" />
-			<Local name="seconds_per_day" />
-			<Local name="jd_2000" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.TLEPropagator$" />
-		<Method name="computePVCoordinates" />
-		<Or>
-			<Local name="newtonRaphsonEpsilon" />
-			<Local name="cv" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.JPLEphemeridesLoader$" />
-		<Method name="tooFarRange" />
-		<Local name="fiftyDays" />
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.JB2006$" />
-		<Method name="getDensity" />
-		<Local name="FACT1" />
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.JB2006$" />
-		<Method name="dTc" />
-		<Local name="HP" />
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.OneAxisEllipsoid$" />
-		<Method name="transform" />
-		<Local name="epsPhi" />
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.RangeTroposphericDelayModifier$" />
-		<Method name="modify" />
-		<Local name="djac" />
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.RangeRateTroposphericDelayModifier$" />
-		<Method name="modify" />
-		<Local name="djac" />
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$" />
-		<Method name="modify" />
-		<Or>
-			<Local name="masterDjac" />
-			<Local name="slaveDjac" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.IERSConventions$1" />
-		<Method name="getEOPTidalCorrection" />
-		<Or>
-			<Local name="deciMilliS" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.IERSConventions$1" />
-		<Method name="getXYSpXY2Function" />
-		<Or>
-			<Local name="fYCosOm" />
-			<Local name="fYCos2FDOm" />
-			<Local name="fST" />
-			<Local name="fST3" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.IERSConventions$2" />
-		<Method name="getGASTFunction" />
-		<Or>
-			<Local name="microAS" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
-	<Match>
-		<Class name="~.*\.IERSConventions$2" />
-		<Method name="getSolidPoleTide" />
-		<Or>
-			<Local name="xp0" />
-		</Or>
-		<Bug pattern="DLS_DEAD_LOCAL_STORE" />
-	</Match>
+  <!-- the following are in fact false positives from SpotBugs -->
+  <!-- their occurrence depends on the java compiler used      -->
+  <Match>
+    <Class name="~.*\.EcksteinHechlerPropagator$"/>
+    <Method name="computeMeanParameters" />
+    <Or>
+      <Local name="epsilon" />
+      <Local name="thresholdAngles" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.DTM2000$"/>
+    <Method name="computation" />
+    <Or>
+      <Local name="zlb" />
+      <Local name="zlbre" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.SDP4$"/>
+    <Method name="thetaG" />
+    <Or>
+      <Local name="omega_E" />
+      <Local name="seconds_per_day" />
+      <Local name="jd_2000" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.TLEPropagator$"/>
+    <Method name="computePVCoordinates" />
+    <Or>
+      <Local name="newtonRaphsonEpsilon" />
+      <Local name="cv" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.JPLEphemeridesLoader$"/>
+    <Method name="tooFarRange" />
+    <Local name="fiftyDays" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.JB2006$"/>
+    <Method name="getDensity" />
+    <Local name="FACT1" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.JB2006$"/>
+    <Method name="dTc" />
+    <Local name="HP" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.OneAxisEllipsoid$"/>
+    <Method name="transform" />
+    <Local name="epsPhi" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.RangeTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Local name="djac" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.RangeRateTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Local name="djac" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Or>
+      <Local name="masterDjac" />
+      <Local name="slaveDjac" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$1"/>
+    <Method name="getEOPTidalCorrection" />
+    <Or>
+      <Local name="deciMilliS" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$1"/>
+    <Method name="getXYSpXY2Function" />
+    <Or>
+      <Local name="fYCosOm" />
+      <Local name="fYCos2FDOm" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$1"/>
+    <Method name="getXYSpXY2Function" />
+    <Or>
+      <Local name="fST" />
+      <Local name="fST3" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$2"/>
+    <Method name="getGASTFunction" />
+    <Local name="microAS" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$2"/>
+    <Method name="getSolidPoleTide" />
+    <Local name="xp0" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
 
 	<!-- the approximate constants do belong to the models -->
 	<Match>
@@ -201,30 +204,53 @@
 		<Bug pattern="BC_VACUOUS_INSTANCEOF" />
 	</Match>
 
-	<!-- The following equality tests are intentional and needed for semantic 
-		purposes -->
-	<Match>
-		<Class name="org.orekit.time.TimeComponents" />
-		<Method name="equals" params="java.lang.Object"
-			returns="boolean" />
-		<Bug pattern="FE_FLOATING_POINT_EQUALITY" />
-	</Match>
-	<Match>
-		<Class name="org.orekit.orbits.KeplerianOrbit" />
-		<Or>
-			<Method name="eMeSinE" params="double,double" returns="double" />
-			<Method name="eMeSinE"
-				params="org.hipparchus.analysis.differentiation.DerivativeStructure,org.hipparchus.analysis.differentiation.DerivativeStructure"
-				returns="org.hipparchus.analysis.differentiation.DerivativeStructure" />
-		</Or>
-		<Bug pattern="FE_FLOATING_POINT_EQUALITY" />
-	</Match>
-	<Match>
-		<Class name="org.orekit.propagation.analytical.tle.TLE" />
-		<Method name="equals" params="java.lang.Object"
-			returns="boolean" />
-		<Bug pattern="FE_FLOATING_POINT_EQUALITY" />
-	</Match>
+  <!-- The following internal representation exposure are intentional,
+       They are used to pass data back and forth between classes
+    -->
+  <Match>
+    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
+    <Method name ="getAdditionalState" params="" returns="double[]" />
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
+    <Method name ="getAdditionalStateDot" params="" returns="double[]" />
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.estimation.measurements.gnss.AbstractLambdaReducer"/>
+    <Or>  
+      <Method name ="getDiagReference" params="" returns="double[]" />
+      <Method name ="getLowReference" params="" returns="double[]" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
+    <Or>  
+      <Method name="getGradient" params="" returns="double[]" />
+      <Method name="getHessian" params="" returns="double[][]" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
+    <Method name="&lt;init>"  params="double[],double[][]" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+
+  <!-- The following is a false positive from SpotBugs -->
+  <Match>
+  	<Class name="org.orekit.estimation.measurements.gnss.IntegerLeastSquareSolution" />
+    <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
+  </Match>
+
+  <!-- the following is an intended switch fall-through in the SP3Parser -->
+  <Match>
+    <Class name="~.*\.SP3Parser$"/>
+    <Method name="parseHeaderLine" />
+    <Bug pattern="SF_SWITCH_FALLTHROUGH" />
+  </Match>
 
 	<!-- The following internal representation exposure are intentional, They 
 		are used to pass data back and forth between classes -->

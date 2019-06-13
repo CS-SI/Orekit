@@ -18,7 +18,6 @@ import org.hipparchus.random.Well1024a;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.estimation.Context;
@@ -156,88 +155,93 @@ public class UnivariateprocessNoiseTest {
         checkCovarianceValue(print, state0, state2, processNoise, sampleNumber, relativeTolerance);
     }
     
-    /** Test process noise matrix computation.
-     * - Initialize with different univariate functions for orbital/propagation parameters variation
-     * - Check that the inertial process noise covariance matrix is consistent with the inputs
-     * - Propagation in Non-Cartesian formalism (Keplerian, Circular or Equinoctial)
-     *  TO DO: Find out why position in LOF frame is off after one hour of propagation
-     */
-    @Ignore
-    @Test
-    public void testProcessNoiseMatrixNonCartesian() {
-
-        // Create context
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-
-        // Print result on console ?
-        final boolean print = true;
-        
-        // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
-        final PositionAngle positionAngle = PositionAngle.TRUE;
-        final boolean       perfectStart  = true;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
-        final double        dP            = 1.;
-        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(orbitType, positionAngle, perfectStart,
-                                                                                   minStep, maxStep, dP);//
-//                                                                                   Force.POTENTIAL, Force.THIRD_BODY_MOON,
-//                                                                                   Force.THIRD_BODY_SUN,
-//                                                                                   Force.SOLAR_RADIATION_PRESSURE);
-
-        // Create a propagator
-        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        
-        // Define the univariate functions for the standard deviations      
-        final UnivariateFunction[] lofCartesianOrbitalParametersEvolution = new UnivariateFunction[6];
-        // Evolution for position error
-        lofCartesianOrbitalParametersEvolution[0] = new PolynomialFunction(new double[] {100., 0., 1e-4});
-        lofCartesianOrbitalParametersEvolution[1] = new PolynomialFunction(new double[] {100., 1e-1, 0.});
-        lofCartesianOrbitalParametersEvolution[2] = new PolynomialFunction(new double[] {100., 0., 0.});
-        // Evolution for velocity error
-        lofCartesianOrbitalParametersEvolution[3] = new PolynomialFunction(new double[] {1., 0., 1.e-6});
-        lofCartesianOrbitalParametersEvolution[4] = new PolynomialFunction(new double[] {1., 1e-3, 0.});
-        lofCartesianOrbitalParametersEvolution[5] = new PolynomialFunction(new double[] {1., 0., 0.});
-
-        final UnivariateFunction[] propagationParametersEvolution =
-                        new UnivariateFunction[] {new PolynomialFunction(new double[] {10, 1., 1e-4}),
-                                                  new PolynomialFunction(new double[] {1000., 0., 0.})};
-        
-        // Create a dummy initial covariance matrix
-        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(7);
-        
-        // Set the process noise object
-        // Define input LOF and output position angle
-        final LOFType lofType = LOFType.TNW;
-        final UnivariateProcessNoise processNoise = new UnivariateProcessNoise(initialCovarianceMatrix,
-                                                                               lofType,
-                                                                               positionAngle,
-                                                                               lofCartesianOrbitalParametersEvolution,
-                                                                               propagationParametersEvolution);
-        // Test on initial value, after 1 hour and after 2 orbits
-        final SpacecraftState state0 = propagator.getInitialState();
-        final SpacecraftState state1 = propagator.propagate(context.initialOrbit.getDate().shiftedBy(3600.));
-//        final SpacecraftState state2 = propagator.propagate(context.initialOrbit.getDate()
-//                                                            .shiftedBy(2*context.initialOrbit.getKeplerianPeriod()));
-        
-        // Number of samples for the statistics
-        final int sampleNumber = 10000;
-        
-        // Relative tolerance on final standard deviations observed
-        final double relativeTolerance = 0.02;
-        
-        if (print) {
-            System.out.println("Orbit Type    : " + orbitType);
-            System.out.println("Position Angle: " + positionAngle + "\n");
-        }
-        checkCovarianceValue(print, state0, state0, processNoise, sampleNumber, relativeTolerance);
-        checkCovarianceValue(print, state0, state1, processNoise, sampleNumber, relativeTolerance);
-        
-        // Orbit too far off after 2 orbital periods
-        // It becomes inconsistent when applying random vector values
-        //checkCovarianceValue(print, state0, state2, processNoise, sampleNumber, relativeTolerance);
-    }
+      // Note: This test does not work, probably due to the high values of the univariate functions when time increases.
+      // The jacobian matrices used to convert from Keplerian (equinoctial, circular) to Cartesian and back are based on first oder
+      // derivatives. When differences to the reference orbit are very large, these first order derivatives are not enough to physically
+      // represent the deviation of the orbit.
+      // Investigations are to be done on this test
+//    /** Test process noise matrix computation.
+//     * - Initialize with different univariate functions for orbital/propagation parameters variation
+//     * - Check that the inertial process noise covariance matrix is consistent with the inputs
+//     * - Propagation in Non-Cartesian formalism (Keplerian, Circular or Equinoctial)
+//     *  TO DO: Find out why position in LOF frame is off after one hour of propagation
+//     */
+//    @Ignore
+//    @Test
+//    public void testProcessNoiseMatrixNonCartesian() {
+//
+//        // Create context
+//        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+//
+//        // Print result on console ?
+//        final boolean print = true;
+//        
+//        // Create initial orbit and propagator builder
+//        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+//        final PositionAngle positionAngle = PositionAngle.TRUE;
+//        final boolean       perfectStart  = true;
+//        final double        minStep       = 1.e-6;
+//        final double        maxStep       = 60.;
+//        final double        dP            = 1.;
+//        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(orbitType, positionAngle, perfectStart,
+//                                                                                   minStep, maxStep, dP);//
+////                                                                                   Force.POTENTIAL, Force.THIRD_BODY_MOON,
+////                                                                                   Force.THIRD_BODY_SUN,
+////                                                                                   Force.SOLAR_RADIATION_PRESSURE);
+//
+//        // Create a propagator
+//        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+//                                                                           propagatorBuilder);
+//        
+//        // Define the univariate functions for the standard deviations      
+//        final UnivariateFunction[] lofCartesianOrbitalParametersEvolution = new UnivariateFunction[6];
+//        // Evolution for position error
+//        lofCartesianOrbitalParametersEvolution[0] = new PolynomialFunction(new double[] {100., 0., 1e-4});
+//        lofCartesianOrbitalParametersEvolution[1] = new PolynomialFunction(new double[] {100., 1e-1, 0.});
+//        lofCartesianOrbitalParametersEvolution[2] = new PolynomialFunction(new double[] {100., 0., 0.});
+//        // Evolution for velocity error
+//        lofCartesianOrbitalParametersEvolution[3] = new PolynomialFunction(new double[] {1., 0., 1.e-6});
+//        lofCartesianOrbitalParametersEvolution[4] = new PolynomialFunction(new double[] {1., 1e-3, 0.});
+//        lofCartesianOrbitalParametersEvolution[5] = new PolynomialFunction(new double[] {1., 0., 0.});
+//
+//        final UnivariateFunction[] propagationParametersEvolution =
+//                        new UnivariateFunction[] {new PolynomialFunction(new double[] {10, 1., 1e-4}),
+//                                                  new PolynomialFunction(new double[] {1000., 0., 0.})};
+//        
+//        // Create a dummy initial covariance matrix
+//        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(7);
+//        
+//        // Set the process noise object
+//        // Define input LOF and output position angle
+//        final LOFType lofType = LOFType.TNW;
+//        final UnivariateProcessNoise processNoise = new UnivariateProcessNoise(initialCovarianceMatrix,
+//                                                                               lofType,
+//                                                                               positionAngle,
+//                                                                               lofCartesianOrbitalParametersEvolution,
+//                                                                               propagationParametersEvolution);
+//        // Test on initial value, after 1 hour and after 2 orbits
+//        final SpacecraftState state0 = propagator.getInitialState();
+//        final SpacecraftState state1 = propagator.propagate(context.initialOrbit.getDate().shiftedBy(3600.));
+////        final SpacecraftState state2 = propagator.propagate(context.initialOrbit.getDate()
+////                                                            .shiftedBy(2*context.initialOrbit.getKeplerianPeriod()));
+//        
+//        // Number of samples for the statistics
+//        final int sampleNumber = 10000;
+//        
+//        // Relative tolerance on final standard deviations observed
+//        final double relativeTolerance = 0.02;
+//        
+//        if (print) {
+//            System.out.println("Orbit Type    : " + orbitType);
+//            System.out.println("Position Angle: " + positionAngle + "\n");
+//        }
+//        checkCovarianceValue(print, state0, state0, processNoise, sampleNumber, relativeTolerance);
+//        checkCovarianceValue(print, state0, state1, processNoise, sampleNumber, relativeTolerance);
+//        
+//        // Orbit too far off after 2 orbital periods
+//        // It becomes inconsistent when applying random vector values
+//        //checkCovarianceValue(print, state0, state2, processNoise, sampleNumber, relativeTolerance);
+//    }
     
     
     /** Check the values of the covariance given in inertial frame by the UnivariateProcessNoise object.

@@ -366,8 +366,7 @@ public class MarshallSolarActivityFutureEstimationTest {
         {
 
         MarshallSolarActivityFutureEstimation msafe =
-            new MarshallSolarActivityFutureEstimation("(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)",
-                                                      strength);
+            new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES, strength);
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.feed(msafe.getSupportedNames(), msafe);
         return msafe;
@@ -487,7 +486,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     public void testMinDate() {
 
         MarshallSolarActivityFutureEstimation msafe =
-            new MarshallSolarActivityFutureEstimation("(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)",
+            new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
         Assert.assertEquals(new AbsoluteDate("2010-05-01", utc), msafe.getMinDate());
         Assert.assertEquals(78.1,
@@ -499,7 +498,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     public void testMaxDate() {
 
         MarshallSolarActivityFutureEstimation msafe =
-            new MarshallSolarActivityFutureEstimation("(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)",
+            new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
         Assert.assertEquals(new AbsoluteDate("2030-10-01", utc), msafe.getMaxDate());
         Assert.assertEquals(67.0,
