@@ -41,7 +41,7 @@ import org.orekit.errors.OrekitMessages;
  * <p>The format of the files holding Yuma almanacs is not precisely specified,
  * so the parsing rules have been deduced from the downloadable files at
  * <a href="http://www.navcen.uscg.gov/?pageName=gpsAlmanacs">NAVCEN</a>
- * and at <a href="http://celestrak.com/GPS/almanac/Yuma/">CelesTrak</a>.</p>
+ * and at <a href="https://celestrak.com/GPS/almanac/Yuma/">CelesTrak</a>.</p>
  *
  * @author Pascal Parraud
  * @since 8.0

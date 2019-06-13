@@ -42,7 +42,7 @@ import org.orekit.utils.Constants;
  * <ol> <li>Martin Losch, Verena Seufer. How to Compute Geoid Undulations (Geoid
  * Height Relative to a Given Reference Ellipsoid) from Spherical Harmonic
  * Coefficients for Satellite Altimetry Applications. , 2003. <a
- * href="mitgcm.org/~mlosch/geoidcookbook.pdf" >mitgcm.org/~mlosch/geoidcookbook.pdf</a></li>
+ * href="http://mitgcm.org/~mlosch/geoidcookbook.pdf" >mitgcm.org/~mlosch/geoidcookbook.pdf</a></li>
  *
  * <li>Weikko A. Heiskanen, Helmut Moritz. Physical Geodesy. W. H. Freeman and
  * Company, 1967. (especially sections 2.13 and equation 2-144)</li>

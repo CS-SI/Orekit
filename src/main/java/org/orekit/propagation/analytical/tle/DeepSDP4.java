@@ -30,7 +30,7 @@ import org.orekit.utils.Constants;
  * {@link TLEPropagator}.
  * </p>
  * <p>This implementation is largely inspired from the paper and source code <a
- * href="http://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
+ * href="https://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
  * Report #3</a> and is fully compliant with its results and tests cases.</p>
  * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)

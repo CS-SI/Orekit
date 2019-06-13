@@ -43,8 +43,8 @@ import org.orekit.time.TimeScalesFactory;
  * 3.00, 3.01, 3.02, and 3.03.
  * </p>
  * @see <a href="ftp://igs.org/pub/data/format/rinex2.txt">rinex 2.0</a>
- * @see <a href="ftp://igs.org/pub/data/forma/rinex210.txt">rinex 2.10</a>
- * @see <a href="ftp://igs.org/pub/data/forma/rinex211.txt">rinex 2.11</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex210.txt">rinex 2.10</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex211.txt">rinex 2.11</a>
  * @see <a href="http://www.aiub.unibe.ch/download/rinex/rinex212.txt">unofficial rinex 2.12</a>
  * @see <a href="http://www.aiub.unibe.ch/download/rinex/rnx_leo.txt">unofficial rinex 2.20</a>
  * @see <a href="ftp://igs.org/pub/data/format/rinex300.pdf">rinex 3.00</a>
