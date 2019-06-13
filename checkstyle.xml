@@ -43,7 +43,7 @@
         <module name="MissingSwitchDefault"/>
         <module name="ModifierOrder"/>
         <module name="MultipleStringLiterals">
-            <property name="ignoreStringsRegexp" value='^(("")|("."))$'/>
+            <property name="ignoreStringsRegexp" value='^(("")|(".")|("\\\\"))$'/>
         </module>
         <module name="MultipleVariableDeclarations"/>
         <module name="NoWhitespaceAfter"/>

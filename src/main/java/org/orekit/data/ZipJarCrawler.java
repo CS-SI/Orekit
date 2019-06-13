@@ -186,7 +186,7 @@ public class ZipJarCrawler implements DataProvider {
 
                 if (visitor.stillAcceptsData() && !entry.isDirectory()) {
 
-                    final String fullName = prefix + "!" + entry.getName();
+                    final String fullName = prefix + "!/" + entry.getName();
 
                     if (ZIP_ARCHIVE_PATTERN.matcher(entry.getName()).matches()) {
 

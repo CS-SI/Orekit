@@ -232,7 +232,12 @@ public enum OrekitMessages implements Localizable {
     IRREGULAR_OR_INCOMPLETE_GRID("irregular or incomplete grid in file {0}"),
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
     NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
-    INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}");
+    INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
+    ITRF_VERSIONS_PREFIX_ONLY("The first column of itrf-versions.conf is a plain " +
+            "prefix that is matched against the name of each loaded file. It should " +
+            "not contain any regular expression syntax or directory components, i.e. " +
+            "\"/\" or \"\\\". Actual value: \"{0}\".");
+
 
     // CHECKSTYLE: resume JavadocVariable check
 
