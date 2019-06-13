@@ -42,6 +42,8 @@
     }
     package frames #DDEBD8 {
     }
+    package gnss #DDEBD8 {
+    }
     package orbits #DDEBD8 {
     }
     package propagation #DDEBD8 {
@@ -69,6 +71,8 @@
     bodies      -->      data
     models      -->      bodies
     models      -->      data
+    gnss        -->      attitude
+    gnss        -->      data
     frames      -->      data
     time        -right-> data
     frames      -->      utils

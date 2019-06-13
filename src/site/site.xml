@@ -31,7 +31,7 @@
       <item name="Building"            href="/building.html"       />
       <item name="Configuration"       href="/configuration.html"  />
       <item name="FAQ"                 href="/faq.html"            />
-      <item name="License"             href="/licenses.html"        />
+      <item name="License"             href="/licenses.html"       />
       <item name="Downloads"           href="/downloads.html"      />
       <item name="Changes"             href="/changes-report.html" />
       <item name="Training"            href="/training.html"       />
@@ -44,6 +44,7 @@
       <item name="Estimation"    href="/architecture/estimation.html"    />
       <item name="Forces"        href="/architecture/forces.html"        />
       <item name="Frames"        href="/architecture/frames.html"        />
+      <item name="GNSS"          href="/architecture/gnss.html"          />
       <item name="Orbits"        href="/architecture/orbits.html"        />
       <item name="Propagation"   href="/architecture/propagation.html"   />
       <item name="Time"          href="/architecture/time.html"          />
