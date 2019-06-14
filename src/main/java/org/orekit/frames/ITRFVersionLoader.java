@@ -64,9 +64,6 @@ class ITRFVersionLoader {
     /** Regular expression for supported files names. */
     public static final String SUPPORTED_NAMES = "itrf-versions.conf";
 
-    /** Regular expression matching anything. */
-    private static final String ANYTHING  = ".*";
-
     /** Default entry to use if no suitable configuration is found. */
     private static final ITRFVersionConfiguration DEFAULT =
                     new ITRFVersionConfiguration("", ITRFVersion.ITRF_2014,
