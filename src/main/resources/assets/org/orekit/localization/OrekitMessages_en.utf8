@@ -543,3 +543,6 @@ NO_TEC_DATA_IN_FILE_FOR_DATE = IONEX file {0} does not contain TEC data for date
 
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = number of maps {0} is inconsistent with header specification: {1}
+
+# cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}

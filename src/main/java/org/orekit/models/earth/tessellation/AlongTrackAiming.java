@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -59,6 +60,12 @@ public class AlongTrackAiming implements TileAiming {
     public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending) {
         this.halfTrack = findHalfTrack(orbit, ellipsoid, isAscending);
         this.factory   = new DSFactory(1, 1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<GeodeticPoint> getSingularPoints() {
+        return Arrays.asList(GeodeticPoint.NORTH_POLE, GeodeticPoint.SOUTH_POLE);
     }
 
     /** {@inheritDoc} */

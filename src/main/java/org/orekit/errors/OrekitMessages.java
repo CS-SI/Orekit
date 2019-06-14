@@ -232,7 +232,8 @@ public enum OrekitMessages implements Localizable {
     IRREGULAR_OR_INCOMPLETE_GRID("irregular or incomplete grid in file {0}"),
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
     NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
-    INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}");
+    INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
+    CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT("cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}");
 
     // CHECKSTYLE: resume JavadocVariable check
 
