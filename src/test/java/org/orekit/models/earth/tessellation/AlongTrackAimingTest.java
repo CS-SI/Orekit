@@ -25,8 +25,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
@@ -82,29 +80,47 @@ public class AlongTrackAimingTest {
     }
 
     @Test
-    public void testTooNorthernLatitude() {
+    public void testTooNorthernLatitudePrograde() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, true);
-        try {
-            final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), 0.0, 0.0);
-            tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_LATITUDE, oe.getSpecifier());
-            Assert.assertEquals(51.0, (Double) (oe.getParts()[0]), 1.0e-10);
-        }
+        final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), 0.0, 0.0);
+        final Vector3D direction = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
+        Assert.assertEquals(0.0, Vector3D.angle(direction, gp.getEast()), 1.0e-15);
     }
 
     @Test
-    public void testTooSouthernLatitude() {
+    public void testTooNorthernLatitudeRetrograde() {
+        final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid,
+                                                                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(130.), FastMath.toRadians(270.),
+                                                                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                                                                   FramesFactory.getEME2000(),
+                                                                                   new AbsoluteDate(2008, 4, 7, 0, 0, 0, TimeScalesFactory.getUTC()),
+                                                                                   Constants.EIGEN5C_EARTH_MU),
+                                                                 true);
+        final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), 0.0, 0.0);
+        final Vector3D direction = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
+        Assert.assertEquals(0.0, Vector3D.angle(direction, gp.getWest()), 1.0e-15);
+    }
+
+    @Test
+    public void testTooSouthernLatitudePrograde() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, true);
-        try {
-            final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(-51.0), 0.0, 0.0);
-            tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_LATITUDE, oe.getSpecifier());
-            Assert.assertEquals(-51.0, (Double) (oe.getParts()[0]), 1.0e-10);
-        }
+        final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(-51.0), 0.0, 0.0);
+        final Vector3D direction = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
+        Assert.assertEquals(0.0, Vector3D.angle(direction, gp.getEast()), 1.0e-15);
+    }
+
+    @Test
+    public void testTooSouthernLatitudeRetrrograde() {
+        final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid,
+                                                                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(130.), FastMath.toRadians(270.),
+                                                                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                                                                   FramesFactory.getEME2000(),
+                                                                                   new AbsoluteDate(2008, 4, 7, 0, 0, 0, TimeScalesFactory.getUTC()),
+                                                                                   Constants.EIGEN5C_EARTH_MU),
+                                                                 true);
+        final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(-51.0), 0.0, 0.0);
+        final Vector3D direction = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
+        Assert.assertEquals(0.0, Vector3D.angle(direction, gp.getWest()), 1.0e-15);
     }
 
     @Before

@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -35,6 +36,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
@@ -59,6 +61,28 @@ public class FootprintOverlapDetectorTest {
     private Orbit initialOrbit;
 
     private OneAxisEllipsoid earth;
+
+    @Test
+    public void testSampleAroundPole() throws NoSuchFieldException, IllegalAccessException {
+        S2Point[] polygon = new S2Point[] {
+            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
+            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
+            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
+        };
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, polygon);
+        FieldOfView fov = new FieldOfView(Vector3D.PLUS_J,
+                                          Vector3D.PLUS_I, FastMath.toRadians(5.),
+                                          Vector3D.PLUS_K, FastMath.toRadians(5.),
+                                          0.);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, itrf);
+        FootprintOverlapDetector detector = new FootprintOverlapDetector(fov, earth, aoi, 20000.);
+        Assert.assertEquals(9.91475183e-3, detector.getZone().getSize(), 1.0e-10);
+        Field sampledZoneField = FootprintOverlapDetector.class.getDeclaredField("sampledZone");
+        sampledZoneField.setAccessible(true);
+        List<?> sampledZone = (List<?>) sampledZoneField.get(detector);
+        Assert.assertEquals(1140, sampledZone.size());
+    }
 
     @Test
     public void testRightForwardView() throws IOException {
@@ -93,14 +117,14 @@ public class FootprintOverlapDetectorTest {
         // the first two consecutive close events occur during the same ascending orbit
         // we first see Corsica, then lose visibility over the sea, then see continental France
 
-        // above Mediterranean see, between Illes Balears and Sardigna,
+        // above Mediterranean sea, between Illes Balears and Sardigna,
         // pointing to Corsica towards North-East
         checkEventPair(events.get(0),  events.get(1),
-                       639010.0775,  34.155, 39.2231,  6.5960, 42.0734,  9.0526);
+                       639010.0775,  34.1551, 39.2231,  6.5960, 42.0734,  9.0526);
 
         // above Saint-Chamond (Loire), pointing near Saint-Dié-des-Vosges (Vosges) towards North-East
         checkEventPair(events.get(2),  events.get(3),
-                       639113.5532,  38.3899, 45.5356,  4.4813, 48.4211,  7.1499);
+                       639113.0792,  38.8639, 45.5214,  4.4865, 48.4068,  7.1545);
 
         // event is on a descending orbit, so the pointing direction,
         // taking roll and pitch offsets, is towards South-West with respect to spacecraft
