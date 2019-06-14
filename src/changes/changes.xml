@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="luc" type="update" >
+        Removed latitude limitation in AlongTrackAiming. If latitude is above (resp. below)
+        the maximum (resp. minimum) latitude reached by the defining orbit, then aiming
+        will be towards East for prograde orbits and towards West for retrograde orbits.
+      </action>
       <action dev="luc" type="fix" issue="559">
         Take into account changes in MSAFE files names published by NASA.
       </action>

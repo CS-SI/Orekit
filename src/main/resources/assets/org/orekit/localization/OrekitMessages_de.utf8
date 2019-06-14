@@ -403,9 +403,6 @@ UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = die Durschnittsumlaufbahn kann auch nac
 # derivation order {0} is out of range
 OUT_OF_RANGE_DERIVATION_ORDER = Ableitungsgrad {0} ist ausserhalb des gültigen Bereichs
 
-# out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = Breitengrad ausserhalb des gültigen Bereichs: {0}, [{1}, {2}]
-
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = Umlaufbahntyp {0} ist hier nicht erlaubt, gültige Typen: {1}
 

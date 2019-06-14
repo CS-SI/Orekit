@@ -403,9 +403,6 @@ UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = no se puede calcular la órbita media a
 # derivation order {0} is out of range
 OUT_OF_RANGE_DERIVATION_ORDER = el orden de derivación {0} está fuera de rango
 
-# out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = la latitud está fuera de rango: {0}, [{1}, {2}]
-
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = tipo de órbita {0} no permitida, los tipos permitidos son: {1}
 
