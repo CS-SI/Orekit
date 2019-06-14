@@ -116,7 +116,7 @@ public class RichardsonExpansionContext {
 
         this.lDim = cr3bpSystem.getLdim();
 
-        this.gamma = getLPosition(cr3bpSystem);
+        this.gamma = cr3bpSystem.getGamma(point);
 
         final double c2 = getCn(2);
 
@@ -220,40 +220,6 @@ public class RichardsonExpansionContext {
         delta = wp * wp - c2;
     }
 
-    /** Calculate gamma.
-     * @param syst CR3BP System considered
-     * @return gamma Distance between the Lagrangian point and its closest primary body, meters
-    */
-    private double getLPosition(final CR3BPSystem syst) {
-
-        final double x;
-
-        final double DCP;
-
-        final double pos;
-
-        switch (point) {
-            case L1:
-                x = syst.getLPosition(LagrangianPoints.L1).getX();
-                DCP = 1 - mu;
-                pos = DCP - x;
-                break;
-            case L2:
-                x = syst.getLPosition(LagrangianPoints.L2).getX();
-                DCP = 1 - mu;
-                pos = x - DCP;
-                break;
-            case L3:
-                x = syst.getLPosition(LagrangianPoints.L3).getX();
-                DCP = -mu;
-                pos = DCP - x;
-                break;
-            default:
-                pos = 0;
-                break;
-        }
-        return pos;
-    }
 
     /** Calculate Cn Richardson Coefficient.
      * @param order Order 'n' of the coefficient needed.
@@ -276,16 +242,6 @@ public class RichardsonExpansionContext {
                 break;
         }
         return cn;
-    }
-
-    /** Calculate first Guess with t=0 , phi=0.
-     * @param azr z-axis Amplitude of the required Halo Orbit, meters
-     * @param type type of the Halo Orbit ("Northern" or "Southern")
-     * @return firstGuess PVCoordinates of the first guess
-    */
-    public PVCoordinates computeFirstGuess(final double azr,
-                                           final String type) {
-        return computeFirstGuess(azr, type, 0.0, 0.0);
     }
 
     /** Calculate first Guess.
@@ -520,13 +476,6 @@ public class RichardsonExpansionContext {
      */
     public double getDelta() {
         return delta;
-    }
-
-    /**
-     * @return the gamma
-     */
-    public double getGamma() {
-        return gamma;
     }
 
     /** Return the orbital period of the Halo Orbit.

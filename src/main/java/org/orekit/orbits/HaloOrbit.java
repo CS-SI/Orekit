@@ -60,10 +60,7 @@ public class HaloOrbit {
      * @param type type of the Halo Orbit ("Northern" or "Southern")
     */
     public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double az, final String type) {
-        this.cr3bpSystem = syst;
-
-        this.firstGuess = new RichardsonExpansionContext(cr3bpSystem, point).computeFirstGuess(az, type);
-        this.orbitalPeriod = new RichardsonExpansionContext(cr3bpSystem, point).getOrbitalPeriod(az, type);
+        this(syst, point, az, type, 0.0, 0.0);
     }
 
     /** Simple Constructor.

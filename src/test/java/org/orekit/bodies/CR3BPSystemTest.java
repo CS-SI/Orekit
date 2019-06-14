@@ -23,14 +23,7 @@ public class CR3BPSystemTest {
 	Assert.assertNotNull(tDim);
     }
     
-    @Test
-    public void testgetBarycenter() {
-	Utils.setDataRoot("regular-data");
-
-	final double bary = CR3BPFactory.getSunEarthCR3BP().getBarycenter();
-	Assert.assertNotNull(bary);
-    }
-    
+   
     @Test
     public void testgetRotatingFrame() {
     Utils.setDataRoot("regular-data");
@@ -101,5 +94,24 @@ public class CR3BPSystemTest {
     Assert.assertEquals(1.87E8, l5Position.getX() * syst.getLdim(),3E6);
     Assert.assertEquals(-3.32E8, l5Position.getY() * syst.getLdim(),3E6);
     Assert.assertEquals(0.0, l5Position.getZ() * syst.getLdim(),1E3);
+    }
+    
+    @Test
+    public void testgetGamma() {
+    Utils.setDataRoot("regular-data");
+
+    final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+    
+    final double l1Gamma = syst.getGamma(LagrangianPoints.L1);
+    Assert.assertEquals(1.491E9, l1Gamma * syst.getLdim(),1E6);
+
+    
+    final double l2Gamma = syst.getGamma(LagrangianPoints.L2);
+    Assert.assertEquals(1.501E9, l2Gamma * syst.getLdim(),1E6);
+
+    
+    final double l3Gamma = syst.getGamma(LagrangianPoints.L3);
+    Assert.assertEquals(1.495E11, l3Gamma * syst.getLdim(),1E8);
+
     }
 }

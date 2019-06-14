@@ -69,8 +69,29 @@ public class CR3BPSystem {
     /** Secondary body. */
     private CelestialBody secondaryBody;
 
-    /** Distance between the primary and the CR3BP System barycenter, meters. */
-    private double barycenter;
+    /** L1 Point position in the rotating frame. */
+    private final Vector3D l1Position;
+
+    /** L2 Point position in the rotating frame. */
+    private final Vector3D l2Position;
+
+    /** L3 Point position in the rotating frame. */
+    private final Vector3D l3Position;
+
+    /** L4 Point position in the rotating frame. */
+    private final Vector3D l4Position;
+
+    /** L5 Point position in the rotating frame. */
+    private final Vector3D l5Position;
+
+    /** Distance between a L1 and the secondaryBody. */
+    private final double gamma1;
+
+    /** Distance between a L2 and the secondaryBody. */
+    private final double gamma2;
+
+    /** Distance between a L3 and the primaryBody. */
+    private final double gamma3;
 
     /** Simple constructor.
      * @param primaryBody Primary Body in the CR3BP System
@@ -78,22 +99,119 @@ public class CR3BPSystem {
      * @param a Semi-Major Axis of the secondary body
      */
     public CR3BPSystem(final CelestialBody primaryBody, final CelestialBody secondaryBody, final double a) {
+        this(primaryBody, secondaryBody, a, secondaryBody.getGM() / (secondaryBody.getGM() + primaryBody.getGM()));
+    }
 
+    /**
+     * Simple constructor.
+     * @param primaryBody Primary Body in the CR3BP System
+     * @param secondaryBody Secondary Body in the CR3BP System
+     * @param a Semi-Major Axis of the secondary body
+     * @param mu Mass ration of the CR3BPSystem
+     */
+    public CR3BPSystem(final CelestialBody primaryBody, final CelestialBody secondaryBody, final double a, final double mu) {
         this.primaryBody = primaryBody;
         this.secondaryBody = secondaryBody;
 
         this.name = primaryBody.getName() + "_" + secondaryBody.getName();
 
         final double mu1 = primaryBody.getGM();
-        final double mu2 = secondaryBody.getGM();
+
+        this.mu = mu;
 
         this.lDim = a;
-
-        this.mu = mu2 / (mu1 + mu2);
-        this.barycenter = lDim * mu;
-
-        this.vDim = FastMath.sqrt(mu1 / (lDim - barycenter));
+        this.vDim = FastMath.sqrt(mu1 / (lDim - mu * lDim));
         this.tDim = 2 * FastMath.PI * lDim / vDim;
+
+        // Calculation of Lagrangian Points position
+
+        // L1
+        final BracketingNthOrderBrentSolver solver =
+            new BracketingNthOrderBrentSolver(RELATIVE_ACCURACY,
+                                              ABSOLUTE_ACCURACY,
+                                              FUNCTION_ACCURACY, MAX_ORDER);
+
+        final double baseR1 = 1 - FastMath.cbrt(mu / 3);
+        final UnivariateFunction l1Equation = x -> {
+            final double leq1 =
+                x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
+            final double leq2 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
+            final double leq3 = mu * (x + mu) * (x + mu);
+            return leq1 - leq2 + leq3;
+        };
+        final double[] searchInterval1 =
+            UnivariateSolverUtils.bracket(l1Equation, baseR1, -mu,
+                                          1 - mu, 1E-6, 1,
+                                          MAX_EVALUATIONS);
+
+        final double r1 =
+                        solver.solve(MAX_EVALUATIONS, l1Equation, searchInterval1[0],
+                         searchInterval1[1], AllowedSolution.ANY_SIDE);
+
+        l1Position = new Vector3D(r1, 0.0, 0.0);
+
+        // L2
+
+        final double baseR2 = 1 + FastMath.cbrt(mu / 3);
+        final UnivariateFunction l2Equation = x -> {
+            final double leq21 =
+                x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
+            final double leq22 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
+            final double leq23 = mu * (x + mu) * (x + mu);
+            return leq21 - leq22 - leq23;
+        };
+        final double[] searchInterval2 =
+            UnivariateSolverUtils.bracket(l2Equation, baseR2, 1 - mu, 2, 1E-6,
+                                          1, MAX_EVALUATIONS);
+
+        final double r2 =
+            solver.solve(MAX_EVALUATIONS, l2Equation, searchInterval2[0],
+                         searchInterval2[1], AllowedSolution.ANY_SIDE);
+
+        l2Position = new Vector3D(r2, 0.0, 0.0);
+
+        // L3
+
+        final double baseR3 = -(1 + 5 * mu / 12);
+        final UnivariateFunction l3Equation = x -> {
+            final double leq31 =
+                x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
+            final double leq32 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
+            final double leq33 = mu * (x + mu) * (x + mu);
+            return leq31 + leq32 + leq33;
+        };
+        final double[] searchInterval3 =
+            UnivariateSolverUtils.bracket(l3Equation, baseR3, -2, -mu, 1E-6, 1,
+                                          MAX_EVALUATIONS);
+
+        final double r3 =
+            solver.solve(MAX_EVALUATIONS, l3Equation, searchInterval3[0],
+                         searchInterval3[1], AllowedSolution.ANY_SIDE);
+
+        l3Position = new Vector3D(r3, 0.0, 0.0);
+
+        // L4
+        l4Position = new Vector3D(0.5 - mu, FastMath.sqrt(3) / 2, 0);
+
+        // L5
+        l5Position = new Vector3D(0.5 - mu, -FastMath.sqrt(3) / 2, 0);
+
+        // Calculation of collinear points gamma
+
+        // L1
+        final double x1 = getLPosition(LagrangianPoints.L1).getX();
+        final double DCP1 = 1 - mu;
+        this.gamma1 = DCP1 - x1;
+
+        // L2
+        final double x2 = getLPosition(LagrangianPoints.L2).getX();
+        final double DCP2 = 1 - mu;
+        this.gamma2 = x2 - DCP2;
+
+        // L3
+        final double x3 = getLPosition(LagrangianPoints.L3).getX();
+        final double DCP3 = -mu;
+        this.gamma3 = DCP3 - x3;
 
     }
 
@@ -150,15 +268,8 @@ public class CR3BPSystem {
      * @return CR3BP Rotating Frame
      */
     public Frame getRotatingFrame() {
-        final Frame baryFrame = new CR3BPRotatingFrame(lDim, barycenter, primaryBody, secondaryBody);
+        final Frame baryFrame = new CR3BPRotatingFrame(lDim, mu * lDim, primaryBody, secondaryBody);
         return baryFrame;
-    }
-
-    /** Get the distance of the CR3BP Barycenter from the primary.
-     * @return distance of the CR3BP Barycenter from the primary
-     */
-    public double getBarycenter() {
-        return barycenter;
     }
 
     /**
@@ -167,95 +278,64 @@ public class CR3BPSystem {
      * @return position of the Lagrangian point in the CR3BP Rotating frame (m)
      */
     public Vector3D getLPosition(final LagrangianPoints lagrangianPoint) {
-        final Vector3D lpos;
-        final double baseR;
-        final double[] searchInterval;
-        final double r;
-        final BracketingNthOrderBrentSolver solver;
+
+        final Vector3D lPosition;
 
         switch (lagrangianPoint) {
 
             case L1:
-                baseR = 1 - FastMath.cbrt(mu / 3);
-                final UnivariateFunction l1Equation = x -> {
-                    final double leq1 =
-                        x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
-                    final double leq2 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
-                    final double leq3 = mu * (x + mu) * (x + mu);
-                    return leq1 - leq2 + leq3;
-                };
-                searchInterval =
-                    UnivariateSolverUtils.bracket(l1Equation, baseR, -mu,
-                                                  1 - mu, 1E-6, 1,
-                                                  MAX_EVALUATIONS);
-                solver =
-                    new BracketingNthOrderBrentSolver(RELATIVE_ACCURACY,
-                                                      ABSOLUTE_ACCURACY,
-                                                      FUNCTION_ACCURACY,
-                                                      MAX_ORDER);
-                r =
-                    solver.solve(MAX_EVALUATIONS, l1Equation, searchInterval[0],
-                                 searchInterval[1], AllowedSolution.ANY_SIDE);
-                lpos = new Vector3D(r, 0.0, 0.0);
+                lPosition = l1Position;
                 break;
 
             case L2:
-                baseR = 1 + FastMath.cbrt(mu / 3);
-                final UnivariateFunction l2Equation = x -> {
-                    final double leq1 =
-                        x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
-                    final double leq2 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
-                    final double leq3 = mu * (x + mu) * (x + mu);
-                    return leq1 - leq2 - leq3;
-                };
-                searchInterval =
-                    UnivariateSolverUtils.bracket(l2Equation, baseR, 1 - mu, 2,
-                                                  1E-6, 1, MAX_EVALUATIONS);
-                solver =
-                    new BracketingNthOrderBrentSolver(RELATIVE_ACCURACY,
-                                                      ABSOLUTE_ACCURACY,
-                                                      FUNCTION_ACCURACY,
-                                                      MAX_ORDER);
-                r =
-                    solver.solve(MAX_EVALUATIONS, l2Equation, searchInterval[0],
-                                 searchInterval[1], AllowedSolution.ANY_SIDE);
-                lpos = new Vector3D(r, 0.0, 0.0);
+                lPosition = l2Position;
                 break;
 
             case L3:
-                baseR = -(1 + 5 * mu / 12);
-                final UnivariateFunction l3Equation = x -> {
-                    final double leq1 =
-                        x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
-                    final double leq2 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
-                    final double leq3 = mu * (x + mu) * (x + mu);
-                    return leq1 + leq2 + leq3;
-                };
-                searchInterval =
-                    UnivariateSolverUtils.bracket(l3Equation, baseR, -2, -mu,
-                                                  1E-6, 1, MAX_EVALUATIONS);
-                solver =
-                    new BracketingNthOrderBrentSolver(RELATIVE_ACCURACY,
-                                                      ABSOLUTE_ACCURACY,
-                                                      FUNCTION_ACCURACY,
-                                                      MAX_ORDER);
-                r =
-                    solver.solve(MAX_EVALUATIONS, l3Equation, searchInterval[0],
-                                 searchInterval[1], AllowedSolution.ANY_SIDE);
-                lpos = new Vector3D(r, 0.0, 0.0);
+                lPosition = l3Position;
                 break;
 
             case L4:
-                lpos = new Vector3D(0.5 - mu, FastMath.sqrt(3) / 2, 0);
+                lPosition = l4Position;
                 break;
 
             case L5:
-                lpos = new Vector3D(0.5 - mu, -FastMath.sqrt(3) / 2, 0);
+                lPosition = l5Position;
                 break;
+
+            // this should never happen
             default:
-                lpos = new Vector3D(0, 0, 0);
-                break;
+                lPosition = new Vector3D(0.0, 0.0, 0.0);
         }
-        return lpos;
+        return lPosition;
+    }
+
+    /**
+     * Get the position of the Lagrangian point in the CR3BP Rotating frame.
+     * @param lagrangianPoint Lagrangian Point to consider
+     * @return Distance between a Lagrangian Point and its closest primary.
+     */
+    public double getGamma(final LagrangianPoints lagrangianPoint) {
+
+        final double gamma;
+
+        switch (lagrangianPoint) {
+
+            case L1:
+                gamma = gamma1;
+                break;
+
+            case L2:
+                gamma = gamma2;
+                break;
+
+            case L3:
+                gamma = gamma3;
+                break;
+
+            default:
+                gamma = 0;
+        }
+        return gamma;
     }
 }
