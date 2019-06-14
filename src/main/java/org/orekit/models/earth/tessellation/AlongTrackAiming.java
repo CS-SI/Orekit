@@ -36,6 +36,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class used to orient tiles along an orbit track.
  * @see ConstantAzimuthAiming
+ * @see DivertedSingularityAiming
  * @author Luc Maisonobe
  */
 public class AlongTrackAiming implements TileAiming {

@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="547">
+        Added a tile/sampling aiming direction that diverts singularity outside of a
+        area of interest. This is mainly useful when sampling areas of interest that
+        cover the pole as the pole is singular for classical aiming directions (constant
+        azimuth or along track).
+      </action>
       <action dev="luc" type="update" >
         Removed latitude limitation in AlongTrackAiming. If latitude is above (resp. below)
         the maximum (resp. minimum) latitude reached by the defining orbit, then aiming

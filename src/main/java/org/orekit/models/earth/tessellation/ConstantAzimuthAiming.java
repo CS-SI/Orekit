@@ -26,6 +26,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 
 /** Class used to orient tiles with respect to a geographic azimuth.
  * @see AlongTrackAiming
+ * @see DivertedSingularityAiming
  * @author Luc Maisonobe
  */
 public class ConstantAzimuthAiming implements TileAiming {

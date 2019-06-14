@@ -349,25 +349,33 @@ public class EllipsoidTessellatorTest {
 
     @Test
     public void testSampleAroundPoleConstantAzimuth() {
-        doTestSampleAroundPole(new ConstantAzimuthAiming(ellipsoid, 0.0), -1);
-    }
-
-    private void doTestSampleAroundPole(final TileAiming aiming, final int expectedNodes) {
-        S2Point[] polygon = new S2Point[] {
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, new S2Point[] {
             new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
             new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
             new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
-        };
-        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, polygon);
-        Assert.assertEquals(9.91475183e-3, aoi.getSize(), 1.0e-10);
+        });
+        doTestSampleAroundPole(aoi, new ConstantAzimuthAiming(ellipsoid, 0.0), -1);
+    }
+
+    @Test
+    public void testSampleAroundPoleDivertedSingularity() {
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, new S2Point[] {
+            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
+            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
+            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
+        });
+        doTestSampleAroundPole(aoi, new DivertedSingularityAiming(aoi), 993);
+    }
+
+    private void doTestSampleAroundPole(final SphericalPolygonsSet aoi, final TileAiming aiming, final int expectedNodes) {
         EllipsoidTessellator tessellator = new EllipsoidTessellator(ellipsoid, aiming, 1);
         try {
             List<List<GeodeticPoint>> sampledZone = tessellator.sample(aoi, 20000.0, 20000.0);
             if (expectedNodes < 0) {
                 Assert.fail("an exception should have been thrown");
             } else {
-                Assert.assertEquals(1,    sampledZone.size());
-                Assert.assertEquals(1000, sampledZone.get(0).size());
+                Assert.assertEquals(1,             sampledZone.size());
+                Assert.assertEquals(expectedNodes, sampledZone.get(0).size());
             }
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT, oe.getSpecifier());
