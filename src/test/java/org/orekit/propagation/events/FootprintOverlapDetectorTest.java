@@ -124,7 +124,7 @@ public class FootprintOverlapDetectorTest {
 
         // above Saint-Chamond (Loire), pointing near Saint-Dié-des-Vosges (Vosges) towards North-East
         checkEventPair(events.get(2),  events.get(3),
-                       639113.0792,  38.8639, 45.5214,  4.4865, 48.4068,  7.1545);
+                       639113.0751,  38.8681, 45.5212,  4.4866, 48.4066,  7.1546);
 
         // event is on a descending orbit, so the pointing direction,
         // taking roll and pitch offsets, is towards South-West with respect to spacecraft
