@@ -127,11 +127,12 @@ public class Position extends AbstractMeasurement<Position> {
     }
 
     /** Get the correlation coefficients matrix.
-     * <br>This is the 3x3 matrix M such that:</br>
-     * <br>Mij = Pij/(σi.σj)</br>
-     * <br>Where: <ul>
-     * <li> P is the covariance matrix
-     * <li> σi is the i-th standard deviation (σi² = Pii)
+     * <p>This is the 3x3 matrix M such that:
+     * <p>Mij = Pij/(σi.σj)
+     * <p>Where:
+     * <ul>
+     * <li>P is the covariance matrix
+     * <li>σi is the i-th standard deviation (σi² = Pii)
      * </ul>
      * @return the correlation coefficient matrix (3x3)
      */

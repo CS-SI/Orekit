@@ -54,7 +54,6 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  *   <li><b>Measurements parameters</b>: Parameters related to measurements (station biases, positions etc...).<br>
  *       They are passed down to the filter in its constructor.</li>
  * </ol>
- * </p>
  * <p>
  * The total number of estimated parameters is m, the size of the state vector.
  * </p>

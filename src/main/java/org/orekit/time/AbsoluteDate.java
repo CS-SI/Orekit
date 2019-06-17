@@ -60,8 +60,8 @@ import org.orekit.utils.Constants;
  *   #AbsoluteDate(int, int, int, int, int, double, TimeScale)}, {@link
  *   #AbsoluteDate(int, int, int, TimeScale)}, {@link #AbsoluteDate(Date,
  *   TimeScale)}, {@link #parseCCSDSCalendarSegmentedTimeCode(byte, byte[])},
- *   toString(){@link #toDate(TimeScale)}, {@link #toString(TimeScale)
- *   toString(timeScale)}, {@link #toString()}, and {@link #timeScalesOffset}.</p>
+ *   {@link #toDate(TimeScale)}, {@link #toString(TimeScale) toString(timeScale)},
+ *   {@link #toString()}, and {@link #timeScalesOffset}.</p>
  *   </li>
  *   <li><p>offset view (mainly for physical computation)</p>
  *   <p>offsets represent either the flow of time between two events

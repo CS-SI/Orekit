@@ -34,7 +34,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * method is called. This class can be used to add a global logging
  * feature registering all events with their corresponding states in
  * a chronological sequence (or reverse-chronological if propagation
- * occurs backward).<p>
+ * occurs backward).
  * <p>This class works by wrapping user-provided {@link FieldEventDetector
  * events detectors} before they are registered to the propagator. The
  * wrapper monitor the calls to {@link
@@ -69,7 +69,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
      * <pre>
      * Propagator propagator = new XyzPropagator(...);
      * EventsLogger logger = new EventsLogger();
-     * FieldEventDetector<T> detector = new UvwDetector(...);
+     * FieldEventDetector&lt;T&gt; detector = new UvwDetector(...);
      * propagator.addEventDetector(logger.monitorDetector(detector));
      * </pre>
      * <p>

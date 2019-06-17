@@ -55,7 +55,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   </pre>
  * where ω stands for the Perigee Argument and Ω stands for the
  * Right Ascension of the Ascending Node.
- * </p>
  * <p>
  * The conversion equations from and to Keplerian elements given above hold only
  * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
@@ -1100,9 +1099,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * Normalize an angle in a 2&pi; wide interval around a center value.
      * <p>This method has three main uses:</p>
      * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br/>
+     *   <li>normalize an angle between 0 and 2&pi;:<br>
      *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br/>
+     *   <li>normalize an angle between -&pi; and +&pi;<br>
      *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
      *   <li>compute the angle between two defining angular positions:<br>
      *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>

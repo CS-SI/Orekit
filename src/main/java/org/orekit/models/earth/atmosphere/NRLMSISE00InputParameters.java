@@ -25,7 +25,6 @@ import org.orekit.time.AbsoluteDate;
  * <p>
  * This model needs daily and average F10.7 solar fluxes and
  * A<sub>p</sub> geomagnetic indices to compute the local density.
- * </p>
  *
  * @author Pascal Parraud
  */
@@ -67,7 +66,6 @@ public interface NRLMSISE00InputParameters extends Serializable {
      * <li>6 → Average of eight 3 hr A<sub>p</sub> indices from 36 to 57 hrs
      *          prior to current time</li>
      * </ul>
-     * </p>
      * @param date the current date
      * @return the array of A<sub>p</sub> indices
      */

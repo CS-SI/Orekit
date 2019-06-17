@@ -219,22 +219,16 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
     /** With the Mendes Pavlis tropospheric model, the mapping
      * function is not split into hydrostatic and wet component.
      * <p>
-     * Therefore, the two components of the resulting array are
-     * equals.
+     * Therefore, the two components of the resulting array are equals.
      * <ul>
      * <li>double[0] = m(e) → total mapping function
      * <li>double[1] = m(e) → total mapping function
      * </ul>
-     * </p><p>
-     * The total delay will thus be computed as this:
-     * <pre>
-     * δ = D<sub>hz</sub> * m(e) + D<sub>wz</sub> * m(e)
-     * </pre>
-     * <pre>
+     * <p>
+     * The total delay will thus be computed as:<br>
+     * δ = D<sub>hz</sub> * m(e) + D<sub>wz</sub> * m(e)<br>
      * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
-     * </pre>
-     * </p>
-     * */
+     */
     @Override
     public double[] mappingFactors(final double elevation, final double height,
                                    final double[] parameters, final AbsoluteDate date) {

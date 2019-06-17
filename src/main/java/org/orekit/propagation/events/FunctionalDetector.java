@@ -28,11 +28,11 @@ import org.orekit.propagation.events.handlers.EventHandler;
  *
  * <p>For example, to create a simple date detector use:
  *
- * <code><pre>
+ * <pre>
  * FunctionalDetector d = new FunctionalDetector()
  *     .withGFunction((s) -&gt; s.getDate().durationFrom(triggerDate))
  *     .withMaxCheck(1e10);
- * </pre></code>
+ * </pre>
  *
  * @author Evan Ward
  * @since 9.2

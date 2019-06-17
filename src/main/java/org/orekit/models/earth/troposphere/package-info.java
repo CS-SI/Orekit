@@ -29,7 +29,7 @@
  *       and non-hydrostatic parts</li>
  *   <li>Estimation of the total zenith delay</li>
  * </ul>
- * </p>
+ *
  * @author Bryan Cazabonne
  *
  */

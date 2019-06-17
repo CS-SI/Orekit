@@ -107,7 +107,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     private final Map<String, T[]> additional;
 
     /** Build a spacecraft state from orbit only.
-     * <p>FieldAttitude<T> and mass are set to unspecified non-null arbitrary values.</p>
+     * <p>FieldAttitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit) {
@@ -129,7 +129,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     }
 
     /** Create a new instance from orbit and mass.
-     * <p>FieldAttitude<T> law is set to an unspecified default attitude.</p>
+     * <p>FieldAttitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
      */
@@ -152,7 +152,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     }
 
     /** Build a spacecraft state from orbit only.
-     * <p>FieldAttitude<T> and mass are set to unspecified non-null arbitrary values.</p>
+     * <p>FieldAttitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
      */
@@ -176,7 +176,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     }
 
     /** Create a new instance from orbit and mass.
-     * <p>FieldAttitude<T> law is set to an unspecified default attitude.</p>
+     * <p>FieldAttitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param additional additional states
