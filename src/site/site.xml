@@ -52,12 +52,13 @@
       <item name="Utils"         href="/architecture/utils.html"         />
     </menu>
     <menu name="Tutorial">
-      <item name="Attitude"                       href="/tutorial/attitude.html"                       />
-      <item name="Frames"                         href="/tutorial/frames.html"                         />
-      <item name="Propagation"                    href="/tutorial/propagation.html"                    />
-      <item name="Time"                           href="/tutorial/time.html"                           />
-      <item name="Geomagnetic field"              href="/tutorial/geomagnetic-field.html"              />
-      <item name="Integration in other languages" href="/tutorial/integration-in-other-languages.html" />
+      <item name="Attitude"                           href="/tutorial/attitude.html"                          />
+      <item name="Frames"                             href="/tutorial/frames.html"                            />
+      <item name="Propagation"                        href="/tutorial/propagation.html"                       />
+      <item name="Propagation in non-inertial frame"  href="/tutorial/propagation-in-non-inertial-frame.html" />
+      <item name="Time"                               href="/tutorial/time.html"                              />
+      <item name="Geomagnetic field"                  href="/tutorial/geomagnetic-field.html"                 />
+      <item name="Integration in other languages"     href="/tutorial/integration-in-other-languages.html"    />
       </menu>
     <menu name="Development">
       <item name="Contributing"  href="/contributing.html"      />
