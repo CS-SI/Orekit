@@ -20,7 +20,19 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="10.0" date="TBD" description="TBD">
+    <release version="10.0" date="2019-06-24"
+             description="Orekit 10.0 is a major new release. It includes DSST OD,
+             propagation in non-inertial frames, specialized propagators for GNSS
+             constellations, a new ionospheric model, modeling for phase measurements, the
+             LAMBDA method for phase ambiguity resolution, Shapiro effect for range
+             measurements, improved documentation, as well as several other new features
+             and bug fixes. This release fixes a security denial of service bug regarding
+             itrf-versions.conf present since Orekit 9.2. Some APIs have incompatibly
+             changed since the 9.X series including the format of itrf-versions.conf,
+             removal of deprecated methods, reorganization of the models package, as well
+             as updates to AbstractDetector, AbstractGNSSAttitudeProvider, DragSensitive,
+             RadiationSensitive, and ZipJarCrawler. See the list below for a full
+             description of the changes.">
       <action dev="luc" type="fix" issue="547">
         Added a tile/sampling aiming direction that diverts singularity outside of a
         area of interest. This is mainly useful when sampling areas of interest that
@@ -68,14 +80,14 @@
         Add a events detector based on the geomagnetic field intensity at the satellite altitude
         or at sea level above the satellite, and the associated tests
       </action>
-      <action dev="maxime" type="add" issue="549">
+      <action dev="maxime" type="update" issue="549">
         Deleted deprecated methods in EclipseDetector.
       </action>
       <action dev="romaric" type="fix" issue="553">
         Fix the bug of attitude transition with Ephemeris propagator
         by adding a way for the LocalPVProvider to get the attitude at the end of the transition
       </action>
-      <action dev="petrus" type="add" issue="518">
+      <action dev="petrus" type="update" issue="518">
         Changing AbstractGNSSAttitudeProvider from public to package-private.
       </action>
       <action dev="romaric" type="fix" issue="551">
@@ -97,13 +109,13 @@
         Added ambiguity resolution for phase measurements.
         This feature is not complete yet and is considered experimental.
       </action>
-      <action dev="bryan" type="add" issue="548">
+      <action dev="bryan" type="update" issue="548">
         Reorganized models package by adding new sub-packages.
       </action>
-      <action dev="maxime" type="add" issue="546">
+      <action dev="maxime" type="update" issue="546">
         Updated Hipparchus dependency to version 1.5 in pom.xml file.
       </action>
-      <action dev="maxime" type="fix" issue="514">
+      <action dev="maxime" type="update" issue="514">
         Deleted unused DerivativeStructure acceleration computation methods.
         In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests.
       </action>
@@ -152,7 +164,7 @@
         Remove EventHandler.Action and FieldEventHandler.Action. Use
         org.hipparchus.ode.events.Action instead.
       </action>
-      <action dev="bryan" type="fix" issue="527">
+      <action dev="bryan" type="update" issue="527">
         Changed API for magnetic field model to a SI base unit API.
       </action>
       <action dev="evan" type="fix">
