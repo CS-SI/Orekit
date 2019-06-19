@@ -28,6 +28,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -38,6 +39,7 @@ public class QZSSAlmanacTest {
 
     @Test
     public void testLoadData() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("regular-data");
         // the parser for reading Yuma files with a pattern
         QZSSYUMAParser reader = new QZSSYUMAParser(".*\\.yum$");
         // the YUMA file to read
