@@ -18,32 +18,50 @@ package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.Arrays;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 
-/** Class calculating the state transition matrix coefficient.
+/** Class calculating the state transition matrix coefficient for CR3BP Computation.
+ * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
  */
 public class STMEquations
     implements
     AdditionalEquations {
 
+    /** Matrix Dimension. */
+    private static final int DIM = 6;
+
     /** Mass ratio of the considered CR3BP System. */
-    private final double mu;
+    private final CR3BPSystem syst;
 
     /** Name of the equations. */
     private final String name;
+
+    /** Potential Hessian Matrix. */
+    private final double[][] jacobian = new double[DIM][DIM];
 
     /** Simple constructor.
      * @param syst CR3BP System considered
      */
     public STMEquations(final CR3BPSystem syst) {
-        this.mu = syst.getMu();
+        this.syst = syst;
         this.name = "stmEquations";
+
+        // Jacobian constant values initialization
+        for (int j = 0; j < jacobian.length; ++j) {
+            Arrays.fill(jacobian[j], 0.0);
+        }
+
+        jacobian[0][3] = 1.0;
+        jacobian[1][4] = 1.0;
+        jacobian[2][5] = 1.0;
+        jacobian[3][4] = 2.0;
+        jacobian[4][3] = -2.0;
     }
 
     /** Method adding the standard initial values of the additional state to the initial spacecraft state.
@@ -60,35 +78,54 @@ public class STMEquations
         for (int i = 0; i < stateDimension; i = i + 7) {
             phi[i] = 1.0;
         }
+
         return s.addAdditionalState(name, phi);
     }
 
     /** {@inheritDoc} */
     public double[] computeDerivatives(final SpacecraftState s, final double[] dPhi) {
 
-        final double[][] jacobian = new double[6][6];
-
-        final double[][] u = new double[3][3];
-        final double[][] phi2d = new double[6][6];
-
+        // State Transition Matrix
         final double[] phi = s.getAdditionalState(getName());
 
-        for (int j = 0; j < jacobian.length; ++j) {
-            Arrays.fill(jacobian[j], 0.0);
-        }
+        // Spacecraft Potential
+        final DerivativeStructure potential = new CR3BPForceModel(syst).getPotential(s);
 
-        jacobian[0][3] = 1.0;
-        jacobian[1][4] = 1.0;
-        jacobian[2][5] = 1.0;
-        jacobian[3][4] = 2.0;
-        jacobian[4][3] = -2.0;
+        // Potential derivatives
+        final double[] dU = potential.getAllDerivatives();
 
-        final double x = s.getPVCoordinates().getPosition().getX();
-        final double y = s.getPVCoordinates().getPosition().getY();
-        final double z = s.getPVCoordinates().getPosition().getZ();
+        // second order derivatives index
+        final int idXX =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(2, 0,
+                                                                           0);
+        final int idXY =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 1,
+                                                                           0);
+        final int idXZ =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 0,
+                                                                           1);
+        final int idYY =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 2,
+                                                                           0);
+        final int idYZ =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 1,
+                                                                           1);
+        final int idZZ =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 0,
+                                                                           2);
 
-        final double r1 = FastMath.sqrt((x + mu) * (x + mu) + y * y + z * z);
-        final double r2 = FastMath.sqrt((x - (1 - mu)) * (x - (1 - mu)) + y * y + z * z);
+        // New Jacobian values
+        jacobian[3][0] = dU[idXX];
+        jacobian[4][1] = dU[idYY];
+        jacobian[5][2] = dU[idZZ];
+        jacobian[3][1] = dU[idXY];
+        jacobian[4][0] = jacobian[3][1];
+        jacobian[3][2] = dU[idXZ];
+        jacobian[5][0] = jacobian[3][2];
+        jacobian[4][2] = dU[idYZ];
+        jacobian[5][1] = jacobian[4][2];
+
+/** Analytical expressions
 
         u[0][0] = 1 - (1 - mu) * (1 / (r1 * r1 * r1) -
             3 * (x + mu) * (x + mu) / (r1 * r1 * r1 * r1 * r1)) -
@@ -118,26 +155,15 @@ public class STMEquations
                   3 * mu * y * z / (r2 * r2 * r2 * r2 * r2);
 
         u[2][1] = u[1][2];
+*/
 
-        for (int k = 3; k < 6; ++k) {
-            jacobian[k][0] = u[k - 3][0];
-            jacobian[k][1] = u[k - 3][1];
-            jacobian[k][2] = u[k - 3][2];
-        }
-
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                phi2d[i][j] = phi[6 * i + j];
-            }
-        }
-
-        final RealMatrix phiM = new Array2DRowRealMatrix(phi2d, false);
-        final RealMatrix jacobianM = new Array2DRowRealMatrix(jacobian, false);
-        final RealMatrix phidM = jacobianM.multiply(phiM);
-
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                dPhi[6 * i + j] = phidM.getEntry(i, j);
+        // STM derivatives computation : dPhi = Jacobian * Phi if both dPhi and Phi are defined as Matrix
+        for (int k = 0; k < DIM; k++) {
+            for (int l = 0; l < DIM; l++) {
+                for (int i = 0; i < DIM; i++) {
+                    dPhi[DIM * k + l] =
+                        dPhi[DIM * k + l] + jacobian[k][i] * phi[DIM * i + l];
+                }
             }
         }
 
@@ -150,16 +176,16 @@ public class STMEquations
         return name;
     }
 
-    /** Method returning the STM.
+    /** Method returning the State Transition Matrix.
      * @param s SpacecraftState of the system
      * @return phiM State Transition Matrix
      */
     public RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
-        final double[][] phi2dA = new double[6][6];
+        final double[][] phi2dA = new double[DIM][DIM];
         final double[] stm = s.getAdditionalState(getName());
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < DIM; i++) {
             for (int j = 0; j < 6; j++) {
-                phi2dA[i][j] = stm[6 * i + j];
+                phi2dA[i][j] = stm[DIM * i + j];
             }
         }
         final RealMatrix phiM = new Array2DRowRealMatrix(phi2dA, false);

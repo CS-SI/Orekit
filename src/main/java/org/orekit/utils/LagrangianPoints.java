@@ -22,19 +22,19 @@ package org.orekit.utils;
  */
 public enum LagrangianPoints {
 
-                              /** Lagrangian Point L1. */
-                              L1,
+      /** Lagrangian Point L1. */
+      L1,
 
-                              /** Lagrangian Point L2. */
-                              L2,
+      /** Lagrangian Point L2. */
+      L2,
 
-                              /** Lagrangian Point L3. */
-                              L3,
+      /** Lagrangian Point L3. */
+      L3,
 
-                              /** Lagrangian Point L4. */
-                              L4,
+      /** Lagrangian Point L4. */
+      L4,
 
-                              /** Lagrangian Point L5. */
-                              L5;
+      /** Lagrangian Point L5. */
+      L5;
 
 }

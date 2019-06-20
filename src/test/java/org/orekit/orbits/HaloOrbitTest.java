@@ -34,7 +34,6 @@ import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.CR3BPDifferentialCorrection;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
@@ -46,8 +45,8 @@ public class HaloOrbitTest {
     CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
     
     final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
-    final HaloOrbit h1 = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, "Northern");
-    final HaloOrbit h2 = new HaloOrbit(syst, LagrangianPoints.L2, firstGuess);
+    final HaloOrbit h1 = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, HaloOrbitType.NORTHERN);
+    final HaloOrbit h2 = new HaloOrbit(syst, firstGuess, 2.0);
     
     final double orbitalPeriod1 = h1.getOrbitalPeriod();
     final double orbitalPeriod2 = h2.getOrbitalPeriod();
@@ -83,7 +82,7 @@ public class HaloOrbitTest {
 
         // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
         // of 8 000 km
-        HaloOrbit h = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, "Northern");
+        HaloOrbit h = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, HaloOrbitType.SOUTHERN);
 
         final double orbitalPeriod = h.getOrbitalPeriod();
 
@@ -109,7 +108,7 @@ public class HaloOrbitTest {
         // equations are too stiff,
         // as well as the reverse situation.
         final double minStep = 1E-10;
-        final double maxstep = 1E-3;
+        final double maxstep = 1E-2;
 
         // tolerances for integrators
         // Used by the integrator to estimate its variable integration step

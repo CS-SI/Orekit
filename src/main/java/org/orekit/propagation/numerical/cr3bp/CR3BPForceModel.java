@@ -20,6 +20,10 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -33,12 +37,13 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.ParameterDriver;
 
 /** Class calculating the acceleration induced by CR3BP model.
+ * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
  */
 public class CR3BPForceModel extends AbstractForceModel {
 
-    /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
-    public static final String ATTRACTION_COEFFICIENT_SUFFIX =  " attraction coefficient";
+    /** Suffix for parameter name for Mass Ratio enabling Jacobian processing. */
+    public static final String MASS_RATIO_SUFFIX =  "CR3BP System Mass Ratio";
 
     /**
      * Central attraction scaling factor.
@@ -57,8 +62,8 @@ public class CR3BPForceModel extends AbstractForceModel {
      */
     public CR3BPForceModel(final CR3BPSystem cr3bp) {
         muParameterDriver =
-            new ParameterDriver(cr3bp.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                cr3bp.getMu(), MU_SCALE, 0.0,
+            new ParameterDriver(cr3bp.getName() + MASS_RATIO_SUFFIX,
+                                cr3bp.getMassRatio(), MU_SCALE, 0.0,
                                 Double.POSITIVE_INFINITY);
     }
 
@@ -67,33 +72,33 @@ public class CR3BPForceModel extends AbstractForceModel {
                                  final double[] parameters)
         throws OrekitException {
 
-        final double mu = parameters[0];
-        final double d1 = mu;
-        final double d2 = 1.0 - mu;
-
-        final double x = s.getPVCoordinates().getPosition().getX();
-        final double y = s.getPVCoordinates().getPosition().getY();
-        final double z = s.getPVCoordinates().getPosition().getZ();
-
+        // Spacecraft Velocity
         final double vx = s.getPVCoordinates().getVelocity().getX();
         final double vy = s.getPVCoordinates().getVelocity().getY();
 
-        final double r1 = FastMath.sqrt((x + d1) * (x + d1) + y * y + z * z);
-        final double r2 = FastMath.sqrt((x - d2) * (x - d2) + y * y + z * z);
+        // Spacecraft Potential
+        final DerivativeStructure potential = getPotential(s);
 
-        final double dUdX =
-            -(1.0 - mu) * (x + d1) / (r1 * r1 * r1) -
-                            mu * (x - d2) / (r2 * r2 * r2) + x;
-        final double dUdY =
-            -y * ((1.0 - mu) / (r1 * r1 * r1) + mu / (r2 * r2 * r2)) + y;
-        final double dUdZ =
-            -z * ((1.0 - mu) / (r1 * r1 * r1) + mu / (r2 * r2 * r2));
+        // Potential derivatives
+        final double[] dU = potential.getAllDerivatives();
 
-        final double accx = dUdX + 2.0 * vy;
+        // first order derivatives index
+        final int idX =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 0,
+                                                                           0);
+        final int idY =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 1,
+                                                                           0);
+        final int idZ =
+            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 0,
+                                                                           1);
 
-        final double accy = dUdY - 2.0 * vx;
+        // Acceleration calculation according to CR3BP Analytical Model
+        final double accx = dU[idX] + 2.0 * vy;
 
-        final double accz = dUdZ;
+        final double accy = dU[idY] - 2.0 * vx;
+
+        final double accz = dU[idZ];
 
         // compute absolute acceleration
         return new Vector3D(accx, accy, accz);
@@ -104,49 +109,125 @@ public class CR3BPForceModel extends AbstractForceModel {
     public <T extends RealFieldElement<T>> FieldVector3D<T>
         acceleration(final FieldSpacecraftState<T> s, final T[] parameters)
             throws OrekitException {
-        // compute bodies separation vectors and squared norm
 
-        final T mu = parameters[0];
-        final T d1 = mu;
-        final T d2 = mu.negate().add(1.0);
-
-        final T x = s.getPVCoordinates().getPosition().getX();
-        final T y = s.getPVCoordinates().getPosition().getY();
-        final T z = s.getPVCoordinates().getPosition().getZ();
-
+        // Spacecraft Velocity
         final T vx = s.getPVCoordinates().getVelocity().getX();
         final T vy = s.getPVCoordinates().getVelocity().getY();
 
-        final T r1 =
-            FastMath.sqrt((d1.add(x)).multiply(d1.add(x)).add(y.multiply(y))
-                .add(z.multiply(z)));
+        // Spacecraft Potential
+        final FieldDerivativeStructure<T> fieldPotential = getPotential(s);
+        // Potential derivatives
+        final T[] dU = fieldPotential.getAllDerivatives();
 
-        final T r2 =
-            FastMath.sqrt((x.subtract(d2)).multiply(x.subtract(d2))
-                .add(y.multiply(y)).add(z.multiply(z)));
+        // first order derivatives index
+        final int idX =
+            fieldPotential.getFactory().getCompiler()
+                .getPartialDerivativeIndex(1, 0, 0);
+        final int idY =
+            fieldPotential.getFactory().getCompiler()
+                .getPartialDerivativeIndex(0, 1, 0);
+        final int idZ =
+            fieldPotential.getFactory().getCompiler()
+                .getPartialDerivativeIndex(0, 0, 1);
 
-        final T dUdX =
-                       mu.negate().add(1.0).negate().multiply(x.add(d1)).divide(r1.multiply(r1).multiply(r1)).
-                       subtract(mu.multiply(x.subtract(d2)).divide(r2.multiply(r2).multiply(r2))).
-                       add(x);
+        // Acceleration calculation according to CR3BP Analytical Model
+        final T accx = dU[idX].add(vy.multiply(2.0));
 
-        final T dUdY =
-            y.negate()
-                .multiply(mu.negate().add(1.0).divide(r1.multiply(r1).multiply(r1)).add(mu.divide(r2.multiply(r2).multiply(r2)))).add(y);
+        final T accy = dU[idY].subtract(vx.multiply(2.0));
 
-        final T dUdZ =
-                        z.negate().multiply(mu.negate().add(1.0).divide(r1.multiply(r1).multiply(r1))
-                                             .add(mu.divide(r2.multiply(r2).multiply(r2))));
-
-        final T accx = dUdX.add(vy.multiply(2.0));
-
-        final T accy = dUdY.subtract(vx.multiply(2.0));
-
-        final T accz = dUdZ;
+        final T accz = dU[idZ];
 
         // compute absolute acceleration
         return new FieldVector3D<>(accx, accy, accz);
 
+    }
+
+    /**
+     * Calculate spacecraft potential.
+     * @param s SpacecraftState
+     * @return Spacecraft Potential
+     */
+    public DerivativeStructure getPotential(final SpacecraftState s) {
+
+        // Spacecraft Position
+        final double x = s.getPVCoordinates().getPosition().getX();
+        final double y = s.getPVCoordinates().getPosition().getY();
+        final double z = s.getPVCoordinates().getPosition().getZ();
+
+        final DSFactory factoryP = new DSFactory(3, 2);
+        final DerivativeStructure fpx = factoryP.variable(0, x);
+        final DerivativeStructure fpy = factoryP.variable(1, y);
+        final DerivativeStructure fpz = factoryP.variable(2, z);
+
+        final DerivativeStructure zero = fpx.getField().getZero();
+
+        // Get CR3BP System mass ratio
+        final DerivativeStructure mu = zero.add(muParameterDriver.getValue());
+
+        // Normalized distances between primaries and barycenter in CR3BP
+        final DerivativeStructure d1 = mu;
+        final DerivativeStructure d2 = mu.negate().add(1.0);
+
+        // Norm of the Spacecraft position relative to the primary body
+        final DerivativeStructure r1 =
+            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.multiply(fpy))
+                .add(fpz.multiply(fpz)));
+
+        // Norm of the Spacecraft position relative to the secondary body
+        final DerivativeStructure r2 =
+            FastMath.sqrt((fpx.subtract(d2)).multiply(fpx.subtract(d2))
+                .add(fpy.multiply(fpy)).add(fpz.multiply(fpz)));
+
+        // Potential of the Spacecraft
+        final DerivativeStructure potential =
+            (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
+                .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
+
+        return potential;
+    }
+
+    /**
+     * Calculate spacecraft potential.
+     * @param <T> Field element
+     * @param s SpacecraftState
+     * @return Spacecraft Potential
+     */
+    public <T extends RealFieldElement<T>> FieldDerivativeStructure<T> getPotential(final FieldSpacecraftState<T> s) {
+
+        // Spacecraft Position
+        final T x = s.getPVCoordinates().getPosition().getX();
+        final T y = s.getPVCoordinates().getPosition().getY();
+        final T z = s.getPVCoordinates().getPosition().getZ();
+
+        final FDSFactory<T> factoryP = new FDSFactory<>(s.getDate().getField(), 3, 2);
+        final FieldDerivativeStructure<T> fpx = factoryP.variable(0, x);
+        final FieldDerivativeStructure<T> fpy = factoryP.variable(1, y);
+        final FieldDerivativeStructure<T> fpz = factoryP.variable(2, z);
+        final FieldDerivativeStructure<T> zero = fpx.getField().getZero();
+
+        // Get CR3BP System mass ratio
+        final FieldDerivativeStructure<T> mu = zero.add(muParameterDriver.getValue());
+
+        // Normalized distances between primaries and barycenter in CR3BP
+        final FieldDerivativeStructure<T> d1 = mu;
+        final FieldDerivativeStructure<T> d2 = mu.negate().add(1.0);
+
+        // Norm of the Spacecraft position relative to the primary body
+        final FieldDerivativeStructure<T> r1 =
+            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.multiply(fpy))
+                .add(fpz.multiply(fpz)));
+
+        // Norm of the Spacecraft position relative to the secondary body
+        final FieldDerivativeStructure<T> r2 =
+            FastMath.sqrt((fpx.subtract(d2)).multiply(fpx.subtract(d2))
+                .add(fpy.multiply(fpy)).add(fpz.multiply(fpz)));
+
+        // Potential of the Spacecraft
+        final FieldDerivativeStructure <T>fieldPotential =
+            (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
+                .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
+
+        return fieldPotential;
     }
 
     /** {@inheritDoc} */

@@ -12,10 +12,8 @@
 			<metadata>
 				<COMMENT>Range correction applied is range calibration to DSS-24.</COMMENT>
 				<COMMENT>Estimated RTLT at begin of pass = 950 seconds</COMMENT>
-				<COMMENT>Antenna Z-height correction 0.0545 km applied to uplink
-					signal</COMMENT>
-				<COMMENT>Antenna Z-height correction 0.0189 km applied to downlink
-					signal</COMMENT>
+				<COMMENT>Antenna Z-height correction 0.0545 km applied to uplink signal</COMMENT>
+				<COMMENT>Antenna Z-height correction 0.0189 km applied to downlink signal</COMMENT>
 				<CORRECTION_RANGE>46.7741</CORRECTION_RANGE>
 				<CORRECTIONS_APPLIED>YES</CORRECTIONS_APPLIED>
 				<INTEGRATION_REF>START</INTEGRATION_REF>

@@ -14,26 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.orbits;
 
-import java.util.Calendar;
 
-/**
- * Set of useful physical CR3BP constants using JPL data.
+/** Enumerate for {@link HaloOrbit Halo Orbit} types.
  * @author Vincent Mouraux
  */
+public enum HaloOrbitType {
 
-public interface CR3BPConstants {
+    /** Northern. */
+    NORTHERN,
 
-    /** Moon semi-major axis = 384 400 000 m. */
-    double CENTURY = (Calendar.getInstance().get(Calendar.YEAR) - 2000.0) / 100.0;
-
-    /** Moon semi-major axis in meters. */
-    double MOON_SEMI_MAJOR_AXIS = 384400000.0;
-
-    /** Earth-Moon barycenter semi-major axis in meters. */
-    double EARTH_MOON_BARYCENTER_SEMI_MAJOR_AXIS = (1.00000261 + 0.00000562 * CENTURY) * Constants.IAU_2012_ASTRONOMICAL_UNIT;
-
-    /** Jupiter semi-major axis in meters. */
-    double JUPITER_SEMI_MAJOR_AXIS = (5.20288700 - 0.00011607 * CENTURY) * Constants.IAU_2012_ASTRONOMICAL_UNIT;
+    /** Southern. */
+    SOUTHERN;
 }

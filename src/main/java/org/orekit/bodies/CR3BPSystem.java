@@ -29,6 +29,7 @@ import org.orekit.utils.LagrangianPoints;
 /**
  * Class creating, from two different celestial bodies, the corresponding system
  * with respect to the Circular Restricted Three Body problem hypotheses.
+ * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
  */
 public class CR3BPSystem {
@@ -52,22 +53,22 @@ public class CR3BPSystem {
     private final double mu;
 
     /** Distance between the two primaries, meters. */
-    private double lDim;
+    private final double lDim;
 
     /** Orbital Velocity of m1, m/s. */
-    private double vDim;
+    private final double vDim;
 
     /** Orbital Period of m1 and m2, seconds. */
-    private double tDim;
+    private final double tDim;
 
     /** CR3BP System name. */
-    private String name;
+    private final String name;
 
     /** Primary body. */
-    private CelestialBody primaryBody;
+    private final CelestialBody primaryBody;
 
     /** Secondary body. */
-    private CelestialBody secondaryBody;
+    private final CelestialBody secondaryBody;
 
     /** L1 Point position in the rotating frame. */
     private final Vector3D l1Position;
@@ -93,7 +94,12 @@ public class CR3BPSystem {
     /** Distance between a L3 and the primaryBody. */
     private final double gamma3;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     * <p>
+     * Standard constructor to use to define a CR3BP System. Mass ratio is
+     * calculated from JPL data.
+     * </p>
      * @param primaryBody Primary Body in the CR3BP System
      * @param secondaryBody Secondary Body in the CR3BP System
      * @param a Semi-Major Axis of the secondary body
@@ -104,10 +110,14 @@ public class CR3BPSystem {
 
     /**
      * Simple constructor.
+     * <p>
+     * This constructor can be used to define a CR3BP System if the user wants
+     * to use a specified mass ratio.
+     * </p>
      * @param primaryBody Primary Body in the CR3BP System
      * @param secondaryBody Secondary Body in the CR3BP System
      * @param a Semi-Major Axis of the secondary body
-     * @param mu Mass ration of the CR3BPSystem
+     * @param mu Mass ratio of the CR3BPSystem
      */
     public CR3BPSystem(final CelestialBody primaryBody, final CelestialBody secondaryBody, final double a, final double mu) {
         this.primaryBody = primaryBody;
@@ -123,7 +133,7 @@ public class CR3BPSystem {
         this.vDim = FastMath.sqrt(mu1 / (lDim - mu * lDim));
         this.tDim = 2 * FastMath.PI * lDim / vDim;
 
-        // Calculation of Lagrangian Points position
+        // Calculation of Lagrangian Points position using CR3BP equations
 
         // L1
         final BracketingNthOrderBrentSolver solver =
@@ -218,7 +228,7 @@ public class CR3BPSystem {
     /** Get the CR3BP mass ratio of the system mu2/(mu1+mu2).
      * @return CR3BP mass ratio of the system mu2/(mu1+mu2)
      */
-    public double getMu() {
+    public double getMassRatio() {
         return mu;
     }
 
@@ -287,7 +297,7 @@ public class CR3BPSystem {
                 lPosition = l1Position;
                 break;
 
-            case L2:
+            default:
                 lPosition = l2Position;
                 break;
 
@@ -302,10 +312,6 @@ public class CR3BPSystem {
             case L5:
                 lPosition = l5Position;
                 break;
-
-            // this should never happen
-            default:
-                lPosition = new Vector3D(0.0, 0.0, 0.0);
         }
         return lPosition;
     }

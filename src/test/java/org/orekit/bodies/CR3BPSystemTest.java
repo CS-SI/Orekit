@@ -52,7 +52,7 @@ public class CR3BPSystemTest {
     public void testgetMu() {
 	Utils.setDataRoot("regular-data");
 
-	final double mu = CR3BPFactory.getSunJupiterCR3BP().getMu();
+	final double mu = CR3BPFactory.getSunJupiterCR3BP().getMassRatio();
 	Assert.assertNotNull(mu);
     }
     

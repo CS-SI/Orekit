@@ -41,46 +41,65 @@ public class HaloOrbit {
     /** Position-Velocity first guess for a point on a Halo Orbit. */
     private final PVCoordinates firstGuess;
 
-    /** Simple Constructor.
+    /**
+     * Simple Constructor.
+     * <p>
+     * This constructor can be used if the user wants to use a first guess from
+     * any other sources. In that case, it is assumed that the user knows the
+     * characteristics of the Halo Orbit leading to this first guess. Also, the
+     * orbital period of this Halo Orbit has to be specified for further
+     * computation.
+     * </p>
      * @param syst CR3BP System considered
-     * @param point Lagrangian Point considered
      * @param firstGuess PVCoordinates of the first guess
-    */
-    public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point,
-                     final PVCoordinates firstGuess) {
+     * @param orbitalPeriod Normalized orbital period linked to the given Halo
+     *        Orbit first guess
+     */
+    public HaloOrbit(final CR3BPSystem syst,
+                     final PVCoordinates firstGuess, final double orbitalPeriod) {
         this.cr3bpSystem = syst;
         this.firstGuess = firstGuess;
-        orbitalPeriod = 2;
+        this.orbitalPeriod = orbitalPeriod;
     }
 
-    /** Simple Constructor.
+    /**
+     * Simple Constructor.
+     * <p>
+     * Standard constructor, the first guess will be computed with both start
+     * time and phase equal to zero.
+     * </p>
      * @param syst CR3BP System considered
      * @param point Lagrangian Point considered
      * @param az z-axis Amplitude of the required Halo Orbit, meters
-     * @param type type of the Halo Orbit ("Northern" or "Southern")
-    */
-    public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double az, final String type) {
+     * @param type type of the Halo Orbit (Northern or Southern)
+     */
+    public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double az, final HaloOrbitType type) {
         this(syst, point, az, type, 0.0, 0.0);
     }
 
-    /** Simple Constructor.
+    /**
+     * Simple Constructor.
+     * <p>
+     * This constructor has to be used in case the user wants a start time
+     * and/or phase different from zero in Richardson first guess computation
+     * </p>
      * @param syst CR3BP System considered
      * @param point Lagrangian Point considered
      * @param az z-axis Amplitude of the required Halo Orbit, meters
      * @param type type of the Halo Orbit ("Northern" or "Southern")
-     * @param t Orbit time, seconds (>0)
+     * @param t time, seconds (!=0)
      * @param phi Orbit phase, rad
-    */
+     */
     public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double az,
-                     final String type, final double t, final double phi) {
+                     final HaloOrbitType type, final double t, final double phi) {
         this.cr3bpSystem = syst;
 
         firstGuess =
-            new RichardsonExpansionContext(cr3bpSystem, point)
+            new RichardsonExpansion(cr3bpSystem, point)
                 .computeFirstGuess(az, type, t, phi);
         orbitalPeriod =
-            new RichardsonExpansionContext(cr3bpSystem, point)
-                .getOrbitalPeriod(az, type);
+            new RichardsonExpansion(cr3bpSystem, point)
+                .getOrbitalPeriod(az);
     }
 
     /** Return the orbital period of the Halo Orbit.
@@ -97,39 +116,117 @@ public class HaloOrbit {
         return firstGuess;
     }
 
-    /** Return the manifold vector.
+    /** Return a manifold direction from one position on a Halo Orbit.
      * @param s SpacecraftState with additionnal equations
-     * @param type Stability of the manifold required
+     * @param isStable True if...
      * @return manifold first guess Position-Velocity of a point on the Halo Orbit
      */
     public PVCoordinates getManifolds(final SpacecraftState s,
-                                      final boolean type) {
+                                      final boolean isStable) {
 
         final RealVector eigenVector;
 
+        // Get Normalize eigen vector linked to the stability of the manifold
         final RealMatrix phi = new STMEquations(cr3bpSystem).getStateTransitionMatrix(s);
-        if (type) {
-            eigenVector = new EigenDecomposition(phi).getEigenvector(1);
+        if (isStable) {
+            // Stable
+            eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
         } else {
-            eigenVector = new EigenDecomposition(phi).getEigenvector(0);
+            // Unstable
+            eigenVector = new EigenDecomposition(phi).getEigenvector(0).unitVector();
         }
 
+        // Small delta, linked to the characteristic velocity of the CR3BP system
         final double epsilon = cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getLdim();
 
+        // New PVCoordinates following the manifold
         final PVCoordinates pv =
             new PVCoordinates(s.getPVCoordinates().getPosition()
                 .add(new Vector3D(eigenVector.getEntry(0), eigenVector
-                    .getEntry(1), eigenVector.getEntry(2)).normalize()
+                    .getEntry(1), eigenVector.getEntry(2))
                         .scalarMultiply(epsilon)), s.getPVCoordinates()
                             .getVelocity()
                             .add(new Vector3D(eigenVector.getEntry(3),
                                               eigenVector.getEntry(4),
                                               eigenVector.getEntry(5))
-                                                  .normalize()
                                                   .scalarMultiply(epsilon)));
         return pv;
 
     }
 
+    /** Return the stable manifold direction for several positions on a Halo Orbit.
+     * @param s SpacecraftStates (with STM equations) to compute from
+     * @return Stable manifold first direction from a point on the Halo Orbit
+     */
+    public PVCoordinates[]
+        getStableManifolds(final SpacecraftState... s) {
+
+        final PVCoordinates[] pv = new PVCoordinates[s.length];
+
+        RealVector eigenVector;
+
+        final double epsilon =
+            cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getLdim();
+
+
+        int i = 0;
+        while (i < s.length) {
+
+            final RealMatrix phi =
+                new STMEquations(cr3bpSystem).getStateTransitionMatrix(s[i]);
+
+            eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
+
+            pv[i] =
+                new PVCoordinates(s[i].getPVCoordinates().getPosition()
+                    .add(new Vector3D(eigenVector.getEntry(0), eigenVector
+                        .getEntry(1), eigenVector.getEntry(2))
+                            .scalarMultiply(epsilon)), s[i].getPVCoordinates()
+                                .getVelocity()
+                                .add(new Vector3D(eigenVector.getEntry(3),
+                                                  eigenVector.getEntry(4),
+                                                  eigenVector.getEntry(5))
+                                                      .scalarMultiply(epsilon)));
+            i++;
+        }
+        return pv;
+    }
+
+    /** Return the Unstable manifold direction for several positions on a Halo Orbit.
+     * @param s SpacecraftStates (with STM equations) to compute from
+     * @return Unstable manifold first direction from a point on the Halo Orbit
+     */
+    public PVCoordinates[] getUnstableManifolds(final SpacecraftState[] s) {
+
+        final PVCoordinates[] pv = new PVCoordinates[s.length];
+
+        RealVector eigenVector;
+
+        final double epsilon =
+            cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getLdim();
+
+        int i = 0;
+        while (i < s.length) {
+
+            final RealMatrix phi =
+                new STMEquations(cr3bpSystem).getStateTransitionMatrix(s[i]);
+
+            eigenVector =
+                new EigenDecomposition(phi).getEigenvector(0).unitVector();
+
+            pv[i] =
+                new PVCoordinates(s[i].getPVCoordinates().getPosition()
+                    .add(new Vector3D(eigenVector.getEntry(0), eigenVector
+                        .getEntry(1), eigenVector.getEntry(2))
+                            .scalarMultiply(epsilon)), s[i].getPVCoordinates()
+                                .getVelocity()
+                                .add(new Vector3D(eigenVector.getEntry(3),
+                                                  eigenVector.getEntry(4),
+                                                  eigenVector.getEntry(5))
+                                                      .scalarMultiply(epsilon)));
+            i++;
+        }
+        return pv;
+    }
 }
 

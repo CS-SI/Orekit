@@ -232,7 +232,9 @@ public enum OrekitMessages implements Localizable {
     IRREGULAR_OR_INCOMPLETE_GRID("irregular or incomplete grid in file {0}"),
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
     NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
-    INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}");
+    INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
+    CANNOT_COMPUTE_LAGRANGIAN("Cannot compute around {0}"),
+    TRAJECTORY_NOT_CROSSING_XZPLANE("The trajectory does not cross XZ Plane, it will not result in a Halo Orbit");
 
     // CHECKSTYLE: resume JavadocVariable check
 
