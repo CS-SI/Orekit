@@ -42,7 +42,7 @@ public class EarthMoonHaloOrbit {
 
     // Distance between the two primaries in the circular restricted system
     // (True semi-major axis of the secondary), meters
-    public static double lDim;
+    public static double dDim;
 
     // Orbital Period in the circular restricted system, s
     public static double tDim;
@@ -95,7 +95,7 @@ public class EarthMoonHaloOrbit {
 
         // Get the characteristic distance of the system, distance between m1
         // and m2
-        lDim = syst.getLdim();
+        dDim = syst.getDdim();
 
         // Get the characteristic time of the system, orbital period of m2
         tDim = syst.getTdim();
@@ -104,7 +104,7 @@ public class EarthMoonHaloOrbit {
         System.out.println("Orbital Period of the expected Halo orbit " + orbitalPeriod * tDim / 2 / 3.14 / 86400 + " days");
 
         double integrationTime = orbitalPeriod;
-        outputStep = 0.01;
+        outputStep = 0.001;
 
         // Integration parameters
         // These parameters are used for the Dormand-Prince integrator, a
@@ -164,8 +164,8 @@ public class EarthMoonHaloOrbit {
         final SpacecraftState finalState =
             propagator.propagate(initialDate.shiftedBy(integrationTime));
         
-        System.out.println("\nInitial position: " + initialState.getPVCoordinates().getPosition().scalarMultiply(lDim));
-        System.out.println("Final position: " + finalState.getPVCoordinates().getPosition().scalarMultiply(lDim));
+        System.out.println("\nInitial position: " + initialState.getPVCoordinates().getPosition().scalarMultiply(dDim));
+        System.out.println("Final position: " + finalState.getPVCoordinates().getPosition().scalarMultiply(dDim));
     }
 
     private static class TutorialStepHandler
@@ -190,13 +190,13 @@ public class EarthMoonHaloOrbit {
                     currentState.getDate().shiftedBy(duration);
                 final double px =
                     currentState.getPVCoordinates().getPosition()
-                        .getX() * lDim;
+                        .getX() * dDim;
                 final double py =
                     currentState.getPVCoordinates().getPosition()
-                        .getY() * lDim;
+                        .getY() * dDim;
                 final double pz =
                     currentState.getPVCoordinates().getPosition()
-                        .getZ() * lDim;
+                        .getZ() * dDim;
                 
                 System.out.format(Locale.US, "%s  %18.12f  %18.12f  %18.12f%n",
                                   d, px, py, pz);

@@ -38,7 +38,7 @@ public class RichardsonExpansion {
     private final double mu;
 
     /** Distance between the two primary bodies, meters. */
-    private final double lDim;
+    private final double dDim;
 
     /** Halo Orbit frequency. */
     private final double wp;
@@ -117,7 +117,7 @@ public class RichardsonExpansion {
 
         this.mu = cr3bpSystem.getMassRatio();
 
-        this.lDim = cr3bpSystem.getLdim();
+        this.dDim = cr3bpSystem.getDdim();
 
         this.gamma = cr3bpSystem.getGamma(point);
 
@@ -258,7 +258,7 @@ public class RichardsonExpansion {
                                            final double t, final double phi) {
 
         // Z-Axis Halo Orbit Amplitude
-        final double az = azr / (gamma * lDim);
+        final double az = azr / (gamma * dDim);
 
         // X-Axis Halo Orbit Amplitude
         final double ax = FastMath.sqrt((delta + l2 * az * az) / -l1);
@@ -351,7 +351,7 @@ public class RichardsonExpansion {
      */
     public double getOrbitalPeriod(final double azr) {
 
-        final double az = azr / (gamma * lDim);
+        final double az = azr / (gamma * dDim);
 
         final double ax = FastMath.sqrt((delta + l2 * az * az) / -l1);
 

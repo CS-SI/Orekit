@@ -153,7 +153,7 @@ public class HaloOrbit {
 
         // Small delta, linked to the characteristic velocity of the CR3BP system
         final double epsilon =
-            cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getLdim();
+            cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getDdim();
 
 
         int i = 0;
@@ -192,7 +192,7 @@ public class HaloOrbit {
         RealVector eigenVector;
 
         final double epsilon =
-            cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getLdim();
+            cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getDdim();
 
         int i = 0;
         while (i < s.length) {

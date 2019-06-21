@@ -46,7 +46,7 @@ public class PropagationInCR3BP {
 
     // Distance between the two primaries in the circular restricted system
     // (True semi-major axis of the secondary), meters
-    public static double lDim;
+    public static double dDim;
 
     // Orbital Period in the circular restricted system, s
     public static double tDim;
@@ -90,7 +90,7 @@ public class PropagationInCR3BP {
 
         // Get the characteristic distance of the system, distance between m1
         // and m2
-        lDim = syst.getLdim();
+        dDim = syst.getDdim();
 
         // Get the characteristic time of the system, orbital period of m2
         tDim = syst.getTdim();
@@ -99,7 +99,7 @@ public class PropagationInCR3BP {
         final double mu = syst.getMassRatio();
 
         System.out
-            .print("Distance in meters between primary bodies: " + lDim + "\n");
+            .print("Distance in meters between primary bodies: " + dDim + "\n");
         System.out.print("Mass ratio of the system: " + mu + "\n\n");
 
         // Get the position of each Lagrangian points in this CR3BP System
@@ -138,6 +138,8 @@ public class PropagationInCR3BP {
         /**
          * Starting point of the spacecraft, has to be in the Rotating Frame as
          * it will be linked to it in the next step
+         *!!! PVCoordinates have to be in the normalized system, here the propagation starts approximately at 3000 km from L4 
+         * e.g in Earth-Moon CR3BP System, 1L = 4.35 days
          */
         final PVCoordinates initialConditions =
             new PVCoordinates(new Vector3D(L4.getX(), L4.getY() + 1E-3, 0.0),
@@ -200,7 +202,7 @@ public class PropagationInCR3BP {
         // Non Keplerian propagation
         propagator.setOrbitType(null);
         
-        // the real GM has to be ignore since this propagation is non Keplerian
+        // the real GM has to be ignored since this propagation is non Keplerian
         propagator.setIgnoreCentralAttraction(true);
         
         // Add our specific force model to the propagation, it has to be
@@ -216,8 +218,8 @@ public class PropagationInCR3BP {
         // Propagate during 40T which is approximately half a year
         final SpacecraftState finalState =
             propagator.propagate(initialDate.shiftedBy(integrationTime));
-        System.out.println("\nInitial position: " + initialState.getPVCoordinates().getPosition().scalarMultiply(lDim));
-        System.out.println("Final position: " + finalState.getPVCoordinates().getPosition().scalarMultiply(lDim));
+        System.out.println("\nInitial position: " + initialState.getPVCoordinates().getPosition().scalarMultiply(dDim));
+        System.out.println("Final position: " + finalState.getPVCoordinates().getPosition().scalarMultiply(dDim));
 
         compteur = 0;
     }
@@ -258,9 +260,9 @@ public class PropagationInCR3BP {
 
                 // Position is normalized with lDim in CR3BP computation
                 // (Velocity with vDim)
-                final double px = x * lDim;
-                final double py = y * lDim;
-                final double pz = z * lDim;
+                final double px = x * dDim;
+                final double py = y * dDim;
+                final double pz = z * dDim;
 
                 System.out.format(Locale.US, "%s  %18.12f  %18.12f  %18.12f%n",
                                   d, px, py, pz);

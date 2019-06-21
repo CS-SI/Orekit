@@ -53,7 +53,7 @@ public class CR3BPSystem {
     private final double mu;
 
     /** Distance between the two primaries, meters. */
-    private final double lDim;
+    private final double dDim;
 
     /** Orbital Velocity of m1, m/s. */
     private final double vDim;
@@ -129,9 +129,9 @@ public class CR3BPSystem {
 
         this.mu = mu;
 
-        this.lDim = a;
-        this.vDim = FastMath.sqrt(mu1 / (lDim - mu * lDim));
-        this.tDim = 2 * FastMath.PI * lDim / vDim;
+        this.dDim = a;
+        this.vDim = FastMath.sqrt(mu1 / (dDim - mu * dDim));
+        this.tDim = 2 * FastMath.PI * dDim / vDim;
 
         // Calculation of Lagrangian Points position using CR3BP equations
 
@@ -235,8 +235,8 @@ public class CR3BPSystem {
     /** Get the CR3BP distance between the two bodies.
      * @return CR3BP distance between the two bodies(m)
      */
-    public double getLdim() {
-        return lDim;
+    public double getDdim() {
+        return dDim;
     }
 
     /** Get the CR3BP orbital velocity of m2.
@@ -278,7 +278,7 @@ public class CR3BPSystem {
      * @return CR3BP Rotating Frame
      */
     public Frame getRotatingFrame() {
-        final Frame baryFrame = new CR3BPRotatingFrame(lDim, mu * lDim, primaryBody, secondaryBody);
+        final Frame baryFrame = new CR3BPRotatingFrame(dDim, mu * dDim, primaryBody, secondaryBody);
         return baryFrame;
     }
 
