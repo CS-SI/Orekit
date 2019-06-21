@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CR3BPFactory;
 import org.orekit.bodies.CR3BPSystem;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -47,26 +48,45 @@ public class HaloOrbitTest {
     final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
     final HaloOrbit h1 = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, HaloOrbitType.NORTHERN);
     final HaloOrbit h2 = new HaloOrbit(syst, firstGuess, 2.0);
+    final HaloOrbit h3 = new HaloOrbit(syst, LagrangianPoints.L2, 8E6, HaloOrbitType.SOUTHERN);
     
     final double orbitalPeriod1 = h1.getOrbitalPeriod();
     final double orbitalPeriod2 = h2.getOrbitalPeriod();
+    final double orbitalPeriod3 = h3.getOrbitalPeriod();
     
     final PVCoordinates firstGuess1 = h1.getFirstGuess();
     final PVCoordinates firstGuess2 = h2.getFirstGuess();
+    final PVCoordinates firstGuess3 = h3.getFirstGuess();
     
     Assert.assertNotEquals(0.0, orbitalPeriod1, 0.5);
+    Assert.assertNotEquals(0.0, orbitalPeriod3, 0.5);
     Assert.assertEquals(2.0, orbitalPeriod2, 1E-15);
+    
     Assert.assertNotEquals(0.0, firstGuess1.getPosition().getX(), 0.6);
     Assert.assertEquals(0.0, firstGuess1.getPosition().getY(), 1E-15);
     Assert.assertEquals(0.0, firstGuess1.getVelocity().getX(), 1E-15);
     Assert.assertNotEquals(0.0, firstGuess1.getVelocity().getY(), 0.01);
     Assert.assertEquals(0.0, firstGuess1.getVelocity().getZ(), 1E-15);
+    
+    Assert.assertNotEquals(0.0, firstGuess3.getPosition().getX(), 1);
+    Assert.assertEquals(0.0, firstGuess3.getPosition().getY(), 1E-15);
+    Assert.assertEquals(0.0, firstGuess3.getVelocity().getX(), 1E-15);
+    Assert.assertNotEquals(0.0, firstGuess3.getVelocity().getY(), 0.01);
+    Assert.assertEquals(0.0, firstGuess3.getVelocity().getZ(), 1E-15);
+    
     Assert.assertEquals(firstGuess.getPosition().getX(), firstGuess2.getPosition().getX(), 1E-15);
     Assert.assertEquals(firstGuess.getPosition().getY(), firstGuess2.getPosition().getY(), 1E-15);
     Assert.assertEquals(firstGuess.getPosition().getZ(), firstGuess2.getPosition().getZ(), 1E-15);
     Assert.assertEquals(firstGuess.getVelocity().getX(), firstGuess2.getVelocity().getX(), 1E-15);
     Assert.assertEquals(firstGuess.getVelocity().getY(), firstGuess2.getVelocity().getY(), 1E-15);
     Assert.assertEquals(firstGuess.getVelocity().getZ(), firstGuess2.getVelocity().getZ(), 1E-15);
+    }
+    
+    @Test(expected=OrekitException.class)
+    public void testLagrangianError() {
+    CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+    final HaloOrbit h = new HaloOrbit(syst, LagrangianPoints.L3, 8E6, HaloOrbitType.NORTHERN);
+    h.getClass();
     }
     
     @Test
@@ -144,6 +164,45 @@ public class HaloOrbitTest {
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getZ(), initialStableManifold.getPosition().getZ(), 1E-7);
+    }
+    
+    @Test(expected=OrekitException.class)
+    public void testDifferentialCorrectionError() {
+
+        CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+
+        final double orbitalPeriod = 1;
+
+        final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
+        
+        // Integration parameters
+        // These parameters are used for the Dormand-Prince integrator, a
+        // variable step integrator,
+        // these limits prevent the integrator to spend too much time when the
+        // equations are too stiff,
+        // as well as the reverse situation.
+        final double minStep = 1E-10;
+        final double maxstep = 1E-2;
+
+        // tolerances for integrators
+        // Used by the integrator to estimate its variable integration step
+        final double positionTolerance = 0.0001;
+        final double velocityTolerance = 0.0001;
+        final double massTolerance = 1.0e-6;
+        final double[] vecAbsoluteTolerances = { positionTolerance, positionTolerance, positionTolerance,
+                velocityTolerance, velocityTolerance, velocityTolerance, massTolerance };
+        final double[] vecRelativeTolerances = new double[vecAbsoluteTolerances.length];
+
+        // Defining the numerical integrator that will be used by the propagator
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances,
+                vecRelativeTolerances);
+        
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+
+        final PVCoordinates initialConditions =
+            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod, propagator)
+                .compute();
+        initialConditions.toString();
     }
     
     @Before

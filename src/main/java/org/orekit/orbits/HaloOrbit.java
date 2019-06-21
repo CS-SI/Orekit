@@ -124,32 +124,18 @@ public class HaloOrbit {
     public PVCoordinates getManifolds(final SpacecraftState s,
                                       final boolean isStable) {
 
-        final RealVector eigenVector;
+        final PVCoordinates pv;
+        final SpacecraftState[] state = new SpacecraftState[1];
+        state[0] = s;
 
-        // Get Normalize eigen vector linked to the stability of the manifold
-        final RealMatrix phi = new STMEquations(cr3bpSystem).getStateTransitionMatrix(s);
         if (isStable) {
             // Stable
-            eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
+            pv = getStableManifolds(state)[0];
         } else {
             // Unstable
-            eigenVector = new EigenDecomposition(phi).getEigenvector(0).unitVector();
+            pv = getUnstableManifolds(state)[0];;
         }
 
-        // Small delta, linked to the characteristic velocity of the CR3BP system
-        final double epsilon = cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getLdim();
-
-        // New PVCoordinates following the manifold
-        final PVCoordinates pv =
-            new PVCoordinates(s.getPVCoordinates().getPosition()
-                .add(new Vector3D(eigenVector.getEntry(0), eigenVector
-                    .getEntry(1), eigenVector.getEntry(2))
-                        .scalarMultiply(epsilon)), s.getPVCoordinates()
-                            .getVelocity()
-                            .add(new Vector3D(eigenVector.getEntry(3),
-                                              eigenVector.getEntry(4),
-                                              eigenVector.getEntry(5))
-                                                  .scalarMultiply(epsilon)));
         return pv;
 
     }
@@ -159,12 +145,13 @@ public class HaloOrbit {
      * @return Stable manifold first direction from a point on the Halo Orbit
      */
     public PVCoordinates[]
-        getStableManifolds(final SpacecraftState... s) {
+        getStableManifolds(final SpacecraftState[] s) {
 
         final PVCoordinates[] pv = new PVCoordinates[s.length];
 
         RealVector eigenVector;
 
+        // Small delta, linked to the characteristic velocity of the CR3BP system
         final double epsilon =
             cr3bpSystem.getVdim() * 1E2 / cr3bpSystem.getLdim();
 
@@ -172,11 +159,13 @@ public class HaloOrbit {
         int i = 0;
         while (i < s.length) {
 
+            // Get Normalize eigen vector linked to the stability of the manifold
             final RealMatrix phi =
                 new STMEquations(cr3bpSystem).getStateTransitionMatrix(s[i]);
 
             eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
 
+            // New PVCoordinates following the manifold
             pv[i] =
                 new PVCoordinates(s[i].getPVCoordinates().getPosition()
                     .add(new Vector3D(eigenVector.getEntry(0), eigenVector

@@ -238,9 +238,9 @@ public class RichardsonExpansion {
             case L2:
                 cn = (1.0 / gamma3) * (FastMath.pow(-1, order) * mu + FastMath.pow(-1, order) * (1 - mu) * FastMath.pow(gamma, order + 1) / FastMath.pow(1 + gamma, order + 1));
                 break;
-            case L3:
-                cn = (1.0 / gamma3) * (1 - mu + mu * FastMath.pow(gamma, order + 1) / FastMath.pow(1 + gamma, order + 1));
-                break;
+            // case L3:
+            //    cn = (1.0 / gamma3) * (1 - mu + mu * FastMath.pow(gamma, order + 1) / FastMath.pow(1 + gamma, order + 1));
+            //    break;
             default:
                 throw new OrekitException(OrekitMessages.CANNOT_COMPUTE_LAGRANGIAN, point);
         }
@@ -338,11 +338,9 @@ public class RichardsonExpansion {
             case L1:
                 pvf = new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu - gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
                 break;
-            case L2:
+            default:
                 pvf = new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu + gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
                 break;
-            default:
-                throw new OrekitException(OrekitMessages.CANNOT_COMPUTE_LAGRANGIAN, point);
         };
         return pvf;
     }
