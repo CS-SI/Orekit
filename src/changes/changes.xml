@@ -33,6 +33,9 @@
              as updates to AbstractDetector, AbstractGNSSAttitudeProvider, DragSensitive,
              RadiationSensitive, and ZipJarCrawler. See the list below for a full
              description of the changes.">
+      <action dev="evan" type="fix" issue="566">
+        Make ITRFVersionLoader public.
+      </action>
       <action dev="luc" type="fix" issue="547">
         Added a tile/sampling aiming direction that diverts singularity outside of a
         area of interest. This is mainly useful when sampling areas of interest that

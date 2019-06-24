@@ -59,7 +59,7 @@ import org.orekit.time.DateComponents;
  * @author Luc Maisonobe
  * @since 9.2
  */
-class ITRFVersionLoader {
+public class ITRFVersionLoader {
 
     /** Regular expression for supported files names. */
     public static final String SUPPORTED_NAMES = "itrf-versions.conf";
@@ -75,9 +75,19 @@ class ITRFVersionLoader {
     /** Build a loader for ITRF version configuration file.
      * @param supportedNames regular expression for supported files names
      */
-    ITRFVersionLoader(final String supportedNames) {
+    public ITRFVersionLoader(final String supportedNames) {
         this.configurations = new ArrayList<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+    }
+
+    /**
+     * Build a loader for ITRF version configuration file using the default name.
+     *
+     * @see #ITRFVersionLoader(String)
+     * @see #SUPPORTED_NAMES
+     */
+    public ITRFVersionLoader() {
+        this(SUPPORTED_NAMES);
     }
 
     /** Get the ITRF version configuration defined by a given file at specified date.
@@ -254,7 +264,7 @@ class ITRFVersionLoader {
          * @param name file name to check
          * @return true if the configuration applies to the specified file
          */
-        boolean appliesTo(final String name) {
+        public boolean appliesTo(final String name) {
             final int i = FastMath.max(name.lastIndexOf("/"), name.lastIndexOf("\\"));
             return name.startsWith(prefix, i + 1);
         }
