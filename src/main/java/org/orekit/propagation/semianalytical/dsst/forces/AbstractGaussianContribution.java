@@ -79,7 +79,7 @@ import org.orekit.utils.TimeSpanMap;
  *
  * <p> To create a numerically averaged contribution, one needs only to provide a
  * {@link ForceModel} and to implement in the derived class the methods:
- * {@link #getLLimits(SpacecraftState, AbstractGaussianContributionContext)}
+ * {@link #getLLimits(SpacecraftState, AuxiliaryElements)}
  * and {@link #getParametersDriversWithoutMu()}.
  * </p>
  * @author Pascal Parraud
