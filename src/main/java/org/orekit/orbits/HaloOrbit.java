@@ -45,20 +45,20 @@ public class HaloOrbit {
      * Simple Constructor.
      * <p>
      * This constructor can be used if the user wants to use a first guess from
-     * any other sources. In that case, it is assumed that the user knows the
-     * characteristics of the Halo Orbit leading to this first guess. Also, the
+     * any other sources or if he has the initial conditions of a well defined Halo Orbit. In that case, it is assumed that the user knows the
+     * characteristics of the Halo Orbit leading to this first guess/point. Also, the
      * orbital period of this Halo Orbit has to be specified for further
      * computation.
      * </p>
      * @param syst CR3BP System considered
-     * @param firstGuess PVCoordinates of the first guess
+     * @param pv PVCoordinates of the initial point or of the first guess
      * @param orbitalPeriod Normalized orbital period linked to the given Halo
      *        Orbit first guess
      */
     public HaloOrbit(final CR3BPSystem syst,
-                     final PVCoordinates firstGuess, final double orbitalPeriod) {
+                     final PVCoordinates pv, final double orbitalPeriod) {
         this.cr3bpSystem = syst;
-        this.firstGuess = firstGuess;
+        this.firstGuess = pv;
         this.orbitalPeriod = orbitalPeriod;
     }
 

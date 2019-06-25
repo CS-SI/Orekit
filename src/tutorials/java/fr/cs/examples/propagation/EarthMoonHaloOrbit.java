@@ -16,9 +16,9 @@
 import java.io.File;
 import java.util.Locale;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CR3BPFactory;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.data.DataProvidersManager;
@@ -99,12 +99,14 @@ public class EarthMoonHaloOrbit {
 
         // Get the characteristic time of the system, orbital period of m2
         tDim = syst.getTdim();
+        
+        System.out.println("         Northern Halo Orbit around Earth-Moon L1\n");
 
         final double orbitalPeriod = h.getOrbitalPeriod();
-        System.out.println("Orbital Period of the expected Halo orbit " + orbitalPeriod * tDim / 2 / 3.14 / 86400 + " days");
+        System.out.println("Orbital Period of the expected Halo orbit: " + orbitalPeriod * tDim / 2 / FastMath.PI / 86400 + " days\n");
 
         double integrationTime = orbitalPeriod;
-        outputStep = 0.001;
+        outputStep = 0.01;
 
         // Integration parameters
         // These parameters are used for the Dormand-Prince integrator, a
@@ -183,7 +185,7 @@ public class EarthMoonHaloOrbit {
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             try {
-                final double duration = compteur * outputStep * tDim / 2 / 3.14;
+                final double duration = compteur * outputStep * tDim / 2 / FastMath.PI;
                 compteur++;
                 
                 final AbsoluteDate d =
