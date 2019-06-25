@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="564">
+        Fixed private argument of getLLimits() abstract method.
+      </action>
       <action dev="bryan" type="fix" issue="565">
         Fixed static loading of UTC for GLONASS reference epoch.
       </action>

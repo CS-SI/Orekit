@@ -272,7 +272,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
         double[] meanElementRate = new double[6];
         // Computes the limits for the integral
-        final double[] ll = getLLimits(state, context);
+        final double[] ll = getLLimits(state, auxiliaryElements);
         // Computes integrated mean element rates if Llow < Lhigh
         if (ll[0] < ll[1]) {
             meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1], context, parameters);
@@ -303,7 +303,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
         T[] meanElementRate = MathArrays.buildArray(field, 6);
         // Computes the limits for the integral
-        final T[] ll = getLLimits(state, context);
+        final T[] ll = getLLimits(state, auxiliaryElements);
         // Computes integrated mean element rates if Llow < Lhigh
         if (ll[0].getReal() < ll[1].getReal()) {
             meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1], context, parameters);
@@ -326,20 +326,20 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Compute the limits in L, the true longitude, for integration.
      *
      *  @param  state current state information: date, kinematics, attitude
-     *  @param context container for attributes
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @return the integration limits in L
      */
-    protected abstract double[] getLLimits(SpacecraftState state, AbstractGaussianContributionContext context);
+    protected abstract double[] getLLimits(SpacecraftState state, AuxiliaryElements auxiliaryElements);
 
     /** Compute the limits in L, the true longitude, for integration.
      *
      *  @param <T> type of the elements
      *  @param state current state information: date, kinematics, attitude
-     *  @param context container for attributes
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @return the integration limits in L
      */
     protected abstract <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
-                                                                      FieldAbstractGaussianContributionContext<T> context);
+                                                                      FieldAuxiliaryElements<T> auxiliaryElements);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
     *
@@ -469,10 +469,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
 
             // Compute rhoj and sigmaj
-            final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context);
+            final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), auxiliaryElements);
 
             // Generate the Cij and Sij coefficients
-            final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, context, parameters);
+            final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, auxiliaryElements, parameters);
 
             // Generate the Uij and Vij coefficients
             final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
@@ -506,7 +506,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context, field);
 
             // Generate the Cij and Sij coefficients
-            final FieldFourierCjSjCoefficients<T> fourierCjSj = new FieldFourierCjSjCoefficients<>(meanState, JMAX, context, parameters, field);
+            final FieldFourierCjSjCoefficients<T> fourierCjSj = new FieldFourierCjSjCoefficients<>(meanState, JMAX, auxiliaryElements, parameters, field);
 
             // Generate the Uij and Vij coefficients
             final FieldUijVijCoefficients<T> uijvij = new FieldUijVijCoefficients<>(currentRhoSigmaj, fourierCjSj, JMAX, field);
@@ -525,11 +525,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
      * </p>
      * @param date current date
-     * @param context container for attributes
+     * @param auxiliaryElements auxiliary elements related to the current orbit
      * @return computed coefficients
      */
-    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date, final AbstractGaussianContributionContext context) {
-        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date, final AuxiliaryElements auxiliaryElements) {
         final double[][] currentRhoSigmaj = new double[2][3 * JMAX + 1];
         final CjSjCoefficient cjsjKH = new CjSjCoefficient(auxiliaryElements.getK(), auxiliaryElements.getH());
         final double b = 1. / (1 + auxiliaryElements.getB());
@@ -1779,11 +1778,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Standard constructor.
          * @param state the current state
          * @param jMax maximum value for j
-         * @param context container for attributes
+         * @param auxiliaryElements auxiliary elements related to the current orbit
          * @param parameters values of the force model parameters
          */
         FourierCjSjCoefficients(final SpacecraftState state, final int jMax,
-                                final AbstractGaussianContributionContext context, final double[] parameters) {
+                                final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
             //Initialise the fields
             this.jMax = jMax;
@@ -1794,7 +1793,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             sCoef = new double[rows][6];
 
             //Compute the coefficients
-            computeCoefficients(state, context, parameters);
+            computeCoefficients(state, auxiliaryElements, parameters);
         }
 
         /**
@@ -1804,15 +1803,15 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * as D<sub>i</sub><sup>m</sup> is always 0.
          * </p>
          * @param state the current state
-         * @param context container for attributes
+         * @param auxiliaryElements auxiliary elements related to the current orbit
          * @param parameters values of the force model parameters
          */
         private void computeCoefficients(final SpacecraftState state,
-                                         final AbstractGaussianContributionContext context,
+                                         final AuxiliaryElements auxiliaryElements,
                                          final double[] parameters) {
 
             // Computes the limits for the integral
-            final double[] ll = getLLimits(state, context);
+            final double[] ll = getLLimits(state, auxiliaryElements);
             // Computes integrated mean element rates if Llow < Lhigh
             if (ll[0] < ll[1]) {
                 //Compute 1 / PI
@@ -1892,12 +1891,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Standard constructor.
          * @param state the current state
          * @param jMax maximum value for j
-         * @param context container for attributes
+         * @param auxiliaryElements auxiliary elements related to the current orbit
          * @param parameters values of the force model parameters
          * @param field field used by default
          */
         FieldFourierCjSjCoefficients(final FieldSpacecraftState<T> state, final int jMax,
-                                     final FieldAbstractGaussianContributionContext<T> context,
+                                     final FieldAuxiliaryElements<T> auxiliaryElements,
                                      final T[] parameters,
                                      final Field<T> field) {
             //Initialise the fields
@@ -1909,7 +1908,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             sCoef = MathArrays.buildArray(field, rows, 6);
 
             //Compute the coefficients
-            computeCoefficients(state, context, parameters, field);
+            computeCoefficients(state, auxiliaryElements, parameters, field);
         }
 
         /**
@@ -1919,18 +1918,18 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * as D<sub>i</sub><sup>m</sup> is always 0.
          * </p>
          * @param state the current state
-         * @param context container for attributes
+         * @param auxiliaryElements auxiliary elements related to the current orbit
          * @param parameters values of the force model parameters
          * @param field field used by default
          */
         private void computeCoefficients(final FieldSpacecraftState<T> state,
-                                         final FieldAbstractGaussianContributionContext<T> context,
+                                         final FieldAuxiliaryElements<T> auxiliaryElements,
                                          final T[] parameters,
                                          final Field<T> field) {
             // Zero
             final T zero = field.getZero();
             // Computes the limits for the integral
-            final T[] ll = getLLimits(state, context);
+            final T[] ll = getLLimits(state, auxiliaryElements);
             // Computes integrated mean element rates if Llow < Lhigh
             if (ll[0].getReal() < ll[1].getReal()) {
                 //Compute 1 / PI
