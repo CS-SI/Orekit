@@ -138,6 +138,13 @@ public class AbsoluteDate
     public static final AbsoluteDate BEIDOU_EPOCH =
         new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, TimeScalesFactory.getBDT());
 
+    /** Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00 GLONASS time.
+     * <p>By convention, TGLONASS = UTC + 3 hours.</p>
+     */
+    public static final AbsoluteDate GLONASS_EPOCH =
+                    new AbsoluteDate(DateComponents.GLONASS_EPOCH,
+                                     new TimeComponents(29.0), TimeScalesFactory.getTAI()).shiftedBy(-10800.0);
+
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
      * @see #createJulianEpoch(double)
      * @see #createBesselianEpoch(double)
@@ -394,20 +401,6 @@ public class AbsoluteDate
     AbsoluteDate(final long epoch, final double offset) {
         this.epoch  = epoch;
         this.offset = offset;
-    }
-
-    /**
-     * Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00 GLONASS
-     * time.
-     *
-     * <p> This is a method instead of a field like the other epochs because GLONASS
-     * depends on UTC so therefore calling this method requires that leap seconds are
-     * loaded.
-     *
-     * @return the GLONASS epoch.
-     */
-    public static AbsoluteDate getGlonassEpoch() {
-        return LazyLeapHolder.GLONASS_EPOCH;
     }
 
     /** Get the reference epoch in seconds from 2000-01-01T12:00:00 TAI.
@@ -1035,23 +1028,6 @@ public class AbsoluteDate
     public String toString(final TimeZone timeZone) {
         final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(timeZone).toString(minuteDuration);
-    }
-
-    /**
-     * Lazy loader for all fields that require leap seconds. As long as the user doesn't
-     * need one of these fields then they can use AbsoluteDate without loading leap
-     * seconds first.
-     */
-    private static class LazyLeapHolder {
-
-        /**
-         * Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00
-         * GLONASS time.
-         */
-        public static final AbsoluteDate GLONASS_EPOCH = new AbsoluteDate(
-                DateComponents.GLONASS_EPOCH,
-                TimeComponents.H00,
-                TimeScalesFactory.getGLONASS());
     }
 
 }

@@ -36,6 +36,12 @@
       <action dev="evan" type="fix" issue="566">
         Make ITRFVersionLoader public.
       </action>
+      <action dev="bryan" type="fix" issue="564">
+        Fixed private argument of getLLimits() abstract method.
+      </action>
+      <action dev="bryan" type="fix" issue="565">
+        Fixed static loading of UTC for GLONASS reference epoch.
+      </action>
       <action dev="luc" type="fix" issue="547">
         Added a tile/sampling aiming direction that diverts singularity outside of a
         area of interest. This is mainly useful when sampling areas of interest that
