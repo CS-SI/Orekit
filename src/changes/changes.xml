@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.0" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="565">
+        Fixed static loading of UTC for GLONASS reference epoch.
+      </action>
       <action dev="luc" type="fix" issue="547">
         Added a tile/sampling aiming direction that diverts singularity outside of a
         area of interest. This is mainly useful when sampling areas of interest that
