@@ -58,7 +58,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AggregateBoundedPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GPSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -262,7 +262,7 @@ public class GenerateBaseSamples {
 
         @Override
         public void handleStep(final SpacecraftState s, final boolean isLast) {
-            GPSDate       gpsDate    = new GPSDate(s.getDate());
+            GNSSDate      gpsDate    = new GNSSDate(s.getDate(), SatelliteSystem.GPS);
             PVCoordinates pvSatInert = s.getPVCoordinates();
             Transform     t          = s.getFrame().getTransformTo(itrf, s.getDate());
             Vector3D      pSat       = t.transformPosition(pvSatInert.getPosition());
