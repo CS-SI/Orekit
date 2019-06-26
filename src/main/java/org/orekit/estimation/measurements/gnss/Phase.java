@@ -69,7 +69,7 @@ public class Phase extends AbstractMeasurement<Phase> {
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
-     * @param phase observed value
+     * @param phase observed value (cycles)
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
