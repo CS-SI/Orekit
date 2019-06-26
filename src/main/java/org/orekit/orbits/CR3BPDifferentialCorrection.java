@@ -30,7 +30,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.XZPlaneCrossingDetector;
+import org.orekit.propagation.events.HaloXZPlaneCrossingDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
@@ -153,7 +153,7 @@ public class CR3BPDifferentialCorrection {
 
         // Event detector definition
         final EventDetector XZPlaneCrossing =
-            new XZPlaneCrossingDetector(maxcheck, threshold)
+            new HaloXZPlaneCrossingDetector(maxcheck, threshold)
                 .withHandler(new PlaneCrossingHandler());
 
         // Additional equations set in order to compute the State Transition Matrix along the propagation
@@ -265,11 +265,11 @@ public class CR3BPDifferentialCorrection {
      */
     private class PlaneCrossingHandler
         implements
-        EventHandler<XZPlaneCrossingDetector> {
+        EventHandler<HaloXZPlaneCrossingDetector> {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s,
-                                    final XZPlaneCrossingDetector detector,
+                                    final HaloXZPlaneCrossingDetector detector,
                                     final boolean increasing) {
             cross = true;
             return Action.STOP;

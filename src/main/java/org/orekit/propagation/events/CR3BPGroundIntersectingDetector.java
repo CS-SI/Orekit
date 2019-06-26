@@ -14,8 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.orekit.propagation.events;
 
+import org.hipparchus.util.FastMath;
+import org.orekit.bodies.CR3BPSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -23,22 +26,30 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
 /** Detector for YZ Planes crossing.
  * @author Vincent Mouraux
  */
-public class YZPlaneCrossingDetector
+public class CR3BPGroundIntersectingDetector
     extends
-    AbstractDetector<YZPlaneCrossingDetector> {
+    AbstractDetector<CR3BPGroundIntersectingDetector> {
 
-    /** Offset from X=0 plane. */
-    private final double delta;
+    /** Radius of the primary body. */
+    private final double primaryR;
+
+    /** Radius of the secondary body. */
+    private final double secondaryR;
+
+    /** CR3BP System. */
+    private final CR3BPSystem syst;
 
     /**
      * Simple Constructor.
-     * @param delta Offset from X=0 plane;
+     * @param primaryR Radius of the primary body (m)
+     * @param secondaryR Radius of the secondary body (m)
+     * @param syst CR3BP System considered
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
      */
-    public YZPlaneCrossingDetector(final double delta, final double maxCheck, final double threshold) {
-        this(delta, maxCheck, threshold, DEFAULT_MAX_ITER,
-             new StopOnDecreasing<YZPlaneCrossingDetector>());
+    public CR3BPGroundIntersectingDetector(final double primaryR, final double secondaryR, final CR3BPSystem syst, final double maxCheck, final double threshold) {
+        this(primaryR, secondaryR, syst, maxCheck, threshold, DEFAULT_MAX_ITER,
+             new StopOnDecreasing<CR3BPGroundIntersectingDetector>());
     }
 
     /**
@@ -48,35 +59,48 @@ public class YZPlaneCrossingDetector
      * with the various {@code withXxx()} methods to set up the instance in a
      * readable manner without using a huge amount of parameters.
      * </p>
-     * @param delta Offset from 0
+     * @param primaryR Radius of the primary body (m)
+     * @param secondaryR Radius of the secondary body (m)
+     * @param syst CR3BP System considered
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    private YZPlaneCrossingDetector(final double delta, final double maxCheck, final double threshold,
+    private CR3BPGroundIntersectingDetector(final double primaryR, final double secondaryR, final CR3BPSystem syst, final double maxCheck, final double threshold,
                              final int maxIter,
-                             final EventHandler<? super YZPlaneCrossingDetector> handler) {
+                             final EventHandler<? super CR3BPGroundIntersectingDetector> handler) {
         super(maxCheck, threshold, maxIter, handler);
-        this.delta = delta;
+        this.primaryR = primaryR;
+        this.secondaryR = secondaryR;
+        this.syst = syst;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected YZPlaneCrossingDetector
+    protected CR3BPGroundIntersectingDetector
         create(final double newMaxCheck, final double newThreshold,
                final int newMaxIter,
-               final EventHandler<? super YZPlaneCrossingDetector> newHandler) {
-        return new YZPlaneCrossingDetector(delta, newMaxCheck, newThreshold, newMaxIter,
+               final EventHandler<? super CR3BPGroundIntersectingDetector> newHandler) {
+        return new CR3BPGroundIntersectingDetector(primaryR, secondaryR, syst, newMaxCheck, newThreshold, newMaxIter,
                                     newHandler);
     }
 
     /** Compute the value of the detection function.
      * @param s the current state information: date, kinematics, attitude
-     * @return Difference between spacecraft X position and the targeted plane offset from zero
+     * @return Product of the differences between the spacecraft and the center of the primaries
      */
     public double g(final SpacecraftState s) {
-        return s.getPVCoordinates().getPosition().getX() - delta;
+        final double mu = syst.getMassRatio();
+        final double dDim = syst.getDdim();
+
+        final double x = s.getPVCoordinates().getPosition().getX();
+        final double y = s.getPVCoordinates().getPosition().getY();
+        final double z = s.getPVCoordinates().getPosition().getZ();
+
+        final double r1 = FastMath.sqrt((x + mu) * (x + mu) + y * y + z * z) * dDim;
+        final double r2 = FastMath.sqrt((x - 1 + mu) * (x - 1 + mu) + y * y + z * z) * dDim;
+        return (r1 - primaryR) * (r2 - secondaryR);
 
     }
 }

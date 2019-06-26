@@ -23,18 +23,18 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
 /** Detector for XZ Plane crossing.
  * @author Vincent Mouraux
  */
-public class XZPlaneCrossingDetector
+public class HaloXZPlaneCrossingDetector
     extends
-    AbstractDetector<XZPlaneCrossingDetector> {
+    AbstractDetector<HaloXZPlaneCrossingDetector> {
 
     /**
      * Simple Constructor.
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
      */
-    public XZPlaneCrossingDetector(final double maxCheck, final double threshold) {
+    public HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<XZPlaneCrossingDetector>());
+             new StopOnIncreasing<HaloXZPlaneCrossingDetector>());
     }
 
     /**
@@ -49,37 +49,25 @@ public class XZPlaneCrossingDetector
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    private XZPlaneCrossingDetector(final double maxCheck, final double threshold,
+    private HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold,
                              final int maxIter,
-                             final EventHandler<? super XZPlaneCrossingDetector> handler) {
+                             final EventHandler<? super HaloXZPlaneCrossingDetector> handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected XZPlaneCrossingDetector
+    protected HaloXZPlaneCrossingDetector
         create(final double newMaxCheck, final double newThreshold,
                final int newMaxIter,
-               final EventHandler<? super XZPlaneCrossingDetector> newHandler) {
-        return new XZPlaneCrossingDetector(newMaxCheck, newThreshold, newMaxIter,
+               final EventHandler<? super HaloXZPlaneCrossingDetector> newHandler) {
+        return new HaloXZPlaneCrossingDetector(newMaxCheck, newThreshold, newMaxIter,
                                     newHandler);
     }
 
     /** Compute the value of the detection function.
-     * <p>
-     * The value is the longitude difference between the spacecraft and the fixed
-     * longitude to be crossed, with some sign tweaks to ensure continuity.
-     * These tweaks imply the {@code increasing} flag in events detection becomes
-     * irrelevant here! As an example, the longitude of a prograde spacecraft
-     * will always increase, but this g function will increase and decrease so it
-     * will cross the zero value once per orbit, in increasing and decreasing
-     * directions on alternate orbits. If eastwards and westwards crossing have to
-     * be distinguished, the velocity direction has to be checked instead of looking
-     * at the {@code increasing} flag.
-     * </p>
      * @param s the current state information: date, kinematics, attitude
-     * @return longitude difference between the spacecraft and the fixed
-     * longitude, with some sign tweaks to ensure continuity
+     * @return Position on Y axis
      */
     public double g(final SpacecraftState s) {
         return s.getPVCoordinates().getPosition().getY();
