@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="568">
+        Fixed too fast step increase in a bracketing attempt.
+      </action>
       <action dev="luc" type="add">
         Added phase measurement builder.
       </action>
