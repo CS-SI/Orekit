@@ -38,8 +38,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class WindUp implements EstimationModifier<Phase> {
 
-    /** Wind-up cache. */
-    private double windUp;
+    /** Cached angular value of wind-up. */
+    private double angularWindUp;
 
     /** Simple constructor.
      * <p>
@@ -49,7 +49,7 @@ public class WindUp implements EstimationModifier<Phase> {
      * </p>
      */
     WindUp() {
-        windUp = 0.0;
+        angularWindUp = 0.0;
     }
 
     /** {@inheritDoc}
@@ -96,10 +96,10 @@ public class WindUp implements EstimationModifier<Phase> {
         // ensure continuity accross measurements
         // we assume the various measurements are close enough in time
         // (less the one satellite half-turn) so the angles remain close
-        windUp = MathUtils.normalizeAngle(correction, windUp);
+        angularWindUp = MathUtils.normalizeAngle(correction, angularWindUp);
 
         // update estimate
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] + windUp);
+        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] + angularWindUp / MathUtils.TWO_PI);
 
     }
 
