@@ -22,6 +22,9 @@
   <body>
     <release version="10.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added phase measurement builder.
+      </action>
+      <action dev="luc" type="add">
         Added getWavelength in GNSS Frequency.
       </action>
     </release>
