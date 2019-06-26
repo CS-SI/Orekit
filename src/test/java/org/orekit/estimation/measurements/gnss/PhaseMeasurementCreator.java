@@ -53,7 +53,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
     public PhaseMeasurementCreator(final Context context, final Frequency frequency,
                                    final int ambiguity, final Vector3D antennaPhaseCenter) {
         this.context            = context;
-        this.wavelength         = Constants.SPEED_OF_LIGHT / (1.0e6 * frequency.getMHzFrequency());
+        this.wavelength         = frequency.getWavelength();
         this.ambiguity          = new PhaseAmbiguityModifier(0, ambiguity);
         this.antennaPhaseCenter = antennaPhaseCenter;
         this.satellite          = new ObservableSatellite(0);

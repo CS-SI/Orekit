@@ -20,6 +20,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added getWavelength in GNSS Frequency.
+      </action>
+    </release>
     <release version="10.0" date="2019-06-24"
              description="Orekit 10.0 is a major new release. It includes DSST OD,
              propagation in non-inertial frames, specialized propagators for GNSS
