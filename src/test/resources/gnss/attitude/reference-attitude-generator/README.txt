@@ -12,6 +12,10 @@ The data files for attitude reference were created as follows:
        curl $baseurl/$week/gbm$week$day.sp3.Z > gbm$week$day.sp3.Z
      done
    done
+
+   in a later batch of tests, an additional case was also extracted from
+   a much earlier file (week 1218 in May 2003):
+   ftp://cddis.gsfc.nasa.gov/pub/gps/products/1218/ngs12183.sp3.Z
    
 2) ran the FindBaseSamples java program to pick up 5 subsets of
    alignment events:
