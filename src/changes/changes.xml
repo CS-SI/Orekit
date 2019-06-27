@@ -33,6 +33,9 @@
              as updates to AbstractDetector, AbstractGNSSAttitudeProvider, DragSensitive,
              RadiationSensitive, and ZipJarCrawler. See the list below for a full
              description of the changes.">
+      <action dev="evan" type="fix">
+        Fix  name of GLONASS G2 frequency.
+      </action>
       <action dev="luc" type="fix" >
         Fixed accuracy of dates conversions from java dates.
       </action>
