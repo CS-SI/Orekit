@@ -17,6 +17,7 @@ import java.util.Locale;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.attitudes.Attitude;
@@ -29,6 +30,9 @@ import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.CR3BPSphereCrossingDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -139,7 +143,7 @@ public class PropagationInCR3BP {
          * Starting point of the spacecraft, has to be in the Rotating Frame as
          * it will be linked to it in the next step
          *!!! PVCoordinates have to be in the normalized system, here the propagation starts approximately at 3000 km from L4 
-         * e.g in Earth-Moon CR3BP System, 1L = 4.35 days
+         * e.g in Earth-Moon CR3BP System, 1 distance unit = 384 400 km
          */
         final PVCoordinates initialConditions =
             new PVCoordinates(new Vector3D(L4.getX(), L4.getY() + 1E-3, 0.0),
@@ -199,6 +203,16 @@ public class PropagationInCR3BP {
         // Creating the numerical propagator
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         
+        
+        // Event detector settings
+        final double maxcheck = 10;
+        final double threshold = 1E-10;
+        
+        // Event detector definition, this detector will stop the propagation if the trajectory enters a sphere around one of the primaries
+        // User can defines the size of the sphere
+        final EventDetector sphereCrossing =
+            new CR3BPSphereCrossingDetector(6378E3, 1737E3, syst, maxcheck, threshold).withHandler(new SphereCrossingHandler());
+        
         // Non Keplerian propagation
         propagator.setOrbitType(null);
         
@@ -208,6 +222,9 @@ public class PropagationInCR3BP {
         // Add our specific force model to the propagation, it has to be
         // propagated in the rotating frame
         propagator.addForceModel(new CR3BPForceModel(syst));
+        
+        // Add our event detector to the propagation
+        propagator.addEventDetector(sphereCrossing);
         
         // Initializing propagation
         propagator.setInitialState(initialState);
@@ -270,6 +287,20 @@ public class PropagationInCR3BP {
             } catch (OrekitException oe) {
                 System.err.println(oe.getMessage());
             }
+        }
+    }
+    
+    /** Static class for event detection.
+     */
+    private static class SphereCrossingHandler
+        implements
+        EventHandler<CR3BPSphereCrossingDetector> {
+
+        public Action eventOccurred(final SpacecraftState s,
+                                    final CR3BPSphereCrossingDetector detector,
+                                    final boolean increasing) {
+            System.out.println("You intersected one of the two primaries so the propagation has been stopped");
+            return Action.STOP;
         }
     }
 }

@@ -16,6 +16,7 @@
 import java.io.File;
 import java.util.Locale;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -29,6 +30,9 @@ import org.orekit.orbits.CR3BPDifferentialCorrection;
 import org.orekit.orbits.HaloOrbit;
 import org.orekit.orbits.HaloOrbitType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.CR3BPSphereCrossingDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -157,10 +161,19 @@ public class EarthMoonHaloOrbit {
 
         final SpacecraftState initialState = new SpacecraftState(initialAbsPV);
 
+        // Event detector settings
+        final double maxcheck = 10;
+        final double threshold = 1E-10;
+        
+        // Event detector definition
+        final EventDetector sphereCrossing =
+            new CR3BPSphereCrossingDetector(6378E3, 1737E3, syst, maxcheck, threshold).withHandler(new SphereCrossingHandler());
+        
         propagator.setOrbitType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(syst));
         propagator.setInitialState(initialState);
+        propagator.addEventDetector(sphereCrossing);
         propagator.setMasterMode(outputStep, new TutorialStepHandler());
 
         final SpacecraftState finalState =
@@ -206,6 +219,20 @@ public class EarthMoonHaloOrbit {
             } catch (OrekitException oe) {
                 System.err.println(oe.getMessage());
             }
+        }
+    }
+    
+    /** Static class for event detection.
+     */
+    private static class SphereCrossingHandler
+        implements
+        EventHandler<CR3BPSphereCrossingDetector> {
+
+        public Action eventOccurred(final SpacecraftState s,
+                                    final CR3BPSphereCrossingDetector detector,
+                                    final boolean increasing) {
+            System.out.println("You intersected one of the two primaries so the propagation has been stopped");
+            return Action.STOP;
         }
     }
 }

@@ -26,9 +26,9 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
 /** Detector for YZ Planes crossing.
  * @author Vincent Mouraux
  */
-public class CR3BPGroundIntersectingDetector
+public class CR3BPSphereCrossingDetector
     extends
-    AbstractDetector<CR3BPGroundIntersectingDetector> {
+    AbstractDetector<CR3BPSphereCrossingDetector> {
 
     /** Radius of the primary body. */
     private final double primaryR;
@@ -41,15 +41,15 @@ public class CR3BPGroundIntersectingDetector
 
     /**
      * Simple Constructor.
-     * @param primaryR Radius of the primary body (m)
-     * @param secondaryR Radius of the secondary body (m)
+     * @param primaryR Radius of the primary body sphere (m)
+     * @param secondaryR Radius of the secondary body sphere (m)
      * @param syst CR3BP System considered
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
      */
-    public CR3BPGroundIntersectingDetector(final double primaryR, final double secondaryR, final CR3BPSystem syst, final double maxCheck, final double threshold) {
+    public CR3BPSphereCrossingDetector(final double primaryR, final double secondaryR, final CR3BPSystem syst, final double maxCheck, final double threshold) {
         this(primaryR, secondaryR, syst, maxCheck, threshold, DEFAULT_MAX_ITER,
-             new StopOnDecreasing<CR3BPGroundIntersectingDetector>());
+             new StopOnDecreasing<CR3BPSphereCrossingDetector>());
     }
 
     /**
@@ -59,17 +59,17 @@ public class CR3BPGroundIntersectingDetector
      * with the various {@code withXxx()} methods to set up the instance in a
      * readable manner without using a huge amount of parameters.
      * </p>
-     * @param primaryR Radius of the primary body (m)
-     * @param secondaryR Radius of the secondary body (m)
+     * @param primaryR Radius of the primary body sphere (m)
+     * @param secondaryR Radius of the secondary body sphere (m)
      * @param syst CR3BP System considered
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    private CR3BPGroundIntersectingDetector(final double primaryR, final double secondaryR, final CR3BPSystem syst, final double maxCheck, final double threshold,
+    private CR3BPSphereCrossingDetector(final double primaryR, final double secondaryR, final CR3BPSystem syst, final double maxCheck, final double threshold,
                              final int maxIter,
-                             final EventHandler<? super CR3BPGroundIntersectingDetector> handler) {
+                             final EventHandler<? super CR3BPSphereCrossingDetector> handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.primaryR = primaryR;
         this.secondaryR = secondaryR;
@@ -78,11 +78,11 @@ public class CR3BPGroundIntersectingDetector
 
     /** {@inheritDoc} */
     @Override
-    protected CR3BPGroundIntersectingDetector
+    protected CR3BPSphereCrossingDetector
         create(final double newMaxCheck, final double newThreshold,
                final int newMaxIter,
-               final EventHandler<? super CR3BPGroundIntersectingDetector> newHandler) {
-        return new CR3BPGroundIntersectingDetector(primaryR, secondaryR, syst, newMaxCheck, newThreshold, newMaxIter,
+               final EventHandler<? super CR3BPSphereCrossingDetector> newHandler) {
+        return new CR3BPSphereCrossingDetector(primaryR, secondaryR, syst, newMaxCheck, newThreshold, newMaxIter,
                                     newHandler);
     }
 

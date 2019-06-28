@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2002-2019 CS Systèmes d'Information Licensed to CS Systèmes
  * d'Information (CS) under one or more contributor license agreements. See the
@@ -28,6 +27,7 @@ import org.orekit.data.DirectoryCrawler;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.HaloOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.CR3BPSphereCrossingDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.YZPlaneCrossingDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -178,6 +178,10 @@ public class ManifoldTransfer {
         final EventDetector YZPlaneCrossing =
             new YZPlaneCrossingDetector(offS, maxcheck, threshold)
                 .withHandler(new PlaneCrossingHandler());
+        
+        // Event detector definition
+        final EventDetector sphereCrossing =
+            new CR3BPSphereCrossingDetector(6378E3, 1737E3, syst, maxcheck, threshold).withHandler(new SphereCrossingHandler());
 
         // Create another propagator for manifolds propagation
         NumericalPropagator mPropagator = new NumericalPropagator(integrator);
@@ -185,6 +189,7 @@ public class ManifoldTransfer {
         mPropagator.setIgnoreCentralAttraction(true);
         mPropagator.addForceModel(new CR3BPForceModel(syst));
         mPropagator.addEventDetector(YZPlaneCrossing);
+        mPropagator.addEventDetector(sphereCrossing);
 
         // Distance of the spacecraft from the Moon
         double distMoon;
@@ -260,6 +265,7 @@ public class ManifoldTransfer {
         oPropagator.setOrbitType(null);
         oPropagator.setIgnoreCentralAttraction(true);
         oPropagator.addForceModel(new CR3BPForceModel(syst));
+        oPropagator.addEventDetector(sphereCrossing);
 
         // Pre-defined insertion Manoeuver, this can be computed and optimized with other tools in orekit
         final PVCoordinates orbitPV =
@@ -308,6 +314,20 @@ public class ManifoldTransfer {
         public Action eventOccurred(final SpacecraftState s,
                                     final YZPlaneCrossingDetector detector,
                                     final boolean increasing) {
+            return Action.STOP;
+        }
+    }
+    
+    /** Static class for event detection.
+     */
+    private static class SphereCrossingHandler
+        implements
+        EventHandler<CR3BPSphereCrossingDetector> {
+
+        public Action eventOccurred(final SpacecraftState s,
+                                    final CR3BPSphereCrossingDetector detector,
+                                    final boolean increasing) {
+            System.out.println("You intersected one of the two primaries so the propagation has been stopped");
             return Action.STOP;
         }
     }
