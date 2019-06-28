@@ -549,3 +549,6 @@ CANNOT_COMPUTE_LAGRANGIAN = Cannot compute around {0}
 
 # The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
 TRAJECTORY_NOT_CROSSING_XZPLANE = The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
+
+# SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed
+NO_STM_EQUATIONS = SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed

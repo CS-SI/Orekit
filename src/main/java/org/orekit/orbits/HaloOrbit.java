@@ -22,6 +22,8 @@ import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.bodies.CR3BPSystem;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.utils.LagrangianPoints;
@@ -40,6 +42,9 @@ public class HaloOrbit {
 
     /** Position-Velocity first guess for a point on a Halo Orbit. */
     private final PVCoordinates firstGuess;
+
+    /** Name of the needed additional state. */
+    private final String stm = "stmEquations";
 
     /**
      * Simple Constructor.
@@ -159,6 +164,10 @@ public class HaloOrbit {
         int i = 0;
         while (i < s.length) {
 
+            if (s[i].getAdditionalState(stm) == null) {
+                throw new OrekitException(OrekitMessages.NO_STM_EQUATIONS, i);
+            }
+
             // Get Normalize eigen vector linked to the stability of the manifold
             final RealMatrix phi =
                 new STMEquations(cr3bpSystem).getStateTransitionMatrix(s[i]);
@@ -196,6 +205,10 @@ public class HaloOrbit {
 
         int i = 0;
         while (i < s.length) {
+
+            if (s[i].getAdditionalState(stm) == null ) {
+                throw new OrekitException(OrekitMessages.NO_STM_EQUATIONS, i);
+            }
 
             final RealMatrix phi =
                 new STMEquations(cr3bpSystem).getStateTransitionMatrix(s[i]);

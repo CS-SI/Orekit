@@ -205,6 +205,33 @@ public class HaloOrbitTest {
         initialConditions.toString();
     }
     
+    @Test(expected=OrekitException.class)
+    public void testSTMError() {
+        // Time settings
+        final AbsoluteDate initialDate =
+                        new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
+                                         TimeScalesFactory.getUTC());
+        CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+
+        final Frame Frame = syst.getRotatingFrame();
+
+        // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
+        // of 8 000 km
+        HaloOrbit h = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, HaloOrbitType.SOUTHERN);
+
+        final PVCoordinates pv = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
+
+        final AbsolutePVCoordinates initialAbsPV =
+                        new AbsolutePVCoordinates(Frame, initialDate, pv);
+
+        // Creating the initial spacecraftstate that will be given to the
+        // propagator
+        final SpacecraftState s = new SpacecraftState(initialAbsPV);
+
+        final PVCoordinates manifold = h.getManifolds(s, true);
+        manifold.getMomentum();
+    }
+    
     @Before
     public void setUp() {
         Utils.setDataRoot("cr3bp:regular-data");

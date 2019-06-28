@@ -550,3 +550,6 @@ CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
 
 # The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
 TRAJECTORY_NOT_CROSSING_XZPLANE = <MISSING TRANSLATION>
+
+# SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed
+NO_STM_EQUATIONS = <MISSING TRANSLATION>

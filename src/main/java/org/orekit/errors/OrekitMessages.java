@@ -234,7 +234,8 @@ public enum OrekitMessages implements Localizable {
     NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
     INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
     CANNOT_COMPUTE_LAGRANGIAN("Cannot compute around {0}"),
-    TRAJECTORY_NOT_CROSSING_XZPLANE("The trajectory does not cross XZ Plane, it will not result in a Halo Orbit");
+    TRAJECTORY_NOT_CROSSING_XZPLANE("The trajectory does not cross XZ Plane, it will not result in a Halo Orbit"),
+    NO_STM_EQUATIONS("SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed");
 
     // CHECKSTYLE: resume JavadocVariable check
 
