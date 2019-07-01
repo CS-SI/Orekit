@@ -868,7 +868,7 @@ public class RinexLoader {
                                         scaleFactorCorrections.add(new ScaleFactorCorrection(satSystemScaleFactor,
                                                                                              scaleFactor, typesObsScaleFactor));
                                         break;
-                                    case SYS_PHASE_SHIFT :
+                                    case SYS_PHASE_SHIFT : {
 
                                         nbSatPhaseShift     = 0;
                                         satsPhaseShift      = null;
@@ -877,7 +877,8 @@ public class RinexLoader {
                                         satSystemPhaseShift = null;
 
                                         satSystemPhaseShift = SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1));
-                                        phaseShiftTypeObs = ObservationType.valueOf(parseString(line, 2, 3));
+                                        final String to = parseString(line, 2, 3);
+                                        phaseShiftTypeObs = to.isEmpty() ? null : ObservationType.valueOf(to);
                                         nbSatPhaseShift = parseInt(line, 16, 2);
                                         corrPhaseShift = parseDouble(line, 6, 8);
 
@@ -903,6 +904,7 @@ public class RinexLoader {
                                                                                            satsPhaseShift));
                                         inPhaseShift = true;
                                         break;
+                                    }
                                     case GLONASS_SLOT_FRQ_NB :
                                         //Not defined yet
                                         inGlonassSlot = true;
@@ -1108,7 +1110,7 @@ public class RinexLoader {
 
             /** Satellite System. */
             private final SatelliteSystem satSystemPhaseShift;
-            /** Carrier Phase Observation Code. */
+            /** Carrier Phase Observation Code (may be null). */
             private final ObservationType typeObsPhaseShift;
             /** Phase Shift Corrections (cycles). */
             private final double phaseShiftCorrection;
@@ -1117,7 +1119,7 @@ public class RinexLoader {
 
             /** Simple constructor.
              * @param satSystemPhaseShift Satellite System
-             * @param typeObsPhaseShift Carrier Phase Observation Code
+             * @param typeObsPhaseShift Carrier Phase Observation Code (may be null)
              * @param phaseShiftCorrection Phase Shift Corrections (cycles)
              * @param satsPhaseShift List of satellites involved
              */
@@ -1137,6 +1139,10 @@ public class RinexLoader {
                 return satSystemPhaseShift;
             }
             /** Get the Carrier Phase Observation Code.
+             * <p>
+             * The observation code may be null for the uncorrected reference
+             * signal group
+             * </p>
              * @return Carrier Phase Observation Code.
              */
             public ObservationType getTypeObs() {
