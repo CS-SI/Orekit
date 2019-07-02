@@ -20,6 +20,9 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <action dev="petrus" type="fix" issue="570">
+        Make FieldOfView.getFootprint public.
+    </action>
     <release version="10.0" date="2019-06-24"
              description="Orekit 10.0 is a major new release. It includes DSST OD,
              propagation in non-inertial frames, specialized propagators for GNSS
