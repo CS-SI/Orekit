@@ -288,8 +288,8 @@ public class FieldOfView {
      * @return list footprint boundary loops (there may be several independent
      * loops if the Field Of View shape is complex)
      */
-    List<List<GeodeticPoint>> getFootprint(final Transform fovToBody, final OneAxisEllipsoid body,
-                                           final double angularStep) {
+    public List<List<GeodeticPoint>> getFootprint(final Transform fovToBody, 
+                    final OneAxisEllipsoid body, final double angularStep) {
 
         final Frame     bodyFrame = body.getBodyFrame();
         final Vector3D  position  = fovToBody.transformPosition(Vector3D.ZERO);
