@@ -15,11 +15,15 @@
  * limitations under the License.
  */
 package org.orekit.gnss;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DataFilter;
 import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
@@ -69,14 +73,17 @@ public class HatanakaCompressFilter implements DataFilter {
     /** Filtering of Hatanaka compressed stream. */
     private static class HatanakaInputStream extends InputStream {
 
-        /** First magic header byte. */
-        private static final int MAGIC_HEADER_1 = 0x1f;
+        /** Compact Rinex version key. */
+        private static final String CRINEX_VERSION_TYPE = "CRINEX VERS   / TYPE";
+
+        /** Compact Rinex program key. */
+        private static final String CRINEX_PROG_DATE    = "CRINEX PROG / DATE";
 
         /** File name. */
         private final String name;
 
-        /** Underlying compressed stream. */
-        private final InputStream input;
+        /** Line-oriented input. */
+        private final BufferedReader reader;
 
         /** Simple constructor.
          * @param name file name
@@ -87,11 +94,20 @@ public class HatanakaCompressFilter implements DataFilter {
             throws IOException {
 
             this.name  = name;
-            this.input = input;
+            this.reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // check header
-            if (input.read() != MAGIC_HEADER_1) {
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE, name);
+            final String line1 = reader.readLine();
+            if (!CRINEX_VERSION_TYPE.equals(parseString(line1, 60, CRINEX_VERSION_TYPE.length()))) {
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
+            }
+            final int format100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
+            if ((format100 != 100) && (format100 != 300)) {
+                throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
+            }
+            final String line2 = reader.readLine();
+            if (!CRINEX_PROG_DATE.equals(parseString(line2, 60, CRINEX_PROG_DATE.length()))) {
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
             }
 
         }
@@ -101,6 +117,41 @@ public class HatanakaCompressFilter implements DataFilter {
         public int read() throws IOException {
             // TODO
             return -1;
+        }
+
+
+        /** {@inheritDoc} */
+        @Override
+        public void close() throws IOException {
+            reader.close();
+        }
+
+        /** Extract a string from a line.
+         * @param line to parse
+         * @param start start index of the string
+         * @param length length of the string
+         * @return parsed string
+         */
+        private String parseString(final String line, final int start, final int length) {
+            if (line.length() > start) {
+                return line.substring(start, FastMath.min(line.length(), start + length)).trim();
+            } else {
+                return null;
+            }
+        }
+
+        /** Extract a double from a line.
+         * @param line to parse
+         * @param start start index of the real
+         * @param length length of the real
+         * @return parsed real, or {@code Double.NaN} if field was empty
+         */
+        private double parseDouble(final String line, final int start, final int length) {
+            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
+                return Double.parseDouble(parseString(line, start, length));
+            } else {
+                return Double.NaN;
+            }
         }
 
     }
