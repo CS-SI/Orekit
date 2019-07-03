@@ -37,7 +37,7 @@ import org.orekit.errors.OrekitMessages;
 public class HatanakaCompressFilter implements DataFilter {
 
     /** Pattern for rinex 2 observation files. */
-    private static final Pattern RINEX_2_PATTERN = Pattern.compile("^(\\w{4}\\d{3}[0a-x](?:\\d{2})?)\\.(\\d{2})[dD]$");
+    private static final Pattern RINEX_2_PATTERN = Pattern.compile("^(\\w{4}\\d{3}[0a-x](?:\\d{2})?\\.\\d{2})[dD]$");
 
     /** Pattern for rinex 3 observation files. */
     private static final Pattern RINEX_3_PATTERN = Pattern.compile("^(\\w{9}_\\w{1}_\\d{11}_\\d{2}\\w_\\d{2}\\w{1}_\\w{2})\\.crx$");
@@ -52,7 +52,7 @@ public class HatanakaCompressFilter implements DataFilter {
         final Matcher rinex2Matcher = RINEX_2_PATTERN.matcher(oName);
         if (rinex2Matcher.matches()) {
             // this is a rinex 2 file compressed with Hatanaka method
-            final String                 fName   = rinex2Matcher.group(1) + "." + rinex2Matcher.group(2) + "o";
+            final String                 fName   = rinex2Matcher.group(1) + "o";
             final NamedData.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openStream());
             return new NamedData(fName, fOpener);
         }
@@ -73,17 +73,32 @@ public class HatanakaCompressFilter implements DataFilter {
     /** Filtering of Hatanaka compressed stream. */
     private static class HatanakaInputStream extends InputStream {
 
-        /** Compact Rinex version key. */
+        /** Index of label in data lines. */
+        private static final int LABEL_START = 60;
+
+        /** Label for compact Rinex version. */
         private static final String CRINEX_VERSION_TYPE = "CRINEX VERS   / TYPE";
 
-        /** Compact Rinex program key. */
+        /** Label for compact Rinex program. */
         private static final String CRINEX_PROG_DATE    = "CRINEX PROG / DATE";
+
+        /** Label for end of header. */
+        private static final String END_OF_HEADER        = "END OF HEADER";
 
         /** File name. */
         private final String name;
 
         /** Line-oriented input. */
         private final BufferedReader reader;
+
+        /** Indicator for header. */
+        private boolean inHeader;
+
+        /** Line pending output. */
+        private String pending;
+
+        /** Number of characters already output in pending line. */
+        private int countOut;
 
         /** Simple constructor.
          * @param name file name
@@ -98,7 +113,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
             // check header
             final String line1 = reader.readLine();
-            if (!CRINEX_VERSION_TYPE.equals(parseString(line1, 60, CRINEX_VERSION_TYPE.length()))) {
+            if (!CRINEX_VERSION_TYPE.equals(parseString(line1, LABEL_START, CRINEX_VERSION_TYPE.length()))) {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
             }
             final int format100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
@@ -106,19 +121,58 @@ public class HatanakaCompressFilter implements DataFilter {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
             }
             final String line2 = reader.readLine();
-            if (!CRINEX_PROG_DATE.equals(parseString(line2, 60, CRINEX_PROG_DATE.length()))) {
+            if (!CRINEX_PROG_DATE.equals(parseString(line2, LABEL_START, CRINEX_PROG_DATE.length()))) {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
             }
+
+            inHeader = true;
+            pending  = null;
 
         }
 
         /** {@inheritDoc} */
         @Override
         public int read() throws IOException {
-            // TODO
-            return -1;
+
+            if (pending == null) {
+                // we need to read another line from the underlying stream and uncompress it
+                uncompressLine();
+                if (pending == null) {
+                    // there are no lines left
+                    return -1;
+                }
+            }
+
+            if (countOut == pending.length()) {
+                // output an end of line
+                pending = null;
+                return '\n';
+            } else {
+                // output a character from the uncompressed line
+                return pending.charAt(countOut++);
+            }
+
         }
 
+        /** Read and uncompress one line.
+         * @exception IOException if we cannot read a line from underlying stream
+         */
+        private void uncompressLine() throws IOException {
+            countOut = 0;
+            final String inLine = reader.readLine();
+            if (inLine == null) {
+                // there are no lines left
+                pending = null;
+            } else {
+                if (inHeader) {
+                    // within header, lines are simply copied out without any processing
+                    pending  = inLine;
+                    inHeader = !END_OF_HEADER.equals(parseString(inLine, LABEL_START, END_OF_HEADER.length()));
+                } else {
+                    // TODO
+                }
+            }
+        }
 
         /** {@inheritDoc} */
         @Override
@@ -137,6 +191,20 @@ public class HatanakaCompressFilter implements DataFilter {
                 return line.substring(start, FastMath.min(line.length(), start + length)).trim();
             } else {
                 return null;
+            }
+        }
+
+        /** Extract an integer from a line.
+         * @param line to parse
+         * @param start start index of the integer
+         * @param length length of the integer
+         * @return parsed integer
+         */
+        private int parseInt(final String line, final int start, final int length) {
+            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
+                return Integer.parseInt(parseString(line, start, length));
+            } else {
+                return 0;
             }
         }
 

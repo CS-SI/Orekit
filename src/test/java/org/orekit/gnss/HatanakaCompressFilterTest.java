@@ -22,6 +22,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.GzipFilter;
 import org.orekit.data.NamedData;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
@@ -73,7 +74,7 @@ public class HatanakaCompressFilterTest {
     public void testHatanakaRinex2() throws IOException {
 
         final String name = "rinex/arol0090.01d.Z";
-        final NamedData raw = new NamedData(name,
+        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         RinexLoader loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
@@ -128,9 +129,9 @@ public class HatanakaCompressFilterTest {
         
         //Tests Rinex 3 with Hatanaka compression
         final String name = "rinex/GANP00SVK_R_20151890000_01H_10M_MO.crx.gz";
-        final NamedData raw = new NamedData(name,
+        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         RinexLoader loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2015, 7, 8, TimeScalesFactory.getGPS());
