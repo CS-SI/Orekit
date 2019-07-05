@@ -322,7 +322,7 @@ public class AbsoluteDate
     public AbsoluteDate(final Date location, final TimeScale timeScale) {
         this(new DateComponents(DateComponents.JAVA_EPOCH,
                                 (int) (location.getTime() / 86400000l)),
-                                new TimeComponents(0.001 * (location.getTime() % 86400000l)),
+                                 millisToTimeComponents((int) (location.getTime() % 86400000l)),
              timeScale);
     }
 
@@ -401,6 +401,14 @@ public class AbsoluteDate
     AbsoluteDate(final long epoch, final double offset) {
         this.epoch  = epoch;
         this.offset = offset;
+    }
+
+    /** Extract time components from a number of milliseconds within the day.
+     * @param millisInDay number of milliseconds within the day
+     * @return time components
+     */
+    private static TimeComponents millisToTimeComponents(final int millisInDay) {
+        return new TimeComponents(millisInDay / 1000, 0.001 * (millisInDay % 1000));
     }
 
     /** Get the reference epoch in seconds from 2000-01-01T12:00:00 TAI.

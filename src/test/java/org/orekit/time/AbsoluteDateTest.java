@@ -18,6 +18,11 @@ package org.orekit.time;
 
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -796,6 +801,20 @@ public class AbsoluteDateTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER, oiae.getSpecifier());
             Assert.assertEquals(86401.5, ((Double) oiae.getParts()[0]).doubleValue(), 1.0e-10);
         }
+
+    }
+
+    @Test
+    public void testIssueTimesStampAccuracy() {
+        String testString = "2019-02-01T13:06:03.115";
+        TimeScale timeScale=TimeScalesFactory.getUTC();
+
+        DateTimeComponents expectedComponent = DateTimeComponents.parseDateTime(testString);
+        AbsoluteDate expectedDate = new AbsoluteDate(expectedComponent, timeScale);
+
+        ZonedDateTime actualComponent = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(testString)).atZone(ZoneOffset.UTC);
+        AbsoluteDate actualDate = new AbsoluteDate(Timestamp.from(actualComponent.toInstant()), timeScale);
+        Assert.assertEquals(0.0, expectedDate.durationFrom(actualDate), 1.0e-15);
 
     }
 
