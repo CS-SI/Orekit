@@ -179,4 +179,27 @@ public class HatanakaCompressFilterTest {
 
     }
 
+    @Test
+    public void testWith5thOrderDifferencesClockOffsetReinitialization() throws IOException {
+
+        // the following file has several specific features with respect to Hatanaka compression
+        //  - we created it using 5th order differences instead of standard 3rd order
+        //  - epoch lines do contain a clock offset (which is a dummy value manually edited from original IGS file)
+        //  - differences are reinitialized every 20 epochs
+        final String name = "rinex/ZIMM00CHE_R_20190320000_15M_30S_MO.crx.gz";
+        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        RinexLoader loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
+
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(30, ods.size());
+        for (final ObservationDataSet dataSet : ods) {
+            Assert.assertEquals(0.123456789012, dataSet.getRcvrClkOffset(), 1.0e-15);
+        }
+        ObservationDataSet last = ods.get(ods.size() - 1);
+        Assert.assertEquals( 24815572.703, last.getObservationData().get(0).getValue(), 1.0e-4);
+        Assert.assertEquals(130406727.683, last.getObservationData().get(1).getValue(), 1.0e-4);
+    }
+
 }
