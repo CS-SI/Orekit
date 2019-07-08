@@ -16,10 +16,14 @@
  */
 package org.orekit.gnss;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.Assert;
@@ -61,13 +65,24 @@ public class HatanakaCompressFilterTest {
         doTestWrong("rinex/labl9990.01d", OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE);
     }
 
+    @Test
+    public void testTruncatedAtReceiverClockLine() throws IOException {
+        doTestWrong("rinex/truncated-crinex.crx", OrekitMessages.UNEXPECTED_END_OF_FILE);
+    }
+
     private void doTestWrong(final String name, final OrekitMessages expectedError)
         throws IOException {
         final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         try {
-            new HatanakaCompressFilter().filter(raw).getStreamOpener().openStream();
-            Assert.fail("an exception should have been thrown");
+            try (InputStream       is  = new HatanakaCompressFilter().filter(raw).getStreamOpener().openStream();
+                 InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+                 BufferedReader    br  = new BufferedReader(isr)) {
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    // nothing to do here
+                }
+                Assert.fail("an exception should have been thrown");
+            }
         } catch (OrekitException oe) {
             Assert.assertEquals(expectedError, oe.getSpecifier());
         }
