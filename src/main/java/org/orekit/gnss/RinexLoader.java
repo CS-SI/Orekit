@@ -988,6 +988,9 @@ public class RinexLoader {
                                         for (int i = 0; i < nbSatObs; i++) {
 
                                             line = reader.readLine();
+                                            if (line == null) {
+                                                throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE, name);
+                                            }
                                             lineNumber++;
 
                                             //We check that the Satellite type is consistent with Satellite System in the top of the file
