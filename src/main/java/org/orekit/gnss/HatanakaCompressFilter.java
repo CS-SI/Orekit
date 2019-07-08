@@ -227,4 +227,65 @@ public class HatanakaCompressFilter implements DataFilter {
 
     }
 
+    /** Processor handling differential compression for one data field. */
+    private static class Differential {
+
+        /** Length of the uncompressed text field. */
+        private final int fieldLength;
+
+        /** Number of decimal places uncompressed text field. */
+        private final int decimalPlaces;
+
+        /** State vector. */
+        private final long[] state;
+
+        /** Number of components in the state vector. */
+        private int nbComponents;
+
+        /** simple constructor.
+         * @param fieldLength length of the uncompressed text field
+         * @param decimalPlaces number of decimal places uncompressed text field
+         * @param order differential order
+         */
+        Differential(final int fieldLength, final int decimalPlaces, final int order) {
+            this.fieldLength   = fieldLength;
+            this.decimalPlaces = decimalPlaces;
+            this.state         = new long[order + 1];
+            this.nbComponents  = 0;
+        }
+
+        /** Handle a new compressed value.
+         * @param value value to add
+         * @param buffer buffer where character representation should be appended
+         * @exception IOException if buffer cannot be appended
+         */
+        public void accept(final long value, final Appendable buffer)
+            throws IOException {
+
+            // store the value as the last component of state vector
+            state[nbComponents] = value;
+
+            // update state vector
+            for (int i = nbComponents; i > 0; --i) {
+                state[i - 1] += state[i];
+            }
+
+            if (++nbComponents == state.length) {
+                // the state vector is full
+                --nbComponents;
+            }
+
+            // output uncompressed value
+            final String unscaled = Long.toString(state[0]);
+            for (int padding = fieldLength - (unscaled.length() + 1); padding > 0; --padding) {
+                buffer.append(' ');
+            }
+            buffer.append(unscaled, 0, unscaled.length() - decimalPlaces);
+            buffer.append('.');
+            buffer.append(unscaled, unscaled.length() - decimalPlaces, unscaled.length());
+
+        }
+
+    }
+
 }

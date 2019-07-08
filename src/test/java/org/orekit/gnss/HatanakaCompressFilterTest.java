@@ -17,6 +17,9 @@
 package org.orekit.gnss;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import org.junit.Assert;
@@ -200,6 +203,59 @@ public class HatanakaCompressFilterTest {
         ObservationDataSet last = ods.get(ods.size() - 1);
         Assert.assertEquals( 24815572.703, last.getObservationData().get(0).getValue(), 1.0e-4);
         Assert.assertEquals(130406727.683, last.getObservationData().get(1).getValue(), 1.0e-4);
+    }
+
+    @Test
+    public void testDifferential3rdOrder() {
+        doTestDifferential(15, 3, 3,
+                           new long[] {
+                               40517356773l, -991203l, -38437l,
+                               3506l, -630l, 2560l
+                           },
+                           new String[] {
+                               "   40517356.773", "   40516365.570", "   40515335.930",
+                               "   40514271.359", "   40513171.227", "   40512038.094"
+                           });
+    }
+
+    @Test
+    public void testDifferential5thOrder() {
+        doTestDifferential(12, 5, 5,
+                           new long[] {
+                               23439008766l, -19297641l, 30704l, 3623l, -8215l,
+                               14517l, -6644l, -2073l, 4164l, -2513l
+                           },
+                           new String[] {
+                               "234390.08766", "234197.11125", "234004.44188", "233812.11578", "233620.08703",
+                               "233428.37273", "233236.98656", "233045.91805", "232855.17422", "232664.75445"
+                           });
+    }
+
+    private void doTestDifferential(final int fieldLength, final int decimalPlaces, final int order,
+                                    final long[] compressed, final String[] uncompressed) {
+        try {
+            Class<?> differentialClass = null;
+            for (final Class<?> c : HatanakaCompressFilter.class.getDeclaredClasses()) {
+                if (c.getName().endsWith("Differential")) {
+                    differentialClass = c;
+                }
+            }
+            final Constructor<?> cstr = differentialClass.getDeclaredConstructor(Integer.TYPE, Integer.TYPE, Integer.TYPE);
+            cstr.setAccessible(true);
+            final Object differential = cstr.newInstance(fieldLength, decimalPlaces, order);
+            final Method acceptMethod = differentialClass.getDeclaredMethod("accept", Long.TYPE, Appendable.class);
+
+            for (int i = 0; i < compressed.length; ++i) {
+                final StringBuilder output = new StringBuilder();
+                acceptMethod.invoke(differential, compressed[i], output);
+                Assert.assertEquals(uncompressed[i], output.toString());
+            }
+
+        } catch (NoSuchMethodException | SecurityException | InstantiationException |
+                 IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            e.printStackTrace();
+            Assert.fail(e.getLocalizedMessage());
+        }
     }
 
 }
