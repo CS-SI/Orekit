@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -227,8 +228,8 @@ public class HatanakaCompressFilter implements DataFilter {
 
     }
 
-    /** Processor handling differential compression for one data field. */
-    private static class Differential {
+    /** Processor handling differential compression for one numerical data field. */
+    private static class NumericDifferential {
 
         /** Length of the uncompressed text field. */
         private final int fieldLength;
@@ -242,12 +243,12 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Number of components in the state vector. */
         private int nbComponents;
 
-        /** simple constructor.
+        /** Simple constructor.
          * @param fieldLength length of the uncompressed text field
          * @param decimalPlaces number of decimal places uncompressed text field
          * @param order differential order
          */
-        Differential(final int fieldLength, final int decimalPlaces, final int order) {
+        NumericDifferential(final int fieldLength, final int decimalPlaces, final int order) {
             this.fieldLength   = fieldLength;
             this.decimalPlaces = decimalPlaces;
             this.state         = new long[order + 1];
@@ -283,6 +284,53 @@ public class HatanakaCompressFilter implements DataFilter {
             buffer.append(unscaled, 0, unscaled.length() - decimalPlaces);
             buffer.append('.');
             buffer.append(unscaled, unscaled.length() - decimalPlaces, unscaled.length());
+
+        }
+
+    }
+
+    /** Processor handling text compression for one text data field. */
+    private static class TextDifferential {
+
+        /** Buffer holding the current state. */
+        private CharBuffer state;
+
+        /** Simple constructor.
+         * @param fieldLength length of the uncompressed text field
+         */
+        TextDifferential(final int fieldLength) {
+            this.state = CharBuffer.allocate(fieldLength);
+            for (int i = 0; i < fieldLength; ++i) {
+                state.put(i, ' ');
+            }
+        }
+
+        /** Handle a new compressed value.
+         * @param complete sequence containing the value to consider
+         * @param start start index of the value within the sequence
+         * @param end end index of the value within the sequence
+         * @param buffer buffer where character representation should be appended
+         * @exception IOException if buffer cannot be appended
+         */
+        public void accept(final CharSequence complete, final int start, final int end,
+                           final Appendable buffer)
+            throws IOException {
+
+            // update state
+            final int length = FastMath.min(state.capacity(), end - start);
+            for (int i = 0; i < length; ++i) {
+                final char c = complete.charAt(start + i);
+                if (c == '&') {
+                    // update state with disappearing character
+                    state.put(i, ' ');
+                } else if (c != ' ') {
+                    // update state with changed character
+                    state.put(i, c);
+                }
+            }
+
+            // output uncompressed value
+            buffer.append(state);
 
         }
 

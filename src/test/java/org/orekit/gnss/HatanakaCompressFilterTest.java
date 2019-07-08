@@ -211,8 +211,7 @@ public class HatanakaCompressFilterTest {
                            new long[] {
                                40517356773l, -991203l, -38437l,
                                3506l, -630l, 2560l
-                           },
-                           new String[] {
+                           }, new String[] {
                                "   40517356.773", "   40516365.570", "   40515335.930",
                                "   40514271.359", "   40513171.227", "   40512038.094"
                            });
@@ -224,8 +223,7 @@ public class HatanakaCompressFilterTest {
                            new long[] {
                                23439008766l, -19297641l, 30704l, 3623l, -8215l,
                                14517l, -6644l, -2073l, 4164l, -2513l
-                           },
-                           new String[] {
+                           }, new String[] {
                                "234390.08766", "234197.11125", "234004.44188", "233812.11578", "233620.08703",
                                "233428.37273", "233236.98656", "233045.91805", "232855.17422", "232664.75445"
                            });
@@ -236,7 +234,7 @@ public class HatanakaCompressFilterTest {
         try {
             Class<?> differentialClass = null;
             for (final Class<?> c : HatanakaCompressFilter.class.getDeclaredClasses()) {
-                if (c.getName().endsWith("Differential")) {
+                if (c.getName().endsWith("NumericDifferential")) {
                     differentialClass = c;
                 }
             }
@@ -248,6 +246,75 @@ public class HatanakaCompressFilterTest {
             for (int i = 0; i < compressed.length; ++i) {
                 final StringBuilder output = new StringBuilder();
                 acceptMethod.invoke(differential, compressed[i], output);
+                Assert.assertEquals(uncompressed[i], output.toString());
+            }
+
+        } catch (NoSuchMethodException | SecurityException | InstantiationException |
+                 IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void testTextDates() {
+        doTestText(35,
+                   new String[] {
+                       "------@> 2015 07 08 00 00 00.0000000  0 34@----------",
+                       "------@                1@",
+                       "------@                2                 2@----------",
+                       "------@                3                 1@----------",
+                       "------@                4                 0@----------",
+                       "------@                5                27@----------"
+                   }, new String[] {
+                       "> 2015 07 08 00 00 00.0000000  0 34",
+                       "> 2015 07 08 00 10 00.0000000  0 34",
+                       "> 2015 07 08 00 20 00.0000000  0 32",
+                       "> 2015 07 08 00 30 00.0000000  0 31",
+                       "> 2015 07 08 00 40 00.0000000  0 30",
+                       "> 2015 07 08 00 50 00.0000000  0 27"
+                   });
+    }
+
+    @Test
+    public void testTextSats() {
+        doTestText(108,
+                   new String[] {
+                       "> 2015 07 08 00 00 00.0000000  0 34@      C02C05C07C10C14E11E12E19E20G01G02G03G06G07G09G10G16G17G23G26G31G32R03R04R05R12R13R14R15R19R20R21S20S26@",
+                       "                1@@",
+                       "                2                 2@                                                          23  6 31  2R03  4  5 13  4  5  9 20 21S  S 6&&&&&&@",
+                       "                3                 1@                  E 1  2  9 20G01  2  3  6  7  9 10  6 23  6 31  2R03  4  5 13  4  5  9 20  1S 0  6&&&@",
+                       "                4                 0@                                2  3  6  7  9 10  6 23  6 31  2R03  4  5 13  4  5  9 20  1S 0  6&&&@",
+                       "                5                27@                                                         R03R04  5 13 14  5 20 21S20S 6&&&&&&&&&@"
+                   }, new String[] {
+                       "      C02C05C07C10C14E11E12E19E20G01G02G03G06G07G09G10G16G17G23G26G31G32R03R04R05R12R13R14R15R19R20R21S20S26",
+                       "      C02C05C07C10C14E11E12E19E20G01G02G03G06G07G09G10G16G17G23G26G31G32R03R04R05R12R13R14R15R19R20R21S20S26",
+                       "      C02C05C07C10C14E11E12E19E20G01G02G03G06G07G09G10G16G23G26G31G32R03R04R05R13R14R15R19R20R21S20S26      ",
+                       "      C02C05C07C10E11E12E19E20G01G02G03G06G07G09G10G16G23G26G31G32R03R04R05R13R14R15R19R20R21S20S26         ",
+                       "      C02C05C07C10E11E12E19E20G02G03G06G07G09G10G16G23G26G31G32R03R04R05R13R14R15R19R20R21S20S26            ",
+                       "      C02C05C07C10E11E12E19E20G02G03G06G07G09G10G16G23G26R03R04R05R13R14R15R20R21S20S26                     "
+                   });
+    }
+
+    private void doTestText(final int fieldLength, final String[] compressed, final String[] uncompressed) {
+        try {
+            Class<?> textClass = null;
+            for (final Class<?> c : HatanakaCompressFilter.class.getDeclaredClasses()) {
+                if (c.getName().endsWith("TextDifferential")) {
+                    textClass = c;
+                }
+            }
+            final Constructor<?> cstr = textClass.getDeclaredConstructor(Integer.TYPE);
+            cstr.setAccessible(true);
+            final Object differentialClass = cstr.newInstance(fieldLength);
+            final Method acceptMethod = textClass.getDeclaredMethod("accept", CharSequence.class,
+                                                                    Integer.TYPE, Integer.TYPE,
+                                                                    Appendable.class);
+
+            for (int i = 0; i < compressed.length; ++i) {
+                final StringBuilder output = new StringBuilder();
+                acceptMethod.invoke(differentialClass,
+                                    compressed[i], compressed[i].indexOf('@') + 1, compressed[i].lastIndexOf('@'),
+                                    output);
                 Assert.assertEquals(uncompressed[i], output.toString());
             }
 
