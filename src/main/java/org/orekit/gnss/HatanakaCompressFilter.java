@@ -91,6 +91,9 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Line-oriented input. */
         private final BufferedReader reader;
 
+        /** Compact rinex version multiplied by 100. */
+        private final int cVersion100;
+
         /** Indicator for header. */
         private boolean inHeader;
 
@@ -108,7 +111,7 @@ public class HatanakaCompressFilter implements DataFilter {
         HatanakaInputStream(final String name, final InputStream input)
             throws IOException {
 
-            this.name  = name;
+            this.name   = name;
             this.reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // check header
@@ -116,8 +119,8 @@ public class HatanakaCompressFilter implements DataFilter {
             if (!CRINEX_VERSION_TYPE.equals(parseString(line1, LABEL_START, CRINEX_VERSION_TYPE.length()))) {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
             }
-            final int format100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
-            if ((format100 != 100) && (format100 != 300)) {
+            cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
+            if ((cVersion100 != 100) && (cVersion100 != 300)) {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
             }
             final String line2 = reader.readLine();
