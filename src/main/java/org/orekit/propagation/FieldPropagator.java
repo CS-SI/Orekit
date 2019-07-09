@@ -73,9 +73,9 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
 
     /** Set the propagator to slave mode.
      * <p>This mode is used when the user needs only the final orbit at the target time.
-     *  The (slave) propagator computes this result and return it to the calling
-     *  (master) application, without any intermediate feedback.<p>
-     * <p>This is the default mode.</p>
+     * The (slave) propagator computes this result and return it to the calling
+     * (master) application, without any intermediate feedback.
+     * <p>This is the default mode.
      * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
      * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #setEphemerisMode()

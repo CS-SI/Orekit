@@ -30,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * which goes from 1 (very low activity) to 9 (high activity).
  * <p>
  * All needed solar activity data can be found on the <a
- * href="http://sec.noaa.gov/Data/index.html">
+ * href="https://www.noaa.gov/">
  * NOAA (National Oceanic and Atmospheric
  * Administration) website.</a>
  *</p>

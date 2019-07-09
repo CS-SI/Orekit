@@ -216,7 +216,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * </p>
      * <p>
      * This method is based on Sergei Tanygin's paper <a
-     * href="http://www.agi.com/downloads/resources/white-papers/Attitude-interpolation.pdf">Attitude
+     * href="http://www.agi.com/resources/white-papers/attitude-interpolation">Attitude
      * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
      * vector as described in Malcolm D. Shuster's paper <a
      * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A

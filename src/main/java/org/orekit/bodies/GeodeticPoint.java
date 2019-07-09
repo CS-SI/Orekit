@@ -32,6 +32,16 @@ import org.hipparchus.util.MathUtils;
  */
 public class GeodeticPoint implements Serializable {
 
+    /** North pole.
+     * @since 10.0
+     */
+    public static final GeodeticPoint NORTH_POLE = new GeodeticPoint(+0.5 * FastMath.PI, 0.0, 0.0);
+
+    /** South pole.
+     * @since 10.0
+     */
+    public static final GeodeticPoint SOUTH_POLE = new GeodeticPoint(-0.5 * FastMath.PI, 0.0, 0.0);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 7862466825590075399L;
 

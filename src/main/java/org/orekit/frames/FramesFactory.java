@@ -123,8 +123,8 @@ import org.orekit.utils.OrekitConfiguration;
  * and {@link EOPHistory#getEndDate()}.
  * <p>
  * For more information on configuring the EOP data Orekit uses see
- * <a href="https://www.orekit.org/forge/projects/orekit/wiki/Configuration">
- * https://www.orekit.org/forge/projects/orekit/wiki/Configuration</a>.
+ * <a href="https://gitlab.orekit.org/orekit/orekit/blob/master/src/site/markdown/configuration.md">
+ * https://gitlab.orekit.org/orekit/orekit/blob/master/src/site/markdown/configuration.md</a>.
  * <p>
  * Here is a schematic representation of the predefined reference frames tree:
  * </p>

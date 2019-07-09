@@ -56,13 +56,12 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * to different activation patterns depending on which events are triggered first. An example
  * of this feature is handling switches to safe mode if some contingency condition is met, in
  * addition to the nominal switches that correspond to proper operations. Another example
- * is handling of maneuver mode.<p>
+ * is handling of maneuver mode.
  * <p>
  * Note that this attitude provider is stateful, it keeps in memory the sequence of active
  * underlying providers with their switch dates and the transitions from one provider to
  * the other. This implies that this provider should <em>not</em> be shared among different
  * propagators at the same time, each propagator should use its own instance of this provider.
- * </p>
  * <p>
  * The sequence kept in memory is reset when {@link #resetActiveProvider(AttitudeProvider)}
  * is called, and only the specify provider is kept. The sequence is also partially

@@ -68,7 +68,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * 9 (high activity).
  *
  * <p>
- * All these data can be found on the <a href="http://sec.noaa.gov/Data/index.html">
+ * All these data can be found on the <a href="https://www.noaa.gov/">
  * NOAA (National Oceanic and Atmospheric Administration) website.</a>
  * </p>
  *

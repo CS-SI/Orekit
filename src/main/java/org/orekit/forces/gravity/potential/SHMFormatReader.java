@@ -37,7 +37,7 @@ import org.orekit.utils.Constants;
  * <p> This format was used to describe the gravity field of EIGEN models
  * published by the GFZ Potsdam up to 2003. It was then replaced by
  * {@link ICGEMFormatReader ICGEM format}. The SHM format is described in
- * <a href="http://www.gfz-potsdam.de/grace/results/"> Potsdam university
+ * <a href="http://op.gfz-potsdam.de/champ/docs_CHAMP/CH-FORMAT-REFLINKS.html"> Potsdam university
  * website</a>.
  *
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}

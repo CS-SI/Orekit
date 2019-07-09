@@ -112,7 +112,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
  * </ul>
  * The last element is the mass in kilograms.
- * </p>
  * <p>The following code snippet shows a typical setting for Low Earth Orbit propagation in
  * equinoctial parameters and true longitude argument:</p>
  * <pre>
@@ -572,7 +571,6 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * So we deduce a scalar velocity error consistent with the position error.
      * From here, we apply orbits Jacobians matrices to get consistent errors
      * on orbital parameters.
-     * </p>
      * <p>
      * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
      * are only local estimates, not global ones. So some care must be taken when using

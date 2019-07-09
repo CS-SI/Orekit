@@ -42,7 +42,7 @@ import org.orekit.utils.Constants;
  * The 2006-02-28 version of this paper can be found <a
  * href="http://op.gfz-potsdam.de/grace/results/grav/g005_ICGEM-Format.pdf">here</a>
  * and the 2011-06-07 version of this paper can be found <a
- * href="http://icgem.gfz-potsdam.de/ICGEM/documents/ICGEM-Format-2011.pdf">here</a>.
+ * href="http://icgem.gfz-potsdam.de/ICGEM-Format-2011.pdf">here</a>.
  * These versions differ in time-dependent coefficients, which are linear-only prior
  * to 2011 (up to eigen-5 model) and have also harmonic effects after that date
  * (starting with eigen-6 model). Both versions are supported by the class.</p>
@@ -50,7 +50,7 @@ import org.orekit.utils.Constants;
  * This reader uses relaxed check on the gravity constant key so any key ending
  * in gravity_constant is accepted and not only earth_gravity_constant as specified
  * in the previous documents. This allows to read also non Earth gravity fields
- * as found in <a href="http://icgem.gfz-potsdam.de/ICGEM/ModelstabBodies.html">ICGEM
+ * as found in <a href="http://icgem.gfz-potsdam.de/tom_celestial">ICGEM
  * - Gravity Field Models of other Celestial Bodies</a> page to be read.
  * </p>
  * <p>

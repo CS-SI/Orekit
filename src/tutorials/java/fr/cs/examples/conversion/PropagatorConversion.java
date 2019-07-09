@@ -54,6 +54,13 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
 /** Orekit tutorial for propagator conversion.
+ * This tutorial will help you understand how a propagator can be converted to another with a different model.
+ * Here we convert a numerical propagator into an analytical Keplerian propagator.
+ * The fitting is performed with 250 points on two orbits.
+ * Both propagators are then run on a time span of 10 orbits to see how the differences evolve.
+ * Two files will be produced in your home directory:
+ *  - elements.dat: A comparison of the Keplerian elements of both propagators
+ *  - elts_pv.dat : A comparison of the PVT of both propagators
  * @author Pascal Parraud
  */
 public class PropagatorConversion {
@@ -143,8 +150,8 @@ public class PropagatorConversion {
             kepProp.setMasterMode(60., kepStepHandler);
 
             // Extrapolate from the initial to the final date
-            numProp.propagate(initialDate.shiftedBy(10.*period));
-            kepProp.propagate(initialDate.shiftedBy(10.*period));
+            numProp.propagate(initialDate, initialDate.shiftedBy(10.*period));
+            kepProp.propagate(initialDate, initialDate.shiftedBy(10.*period));
 
             // retrieve the states
             List<SpacecraftState> numStates = numStepHandler.getStates();

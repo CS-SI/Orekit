@@ -70,7 +70,10 @@
   * Propagation
 
     * analytical propagation models
-      (Kepler, Eckstein-Heschler, SDP4/SGP4 with 2006 corrections)
+      * Kepler
+      * Eckstein-Heschler
+      * SDP4/SGP4 with 2006 corrections
+      * GNSS: GPS, QZSS, Galileo, GLONASS, and Beidou
     * numerical propagators
 
       * central attraction
@@ -90,6 +93,7 @@
         force models parameters
       * serialization mechanism to store complete results on persistent storage for
         later use
+      * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
 
     * semi-analytical propagation model (DSST) with customizable force models
     * tabulated ephemerides
@@ -142,6 +146,7 @@
       * inter-satellites direct view
       * ground at night
       * impulse maneuvers occurrence
+      * geomagnetic intensity
 
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
@@ -187,6 +192,7 @@
         station position, pole motion and rate, prime meridian correction and rate, total zenith
         delay in tropospheric correction)
 
+    * Use numerical propagator or DSST propagator
     * multi-satellites orbit determination
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
@@ -245,6 +251,7 @@
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
+    * Global Ionospheric Map model
     * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field

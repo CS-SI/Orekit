@@ -31,6 +31,8 @@ import org.hipparchus.util.Precision;
 import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Class creating a mesh for spherical zones tessellation.
  * @author Luc Maisonobe
@@ -79,8 +81,8 @@ class Mesh {
      * @param start location of the first node.
      */
     Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
-                final TileAiming aiming, final double alongGap, final double acrossGap,
-                final S2Point start) {
+         final TileAiming aiming, final double alongGap, final double acrossGap,
+         final S2Point start) {
         this.ellipsoid      = ellipsoid;
         this.zone           = zone;
         this.coverage       = null;
@@ -92,6 +94,16 @@ class Mesh {
         this.maxAlongIndex  = 0;
         this.minAcrossIndex = 0;
         this.maxAcrossIndex = 0;
+
+        // safety check for singular points (typically poles)
+        for (final GeodeticPoint singular : aiming.getSingularPoints()) {
+            final S2Point s2p = new S2Point(singular.getLongitude(), 0.5 * FastMath.PI - singular.getLatitude());
+            if (zone.checkPoint(s2p) != Location.OUTSIDE) {
+                throw new OrekitException(OrekitMessages.CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT,
+                                          FastMath.toDegrees(singular.getLatitude()),
+                                          FastMath.toDegrees(singular.getLongitude()));
+            }
+        }
 
         // create an enabled first node at origin
         final Node origin = new Node(start, 0, 0);

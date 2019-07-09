@@ -25,10 +25,9 @@ import org.orekit.time.FieldAbsoluteDate;
  * <p>
  * Models that implement this interface split the delay into hydrostatic
  * and non-hydrostatic part:
- * </p>
- * <pre>
+ * <p>
  * δ = δ<sub>h</sub> + δ<sub>nh</sub>
- * </pre>
+ * <p>
  * With:
  * <ul>
  * <li> δ<sub>h</sub>  =  hydrostatic delay </li>

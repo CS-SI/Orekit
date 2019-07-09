@@ -64,7 +64,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  *  </ul>
  *  </li>
  *  </ul>
- *  </p>
  *  <p>
  *  The model needs geographical and time information to compute general values,
  *  but also needs space weather data:
@@ -72,7 +71,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  *  <li>mean and daily solar flux,</li>
  *  <li>geomagnetic indices.</li>
  *  </ul>
- *  </p>
  *  <p>
  *  Switches can be used to turn on and off particular variations:<br>
  *  0 is off, 1 is on, and 2 is main effects off but cross terms on.<br>
@@ -108,7 +106,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  *  <li>set to  1, the daily Ap only is used (first element of ap array),</li>
  *  <li>set to -1, the entire array of ap is used, including 3 hr ap indices.</li>
  *  </ul>
- *  </p>
  *  <p>
  *  The NRLMSISE-00 model was developed by Mike Picone, Alan Hedin, and Doug Drob.<br>
  *  They also wrote a NRLMSISE-00 distribution package in FORTRAN available at:<br>
@@ -116,7 +113,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  *  <br>
  *  Dominik Brodowski implemented a C version of the NRLMSISE-00 model available at:<br>
  *  http://www.brodo.de/space/nrlmsise/index.html
- *  </p>
  *  <p>
  *  Instances of this class are immutable.
  *  </p>
@@ -2630,13 +2626,13 @@ public class NRLMSISE00 implements Atmosphere {
      * of the mass densities of all species in this model, INCLUDING anomalous oxygen.</li>
      * </ul>
      * O, H, and N are set to zero below 72.5 km.
-     * </p>
      * <p>
      * Temperatures are provided as an array t such as:
      * <ul>
      * <li>t[0] = exospheric temperature (K)</li>
      * <li>t[1] = temperature at altitude (K)</li>
      * </ul>
+     * <p>
      * t[0] is set to global average for altitudes below 120 km.<br>
      * The 120 km gradient is left at global average value for altitudes below 72 km.
      * </p>

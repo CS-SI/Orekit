@@ -29,6 +29,15 @@ public class GLONASSScaleTest {
     private GLONASSScale glonass;
 
     @Test
+    public void testT0() {
+        TimeScale scale = TimeScalesFactory.getGLONASS();
+        Assert.assertEquals("GLONASS", scale.toString());
+        AbsoluteDate t0 =
+            new AbsoluteDate(new DateComponents(1996, 1, 1), TimeComponents.H00, scale);
+        Assert.assertEquals(AbsoluteDate.GLONASS_EPOCH, t0);
+    }
+
+    @Test
     public void testArbitrary() {
         AbsoluteDate tGLONASS =
             new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, glonass);

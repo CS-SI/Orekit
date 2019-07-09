@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,6 +52,7 @@ public class ZipJarCrawlerTest {
         }
         public void loadData(InputStream input, String name) {
             ++count;
+            Assert.assertThat(name, CoreMatchers.containsString("!/"));
         }
         public int getCount() {
             return count;

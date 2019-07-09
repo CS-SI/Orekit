@@ -153,8 +153,8 @@ public class CelestialBodyFactory {
      * <p>
      * The default loaders look for DE405 or DE406 JPL ephemerides.
      * </p>
-     * @see <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405">DE405 JPL ephemerides</a>
-     * @see <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de406">DE406 JPL ephemerides</a>
+     * @see <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux/de405/">DE405 JPL ephemerides</a>
+     * @see <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux/de406/">DE406 JPL ephemerides</a>
      * @see #addCelestialBodyLoader(String, CelestialBodyLoader)
      * @see #addDefaultCelestialBodyLoader(String)
      * @see #clearCelestialBodyLoaders(String)
@@ -183,8 +183,8 @@ public class CelestialBodyFactory {
      * <p>
      * The default loaders look for DE405 or DE406 JPL ephemerides.
      * </p>
-     * @see <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de405">DE405 JPL ephemerides</a>
-     * @see <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/unix/de406">DE406 JPL ephemerides</a>
+     * @see <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux/de405/">DE405 JPL ephemerides</a>
+     * @see <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux/de406/">DE406 JPL ephemerides</a>
      * @see #addCelestialBodyLoader(String, CelestialBodyLoader)
      * @see #addDefaultCelestialBodyLoader(String)
      * @see #clearCelestialBodyLoaders(String)

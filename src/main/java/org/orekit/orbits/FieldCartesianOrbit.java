@@ -57,7 +57,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *     <li>zDot</li>
  *   </ul>
  * contained in {@link PVCoordinates}.
- * </p>
 
  * <p>
  * Note that the implementation of this class delegates all non-Cartesian related

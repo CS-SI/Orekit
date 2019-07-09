@@ -47,11 +47,11 @@ import org.orekit.utils.PVCoordinates;
  * and can compute {@link PVCoordinates position and velocity coordinates} at any
  * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided
  * TLE epoch (of course this accuracy is not really measurable nor predictable: according to
- * <a href="http://www.celestrak.com/">CelesTrak</a>, the precision is close to one kilometer
+ * <a href="https://www.celestrak.com/">CelesTrak</a>, the precision is close to one kilometer
  * and error won't probably rise above 2 km).
  * </p>
  * <p>This implementation is largely inspired from the paper and source code <a
- * href="http://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
+ * href="https://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
  * Report #3</a> and is fully compliant with its results and tests cases.</p>
  * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)

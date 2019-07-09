@@ -289,4 +289,12 @@
     <Bug pattern="NP_NULL_PARAM_DEREF" />
   </Match>
 
+  <!-- the following is a false positive as this should never happen
+       with files embedded in Orekit -->
+  <Match>
+    <Class name="~.*\.IERSConventions$"/>
+    <Method name="loadLoveNumbers" />
+    <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
+  </Match>
+
 </FindBugsFilter>

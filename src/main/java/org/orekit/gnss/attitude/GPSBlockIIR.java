@@ -26,7 +26,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
- * Attitude providers for GPS block IIF navigation satellites.
+ * Attitude providers for GPS block IIR navigation satellites.
  * <p>
  * This class is based on the May 2017 version of J. Kouba eclips.f
  * subroutine available at <a href="http://acc.igs.org/orbits">IGS Analysis

@@ -32,7 +32,7 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Transform;
-import org.orekit.models.earth.tessellation.ConstantAzimuthAiming;
+import org.orekit.models.earth.tessellation.DivertedSingularityAiming;
 import org.orekit.models.earth.tessellation.EllipsoidTessellator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -174,7 +174,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
 
         // sample the zone interior
         final EllipsoidTessellator tessellator =
-                        new EllipsoidTessellator(body, new ConstantAzimuthAiming(body, 0.0), 4);
+                        new EllipsoidTessellator(body, new DivertedSingularityAiming(zone), 1);
         final List<List<GeodeticPoint>> gpSample = tessellator.sample(zone, samplingStep, samplingStep);
         for (final List<GeodeticPoint> list : gpSample) {
             for (final GeodeticPoint gp : list) {

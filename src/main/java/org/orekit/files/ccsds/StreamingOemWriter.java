@@ -62,7 +62,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * be overridden for a particular segment using the {@code metadata} argument to {@link
  * #newSegment(Frame, Map)}.
  *
- * <table>
+ * <table summary="OEM metada">
  *     <thead>
  *         <tr>
  *             <th>Keyword

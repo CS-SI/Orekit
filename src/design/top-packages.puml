@@ -28,7 +28,7 @@
 
   package org.orekit #ECEBD8 {
 
-    package attitude #DDEBD8 {
+    package attitudes #DDEBD8 {
     }
     package bodies #DDEBD8 {
     }
@@ -41,6 +41,8 @@
     package forces #DDEBD8 {
     }
     package frames #DDEBD8 {
+    }
+    package gnss #DDEBD8 {
     }
     package orbits #DDEBD8 {
     }
@@ -56,19 +58,20 @@
     }
 
     estimation  -->      propagation
-    propagation -->      attitude
+    propagation -->      attitudes
     propagation -->      forces
     forces      -->      bodies
     propagation -->      orbits
     orbits      -->      frames
-    attitude    -->      time
+    attitudes   -->      time
     orbits      -->      time
-    attitude    -->      time
     frames      -->      time
     bodies      -->      time
     bodies      -->      data
     models      -->      bodies
     models      -->      data
+    gnss        -->      attitudes
+    gnss        -->      data
     frames      -->      data
     time        -right-> data
     frames      -->      utils

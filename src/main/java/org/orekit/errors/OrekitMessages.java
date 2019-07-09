@@ -188,7 +188,6 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
-    OUT_OF_RANGE_LATITUDE("out of range latitude: {0}, [{1}, {2}]"),
     ORBIT_TYPE_NOT_ALLOWED("orbit type {0} not allowed here, allowed types: {1}"),
     NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES("non pseudo-inertial frame {0} is not suitable as reference for inertial forces"),
     METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY("method not available in the absence of a central body"),
@@ -232,7 +231,12 @@ public enum OrekitMessages implements Localizable {
     IRREGULAR_OR_INCOMPLETE_GRID("irregular or incomplete grid in file {0}"),
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
     NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
-    INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}");
+    INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
+    ITRF_VERSIONS_PREFIX_ONLY("The first column of itrf-versions.conf is a plain " +
+            "prefix that is matched against the name of each loaded file. It should " +
+            "not contain any regular expression syntax or directory components, i.e. " +
+            "\"/\" or \"\\\". Actual value: \"{0}\"."),
+    CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT("cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}");
 
     // CHECKSTYLE: resume JavadocVariable check
 

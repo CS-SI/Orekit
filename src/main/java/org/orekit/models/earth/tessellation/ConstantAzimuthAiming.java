@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
@@ -23,6 +26,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 
 /** Class used to orient tiles with respect to a geographic azimuth.
  * @see AlongTrackAiming
+ * @see DivertedSingularityAiming
  * @author Luc Maisonobe
  */
 public class ConstantAzimuthAiming implements TileAiming {
@@ -40,6 +44,12 @@ public class ConstantAzimuthAiming implements TileAiming {
     public ConstantAzimuthAiming(final OneAxisEllipsoid ellipsoid, final double azimuth) {
         this.cos = FastMath.cos(azimuth);
         this.sin = FastMath.sin(azimuth);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<GeodeticPoint> getSingularPoints() {
+        return Arrays.asList(GeodeticPoint.NORTH_POLE, GeodeticPoint.SOUTH_POLE);
     }
 
     /** {@inheritDoc} */
