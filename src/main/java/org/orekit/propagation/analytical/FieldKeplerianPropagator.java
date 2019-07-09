@@ -57,7 +57,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param initialFieldOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
      */
-    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final double mu) {
+    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final T mu) {
         this(initialFieldOrbit, DEFAULT_LAW, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -82,7 +82,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
                                     final AttitudeProvider attitudeProv,
-                                    final double mu) {
+                                    final T mu) {
         this(initialFieldOrbit, attitudeProv, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -94,7 +94,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param mass spacecraft mass (kg)
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialOrbit, final AttitudeProvider attitudeProv,
-                                    final double mu, final T mass) {
+                                    final T mu, final T mass) {
 
         super(initialOrbit.getA().getField(), attitudeProv);
 
@@ -120,7 +120,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @return fixed orbit
      */
     private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
-                                     final double mu) {
+                                     final T mu) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
@@ -133,7 +133,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     public void resetInitialState(final FieldSpacecraftState<T> state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        final double mu = initialState == null ? state.getMu() : initialState.getMu();
+        final T mu = initialState == null ? state.getMu() : initialState.getMu();
         final FieldSpacecraftState<T> fixedState = fixState(state.getOrbit(),
                                                             state.getAttitude(),
                                                             state.getMass(),

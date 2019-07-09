@@ -17,6 +17,10 @@
 
 package org.orekit.errors;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import org.hamcrest.CoreMatchers;
 import org.hipparchus.exception.DummyLocalizable;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,6 +40,34 @@ public class OrekitExceptionTest {
 
         // verify
         Assert.assertEquals(exception.getMessage(), "");
+    }
+
+    /**
+     * Check that if the message formatting in {@link OrekitException#getLocalizedMessage()}
+     * throws an exception a useful message and stack trace is still printed.
+     */
+    @Test
+    public void testBadMessage() {
+        // setup
+        StringWriter writer = new StringWriter();
+        PrintWriter printer = new PrintWriter(writer);
+        OrekitMessages message = OrekitMessages.CORRUPTED_FILE;
+        Object part = new Object() {
+            @Override
+            public String toString() {
+                throw new IllegalStateException("bad message");
+            }
+        };
+
+        // action, message expects a parameter, but none is given
+        new OrekitException(message, part).printStackTrace(printer);
+
+        // verify
+        String actual = writer.toString();
+        Assert.assertThat(actual,
+                CoreMatchers.containsString(message.getSourceString()));
+        Assert.assertThat(actual,
+                CoreMatchers.containsString("IllegalStateException: bad message"));
     }
 
 }

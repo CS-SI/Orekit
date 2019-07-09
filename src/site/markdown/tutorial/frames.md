@@ -297,8 +297,7 @@ the desired data in spacecraft frame using the current spacecraft state
             // write file header
         }
                     
-        public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws OrekitException {
+        public void handleStep(SpacecraftState currentState, boolean isLast) {
     
             Transform inertToSpacecraft = currentState.toTransform();
             Vector3D sunInert = sun.getPVCoordinates(currentState.getDate(), currentState.getFrame()).getPosition();

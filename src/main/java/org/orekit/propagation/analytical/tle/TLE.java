@@ -47,7 +47,7 @@ import org.orekit.time.TimeStamped;
  * {@link #getI() inclination}, etc. without any reference to the {@link TLEPropagator
  * TLE propagator} is prone to errors.</p>
  * <p>More information on the TLE format can be found on the
- * <a href="http://www.celestrak.com/">CelesTrak website.</a></p>
+ * <a href="https://www.celestrak.com/">CelesTrak website.</a></p>
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */

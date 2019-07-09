@@ -28,7 +28,7 @@ import org.hipparchus.util.FastMath;
 public class GammaMnsFunction {
 
     /** Factorial ratios. */
-    private static double[] PRECOMPUTED_RATIOS = new double[0];
+    private static double[] PRECOMPUTED_RATIOS;
 
     /** Factorial ratios. */
     private final double[] ratios;
@@ -74,8 +74,8 @@ public class GammaMnsFunction {
      * @return factorial ratios
      */
     private static double[] getRatios(final int nMax, final int size) {
-        synchronized (PRECOMPUTED_RATIOS) {
-            if (PRECOMPUTED_RATIOS.length < size) {
+        synchronized (GammaMnsFunction.class) {
+            if (PRECOMPUTED_RATIOS == null || PRECOMPUTED_RATIOS.length < size) {
                 // we need to compute a larger reference array
 
                 final BigFraction[] bF = new BigFraction[size];

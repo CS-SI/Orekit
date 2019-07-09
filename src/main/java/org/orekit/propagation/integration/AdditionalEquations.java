@@ -30,9 +30,10 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * <p>
  * This interface allows users to add such equations to a {@link
- * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}. Users provide the
+ * org.orekit.propagation.numerical.NumericalPropagator numerical propagator} or a {@link
+ * org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSST propagator}. Users provide the
  * equations as an implementation of this interface and register it to the propagator thanks to
- * its {@link org.orekit.propagation.numerical.NumericalPropagator#addAdditionalEquations(AdditionalEquations)}
+ * its {@link org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(AdditionalEquations)}
  * method. Several such objects can be registered with each numerical propagator, but it is
  * recommended to gather in the same object the sets of parameters which equations can interact
  * on each others states.
@@ -52,7 +53,8 @@ import org.orekit.time.AbsoluteDate;
  * This interface is the numerical (read not already integrated) counterpart of
  * the {@link org.orekit.propagation.AdditionalStateProvider} interface.
  * It allows to append various additional state parameters to any {@link
- * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}.
+ * org.orekit.propagation.numerical.NumericalPropagator numerical propagator} or {@link
+ * org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSST propagator}.
  * </p>
  * @see AbstractIntegratedPropagator
  * @see org.orekit.propagation.AdditionalStateProvider

@@ -27,7 +27,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -46,15 +45,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPropagator, Serializable {
+public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
     /** Default extrapolation time threshold: 1ms.
      * @since 9.0
      **/
     public static final double DEFAULT_EXTRAPOLATION_THRESHOLD_SEC = 1e-3;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170606L;
 
      /** First date in range. */
     private final AbsoluteDate minDate;
@@ -127,7 +123,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             s0.ensureCompatibleAdditionalStates(state);
         }
 
-        pvProvider = new LocalPVProvider();
+        pvProvider = new LocalPVProvider(states, interpolationPoints, extrapolationThreshold);
 
         // user needs to explicitly set attitude provider if they want to use one
         setAttitudeProvider(null);
@@ -260,61 +256,6 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         return managed;
     }
 
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the data needed for generation,
-     * but does <em>not</em> serializes the cache itself (in fact the cache is
-     * not serializable).
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(cache.getAll(), cache.getNeighborsSize(), extrapolationThreshold);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20170606L;
-
-        /** Tabulates states. */
-        private final List<SpacecraftState> states;
-
-        /** Number of points to use in interpolation. */
-        private final int interpolationPoints;
-
-        /** The extrapolation threshold beyond which the propagation will fail. **/
-        private final double extrapolationThreshold;
-
-        /** Simple constructor.
-         * @param states tabulates states
-         * @param interpolationPoints number of points to use in interpolation
-         * @param extrapolationThreshold extrapolation threshold beyond which the propagation will fail
-         */
-        private DataTransferObject(final List<SpacecraftState> states, final int interpolationPoints,
-                                   final double extrapolationThreshold) {
-            this.states                 = states;
-            this.interpolationPoints    = interpolationPoints;
-            this.extrapolationThreshold = extrapolationThreshold;
-        }
-
-        /** Replace the deserialized data transfer object with a
-         * {@link Ephemeris}.
-         * @return replacement {@link Ephemeris}
-         */
-        private Object readResolve() {
-            try {
-                // build a new provider, with an empty cache
-                return new Ephemeris(states, interpolationPoints, extrapolationThreshold);
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
-        }
-
-    }
-
     /** Internal PVCoordinatesProvider for attitude computation. */
     private static class LocalPVProvider implements PVCoordinatesProvider, Serializable {
 
@@ -323,6 +264,28 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
         /** Current state. */
         private SpacecraftState currentState;
+
+        /** List of spacecraft states. */
+        private List<SpacecraftState> states;
+
+        /** Interpolation points number. */
+        private int interpolationPoints;
+
+        /** Extrapolation threshold. */
+        private double extrapolationThreshold;
+
+        /** Constructor.
+         * @param states list of spacecraft states
+         * @param interpolationPoints interpolation points number
+         * @param extrapolationThreshold extrapolation threshold value
+         */
+        LocalPVProvider(final List<SpacecraftState> states, final int interpolationPoints,
+                     final double extrapolationThreshold) {
+
+            this.states = states;
+            this.interpolationPoints = interpolationPoints;
+            this.extrapolationThreshold = extrapolationThreshold;
+        }
 
         /** Get the current state.
          * @return current state
@@ -344,11 +307,13 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             final double closeEnoughTimeInSec = 1e-9;
 
             if (FastMath.abs(dt) > closeEnoughTimeInSec) {
-                throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, FastMath.abs(dt), 0.0,
-                                          closeEnoughTimeInSec);
+
+                // used in case of attitude transition, the attitude computed is not at the current date.
+                final Ephemeris ephemeris = new Ephemeris(states, interpolationPoints, extrapolationThreshold);
+                return ephemeris.getPVCoordinates(date, f);
             }
 
-            return getCurrentState().getPVCoordinates(f);
+            return currentState.getPVCoordinates(f);
 
         }
 

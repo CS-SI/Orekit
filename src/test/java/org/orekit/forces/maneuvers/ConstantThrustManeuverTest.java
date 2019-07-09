@@ -80,8 +80,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> position,
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass)
-        {
+                                                                         final DerivativeStructure mass) {
         try {
             java.lang.reflect.Field firingField = ConstantThrustManeuver.class.getDeclaredField("firing");
             firingField.setAccessible(true);
@@ -156,6 +155,12 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
         Assert.assertFalse(maneuver.dependsOnPositionOnly());
+        Assert.assertNull(maneuver.getAttitudeOverride());
+        Assert.assertEquals(0.0, Vector3D.distance(maneuver.getDirection(), Vector3D.PLUS_K), 1.0e-15);
+        Assert.assertEquals(10.0, maneuver.getDuration(), 1.0e-15);
+        Assert.assertEquals(0.0, date.durationFrom(maneuver.getStartDate()), 1.0e-15);
+        Assert.assertEquals(0.0, date.shiftedBy(10.0).durationFrom(maneuver.getEndDate()), 1.0e-15);
+        Assert.assertEquals("", maneuver.getName());
         ParameterDriver[] drivers = maneuver.getParametersDrivers();
         Assert.assertEquals(2, drivers.length);
         Assert.assertEquals("thrust", drivers[0].getName());
@@ -279,7 +284,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
 
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
@@ -428,7 +433,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
 
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 

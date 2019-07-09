@@ -135,7 +135,7 @@ public enum OrbitType {
                                                                                       final T[] stateVectorDot,
                                                                                       final PositionAngle type,
                                                                                       final FieldAbsoluteDate<T> date,
-                                                                                      final double mu, final Frame frame) {
+                                                                                      final T mu, final Frame frame) {
             final FieldVector3D<T> p = new FieldVector3D<>(stateVector[0], stateVector[1], stateVector[2]);
             final FieldVector3D<T> v = new FieldVector3D<>(stateVector[3], stateVector[4], stateVector[5]);
             final FieldVector3D<T> a;
@@ -267,7 +267,7 @@ public enum OrbitType {
         public <T extends RealFieldElement<T>> FieldCircularOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                      final T[] stateVectorDot, final PositionAngle type,
                                                                                      final FieldAbsoluteDate<T> date,
-                                                                                     final double mu, final Frame frame) {
+                                                                                     final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldCircularOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -406,7 +406,7 @@ public enum OrbitType {
                                                                                         final T[] stateVectorDot,
                                                                                         final PositionAngle type,
                                                                                         final FieldAbsoluteDate<T> date,
-                                                                                        final double mu, final Frame frame) {
+                                                                                        final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldEquinoctialOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -545,7 +545,7 @@ public enum OrbitType {
                                                                                       final T[] stateVectorDot,
                                                                                       final PositionAngle type,
                                                                                       final FieldAbsoluteDate<T> date,
-                                                                                      final double mu, final Frame frame) {
+                                                                                      final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldKeplerianOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -753,7 +753,7 @@ public enum OrbitType {
                                                                                   T[] arrayDot,
                                                                                   PositionAngle type,
                                                                                   FieldAbsoluteDate<T> date,
-                                                                                  double mu, Frame frame);
+                                                                                  T mu, Frame frame);
 
     /** Get parameters drivers initialized from a reference orbit.
      * @param dP user specified position error

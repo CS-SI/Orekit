@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -29,8 +30,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * is the {@link org.orekit.bodies.CelestialBodyFactory#getSun() Sun}, for computing
  * interferences for the telemetry link. Another similar case is when the beacon is
  * another spacecraft, for interferences computation.</p>
- * <p>The default handler behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * <p>The default handler behavior is to {@link Action#STOP stop}
  * propagation when spacecraft enters the proximity zone. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -38,9 +38,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 8.0
  */
 public class AngularSeparationDetector extends AbstractDetector<AngularSeparationDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160519L;
 
     /** Beacon at the center of the proximity zone. */
     private final PVCoordinatesProvider beacon;

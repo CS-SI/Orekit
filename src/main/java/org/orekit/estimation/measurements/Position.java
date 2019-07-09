@@ -55,47 +55,6 @@ public class Position extends AbstractMeasurement<Position> {
      * <p>
      * The measurement must be in the orbit propagation frame.
      * </p>
-     * <p>This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param sigmaPosition theoretical standard deviation on position components
-     * @param baseWeight base weight
-     * @deprecated as of 9.3, replaced by {@link #Position(AbsoluteDate, Vector3D,
-     * double, double, ObservableSatellite)}
-     */
-    @Deprecated
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double sigmaPosition, final double baseWeight) {
-        this(date, position, sigmaPosition, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Constructor with one double for the standard deviation.
-     * <p>The double is the position's standard deviation, common to the 3 position's components.</p>
-     * <p>
-     * The measurement must be in the orbit propagation frame.
-     * </p>
-     * @param date date of the measurement
-     * @param position position
-     * @param sigmaPosition theoretical standard deviation on position components
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @deprecated as of 9.3, replaced by {@link #Position(AbsoluteDate, Vector3D,
-     * double, double, ObservableSatellite)}
-     */
-    @Deprecated
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double sigmaPosition, final double baseWeight,
-                    final int propagatorIndex) {
-        this(date, position, sigmaPosition, baseWeight, new ObservableSatellite(propagatorIndex));
-    }
-
-    /** Constructor with one double for the standard deviation.
-     * <p>The double is the position's standard deviation, common to the 3 position's components.</p>
-     * <p>
-     * The measurement must be in the orbit propagation frame.
-     * </p>
      * @param date date of the measurement
      * @param position position
      * @param sigmaPosition theoretical standard deviation on position components
@@ -114,42 +73,6 @@ public class Position extends AbstractMeasurement<Position> {
              }, baseWeight, satellite);
     }
 
-    /** Constructor with one vector for the standard deviation and default value for propagator index..
-     * <p>The 3-sized vector represents the square root of the diagonal elements of the covariance matrix.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * <p>This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param sigmaPosition 3-sized vector of the standard deviations of the position
-     * @param baseWeight base weight
-     * @deprecated as of 9.3, replaced by {@link #Position(AbsoluteDate, Vector3D,
-     * double[], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double[] sigmaPosition, final double baseWeight) {
-        this(date, position, sigmaPosition, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Constructor with one vector for the standard deviation.
-     * <p>The 3-sized vector represents the square root of the diagonal elements of the covariance matrix.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param sigmaPosition 3-sized vector of the standard deviations of the position
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @deprecated as of 9.3, replaced by {@link #Position(AbsoluteDate, Vector3D,
-     * double[], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double[] sigmaPosition, final double baseWeight, final int propagatorIndex) {
-        this(date, position, sigmaPosition, baseWeight, new ObservableSatellite(propagatorIndex));
-    }
-
     /** Constructor with one vector for the standard deviation.
      * <p>The 3-sized vector represents the square root of the diagonal elements of the covariance matrix.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
@@ -163,44 +86,6 @@ public class Position extends AbstractMeasurement<Position> {
     public Position(final AbsoluteDate date, final Vector3D position,
                     final double[] sigmaPosition, final double baseWeight, final ObservableSatellite satellite) {
         this(date, position, buildPvCovarianceMatrix(sigmaPosition), baseWeight, satellite);
-    }
-
-    /**
-     * Constructor with a covariance matrix and default value for propagator index.
-     * <p>The fact that the covariance matrices are symmetric and positive definite is not checked.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * <p>This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param positionCovarianceMatrix 3x3 covariance matrix of the position
-     * @param baseWeight base weight
-     * @deprecated as of 9.3, replaced by {@link #Position(AbsoluteDate, Vector3D,
-     * double[][], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double[][] positionCovarianceMatrix, final double baseWeight) {
-        this(date, position, positionCovarianceMatrix, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Constructor with full covariance matrix and all inputs.
-     * <p>The fact that the covariance matrix is symmetric and positive definite is not checked.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param covarianceMatrix 6x6 covariance matrix of the PV measurement
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @deprecated as of 9.3, replaced by {@link #Position(AbsoluteDate, Vector3D,
-     * double[][], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double[][] covarianceMatrix, final double baseWeight,
-                    final int propagatorIndex) {
-        this(date, position, covarianceMatrix, baseWeight, new ObservableSatellite(propagatorIndex));
     }
 
     /** Constructor with full covariance matrix and all inputs.
@@ -223,7 +108,7 @@ public class Position extends AbstractMeasurement<Position> {
               new double[] {
                   baseWeight, baseWeight, baseWeight
               }, Arrays.asList(satellite));
-        this.covarianceMatrix = covarianceMatrix;
+        this.covarianceMatrix = covarianceMatrix.clone();
     }
 
     /** Get the position.
@@ -238,15 +123,16 @@ public class Position extends AbstractMeasurement<Position> {
      * @return the covariance matrix
      */
     public double[][] getCovarianceMatrix() {
-        return covarianceMatrix;
+        return covarianceMatrix.clone();
     }
 
     /** Get the correlation coefficients matrix.
-     * <br>This is the 3x3 matrix M such that:</br>
-     * <br>Mij = Pij/(σi.σj)</br>
-     * <br>Where: <ul>
-     * <li> P is the covariance matrix
-     * <li> σi is the i-th standard deviation (σi² = Pii)
+     * <p>This is the 3x3 matrix M such that:
+     * <p>Mij = Pij/(σi.σj)
+     * <p>Where:
+     * <ul>
+     * <li>P is the covariance matrix
+     * <li>σi is the i-th standard deviation (σi² = Pii)
      * </ul>
      * @return the correlation coefficient matrix (3x3)
      */

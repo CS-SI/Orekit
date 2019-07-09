@@ -16,34 +16,49 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldCjSjCoefficient;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldShortPeriodicsInterpolatedCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
-import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
+import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenThirdBodyLinear;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenThirdBodyLinear;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTimeSpanMap;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Third body attraction perturbation to the
@@ -51,23 +66,23 @@ import org.orekit.utils.TimeSpanMap;
  *
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
+ *  @author Bryan Cazabonne (field translation)
  */
 public class DSSTThirdBody implements DSSTForceModel {
 
-    /** Max power for summation. */
-    private static final int    MAX_POWER = 22;
+    /**  Name of the prefix for short period coefficients keys. */
+    public static final String SHORT_PERIOD_PREFIX = "DSST-3rd-body-";
 
-    /** Truncation tolerance for big, eccentric  orbits. */
-    private static final double BIG_TRUNCATION_TOLERANCE = 1.e-1;
+    /** Name of the single parameter of this model: the attraction coefficient. */
+    public static final String ATTRACTION_COEFFICIENT = " attraction coefficient";
 
-    /** Truncation tolerance for small orbits. */
-    private static final double SMALL_TRUNCATION_TOLERANCE = 1.9e-6;
-
-    /** Number of points for interpolation. */
-    private static final int    INTERPOLATION_POINTS = 3;
-
-    /** Maximum power for eccentricity used in short periodic computation. */
-    private static final int    MAX_ECCPOWER_SP = 4;
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
     /** Retrograde factor I.
      *  <p>
@@ -84,146 +99,75 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     private static final int    I = 1;
 
-    /** The 3rd body to consider. */
-    private final CelestialBody    body;
+    /** Number of points for interpolation. */
+    private static final int    INTERPOLATION_POINTS = 3;
 
-    /** Standard gravitational parameter μ for the body in m³/s². */
-    private final double           gm;
+    /** Maximum power for eccentricity used in short periodic computation. */
+    private static final int    MAX_ECCPOWER_SP = 4;
 
-    /** Factorial. */
-    private final double[]         fact;
+    /** Max power for summation. */
+    private static final int    MAX_POWER = 22;
 
     /** V<sub>ns</sub> coefficients. */
     private final TreeMap<NSKey, Double> Vns;
 
-    /** Distance from center of mass of the central body to the 3rd body. */
-    private double R3;
+    /** Max frequency of F. */
+    private int    maxFreqF;
+
+    /** Max frequency of F for field initialization. */
+    private int    maxFieldFreqF;
+
+    /** The 3rd body to consider. */
+    private final CelestialBody    body;
 
     /** Short period terms. */
     private ThirdBodyShortPeriodicCoefficients shortPeriods;
 
-    // Equinoctial elements (according to DSST notation)
-    /** a. */
-    private double a;
-    /** e<sub>x</sub>. */
-    private double k;
-    /** e<sub>y</sub>. */
-    private double h;
-    /** h<sub>x</sub>. */
-    private double q;
-    /** h<sub>y</sub>. */
-    private double p;
+    /** Short period terms. */
+    private Map<Field<?>, FieldThirdBodyShortPeriodicCoefficients<?>> fieldShortPeriods;
 
-    /** Eccentricity. */
-    private double ecc;
+    /** Drivers for third body attraction coefficient. */
+    private final ParameterDriver bodyParameterDriver;
 
-    // Direction cosines of the symmetry axis
-    /** α. */
-    private double alpha;
-    /** β. */
-    private double beta;
-    /** γ. */
-    private double gamma;
+    /** Driver for gravitational parameter. */
+    private final ParameterDriver gmParameterDriver;
 
-    // Common factors for potential computation
-    /** A = n * a². */
-    private double A;
-    /** B = sqrt(1 - e²). */
-    private double B;
-    /** C = 1 + p² + q². */
-    private double C;
-    /** B². */
-    private double BB;
-    /** B³. */
-    private double BBB;
+    /** Hansen objects. */
+    private HansenObjects hansen;
 
-    /** The mean motion (n). */
-    private double meanMotion;
-
-    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private double X;
-    /** &Chi;². */
-    private double XX;
-    /** &Chi;³. */
-    private double XXX;
-    /** -2 * a / A. */
-    private double m2aoA;
-    /** B / A. */
-    private double BoA;
-    /** 1 / (A * B). */
-    private double ooAB;
-    /** -C / (2 * A * B). */
-    private double mCo2AB;
-    /** B / A(1 + B). */
-    private double BoABpo;
-
-    /** Max power for a/R3 in the serie expansion. */
-    private int    maxAR3Pow;
-
-    /** Max power for e in the serie expansion. */
-    private int    maxEccPow;
-
-    /** Max power for e in the serie expansion (for short periodics). */
-    private int    maxEccPowShort;
-
-    /** Max frequency of F. */
-    private int    maxFreqF;
-
-    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The index is s */
-    private final HansenThirdBodyLinear[] hansenObjects;
-
-    /** The current value of the U function. <br/>
-     * Needed for the short periodic contribution */
-    private double U;
-
-    /** Qns coefficients. */
-    private double[][] Qns;
-    /** a / R3 up to power maxAR3Pow. */
-    private double[] aoR3Pow;
-    /** mu3 / R3. */
-    private double muoR3;
-
-    /** b = 1 / (1 + sqrt(1 - e²)) = 1 / (1 + B).*/
-    private double b;
-
-    /** h * &Chi;³. */
-    private double hXXX;
-    /** k * &Chi;³. */
-    private double kXXX;
+    /** Hansen objects for field elements. */
+    private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
     /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
+    private DSFactory factory;
+
+    /** Factory for the DerivativeStructure instances. */
+    private Map<Field<?>, FDSFactory<?>> fieldFactory;
+
+    /** Flag for force model initialization with field elements. */
+    private boolean pendingInitialization;
 
     /** Complete constructor.
      *  @param body the 3rd body to consider
+     *  @param mu central attraction coefficient
      *  @see org.orekit.bodies.CelestialBodyFactory
      */
-    public DSSTThirdBody(final CelestialBody body) {
+    public DSSTThirdBody(final CelestialBody body, final double mu) {
+        bodyParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
+                                                  body.getGM(), MU_SCALE,
+                                                  0.0, Double.POSITIVE_INFINITY);
+        gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                mu, MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY);
+
         this.body = body;
-        this.gm   = body.getGM();
+        this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);
 
-        this.maxAR3Pow = Integer.MIN_VALUE;
-        this.maxEccPow = Integer.MIN_VALUE;
+        pendingInitialization = true;
 
-        this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
-
-        // Factorials computation
-        final int dim = 2 * MAX_POWER;
-        this.fact = new double[dim];
-        fact[0] = 1.;
-        for (int i = 1; i < dim; i++) {
-            fact[i] = i * fact[i - 1];
-        }
-
-        //Initialise the HansenCoefficient generator
-        this.hansenObjects = new HansenThirdBodyLinear[MAX_POWER + 1];
-        for (int s = 0; s <= MAX_POWER; s++) {
-            this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
-        }
-
-        this.factory = new DSFactory(1, 1);
-
+        fieldShortPeriods = new HashMap<>();
+        fieldHansen       = new HashMap<>();
+        fieldFactory      = new HashMap<>();
     }
 
     /** Get third body.
@@ -240,83 +184,25 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  determines the maximal powers for the eccentricity and a/R3 producing
      *  potential terms bigger than a defined tolerance.
      *  </p>
-     *  @param aux auxiliary elements related to the current orbit
-     *  @param meanOnly only mean elements will be used for the propagation
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param type type of the elements used during the propagation
+     *  @param parameters values of the force model parameters
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+                                             final PropagationType type,
+                                             final double[] parameters) {
 
         // Initializes specific parameters.
-        initializeStep(aux);
+        final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
 
-        // Truncation tolerance.
-        final double aor = a / R3;
-        final double tol = ( aor > .3 || (aor > .15  && ecc > .25) ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
+        maxFreqF = context.getMaxFreqF();
 
-        // Utilities for truncation
-        // Set a lower bound for eccentricity
-        final double eo2  = FastMath.max(0.0025, ecc / 2.);
-        final double x2o2 = XX / 2.;
-        final double[] eccPwr = new double[MAX_POWER];
-        final double[] chiPwr = new double[MAX_POWER];
-        eccPwr[0] = 1.;
-        chiPwr[0] = X;
-        for (int i = 1; i < MAX_POWER; i++) {
-            eccPwr[i] = eccPwr[i - 1] * eo2;
-            chiPwr[i] = chiPwr[i - 1] * x2o2;
-        }
+        hansen = new HansenObjects();
 
-        // Auxiliary quantities.
-        final double ao2rxx = aor / (2. * XX);
-        double xmuarn       = ao2rxx * ao2rxx * gm / (X * R3);
-        double term         = 0.;
+        factory = new DSFactory(1, 1);
 
-        // Compute max power for a/R3 and e.
-        maxAR3Pow = 2;
-        maxEccPow = 0;
-        int n     = 2;
-        int m     = 2;
-        int nsmd2 = 0;
-
-        do {
-            // Upper bound for Tnm.
-            term =  xmuarn *
-                   (fact[n + m] / (fact[nsmd2] * fact[nsmd2 + m])) *
-                   (fact[n + m + 1] / (fact[m] * fact[n + 1])) *
-                   (fact[n - m + 1] / fact[n + 1]) *
-                   eccPwr[m] * UpperBounds.getDnl(XX, chiPwr[m], n + 2, m);
-
-            if (term < tol) {
-                if (m == 0) {
-                    break;
-                } else if (m < 2) {
-                    xmuarn *= ao2rxx;
-                    m = 0;
-                    n++;
-                    nsmd2++;
-                } else {
-                    m -= 2;
-                    nsmd2++;
-                }
-            } else {
-                maxAR3Pow = n;
-                maxEccPow = FastMath.max(m, maxEccPow);
-                xmuarn *= ao2rxx;
-                m++;
-                n++;
-            }
-        } while (n < MAX_POWER);
-
-        maxEccPow = FastMath.min(maxAR3Pow, maxEccPow);
-
-        // allocate the array aoR3Pow
-        aoR3Pow = new double[maxAR3Pow + 1];
-
-        maxFreqF = maxAR3Pow + 1;
-        maxEccPowShort = MAX_ECCPOWER_SP;
-
-        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
-        final int jMax = maxAR3Pow + 1;
+        final int jMax = maxFreqF;
         shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
                                                               maxFreqF, body.getName(),
                                                               new TimeSpanMap<Slot>(new Slot(jMax, INTERPOLATION_POINTS)));
@@ -329,103 +215,87 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux) {
+    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                     final PropagationType type,
+                                                                                     final T[] parameters) {
 
-        // Equinoctial elements
-        a = aux.getSma();
-        k = aux.getK();
-        h = aux.getH();
-        q = aux.getQ();
-        p = aux.getP();
+        // Field used by default
+        final Field<T> field = auxiliaryElements.getDate().getField();
 
-        // Eccentricity
-        ecc = aux.getEcc();
+        if (pendingInitialization == true) {
+            // Initializes specific parameters.
+            final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-        // Distance from center of mass of the central body to the 3rd body
-        final Vector3D bodyPos = body.getPVCoordinates(aux.getDate(), aux.getFrame()).getPosition();
-        R3 = bodyPos.getNorm();
+            maxFieldFreqF = context.getMaxFreqF();
 
-        // Direction cosines
-        final Vector3D bodyDir = bodyPos.normalize();
-        alpha = bodyDir.dotProduct(aux.getVectorF());
-        beta  = bodyDir.dotProduct(aux.getVectorG());
-        gamma = bodyDir.dotProduct(aux.getVectorW());
+            fieldFactory.put(field, new FDSFactory<>(field, 1, 1));
+            fieldHansen.put(field, new FieldHansenObjects<>(field));
 
-        // Equinoctial coefficients
-        A = aux.getA();
-        B = aux.getB();
-        C = aux.getC();
-        meanMotion = aux.getMeanMotion();
+            pendingInitialization = false;
+        }
 
-        //&Chi;<sup>-2</sup>.
-        BB = B * B;
-        //&Chi;<sup>-3</sup>.
-        BBB = BB * B;
+        final int jMax = maxFieldFreqF;
+        final FieldThirdBodyShortPeriodicCoefficients<T> ftbspc =
+                        new FieldThirdBodyShortPeriodicCoefficients<>(jMax, INTERPOLATION_POINTS,
+                                                                      maxFieldFreqF, body.getName(),
+                                                                      new FieldTimeSpanMap<>(new FieldSlot<>(jMax,
+                                                                                                             INTERPOLATION_POINTS),
+                                                                                             field));
+        fieldShortPeriods.put(field, ftbspc);
+        return Collections.singletonList(ftbspc);
+    }
 
-        //b = 1 / (1 + B)
-        b = 1. / (1. + B);
+    /** Performs initialization at each integration step for the current force model.
+     *  <p>
+     *  This method aims at being called before mean elements rates computation.
+     *  </p>
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters values of the force model parameters
+     *  @return new force model context
+     */
+    private DSSTThirdBodyContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
+        return new DSSTThirdBodyContext(auxiliaryElements, body, parameters);
+    }
 
-        // &Chi;
-        X = 1. / B;
-        XX = X * X;
-        XXX = X * XX;
-        // -2 * a / A
-        m2aoA = -2. * a / A;
-        // B / A
-        BoA = B / A;
-        // 1 / AB
-        ooAB = 1. / (A * B);
-        // -C / 2AB
-        mCo2AB = -C * ooAB / 2.;
-        // B / A(1 + B)
-        BoABpo = BoA / (1. + B);
-
-        // mu3 / R3
-        muoR3 = gm / R3;
-
-        //h * &Chi;³
-        hXXX = h * XXX;
-        //k * &Chi;³
-        kXXX = k * XXX;
+    /** Performs initialization at each integration step for the current force model.
+     *  <p>
+     *  This method aims at being called before mean elements rates computation.
+     *  </p>
+     *  @param <T> type of the elements
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters values of the force model parameters
+     *  @return new force model context
+     */
+    private <T extends RealFieldElement<T>> FieldDSSTThirdBodyContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                        final T[] parameters) {
+        return new FieldDSSTThirdBodyContext<>(auxiliaryElements, body, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState currentState) {
+    public double[] getMeanElementRate(final SpacecraftState currentState,
+                                       final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
-        // Qns coefficients
-        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, maxEccPow);
-        // a / R3 up to power maxAR3Pow
-        final double aoR3 = a / R3;
-        aoR3Pow[0] = 1.;
-        for (int i = 1; i <= maxAR3Pow; i++) {
-            aoR3Pow[i] = aoR3 * aoR3Pow[i - 1];
-        }
-
-        // Compute potential U derivatives
-        final double[] dU  = computeUDerivatives();
-        final double dUda  = dU[0];
-        final double dUdk  = dU[1];
-        final double dUdh  = dU[2];
-        final double dUdAl = dU[3];
-        final double dUdBe = dU[4];
-        final double dUdGa = dU[5];
+        // Container for attributes
+        final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
+        // Access to potential U derivatives
+        final UAnddU udu = new UAnddU(context, hansen);
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
-        final double UAlphaGamma   = alpha * dUdGa - gamma * dUdAl;
+        final double UAlphaGamma   = context.getAlpha() * udu.getdUdGa() - context.getGamma() * udu.getdUdAl();
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
-        final double UBetaGamma    =  beta * dUdGa - gamma * dUdBe;
+        final double UBetaGamma    =  context.getBeta() * udu.getdUdGa() - context.getGamma() * udu.getdUdBe();
         // Common factor
-        final double pUAGmIqUBGoAB = (p * UAlphaGamma - I * q * UBetaGamma) * ooAB;
+        final double pUAGmIqUBGoAB = (auxiliaryElements.getP() * UAlphaGamma - I * auxiliaryElements.getQ() * UBetaGamma) * context.getOoAB();
 
         // Compute mean elements rates [Eq. 3.1-(1)]
         final double da =  0.;
-        final double dh =  BoA * dUdk + k * pUAGmIqUBGoAB;
-        final double dk = -BoA * dUdh - h * pUAGmIqUBGoAB;
-        final double dp =  mCo2AB * UBetaGamma;
-        final double dq =  mCo2AB * UAlphaGamma * I;
-        final double dM =  m2aoA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUAGmIqUBGoAB;
+        final double dh =  context.getBoA() * udu.getdUdk() + auxiliaryElements.getK() * pUAGmIqUBGoAB;
+        final double dk = -context.getBoA() * udu.getdUdh() - auxiliaryElements.getH() * pUAGmIqUBGoAB;
+        final double dp =  context.getMCo2AB() * UBetaGamma;
+        final double dq =  context.getMCo2AB() * UAlphaGamma * I;
+        final double dM =  context.getM2aoA() * udu.getdUda() + context.getBoABpo() * (auxiliaryElements.getH() * udu.getdUdh() + auxiliaryElements.getK() * udu.getdUdk()) + pUAGmIqUBGoAB;
 
         return new double[] {da, dk, dh, dq, dp, dM};
 
@@ -433,39 +303,81 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState,
+                                                                  final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                  final T[] parameters) {
+
+        // Parameters for array building
+        final Field<T> field = currentState.getDate().getField();
+        final T        zero  = field.getZero();
+
+        // Container for attributes
+        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
+
+        @SuppressWarnings("unchecked")
+        final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
+
+        // Access to potential U derivatives
+        final FieldUAnddU<T> udu = new FieldUAnddU<>(context, fho);
+
+        // Compute cross derivatives [Eq. 2.2-(8)]
+        // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
+        final T UAlphaGamma   = udu.getdUdGa().multiply(context.getAlpha()).subtract(udu.getdUdAl().multiply(context.getGamma()));
+        // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
+        final T UBetaGamma    = udu.getdUdGa().multiply(context.getBeta()).subtract(udu.getdUdBe().multiply(context.getGamma()));
+        // Common factor
+        final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(auxiliaryElements.getP()).subtract(UBetaGamma.multiply(auxiliaryElements.getQ()).multiply(I))).multiply(context.getOoAB());
+
+        // Compute mean elements rates [Eq. 3.1-(1)]
+        final T da =  zero;
+        final T dh =  udu.getdUdk().multiply(context.getBoA()).add(pUAGmIqUBGoAB.multiply(auxiliaryElements.getK()));
+        final T dk =  ((udu.getdUdh().multiply(context.getBoA())).negate()).subtract(pUAGmIqUBGoAB.multiply(auxiliaryElements.getH()));
+        final T dp =  UBetaGamma.multiply(context.getMCo2AB());
+        final T dq =  UAlphaGamma.multiply(I).multiply(context.getMCo2AB());
+        final T dM =  pUAGmIqUBGoAB.add(udu.getdUda().multiply(context.getM2aoA())).add((udu.getdUdh().multiply(auxiliaryElements.getH()).add(udu.getdUdk().multiply(auxiliaryElements.getK()))).multiply(context.getBoABpo()));
+
+        final T[] elements = MathArrays.buildArray(field, 6);
+        elements[0] = da;
+        elements[1] = dk;
+        elements[2] = dh;
+        elements[3] = dq;
+        elements[4] = dp;
+        elements[5] = dM;
+
+        return elements;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates) {
 
         final Slot slot = shortPeriods.createSlot(meanStates);
 
         for (final SpacecraftState meanState : meanStates) {
 
-            initializeStep(new AuxiliaryElements(meanState.getOrbit(), I));
+            // Auxiliary elements related to the current orbit
+            final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            // a / R3 up to power maxAR3Pow
-            final double aoR3 = a / R3;
-            aoR3Pow[0] = 1.;
-            for (int i = 1; i <= maxAR3Pow; i++) {
-                aoR3Pow[i] = aoR3 * aoR3Pow[i - 1];
-            }
+            // Container of attributes
+            final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
 
-            // Qns coefficients
-            Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
             final GeneratingFunctionCoefficients gfCoefs =
-                            new GeneratingFunctionCoefficients(maxAR3Pow, MAX_ECCPOWER_SP, maxAR3Pow + 1);
+                            new GeneratingFunctionCoefficients(context.getMaxAR3Pow(), MAX_ECCPOWER_SP, context.getMaxAR3Pow() + 1, context, hansen);
 
             //Compute additional quantities
             // 2 * a / An
-            final double ax2oAn  = -m2aoA / meanMotion;
+            final double ax2oAn  = -context.getM2aoA() / context.getMeanMotion();
             // B / An
-            final double BoAn  = BoA / meanMotion;
+            final double BoAn    = context.getBoA() / context.getMeanMotion();
             // 1 / ABn
-            final double ooABn = ooAB / meanMotion;
+            final double ooABn   = context.getOoAB() / context.getMeanMotion();
             // C / 2ABn
-            final double Co2ABn = -mCo2AB / meanMotion;
+            final double Co2ABn  = -context.getMCo2AB() / context.getMeanMotion();
             // B / (A * (1 + B) * n)
-            final double BoABpon = BoABpo / meanMotion;
+            final double BoABpon = context.getBoABpo() / context.getMeanMotion();
             // -3 / n²a² = -3 / nA
-            final double m3onA = -3 / (A * meanMotion);
+            final double m3onA   = -3 / (context.getA() * context.getMeanMotion());
 
             //Compute the C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> coefficients.
             for (int j = 1; j < slot.cij.length; j++) {
@@ -473,19 +385,19 @@ public class DSSTThirdBody implements DSSTForceModel {
                 final double[] currentCij = new double[6];
 
                 // Compute the cross derivatives operator :
-                final double SAlphaGammaCj   = alpha * gfCoefs.getdSdgammaCj(j) - gamma * gfCoefs.getdSdalphaCj(j);
-                final double SAlphaBetaCj    = alpha * gfCoefs.getdSdbetaCj(j)  - beta  * gfCoefs.getdSdalphaCj(j);
-                final double SBetaGammaCj    =  beta * gfCoefs.getdSdgammaCj(j) - gamma * gfCoefs.getdSdbetaCj(j);
-                final double ShkCj           =     h * gfCoefs.getdSdkCj(j)     -  k    * gfCoefs.getdSdhCj(j);
-                final double pSagmIqSbgoABnCj = (p * SAlphaGammaCj - I * q * SBetaGammaCj) * ooABn;
-                final double ShkmSabmdSdlCj  =  ShkCj - SAlphaBetaCj - gfCoefs.getdSdlambdaCj(j);
+                final double SAlphaGammaCj    = context.getAlpha() * gfCoefs.getdSdgammaCj(j) - context.getGamma() * gfCoefs.getdSdalphaCj(j);
+                final double SAlphaBetaCj     = context.getAlpha() * gfCoefs.getdSdbetaCj(j)  - context.getBeta()  * gfCoefs.getdSdalphaCj(j);
+                final double SBetaGammaCj     = context.getBeta() * gfCoefs.getdSdgammaCj(j) - context.getGamma() * gfCoefs.getdSdbetaCj(j);
+                final double ShkCj            = auxiliaryElements.getH() * gfCoefs.getdSdkCj(j)     -  auxiliaryElements.getK()    * gfCoefs.getdSdhCj(j);
+                final double pSagmIqSbgoABnCj = (auxiliaryElements.getP() * SAlphaGammaCj - I * auxiliaryElements.getQ() * SBetaGammaCj) * ooABn;
+                final double ShkmSabmdSdlCj   = ShkCj - SAlphaBetaCj - gfCoefs.getdSdlambdaCj(j);
 
                 currentCij[0] =  ax2oAn * gfCoefs.getdSdlambdaCj(j);
-                currentCij[1] =  -(BoAn * gfCoefs.getdSdhCj(j) + h * pSagmIqSbgoABnCj + k * BoABpon * gfCoefs.getdSdlambdaCj(j));
-                currentCij[2] =    BoAn * gfCoefs.getdSdkCj(j) + k * pSagmIqSbgoABnCj - h * BoABpon * gfCoefs.getdSdlambdaCj(j);
-                currentCij[3] =  Co2ABn * (q * ShkmSabmdSdlCj - I * SAlphaGammaCj);
-                currentCij[4] =  Co2ABn * (p * ShkmSabmdSdlCj - SBetaGammaCj);
-                currentCij[5] = -ax2oAn * gfCoefs.getdSdaCj(j) + BoABpon * (h * gfCoefs.getdSdhCj(j) + k * gfCoefs.getdSdkCj(j)) + pSagmIqSbgoABnCj + m3onA * gfCoefs.getSCj(j);
+                currentCij[1] =  -(BoAn * gfCoefs.getdSdhCj(j) + auxiliaryElements.getH() * pSagmIqSbgoABnCj + auxiliaryElements.getK() * BoABpon * gfCoefs.getdSdlambdaCj(j));
+                currentCij[2] =    BoAn * gfCoefs.getdSdkCj(j) + auxiliaryElements.getK() * pSagmIqSbgoABnCj - auxiliaryElements.getH() * BoABpon * gfCoefs.getdSdlambdaCj(j);
+                currentCij[3] =  Co2ABn * (auxiliaryElements.getQ() * ShkmSabmdSdlCj - I * SAlphaGammaCj);
+                currentCij[4] =  Co2ABn * (auxiliaryElements.getP() * ShkmSabmdSdlCj - SBetaGammaCj);
+                currentCij[5] = -ax2oAn * gfCoefs.getdSdaCj(j) + BoABpon * (auxiliaryElements.getH() * gfCoefs.getdSdhCj(j) + auxiliaryElements.getK() * gfCoefs.getdSdkCj(j)) + pSagmIqSbgoABnCj + m3onA * gfCoefs.getSCj(j);
 
                 // add the computed coefficients to the interpolators
                 slot.cij[j].addGridPoint(meanState.getDate(), currentCij);
@@ -494,19 +406,19 @@ public class DSSTThirdBody implements DSSTForceModel {
                 final double[] currentSij = new double[6];
 
                 // Compute the cross derivatives operator :
-                final double SAlphaGammaSj   = alpha * gfCoefs.getdSdgammaSj(j) - gamma * gfCoefs.getdSdalphaSj(j);
-                final double SAlphaBetaSj    = alpha * gfCoefs.getdSdbetaSj(j)  - beta  * gfCoefs.getdSdalphaSj(j);
-                final double SBetaGammaSj    =  beta * gfCoefs.getdSdgammaSj(j) - gamma * gfCoefs.getdSdbetaSj(j);
-                final double ShkSj           =     h * gfCoefs.getdSdkSj(j)     -  k    * gfCoefs.getdSdhSj(j);
-                final double pSagmIqSbgoABnSj = (p * SAlphaGammaSj - I * q * SBetaGammaSj) * ooABn;
-                final double ShkmSabmdSdlSj  =  ShkSj - SAlphaBetaSj - gfCoefs.getdSdlambdaSj(j);
+                final double SAlphaGammaSj    = context.getAlpha() * gfCoefs.getdSdgammaSj(j) - context.getGamma() * gfCoefs.getdSdalphaSj(j);
+                final double SAlphaBetaSj     = context.getAlpha() * gfCoefs.getdSdbetaSj(j)  - context.getBeta()  * gfCoefs.getdSdalphaSj(j);
+                final double SBetaGammaSj     =  context.getBeta() * gfCoefs.getdSdgammaSj(j) - context.getGamma() * gfCoefs.getdSdbetaSj(j);
+                final double ShkSj            =     auxiliaryElements.getH() * gfCoefs.getdSdkSj(j)     -  auxiliaryElements.getK()    * gfCoefs.getdSdhSj(j);
+                final double pSagmIqSbgoABnSj = (auxiliaryElements.getP() * SAlphaGammaSj - I * auxiliaryElements.getQ() * SBetaGammaSj) * ooABn;
+                final double ShkmSabmdSdlSj   =  ShkSj - SAlphaBetaSj - gfCoefs.getdSdlambdaSj(j);
 
                 currentSij[0] =  ax2oAn * gfCoefs.getdSdlambdaSj(j);
-                currentSij[1] =  -(BoAn * gfCoefs.getdSdhSj(j) + h * pSagmIqSbgoABnSj + k * BoABpon * gfCoefs.getdSdlambdaSj(j));
-                currentSij[2] =    BoAn * gfCoefs.getdSdkSj(j) + k * pSagmIqSbgoABnSj - h * BoABpon * gfCoefs.getdSdlambdaSj(j);
-                currentSij[3] =  Co2ABn * (q * ShkmSabmdSdlSj - I * SAlphaGammaSj);
-                currentSij[4] =  Co2ABn * (p * ShkmSabmdSdlSj - SBetaGammaSj);
-                currentSij[5] = -ax2oAn * gfCoefs.getdSdaSj(j) + BoABpon * (h * gfCoefs.getdSdhSj(j) + k * gfCoefs.getdSdkSj(j)) + pSagmIqSbgoABnSj + m3onA * gfCoefs.getSSj(j);
+                currentSij[1] =  -(BoAn * gfCoefs.getdSdhSj(j) + auxiliaryElements.getH() * pSagmIqSbgoABnSj + auxiliaryElements.getK() * BoABpon * gfCoefs.getdSdlambdaSj(j));
+                currentSij[2] =    BoAn * gfCoefs.getdSdkSj(j) + auxiliaryElements.getK() * pSagmIqSbgoABnSj - auxiliaryElements.getH() * BoABpon * gfCoefs.getdSdlambdaSj(j);
+                currentSij[3] =  Co2ABn * (auxiliaryElements.getQ() * ShkmSabmdSdlSj - I * SAlphaGammaSj);
+                currentSij[4] =  Co2ABn * (auxiliaryElements.getP() * ShkmSabmdSdlSj - SBetaGammaSj);
+                currentSij[5] = -ax2oAn * gfCoefs.getdSdaSj(j) + BoABpon * (auxiliaryElements.getH() * gfCoefs.getdSdhSj(j) + auxiliaryElements.getK() * gfCoefs.getdSdkSj(j)) + pSagmIqSbgoABnSj + m3onA * gfCoefs.getSSj(j);
 
                 // add the computed coefficients to the interpolators
                 slot.sij[j].addGridPoint(meanState.getDate(), currentSij);
@@ -515,7 +427,101 @@ public class DSSTThirdBody implements DSSTForceModel {
                     //Compute the C⁰ coefficients using Danielson 2.5.2-15a.
                     final double[] value = new double[6];
                     for (int i = 0; i < 6; ++i) {
-                        value[i] = currentCij[i] * k / 2. + currentSij[i] * h / 2.;
+                        value[i] = currentCij[i] * auxiliaryElements.getK() / 2. + currentSij[i] * auxiliaryElements.getH() / 2.;
+                    }
+                    slot.cij[0].addGridPoint(meanState.getDate(), value);
+                }
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+                                                                       final FieldSpacecraftState<T>... meanStates) {
+
+        // Field used by default
+        final Field<T> field = meanStates[0].getDate().getField();
+
+        final FieldThirdBodyShortPeriodicCoefficients<T> ftbspc = (FieldThirdBodyShortPeriodicCoefficients<T>) fieldShortPeriods.get(field);
+        final FieldSlot<T> slot = ftbspc.createSlot(meanStates);
+        for (final FieldSpacecraftState<T> meanState : meanStates) {
+
+            // Auxiliary elements related to the current orbit
+            final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
+
+            // Container of attributes
+            final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
+
+            final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
+
+            final FieldGeneratingFunctionCoefficients<T> gfCoefs =
+                            new FieldGeneratingFunctionCoefficients<>(context.getMaxAR3Pow(), MAX_ECCPOWER_SP, context.getMaxAR3Pow() + 1, context, fho, field);
+
+            //Compute additional quantities
+            // 2 * a / An
+            final T ax2oAn  = context.getM2aoA().negate().divide(context.getMeanMotion());
+            // B / An
+            final T BoAn    = context.getBoA().divide(context.getMeanMotion());
+            // 1 / ABn
+            final T ooABn   = context.getOoAB().divide(context.getMeanMotion());
+            // C / 2ABn
+            final T Co2ABn  = context.getMCo2AB().negate().divide(context.getMeanMotion());
+            // B / (A * (1 + B) * n)
+            final T BoABpon = context.getBoABpo().divide(context.getMeanMotion());
+            // -3 / n²a² = -3 / nA
+            final T m3onA   = context.getA().multiply(context.getMeanMotion()).divide(-3.).reciprocal();
+
+            //Compute the C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> coefficients.
+            for (int j = 1; j < slot.cij.length; j++) {
+                // First compute the C<sub>i</sub><sup>j</sup> coefficients
+                final T[] currentCij = MathArrays.buildArray(field, 6);
+
+                // Compute the cross derivatives operator :
+                final T SAlphaGammaCj    = context.getAlpha().multiply(gfCoefs.getdSdgammaCj(j)).subtract(context.getGamma().multiply(gfCoefs.getdSdalphaCj(j)));
+                final T SAlphaBetaCj     = context.getAlpha().multiply(gfCoefs.getdSdbetaCj(j)).subtract(context.getBeta().multiply(gfCoefs.getdSdalphaCj(j)));
+                final T SBetaGammaCj     = context.getBeta().multiply(gfCoefs.getdSdgammaCj(j)).subtract(context.getGamma().multiply(gfCoefs.getdSdbetaCj(j)));
+                final T ShkCj            = auxiliaryElements.getH().multiply(gfCoefs.getdSdkCj(j)).subtract(auxiliaryElements.getK().multiply(gfCoefs.getdSdhCj(j)));
+                final T pSagmIqSbgoABnCj = ooABn.multiply(auxiliaryElements.getP().multiply(SAlphaGammaCj).subtract(auxiliaryElements.getQ().multiply(SBetaGammaCj).multiply(I)));
+                final T ShkmSabmdSdlCj   = ShkCj.subtract(SAlphaBetaCj).subtract(gfCoefs.getdSdlambdaCj(j));
+
+                currentCij[0] = ax2oAn.multiply(gfCoefs.getdSdlambdaCj(j));
+                currentCij[1] = BoAn.multiply(gfCoefs.getdSdhCj(j)).add(auxiliaryElements.getH().multiply(pSagmIqSbgoABnCj)).add(auxiliaryElements.getK().multiply(BoABpon).multiply(gfCoefs.getdSdlambdaCj(j))).negate();
+                currentCij[2] = BoAn.multiply(gfCoefs.getdSdkCj(j)).add(auxiliaryElements.getK().multiply(pSagmIqSbgoABnCj)).subtract(auxiliaryElements.getH().multiply(BoABpon).multiply(gfCoefs.getdSdlambdaCj(j)));
+                currentCij[3] = Co2ABn.multiply(auxiliaryElements.getQ().multiply(ShkmSabmdSdlCj).subtract(SAlphaGammaCj.multiply(I)));
+                currentCij[4] = Co2ABn.multiply(auxiliaryElements.getP().multiply(ShkmSabmdSdlCj).subtract(SBetaGammaCj));
+                currentCij[5] = ax2oAn.negate().multiply(gfCoefs.getdSdaCj(j)).add(BoABpon.multiply(auxiliaryElements.getH().multiply(gfCoefs.getdSdhCj(j)).add(auxiliaryElements.getK().multiply(gfCoefs.getdSdkCj(j))))).add(pSagmIqSbgoABnCj).add(m3onA.multiply(gfCoefs.getSCj(j)));
+
+                // add the computed coefficients to the interpolators
+                slot.cij[j].addGridPoint(meanState.getDate(), currentCij);
+
+                // Compute the S<sub>i</sub><sup>j</sup> coefficients
+                final T[] currentSij = MathArrays.buildArray(field, 6);
+
+                // Compute the cross derivatives operator :
+                final T SAlphaGammaSj    = context.getAlpha().multiply(gfCoefs.getdSdgammaSj(j)).subtract(context.getGamma().multiply(gfCoefs.getdSdalphaSj(j)));
+                final T SAlphaBetaSj     = context.getAlpha().multiply(gfCoefs.getdSdbetaSj(j)).subtract(context.getBeta().multiply(gfCoefs.getdSdalphaSj(j)));
+                final T SBetaGammaSj     = context.getBeta().multiply(gfCoefs.getdSdgammaSj(j)).subtract(context.getGamma().multiply(gfCoefs.getdSdbetaSj(j)));
+                final T ShkSj            = auxiliaryElements.getH().multiply(gfCoefs.getdSdkSj(j)).subtract(auxiliaryElements.getK().multiply(gfCoefs.getdSdhSj(j)));
+                final T pSagmIqSbgoABnSj = ooABn.multiply(auxiliaryElements.getP().multiply(SAlphaGammaSj).subtract(auxiliaryElements.getQ().multiply(SBetaGammaSj).multiply(I)));
+                final T ShkmSabmdSdlSj   = ShkSj.subtract(SAlphaBetaSj).subtract(gfCoefs.getdSdlambdaSj(j));
+
+                currentSij[0] = ax2oAn.multiply(gfCoefs.getdSdlambdaSj(j));
+                currentSij[1] = BoAn.multiply(gfCoefs.getdSdhSj(j)).add(auxiliaryElements.getH().multiply(pSagmIqSbgoABnSj)).add(auxiliaryElements.getK().multiply(BoABpon).multiply(gfCoefs.getdSdlambdaSj(j))).negate();
+                currentSij[2] = BoAn.multiply(gfCoefs.getdSdkSj(j)).add(auxiliaryElements.getK().multiply(pSagmIqSbgoABnSj)).subtract(auxiliaryElements.getH().multiply(BoABpon).multiply(gfCoefs.getdSdlambdaSj(j)));
+                currentSij[3] = Co2ABn.multiply(auxiliaryElements.getQ().multiply(ShkmSabmdSdlSj).subtract(SAlphaGammaSj.multiply(I)));
+                currentSij[4] = Co2ABn.multiply(auxiliaryElements.getP().multiply(ShkmSabmdSdlSj).subtract(SBetaGammaSj));
+                currentSij[5] = ax2oAn.negate().multiply(gfCoefs.getdSdaSj(j)).add(BoABpon.multiply(auxiliaryElements.getH().multiply(gfCoefs.getdSdhSj(j)).add(auxiliaryElements.getK().multiply(gfCoefs.getdSdkSj(j))))).add(pSagmIqSbgoABnSj).add(m3onA.multiply(gfCoefs.getSSj(j)));
+
+                // add the computed coefficients to the interpolators
+                slot.sij[j].addGridPoint(meanState.getDate(), currentSij);
+
+                if (j == 1) {
+                    //Compute the C⁰ coefficients using Danielson 2.5.2-15a.
+                    final T[] value = MathArrays.buildArray(field, 6);
+                    for (int i = 0; i < 6; ++i) {
+                        value[i] = currentCij[i].multiply(auxiliaryElements.getK()).divide(2.).add(currentSij[i].multiply(auxiliaryElements.getH()).divide(2.));
                     }
                     slot.cij[0].addGridPoint(meanState.getDate(), value);
                 }
@@ -529,103 +535,25 @@ public class DSSTThirdBody implements DSSTForceModel {
         return null;
     }
 
-    /** Compute potential derivatives.
-     *  @return derivatives of the potential with respect to orbital parameters
-     */
-    private double[] computeUDerivatives() {
-
-        // Gs and Hs coefficients
-        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
-
-        // Initialise U.
-        U = 0.;
-
-        // Potential derivatives
-        double dUda  = 0.;
-        double dUdk  = 0.;
-        double dUdh  = 0.;
-        double dUdAl = 0.;
-        double dUdBe = 0.;
-        double dUdGa = 0.;
-
-        for (int s = 0; s <= maxEccPow; s++) {
-            // initialise the Hansen roots
-            this.hansenObjects[s].computeInitValues(B, BB, BBB);
-
-            // Get the current Gs coefficient
-            final double gs = GsHs[0][s];
-
-            // Compute Gs partial derivatives from 3.1-(9)
-            double dGsdh  = 0.;
-            double dGsdk  = 0.;
-            double dGsdAl = 0.;
-            double dGsdBe = 0.;
-            if (s > 0) {
-                // First get the G(s-1) and the H(s-1) coefficients
-                final double sxGsm1 = s * GsHs[0][s - 1];
-                final double sxHsm1 = s * GsHs[1][s - 1];
-                // Then compute derivatives
-                dGsdh  = beta  * sxGsm1 - alpha * sxHsm1;
-                dGsdk  = alpha * sxGsm1 + beta  * sxHsm1;
-                dGsdAl = k * sxGsm1 - h * sxHsm1;
-                dGsdBe = h * sxGsm1 + k * sxHsm1;
-            }
-
-            // Kronecker symbol (2 - delta(0,s))
-            final double delta0s = (s == 0) ? 1. : 2.;
-
-            for (int n = FastMath.max(2, s); n <= maxAR3Pow; n++) {
-                // (n - s) must be even
-                if ((n - s) % 2 == 0) {
-                    // Extract data from previous computation :
-                    final double kns   = this.hansenObjects[s].getValue(n, B);
-                    final double dkns  = this.hansenObjects[s].getDerivative(n, B);
-
-                    final double vns   = Vns.get(new NSKey(n, s));
-                    final double coef0 = delta0s * aoR3Pow[n] * vns;
-                    final double coef1 = coef0 * Qns[n][s];
-                    final double coef2 = coef1 * kns;
-                    // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
-                    // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
-                    final double dqns = (n == s) ? 0. : Qns[n][s + 1];
-
-                    //Compute U:
-                    U += coef2 * gs;
-
-                    // Compute dU / da :
-                    dUda += coef2 * n * gs;
-                    // Compute dU / dh
-                    dUdh += coef1 * (kns * dGsdh + hXXX * gs * dkns);
-                    // Compute dU / dk
-                    dUdk += coef1 * (kns * dGsdk + kXXX * gs * dkns);
-                    // Compute dU / dAlpha
-                    dUdAl += coef2 * dGsdAl;
-                    // Compute dU / dBeta
-                    dUdBe += coef2 * dGsdBe;
-                    // Compute dU / dGamma
-                    dUdGa += coef0 * kns * dqns * gs;
-                }
-            }
-        }
-
-        // multiply by mu3 / R3
-        U *= muoR3;
-
-        return new double[] {
-            dUda  * muoR3 / a,
-            dUdk  * muoR3,
-            dUdh  * muoR3,
-            dUdAl * muoR3,
-            dUdBe * muoR3,
-            dUdGa * muoR3
-        };
-
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+        return null;
     }
 
     /** {@inheritDoc} */
     @Override
     public void registerAttitudeProvider(final AttitudeProvider provider) {
         //nothing is done since this contribution is not sensitive to attitude
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[] {
+            bodyParameterDriver,
+            gmParameterDriver
+        };
     }
 
     /** Computes the C<sup>j</sup> and S<sup>j</sup> coefficients Danielson 4.2-(15,16)
@@ -702,17 +630,18 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param nMax maximum value for n index
          * @param sMax maximum value for s index
          * @param jMax maximum value for j index
+         * @param context container for attributes
          */
-        FourierCjSjCoefficients(final int nMax, final int sMax, final int jMax) {
+        FourierCjSjCoefficients(final int nMax, final int sMax, final int jMax, final DSSTThirdBodyContext context) {
             //Save parameters
             this.nMax = nMax;
             this.sMax = sMax;
             this.jMax = jMax;
 
             //Create objects
-            wnsjEtomjmsCoefficient = new WnsjEtomjmsCoefficient();
-            ABDECoefficients = new CjSjAlphaBetaKH();
-            gns = new GnsCoefficients(nMax, sMax);
+            wnsjEtomjmsCoefficient = new WnsjEtomjmsCoefficient(context);
+            ABDECoefficients = new CjSjAlphaBetaKH(context);
+            gns = new GnsCoefficients(nMax, sMax, context);
 
             //create arays
             this.cj = new double[7][jMax + 1];
@@ -720,13 +649,16 @@ public class DSSTThirdBody implements DSSTForceModel {
             this.cjlambda = new double[jMax];
             this.sjlambda = new double[jMax];
 
-            computeCoefficients();
+            computeCoefficients(context);
         }
 
         /**
          * Compute all coefficients.
+         * @param context container for attributes
          */
-        private void computeCoefficients() {
+        private void computeCoefficients(final DSSTThirdBodyContext context) {
+
+            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
             for (int j = 1; j <= jMax; j++) {
                 // initialise the coefficients
@@ -751,10 +683,10 @@ public class DSSTThirdBody implements DSSTForceModel {
                         // check if n-s is even
                         if ((n - s) % 2 == 0) {
                             // compute the coefficient e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n+1, s</sup> and its derivatives
-                            final double[] wjnp1semjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(j, s, n + 1);
+                            final double[] wjnp1semjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(j, s, n + 1, context);
 
                             // compute the coefficient e<sup>-|j-s|</sup>*w<sub>-j</sub><sup>n+1, s</sup> and its derivatives
-                            final double[] wmjnp1semjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(-j, s, n + 1);
+                            final double[] wmjnp1semjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(-j, s, n + 1, context);
 
                             // compute common factors
                             final double coef1 = -(wjnp1semjms[0] * ABDECoefficients.getCoefA() + wmjnp1semjms[0] * ABDECoefficients.getCoefB());
@@ -833,10 +765,10 @@ public class DSSTThirdBody implements DSSTForceModel {
                             //Check if n is greater or equal to j and j is at most jMax-1
                             if (n >= j && j < jMax) {
                                 // compute the coefficient e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> and its derivatives
-                                final double[] wjnsemjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(j, s, n);
+                                final double[] wjnsemjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(j, s, n, context);
 
                                 // compute the coefficient e<sup>-|j-s|</sup>*w<sub>-j</sub><sup>n, s</sup> and its derivatives
-                                final double[] wmjnsemjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(-j, s, n);
+                                final double[] wmjnsemjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(-j, s, n, context);
 
                                 //Compute C<sup>j</sup><sub>,λ</sub>
                                 cjlambda[j] += gns.getGns(n, s) * (wjnsemjms[0] * ABDECoefficients.getCoefD() + wmjnsemjms[0] * ABDECoefficients.getCoefE());
@@ -856,7 +788,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             //They are evaluated at the final point.
 
             //C⁰<sub>,λ</sub>
-            cjlambda[0] = k * cjlambda[1] / 2. + h * sjlambda[1] / 2.;
+            cjlambda[0] = auxiliaryElements.getK() * cjlambda[1] / 2. + auxiliaryElements.getH() * sjlambda[1] / 2.;
         }
 
         /** Get the Fourier coefficient C<sup>j</sup>.
@@ -1001,6 +933,394 @@ public class DSSTThirdBody implements DSSTForceModel {
         }
     }
 
+    /** Computes the C<sup>j</sup> and S<sup>j</sup> coefficients Danielson 4.2-(15,16)
+     * and their derivatives.
+     *  <p>
+     *  CS Mathematical Report $3.5.3.2
+     *  </p>
+     */
+    private class FieldFourierCjSjCoefficients <T extends RealFieldElement<T>> {
+
+        /** The coefficients G<sub>n, s</sub> and their derivatives. */
+        private final FieldGnsCoefficients<T> gns;
+
+        /** the coefficients e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> and their derivatives by h and k. */
+        private final FieldWnsjEtomjmsCoefficient<T> wnsjEtomjmsCoefficient;
+
+        /** The terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (α, β) or (k, h). */
+        private final FieldCjSjAlphaBetaKH<T> ABDECoefficients;
+
+        /** The Fourier coefficients C<sup>j</sup> and their derivatives.
+         * <p>
+         * Each column of the matrix contains the following values: <br/>
+         * - C<sup>j</sup> <br/>
+         * - dC<sup>j</sup> / da <br/>
+         * - dC<sup>j</sup> / dk <br/>
+         * - dC<sup>j</sup> / dh <br/>
+         * - dC<sup>j</sup> / dα <br/>
+         * - dC<sup>j</sup> / dβ <br/>
+         * - dC<sup>j</sup> / dγ <br/>
+         * </p>
+         */
+        private final T[][] cj;
+
+        /** The S<sup>j</sup> coefficients and their derivatives.
+         * <p>
+         * Each column of the matrix contains the following values: <br/>
+         * - S<sup>j</sup> <br/>
+         * - dS<sup>j</sup> / da <br/>
+         * - dS<sup>j</sup> / dk <br/>
+         * - dS<sup>j</sup> / dh <br/>
+         * - dS<sup>j</sup> / dα <br/>
+         * - dS<sup>j</sup> / dβ <br/>
+         * - dS<sup>j</sup> / dγ <br/>
+         * </p>
+         */
+        private final T[][] sj;
+
+        /** The Coefficients C<sup>j</sup><sub>,λ</sub>.
+         * <p>
+         * See Danielson 4.2-21
+         * </p>
+         */
+        private final T[] cjlambda;
+
+        /** The Coefficients S<sup>j</sup><sub>,λ</sub>.
+        * <p>
+        * See Danielson 4.2-21
+        * </p>
+        */
+        private final T[] sjlambda;
+
+        /** Zero. */
+        private final T zero;
+
+        /** Maximum value for n. */
+        private final int nMax;
+
+        /** Maximum value for s. */
+        private final int sMax;
+
+        /** Maximum value for j. */
+        private final int jMax;
+
+        /**
+         * Private constructor.
+         *
+         * @param nMax maximum value for n index
+         * @param sMax maximum value for s index
+         * @param jMax maximum value for j index
+         * @param context container for attributes
+         * @param field field used by default
+         */
+        FieldFourierCjSjCoefficients(final int nMax, final int sMax, final int jMax,
+                                     final FieldDSSTThirdBodyContext<T> context,
+                                     final Field<T> field) {
+            //Zero
+            this.zero = field.getZero();
+
+            //Save parameters
+            this.nMax = nMax;
+            this.sMax = sMax;
+            this.jMax = jMax;
+
+            //Create objects
+            wnsjEtomjmsCoefficient = new FieldWnsjEtomjmsCoefficient<>(context, field);
+            ABDECoefficients       = new FieldCjSjAlphaBetaKH<>(context, field);
+            gns                    = new FieldGnsCoefficients<>(nMax, sMax, context, field);
+
+            //create arays
+            this.cj = MathArrays.buildArray(field, 7, jMax + 1);
+            this.sj = MathArrays.buildArray(field, 7, jMax + 1);
+            this.cjlambda = MathArrays.buildArray(field, jMax);
+            this.sjlambda = MathArrays.buildArray(field, jMax);
+
+            computeCoefficients(context, field);
+        }
+
+        /**
+         * Compute all coefficients.
+         * @param context container for attributes
+         * @param field field used by default
+         */
+        private void computeCoefficients(final FieldDSSTThirdBodyContext<T> context,
+                                         final Field<T> field) {
+
+            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+            for (int j = 1; j <= jMax; j++) {
+                // initialise the coefficients
+                for (int i = 0; i <= 6; i++) {
+                    cj[i][j] = zero;
+                    sj[i][j] = zero;
+                }
+                if (j < jMax) {
+                    // initialise the C<sup>j</sup><sub>,λ</sub> and S<sup>j</sup><sub>,λ</sub> coefficients
+                    cjlambda[j] = zero;
+                    sjlambda[j] = zero;
+                }
+                for (int s = 0; s <= sMax; s++) {
+
+                    // Compute the coefficients A<sub>j, s</sub>, B<sub>j, s</sub>, D<sub>j, s</sub> and E<sub>j, s</sub>
+                    ABDECoefficients.computeCoefficients(j, s);
+
+                    // compute starting value for n
+                    final int minN = FastMath.max(2, FastMath.max(j - 1, s));
+
+                    for (int n = minN; n <= nMax; n++) {
+                        // check if n-s is even
+                        if ((n - s) % 2 == 0) {
+                            // compute the coefficient e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n+1, s</sup> and its derivatives
+                            final T[] wjnp1semjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(j, s, n + 1, context, field);
+
+                            // compute the coefficient e<sup>-|j-s|</sup>*w<sub>-j</sub><sup>n+1, s</sup> and its derivatives
+                            final T[] wmjnp1semjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(-j, s, n + 1, context, field);
+
+                            // compute common factors
+                            final T coef1 = (wjnp1semjms[0].multiply(ABDECoefficients.getCoefA()).add(wmjnp1semjms[0].multiply(ABDECoefficients.getCoefB()))).negate();
+                            final T coef2 =  wjnp1semjms[0].multiply(ABDECoefficients.getCoefD()).add(wmjnp1semjms[0].multiply(ABDECoefficients.getCoefE()));
+
+                            //Compute C<sup>j</sup>
+                            cj[0][j] = cj[0][j].add(gns.getGns(n, s).multiply(coef1));
+                            //Compute dC<sup>j</sup> / da
+                            cj[1][j] = cj[1][j].add(gns.getdGnsda(n, s).multiply(coef1));
+                            //Compute dC<sup>j</sup> / dk
+                            cj[2][j] = cj[2][j].add(gns.getGns(n, s).negate().
+                                       multiply(
+                                            wjnp1semjms[1].multiply(ABDECoefficients.getCoefA()).
+                                            add(wjnp1semjms[0].multiply(ABDECoefficients.getdCoefAdk())).
+                                            add(wmjnp1semjms[1].multiply(ABDECoefficients.getCoefB())).
+                                            add(wmjnp1semjms[0].multiply(ABDECoefficients.getdCoefBdk()))
+                                         ));
+                            //Compute dC<sup>j</sup> / dh
+                            cj[3][j] = cj[3][j].add(gns.getGns(n, s).negate().
+                                       multiply(
+                                             wjnp1semjms[2].multiply(ABDECoefficients.getCoefA()).
+                                             add(wjnp1semjms[0].multiply(ABDECoefficients.getdCoefAdh())).
+                                             add(wmjnp1semjms[2].multiply(ABDECoefficients.getCoefB())).
+                                             add(wmjnp1semjms[0].multiply(ABDECoefficients.getdCoefBdh()))
+                                             ));
+                            //Compute dC<sup>j</sup> / dα
+                            cj[4][j] = cj[4][j].add(gns.getGns(n, s).negate().
+                                       multiply(
+                                           wjnp1semjms[0].multiply(ABDECoefficients.getdCoefAdalpha()).
+                                           add(wmjnp1semjms[0].multiply(ABDECoefficients.getdCoefBdalpha()))
+                                       ));
+                            //Compute dC<sup>j</sup> / dβ
+                            cj[5][j] = cj[5][j].add(gns.getGns(n, s).negate().
+                                       multiply(
+                                           wjnp1semjms[0].multiply(ABDECoefficients.getdCoefAdbeta()).
+                                           add(wmjnp1semjms[0].multiply(ABDECoefficients.getdCoefBdbeta()))
+                                       ));
+                            //Compute dC<sup>j</sup> / dγ
+                            cj[6][j] = cj[6][j].add(gns.getdGnsdgamma(n, s).multiply(coef1));
+
+                            //Compute S<sup>j</sup>
+                            sj[0][j] = sj[0][j].add(gns.getGns(n, s).multiply(coef2));
+                            //Compute dS<sup>j</sup> / da
+                            sj[1][j] = sj[1][j].add(gns.getdGnsda(n, s).multiply(coef2));
+                            //Compute dS<sup>j</sup> / dk
+                            sj[2][j] = sj[2][j].add(gns.getGns(n, s).
+                                       multiply(
+                                           wjnp1semjms[1].multiply(ABDECoefficients.getCoefD()).
+                                           add(wjnp1semjms[0].multiply(ABDECoefficients.getdCoefDdk())).
+                                           add(wmjnp1semjms[1].multiply(ABDECoefficients.getCoefE())).
+                                           add(wmjnp1semjms[0].multiply(ABDECoefficients.getdCoefEdk()))
+                                       ));
+                            //Compute dS<sup>j</sup> / dh
+                            sj[3][j] = sj[3][j].add(gns.getGns(n, s).
+                                       multiply(
+                                           wjnp1semjms[2].multiply(ABDECoefficients.getCoefD()).
+                                           add(wjnp1semjms[0].multiply(ABDECoefficients.getdCoefDdh())).
+                                           add(wmjnp1semjms[2].multiply(ABDECoefficients.getCoefE())).
+                                           add(wmjnp1semjms[0].multiply(ABDECoefficients.getdCoefEdh()))
+                                       ));
+                            //Compute dS<sup>j</sup> / dα
+                            sj[4][j] = sj[4][j].add(gns.getGns(n, s).
+                                       multiply(
+                                            wjnp1semjms[0].multiply(ABDECoefficients.getdCoefDdalpha()).
+                                            add(wmjnp1semjms[0].multiply(ABDECoefficients.getdCoefEdalpha()))
+                                       ));
+                            //Compute dS<sup>j</sup> / dβ
+                            sj[5][j] = sj[5][j].add(gns.getGns(n, s).
+                                        multiply(
+                                            wjnp1semjms[0].multiply(ABDECoefficients.getdCoefDdbeta()).
+                                            add(wmjnp1semjms[0].multiply(ABDECoefficients.getdCoefEdbeta()))
+                                       ));
+                            //Compute dS<sup>j</sup> / dγ
+                            sj[6][j] = sj[6][j].add(gns.getdGnsdgamma(n, s).multiply(coef2));
+
+                            //Check if n is greater or equal to j and j is at most jMax-1
+                            if (n >= j && j < jMax) {
+                                // compute the coefficient e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> and its derivatives
+                                final T[] wjnsemjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(j, s, n, context, field);
+
+                                // compute the coefficient e<sup>-|j-s|</sup>*w<sub>-j</sub><sup>n, s</sup> and its derivatives
+                                final T[] wmjnsemjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(-j, s, n, context, field);
+
+                                //Compute C<sup>j</sup><sub>,λ</sub>
+                                cjlambda[j] = cjlambda[j].add(gns.getGns(n, s).multiply(wjnsemjms[0].multiply(ABDECoefficients.getCoefD()).add(wmjnsemjms[0].multiply(ABDECoefficients.getCoefE()))));
+                                //Compute S<sup>j</sup><sub>,λ</sub>
+                                sjlambda[j] = sjlambda[j].add(gns.getGns(n, s).multiply(wjnsemjms[0].multiply(ABDECoefficients.getCoefA()).add(wmjnsemjms[0].multiply(ABDECoefficients.getCoefB()))));
+                            }
+                        }
+                    }
+                }
+                // Divide by j
+                for (int i = 0; i <= 6; i++) {
+                    cj[i][j] = cj[i][j].divide(j);
+                    sj[i][j] = sj[i][j].divide(j);
+                }
+            }
+            //The C⁰ coefficients are not computed here.
+            //They are evaluated at the final point.
+
+            //C⁰<sub>,λ</sub>
+            cjlambda[0] = auxiliaryElements.getK().multiply(cjlambda[1]).divide(2.).add(auxiliaryElements.getH().multiply(sjlambda[1]).divide(2.));
+        }
+
+        /** Get the Fourier coefficient C<sup>j</sup>.
+         * @param j j index
+         * @return C<sup>j</sup>
+         */
+        public T getCj(final int j) {
+            return cj[0][j];
+        }
+
+        /** Get the derivative dC<sup>j</sup>/da.
+         * @param j j index
+         * @return dC<sup>j</sup>/da
+         */
+        public T getdCjda(final int j) {
+            return cj[1][j];
+        }
+
+        /** Get the derivative dC<sup>j</sup>/dk.
+         * @param j j index
+         * @return dC<sup>j</sup>/dk
+         */
+        public T getdCjdk(final int j) {
+            return cj[2][j];
+        }
+
+        /** Get the derivative dC<sup>j</sup>/dh.
+         * @param j j index
+         * @return dC<sup>j</sup>/dh
+         */
+        public T getdCjdh(final int j) {
+            return cj[3][j];
+        }
+
+        /** Get the derivative dC<sup>j</sup>/dα.
+         * @param j j index
+         * @return dC<sup>j</sup>/dα
+         */
+        public T getdCjdalpha(final int j) {
+            return cj[4][j];
+        }
+
+        /** Get the derivative dC<sup>j</sup>/dβ.
+         * @param j j index
+         * @return dC<sup>j</sup>/dβ
+         */
+        public T getdCjdbeta(final int j) {
+            return cj[5][j];
+        }
+
+        /** Get the derivative dC<sup>j</sup>/dγ.
+         * @param j j index
+         * @return dC<sup>j</sup>/dγ
+         */
+        public T getdCjdgamma(final int j) {
+            return cj[6][j];
+        }
+
+        /** Get the Fourier coefficient S<sup>j</sup>.
+         * @param j j index
+         * @return S<sup>j</sup>
+         */
+        public T getSj(final int j) {
+            return sj[0][j];
+        }
+
+        /** Get the derivative dS<sup>j</sup>/da.
+         * @param j j index
+         * @return dS<sup>j</sup>/da
+         */
+        public T getdSjda(final int j) {
+            return sj[1][j];
+        }
+
+        /** Get the derivative dS<sup>j</sup>/dk.
+         * @param j j index
+         * @return dS<sup>j</sup>/dk
+         */
+        public T getdSjdk(final int j) {
+            return sj[2][j];
+        }
+
+        /** Get the derivative dS<sup>j</sup>/dh.
+         * @param j j index
+         * @return dS<sup>j</sup>/dh
+         */
+        public T getdSjdh(final int j) {
+            return sj[3][j];
+        }
+
+        /** Get the derivative dS<sup>j</sup>/dα.
+         * @param j j index
+         * @return dS<sup>j</sup>/dα
+         */
+        public T getdSjdalpha(final int j) {
+            return sj[4][j];
+        }
+
+        /** Get the derivative dS<sup>j</sup>/dβ.
+         * @param j j index
+         * @return dS<sup>j</sup>/dβ
+         */
+        public T getdSjdbeta(final int j) {
+            return sj[5][j];
+        }
+
+        /** Get the derivative dS<sup>j</sup>/dγ.
+         * @param j j index
+         * @return dS<sup>j</sup>/dγ
+         */
+        public T getdSjdgamma(final int j) {
+            return sj[6][j];
+        }
+
+        /** Get the coefficient C⁰<sub>,λ</sub>.
+         * @return C⁰<sub>,λ</sub>
+         */
+        public T getC0Lambda() {
+            return cjlambda[0];
+        }
+
+        /** Get the coefficient C<sup>j</sup><sub>,λ</sub>.
+         * @param j j index
+         * @return C<sup>j</sup><sub>,λ</sub>
+         */
+        public T getCjLambda(final int j) {
+            if (j < 1 || j >= jMax) {
+                return zero;
+            }
+            return cjlambda[j];
+        }
+
+        /** Get the coefficient S<sup>j</sup><sub>,λ</sub>.
+         * @param j j index
+         * @return S<sup>j</sup><sub>,λ</sub>
+         */
+        public T getSjLambda(final int j) {
+            if (j < 1 || j >= jMax) {
+                return zero;
+            }
+            return sjlambda[j];
+        }
+    }
+
     /** This class covers the coefficients e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> and their derivatives by h and k.
      *
      * <p>
@@ -1058,47 +1378,51 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /**
          * Standard constructor.
+         * @param context container for attributes
          */
-        WnsjEtomjmsCoefficient() {
+        WnsjEtomjmsCoefficient(final DSSTThirdBodyContext context) {
+
+            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
             //initialise fields
-            c = ecc * b;
+            c = auxiliaryElements.getEcc() * context.getb();
             final double c2 = c * c;
 
             //b² * χ
-            final double b2Chi = b * b * X;
+            final double b2Chi = context.getb() * context.getb() * context.getX();
             //Compute derivatives of b
-            dbdh = h * b2Chi;
-            dbdk = k * b2Chi;
+            dbdh = auxiliaryElements.getH() * b2Chi;
+            dbdk = auxiliaryElements.getK() * b2Chi;
 
             //Compute derivatives of c
-            if (ecc == 0.0) {
+            if (auxiliaryElements.getEcc() == 0.0) {
                 // we are at a perfectly circular orbit singularity here
                 // we arbitrarily consider the perigee is along the X axis,
                 // i.e cos(ω + Ω) = h/ecc 1 and sin(ω + Ω) = k/ecc = 0
-                dcdh = ecc * dbdh + b;
-                dcdk = ecc * dbdk;
+                dcdh = auxiliaryElements.getEcc() * dbdh + context.getb();
+                dcdk = auxiliaryElements.getEcc() * dbdk;
             } else {
-                dcdh = ecc * dbdh + b * h / ecc;
-                dcdk = ecc * dbdk + b * k / ecc;
+                dcdh = auxiliaryElements.getEcc() * dbdh + context.getb() * auxiliaryElements.getH() / auxiliaryElements.getEcc();
+                dcdk = auxiliaryElements.getEcc() * dbdk + context.getb() * auxiliaryElements.getK() / auxiliaryElements.getEcc();
             }
 
             //Compute the powers (1 - c²)<sup>n</sup> and (1 + c²)<sup>n</sup>
-            omc2tn = new double[maxAR3Pow + maxFreqF + 2];
-            opc2tn = new double[maxAR3Pow + maxFreqF + 2];
+            omc2tn = new double[context.getMaxAR3Pow() + context.getMaxFreqF() + 2];
+            opc2tn = new double[context.getMaxAR3Pow() + context.getMaxFreqF() + 2];
             final double omc2 = 1. - c2;
             final double opc2 = 1. + c2;
             omc2tn[0] = 1.;
             opc2tn[0] = 1.;
-            for (int i = 1; i <= maxAR3Pow + maxFreqF + 1; i++) {
+            for (int i = 1; i <= context.getMaxAR3Pow() + context.getMaxFreqF() + 1; i++) {
                 omc2tn[i] = omc2tn[i - 1] * omc2;
                 opc2tn[i] = opc2tn[i - 1] * opc2;
             }
 
             //Compute the powers of b
-            btjms = new double[maxAR3Pow + maxFreqF + 1];
+            btjms = new double[context.getMaxAR3Pow() + context.getMaxFreqF() + 1];
             btjms[0] = 1.;
-            for (int i = 1; i <= maxAR3Pow + maxFreqF; i++) {
-                btjms[i] = btjms[i - 1] * b;
+            for (int i = 1; i <= context.getMaxAR3Pow() + context.getMaxFreqF(); i++) {
+                btjms[i] = btjms[i - 1] * context.getb();
             }
         }
 
@@ -1107,9 +1431,10 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param j j index
          * @param s s index
          * @param n n index
+         * @param context container for attributes
          * @return an array containing the value of the coefficient at index 0, the derivative by k at index 1 and the derivative by h at index 2
          */
-        public double[] computeWjnsEmjmsAndDeriv(final int j, final int s, final int n) {
+        public double[] computeWjnsEmjmsAndDeriv(final int j, final int s, final int n, final DSSTThirdBodyContext context) {
             final double[] wjnsemjms = new double[] {0., 0., 0.};
 
             // |j|
@@ -1126,7 +1451,8 @@ public class DSSTThirdBody implements DSSTForceModel {
             // the factorial ratio coefficient or 1. if |s| <= |j|
             final double factCoef;
             if (absS > absJ) {
-                factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact[n - j]);
+                //factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact[n - j]);
+                factCoef = (CombinatoricsUtils.factorialDouble(n + s) / CombinatoricsUtils.factorialDouble(n + j)) * (CombinatoricsUtils.factorialDouble(n - s) / CombinatoricsUtils.factorialDouble(n - j));
                 l = n - absS;
             } else {
                 factCoef = 1.;
@@ -1141,7 +1467,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
             final DerivativeStructure jac =
-                    JacobiPolynomials.getValue(l, absJmS, absJpS, factory.variable(0, X));
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, factory.variable(0, context.getX()));
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);
@@ -1160,9 +1486,9 @@ public class DSSTThirdBody implements DSSTForceModel {
             // the jacobi polynomial value
             final double jacobi = jac.getValue();
             // the derivative of the Jacobi polynomial by h
-            final double djacobidh = jac.getPartialDerivative(1) * hXXX;
+            final double djacobidh = jac.getPartialDerivative(1) * context.getHXXX();
             // the derivative of the Jacobi polynomial by k
-            final double djacobidk = jac.getPartialDerivative(1) * kXXX;
+            final double djacobidk = jac.getPartialDerivative(1) * context.getKXXX();
 
             //group the above coefficients to limit the mathematical operations
             final double term1 = factCoef * coef1 * coef2;
@@ -1173,6 +1499,202 @@ public class DSSTThirdBody implements DSSTForceModel {
             wjnsemjms[0] = term1 * jacobi;
             wjnsemjms[1] = dcoef1dk * term3 + dcoef2dk * term2 + djacobidk * term1;
             wjnsemjms[2] = dcoef1dh * term3 + dcoef2dh * term2 + djacobidh * term1;
+
+            return wjnsemjms;
+        }
+    }
+
+    /** This class covers the coefficients e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> and their derivatives by h and k.
+    *
+    * <p>
+    * Starting from Danielson 4.2-9,10,11 and taking into account that fact that: <br />
+    * c = e / (1 + (1 - e²)<sup>1/2</sup>) = e / (1 + B) = e * b <br/>
+    * the expression e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup>
+    * can be written as: <br/ >
+    * - for |s| > |j| <br />
+    * e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> =
+    *          (((n + s)!(n - s)!)/((n + j)!(n - j)!)) *
+    *          (-b)<sup>|j-s|</sup> *
+    *          ((1 - c²)<sup>n-|s|</sup>/(1 + c²)<sup>n</sup>) *
+    *          P<sub>n-|s|</sub><sup>|j-s|, |j+s|</sup>(χ) <br />
+    * <br />
+    * - for |s| <= |j| <br />
+    * e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> =
+    *          (-b)<sup>|j-s|</sup> *
+    *          ((1 - c²)<sup>n-|j|</sup>/(1 + c²)<sup>n</sup>) *
+    *          P<sub>n-|j|</sub><sup>|j-s|, |j+s|</sup>(χ)
+    * </p>
+    *
+    * @author Lucian Barbulescu
+    */
+    private class FieldWnsjEtomjmsCoefficient <T extends RealFieldElement<T>> {
+
+        /** The value c.
+         * <p>
+         *  c = e / (1 + (1 - e²)<sup>1/2</sup>) = e / (1 + B) = e * b <br/>
+         * </p>
+         *  */
+        private final T c;
+
+        /** db / dh. */
+        private final T dbdh;
+
+        /** db / dk. */
+        private final T dbdk;
+
+        /** dc / dh = e * db/dh + b * de/dh. */
+        private final T dcdh;
+
+        /** dc / dk = e * db/dk + b * de/dk. */
+        private final T dcdk;
+
+        /** The values (1 - c²)<sup>n</sup>. <br />
+         * The maximum possible value for the power is N + 1 */
+        private final T[] omc2tn;
+
+        /** The values (1 + c²)<sup>n</sup>. <br />
+         * The maximum possible value for the power is N + 1 */
+        private final T[] opc2tn;
+
+        /** The values b<sup>|j-s|</sup>. */
+        private final T[] btjms;
+
+        /**
+         * Standard constructor.
+         * @param context container for attributes
+         * @param field field used by default
+         */
+        FieldWnsjEtomjmsCoefficient(final FieldDSSTThirdBodyContext<T> context, final Field<T> field) {
+
+            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+            //Zero
+            final T zero = field.getZero();
+
+            //initialise fields
+            c = auxiliaryElements.getEcc().multiply(context.getb());
+            final T c2 = c.multiply(c);
+
+            //b² * χ
+            final T b2Chi = context.getb().multiply(context.getb()).multiply(context.getX());
+            //Compute derivatives of b
+            dbdh = auxiliaryElements.getH().multiply(b2Chi);
+            dbdk = auxiliaryElements.getK().multiply(b2Chi);
+
+            //Compute derivatives of c
+            if (auxiliaryElements.getEcc().getReal() == 0.0) {
+                // we are at a perfectly circular orbit singularity here
+                // we arbitrarily consider the perigee is along the X axis,
+                // i.e cos(ω + Ω) = h/ecc 1 and sin(ω + Ω) = k/ecc = 0
+                dcdh = auxiliaryElements.getEcc().multiply(dbdh).add(context.getb());
+                dcdk = auxiliaryElements.getEcc().multiply(dbdk);
+            } else {
+                dcdh = auxiliaryElements.getEcc().multiply(dbdh).add(context.getb().multiply(auxiliaryElements.getH()).divide(auxiliaryElements.getEcc()));
+                dcdk = auxiliaryElements.getEcc().multiply(dbdk).add(context.getb().multiply(auxiliaryElements.getK()).divide(auxiliaryElements.getEcc()));
+            }
+
+            //Compute the powers (1 - c²)<sup>n</sup> and (1 + c²)<sup>n</sup>
+            omc2tn = MathArrays.buildArray(field, context.getMaxAR3Pow() + context.getMaxFreqF() + 2);
+            opc2tn = MathArrays.buildArray(field, context.getMaxAR3Pow() + context.getMaxFreqF() + 2);
+            final T omc2 = c2.negate().add(1.);
+            final T opc2 = c2.add(1.);
+            omc2tn[0] = zero.add(1.);
+            opc2tn[0] = zero.add(1.);
+            for (int i = 1; i <= context.getMaxAR3Pow() + context.getMaxFreqF() + 1; i++) {
+                omc2tn[i] = omc2tn[i - 1].multiply(omc2);
+                opc2tn[i] = opc2tn[i - 1].multiply(opc2);
+            }
+
+            //Compute the powers of b
+            btjms = MathArrays.buildArray(field, context.getMaxAR3Pow() + context.getMaxFreqF() + 1);
+            btjms[0] = zero.add(1.);
+            for (int i = 1; i <= context.getMaxAR3Pow() + context.getMaxFreqF(); i++) {
+                btjms[i] = btjms[i - 1].multiply(context.getb());
+            }
+        }
+
+        /** Compute the value of the coefficient e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> and its derivatives by h and k. <br />
+         *
+         * @param j j index
+         * @param s s index
+         * @param n n index
+         * @param context container for attributes
+         * @param field field used by default
+         * @return an array containing the value of the coefficient at index 0, the derivative by k at index 1 and the derivative by h at index 2
+         */
+        public T[] computeWjnsEmjmsAndDeriv(final int j, final int s, final int n,
+                                            final FieldDSSTThirdBodyContext<T> context,
+                                            final Field<T> field) {
+            //Zero
+            final T zero = field.getZero();
+
+            final T[] wjnsemjms = MathArrays.buildArray(field, 3);
+            Arrays.fill(wjnsemjms, zero);
+
+            // |j|
+            final int absJ = FastMath.abs(j);
+            // |s|
+            final int absS = FastMath.abs(s);
+            // |j - s|
+            final int absJmS = FastMath.abs(j - s);
+            // |j + s|
+            final int absJpS = FastMath.abs(j + s);
+
+            //The lower index of P. Also the power of (1 - c²)
+            final int l;
+            // the factorial ratio coefficient or 1. if |s| <= |j|
+            final T factCoef;
+            if (absS > absJ) {
+                //factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact[n - j]);
+                factCoef = zero.add((CombinatoricsUtils.factorialDouble(n + s) / CombinatoricsUtils.factorialDouble(n + j)) * (CombinatoricsUtils.factorialDouble(n - s) / CombinatoricsUtils.factorialDouble(n - j)));
+                l = n - absS;
+            } else {
+                factCoef = zero.add(1.);
+                l = n - absJ;
+            }
+
+            // (-1)<sup>|j-s|</sup>
+            final T sign = absJmS % 2 != 0 ? zero.add(-1.) : zero.add(1.);
+            //(1 - c²)<sup>n-|s|</sup> / (1 + c²)<sup>n</sup>
+            final T coef1 = omc2tn[l].divide(opc2tn[n]);
+            //-b<sup>|j-s|</sup>
+            final T coef2 = btjms[absJmS].multiply(sign);
+            // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> fdsf = (FDSFactory<T>) fieldFactory.get(field);
+            final FieldDerivativeStructure<T> jac =
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, fdsf.variable(0, context.getX()));
+
+            // the derivative of coef1 by c
+            final T dcoef1dc = coef1.negate().multiply(2.).multiply(c).multiply(opc2tn[1].reciprocal().multiply(n).add(omc2tn[1].reciprocal().multiply(l)));
+            // the derivative of coef1 by h
+            final T dcoef1dh = dcoef1dc.multiply(dcdh);
+            // the derivative of coef1 by k
+            final T dcoef1dk = dcoef1dc.multiply(dcdk);
+
+            // the derivative of coef2 by b
+            final T dcoef2db = absJmS == 0 ? zero : sign.multiply(absJmS).multiply(btjms[absJmS - 1]);
+            // the derivative of coef2 by h
+            final T dcoef2dh = dcoef2db.multiply(dbdh);
+            // the derivative of coef2 by k
+            final T dcoef2dk = dcoef2db.multiply(dbdk);
+
+            // the jacobi polynomial value
+            final T jacobi = jac.getValue();
+            // the derivative of the Jacobi polynomial by h
+            final T djacobidh = jac.getPartialDerivative(1).multiply(context.getHXXX());
+            // the derivative of the Jacobi polynomial by k
+            final T djacobidk = jac.getPartialDerivative(1).multiply(context.getKXXX());
+
+            //group the above coefficients to limit the mathematical operations
+            final T term1 = factCoef.multiply(coef1).multiply(coef2);
+            final T term2 = factCoef.multiply(coef1).multiply(jacobi);
+            final T term3 = factCoef.multiply(coef2).multiply(jacobi);
+
+            //compute e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> and its derivatives by k and h
+            wjnsemjms[0] = term1.multiply(jacobi);
+            wjnsemjms[1] = dcoef1dk.multiply(term3).add(dcoef2dk.multiply(term2)).add(djacobidk.multiply(term1));
+            wjnsemjms[2] = dcoef1dh.multiply(term3).add(dcoef2dh.multiply(term2)).add(djacobidh.multiply(term1));
 
             return wjnsemjms;
         }
@@ -1205,8 +1727,9 @@ public class DSSTThirdBody implements DSSTForceModel {
          *
          * @param nMax maximum value for n indes
          * @param sMax maximum value for s index
+         * @param context container for attributes
          */
-        GnsCoefficients(final int nMax, final int sMax) {
+        GnsCoefficients(final int nMax, final int sMax, final DSSTThirdBodyContext context) {
             this.nMax = nMax;
             this.sMax = sMax;
 
@@ -1217,15 +1740,19 @@ public class DSSTThirdBody implements DSSTForceModel {
             this.dgnsdgamma   = new double[rows][columns];
 
             // Generate the coefficients
-            generateCoefficients();
+            generateCoefficients(context);
         }
         /**
          * Compute the coefficient G<sub>n,s</sub> and its derivatives.
          * <p>
          * Only the derivatives by a and γ are computed as all others are 0
          * </p>
+         * @param context container for attributes
          */
-        private void generateCoefficients() {
+        private void generateCoefficients(final DSSTThirdBodyContext context) {
+
+            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
             for (int s = 0; s <= sMax; s++) {
                 // The n index is always at least the maximum between 2 and s
                 final int minN = FastMath.max(2, s);
@@ -1235,15 +1762,15 @@ public class DSSTThirdBody implements DSSTForceModel {
                         // Kronecker symbol (2 - delta(0,s))
                         final double delta0s = (s == 0) ? 1. : 2.;
                         final double vns   = Vns.get(new NSKey(n, s));
-                        final double coef0 = delta0s * aoR3Pow[n] * vns * muoR3;
-                        final double coef1 = coef0 * Qns[n][s];
+                        final double coef0 = delta0s * context.getAoR3Pow()[n] * vns * context.getMuoR3();
+                        final double coef1 = coef0 * context.getQns()[n][s];
                         // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
                         // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
-                        final double dqns = (n == s) ? 0. : Qns[n][s + 1];
+                        final double dqns = (n == s) ? 0. : context.getQns()[n][s + 1];
 
                         //Compute the coefficient and its derivatives.
                         this.gns[n][s] = coef1;
-                        this.dgnsda[n][s] = coef1 * n / a;
+                        this.dgnsda[n][s] = coef1 * n / auxiliaryElements.getSma();
                         this.dgnsdgamma[n][s] = coef0 * dqns;
                     } else {
                         // the coefficient and its derivatives is 0
@@ -1286,6 +1813,127 @@ public class DSSTThirdBody implements DSSTForceModel {
         }
     }
 
+    /** The G<sub>n,s</sub> coefficients and their derivatives.
+     * <p>
+     * See Danielson, 4.2-17
+     *
+     * @author Lucian Barbulescu
+     */
+    private class FieldGnsCoefficients  <T extends RealFieldElement<T>> {
+
+        /** Maximum value for n index. */
+        private final int nMax;
+
+        /** Maximum value for s index. */
+        private final int sMax;
+
+        /** The coefficients G<sub>n,s</sub>. */
+        private final T gns[][];
+
+        /** The derivatives of the coefficients G<sub>n,s</sub> by a. */
+        private final T dgnsda[][];
+
+        /** The derivatives of the coefficients G<sub>n,s</sub> by γ. */
+        private final T dgnsdgamma[][];
+
+        /** Standard constructor.
+         *
+         * @param nMax maximum value for n indes
+         * @param sMax maximum value for s index
+         * @param context container for attributes
+         * @param field field used by default
+         */
+        FieldGnsCoefficients(final int nMax, final int sMax,
+                             final FieldDSSTThirdBodyContext<T> context,
+                             final Field<T> field) {
+            this.nMax = nMax;
+            this.sMax = sMax;
+
+            final int rows    = nMax + 1;
+            final int columns = sMax + 1;
+            this.gns          = MathArrays.buildArray(field, rows, columns);
+            this.dgnsda       = MathArrays.buildArray(field, rows, columns);
+            this.dgnsdgamma   = MathArrays.buildArray(field, rows, columns);
+
+            // Generate the coefficients
+            generateCoefficients(context, field);
+        }
+        /**
+         * Compute the coefficient G<sub>n,s</sub> and its derivatives.
+         * <p>
+         * Only the derivatives by a and γ are computed as all others are 0
+         * </p>
+         * @param context container for attributes
+         * @param field field used by default
+         */
+        private void generateCoefficients(final FieldDSSTThirdBodyContext<T> context,
+                                          final Field<T> field) {
+
+            //Zero
+            final T zero = field.getZero();
+
+            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+            for (int s = 0; s <= sMax; s++) {
+                // The n index is always at least the maximum between 2 and s
+                final int minN = FastMath.max(2, s);
+                for (int n = minN; n <= nMax; n++) {
+                    // compute the coefficients only if (n - s) % 2 == 0
+                    if ( (n - s) % 2 == 0 ) {
+                        // Kronecker symbol (2 - delta(0,s))
+                        final T delta0s = (s == 0) ? zero.add(1.) : zero.add(2.);
+                        final double vns = Vns.get(new NSKey(n, s));
+                        final T coef0 = context.getAoR3Pow()[n].multiply(vns).multiply(context.getMuoR3()).multiply(delta0s);
+                        final T coef1 = coef0.multiply(context.getQns()[n][s]);
+                        // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
+                        // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
+                        final T dqns = (n == s) ? zero : context.getQns()[n][s + 1];
+
+                        //Compute the coefficient and its derivatives.
+                        this.gns[n][s] = coef1;
+                        this.dgnsda[n][s] = coef1.multiply(n).divide(auxiliaryElements.getSma());
+                        this.dgnsdgamma[n][s] = coef0.multiply(dqns);
+                    } else {
+                        // the coefficient and its derivatives is 0
+                        this.gns[n][s] = zero;
+                        this.dgnsda[n][s] = zero;
+                        this.dgnsdgamma[n][s] = zero;
+                    }
+                }
+            }
+        }
+
+        /** Get the coefficient G<sub>n,s</sub>.
+         *
+         * @param n n index
+         * @param s s index
+         * @return the coefficient G<sub>n,s</sub>
+         */
+        public T getGns(final int n, final int s) {
+            return this.gns[n][s];
+        }
+
+        /** Get the derivative dG<sub>n,s</sub> / da.
+         *
+         * @param n n index
+         * @param s s index
+         * @return the derivative dG<sub>n,s</sub> / da
+         */
+        public T getdGnsda(final int n, final int s) {
+            return this.dgnsda[n][s];
+        }
+
+        /** Get the derivative dG<sub>n,s</sub> / dγ.
+         *
+         * @param n n index
+         * @param s s index
+         * @return the derivative dG<sub>n,s</sub> / dγ
+         */
+        public T getdGnsdgamma(final int n, final int s) {
+            return this.dgnsdgamma[n][s];
+        }
+    }
+
     /** This class computes the terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (α, β) or (k, h).
      *
      * <p>
@@ -1299,7 +1947,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      * </p>
      * @author Lucian Barbulescu
      */
-    private class CjSjAlphaBetaKH {
+    private static class CjSjAlphaBetaKH {
 
         /** The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) series. */
         private final CjSjCoefficient cjsjkh;
@@ -1325,10 +1973,14 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /**
          * Standard constructor.
+         * @param context container for attributes
          */
-        CjSjAlphaBetaKH() {
-            cjsjkh = new CjSjCoefficient(k, h);
-            cjsjalbe = new CjSjCoefficient(alpha, beta);
+        CjSjAlphaBetaKH(final DSSTThirdBodyContext context) {
+
+            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
+            cjsjkh = new CjSjCoefficient(auxiliaryElements.getK(), auxiliaryElements.getH());
+            cjsjalbe = new CjSjCoefficient(context.getAlpha(), context.getBeta());
 
             coefAandDeriv = new double[5];
             coefBandDeriv = new double[5];
@@ -1540,6 +2192,265 @@ public class DSSTThirdBody implements DSSTForceModel {
         }
     }
 
+     /** This class computes the terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (α, β) or (k, h).
+     *
+     * <p>
+     * The following terms and their derivatives by k, h, alpha and beta are considered: <br/ >
+     * - sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) <br />
+     * - C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) <br />
+     * - C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) <br />
+     * - C<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) <br />
+     * For the ease of usage the above terms are renamed A<sub>js</sub>, B<sub>js</sub>, D<sub>js</sub> and E<sub>js</sub> respectively <br />
+     * See the CS Mathematical report $3.5.3.2 for more details
+     * </p>
+     * @author Lucian Barbulescu
+     */
+    private static class FieldCjSjAlphaBetaKH <T extends RealFieldElement<T>> {
+
+        /** The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) series. */
+        private final FieldCjSjCoefficient<T> cjsjkh;
+
+        /** The C<sub>j</sub>(α, β) and the S<sub>j</sub>(α, β) series. */
+        private final FieldCjSjCoefficient<T> cjsjalbe;
+
+        /** The coeficient sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h)
+         * and its derivative by k, h, α and β. */
+        private final T coefAandDeriv[];
+
+        /** The coeficient C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h)
+         * and its derivative by k, h, α and β. */
+        private final T coefBandDeriv[];
+
+        /** The coeficient C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h)
+         * and its derivative by k, h, α and β. */
+        private final T coefDandDeriv[];
+
+        /** The coeficient C<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h)
+         * and its derivative by k, h, α and β. */
+        private final T coefEandDeriv[];
+
+        /**
+         * Standard constructor.
+         * @param context container for attributes
+         * @param field field used by default
+         */
+        FieldCjSjAlphaBetaKH(final FieldDSSTThirdBodyContext<T> context, final Field<T> field) {
+
+            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+            cjsjkh   = new FieldCjSjCoefficient<>(auxiliaryElements.getK(), auxiliaryElements.getH(), field);
+            cjsjalbe = new FieldCjSjCoefficient<>(context.getAlpha(), context.getBeta(), field);
+
+            coefAandDeriv = MathArrays.buildArray(field, 5);
+            coefBandDeriv = MathArrays.buildArray(field, 5);
+            coefDandDeriv = MathArrays.buildArray(field, 5);
+            coefEandDeriv = MathArrays.buildArray(field, 5);
+        }
+
+        /** Compute the coefficients and their derivatives for a given (j,s) pair.
+         * @param j j index
+         * @param s s index
+         */
+        public void computeCoefficients(final int j, final int s) {
+            // sign of j-s
+            final int sign = j < s ? -1 : 1;
+
+            //|j-s|
+            final int absJmS = FastMath.abs(j - s);
+
+            //j+s
+            final int jps = j + s;
+
+            //Compute the coefficient A and its derivatives
+            coefAandDeriv[0] = cjsjalbe.getCj(s).multiply(cjsjkh.getSj(absJmS)).multiply(sign).add(cjsjalbe.getSj(s).multiply(cjsjkh.getCj(absJmS)));
+            coefAandDeriv[1] = cjsjalbe.getCj(s).multiply(cjsjkh.getDsjDk(absJmS)).multiply(sign).add(cjsjalbe.getSj(s).multiply(cjsjkh.getDcjDk(absJmS)));
+            coefAandDeriv[2] = cjsjalbe.getCj(s).multiply(cjsjkh.getDsjDh(absJmS)).multiply(sign).add(cjsjalbe.getSj(s).multiply(cjsjkh.getDcjDh(absJmS)));
+            coefAandDeriv[3] = cjsjalbe.getDcjDk(s).multiply(cjsjkh.getSj(absJmS)).multiply(sign).add(cjsjalbe.getDsjDk(s).multiply(cjsjkh.getCj(absJmS)));
+            coefAandDeriv[4] = cjsjalbe.getDcjDh(s).multiply(cjsjkh.getSj(absJmS)).multiply(sign).add(cjsjalbe.getDsjDh(s).multiply(cjsjkh.getCj(absJmS)));
+
+            //Compute the coefficient B and its derivatives
+            coefBandDeriv[0] = cjsjalbe.getCj(s).multiply(cjsjkh.getSj(jps)).subtract(cjsjalbe.getSj(s).multiply(cjsjkh.getCj(jps)));
+            coefBandDeriv[1] = cjsjalbe.getCj(s).multiply(cjsjkh.getDsjDk(jps)).subtract(cjsjalbe.getSj(s).multiply(cjsjkh.getDcjDk(jps)));
+            coefBandDeriv[2] = cjsjalbe.getCj(s).multiply(cjsjkh.getDsjDh(jps)).subtract(cjsjalbe.getSj(s).multiply(cjsjkh.getDcjDh(jps)));
+            coefBandDeriv[3] = cjsjalbe.getDcjDk(s).multiply(cjsjkh.getSj(jps)).subtract(cjsjalbe.getDsjDk(s).multiply(cjsjkh.getCj(jps)));
+            coefBandDeriv[4] = cjsjalbe.getDcjDh(s).multiply(cjsjkh.getSj(jps)).subtract(cjsjalbe.getDsjDh(s).multiply(cjsjkh.getCj(jps)));
+
+            //Compute the coefficient D and its derivatives
+            coefDandDeriv[0] = cjsjalbe.getCj(s).multiply(cjsjkh.getCj(absJmS)).subtract(cjsjalbe.getSj(s).multiply(cjsjkh.getSj(absJmS)).multiply(sign));
+            coefDandDeriv[1] = cjsjalbe.getCj(s).multiply(cjsjkh.getDcjDk(absJmS)).subtract(cjsjalbe.getSj(s).multiply(cjsjkh.getDsjDk(absJmS)).multiply(sign));
+            coefDandDeriv[2] = cjsjalbe.getCj(s).multiply(cjsjkh.getDcjDh(absJmS)).subtract(cjsjalbe.getSj(s).multiply(cjsjkh.getDsjDh(absJmS)).multiply(sign));
+            coefDandDeriv[3] = cjsjalbe.getDcjDk(s).multiply(cjsjkh.getCj(absJmS)).subtract(cjsjalbe.getDsjDk(s).multiply(cjsjkh.getSj(absJmS)).multiply(sign));
+            coefDandDeriv[4] = cjsjalbe.getDcjDh(s).multiply(cjsjkh.getCj(absJmS)).subtract(cjsjalbe.getDsjDh(s).multiply(cjsjkh.getSj(absJmS)).multiply(sign));
+
+            //Compute the coefficient E and its derivatives
+            coefEandDeriv[0] = cjsjalbe.getCj(s).multiply(cjsjkh.getCj(jps)).add(cjsjalbe.getSj(s).multiply(cjsjkh.getSj(jps)));
+            coefEandDeriv[1] = cjsjalbe.getCj(s).multiply(cjsjkh.getDcjDk(jps)).add(cjsjalbe.getSj(s).multiply(cjsjkh.getDsjDk(jps)));
+            coefEandDeriv[2] = cjsjalbe.getCj(s).multiply(cjsjkh.getDcjDh(jps)).add(cjsjalbe.getSj(s).multiply(cjsjkh.getDsjDh(jps)));
+            coefEandDeriv[3] = cjsjalbe.getDcjDk(s).multiply(cjsjkh.getCj(jps)).add(cjsjalbe.getDsjDk(s).multiply(cjsjkh.getSj(jps)));
+            coefEandDeriv[4] = cjsjalbe.getDcjDh(s).multiply(cjsjkh.getCj(jps)).add(cjsjalbe.getDsjDh(s).multiply(cjsjkh.getSj(jps)));
+        }
+
+        /** Get the value of coefficient A<sub>j,s</sub>.
+         *
+         * @return the coefficient A<sub>j,s</sub>
+         */
+        public T getCoefA() {
+            return coefAandDeriv[0];
+        }
+
+        /** Get the value of coefficient dA<sub>j,s</sub>/dk.
+         *
+         * @return the coefficient dA<sub>j,s</sub>/dk
+         */
+        public T getdCoefAdk() {
+            return coefAandDeriv[1];
+        }
+
+        /** Get the value of coefficient dA<sub>j,s</sub>/dh.
+         *
+         * @return the coefficient dA<sub>j,s</sub>/dh
+         */
+        public T getdCoefAdh() {
+            return coefAandDeriv[2];
+        }
+
+        /** Get the value of coefficient dA<sub>j,s</sub>/dα.
+         *
+         * @return the coefficient dA<sub>j,s</sub>/dα
+         */
+        public T getdCoefAdalpha() {
+            return coefAandDeriv[3];
+        }
+
+        /** Get the value of coefficient dA<sub>j,s</sub>/dβ.
+         *
+         * @return the coefficient dA<sub>j,s</sub>/dβ
+         */
+        public T getdCoefAdbeta() {
+            return coefAandDeriv[4];
+        }
+
+       /** Get the value of coefficient B<sub>j,s</sub>.
+        *
+        * @return the coefficient B<sub>j,s</sub>
+        */
+        public T getCoefB() {
+            return coefBandDeriv[0];
+        }
+
+        /** Get the value of coefficient dB<sub>j,s</sub>/dk.
+         *
+         * @return the coefficient dB<sub>j,s</sub>/dk
+         */
+        public T getdCoefBdk() {
+            return coefBandDeriv[1];
+        }
+
+        /** Get the value of coefficient dB<sub>j,s</sub>/dh.
+         *
+         * @return the coefficient dB<sub>j,s</sub>/dh
+         */
+        public T getdCoefBdh() {
+            return coefBandDeriv[2];
+        }
+
+        /** Get the value of coefficient dB<sub>j,s</sub>/dα.
+         *
+         * @return the coefficient dB<sub>j,s</sub>/dα
+         */
+        public T getdCoefBdalpha() {
+            return coefBandDeriv[3];
+        }
+
+        /** Get the value of coefficient dB<sub>j,s</sub>/dβ.
+         *
+         * @return the coefficient dB<sub>j,s</sub>/dβ
+         */
+        public T getdCoefBdbeta() {
+            return coefBandDeriv[4];
+        }
+
+        /** Get the value of coefficient D<sub>j,s</sub>.
+         *
+         * @return the coefficient D<sub>j,s</sub>
+         */
+        public T getCoefD() {
+            return coefDandDeriv[0];
+        }
+
+        /** Get the value of coefficient dD<sub>j,s</sub>/dk.
+         *
+         * @return the coefficient dD<sub>j,s</sub>/dk
+         */
+        public T getdCoefDdk() {
+            return coefDandDeriv[1];
+        }
+
+        /** Get the value of coefficient dD<sub>j,s</sub>/dh.
+         *
+         * @return the coefficient dD<sub>j,s</sub>/dh
+         */
+        public T getdCoefDdh() {
+            return coefDandDeriv[2];
+        }
+
+        /** Get the value of coefficient dD<sub>j,s</sub>/dα.
+         *
+         * @return the coefficient dD<sub>j,s</sub>/dα
+         */
+        public T getdCoefDdalpha() {
+            return coefDandDeriv[3];
+        }
+
+        /** Get the value of coefficient dD<sub>j,s</sub>/dβ.
+         *
+         * @return the coefficient dD<sub>j,s</sub>/dβ
+         */
+        public T getdCoefDdbeta() {
+            return coefDandDeriv[4];
+        }
+
+        /** Get the value of coefficient E<sub>j,s</sub>.
+         *
+         * @return the coefficient E<sub>j,s</sub>
+         */
+        public T getCoefE() {
+            return coefEandDeriv[0];
+        }
+
+        /** Get the value of coefficient dE<sub>j,s</sub>/dk.
+         *
+         * @return the coefficient dE<sub>j,s</sub>/dk
+         */
+        public T getdCoefEdk() {
+            return coefEandDeriv[1];
+        }
+
+        /** Get the value of coefficient dE<sub>j,s</sub>/dh.
+         *
+         * @return the coefficient dE<sub>j,s</sub>/dh
+         */
+        public T getdCoefEdh() {
+            return coefEandDeriv[2];
+        }
+
+        /** Get the value of coefficient dE<sub>j,s</sub>/dα.
+         *
+         * @return the coefficient dE<sub>j,s</sub>/dα
+         */
+        public T getdCoefEdalpha() {
+            return coefEandDeriv[3];
+        }
+
+        /** Get the value of coefficient dE<sub>j,s</sub>/dβ.
+         *
+         * @return the coefficient dE<sub>j,s</sub>/dβ
+         */
+        public T getdCoefEdbeta() {
+            return coefEandDeriv[4];
+        }
+    }
+
     /** This class computes the coefficients for the generating function S and its derivatives.
      * <p>
      * The form of the generating functions is: <br>
@@ -1599,23 +2510,30 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param nMax maximum value of n index
          * @param sMax maximum value of s index
          * @param jMax maximum value of j index
+         * @param context container for attributes
+         * @param hansen hansen objects
          */
-        GeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax) {
+        GeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax,
+                                       final DSSTThirdBodyContext context, final HansenObjects hansen) {
             this.jMax = jMax;
-            this.cjsjFourier = new FourierCjSjCoefficients(nMax, sMax, jMax);
+            this.cjsjFourier = new FourierCjSjCoefficients(nMax, sMax, jMax, context);
             this.cjCoefs = new double[8][jMax + 1];
             this.sjCoefs = new double[8][jMax + 1];
 
-            computeGeneratingFunctionCoefficients();
+            computeGeneratingFunctionCoefficients(context, hansen);
         }
 
         /**
          * Compute the coefficients for the generating function S and its derivatives.
+         * @param context container for attributes
+         * @param hansenObjects hansen objects
          */
-        private void computeGeneratingFunctionCoefficients() {
+        private void computeGeneratingFunctionCoefficients(final DSSTThirdBodyContext context, final HansenObjects hansenObjects) {
 
-            // Compute potential U and derivatives
-            final double[] dU  = computeUDerivatives();
+            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
+            // Access to potential U derivatives
+            final UAnddU udu = new UAnddU(context, hansenObjects);
 
             //Compute the C<sup>j</sup> coefficients
             for (int j = 1; j <= jMax; j++) {
@@ -1642,22 +2560,22 @@ public class DSSTThirdBody implements DSSTForceModel {
                 //In the special case j == 1 there are some additional terms to be added
                 if (j == 1) {
                     //Additional terms for C<sup>j</sup> coefficients
-                    cjCoefs[0][j] += -h * U;
-                    cjCoefs[1][j] += -h * dU[0];
-                    cjCoefs[2][j] += -h * dU[1];
-                    cjCoefs[3][j] += -(h * dU[2] + U + cjsjFourier.getC0Lambda());
-                    cjCoefs[4][j] += -h * dU[3];
-                    cjCoefs[5][j] += -h * dU[4];
-                    cjCoefs[6][j] += -h * dU[5];
+                    cjCoefs[0][j] += -auxiliaryElements.getH() * udu.getU();
+                    cjCoefs[1][j] += -auxiliaryElements.getH() * udu.getdUda();
+                    cjCoefs[2][j] += -auxiliaryElements.getH() * udu.getdUdk();
+                    cjCoefs[3][j] += -(auxiliaryElements.getH() * udu.getdUdh() + udu.getU() + cjsjFourier.getC0Lambda());
+                    cjCoefs[4][j] += -auxiliaryElements.getH() * udu.getdUdAl();
+                    cjCoefs[5][j] += -auxiliaryElements.getH() * udu.getdUdBe();
+                    cjCoefs[6][j] += -auxiliaryElements.getH() * udu.getdUdGa();
 
                     //Additional terms for S<sup>j</sup> coefficients
-                    sjCoefs[0][j] += k * U;
-                    sjCoefs[1][j] += k * dU[0];
-                    sjCoefs[2][j] += k * dU[1] + U + cjsjFourier.getC0Lambda();
-                    sjCoefs[3][j] += k * dU[2];
-                    sjCoefs[4][j] += k * dU[3];
-                    sjCoefs[5][j] += k * dU[4];
-                    sjCoefs[6][j] += k * dU[5];
+                    sjCoefs[0][j] += auxiliaryElements.getK() * udu.getU();
+                    sjCoefs[1][j] += auxiliaryElements.getK() * udu.getdUda();
+                    sjCoefs[2][j] += auxiliaryElements.getK() * udu.getdUdk() + udu.getU() + cjsjFourier.getC0Lambda();
+                    sjCoefs[3][j] += auxiliaryElements.getK() * udu.getdUdh();
+                    sjCoefs[4][j] += auxiliaryElements.getK() * udu.getdUdAl();
+                    sjCoefs[5][j] += auxiliaryElements.getK() * udu.getdUdBe();
+                    sjCoefs[6][j] += auxiliaryElements.getK() * udu.getdUdGa();
                 }
             }
         }
@@ -1831,6 +2749,308 @@ public class DSSTThirdBody implements DSSTForceModel {
         }
     }
 
+    /** This class computes the coefficients for the generating function S and its derivatives.
+     * <p>
+     * The form of the generating functions is: <br>
+     *  S = C⁰ + &Sigma;<sub>j=1</sub><sup>N+1</sup>(C<sup>j</sup> * cos(jF) + S<sup>j</sup> * sin(jF)) <br>
+     *  The coefficients C⁰, C<sup>j</sup>, S<sup>j</sup> are the Fourrier coefficients
+     *  presented in Danielson 4.2-14,15 except for the case j=1 where
+     *  C¹ = C¹<sub>Fourier</sub> - hU and
+     *  S¹ = S¹<sub>Fourier</sub> + kU <br>
+     *  Also the coefficients of the derivatives of S by a, k, h, α, β, γ and λ
+     *  are computed end expressed in a similar manner. The formulas used are 4.2-19, 20, 23, 24
+     * </p>
+     * @author Lucian Barbulescu
+     */
+    private class FieldGeneratingFunctionCoefficients <T extends RealFieldElement<T>> {
+
+        /** The Fourier coefficients as presented in Danielson 4.2-14,15. */
+        private final FieldFourierCjSjCoefficients<T> cjsjFourier;
+
+        /** Maximum value of j index. */
+        private final int jMax;
+
+        /** The coefficients C<sup>j</sup> of the function S and its derivatives.
+         * <p>
+         * The index j belongs to the interval [0,jMax]. The coefficient C⁰ is the free coefficient.<br>
+         * Each column of the matrix contains the coefficient corresponding to the following functions: <br/>
+         * - S <br/>
+         * - dS / da <br/>
+         * - dS / dk <br/>
+         * - dS / dh <br/>
+         * - dS / dα <br/>
+         * - dS / dβ <br/>
+         * - dS / dγ <br/>
+         * - dS / dλ
+         * </p>
+         */
+        private final T[][] cjCoefs;
+
+        /** The coefficients S<sup>j</sup> of the function S and its derivatives.
+         * <p>
+         * The index j belongs to the interval [0,jMax].<br>
+         * Each column of the matrix contains the coefficient corresponding to the following functions: <br/>
+         * - S <br/>
+         * - dS / da <br/>
+         * - dS / dk <br/>
+         * - dS / dh <br/>
+         * - dS / dα <br/>
+         * - dS / dβ <br/>
+         * - dS / dγ <br/>
+         * - dS / dλ
+         * </p>
+         */
+        private final T[][] sjCoefs;
+
+        /**
+         * Standard constructor.
+         *
+         * @param nMax maximum value of n index
+         * @param sMax maximum value of s index
+         * @param jMax maximum value of j index
+         * @param context container for attributes
+         * @param hansen hansen objects
+         * @param field field used by default
+         */
+        FieldGeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax,
+                                            final FieldDSSTThirdBodyContext<T> context,
+                                            final FieldHansenObjects<T> hansen,
+                                            final Field<T> field) {
+            this.jMax = jMax;
+            this.cjsjFourier = new FieldFourierCjSjCoefficients<>(nMax, sMax, jMax, context, field);
+            this.cjCoefs     = MathArrays.buildArray(field, 8, jMax + 1);
+            this.sjCoefs     = MathArrays.buildArray(field, 8, jMax + 1);
+
+            computeGeneratingFunctionCoefficients(context, hansen);
+        }
+
+        /**
+         * Compute the coefficients for the generating function S and its derivatives.
+         * @param context container for attributes
+         * @param hansenObjects hansen objects
+         */
+        private void computeGeneratingFunctionCoefficients(final FieldDSSTThirdBodyContext<T> context,
+                                                           final FieldHansenObjects<T> hansenObjects) {
+
+            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+            // Access to potential U derivatives
+            final FieldUAnddU<T> udu = new FieldUAnddU<>(context, hansenObjects);
+
+            //Compute the C<sup>j</sup> coefficients
+            for (int j = 1; j <= jMax; j++) {
+                //Compute the C<sup>j</sup> coefficients
+                cjCoefs[0][j] = cjsjFourier.getCj(j);
+                cjCoefs[1][j] = cjsjFourier.getdCjda(j);
+                cjCoefs[2][j] = cjsjFourier.getdCjdk(j).subtract((cjsjFourier.getSjLambda(j - 1).subtract(cjsjFourier.getSjLambda(j + 1))).divide(2.));
+                cjCoefs[3][j] = cjsjFourier.getdCjdh(j).subtract((cjsjFourier.getCjLambda(j - 1).add(cjsjFourier.getCjLambda(j + 1))).divide(2.));
+                cjCoefs[4][j] = cjsjFourier.getdCjdalpha(j);
+                cjCoefs[5][j] = cjsjFourier.getdCjdbeta(j);
+                cjCoefs[6][j] = cjsjFourier.getdCjdgamma(j);
+                cjCoefs[7][j] = cjsjFourier.getCjLambda(j);
+
+                //Compute the S<sup>j</sup> coefficients
+                sjCoefs[0][j] = cjsjFourier.getSj(j);
+                sjCoefs[1][j] = cjsjFourier.getdSjda(j);
+                sjCoefs[2][j] = cjsjFourier.getdSjdk(j).add((cjsjFourier.getCjLambda(j - 1).subtract(cjsjFourier.getCjLambda(j + 1))).divide(2.));
+                sjCoefs[3][j] = cjsjFourier.getdSjdh(j).subtract((cjsjFourier.getSjLambda(j - 1).add(cjsjFourier.getSjLambda(j + 1))).divide(2.));
+                sjCoefs[4][j] = cjsjFourier.getdSjdalpha(j);
+                sjCoefs[5][j] = cjsjFourier.getdSjdbeta(j);
+                sjCoefs[6][j] = cjsjFourier.getdSjdgamma(j);
+                sjCoefs[7][j] = cjsjFourier.getSjLambda(j);
+
+                //In the special case j == 1 there are some additional terms to be added
+                if (j == 1) {
+                    //Additional terms for C<sup>j</sup> coefficients
+                    cjCoefs[0][j] = cjCoefs[0][j].add(auxiliaryElements.getH().negate().multiply(udu.getU()));
+                    cjCoefs[1][j] = cjCoefs[1][j].add(auxiliaryElements.getH().negate().multiply(udu.getdUda()));
+                    cjCoefs[2][j] = cjCoefs[2][j].add(auxiliaryElements.getH().negate().multiply(udu.getdUdk()));
+                    cjCoefs[3][j] = cjCoefs[3][j].add(auxiliaryElements.getH().multiply(udu.getdUdh()).add(udu.getU()).add(cjsjFourier.getC0Lambda()).negate());
+                    cjCoefs[4][j] = cjCoefs[4][j].add(auxiliaryElements.getH().negate().multiply(udu.getdUdAl()));
+                    cjCoefs[5][j] = cjCoefs[5][j].add(auxiliaryElements.getH().negate().multiply(udu.getdUdBe()));
+                    cjCoefs[6][j] = cjCoefs[6][j].add(auxiliaryElements.getH().negate().multiply(udu.getdUdGa()));
+
+                    //Additional terms for S<sup>j</sup> coefficients
+                    sjCoefs[0][j] = sjCoefs[0][j].add(auxiliaryElements.getK().multiply(udu.getU()));
+                    sjCoefs[1][j] = sjCoefs[1][j].add(auxiliaryElements.getK().multiply(udu.getdUda()));
+                    sjCoefs[2][j] = sjCoefs[2][j].add(auxiliaryElements.getK().multiply(udu.getdUdk()).add(udu.getU()).add(cjsjFourier.getC0Lambda()));
+                    sjCoefs[3][j] = sjCoefs[3][j].add(auxiliaryElements.getK().multiply(udu.getdUdh()));
+                    sjCoefs[4][j] = sjCoefs[4][j].add(auxiliaryElements.getK().multiply(udu.getdUdAl()));
+                    sjCoefs[5][j] = sjCoefs[5][j].add(auxiliaryElements.getK().multiply(udu.getdUdBe()));
+                    sjCoefs[6][j] = sjCoefs[6][j].add(auxiliaryElements.getK().multiply(udu.getdUdGa()));
+                }
+            }
+        }
+
+        /** Get the coefficient C<sup>j</sup> for the function S.
+         * <br>
+         * Possible values for j are within the interval [0,jMax].
+         * The value 0 is used to obtain the free coefficient C⁰
+         * @param j j index
+         * @return C<sup>j</sup> for the function S
+         */
+        public T getSCj(final int j) {
+            return cjCoefs[0][j];
+        }
+
+        /** Get the coefficient S<sup>j</sup> for the function S.
+         * <br>
+         * Possible values for j are within the interval [1,jMax].
+         * @param j j index
+         * @return S<sup>j</sup> for the function S
+         */
+        public T getSSj(final int j) {
+            return sjCoefs[0][j];
+        }
+
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/da.
+         * <br>
+         * Possible values for j are within the interval [0,jMax].
+         * The value 0 is used to obtain the free coefficient C⁰
+         * @param j j index
+         * @return C<sup>j</sup> for the function dS/da
+         */
+        public T getdSdaCj(final int j) {
+            return cjCoefs[1][j];
+        }
+
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/da.
+         * <br>
+         * Possible values for j are within the interval [1,jMax].
+         * @param j j index
+         * @return S<sup>j</sup> for the derivative dS/da
+         */
+        public T getdSdaSj(final int j) {
+            return sjCoefs[1][j];
+        }
+
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dk
+         * <br>
+         * Possible values for j are within the interval [0,jMax].
+         * The value 0 is used to obtain the free coefficient C⁰
+         * @param j j index
+         * @return C<sup>j</sup> for the function dS/dk
+         */
+        public T getdSdkCj(final int j) {
+            return cjCoefs[2][j];
+        }
+
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dk.
+         * <br>
+         * Possible values for j are within the interval [1,jMax].
+         * @param j j index
+         * @return S<sup>j</sup> for the derivative dS/dk
+         */
+        public T getdSdkSj(final int j) {
+            return sjCoefs[2][j];
+        }
+
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dh
+         * <br>
+         * Possible values for j are within the interval [0,jMax].
+         * The value 0 is used to obtain the free coefficient C⁰
+         * @param j j index
+         * @return C<sup>j</sup> for the function dS/dh
+         */
+        public T getdSdhCj(final int j) {
+            return cjCoefs[3][j];
+        }
+
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dh.
+         * <br>
+         * Possible values for j are within the interval [1,jMax].
+         * @param j j index
+         * @return S<sup>j</sup> for the derivative dS/dh
+         */
+        public T getdSdhSj(final int j) {
+            return sjCoefs[3][j];
+        }
+
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dα
+         * <br>
+         * Possible values for j are within the interval [0,jMax].
+         * The value 0 is used to obtain the free coefficient C⁰
+         * @param j j index
+         * @return C<sup>j</sup> for the function dS/dα
+         */
+        public T getdSdalphaCj(final int j) {
+            return cjCoefs[4][j];
+        }
+
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dα.
+         * <br>
+         * Possible values for j are within the interval [1,jMax].
+         * @param j j index
+         * @return S<sup>j</sup> for the derivative dS/dα
+         */
+        public T getdSdalphaSj(final int j) {
+            return sjCoefs[4][j];
+        }
+
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dβ
+         * <br>
+         * Possible values for j are within the interval [0,jMax].
+         * The value 0 is used to obtain the free coefficient C⁰
+         * @param j j index
+         * @return C<sup>j</sup> for the function dS/dβ
+         */
+        public T getdSdbetaCj(final int j) {
+            return cjCoefs[5][j];
+        }
+
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dβ.
+         * <br>
+         * Possible values for j are within the interval [1,jMax].
+         * @param j j index
+         * @return S<sup>j</sup> for the derivative dS/dβ
+         */
+        public T getdSdbetaSj(final int j) {
+            return sjCoefs[5][j];
+        }
+
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dγ
+         * <br>
+         * Possible values for j are within the interval [0,jMax].
+         * The value 0 is used to obtain the free coefficient C⁰
+         * @param j j index
+         * @return C<sup>j</sup> for the function dS/dγ
+         */
+        public T getdSdgammaCj(final int j) {
+            return cjCoefs[6][j];
+        }
+
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dγ.
+         * <br>
+         * Possible values for j are within the interval [1,jMax].
+         * @param j j index
+         * @return S<sup>j</sup> for the derivative dS/dγ
+         */
+        public T getdSdgammaSj(final int j) {
+            return sjCoefs[6][j];
+        }
+
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dλ
+         * <br>
+         * Possible values for j are within the interval [0,jMax].
+         * The value 0 is used to obtain the free coefficient C⁰
+         * @param j j index
+         * @return C<sup>j</sup> for the function dS/dλ
+         */
+        public T getdSdlambdaCj(final int j) {
+            return cjCoefs[7][j];
+        }
+
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dλ.
+         * <br>
+         * Possible values for j are within the interval [1,jMax].
+         * @param j j index
+         * @return S<sup>j</sup> for the derivative dS/dλ
+         */
+        public T getdSdlambdaSj(final int j) {
+            return sjCoefs[7][j];
+        }
+    }
+
     /**
      * The coefficients used to compute the short periodic contribution for the Third body perturbation.
      * <p>
@@ -1841,9 +3061,6 @@ public class DSSTThirdBody implements DSSTForceModel {
      * @author Lucian Barbulescu
      */
     private static class ThirdBodyShortPeriodicCoefficients implements ShortPeriodTerms {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151119L;
 
         /** Maximal value for j. */
         private final int jMax;
@@ -1874,7 +3091,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             this.jMax                = jMax;
             this.interpolationPoints = interpolationPoints;
             this.maxFreqF            = maxFreqF;
-            this.prefix              = "DSST-3rd-body-" + bodyName + "-";
+            this.prefix              = DSSTThirdBody.SHORT_PERIOD_PREFIX + bodyName + "-";
             this.slots               = slots;
         }
 
@@ -1975,100 +3192,154 @@ public class DSSTThirdBody implements DSSTForceModel {
             }
         }
 
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if an additional state provider is not serializable
-         */
-        private Object writeReplace() throws NotSerializableException {
+    }
 
-            // slots transitions
-            final SortedSet<TimeSpanMap.Transition<Slot>> transitions     = slots.getTransitions();
-            final AbsoluteDate[]                          transitionDates = new AbsoluteDate[transitions.size()];
-            final Slot[]                                  allSlots        = new Slot[transitions.size() + 1];
-            int i = 0;
-            for (final TimeSpanMap.Transition<Slot> transition : transitions) {
-                if (i == 0) {
-                    // slot before the first transition
-                    allSlots[i] = transition.getBefore();
-                }
-                if (i < transitionDates.length) {
-                    transitionDates[i] = transition.getDate();
-                    allSlots[++i]      = transition.getAfter();
+    /**
+     * The coefficients used to compute the short periodic contribution for the Third body perturbation.
+     * <p>
+     * The short periodic contribution for the Third Body is expressed in Danielson 4.2-25.<br>
+     * The coefficients C<sub>i</sub>⁰, C<sub>i</sub><sup>j</sup>, S<sub>i</sub><sup>j</sup>
+     * are computed by replacing the corresponding values in formula 2.5.5-10.
+     * </p>
+     * @author Lucian Barbulescu
+     */
+    private static class FieldThirdBodyShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
+
+        /** Maximal value for j. */
+        private final int jMax;
+
+        /** Number of points used in the interpolation process. */
+        private final int interpolationPoints;
+
+        /** Max frequency of F. */
+        private final int    maxFreqF;
+
+        /** Coefficients prefix. */
+        private final String prefix;
+
+        /** All coefficients slots. */
+        private final transient FieldTimeSpanMap<FieldSlot<T>, T> slots;
+
+        /**
+         * Standard constructor.
+         * @param interpolationPoints number of points used in the interpolation process
+         * @param jMax maximal value for j
+         * @param maxFreqF Max frequency of F
+         * @param bodyName third body name
+         * @param slots all coefficients slots
+         */
+        FieldThirdBodyShortPeriodicCoefficients(final int jMax, final int interpolationPoints,
+                                                final int maxFreqF, final String bodyName,
+                                                final FieldTimeSpanMap<FieldSlot<T>, T> slots) {
+            this.jMax                = jMax;
+            this.interpolationPoints = interpolationPoints;
+            this.maxFreqF            = maxFreqF;
+            this.prefix              = DSSTThirdBody.SHORT_PERIOD_PREFIX + bodyName + "-";
+            this.slots               = slots;
+        }
+
+        /** Get the slot valid for some date.
+         * @param meanStates mean states defining the slot
+         * @return slot valid at the specified date
+         */
+        @SuppressWarnings("unchecked")
+        public FieldSlot<T> createSlot(final FieldSpacecraftState<T>... meanStates) {
+            final FieldSlot<T>         slot  = new FieldSlot<>(jMax, interpolationPoints);
+            final FieldAbsoluteDate<T> first = meanStates[0].getDate();
+            final FieldAbsoluteDate<T> last  = meanStates[meanStates.length - 1].getDate();
+            if (first.compareTo(last) <= 0) {
+                slots.addValidAfter(slot, first);
+            } else {
+                slots.addValidBefore(slot, first);
+            }
+            return slot;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public T[] value(final FieldOrbit<T> meanOrbit) {
+
+            // select the coefficients slot
+            final FieldSlot<T> slot = slots.get(meanOrbit.getDate());
+
+            // the current eccentric longitude
+            final T F = meanOrbit.getLE();
+
+            //initialize the short periodic contribution with the corresponding C⁰ coeficient
+            final T[] shortPeriodic = (T[]) slot.cij[0].value(meanOrbit.getDate());
+
+            // Add the cos and sin dependent terms
+            for (int j = 1; j <= maxFreqF; j++) {
+                //compute cos and sin
+                final T cosjF = FastMath.cos(F.multiply(j));
+                final T sinjF = FastMath.sin(F.multiply(j));
+
+                final T[] c = (T[]) slot.cij[j].value(meanOrbit.getDate());
+                final T[] s = (T[]) slot.sij[j].value(meanOrbit.getDate());
+                for (int i = 0; i < 6; i++) {
+                    shortPeriodic[i] = shortPeriodic[i].add(c[i].multiply(cosjF).add(s[i].multiply(sinjF)));
                 }
             }
 
-            return new DataTransferObject(jMax, interpolationPoints, maxFreqF, prefix,
-                                          transitionDates, allSlots);
+            return shortPeriodic;
 
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public String getCoefficientsKeyPrefix() {
+            return prefix;
+        }
 
-        /** Internal class used only for serialization. */
-        private static class DataTransferObject implements Serializable {
+        /** {@inheritDoc}
+         * <p>
+         * For third body attraction forces,there are maxFreqF + 1 cj coefficients,
+         * maxFreqF sj coefficients where maxFreqF depends on the orbit.
+         * The j index is the integer multiplier for the eccentric longitude argument
+         * in the cj and sj coefficients.
+         * </p>
+         */
+        @Override
+        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected) {
 
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20160319L;
+            // select the coefficients slot
+            final FieldSlot<T> slot = slots.get(date);
 
-            /** Maximum value for j index. */
-            private final int jMax;
-
-            /** Number of points used in the interpolation process. */
-            private final int interpolationPoints;
-
-            /** Max frequency of F. */
-            private final int    maxFreqF;
-
-            /** Coefficients prefix. */
-            private final String prefix;
-
-            /** Transitions dates. */
-            private final AbsoluteDate[] transitionDates;
-
-            /** All slots. */
-            private final Slot[] allSlots;
-
-            /** Simple constructor.
-             * @param jMax maximum value for j index
-             * @param interpolationPoints number of points used in the interpolation process
-             * @param maxFreqF max frequency of F
-             * @param prefix prefix for coefficients keys
-             * @param transitionDates transitions dates
-             * @param allSlots all slots
-             */
-            DataTransferObject(final int jMax, final int interpolationPoints,
-                               final int maxFreqF, final String prefix,
-                               final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
-                this.jMax                  = jMax;
-                this.interpolationPoints   = interpolationPoints;
-                this.maxFreqF              = maxFreqF;
-                this.prefix                = prefix;
-                this.transitionDates       = transitionDates;
-                this.allSlots              = allSlots;
+            final Map<String, T[]> coefficients = new HashMap<String, T[]>(2 * maxFreqF + 1);
+            storeIfSelected(coefficients, selected, slot.cij[0].value(date), "c", 0);
+            for (int j = 1; j <= maxFreqF; j++) {
+                storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
+                storeIfSelected(coefficients, selected, slot.sij[j].value(date), "s", j);
             }
+            return coefficients;
 
-            /** Replace the deserialized data transfer object with a {@link ThirdBodyShortPeriodicCoefficients}.
-             * @return replacement {@link ThirdBodyShortPeriodicCoefficients}
-             */
-            private Object readResolve() {
+        }
 
-                final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
-                for (int i = 0; i < transitionDates.length; ++i) {
-                    slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
-                }
-
-                return new ThirdBodyShortPeriodicCoefficients(jMax, interpolationPoints, maxFreqF, prefix, slots);
-
+        /** Put a coefficient in a map if selected.
+         * @param map map to populate
+         * @param selected set of coefficients that should be put in the map
+         * (empty set means all coefficients are selected)
+         * @param value coefficient value
+         * @param id coefficient identifier
+         * @param indices list of coefficient indices
+         */
+        private void storeIfSelected(final Map<String, T[]> map, final Set<String> selected,
+                                     final T[] value, final String id, final int... indices) {
+            final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
+            keyBuilder.append(id);
+            for (int index : indices) {
+                keyBuilder.append('[').append(index).append(']');
             }
-
+            final String key = keyBuilder.toString();
+            if (selected.isEmpty() || selected.contains(key)) {
+                map.put(key, value);
+            }
         }
 
     }
 
     /** Coefficients valid for one time slot. */
-    private static class Slot implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160319L;
+    private static class Slot {
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
@@ -2113,6 +3384,480 @@ public class DSSTThirdBody implements DSSTForceModel {
 
 
         }
+    }
+
+    /** Coefficients valid for one time slot. */
+    private static class FieldSlot <T extends RealFieldElement<T>> {
+
+        /** The coefficients C<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The index order is cij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final FieldShortPeriodicsInterpolatedCoefficient<T>[] cij;
+
+        /** The coefficients S<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The index order is sij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final FieldShortPeriodicsInterpolatedCoefficient<T>[] sij;
+
+        /** Simple constructor.
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
+         */
+        @SuppressWarnings("unchecked")
+        FieldSlot(final int jMax, final int interpolationPoints) {
+            // allocate the coefficients arrays
+            cij = (FieldShortPeriodicsInterpolatedCoefficient<T>[]) Array.newInstance(FieldShortPeriodicsInterpolatedCoefficient.class, jMax + 1);
+            sij = (FieldShortPeriodicsInterpolatedCoefficient<T>[]) Array.newInstance(FieldShortPeriodicsInterpolatedCoefficient.class, jMax + 1);
+            for (int j = 0; j <= jMax; j++) {
+                cij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
+                sij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
+            }
+
+
+        }
+    }
+
+    /** Compute potential and potential derivatives with respect to orbital parameters. */
+    private class UAnddU {
+
+        /** The current value of the U function. <br/>
+         * Needed for the short periodic contribution */
+        private double U;
+
+        /** dU / da. */
+        private  double dUda;
+
+        /** dU / dk. */
+        private double dUdk;
+
+        /** dU / dh. */
+        private double dUdh;
+
+        /** dU / dAlpha. */
+        private double dUdAl;
+
+        /** dU / dBeta. */
+        private double dUdBe;
+
+        /** dU / dGamma. */
+        private double dUdGa;
+
+        /** Simple constuctor.
+         * @param context container for attributes
+         * @param hansen hansen objects
+         */
+        UAnddU(final DSSTThirdBodyContext context,
+               final HansenObjects hansen) {
+            // Auxiliary elements related to the current orbit
+            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
+            // Gs and Hs coefficients
+            final double[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), context.getMaxEccPow());
+
+            // Initialise U.
+            U = 0.;
+
+            // Potential derivatives
+            dUda  = 0.;
+            dUdk  = 0.;
+            dUdh  = 0.;
+            dUdAl = 0.;
+            dUdBe = 0.;
+            dUdGa = 0.;
+
+            for (int s = 0; s <= context.getMaxEccPow(); s++) {
+
+                // initialise the Hansen roots
+                hansen.computeHansenObjectsInitValues(context, auxiliaryElements.getB(), s);
+
+                // Get the current Gs coefficient
+                final double gs = GsHs[0][s];
+
+                // Compute Gs partial derivatives from 3.1-(9)
+                double dGsdh  = 0.;
+                double dGsdk  = 0.;
+                double dGsdAl = 0.;
+                double dGsdBe = 0.;
+                if (s > 0) {
+                    // First get the G(s-1) and the H(s-1) coefficients
+                    final double sxGsm1 = s * GsHs[0][s - 1];
+                    final double sxHsm1 = s * GsHs[1][s - 1];
+                    // Then compute derivatives
+                    dGsdh  = context.getBeta()  * sxGsm1 - context.getAlpha() * sxHsm1;
+                    dGsdk  = context.getAlpha() * sxGsm1 + context.getBeta()  * sxHsm1;
+                    dGsdAl = auxiliaryElements.getK() * sxGsm1 - auxiliaryElements.getH() * sxHsm1;
+                    dGsdBe = auxiliaryElements.getH() * sxGsm1 + auxiliaryElements.getK() * sxHsm1;
+                }
+
+                // Kronecker symbol (2 - delta(0,s))
+                final double delta0s = (s == 0) ? 1. : 2.;
+
+                for (int n = FastMath.max(2, s); n <= context.getMaxAR3Pow(); n++) {
+                    // (n - s) must be even
+                    if ((n - s) % 2 == 0) {
+                        // Extract data from previous computation :
+                        final double kns   = hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
+                        final double dkns  = hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
+
+                        final double vns   = Vns.get(new NSKey(n, s));
+                        final double coef0 = delta0s * context.getAoR3Pow()[n] * vns;
+                        final double coef1 = coef0 * context.getQns()[n][s];
+                        final double coef2 = coef1 * kns;
+                        // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
+                        // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
+                        final double dqns = (n == s) ? 0. : context.getQns()[n][s + 1];
+
+                        //Compute U:
+                        U += coef2 * gs;
+
+                        // Compute dU / da :
+                        dUda  += coef2 * n * gs;
+                        // Compute dU / dh
+                        dUdh  += coef1 * (kns * dGsdh + context.getHXXX() * gs * dkns);
+                        // Compute dU / dk
+                        dUdk  += coef1 * (kns * dGsdk + context.getKXXX() * gs * dkns);
+                        // Compute dU / dAlpha
+                        dUdAl += coef2 * dGsdAl;
+                        // Compute dU / dBeta
+                        dUdBe += coef2 * dGsdBe;
+                        // Compute dU / dGamma
+                        dUdGa += coef0 * kns * dqns * gs;
+                    }
+                }
+            }
+
+            // multiply by mu3 / R3
+            this.U = U * context.getMuoR3();
+
+            this.dUda  = dUda  * context.getMuoR3() / auxiliaryElements.getSma();
+            this.dUdk  = dUdk  * context.getMuoR3();
+            this.dUdh  = dUdh  * context.getMuoR3();
+            this.dUdAl = dUdAl * context.getMuoR3();
+            this.dUdBe = dUdBe * context.getMuoR3();
+            this.dUdGa = dUdGa * context.getMuoR3();
+
+        }
+
+        /** Return value of U.
+         * @return U
+         */
+        public double getU() {
+            return U;
+        }
+
+        /** Return value of dU / da.
+         * @return dUda
+         */
+        public double getdUda() {
+            return dUda;
+        }
+
+        /** Return value of dU / dk.
+         * @return dUdk
+         */
+        public double getdUdk() {
+            return dUdk;
+        }
+
+        /** Return value of dU / dh.
+         * @return dUdh
+         */
+        public double getdUdh() {
+            return dUdh;
+        }
+
+        /** Return value of dU / dAlpha.
+         * @return dUdAl
+         */
+        public double getdUdAl() {
+            return dUdAl;
+        }
+
+        /** Return value of dU / dBeta.
+         * @return dUdBe
+         */
+        public double getdUdBe() {
+            return dUdBe;
+        }
+
+        /** Return value of dU / dGamma.
+         * @return dUdGa
+         */
+        public double getdUdGa() {
+            return dUdGa;
+        }
+
+    }
+
+    /** Compute potential and potential derivatives with respect to orbital parameters. */
+    private class FieldUAnddU <T extends RealFieldElement<T>> {
+
+        /** The current value of the U function. <br/>
+         * Needed for the short periodic contribution */
+        private T U;
+
+        /** dU / da. */
+        private T dUda;
+
+        /** dU / dk. */
+        private T dUdk;
+
+        /** dU / dh. */
+        private T dUdh;
+
+        /** dU / dAlpha. */
+        private T dUdAl;
+
+        /** dU / dBeta. */
+        private T dUdBe;
+
+        /** dU / dGamma. */
+        private T dUdGa;
+
+        /** Simple constuctor.
+         * @param context container for attributes
+         * @param hansen hansen objects
+         */
+        FieldUAnddU(final FieldDSSTThirdBodyContext<T> context,
+                    final FieldHansenObjects<T> hansen) {
+
+            // Auxiliary elements related to the current orbit
+            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+            // Field for array building
+            final Field<T> field = auxiliaryElements.getDate().getField();
+            // Zero for initialization
+            final T zero = field.getZero();
+
+            // Gs and Hs coefficients
+            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), context.getMaxEccPow(), field);
+
+            // Initialise U.
+            U = zero;
+
+            // Potential derivatives
+            dUda  = zero;
+            dUdk  = zero;
+            dUdh  = zero;
+            dUdAl = zero;
+            dUdBe = zero;
+            dUdGa = zero;
+
+            for (int s = 0; s <= context.getMaxEccPow(); s++) {
+                // initialise the Hansen roots
+                hansen.computeHansenObjectsInitValues(context, auxiliaryElements.getB(), s);
+
+                // Get the current Gs coefficient
+                final T gs = GsHs[0][s];
+
+                // Compute Gs partial derivatives from 3.1-(9)
+                T dGsdh  = zero;
+                T dGsdk  = zero;
+                T dGsdAl = zero;
+                T dGsdBe = zero;
+                if (s > 0) {
+                    // First get the G(s-1) and the H(s-1) coefficients
+                    final T sxGsm1 = GsHs[0][s - 1].multiply(s);
+                    final T sxHsm1 = GsHs[1][s - 1].multiply(s);
+                    // Then compute derivatives
+                    dGsdh  = sxGsm1.multiply(context.getBeta()).subtract(sxHsm1.multiply(context.getAlpha()));
+                    dGsdk  = sxGsm1.multiply(context.getAlpha()).add(sxHsm1.multiply(context.getBeta()));
+                    dGsdAl = sxGsm1.multiply(auxiliaryElements.getK()).subtract(sxHsm1.multiply(auxiliaryElements.getH()));
+                    dGsdBe = sxGsm1.multiply(auxiliaryElements.getH()).add(sxHsm1.multiply(auxiliaryElements.getK()));
+                }
+
+                // Kronecker symbol (2 - delta(0,s))
+                final T delta0s = zero.add((s == 0) ? 1. : 2.);
+
+                for (int n = FastMath.max(2, s); n <= context.getMaxAR3Pow(); n++) {
+                    // (n - s) must be even
+                    if ((n - s) % 2 == 0) {
+                        // Extract data from previous computation :
+                        final T kns   = (T) hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
+                        final T dkns  = (T) hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
+
+                        final double vns = Vns.get(new NSKey(n, s));
+                        final T coef0 = delta0s.multiply(vns).multiply(context.getAoR3Pow()[n]);
+                        final T coef1 = coef0.multiply(context.getQns()[n][s]);
+                        final T coef2 = coef1.multiply(kns);
+                        // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
+                        // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
+                        final T dqns = (n == s) ? zero : context.getQns()[n][s + 1];
+
+                        //Compute U:
+                        U = U.add(coef2.multiply(gs));
+
+                        // Compute dU / da :
+                        dUda  = dUda.add(coef2.multiply(n).multiply(gs));
+                        // Compute dU / dh
+                        dUdh  = dUdh.add(coef1.multiply(dGsdh.multiply(kns).add(context.getHXXX().multiply(gs).multiply(dkns))));
+                        // Compute dU / dk
+                        dUdk  = dUdk.add(coef1.multiply(dGsdk.multiply(kns).add(context.getKXXX().multiply(gs).multiply(dkns))));
+                        // Compute dU / dAlpha
+                        dUdAl = dUdAl.add(coef2.multiply(dGsdAl));
+                        // Compute dU / dBeta
+                        dUdBe = dUdBe.add(coef2.multiply(dGsdBe));
+                        // Compute dU / dGamma
+                        dUdGa = dUdGa.add(coef0.multiply(kns).multiply(dqns).multiply(gs));
+                    }
+                }
+            }
+
+            // multiply by mu3 / R3
+            this.U = U.multiply(context.getMuoR3());
+
+            this.dUda  = dUda.multiply(context.getMuoR3().divide(auxiliaryElements.getSma()));
+            this.dUdk  = dUdk.multiply(context.getMuoR3());
+            this.dUdh  = dUdh.multiply(context.getMuoR3());
+            this.dUdAl = dUdAl.multiply(context.getMuoR3());
+            this.dUdBe = dUdBe.multiply(context.getMuoR3());
+            this.dUdGa = dUdGa.multiply(context.getMuoR3());
+
+        }
+
+        /** Return value of U.
+         * @return U
+         */
+        public T getU() {
+            return U;
+        }
+
+        /** Return value of dU / da.
+         * @return dUda
+         */
+        public T getdUda() {
+            return dUda;
+        }
+
+        /** Return value of dU / dk.
+         * @return dUdk
+         */
+        public T getdUdk() {
+            return dUdk;
+        }
+
+        /** Return value of dU / dh.
+         * @return dUdh
+         */
+        public T getdUdh() {
+            return dUdh;
+        }
+
+        /** Return value of dU / dAlpha.
+         * @return dUdAl
+         */
+        public T getdUdAl() {
+            return dUdAl;
+        }
+
+        /** Return value of dU / dBeta.
+         * @return dUdBe
+         */
+        public T getdUdBe() {
+            return dUdBe;
+        }
+
+        /** Return value of dU / dGamma.
+         * @return dUdGa
+         */
+        public T getdUdGa() {
+            return dUdGa;
+        }
+
+    }
+
+    /** Computes init values of the Hansen Objects. */
+    private static class HansenObjects {
+
+        /** Max power for summation. */
+        private static final int    MAX_POWER = 22;
+
+        /** An array that contains the objects needed to build the Hansen coefficients. <br/>
+         * The index is s */
+        private final HansenThirdBodyLinear[] hansenObjects;
+
+        /** Simple constructor. */
+        HansenObjects() {
+            this.hansenObjects = new HansenThirdBodyLinear[MAX_POWER + 1];
+            for (int s = 0; s <= MAX_POWER; s++) {
+                this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
+            }
+        }
+
+        /** Compute init values for hansen objects.
+         * @param context container for attributes
+         * @param B = sqrt(1 - e²).
+         * @param element element of the array to compute the init values
+         */
+        public void computeHansenObjectsInitValues(final DSSTThirdBodyContext context, final double B, final int element) {
+            hansenObjects[element].computeInitValues(B, context.getBB(), context.getBBB());
+        }
+
+        /** Get the Hansen Objects.
+         * @return hansenObjects
+         */
+        public HansenThirdBodyLinear[] getHansenObjects() {
+            return hansenObjects;
+        }
+
+    }
+
+    /** Computes init values of the Hansen Objects. */
+    private static class FieldHansenObjects<T extends RealFieldElement<T>> {
+
+        /** Max power for summation. */
+        private static final int    MAX_POWER = 22;
+
+        /** An array that contains the objects needed to build the Hansen coefficients. <br/>
+         * The index is s */
+        private final FieldHansenThirdBodyLinear<T>[] hansenObjects;
+
+        /** Simple constructor.
+         * @param field field used by default
+         */
+        @SuppressWarnings("unchecked")
+        FieldHansenObjects(final Field<T> field) {
+            this.hansenObjects = (FieldHansenThirdBodyLinear<T>[]) Array.newInstance(FieldHansenThirdBodyLinear.class, MAX_POWER + 1);
+            for (int s = 0; s <= MAX_POWER; s++) {
+                this.hansenObjects[s] = new FieldHansenThirdBodyLinear<>(MAX_POWER, s, field);
+            }
+        }
+
+        /** Initialise the Hansen roots for third body problem.
+         * @param context container for attributes
+         * @param B = sqrt(1 - e²).
+         * @param element element of the array to compute the init values
+         */
+        public void computeHansenObjectsInitValues(final FieldDSSTThirdBodyContext<T> context,
+                                                   final T B, final int element) {
+            hansenObjects[element].computeInitValues(B, context.getBB(), context.getBBB());
+        }
+
+        /** Get the Hansen Objects.
+         * @return hansenObjects
+         */
+        public FieldHansenThirdBodyLinear<T>[] getHansenObjects() {
+            return hansenObjects;
+        }
+
     }
 
 }

@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.hipparchus.util.Pair;
 import org.orekit.data.DataLoader;
@@ -40,7 +41,7 @@ import org.orekit.errors.OrekitMessages;
  * <p>The format of the files holding Yuma almanacs is not precisely specified,
  * so the parsing rules have been deduced from the downloadable files at
  * <a href="http://www.navcen.uscg.gov/?pageName=gpsAlmanacs">NAVCEN</a>
- * and at <a href="http://celestrak.com/GPS/almanac/Yuma/">CelesTrak</a>.</p>
+ * and at <a href="https://celestrak.com/GPS/almanac/Yuma/">CelesTrak</a>.</p>
  *
  * @author Pascal Parraud
  * @since 8.0
@@ -222,55 +223,56 @@ public class YUMAParser implements DataLoader {
             final boolean[] checks = new boolean[KEY.length];
             // Loop over entries
             for (Pair<String, String> entry: entries) {
-                if (entry.getKey().toLowerCase().startsWith(KEY[0])) {
+                final String lowerCaseKey = entry.getKey().toLowerCase(Locale.US);
+                if (lowerCaseKey.startsWith(KEY[0])) {
                     // Gets the PRN of the SVN
                     prn = Integer.parseInt(entry.getValue());
                     checks[0] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[1])) {
+                } else if (lowerCaseKey.startsWith(KEY[1])) {
                     // Gets the Health status
                     health = Integer.parseInt(entry.getValue());
                     checks[1] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[2])) {
+                } else if (lowerCaseKey.startsWith(KEY[2])) {
                     // Gets the eccentricity
                     ecc = Double.parseDouble(entry.getValue());
                     checks[2] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[3])) {
+                } else if (lowerCaseKey.startsWith(KEY[3])) {
                     // Gets the Time of Applicability
                     toa = Double.parseDouble(entry.getValue());
                     checks[3] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[4])) {
+                } else if (lowerCaseKey.startsWith(KEY[4])) {
                     // Gets the Inclination
                     inc = Double.parseDouble(entry.getValue());
                     checks[4] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[5])) {
+                } else if (lowerCaseKey.startsWith(KEY[5])) {
                     // Gets the Rate of Right Ascension
                     dom = Double.parseDouble(entry.getValue());
                     checks[5] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[6])) {
+                } else if (lowerCaseKey.startsWith(KEY[6])) {
                     // Gets the square root of the semi-major axis
                     sqa = Double.parseDouble(entry.getValue());
                     checks[6] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[7])) {
+                } else if (lowerCaseKey.startsWith(KEY[7])) {
                     // Gets the Right Ascension of Ascending Node
                     om0 = Double.parseDouble(entry.getValue());
                     checks[7] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[8])) {
+                } else if (lowerCaseKey.startsWith(KEY[8])) {
                     // Gets the Argument of Perigee
                     aop = Double.parseDouble(entry.getValue());
                     checks[8] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[9])) {
+                } else if (lowerCaseKey.startsWith(KEY[9])) {
                     // Gets the Mean Anomalie
                     anom = Double.parseDouble(entry.getValue());
                     checks[9] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[10])) {
+                } else if (lowerCaseKey.startsWith(KEY[10])) {
                     // Gets the SV clock bias
                     af0 = Double.parseDouble(entry.getValue());
                     checks[10] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[11])) {
+                } else if (lowerCaseKey.startsWith(KEY[11])) {
                     // Gets the SV clock Drift
                     af1 = Double.parseDouble(entry.getValue());
                     checks[11] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[12])) {
+                } else if (lowerCaseKey.startsWith(KEY[12])) {
                     // Gets the week number
                     week = Integer.parseInt(entry.getValue());
                     checks[12] = true;

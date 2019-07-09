@@ -18,6 +18,7 @@ package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class FieldStopOnDecreasingTest {
                                                                                          PositionAngle.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
-                                                                                         Constants.EIGEN5C_EARTH_MU));
+                                                                                         zero.add(Constants.EIGEN5C_EARTH_MU)));
         Assert.assertSame(s, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().resetState(null, s));
     }
 
@@ -74,8 +75,9 @@ public class FieldStopOnDecreasingTest {
                                                                                          PositionAngle.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
-                                                                                         Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(FieldEventHandler.Action.CONTINUE, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
+                                                                                         zero.add(Constants.EIGEN5C_EARTH_MU)));
+
+        Assert.assertSame(Action.CONTINUE, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
     }
 
     private <T extends RealFieldElement<T>> void doTestDecreasing(Field<T> field) {
@@ -90,8 +92,9 @@ public class FieldStopOnDecreasingTest {
                                                                                          PositionAngle.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
-                                                                                         Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(FieldEventHandler.Action.STOP, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, false));
+                                                                                         zero.add(Constants.EIGEN5C_EARTH_MU)));
+
+        Assert.assertSame(Action.STOP, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, false));
     }
 
 }

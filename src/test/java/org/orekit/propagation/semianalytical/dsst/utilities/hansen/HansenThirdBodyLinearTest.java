@@ -91,9 +91,7 @@ public class HansenThirdBodyLinearTest {
 
     private void doTestLinearVsRecursive(final double ecc, final double tol) {
         final int N = 22;
-
         final double chi = 1.0 / FastMath.sqrt(1 - ecc * ecc);
-
         final HansenThirdBodyLinear[] htbl = new HansenThirdBodyLinear[N + 1];
 
         for (int s = 0; s <= N; s++) {
@@ -110,6 +108,7 @@ public class HansenThirdBodyLinearTest {
                 maxRelativeError = FastMath.max(maxRelativeError, relativeError);
             }
         }
+        
         Assert.assertEquals(0.0, maxRelativeError, tol);
 
     }

@@ -35,9 +35,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class FixedRate implements AttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6874119218379303688L;
-
     /** Reference attitude.  */
     private final Attitude referenceAttitude;
 

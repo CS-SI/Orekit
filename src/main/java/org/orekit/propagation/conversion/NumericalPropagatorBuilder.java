@@ -22,6 +22,11 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.estimation.leastsquares.BatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -29,12 +34,13 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -173,4 +179,20 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
         return propagator;
     }
+
+    /** {@inheritDoc} */
+    public BatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
+                            final List<ObservedMeasurement<?>> measurements,
+                            final ParameterDriversList estimatedMeasurementsParameters,
+                            final ModelObserver observer) {
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+    }
+
+    /** {@inheritDoc} */
+    public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                  final ParameterDriversList estimatedMeasurementsParameters) {
+        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
+    }
+
 }

@@ -169,7 +169,7 @@ public class FixedRateTest {
             new FieldPVCoordinates<>(field.getOne(),
                                      new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                                                        new Vector3D(0, 0, 3680.853673522056)));
-        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, date, 3.986004415e14);
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, date, zero.add(3.986004415e14));
         FieldRotation<T> attitude0 = law.getAttitude(orbit, date, frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
         FieldRotation<T> attitude1 = law.getAttitude(orbit.shiftedBy(zero.add(10.0)), date.shiftedBy(10.0), frame).getRotation();
@@ -199,7 +199,7 @@ public class FixedRateTest {
                         new FieldPVCoordinates<>(field.getOne(),
                                                  new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                                                                    new Vector3D(0, 0, 3680.853673522056)));
-        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
         FieldRotation<T> attitude0 = law.getAttitude(orbit, date, frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
         FieldRotation<T> attitude1 = law.getAttitude(orbit.shiftedBy(zero.add(10.0)), date.shiftedBy(10.0), frame).getRotation();
@@ -239,7 +239,7 @@ public class FixedRateTest {
                                       zero.add(FastMath.toRadians(10.)),
                                       zero.add(FastMath.toRadians(20.)),
                                       zero.add(FastMath.toRadians(30.)), PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, 3.986004415e14);
+                                      FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit, law);
 

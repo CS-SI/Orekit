@@ -22,15 +22,15 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 
-/** Observer for {@link Model model} calls.
+/** Observer for {@link BatchLSModel model} calls.
  * <p>
  * This interface is an internal one intended to pass the orbit
- * back from {@link Model model} to {@link BatchLSEstimator estimator}.
+ * back from {@link BatchLSModel model} to {@link BatchLSEstimator estimator}.
  * </p>
  * @author Luc Maisonobe
  * @since 8.0
  */
-interface ModelObserver {
+public interface ModelObserver {
 
     /** Notification callback for orbit changes.
      * @param orbits current estimated orbits

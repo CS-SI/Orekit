@@ -55,52 +55,6 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     private final boolean twoway;
 
     /** Simple constructor.
-     * <p>
-     * This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.
-     * </p>
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param rangeRate observed value, m/s
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param twoway if true, this is a two-way measurement
-     * @deprecated since 9.3 replaced by {@link #RangeRate(GroundStation, AbsoluteDate,
-     * double, double, double, boolean, ObservableSatellite)}
-     */
-    @Deprecated
-    public RangeRate(final GroundStation station, final AbsoluteDate date,
-                     final double rangeRate,
-                     final double sigma,
-                     final double baseWeight,
-                     final boolean twoway) {
-        this(station, date, rangeRate, sigma, baseWeight, twoway, new ObservableSatellite(0));
-    }
-
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param rangeRate observed value, m/s
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param twoway if true, this is a two-way measurement
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.0
-     * @deprecated since 9.3 replaced by {@link #RangeRate(GroundStation, AbsoluteDate,
-     * double, double, double, boolean, ObservableSatellite)}
-     */
-    @Deprecated
-    public RangeRate(final GroundStation station, final AbsoluteDate date,
-                     final double rangeRate,
-                     final double sigma,
-                     final double baseWeight,
-                     final boolean twoway,
-                     final int propagatorIndex) {
-        this(station, date, rangeRate, sigma, baseWeight, twoway, new ObservableSatellite(propagatorIndex));
-    }
-
-    /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param rangeRate observed value, m/s

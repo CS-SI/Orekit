@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -25,10 +26,8 @@ import org.orekit.utils.PVCoordinates;
 
 /** Finder for apside crossing events.
  * <p>This class finds apside crossing events (i.e. apogee or perigee crossing).</p>
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
- * propagation at apogee crossing and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at apogee crossing and to {@link Action#STOP stop} propagation
  * at perigee crossing. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * <p>Beware that apside detection will fail for almost circular orbits. If
@@ -40,9 +39,6 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  */
 public class ApsideDetector extends AbstractDetector<ApsideDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the

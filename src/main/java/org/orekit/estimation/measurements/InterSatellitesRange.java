@@ -73,30 +73,6 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
     private final boolean twoway;
 
     /** Simple constructor.
-     * @param localIndex index of local satellite propagator
-     * (i.e. the satellite which receives the signal and performs
-     * the measurement)
-     * @param remoteIndex index of remote satellite propagator
-     * (i.e. the satellite which simply emits the signal in the one-way
-     * case, or reflects the signal in the two-way case)
-     * @param twoWay flag indicating whether it is a two-way measurement
-     * @param date date of the measurement
-     * @param range observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @deprecated as of 9.3, replaced by {@link #InterSatellitesRange(ObservableSatellite, ObservableSatellite,
-     * boolean, AbsoluteDate, double, double, double)}
-     */
-    @Deprecated
-    public InterSatellitesRange(final int localIndex, final int remoteIndex,
-                                final boolean twoWay,
-                                final AbsoluteDate date, final double range,
-                                final double sigma, final double baseWeight) {
-        this(new ObservableSatellite(localIndex), new ObservableSatellite(remoteIndex),
-             twoWay, date, range, sigma, baseWeight);
-    }
-
-    /** Simple constructor.
      * @param local satellite which receives the signal and performs the measurement
      * @param remote satellite which simply emits the signal in the one-way case,
      * or reflects the signal in the two-way case

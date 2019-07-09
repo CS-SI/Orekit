@@ -241,7 +241,7 @@ into `orekit-data` and add the following lines at the start of your program:
 This zip file contains JPL DE 430 ephemerides from 1990
 to 2069, IERS Earth orientation parameters from 1973 (both IAU-1980
 and IAU-2000), UTC-TAI history from 1972,
-Marshall Solar Activity Futur Estimation from 1999 to mid 2016,
+Marshall Solar Activity Futur Estimation from 1999,
 the Eigen 06S gravity field and the FES 2004 ocean tides model.
 
 ## Supported data types
@@ -282,7 +282,8 @@ the XML format and the columns format.
 | eigen\_\*\_coef[.gz|.Z]                          |  SHM format        | Eigen gravity field (old format)                                                         | [http://op.gfz-potsdam.de/grace/results/main\_RESULTS.html#gravity](http://op.gfz-potsdam.de/grace/results/main_RESULTS.html#gravity)            |
 | \*.gfc, g\#\#\#\_eigen\_\*\_coef[.gz|.Z]         |  ICGEM format      | gravity fields from International Centre for Global Earth Models                         | [http://icgem.gfz-potsdam.de/ICGEM/modelstab.html](http://icgem.gfz-potsdam.de/ICGEM/modelstab.html)                                             |
 | egm\#\#\_to\#\*[.gz|.Z]                          |  EGM format        | EGM gravity field                                                                        | [ftp://cddis.gsfc.nasa.gov/pub/egm96/general\_info](ftp://cddis.gsfc.nasa.gov/pub/egm96/general_info)                                            |
-| Jan\#\#\#\#F10.txt to Dec\#\#\#\#F10.txt[.gz|.Z] |  MSAFE format      | Marshall Solar Activity Future Estimation                                                | [https://sail.msfc.nasa.gov/index\_archive.htm](https://sail.msfc.nasa.gov/index_archive.htm)                                                    |
+| jan\#\#\#\#f10.txt to dec\#\#\#\#f10[_prd].txt[.gz|.Z] |  MSAFE format      | Marshall Solar Activity Future Estimation                                                | [https://www.nasa.gov/msfcsolar/archivedforecast](https://www.nasa.gov/msfcsolar/archivedforecast)                                                    |
 | CGIM\#\#\#0.\#\#N [.gz|.Z]                       |  Bern Astronomical Institute format  | Klobuchar coefficients                                                 | [ftp://ftp.aiub.unibe.ch/aiub/CODE/](ftp://ftp.aiub.unibe.ch/aiub/CODE/)                                                                         |
 | \*.blq[.gz|.Z]                                   |  Onsala Space Observatory BLQ format | ocean loading coefficients                                             | [http://holt.oso.chalmers.se/loading/](http://holt.oso.chalmers.se/loading/)                                                                     |
+| itrf-versions.conf                               |  Orekit itrf-versions.conf | Maps EOP files to ITRF versions                                                  | [Orekit Physical Data Archive](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)                             |
 Supported data types

@@ -18,10 +18,18 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
  *  org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -32,19 +40,16 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  *  </p>
  *  <p>
  *  The propagator will call at the very beginning of a propagation the {@link
- *  #initialize(AuxiliaryElements, boolean)} method allowing preliminary computation
- *  such as truncation if needed.
+ *  #initialize(AuxiliaryElements, PropagationType, double[])} method allowing
+ *  preliminary computation such as truncation if needed.
  *  </p>
  *  <p>
  *  Then the propagator will call at each step:
  *  <ol>
- *  <li>the {@link #initializeStep(AuxiliaryElements)} method.
- *  The force model instance will extract all the elements needed before
- *  computing the mean element rates.</li>
- *  <li>the {@link #getMeanElementRate(SpacecraftState)} method.
+ *  <li>the {@link #getMeanElementRate(SpacecraftState, AuxiliaryElements, double[])} method.
  *  The force model instance will extract all the state data needed to compute
  *  the mean element rates that contribute to the mean state derivative.</li>
- *  <li>the {@link #updateShortPeriodTerms(SpacecraftState...)} method,
+ *  <li>the {@link #updateShortPeriodTerms(double[], SpacecraftState...)} method,
  *  if osculating parameters are desired, on a sample of points within the
  *  last step.</li>
  *  </ol>
@@ -58,33 +63,92 @@ public interface DSSTForceModel {
      *  <p>
      *  This method aims at being called at the very beginning of a propagation.
      *  </p>
-     *  @param aux auxiliary elements related to the current orbit
-     *  @param meanOnly only mean elements are used during the propagation
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param type type of the elements used during the propagation
+     *  @param parameters values of the force model parameters
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      */
-    List<ShortPeriodTerms> initialize(AuxiliaryElements aux, boolean meanOnly);
+    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
+                                      PropagationType type, double[] parameters);
 
-    /** Performs initialization at each integration step for the current force model.
+    /** Performs initialization prior to propagation for the current force model.
      *  <p>
-     *  This method aims at being called before mean elements rates computation.
+     *  This method aims at being called at the very beginning of a propagation.
      *  </p>
-     *  @param aux auxiliary elements related to the current orbit
+     *  @param <T> type of the elements
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param type type of the elements used during the propagation
+     *  @param parameters values of the force model parameters
+     *  @return a list of objects that will hold short period terms (the objects
+     *  are also retained by the force model, which will update them during propagation)
      */
-    void initializeStep(AuxiliaryElements aux);
+    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                              PropagationType type, T[] parameters);
+
+    /** Get force model parameters.
+     * @return force model parameters
+     * @since 9.0
+     */
+    default double[] getParameters() {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.length];
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = drivers[i].getValue();
+        }
+        return parameters;
+    }
+
+    /** Get force model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @return force model parameters
+     * @since 9.0
+     */
+    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.length);
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = field.getZero().add(drivers[i].getValue());
+        }
+        return parameters;
+    }
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
      *  @param state current state information: date, kinematics, attitude
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters values of the force model parameters
      *  @return the mean element rates dai/dt
      */
-    double[] getMeanElementRate(SpacecraftState state);
+    double[] getMeanElementRate(SpacecraftState state,
+                                AuxiliaryElements auxiliaryElements, double[] parameters);
+
+    /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
+     *
+     *  @param <T> type of the elements
+     *  @param state current state information: date, kinematics, attitude
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters values of the force model parameters
+     *  @return the mean element rates dai/dt
+     */
+    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
+                                                           FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
+
 
     /** Get the discrete events related to the model.
      * @return array of events detectors or null if the model is not
      * related to any discrete events
      */
     EventDetector[] getEventsDetectors();
+
+    /** Get the discrete events related to the model.
+     * @param <T> type of the elements
+     * @param field field used by default
+     * @return array of events detectors or null if the model is not
+     * related to any discrete events
+     */
+    <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field);
 
     /** Register an attitude provider.
      * <p>
@@ -98,10 +162,29 @@ public interface DSSTForceModel {
      * <p>
      * The {@link ShortPeriodTerms short period terms} that will be updated
      * are the ones that were returned during the call to {@link
-     * #initialize(AuxiliaryElements, boolean)}.
+     * #initialize(AuxiliaryElements, PropagationType, double[])}.
      * </p>
+     * @param parameters values of the force model parameters
      * @param meanStates mean states information: date, kinematics, attitude
      */
-    void updateShortPeriodTerms(SpacecraftState... meanStates);
+    void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates);
+
+    /** Update the short period terms.
+     * <p>
+     * The {@link ShortPeriodTerms short period terms} that will be updated
+     * are the ones that were returned during the call to {@link
+     * #initialize(AuxiliaryElements, PropagationType, double[])}.
+     * </p>
+     * @param <T> type of the elements
+     * @param parameters values of the force model parameters
+     * @param meanStates mean states information: date, kinematics, attitude
+     */
+    @SuppressWarnings("unchecked")
+    <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates);
+
+    /** Get the drivers for force model parameters.
+     * @return drivers for force model parameters
+     */
+    ParameterDriver[] getParametersDrivers();
 
 }

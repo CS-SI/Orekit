@@ -42,13 +42,14 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.SatelliteType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.GPSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -136,7 +137,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 final FieldCartesianOrbit<Decimal64> orbit64 = new FieldCartesianOrbit<>(pv64,
                                                                                          parsedLine.orbit.getFrame(),
                                                                                          date64,
-                                                                                         parsedLine.orbit.getMu());
+                                                                                         field.getZero().add(parsedLine.orbit.getMu()));
                 final FieldAttitude<Decimal64> attitude64 =
                                 attitudeProvider.getAttitude(orbit64, orbit64.getDate(), parsedLine.orbit.getFrame());
                 final Attitude attitude2 = attitude64.toAttitude();
@@ -239,7 +240,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     private static class ParsedLine {
 
-        final GPSDate       gpsDate;
+        final GNSSDate      gpsDate;
         final int           prnNumber;
         final SatelliteType satType;
         final Orbit         orbit;
@@ -248,7 +249,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
         ParsedLine(final String line, final Frame eme2000, final Frame itrf) {
             final String[] fields = line.split("\\s+");
-            gpsDate    = new GPSDate(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]));
+            gpsDate    = new GNSSDate(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]), SatelliteSystem.GPS);
             final Transform t = itrf.getTransformTo(eme2000, gpsDate.getDate());
             prnNumber  = Integer.parseInt(fields[3].substring(1));
             satType    = SatelliteType.parseSatelliteType(fields[4].replaceAll("[-_ ]", ""));

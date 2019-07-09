@@ -81,7 +81,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                                                                      position,
                                                                                                                      velocity,
                                                                                                                      zero),
-                                                                                 frame, mu),
+                                                                                 frame, field.getZero().add(mu)),
                                                       new FieldAttitude<>(frame,
                                                                       new TimeStampedFieldAngularCoordinates<>(dsDate,
                                                                                                                rotation,

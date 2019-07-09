@@ -39,17 +39,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.Atmosphere;
-import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.atmosphere.Atmosphere;
+import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -76,7 +75,7 @@ public class JacobianPropagatorConverterTest {
     private double crossSection;
 
     @Test
-    public void testDerivativesNothing() throws OrekitException  {
+    public void testDerivativesNothing() {
         try {
             doTestDerivatives(1.0, 1.0);
             Assert.fail("an exception should have been thrown");
@@ -86,38 +85,38 @@ public class JacobianPropagatorConverterTest {
     }
 
     @Test
-    public void testDerivativesOrbitOnly() throws OrekitException  {
+    public void testDerivativesOrbitOnly() {
         doTestDerivatives(4.8e-9, 3.5e-12,
                           "Px", "Py", "Pz", "Vx", "Vy", "Vz");
     }
 
     @Test
-    public void testDerivativesPositionAndDrag() throws OrekitException  {
+    public void testDerivativesPositionAndDrag() {
         doTestDerivatives(5.1e-9, 4.8e-12,
                           "Px", "Py", "Pz", DragSensitive.DRAG_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesDrag() throws OrekitException  {
+    public void testDerivativesDrag() {
         doTestDerivatives(3.2e-9, 3.2e-12,
                           DragSensitive.DRAG_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesCentralAttraction() throws OrekitException  {
+    public void testDerivativesCentralAttraction() {
         doTestDerivatives(3.6e-9, 4.0e-12,
                           NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesAllParameters() throws OrekitException  {
+    public void testDerivativesAllParameters() {
         doTestDerivatives(1.1e-8, 1.1e-11,
                           "Px", "Py", "Pz", "Vx", "Vy", "Vz",
                           DragSensitive.DRAG_COEFFICIENT,
                           NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
-    private void doTestDerivatives(double tolP, double tolV, String... names) throws OrekitException  {
+    private void doTestDerivatives(double tolP, double tolV, String... names) {
 
         // we use a fixed step integrator on purpose
         // as the test is based on external differentiation using finite differences,

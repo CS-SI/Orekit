@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.frames.FramesFactory;
@@ -23,7 +24,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -46,7 +46,7 @@ public class StopOnIncreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(EventHandler.Action.STOP, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, true));
+        Assert.assertSame(Action.STOP, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, true));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class StopOnIncreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(EventHandler.Action.CONTINUE, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, false));
+        Assert.assertSame(Action.CONTINUE, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, false));
     }
 
 }

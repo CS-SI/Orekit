@@ -26,7 +26,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
- * Attitude providers for GPS block IIR navigation satellites.
+ * Attitude providers for GPS block IIA navigation satellites.
  * <p>
  * This class is based on the May 2017 version of J. Kouba eclips.f
  * subroutine available at <a href="http://acc.igs.org/orbits">IGS Analysis
@@ -40,8 +40,17 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
+    /** Default yaw bias (rad). */
+    public static final double DEFAULT_YAW_BIAS = FastMath.toRadians(0.5);
+
+    /** Satellite-Sun angle limit for a midnight turn maneuver. */
+    private static final double NIGHT_TURN_LIMIT = FastMath.toRadians(180.0 - 13.25);
+
+    /** Margin on turn end. */
+    private static final double END_MARGIN = 1800.0;
+
     /** Default yaw rates for all spacecrafts in radians per seconds (indexed by prnNumber, hence entry 0 is unused). */
-    public static final double[] DEFAULT_YAW_RATES = new double[] {
+    private static final double[] DEFAULT_YAW_RATES = new double[] {
         Double.NaN,  // unused entry 0
         FastMath.toRadians(0.1211), FastMath.toRadians(0.1339), FastMath.toRadians(0.1230), FastMath.toRadians(0.1233),
         FastMath.toRadians(0.1180), FastMath.toRadians(0.1266), FastMath.toRadians(0.1269), FastMath.toRadians(0.1033),
@@ -53,18 +62,6 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
         FastMath.toRadians(0.1228), FastMath.toRadians(0.1165), FastMath.toRadians(0.0969), FastMath.toRadians(0.1140)
     };
 
-    /** Default yaw bias (rad). */
-    public static final double DEFAULT_YAW_BIAS = FastMath.toRadians(0.5);
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
-    /** Satellite-Sun angle limit for a midnight turn maneuver. */
-    private static final double NIGHT_TURN_LIMIT = FastMath.toRadians(180.0 - 13.25);
-
-    /** Margin on turn end. */
-    private final double END_MARGIN = 1800.0;
-
     /** Yaw rate for current spacecraft. */
     private final double yawRate;
 
@@ -72,25 +69,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
     private final double yawBias;
 
     /** Simple constructor.
-     * @param yawRate yaw rate to use in radians per seconds (typically {@link #DEFAULT_YAW_RATES}{@code [prnNumber]})
-     * @param yawBias yaw bias to use (rad) (typicall {@link #DEFAULT_YAW_BIAS})
-     * @param validityStart start of validity for this provider
-     * @param validityEnd end of validity for this provider
-     * @param sun provider for Sun position
-     * @param inertialFrame inertial frame where velocity are computed
-     * @param prnNumber number within the GPS constellation (between 1 and 32)
-     * @deprecated as of 9.3 replaced by {@link #GPSBlockIIA(double, double,
-     * AbsoluteDate, AbsoluteDate, ExtendedPVCoordinatesProvider, Frame)}
-     */
-    @Deprecated
-    public GPSBlockIIA(final double yawRate, final double yawBias,
-                       final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                       final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame, final int prnNumber) {
-        this(yawRate, yawBias, validityStart, validityEnd, sun, inertialFrame);
-    }
-
-    /** Simple constructor.
-     * @param yawRate yaw rate to use in radians per seconds (typically {@link #DEFAULT_YAW_RATES}{@code [prnNumber]})
+     * @param yawRate yaw rate to use in radians per seconds (typically {@link #getDefaultYawRate(int) GPSBlockIIA.getDefaultYawRate(prnNumber)})
      * @param yawBias yaw bias to use (rad) (typicall {@link #DEFAULT_YAW_BIAS})
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
@@ -104,6 +83,15 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
         super(validityStart, validityEnd, sun, inertialFrame);
         this.yawRate = yawRate;
         this.yawBias = yawBias;
+    }
+
+    /** Get the default yaw rate for a satellite.
+     * @param prnNumber satellite PRN
+     * @return default yaw rate for the specified satellite
+     * @since 10.0
+     */
+    public static double getDefaultYawRate(final int prnNumber) {
+        return DEFAULT_YAW_RATES[prnNumber];
     }
 
     /** {@inheritDoc} */

@@ -309,7 +309,6 @@ public class HansenThirdBodyLinear {
      * @return the coefficient K₀<sup>n, s</sup>
      */
     public double getValue(final int n, final double chitm1) {
-
         //Compute the potential slice
         int sliceNo = (n - s) / SLICE;
         if (sliceNo < numSlices) {

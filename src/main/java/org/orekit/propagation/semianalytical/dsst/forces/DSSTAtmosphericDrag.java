@@ -16,15 +16,23 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.Atmosphere;
+import org.orekit.models.earth.atmosphere.Atmosphere;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 
 /** Atmospheric drag contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -56,20 +64,22 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      * @param atmosphere atmospheric model
      * @param cd drag coefficient
      * @param area cross sectionnal area of satellite
+     * @param mu central attraction coefficient
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd,
-            final double area) {
-        this(atmosphere, new IsotropicDrag(area, cd));
+                               final double area, final double mu) {
+        this(atmosphere, new IsotropicDrag(area, cd), mu);
     }
 
     /** Simple constructor with custom spacecraft.
      * @param atmosphere atmospheric model
      * @param spacecraft spacecraft model
+     * @param mu central attraction coefficient
      */
-    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft) {
+    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft, final double mu) {
 
         //Call to the constructor from superclass using the numerical drag model as ForceModel
-        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft));
+        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft), mu);
 
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
@@ -100,22 +110,65 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(final SpacecraftState state) {
-        final double perigee = a * (1. - ecc);
+    @Override
+    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    protected double[] getLLimits(final SpacecraftState state, final AuxiliaryElements auxiliaryElements) {
+
+        final double perigee = auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc());
+
         // Trajectory entirely out of the atmosphere
         if (perigee > rbar) {
             return new double[2];
         }
-        final double apogee  = a * (1. + ecc);
+        final double apogee  = auxiliaryElements.getSma() * (1. + auxiliaryElements.getEcc());
         // Trajectory entirely within of the atmosphere
         if (apogee < rbar) {
             return new double[]{-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
                                 FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
         }
         // Else, trajectory partialy within of the atmosphere
-        final double fb = FastMath.acos(((a * (1. - ecc * ecc) / rbar) - 1.) / ecc);
-        final double wW = FastMath.atan2(h, k);
+        final double fb = FastMath.acos(((auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc() * auxiliaryElements.getEcc()) / rbar) - 1.) / auxiliaryElements.getEcc());
+        final double wW = FastMath.atan2(auxiliaryElements.getH(), auxiliaryElements.getK());
         return new double[] {wW - fb, wW + fb};
+    }
+
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
+                                                             final FieldAuxiliaryElements<T> auxiliaryElements) {
+
+        final Field<T> field = state.getDate().getField();
+        final T zero = field.getZero();
+
+        final T[] tab = MathArrays.buildArray(field, 2);
+
+        final T perigee = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().negate().add(1.));
+        // Trajectory entirely out of the atmosphere
+        if (perigee.getReal() > rbar) {
+            return tab;
+        }
+        final T apogee  = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().add(1.));
+        // Trajectory entirely within of the atmosphere
+        if (apogee.getReal() < rbar) {
+            tab[0] = auxiliaryElements.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
+            tab[1] = auxiliaryElements.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+            return tab;
+        }
+        // Else, trajectory partialy within of the atmosphere
+        final T fb = FastMath.acos(((auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc()).negate().add(1.)).divide(rbar)).subtract(1.)).divide(auxiliaryElements.getEcc()));
+        final T wW = FastMath.atan2(auxiliaryElements.getH(), auxiliaryElements.getK());
+
+        tab[0] = wW.subtract(fb);
+        tab[1] = wW.add(fb);
+        return tab;
+    }
+
+    /** {@inheritDoc} */
+    protected ParameterDriver[] getParametersDriversWithoutMu() {
+        return spacecraft.getDragParametersDrivers();
     }
 
     /** Get spacecraft shape.
@@ -125,4 +178,5 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     public DragSensitive getSpacecraft() {
         return spacecraft;
     }
+
 }

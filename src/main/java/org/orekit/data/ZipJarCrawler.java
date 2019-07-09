@@ -136,30 +136,31 @@ public class ZipJarCrawler implements DataProvider {
         try {
 
             // open the raw data stream
-            Archive archive = null;
-            try {
-                if (file != null) {
-                    archive = new Archive(new FileInputStream(file));
-                } else if (resource != null) {
-                    archive = new Archive(classLoader.getResourceAsStream(resource));
-                } else {
-                    archive = new Archive(url.openConnection().getInputStream());
-                }
-
+            try (InputStream in = openStream();
+                 Archive archive = new Archive(in)) {
                 return feed(name, supported, visitor, archive);
-
-            } finally {
-                if (archive != null) {
-                    archive.close();
-                }
             }
 
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } catch (ParseException pe) {
-            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
+        } catch (IOException | ParseException e) {
+            throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }
 
+    }
+
+    /**
+     * Open a stream to the raw archive.
+     *
+     * @return an open stream.
+     * @throws IOException if the stream could not be opened.
+     */
+    private InputStream openStream() throws IOException {
+        if (file != null) {
+            return new FileInputStream(file);
+        } else if (resource != null) {
+            return classLoader.getResourceAsStream(resource);
+        } else {
+            return url.openConnection().getInputStream();
+        }
     }
 
     /** Feed a data file loader by browsing the entries in a zip/jar.
@@ -185,7 +186,7 @@ public class ZipJarCrawler implements DataProvider {
 
                 if (visitor.stillAcceptsData() && !entry.isDirectory()) {
 
-                    final String fullName = prefix + "!" + entry.getName();
+                    final String fullName = prefix + "!/" + entry.getName();
 
                     if (ZIP_ARCHIVE_PATTERN.matcher(entry.getName()).matches()) {
 

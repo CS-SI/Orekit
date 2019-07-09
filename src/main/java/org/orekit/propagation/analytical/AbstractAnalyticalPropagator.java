@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +25,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -41,7 +40,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
 import org.orekit.propagation.events.EventState.EventOccurrence;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -167,6 +165,10 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 // accept the step, trigger events and step handlers
                 state = acceptStep(interpolator, target, epsilon);
 
+                // Update the potential changes in the spacecraft state due to the events
+                // especially the potential attitude transition
+                state = updateAdditionalStates(basicPropagate(state.getDate()));
+
             } while (!isLastStep);
 
             // return the last computed state
@@ -192,6 +194,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         SpacecraftState       previous = interpolator.getPreviousState();
         final SpacecraftState current  = interpolator.getCurrentState();
+        OrekitStepInterpolator restricted = interpolator;
+
 
         // initialize the events states if needed
         if (!statesInitialized) {
@@ -217,96 +221,111 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             }
         });
 
-        for (final EventState<?> state : eventsStates) {
-            if (state.evaluateStep(interpolator)) {
-                // the event occurs during the current step
-                occurringEvents.add(state);
-            }
-        }
-
-        OrekitStepInterpolator restricted = interpolator;
-
+        boolean doneWithStep = false;
+        resetEvents:
         do {
 
-            eventLoop:
-            while (!occurringEvents.isEmpty()) {
-
-                // handle the chronologically first event
-                final EventState<?> currentEvent = occurringEvents.poll();
-
-                // get state at event time
-                SpacecraftState eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
-
-                // try to advance all event states to current time
-                for (final EventState<?> state : eventsStates) {
-                    if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
-                        // we need to handle another event first
-                        // remove event we just updated to prevent heap corruption
-                        occurringEvents.remove(state);
-                        // add it back to update its position in the heap
-                        occurringEvents.add(state);
-                        // re-queue the event we were processing
-                        occurringEvents.add(currentEvent);
-                        continue eventLoop;
-                    }
-                }
-                // all event detectors agree we can advance to the current event time
-
-                final EventOccurrence occurrence = currentEvent.doEvent(eventState);
-                final Action action = occurrence.getAction();
-                isLastStep = action == Action.STOP;
-
-                if (isLastStep) {
-                    // ensure the event is after the root if it is returned STOP
-                    // this lets the user integrate to a STOP event and then restart
-                    // integration from the same time.
-                    eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
-                    restricted = restricted.restrictStep(previous, eventState);
-                }
-
-                // handle the first part of the step, up to the event
-                if (getStepHandler() != null) {
-                    getStepHandler().handleStep(restricted, isLastStep);
-                }
-
-                if (isLastStep) {
-                    // the event asked to stop integration
-                    return eventState;
-                }
-
-                if (action == Action.RESET_DERIVATIVES || action == Action.RESET_STATE) {
-                    // some event handler has triggered changes that
-                    // invalidate the derivatives, we need to recompute them
-                    final SpacecraftState resetState = occurrence.getNewState();
-                    if (resetState != null) {
-                        resetIntermediateState(resetState, interpolator.isForward());
-                        return resetState;
-                    }
-                }
-                // at this point we know action == Action.CONTINUE
-
-                // prepare handling of the remaining part of the step
-                previous = eventState;
-                restricted         = new BasicStepInterpolator(restricted.isForward(), eventState, current);
-
-                // check if the same event occurs again in the remaining part of the step
-                if (currentEvent.evaluateStep(restricted)) {
-                    // the event occurs during the current step
-                    occurringEvents.add(currentEvent);
-                }
-
-            }
-
-            // last part of the step, after the last event
-            // may be a new event here if the last event modified the g function of
-            // another event detector.
+            // Evaluate all event detectors for events
+            occurringEvents.clear();
             for (final EventState<?> state : eventsStates) {
-                if (state.tryAdvance(current, interpolator)) {
+                if (state.evaluateStep(interpolator)) {
+                    // the event occurs during the current step
                     occurringEvents.add(state);
                 }
             }
 
-        } while (!occurringEvents.isEmpty());
+            do {
+
+                eventLoop:
+                while (!occurringEvents.isEmpty()) {
+
+                    // handle the chronologically first event
+                    final EventState<?> currentEvent = occurringEvents.poll();
+
+                    // get state at event time
+                    SpacecraftState eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
+
+                    // try to advance all event states to current time
+                    for (final EventState<?> state : eventsStates) {
+                        if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
+                            // we need to handle another event first
+                            // remove event we just updated to prevent heap corruption
+                            occurringEvents.remove(state);
+                            // add it back to update its position in the heap
+                            occurringEvents.add(state);
+                            // re-queue the event we were processing
+                            occurringEvents.add(currentEvent);
+                            continue eventLoop;
+                        }
+                    }
+                    // all event detectors agree we can advance to the current event time
+
+                    final EventOccurrence occurrence = currentEvent.doEvent(eventState);
+                    final Action action = occurrence.getAction();
+                    isLastStep = action == Action.STOP;
+
+                    if (isLastStep) {
+                        // ensure the event is after the root if it is returned STOP
+                        // this lets the user integrate to a STOP event and then restart
+                        // integration from the same time.
+                        eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
+                        restricted = restricted.restrictStep(previous, eventState);
+                    }
+
+                    // handle the first part of the step, up to the event
+                    if (getStepHandler() != null) {
+                        getStepHandler().handleStep(restricted, isLastStep);
+                    }
+
+                    if (isLastStep) {
+                        // the event asked to stop integration
+                        return eventState;
+                    }
+
+                    if (action == Action.RESET_DERIVATIVES || action == Action.RESET_STATE) {
+                        // some event handler has triggered changes that
+                        // invalidate the derivatives, we need to recompute them
+                        final SpacecraftState resetState = occurrence.getNewState();
+                        if (resetState != null) {
+                            resetIntermediateState(resetState, interpolator.isForward());
+                            return resetState;
+                        }
+                    }
+                    // at this point action == Action.CONTINUE or Action.RESET_EVENTS
+
+                    // prepare handling of the remaining part of the step
+                    previous = eventState;
+                    restricted = new BasicStepInterpolator(restricted.isForward(), eventState, current);
+
+                    if (action == Action.RESET_EVENTS) {
+                        continue resetEvents;
+                    }
+
+                    // at this point action == Action.CONTINUE
+                    // check if the same event occurs again in the remaining part of the step
+                    if (currentEvent.evaluateStep(restricted)) {
+                        // the event occurs during the current step
+                        occurringEvents.add(currentEvent);
+                    }
+
+                }
+
+                // last part of the step, after the last event. Advance all detectors to
+                // the end of the step. Should only detect a new event here if an event
+                // modified the g function of another detector. Detecting such events here
+                // is unreliable and RESET_EVENTS should be used instead. Might as well
+                // re-check here because we have to loop through all the detectors anyway
+                // and the alternative is to throw an exception.
+                for (final EventState<?> state : eventsStates) {
+                    if (state.tryAdvance(current, interpolator)) {
+                        occurringEvents.add(state);
+                    }
+                }
+
+            } while (!occurringEvents.isEmpty());
+
+            doneWithStep = true;
+        } while (!doneWithStep);
 
         isLastStep = target.equals(current.getDate());
 
@@ -382,12 +401,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     }
 
     /** {@link BoundedPropagator} view of the instance. */
-    private class BoundedPropagatorView
-        extends AbstractAnalyticalPropagator
-        implements BoundedPropagator, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151117L;
+    private class BoundedPropagatorView extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
         /** Min date. */
         private final AbsoluteDate minDate;
@@ -465,53 +479,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public Frame getFrame() {
             return AbstractAnalyticalPropagator.this.getFrame();
-        }
-
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if attitude provider or additional
-         * state provider is not serializable
-         */
-        private Object writeReplace() throws NotSerializableException {
-            return new DataTransferObject(minDate, maxDate, AbstractAnalyticalPropagator.this);
-        }
-
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20151117L;
-
-        /** Min date. */
-        private final AbsoluteDate minDate;
-
-        /** Max date. */
-        private final AbsoluteDate maxDate;
-
-        /** Underlying propagator. */
-        private final AbstractAnalyticalPropagator propagator;
-
-        /** Simple constructor.
-         * @param minDate min date
-         * @param maxDate max date
-         * @param propagator underlying propagator
-         */
-        DataTransferObject(final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                           final AbstractAnalyticalPropagator propagator) {
-            this.minDate    = minDate;
-            this.maxDate    = maxDate;
-            this.propagator = propagator;
-        }
-
-        /** Replace the deserialized data transfer object with an {@link BoundedPropagatorView}.
-         * @return replacement {@link BoundedPropagatorView}
-         */
-        private Object readResolve() {
-            propagator.lastPropagationStart = minDate;
-            propagator.lastPropagationEnd   = maxDate;
-            return propagator.getGeneratedEphemeris();
         }
 
     }

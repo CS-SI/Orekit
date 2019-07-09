@@ -19,14 +19,12 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -43,11 +41,8 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
-import org.orekit.estimation.measurements.modifiers.AngularIonosphericDelayModifier;
-import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
-import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
-import org.orekit.estimation.measurements.modifiers.TurnAroundRangeIonosphericDelayModifier;
-import org.orekit.models.earth.KlobucharIonoModel;
+import org.orekit.gnss.Frequency;
+import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -61,6 +56,9 @@ public class IonoModifierTest {
     /** ionospheric model. */
     private KlobucharIonoModel model;
 
+    /** frequency [Hz]. */
+    private double frequency;
+
     @Before
     public void setUp() throws Exception {
         // Navigation message data
@@ -68,6 +66,8 @@ public class IonoModifierTest {
         // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA
         model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+        // GPS L1 in HZ
+        frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
     }
 
     @After
@@ -100,7 +100,7 @@ public class IonoModifierTest {
         propagator.setSlaveMode();
 
 
-        final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model);
+        final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model, frequency);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -171,7 +171,7 @@ public class IonoModifierTest {
         propagator.setSlaveMode();
 
 
-        final TurnAroundRangeIonosphericDelayModifier modifier = new TurnAroundRangeIonosphericDelayModifier(model);
+        final TurnAroundRangeIonosphericDelayModifier modifier = new TurnAroundRangeIonosphericDelayModifier(model, frequency);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -235,7 +235,7 @@ public class IonoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model, true);
+        final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model, frequency, true);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -283,7 +283,7 @@ public class IonoModifierTest {
         propagator.setSlaveMode();
 
 
-        final AngularIonosphericDelayModifier modifier = new AngularIonosphericDelayModifier(model);
+        final AngularIonosphericDelayModifier modifier = new AngularIonosphericDelayModifier(model, frequency);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
@@ -335,22 +335,7 @@ public class IonoModifierTest {
             final AbsoluteDate    date    = ((Range) measurement).getDate();
             final SpacecraftState state   = propagator.propagate(date);
 
-            final Vector3D position = state.getPVCoordinates().getPosition();
-
-            //
-            final GeodeticPoint geo = station.getBaseFrame().getPoint();
-
-            // elevation
-            final double elevation = station.getBaseFrame().getElevation(position,
-                                                                         state.getFrame(),
-                                                                         state.getDate());
-
-            // elevation
-            final double azimuth = station.getBaseFrame().getAzimuth(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
-
-            double delayMeters = model.pathDelay(date, geo, elevation, azimuth);
+            double delayMeters = model.pathDelay(state, station.getBaseFrame(), frequency, model.getParameters());
 
             final double epsilon = 1e-6;
             Assert.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);

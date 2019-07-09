@@ -31,10 +31,9 @@
       <item name="Building"            href="/building.html"       />
       <item name="Configuration"       href="/configuration.html"  />
       <item name="FAQ"                 href="/faq.html"            />
-      <item name="License"             href="/license.html"        />
+      <item name="License"             href="/licenses.html"       />
       <item name="Downloads"           href="/downloads.html"      />
       <item name="Changes"             href="/changes-report.html" />
-      <item name="Training"            href="/training.html"       />
       <item name="Contact"             href="/contact.html"        />
     </menu>
     <menu name="Architecture">
@@ -44,6 +43,7 @@
       <item name="Estimation"    href="/architecture/estimation.html"    />
       <item name="Forces"        href="/architecture/forces.html"        />
       <item name="Frames"        href="/architecture/frames.html"        />
+      <item name="GNSS"          href="/architecture/gnss.html"          />
       <item name="Orbits"        href="/architecture/orbits.html"        />
       <item name="Propagation"   href="/architecture/propagation.html"   />
       <item name="Time"          href="/architecture/time.html"          />
@@ -52,12 +52,13 @@
       <item name="Utils"         href="/architecture/utils.html"         />
     </menu>
     <menu name="Tutorial">
-      <item name="Attitude"                       href="/tutorial/attitude.html"                       />
-      <item name="Frames"                         href="/tutorial/frames.html"                         />
-      <item name="Propagation"                    href="/tutorial/propagation.html"                    />
-      <item name="Time"                           href="/tutorial/time.html"                           />
-      <item name="Geomagnetic field"              href="/tutorial/geomagnetic-field.html"              />
-      <item name="Integration in other languages" href="/tutorial/integration-in-other-languages.html" />
+      <item name="Attitude"                           href="/tutorial/attitude.html"                          />
+      <item name="Frames"                             href="/tutorial/frames.html"                            />
+      <item name="Propagation"                        href="/tutorial/propagation.html"                       />
+      <item name="Propagation in non-inertial frame"  href="/tutorial/propagation-in-non-inertial-frame.html" />
+      <item name="Time"                               href="/tutorial/time.html"                              />
+      <item name="Geomagnetic field"                  href="/tutorial/geomagnetic-field.html"                 />
+      <item name="Integration in other languages"     href="/tutorial/integration-in-other-languages.html"    />
       </menu>
     <menu name="Development">
       <item name="Contributing"  href="/contributing.html"      />

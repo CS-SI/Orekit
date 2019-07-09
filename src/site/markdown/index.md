@@ -70,16 +70,17 @@
   * Propagation
 
     * analytical propagation models
-      (Kepler, Eckstein-Heschler, SDP4/SGP4 with 2006 corrections)
+      * Kepler
+      * Eckstein-Heschler
+      * SDP4/SGP4 with 2006 corrections
+      * GNSS: GPS, QZSS, Galileo, GLONASS, and Beidou
     * numerical propagators
 
       * central attraction
       * gravity models including time-dependent like trends and pulsations
         (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
         EGM and GRGS gravity field files formats, even compressed)
-      * atmospheric drag (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000,
-        Harris-Priester and simple exponential models),
-        and Marshall solar Activity Future Estimation, optionally with lift component
+      * atmospheric drag
       * third body attraction (with data for Sun, Moon and all solar systems planets)
       * radiation pressure with eclipses
       * solid tides, with or without solid pole tide
@@ -92,6 +93,7 @@
         force models parameters
       * serialization mechanism to store complete results on persistent storage for
         later use
+      * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
 
     * semi-analytical propagation model (DSST) with customizable force models
     * tabulated ephemerides
@@ -137,13 +139,14 @@
       * latitude, longitude extremum
       * elevation extremum
       * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
-      * moving target detection in spacecraft sensor Field Of View (any shape, with special case for circular)
+      * moving target detection (with optional radius) in spacecraft sensor Field Of View (any shape, with special case for circular)
       * spacecraft detection in ground based Field Of View (any shape)
       * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal
       * inter-satellites direct view
       * ground at night
       * impulse maneuvers occurrence
+      * geomagnetic intensity
 
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
@@ -189,6 +192,7 @@
         station position, pole motion and rate, prime meridian correction and rate, total zenith
         delay in tropospheric correction)
 
+    * Use numerical propagator or DSST propagator
     * multi-satellites orbit determination
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
@@ -203,7 +207,7 @@
       * position
       * inter-satellites range (one way and two way)
       * GNSS code
-      * GNSS phase
+      * GNSS phase with integer ambiguity resolution (not complete yet and experimental)
 
     * possibility to add custom measurements
     * several predefined modifiers
@@ -214,6 +218,7 @@
       * biases
       * delays
       * Antenna Phase Center
+      * Shapiro relativistic effect
 
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
@@ -241,10 +246,12 @@
 
   * Earth models
   
+    * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
     * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
+    * Global Ionospheric Map model
     * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
@@ -285,7 +292,7 @@
 Orekit is freely available both in source and binary formats, with all related
 documentation and tests.
 
-It is distributed under the [Apache License Version 2.0](./license.html). This
+It is distributed under the [Apache License Version 2.0](./licenses.html). This
 is a well known business-friendly license. This means anybody can use it to build
 any application, free or not. There are no strings attached to your own code.
 

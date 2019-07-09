@@ -68,15 +68,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p> The transform to apply then is defined as follows :
  *
- * <pre><code>
+ * <pre>
  * Vector3D translation  = new Vector3D(-1, 0, 0);
  * Vector3D velocity     = new Vector3D(-2, 0, 0);
  * Vector3D acceleration = new Vector3D(-3, 0, 0);
  *
  * Transform R1toR2 = new Transform(date, translation, velocity, acceleration);
  *
- * PVB = R1toR2.transformPVCoordinates<T>(PVA);
- * </code></pre>
+ * PVB = R1toR2.transformPVCoordinate(PVA);
+ * </pre>
  *
  * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
  * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
@@ -87,14 +87,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p> The transform to apply then is defined as follows :
  *
- * <pre><code>
+ * <pre>
  * Rotation rotation = new Rotation(Vector3D.PLUS_K, FastMath.PI / 2);
  * Vector3D rotationRate = new Vector3D(0, 0, -2);
  *
  * Transform R1toR2 = new Transform(rotation, rotationRate);
  *
- * PVB = R1toR2.transformPVCoordinates<T>(PVA);
- * </code></pre>
+ * PVB = R1toR2.transformPVCoordinates(PVA);
+ * </pre>
  *
  * @author Luc Maisonobe
  * @author Fabien Maussion
@@ -728,14 +728,10 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * </p>
      * <p>
      * This definition implies that if we define position-velocity coordinates
-     * <pre>
-     * PV₁ = transform.transformPVCoordinates<T>(PV₀), then
-     * </pre>
-     * <p> their differentials dPV₁ and dPV₀ will obey the following relation
+     * <pre>PV₁ = transform.transformPVCoordinates(PV₀)</pre>
+     * then their differentials dPV₁ and dPV₀ will obey the following relation
      * where J is the matrix computed by this method:
-     * <pre>
-     * dPV₁ = J &times; dPV₀
-     * </pre>
+     * <pre>dPV₁ = J &times; dPV₀</pre>
      *
      * @param selector selector specifying the size of the upper left corner that must be filled
      * (either 3x3 for positions only, 6x6 for positions and velocities, 9x9 for positions,

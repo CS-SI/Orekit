@@ -43,7 +43,7 @@ public interface FieldTimeDerivativesEquations<T extends RealFieldElement<T>> {
      * numerical accuracy.</p>
      * @param mu central body gravitational constant
      */
-    void addKeplerContribution(double mu);
+    void addKeplerContribution(T mu);
 
     /** Add the contribution of an acceleration expressed in some inertial frame.
      * @param gamma acceleration vector in the same inertial frame the spacecraft state is defined in (m/s²)

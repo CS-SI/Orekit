@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
@@ -64,7 +65,6 @@ public class DateDetectorTest {
         Assert.assertNull(dateDetector.getDate());
         EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()).
                 withHandler(new ContinueOnEvent<NodeDetector>() {
-                    private static final long serialVersionUID = 1L;
                     public Action eventOccurred(SpacecraftState s, NodeDetector nd, boolean increasing)
                         {
                         if (increasing) {
@@ -86,7 +86,6 @@ public class DateDetectorTest {
     public void testAutoEmbeddedTimer() {
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(-dt)).
                 withHandler(new ContinueOnEvent<DateDetector>() {
-                    private static final long serialVersionUID = 1L;
                     public Action eventOccurred(SpacecraftState s, DateDetector dd,  boolean increasing)
                             {
                         AbsoluteDate nextDate = s.getDate().shiftedBy(-dt);
@@ -105,7 +104,6 @@ public class DateDetectorTest {
     public void testExceptionTimer() {
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt)).
                 withHandler(new ContinueOnEvent<DateDetector>() {
-                    private static final long serialVersionUID = 1L;
                     public Action eventOccurred(SpacecraftState s, DateDetector dd, boolean increasing)
                         {
                         double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;

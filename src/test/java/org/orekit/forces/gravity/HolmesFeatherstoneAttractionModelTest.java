@@ -19,10 +19,8 @@ package org.orekit.forces.gravity;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.stream.Stream;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.dfp.Dfp;
@@ -36,7 +34,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.random.GaussianRandomGenerator;
@@ -52,9 +49,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -63,8 +57,6 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
-import org.orekit.forces.gravity.potential.TideSystemProvider;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -81,8 +73,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -96,7 +86,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
 
 
 public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceModelTest {
@@ -451,7 +440,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
 
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
@@ -606,7 +595,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
 
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
@@ -989,129 +978,6 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     }
 
-    // test the difference with the Cunningham model
-    @Test
-    @Deprecated
-    public void testZonalWithCunninghamReference()
-        {
-        // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
-                                             new TimeComponents(13, 59, 27.816),
-                                             TimeScalesFactory.getUTC());
-        double i     = FastMath.toRadians(98.7);
-        double omega = FastMath.toRadians(93.0);
-        double OMEGA = FastMath.toRadians(15.0 * 22.5);
-        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
-
-        propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(itrf,
-                                                                       GravityFieldFactory.getNormalizedProvider(ae, mu,
-                                                                                                                 TideSystem.UNKNOWN,
-                                                                       new double[][] {
-                { 0.0 }, { 0.0 }, { normalizedC20 }, { normalizedC30 },
-                { normalizedC40 }, { normalizedC50 }, { normalizedC60 },
-        },
-        new double[][] {
-                { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
-                { 0.0 }, { 0.0 }, { 0.0 },
-        })));
-
-        propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState hfOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-
-        propagator.removeForceModels();
-
-        propagator.addForceModel(new CunninghamAttractionModel(itrf,
-                                                               GravityFieldFactory.getUnnormalizedProvider(ae, mu,
-                                                                                                           TideSystem.UNKNOWN,
-                                                               new double[][] {
-                { 0.0 }, { 0.0 }, { unnormalizedC20 }, { unnormalizedC30 },
-                { unnormalizedC40 }, { unnormalizedC50 }, { unnormalizedC60 },
-        },
-        new double[][] {
-                { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
-                { 0.0 }, { 0.0 }, { 0.0 },
-        })));
-
-        propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState cOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-
-        Vector3D dif = hfOrb.getPVCoordinates().getPosition().subtract(cOrb.getPVCoordinates().getPosition());
-        Assert.assertEquals(0, dif.getNorm(), 2e-9);
-        Assert.assertTrue(propagator.getCalls() < 400);
-    }
-
-    @Test
-    @Deprecated
-    public void testCompleteWithCunninghamReference()
-        {
-
-        Utils.setDataRoot("regular-data:potential/grgs-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-
-        // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
-                                             new TimeComponents(13, 59, 27.816),
-                                             TimeScalesFactory.getUTC());
-        double i     = FastMath.toRadians(98.7);
-        double omega = FastMath.toRadians(93.0);
-        double OMEGA = FastMath.toRadians(15.0 * 22.5);
-        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, OrbitType.CARTESIAN);
-        AbsoluteDate targetDate = date.shiftedBy(3 * Constants.JULIAN_DAY);
-
-        propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
-                                                                            tolerances[0], tolerances[1]));
-        propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(itrf,
-                                                                       GravityFieldFactory.getNormalizedProvider(69, 69)));
-
-        propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState hfOrb = propagator.propagate(targetDate);
-
-        propagator.removeForceModels();
-
-        propagator.addForceModel(new CunninghamAttractionModel(itrf,
-                                                               GravityFieldFactory.getUnnormalizedProvider(69, 69)));
-
-        propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState cOrb = propagator.propagate(targetDate);
-
-        Vector3D dif = hfOrb.getPVCoordinates().getPosition().subtract(cOrb.getPVCoordinates().getPosition());
-        Assert.assertEquals(0, dif.getNorm(), 4e-5);
-    }
-
-    @Test
-    @Deprecated
-    public void testIssue97() {
-
-        Utils.setDataRoot("regular-data:potential/grgs-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-
-        // pos-vel (from a ZOOM ephemeris reference)
-        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
-        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
-
-        for (int i = 2; i <= 69; i++) {
-            final ForceModel holmesFeatherstoneModel =
-                    new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                          GravityFieldFactory.getNormalizedProvider(i, i));
-            final ForceModel cunninghamModel =
-                    new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                  GravityFieldFactory.getUnnormalizedProvider(i, i));
-            double relativeError = accelerationRelativeError(holmesFeatherstoneModel, cunninghamModel, state);
-            Assert.assertEquals(0.0, relativeError, 8.0e-15);
-        }
-
-    }
-
     @Test
     public void testParameterDerivative() {
 
@@ -1133,18 +999,6 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
         checkParameterDerivative(state, holmesFeatherstoneModel, name, 1.0e-5, 5.0e-12);
-
-    }
-
-    private double accelerationRelativeError(ForceModel testModel, ForceModel referenceModel,
-                                             SpacecraftState state)
-        {
-
-        final Vector3D testAcceleration = testModel.acceleration(state, testModel.getParameters());
-        final Vector3D referenceAcceleration = referenceModel.acceleration(state, referenceModel.getParameters());
-
-        return testAcceleration.subtract(referenceAcceleration).getNorm() /
-               referenceAcceleration.getNorm();
 
     }
 
@@ -1355,325 +1209,6 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     private Frame   itrf;
     private NumericalPropagator propagator;
-
-    /** Restricted version of the Cunningham attraction model.
-     * <p>
-     * This class implements only a small part of the ForceModel interface, for test purposes only.
-     * </p>
-     */
-    private static class CunninghamAttractionModel extends AbstractForceModel implements TideSystemProvider {
-        
-        /** Provider for the spherical harmonics. */
-        private final UnnormalizedSphericalHarmonicsProvider provider;
-
-        /** Rotating body. */
-        private final Frame bodyFrame;
-
-        /** Driver for gravitational parameter. */
-        private final ParameterDriver gmParameterDriver;
-
-        /** Creates a new instance.
-       * @param centralBodyFrame rotating body frame
-       * @param provider provider for spherical harmonics
-       */
-        public CunninghamAttractionModel(final Frame centralBodyFrame,
-                                         final UnnormalizedSphericalHarmonicsProvider provider)
-            {
-            this.provider     = provider;
-            try {
-                gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                        provider.getMu(), FastMath.scalb(1.0, 32), 0.0, Double.POSITIVE_INFINITY);
-            } catch (OrekitException oe) {
-                // this should never occur as valueChanged above never throws an exception
-                throw new OrekitInternalError(oe);
-            }
-            this.bodyFrame    = centralBodyFrame;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean dependsOnPositionOnly() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TideSystem getTideSystem() {
-            return provider.getTideSystem();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-            {
-
-            final double mu = parameters[0];
-
-            // get the position in body frame
-            final AbsoluteDate date = s.getDate();
-            final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
-            final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
-            final Transform toBodyFrame   = fromBodyFrame.getInverse();
-            final Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
-
-            final double x = relative.getX();
-            final double y = relative.getY();
-            final double z = relative.getZ();
-
-            final double x2 = x * x;
-            final double y2 = y * y;
-            final double z2 = z * z;
-            final double r2 = x2 + y2 + z2;
-            final double r = FastMath.sqrt(r2);
-            final double equatorialRadius = provider.getAe();
-            if (r <= equatorialRadius) {
-                throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
-            }
-
-            // define some intermediate variables
-            final double onR2 = 1 / r2;
-            final double onR3 = onR2 / r;
-            final double rEqOnR2  = equatorialRadius / r2;
-            final double rEqOnR4  = rEqOnR2 / r2;
-            final double rEq2OnR2 = equatorialRadius * rEqOnR2;
-
-            double cmx   = -x * rEqOnR2;
-            double cmy   = -y * rEqOnR2;
-            double cmz   = -z * rEqOnR2;
-
-            final double dx   = -2 * cmx;
-            final double dy   = -2 * cmy;
-            final double dz   = -2 * cmz;
-
-            // intermediate variables gradients
-            // since dcy/dx = dcx/dy, dcz/dx = dcx/dz and dcz/dy = dcy/dz,
-            // we reuse the existing variables
-
-            double dcmxdx = (x2 - y2 - z2) * rEqOnR4;
-            double dcmxdy =  dx * y * onR2;
-            double dcmxdz =  dx * z * onR2;
-            double dcmydy = (y2 - x2 - z2) * rEqOnR4;
-            double dcmydz =  dy * z * onR2;
-            double dcmzdz = (z2 - x2 - y2) * rEqOnR4;
-
-            final double ddxdx = -2 * dcmxdx;
-            final double ddxdy = -2 * dcmxdy;
-            final double ddxdz = -2 * dcmxdz;
-            final double ddydy = -2 * dcmydy;
-            final double ddydz = -2 * dcmydz;
-            final double ddzdz = -2 * dcmzdz;
-
-            final double donr2dx = -dx * rEqOnR2;
-            final double donr2dy = -dy * rEqOnR2;
-            final double donr2dz = -dz * rEqOnR2;
-
-            // potential coefficients (4 per matrix)
-            double vrn  = 0.0;
-            double vin  = 0.0;
-            double vrd  = 1.0 / (equatorialRadius * r);
-            double vid  = 0.0;
-            double vrn1 = 0.0;
-            double vin1 = 0.0;
-            double vrn2 = 0.0;
-            double vin2 = 0.0;
-
-            // gradient coefficients (4 per matrix)
-            double gradXVrn  = 0.0;
-            double gradXVin  = 0.0;
-            double gradXVrd  = -x * onR3 / equatorialRadius;
-            double gradXVid  = 0.0;
-            double gradXVrn1 = 0.0;
-            double gradXVin1 = 0.0;
-            double gradXVrn2 = 0.0;
-            double gradXVin2 = 0.0;
-
-            double gradYVrn  = 0.0;
-            double gradYVin  = 0.0;
-            double gradYVrd  = -y * onR3 / equatorialRadius;
-            double gradYVid  = 0.0;
-            double gradYVrn1 = 0.0;
-            double gradYVin1 = 0.0;
-            double gradYVrn2 = 0.0;
-            double gradYVin2 = 0.0;
-
-            double gradZVrn  = 0.0;
-            double gradZVin  = 0.0;
-            double gradZVrd  = -z * onR3 / equatorialRadius;
-            double gradZVid  = 0.0;
-            double gradZVrn1 = 0.0;
-            double gradZVin1 = 0.0;
-            double gradZVrn2 = 0.0;
-            double gradZVin2 = 0.0;
-
-            // acceleration coefficients
-            double vdX = 0.0;
-            double vdY = 0.0;
-            double vdZ = 0.0;
-
-            // start calculating
-            for (int m = 0; m <= provider.getMaxOrder(); m++) {
-
-                double cx = cmx;
-                double cy = cmy;
-                double cz = cmz;
-
-                double dcxdx = dcmxdx;
-                double dcxdy = dcmxdy;
-                double dcxdz = dcmxdz;
-                double dcydy = dcmydy;
-                double dcydz = dcmydz;
-                double dczdz = dcmzdz;
-
-                for (int n = m; n <= provider.getMaxDegree(); n++) {
-
-                    if (n == m) {
-                        // calculate the first element of the next column
-
-                        vrn      = equatorialRadius * vrd;
-                        vin      = equatorialRadius * vid;
-
-                        gradXVrn = equatorialRadius * gradXVrd;
-                        gradXVin = equatorialRadius * gradXVid;
-                        gradYVrn = equatorialRadius * gradYVrd;
-                        gradYVin = equatorialRadius * gradYVid;
-                        gradZVrn = equatorialRadius * gradZVrd;
-                        gradZVin = equatorialRadius * gradZVid;
-
-                        final double tmpGradXVrd = (cx + dx) * gradXVrd - (cy + dy) * gradXVid + (dcxdx + ddxdx) * vrd - (dcxdy + ddxdy) * vid;
-                        gradXVid = (cy + dy) * gradXVrd + (cx + dx) * gradXVid + (dcxdy + ddxdy) * vrd + (dcxdx + ddxdx) * vid;
-                        gradXVrd = tmpGradXVrd;
-
-                        final double tmpGradYVrd = (cx + dx) * gradYVrd - (cy + dy) * gradYVid + (dcxdy + ddxdy) * vrd - (dcydy + ddydy) * vid;
-                        gradYVid = (cy + dy) * gradYVrd + (cx + dx) * gradYVid + (dcydy + ddydy) * vrd + (dcxdy + ddxdy) * vid;
-                        gradYVrd = tmpGradYVrd;
-
-                        final double tmpGradZVrd = (cx + dx) * gradZVrd - (cy + dy) * gradZVid + (dcxdz + ddxdz) * vrd - (dcydz + ddydz) * vid;
-                        gradZVid = (cy + dy) * gradZVrd + (cx + dx) * gradZVid + (dcydz + ddydz) * vrd + (dcxdz + ddxdz) * vid;
-                        gradZVrd = tmpGradZVrd;
-
-                        final double tmpVrd = (cx + dx) * vrd - (cy + dy) * vid;
-                        vid = (cy + dy) * vrd + (cx + dx) * vid;
-                        vrd = tmpVrd;
-
-                    } else if (n == m + 1) {
-                        // calculate the second element of the column
-                        vrn = cz * vrn1;
-                        vin = cz * vin1;
-
-                        gradXVrn = cz * gradXVrn1 + dcxdz * vrn1;
-                        gradXVin = cz * gradXVin1 + dcxdz * vin1;
-
-                        gradYVrn = cz * gradYVrn1 + dcydz * vrn1;
-                        gradYVin = cz * gradYVin1 + dcydz * vin1;
-
-                        gradZVrn = cz * gradZVrn1 + dczdz * vrn1;
-                        gradZVin = cz * gradZVin1 + dczdz * vin1;
-
-                    } else {
-                        // calculate the other elements of the column
-                        final double inv   = 1.0 / (n - m);
-                        final double coeff = n + m - 1.0;
-
-                        vrn = (cz * vrn1 - coeff * rEq2OnR2 * vrn2) * inv;
-                        vin = (cz * vin1 - coeff * rEq2OnR2 * vin2) * inv;
-
-                        gradXVrn = (cz * gradXVrn1 - coeff * rEq2OnR2 * gradXVrn2 + dcxdz * vrn1 - coeff * donr2dx * vrn2) * inv;
-                        gradXVin = (cz * gradXVin1 - coeff * rEq2OnR2 * gradXVin2 + dcxdz * vin1 - coeff * donr2dx * vin2) * inv;
-                        gradYVrn = (cz * gradYVrn1 - coeff * rEq2OnR2 * gradYVrn2 + dcydz * vrn1 - coeff * donr2dy * vrn2) * inv;
-                        gradYVin = (cz * gradYVin1 - coeff * rEq2OnR2 * gradYVin2 + dcydz * vin1 - coeff * donr2dy * vin2) * inv;
-                        gradZVrn = (cz * gradZVrn1 - coeff * rEq2OnR2 * gradZVrn2 + dczdz * vrn1 - coeff * donr2dz * vrn2) * inv;
-                        gradZVin = (cz * gradZVin1 - coeff * rEq2OnR2 * gradZVin2 + dczdz * vin1 - coeff * donr2dz * vin2) * inv;
-                    }
-
-                    // increment variables
-                    cx += dx;
-                    cy += dy;
-                    cz += dz;
-
-                    dcxdx += ddxdx;
-                    dcxdy += ddxdy;
-                    dcxdz += ddxdz;
-                    dcydy += ddydy;
-                    dcydz += ddydz;
-                    dczdz += ddzdz;
-
-                    vrn2 = vrn1;
-                    vin2 = vin1;
-                    gradXVrn2 = gradXVrn1;
-                    gradXVin2 = gradXVin1;
-                    gradYVrn2 = gradYVrn1;
-                    gradYVin2 = gradYVin1;
-                    gradZVrn2 = gradZVrn1;
-                    gradZVin2 = gradZVin1;
-
-                    vrn1 = vrn;
-                    vin1 = vin;
-                    gradXVrn1 = gradXVrn;
-                    gradXVin1 = gradXVin;
-                    gradYVrn1 = gradYVrn;
-                    gradYVin1 = gradYVin;
-                    gradZVrn1 = gradZVrn;
-                    gradZVin1 = gradZVin;
-
-                    // compute the acceleration due to the Cnm and Snm coefficients
-                    // ignoring the central attraction
-                    if (n > 0) {
-                        final double cnm = harmonics.getUnnormalizedCnm(n, m);
-                        final double snm = harmonics.getUnnormalizedSnm(n, m);
-                        vdX += cnm * gradXVrn + snm * gradXVin;
-                        vdY += cnm * gradYVrn + snm * gradYVin;
-                        vdZ += cnm * gradZVrn + snm * gradZVin;
-                    }
-
-                }
-
-                // increment variables
-                cmx += dx;
-                cmy += dy;
-                cmz += dz;
-
-                dcmxdx += ddxdx;
-                dcmxdy += ddxdy;
-                dcmxdz += ddxdz;
-                dcmydy += ddydy;
-                dcmydz += ddydz;
-                dcmzdz += ddzdz;
-
-            }
-
-            // compute acceleration in inertial frame
-            return fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
-
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                             final T[] parameters) {
-            throw new UnsupportedOperationException();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public Stream<EventDetector> getEventsDetectors() {
-            return Stream.empty();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-            return Stream.empty();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[] {
-                gmParameterDriver
-            };
-        }
-
-    }
 
 }
 

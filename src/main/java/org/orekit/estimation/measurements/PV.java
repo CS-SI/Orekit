@@ -62,54 +62,6 @@ public class PV extends AbstractMeasurement<PV> {
      * <p>
      * The measurement must be in the orbit propagation frame.
      * </p>
-     * <p>This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param sigmaPosition theoretical standard deviation on position components
-     * @param sigmaVelocity theoretical standard deviation on velocity components
-     * @param baseWeight base weight
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double, double, double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double sigmaPosition, final double sigmaVelocity, final double baseWeight) {
-        this(date, position, velocity, sigmaPosition, sigmaVelocity, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Constructor with two double for the standard deviations.
-     * <p>The first double is the position's standard deviation, common to the 3 position's components.
-     * The second double is the position's standard deviation, common to the 3 position's components.</p>
-     * <p>
-     * The measurement must be in the orbit propagation frame.
-     * </p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param sigmaPosition theoretical standard deviation on position components
-     * @param sigmaVelocity theoretical standard deviation on velocity components
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.0
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double, double, double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double sigmaPosition, final double sigmaVelocity, final double baseWeight,
-              final int propagatorIndex) {
-        this(date, position, velocity, sigmaPosition, sigmaVelocity, baseWeight, new ObservableSatellite(propagatorIndex));
-    }
-
-    /** Constructor with two double for the standard deviations.
-     * <p>The first double is the position's standard deviation, common to the 3 position's components.
-     * The second double is the position's standard deviation, common to the 3 position's components.</p>
-     * <p>
-     * The measurement must be in the orbit propagation frame.
-     * </p>
      * @param date date of the measurement
      * @param position position
      * @param velocity velocity
@@ -131,54 +83,6 @@ public class PV extends AbstractMeasurement<PV> {
                  sigmaVelocity,
                  sigmaVelocity
              }, baseWeight, satellite);
-    }
-
-    /** Constructor with two vectors for the standard deviations and default value for propagator index.
-     * <p>One 3-sized vectors for position standard deviations.
-     * One 3-sized vectors for velocity standard deviations.
-     * The 3-sized vectors are the square root of the diagonal elements of the covariance matrix.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * <p>This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param sigmaPosition 3-sized vector of the standard deviations of the position
-     * @param sigmaVelocity 3-sized vector of the standard deviations of the velocity
-     * @param baseWeight base weight
-     * @since 9.2
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[], double[], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPosition, final double[] sigmaVelocity, final double baseWeight) {
-        this(date, position, velocity, sigmaPosition, sigmaVelocity, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Constructor with two vectors for the standard deviations.
-     * <p>One 3-sized vectors for position standard deviations.
-     * One 3-sized vectors for velocity standard deviations.
-     * The 3-sized vectors are the square root of the diagonal elements of the covariance matrix.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param sigmaPosition 3-sized vector of the standard deviations of the position
-     * @param sigmaVelocity 3-sized vector of the standard deviations of the velocity
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.2
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[], double[], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPosition, final double[] sigmaVelocity,
-              final double baseWeight, final int propagatorIndex) {
-        this(date, position, velocity, sigmaPosition, sigmaVelocity,
-             baseWeight, new ObservableSatellite(propagatorIndex));
     }
 
     /** Constructor with two vectors for the standard deviations.
@@ -203,46 +107,6 @@ public class PV extends AbstractMeasurement<PV> {
              baseWeight, satellite);
     }
 
-    /** Constructor with one vector for the standard deviations and default value for propagator index.
-     * <p>The 6-sized vector is the square root of the diagonal elements of the covariance matrix.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * <p>This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param sigmaPV 6-sized vector of the standard deviations
-     * @param baseWeight base weight
-     * @since 9.2
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPV, final double baseWeight) {
-        this(date, position, velocity, sigmaPV, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Constructor with one vector for the standard deviations.
-     * <p>The 6-sized vector is the square root of the diagonal elements of the covariance matrix.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param sigmaPV 6-sized vector of the standard deviations
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.2
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPV, final double baseWeight, final int propagatorIndex) {
-        this(date, position, velocity, sigmaPV, baseWeight, new ObservableSatellite(0));
-    }
-
     /** Constructor with one vector for the standard deviations.
      * <p>The 6-sized vector is the square root of the diagonal elements of the covariance matrix.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
@@ -257,56 +121,6 @@ public class PV extends AbstractMeasurement<PV> {
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double[] sigmaPV, final double baseWeight, final ObservableSatellite satellite) {
         this(date, position, velocity, buildPvCovarianceMatrix(sigmaPV), baseWeight, satellite);
-    }
-
-    /**
-     * Constructor with 2 smaller covariance matrices and default value for propagator index.
-     * <p>One 3x3 covariance matrix for position and one 3x3 covariance matrix for velocity.
-     * The fact that the covariance matrices are symmetric and positive definite is not checked.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * <p>This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param positionCovarianceMatrix 3x3 covariance matrix of the position
-     * @param velocityCovarianceMatrix 3x3 covariance matrix of the velocity
-     * @param baseWeight base weight
-     * @since 9.2
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[][], double[][], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] positionCovarianceMatrix, final double[][] velocityCovarianceMatrix,
-              final double baseWeight) {
-        this(date, position, velocity, positionCovarianceMatrix, velocityCovarianceMatrix,
-             baseWeight, new ObservableSatellite(0));
-    }
-
-    /**
-     * Constructor with 2 smaller covariance matrices.
-     * <p>One 3x3 covariance matrix for position and one 3x3 covariance matrix for velocity.
-     * The fact that the covariance matrices are symmetric and positive definite is not checked.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param positionCovarianceMatrix 3x3 covariance matrix of the position
-     * @param velocityCovarianceMatrix 3x3 covariance matrix of the velocity
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.2
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[][], double[][], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] positionCovarianceMatrix, final double[][] velocityCovarianceMatrix,
-              final double baseWeight, final int propagatorIndex) {
-        this(date, position, velocity, positionCovarianceMatrix, velocityCovarianceMatrix,
-             baseWeight, new ObservableSatellite(propagatorIndex));
     }
 
     /**
@@ -331,47 +145,6 @@ public class PV extends AbstractMeasurement<PV> {
              baseWeight, satellite);
     }
 
-    /**
-     * Constructor with full covariance matrix but default index for propagator.
-     * <p>The fact that the covariance matrix is symmetric and positive definite is not checked.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * <p>This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param covarianceMatrix 6x6 covariance matrix of the PV measurement
-     * @param baseWeight base weight
-     * @since 9.2
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[][], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] covarianceMatrix, final double baseWeight) {
-        this(date, position, velocity, covarianceMatrix, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Constructor with full covariance matrix and all inputs.
-     * <p>The fact that the covariance matrix is symmetric and positive definite is not checked.</p>
-     * <p>The measurement must be in the orbit propagation frame.</p>
-     * @param date date of the measurement
-     * @param position position
-     * @param velocity velocity
-     * @param covarianceMatrix 6x6 covariance matrix of the PV measurement
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.2
-     * @deprecated as of 9.3, replaced by {@link #PV(AbsoluteDate, Vector3D, Vector3D,
-     * double[][], double, ObservableSatellite)}
-     */
-    @Deprecated
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] covarianceMatrix, final double baseWeight, final int propagatorIndex) {
-        this(date, position, velocity, covarianceMatrix, baseWeight, new ObservableSatellite(propagatorIndex));
-    }
-
     /** Constructor with full covariance matrix and all inputs.
      * <p>The fact that the covariance matrix is symmetric and positive definite is not checked.</p>
      * <p>The measurement must be in the orbit propagation frame.</p>
@@ -394,7 +167,7 @@ public class PV extends AbstractMeasurement<PV> {
                   baseWeight, baseWeight, baseWeight,
                   baseWeight, baseWeight, baseWeight
               }, Arrays.asList(satellite));
-        this.covarianceMatrix = covarianceMatrix;
+        this.covarianceMatrix = covarianceMatrix.clone();
     }
 
     /** Get the position.
@@ -417,15 +190,16 @@ public class PV extends AbstractMeasurement<PV> {
      * @return the covariance matrix
      */
     public double[][] getCovarianceMatrix() {
-        return covarianceMatrix;
+        return covarianceMatrix.clone();
     }
 
     /** Get the correlation coefficients matrix.
-     * <br>This is the 6x6 matrix M such that:</br>
-     * <br>Mij = Pij/(σi.σj)</br>
-     * <br>Where: <ul>
-     * <li> P is the covariance matrix
-     * <li> σi is the i-th standard deviation (σi² = Pii)
+     * <p>This is the 6x6 matrix M such that:
+     * <p>Mij = Pij/(σi.σj)
+     * <p>Where:
+     * <ul>
+     * <li>P is the covariance matrix
+     * <li>σi is the i-th standard deviation (σi² = Pii)
      * </ul>
      * @return the correlation coefficient matrix (6x6)
      */

@@ -32,7 +32,6 @@ import org.hipparchus.RealFieldElement;
  * between the Doodson arguments and the traditional Delaunay
  * arguments ensures the proper sign is known.
  * </p>
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
 class TideTerm extends SeriesTerm {

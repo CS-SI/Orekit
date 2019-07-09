@@ -34,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 class MeasurementHandler implements MultiSatStepHandler {
 
     /** Least squares model. */
-    private final Model model;
+    private final BatchLSODModel model;
 
     /** Underlying measurements. */
     private final List<PreCompensation> precompensated;
@@ -49,12 +49,10 @@ class MeasurementHandler implements MultiSatStepHandler {
      * @param model least squares model
      * @param precompensated underlying measurements
      */
-    MeasurementHandler(final Model model, final List<PreCompensation> precompensated) {
+    MeasurementHandler(final BatchLSODModel model, final List<PreCompensation> precompensated) {
         this.model          = model;
         this.precompensated = precompensated;
     }
-
-    /**
 
     /** {@inheritDoc} */
     @Override

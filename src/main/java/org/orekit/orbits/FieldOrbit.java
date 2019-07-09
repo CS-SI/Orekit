@@ -74,7 +74,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     private final FieldAbsoluteDate<T> date;
 
     /** Value of mu used to compute position and velocity (m³/s²). */
-    private final double mu;
+    private final T mu;
 
     /** Computed PVCoordinates. */
     private transient TimeStampedFieldPVCoordinates<T> pvCoordinates;
@@ -106,7 +106,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    protected FieldOrbit(final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+    protected FieldOrbit(final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
         this.date                      = date;
@@ -135,7 +135,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    protected FieldOrbit(final TimeStampedFieldPVCoordinates<T> FieldPVCoordinates, final Frame frame, final double mu)
+    protected FieldOrbit(final TimeStampedFieldPVCoordinates<T> FieldPVCoordinates, final Frame frame, final T mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
         this.date = FieldPVCoordinates.getDate();
@@ -148,7 +148,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
             this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(FieldPVCoordinates.getDate(),
                                                                      FieldPVCoordinates.getPosition(),
                                                                      FieldPVCoordinates.getVelocity(),
-                                                                     new FieldVector3D<>(r3.reciprocal().multiply(-mu), FieldPVCoordinates.getPosition()));
+                                                                     new FieldVector3D<>(r3.reciprocal().multiply(mu.negate()), FieldPVCoordinates.getPosition()));
         } else {
             this.pvCoordinates = FieldPVCoordinates;
         }
@@ -161,7 +161,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @param <T> type of the field elements
      * @return true if Cartesian coordinates include non-Keplerian acceleration
      */
-    protected static <T extends RealFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final double mu) {
+    protected static <T extends RealFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final T mu) {
 
         final FieldVector3D<T> a = pva.getAcceleration();
         if (a == null) {
@@ -171,7 +171,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         final FieldVector3D<T> p = pva.getPosition();
         final T r2 = p.getNormSq();
         final T r  = r2.sqrt();
-        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu), p);
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), p);
         if (a.getNorm().getReal() > 1.0e-9 * keplerianAcceleration.getNorm().getReal()) {
             // we have a relevant acceleration, we can compute derivatives
             return true;
@@ -363,7 +363,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      */
     public abstract boolean hasDerivatives();
 
-    public double getMu() {
+    public T getMu() {
         return mu;
     }
 
@@ -610,7 +610,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(PositionAngle type, double gm, T[] pDot);
+    public abstract void addKeplerContribution(PositionAngle type, T gm, T[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

@@ -30,7 +30,7 @@ import java.util.TreeSet;
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.drag.atmosphere.DTM2000InputParameters;
+import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;

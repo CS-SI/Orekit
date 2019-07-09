@@ -142,7 +142,7 @@ public class FieldIntegratedEphemerisTest {
         double mu = 3.9860047e14;
         FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
         return new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                           FramesFactory.getEME2000(), initDate, mu);
+                                           FramesFactory.getEME2000(), initDate, zero.add(mu));
     }
 
     double mu;

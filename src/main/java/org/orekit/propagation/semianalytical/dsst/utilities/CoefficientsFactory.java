@@ -18,8 +18,11 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.TreeMap;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -90,6 +93,48 @@ public class CoefficientsFactory {
         return Qns;
     }
 
+    /** Compute the Q<sub>n,s</sub> coefficients evaluated at γ from the recurrence formula 2.8.3-(2).
+     *  <p>
+     *  Q<sub>n,s</sub> coefficients are computed for n = 0 to nMax
+     *  and s = 0 to sMax + 1 in order to also get the derivative dQ<sub>n,s</sub>/dγ = Q(n, s + 1)
+     *  </p>
+     *  @param gamma γ angle
+     *  @param nMax n max value
+     *  @param sMax s max value
+     *  @param <T> the type of the field elements
+     *  @return Q<sub>n,s</sub> coefficients array
+     */
+    public static <T extends RealFieldElement<T>> T[][] computeQns(final T gamma, final int nMax, final int sMax) {
+
+        // Initialization
+        final int sDim = FastMath.min(sMax + 1, nMax) + 1;
+        final int rows = nMax + 1;
+        final T[][] Qns = MathArrays.buildArray(gamma.getField(), rows, FastMath.min(nMax + 1, sDim) - 1);
+        for (int i = 0; i <= nMax; i++) {
+            final int snDim = FastMath.min(i + 1, sDim);
+            Qns[i] = MathArrays.buildArray(gamma.getField(), snDim);
+        }
+
+        // first element
+        Qns[0][0] = gamma.subtract(gamma).add(1.);
+
+        for (int n = 1; n <= nMax; n++) {
+            final int snDim = FastMath.min(n + 1, sDim);
+            for (int s = 0; s < snDim; s++) {
+                if (n == s) {
+                    Qns[n][s] = Qns[s - 1][s - 1].multiply(2. * s - 1.);
+                } else if (n == (s + 1)) {
+                    Qns[n][s] = Qns[s][s].multiply(gamma).multiply(2. * s + 1.);
+                } else {
+                    Qns[n][s] = Qns[n - 1][s].multiply(gamma).multiply(2. * n - 1.).subtract(Qns[n - 2][s].multiply(n + s - 1.));
+                    Qns[n][s] = Qns[n][s].divide(n - s);
+                }
+            }
+        }
+
+        return Qns;
+    }
+
     /** Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5).
      *  @param k x-component of the eccentricity vector
      *  @param h y-component of the eccentricity vector
@@ -116,6 +161,42 @@ public class CoefficientsFactory {
             GsHs[0][s] = kaphb * GsHs[0][s - 1] - hamkb * GsHs[1][s - 1];
             // Hs coefficient
             GsHs[1][s] = hamkb * GsHs[0][s - 1] + kaphb * GsHs[1][s - 1];
+        }
+
+        return GsHs;
+    }
+
+    /** Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5).
+     *  @param k x-component of the eccentricity vector
+     *  @param h y-component of the eccentricity vector
+     *  @param alpha 1st direction cosine
+     *  @param beta 2nd direction cosine
+     *  @param order development order
+     *  @param field field of elements
+     *  @param <T> the type of the field elements
+     *  @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order.<br>
+     *          The 1st column contains the G<sub>s</sub> values.
+     *          The 2nd column contains the H<sub>s</sub> values.
+     */
+    public static <T extends RealFieldElement<T>> T[][] computeGsHs(final T k, final T h,
+                                         final T alpha, final T beta,
+                                         final int order, final Field<T> field) {
+        // Zero for initialization
+        final T zero = field.getZero();
+
+        // Constant terms
+        final T hamkb = h.multiply(alpha).subtract(k.multiply(beta));
+        final T kaphb = k.multiply(alpha).add(h.multiply(beta));
+        // Initialization
+        final T[][] GsHs = MathArrays.buildArray(field, 2, order + 1);
+        GsHs[0][0] = zero.add(1.);
+        GsHs[1][0] = zero;
+
+        for (int s = 1; s <= order; s++) {
+            // Gs coefficient
+            GsHs[0][s] = kaphb.multiply(GsHs[0][s - 1]).subtract(hamkb.multiply(GsHs[1][s - 1]));
+            // Hs coefficient
+            GsHs[1][s] = hamkb.multiply(GsHs[0][s - 1]).add(kaphb.multiply(GsHs[1][s - 1]));
         }
 
         return GsHs;

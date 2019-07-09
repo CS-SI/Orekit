@@ -44,9 +44,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class BodyCenterPointing extends GroundPointing {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150529L;
-
     /** Body ellipsoid.  */
     private final Ellipsoid ellipsoid;
 

@@ -57,7 +57,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   </pre>
  * where ω stands for the Perigee Argument, Ω stands for the
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
- * </p>
  * <p>
  * This class supports hyperbolic orbits, using the convention that semi major
  * axis is negative for such orbits (and of course eccentricity is greater than 1).
@@ -170,7 +169,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     public FieldKeplerianOrbit(final T a, final T e, final T i,
                                final T pa, final T raan,
                                final T anomaly, final PositionAngle type,
-                               final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, e, i, pa, raan, anomaly,
              null, null, null, null, null, null,
@@ -204,7 +203,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
                                final T aDot, final T eDot, final T iDot,
                                final T paDot, final T raanDot, final T anomalyDot,
                                final PositionAngle type,
-                               final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         if (a.multiply(e.negate().add(1)).getReal() < 0) {
@@ -221,10 +220,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         this.eDot    =    eDot;
         this.i       =    i;
         this.iDot    =    iDot;
-        this.pa      =   pa;
-        this.paDot   =   paDot;
-        this.raan    = raan;
-        this.raanDot = raanDot;
+        this.pa      =    pa;
+        this.paDot   =    paDot;
+        this.raan    =    raan;
+        this.raanDot =    raanDot;
 
         /** Identity element. */
         this.one = a.getField().getOne();
@@ -310,7 +309,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldKeplerianOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
-                               final Frame frame, final double mu)
+                               final Frame frame, final T mu)
         throws IllegalArgumentException {
         this(pvCoordinates, frame, mu, hasNonKeplerianAcceleration(pvCoordinates, mu));
     }
@@ -331,7 +330,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     private FieldKeplerianOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
-                                final Frame frame, final double mu,
+                                final Frame frame, final T mu,
                                 final boolean reliableAcceleration)
         throws IllegalArgumentException {
 
@@ -400,7 +399,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
             getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
 
-            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu), pvP);
+            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
             final T   aX                       = nonKeplerianAcceleration.getX();
             final T   aY                       = nonKeplerianAcceleration.getY();
@@ -454,7 +453,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldKeplerianOrbit(final FieldPVCoordinates<T> FieldPVCoordinates,
-                               final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates), frame, mu);
     }
@@ -788,7 +787,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         T term = E;
         double d    = 0;
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (T x0 = E.getField().getZero().add(Double.NaN); x.getReal() != x0.getReal();) {
+        for (T x0 = E.getField().getZero().add(Double.NaN); !Double.valueOf(x.getReal()).equals(Double.valueOf(x0.getReal()));) {
             d += 2;
             term = term.multiply(mE2.divide(d * (d + 1)));
             x0 = x;
@@ -861,104 +860,6 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     public static <T extends RealFieldElement<T>> T ellipticEccentricToMean(final T E, final T e) {
         return E.subtract(e.multiply(E.sin()));
-    }
-
-    /** Compute position from elliptic Keplerian parameters.
-     * @param a semi-major axis (m)
-     * @param e eccentricity
-     * @param i inclination (rad)
-     * @param pa Perigee Argument (rad)
-     * @param raan Right Ascension of Ascending Node (rad)
-     * @param v true anomaly (rad)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the fiels elements
-     * @return position vector
-     * @deprecated as of 9.3 replaced with {@link #FieldKeplerianOrbit(RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> ellipticKeplerianToPosition(final T a, final T e, final T i,
-                                                                                               final T pa, final T raan, final T v,
-                                                                                               final double mu) {
-
-        // preliminary variables
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T cosPa   = pa.cos();
-        final T sinPa   = pa.sin();
-        final T cosI    = i.cos();
-        final T sinI    = i.sin();
-        final T crcp    = cosRaan.multiply(cosPa);
-        final T crsp    = cosRaan.multiply(sinPa);
-        final T srcp    = sinRaan.multiply(cosPa);
-        final T srsp    = sinRaan.multiply(sinPa);
-
-        // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
-
-        // elliptic eccentric anomaly
-        final T uME2   = e.negate().add(1).multiply(e.add(1));
-        final T s1Me2  = uME2.sqrt();
-        final T E      = (a.getReal() < 0) ? trueToHyperbolicEccentric(v, e) : trueToEllipticEccentric(v, e);
-        final T cosE   = E.cos();
-        final T sinE   = E.sin();
-
-        // coordinates of position in the orbital plane
-        final T x      = a.multiply(cosE.subtract(e));
-        final T y      = a.multiply(sinE).multiply(s1Me2);
-
-        return new FieldVector3D<>(x, p, y, q);
-
-    }
-
-    /** Compute position from hyperbolic Keplerian parameters.
-     * @param a semi-major axis (m)
-     * @param e eccentricity
-     * @param i inclination (rad)
-     * @param pa Perigee Argument (rad)
-     * @param raan Right Ascension of Ascending Node (rad)
-     * @param v true anomaly (rad)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the fiels elements
-     * @return position vector
-     * @deprecated as of 9.3 replaced with {@link #FieldKeplerianOrbit(RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> hyperbolicKeplerianToPosition(final T a, final T e, final T i,
-                                                                                                 final T pa, final T raan, final T v,
-                                                                                                 final double mu) {
-
-        // preliminary variables
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T cosPa   = pa.cos();
-        final T sinPa   = pa.sin();
-        final T cosI    = i.cos();
-        final T sinI    = i.sin();
-        final T crcp    = cosRaan.multiply(cosPa);
-        final T crsp    = cosRaan.multiply(sinPa);
-        final T srcp    = sinRaan.multiply(cosPa);
-        final T srsp    = sinRaan.multiply(sinPa);
-
-        // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
-
-
-        // coordinates of position in the orbital plane
-        final T sinV      = v.sin();
-        final T cosV      = v.cos();
-        final T f         = a.multiply(e.multiply(e).negate().add(1));
-        final T posFactor = f.divide(e.multiply(cosV).add(1));
-        final T x         = posFactor.multiply(cosV);
-        final T y         = posFactor.multiply(sinV);
-
-        return new FieldVector3D<>(x, p, y, q);
-
     }
 
     /** {@inheritDoc} */
@@ -1136,7 +1037,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             // coordinates of position and velocity in the orbital plane
             final T x      = a.multiply(cosE.subtract(e));
             final T y      = a.multiply(sinE).multiply(s1Me2);
-            final T factor = (a.reciprocal().multiply(getMu())).sqrt().divide(e.negate().multiply(cosE).add(1));
+            final T factor = FastMath.sqrt(getMu().divide(a)).divide(e.negate().multiply(cosE).add(1));
             final T xDot   = sinE.negate().multiply(factor);
             final T yDot   = cosE.multiply(s1Me2).multiply(factor);
 
@@ -1153,7 +1054,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final T cosV      = v.cos();
             final T f         = a.multiply(e.multiply(e).negate().add(1));
             final T posFactor = f.divide(e.multiply(cosV).add(1));
-            final T velFactor = f.reciprocal().multiply(getMu()).sqrt();
+            final T velFactor = FastMath.sqrt(getMu().divide(f));
 
             final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), p, posFactor.multiply(sinV), q);
             final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), p, velFactor.multiply(e.add(cosV)), q);
@@ -1206,7 +1107,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // acceleration
         final T r2 = partialPV.getPosition().getNormSq();
-        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(-getMu()),
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(FastMath.sqrt(r2)).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
         final FieldVector3D<T> acceleration = hasDerivatives() ?
                                               keplerianAcceleration.add(nonKeplerianAcceleration()) :
@@ -1242,7 +1143,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final T   fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, keplerianShifted.partialPV.getVelocity(),
                                                                  dt, nonKeplerianAcceleration);
-            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(-getMu()),
+            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
                                                                  keplerianShifted.partialPV.getPosition(),
                                                                  one, nonKeplerianAcceleration);
 
@@ -1391,9 +1292,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T my         = momentum.getY();
         final T mz         = momentum.getZ();
 
-        final double mu         = getMu();
-        final T sqrtMuA    = a.multiply(mu).sqrt();
-        final T sqrtAoMu   = a.divide(mu).sqrt();
+        final T mu         = getMu();
+        final T sqrtMuA    = FastMath.sqrt(a.multiply(mu));
+        final T sqrtAoMu   = FastMath.sqrt(a.divide(mu));
         final T a2         = a.multiply(a);
         final T twoA       = a.multiply(2);
         final T rOnA       = r.divide(a);
@@ -1413,7 +1314,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // da
         final FieldVector3D<T> vectorAR = new FieldVector3D<>(a2.multiply(2).divide(r3), position);
-        final FieldVector3D<T> vectorARDot = velocity.scalarMultiply(a2.multiply(2 / mu));
+        final FieldVector3D<T> vectorARDot = velocity.scalarMultiply(a2.multiply(mu.divide(2.).reciprocal()));
         fillHalfRow(this.one, vectorAR,    jacobian[0], 0);
         fillHalfRow(this.one, vectorARDot, jacobian[0], 3);
 
@@ -1423,7 +1324,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
                                                                 sinE.divide(sqrtMuA), velocity,
                                                                 factorER3.negate().multiply(sinE).divide(sqrtMuA), vectorAR);
         final FieldVector3D<T> vectorERDot = new FieldVector3D<>(sinE.divide(sqrtMuA), position,
-                                                                 cosE.multiply(2 / mu).multiply(r), velocity,
+                                                                 cosE.multiply(mu.divide(2.).reciprocal()).multiply(r), velocity,
                                                                  factorER3.negate().multiply(sinE).divide(sqrtMuA), vectorARDot);
         fillHalfRow(this.one, vectorER,    jacobian[1], 0);
         fillHalfRow(this.one, vectorERDot, jacobian[1], 3);
@@ -1528,7 +1429,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T my         = momentum.getY();
         final T mz         = momentum.getZ();
 
-        final double mu         = getMu();
+        final T mu         = getMu();
         final T absA       = a.negate();
         final T sqrtMuA    = absA.multiply(mu).sqrt();
         final T a2         = a.multiply(a);
@@ -1541,7 +1442,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // da
         final FieldVector3D<T> vectorAR = new FieldVector3D<>(a2.multiply(-2).divide(r3), position);
-        final FieldVector3D<T> vectorARDot = velocity.scalarMultiply(a2.multiply(-2 / mu));
+        final FieldVector3D<T> vectorARDot = velocity.scalarMultiply(a2.multiply(-2).divide(mu));
         fillHalfRow(this.one.negate(), vectorAR,    jacobian[0], 0);
         fillHalfRow(this.one.negate(), vectorARDot, jacobian[0], 3);
 
@@ -1612,8 +1513,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T scasbu = pv.multiply(oObux);
         final FieldVector3D<T> dauP = new FieldVector3D<>(sqrtMuA.reciprocal(), velocity, s2a.negate().divide(sqrtMuA), vectorAR);
         final FieldVector3D<T> dauV = new FieldVector3D<>(sqrtMuA.reciprocal(), position, s2a.negate().divide(sqrtMuA), vectorARDot);
-        final FieldVector3D<T> dbuP = new FieldVector3D<>(oObux.multiply(mu / 2), vectorAR,    m.multiply(oObux), dCP);
-        final FieldVector3D<T> dbuV = new FieldVector3D<>(oObux.multiply(mu / 2), vectorARDot, m.multiply(oObux), dCV);
+        final FieldVector3D<T> dbuP = new FieldVector3D<>(oObux.multiply(mu.divide(2.)), vectorAR,    m.multiply(oObux), dCP);
+        final FieldVector3D<T> dbuV = new FieldVector3D<>(oObux.multiply(mu.divide(2.)), vectorARDot, m.multiply(oObux), dCV);
         final FieldVector3D<T> dcuP = new FieldVector3D<>(oObux, velocity, scasbu.negate().multiply(oObux), dbuP);
         final FieldVector3D<T> dcuV = new FieldVector3D<>(oObux, position, scasbu.negate().multiply(oObux), dbuV);
         fillHalfRow(this.one, dauP, e.negate().divide(rOa.add(1)), dcuP, jacobian[5], 0);
@@ -1785,7 +1686,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngle type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
@@ -1828,9 +1729,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * Normalize an angle in a 2&pi; wide interval around a center value.
      * <p>This method has three main uses:</p>
      * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br/>
+     *   <li>normalize an angle between 0 and 2&pi;:<br>
      *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br/>
+     *   <li>normalize an angle between -&pi; and +&pi;<br>
      *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
      *   <li>compute the angle between two defining angular positions:<br>
      *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
@@ -1855,12 +1756,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
                                       aDot.getReal(), eDot.getReal(), iDot.getReal(),
                                       paDot.getReal(), raanDot.getReal(), vDot.getReal(),
                                       PositionAngle.TRUE,
-                                      getFrame(), getDate().toAbsoluteDate(), getMu());
+                                      getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
                                       pa.getReal(), raan.getReal(), v.getReal(),
                                       PositionAngle.TRUE,
-                                      getFrame(), getDate().toAbsoluteDate(), getMu());
+                                      getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
         }
     }
 

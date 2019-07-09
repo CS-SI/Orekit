@@ -41,7 +41,7 @@ public enum Frequency {
     R02(SatelliteSystem.GLONASS, "G2", 1246.0 / 10.23),
 
     /** GLONASS, "G3" (1202.025 MHz). */
-    R03(SatelliteSystem.GLONASS, "G2", 117.5),
+    R03(SatelliteSystem.GLONASS, "G3", 117.5),
 
     /** Galileo, "E1" (1575.42 MHz). */
     E01(SatelliteSystem.GALILEO, "E1", 154),

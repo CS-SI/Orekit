@@ -81,9 +81,6 @@ import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.Atmosphere;
-import org.orekit.forces.drag.atmosphere.DTM2000;
-import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.OceanTides;
 import org.orekit.forces.gravity.Relativity;
@@ -108,21 +105,24 @@ import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.RinexLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
-import org.orekit.models.earth.DiscreteTroposphericModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
-import org.orekit.models.earth.EstimatedTroposphericModel;
-import org.orekit.models.earth.GlobalMappingFunctionModel;
-import org.orekit.models.earth.GlobalPressureTemperatureModel;
-import org.orekit.models.earth.IonosphericModel;
-import org.orekit.models.earth.KlobucharIonoCoefficientsLoader;
-import org.orekit.models.earth.KlobucharIonoModel;
-import org.orekit.models.earth.MappingFunction;
-import org.orekit.models.earth.NiellMappingFunctionModel;
-import org.orekit.models.earth.SaastamoinenModel;
+import org.orekit.models.earth.atmosphere.Atmosphere;
+import org.orekit.models.earth.atmosphere.DTM2000;
+import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.models.earth.displacement.OceanLoading;
 import org.orekit.models.earth.displacement.OceanLoadingCoefficientsBLQFactory;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
+import org.orekit.models.earth.ionosphere.IonosphericModel;
+import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
+import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
+import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
+import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
+import org.orekit.models.earth.troposphere.MappingFunction;
+import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -1277,7 +1277,7 @@ public class KalmanOrbitDeterminationTest {
             final boolean cdEstimated = parser.getBoolean(ParameterKey.DRAG_CD_ESTIMATED);
 
             MarshallSolarActivityFutureEstimation msafe =
-                            new MarshallSolarActivityFutureEstimation("(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)",
+                            new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
             DataProvidersManager manager = DataProvidersManager.getInstance();
             manager.feed(msafe.getSupportedNames(), msafe);
@@ -2761,18 +2761,14 @@ public class KalmanOrbitDeterminationTest {
                 // load Klobuchar model for the L1 frequency
                 final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
                 loader.loadKlobucharIonosphericCoefficients(dc);
-                final IonosphericModel l1Model   = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
+                final IonosphericModel model = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
 
-                // scale for current frequency
-                final double fL1   = Frequency.G01.getMHzFrequency();
-                final double f     = frequency.getMHzFrequency();
-                final double ratio = (fL1 * fL1) / (f * f);
-                final IonosphericModel scaledModel = (date, geo, elevation, azimuth) ->
-                                                     ratio * l1Model.pathDelay(date, geo, elevation, azimuth);
+                // frequency
+                final double f = frequency.getMHzFrequency() * 1.0e6;
 
                 // create modifiers
-                rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(scaledModel));
-                rangeRateModifiers.get(frequency).put(dc, new RangeRateIonosphericDelayModifier(scaledModel, twoWay));
+                rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(model, f));
+                rangeRateModifiers.get(frequency).put(dc, new RangeRateIonosphericDelayModifier(model, f, twoWay));
 
             }
 
@@ -2911,11 +2907,11 @@ public class KalmanOrbitDeterminationTest {
         GROUND_STATION_LATITUDE,
         GROUND_STATION_LONGITUDE,
         GROUND_STATION_ALTITUDE,
+        GROUND_STATION_POSITION_ESTIMATED,
         GROUND_STATION_CLOCK_OFFSET,
         GROUND_STATION_CLOCK_OFFSET_MIN,
         GROUND_STATION_CLOCK_OFFSET_MAX,
         GROUND_STATION_CLOCK_OFFSET_ESTIMATED,
-        GROUND_STATION_POSITION_ESTIMATED,
         GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED,
         GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
         GROUND_STATION_NIELL_MAPPING_FUNCTION,

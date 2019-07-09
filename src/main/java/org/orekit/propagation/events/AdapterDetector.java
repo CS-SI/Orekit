@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 
 /** Base class for adapting an existing detector.
@@ -31,9 +31,6 @@ import org.orekit.time.AbsoluteDate;
  * @since 9.3
  */
 public class AdapterDetector implements EventDetector {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20181206L;
 
     /** Wrapped detector. */
     private final EventDetector detector;

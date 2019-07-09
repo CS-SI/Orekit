@@ -55,7 +55,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   </pre>
  * where ω stands for the Perigee Argument and Ω stands for the
  * Right Ascension of the Ascending Node.
- * </p>
  * <p>
  * The conversion equations from and to Keplerian elements given above hold only
  * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
@@ -150,7 +149,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     public FieldEquinoctialOrbit(final T a, final T ex, final T ey,
                                  final T hx, final T hy, final T l,
                                  final PositionAngle type,
-                                 final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                                 final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, hx, hy, l,
              null, null, null, null, null, null,
@@ -183,7 +182,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
                                  final T aDot, final T exDot, final T eyDot,
                                  final T hxDot, final T hyDot, final T lDot,
                                  final PositionAngle type,
-                                 final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                                 final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         field = a.getField();
@@ -267,7 +266,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldEquinoctialOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
-                                 final Frame frame, final double mu)
+                                 final Frame frame, final T mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
 
@@ -325,7 +324,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
             getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
 
-            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu), pvP);
+            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
             final T   aX                       = nonKeplerianAcceleration.getX();
             final T   aY                       = nonKeplerianAcceleration.getY();
@@ -378,7 +377,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldEquinoctialOrbit(final FieldPVCoordinates<T> pvCoordinates, final Frame frame,
-                            final FieldAbsoluteDate<T> date, final double mu)
+                            final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(new TimeStampedFieldPVCoordinates<>(date, pvCoordinates), frame, mu);
     }
@@ -626,66 +625,6 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         return lE.subtract(ex.multiply(lE.sin())).add(ey.multiply(lE.cos()));
     }
 
-    /** Compute position from equinoctial parameters.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω + Ω), first component of eccentricity vector
-     * @param ey e sin(ω + Ω), second component of eccentricity vector
-     * @param hx tan(i/2) cos(Ω), first component of inclination vector
-     * @param hy tan(i/2) sin(Ω), second component of inclination vector
-     * @param lv  v + ω + Ω true longitude argument (rad)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the field elements
-     * @return position vector
-     * @deprecated as of 9.3, replaced by {@link #FieldEquinoctialOrbit(RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> equinoctialToPosition(final T a, final T ex, final T ey,
-                                                                                         final T hx, final T hy, final T lv,
-                                                                                         final double mu) {
-
-        final T one  = a.getField().getOne();
-
-        // eccentric longitude argument
-        final T lE = trueToEccentric(lv, ex, ey);
-
-        // inclination-related intermediate parameters
-        final T hx2   = hx.multiply(hx);
-        final T hy2   = hy.multiply(hy);
-        final T factH = one.divide(hx2.add(1.0).add(hy2));
-
-        // reference axes defining the orbital plane
-        final T ux = hx2.add(1.0).subtract(hy2).multiply(factH);
-        final T uy = hx.multiply(hy).multiply(factH).multiply(2);
-        final T uz = hy.multiply(-2).multiply(factH);
-
-        final T vx = uy;
-        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
-        final T vz =  hx.multiply(factH).multiply(2);
-
-        // eccentricity-related intermediate parameters
-        final T ex2  = ex.multiply(ex);
-        final T exey = ex.multiply(ey);
-        final T ey2  = ey.multiply(ey);
-        final T e2   = ex2.add(ey2);
-        final T eta  = one.subtract(e2).sqrt().add(1);
-        final T beta = one.divide(eta);
-
-        // eccentric longitude argument
-        final T cLe    = lE.cos();
-        final T sLe    = lE.sin();
-
-        // coordinates of position and velocity in the orbital plane
-        final T x      = a.multiply(one.subtract(beta.multiply(ey2)).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(ex));
-        final T y      = a.multiply(one.subtract(beta.multiply(ex2)).multiply(sLe).add(beta .multiply(exey).multiply(cLe)).subtract(ey));
-
-        return new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
-                                   x.multiply(uy).add(y.multiply(vy)),
-                                   x.multiply(uz).add(y.multiply(vz)));
-
-    }
-
     /** {@inheritDoc} */
     public T getE() {
         return ex.multiply(ex).add(ey.multiply(ey)).sqrt();
@@ -763,7 +702,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T x      = a.multiply(one.subtract(beta.multiply(ey2)).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(ex));
         final T y      = a.multiply(one.subtract(beta.multiply(ex2)).multiply(sLe).add(beta .multiply(exey).multiply(cLe)).subtract(ey));
 
-        final T factor = zero.add(getMu()).divide(a).sqrt().divide(one.subtract(exCeyS));
+        final T factor = getMu().divide(a).sqrt().divide(one.subtract(exCeyS));
         final T xdot   = factor.multiply(sLe.negate().add(beta.multiply(ey).multiply(exCeyS)));
         final T ydot   = factor.multiply(cLe.subtract(beta.multiply(ex).multiply(exCeyS)));
 
@@ -821,7 +760,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
 
         // acceleration
         final T r2 = partialPV.getPosition().getNormSq();
-        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(-getMu()),
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
         final FieldVector3D<T> acceleration = hasDerivatives() ?
                                               keplerianAcceleration.add(nonKeplerianAcceleration()) :
@@ -858,7 +797,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             final T   fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, keplerianShifted.partialPV.getVelocity(),
                                                                  dt, nonKeplerianAcceleration);
-            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(-getMu()),
+            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
                                                                  keplerianShifted.partialPV.getPosition(),
                                                                  one, nonKeplerianAcceleration);
 
@@ -969,7 +908,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T r          = r2.sqrt();
         final T r3         = r.multiply(r2);
 
-        final double mu         = getMu();
+        final T mu         = getMu();
         final T sqrtMuA    = a.multiply(mu).sqrt();
         final T a2         = a.multiply(a);
 
@@ -1120,11 +1059,11 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngle type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
-        final T n = zero.add(gm).divide(a).sqrt().divide(a);
+        final T n = gm.divide(a).sqrt().divide(a);
         switch (type) {
             case MEAN :
                 pDot[5] = pDot[5].add(n);
@@ -1160,9 +1099,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * Normalize an angle in a 2&pi; wide interval around a center value.
      * <p>This method has three main uses:</p>
      * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br/>
+     *   <li>normalize an angle between 0 and 2&pi;:<br>
      *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br/>
+     *   <li>normalize an angle between -&pi; and +&pi;<br>
      *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
      *   <li>compute the angle between two defining angular positions:<br>
      *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
@@ -1187,12 +1126,12 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
                                         aDot.getReal(), exDot.getReal(), eyDot.getReal(),
                                         hxDot.getReal(), hyDot.getReal(), lvDot.getReal(),
                                         PositionAngle.TRUE, getFrame(),
-                                        getDate().toAbsoluteDate(), getMu());
+                                        getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                         hx.getReal(), hy.getReal(), lv.getReal(),
                                         PositionAngle.TRUE, getFrame(),
-                                        getDate().toAbsoluteDate(), getMu());
+                                        getDate().toAbsoluteDate(), getMu().getReal());
         }
     }
 

@@ -403,11 +403,26 @@ UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = impossible de calculer l''orbite moyenn
 # derivation order {0} is out of range
 OUT_OF_RANGE_DERIVATION_ORDER = ordre de différentiation {0} hors domaine
 
-# out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = latitude {0} hors domaine [{1}, {2}]
-
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = type d''orbite {0} non autorisé ici, types autorisés : {1}
+
+# non pseudo-inertial frame {0} is not suitable as reference for inertial forces
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = le repère non pseudo-inertiel {0} n''est pas une référence adaptée pour les forces d''inertie
+
+# method not available in the absence of a central body
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = méthode non disponible en l''absence de corps central
+
+# operation not available between frames {0} and {1}
+INCOMPATIBLE_FRAMES = opération non disponible entre les repères {0} et {1}
+
+# orbit not defined, state rather contains an absolute position-velocity-acceleration
+UNDEFINED_ORBIT = orbite non définie, l''état contient plutôt une position-vitesse-accélération absolue
+
+# absolute position-velocity-acceleration not defined, state rather contains an orbit
+UNDEFINED_ABSOLUTE_PVCOORDINATES = position-vitesse-accélération absolue non définie, l''état contient plutôt une orbite
+
+# an inertial force model has to be used when propagating in non-inertial frame {0}
+INERTIAL_FORCE_MODEL_MISSING = un modèle de forces d''inertie est nécessaire pour propager dans le repère non pseudo-inertiel {0}
 
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = aucun fichier d''almanach SEM n''a été trouvé
@@ -463,6 +478,9 @@ UNKNOWN_SATELLITE_SYSTEM = système satellitaire {0} inconnu
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = code d''antenne satellite {0} inconnu
 
+# frequency {0} is not supported by antenna {1}
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = fréquence {0} non prise en compte par l''antenne {1}
+
 # cannot find satellite {0} in satellite system {1}
 CANNOT_FIND_SATELLITE_IN_SYSTEM = satellite {0} introuvable dans le système satellitaire {1}
 
@@ -509,7 +527,24 @@ VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = impossible de charger des coefficients
 VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = les coefficients du modèle de Vienne ah, aw, zh ou zw ne sont pas disponibles pour la date {0}
 
 # file {0} does not contain Vienna coefficients ah, aw, zh or zw
-NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = {0} ne contiant pas de coefficients du modèle de Vienne ah, aw, zh ou zw
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = {0} ne contient pas de coefficients du modèle de Vienne ah, aw, zh ou zw
 
 # irregular or incomplete grid in file {0}
 IRREGULAR_OR_INCOMPLETE_GRID = grille incomplète ou irrégulière dans le fichier {0}
+
+# invalid satellite system {0}
+INVALID_SATELLITE_SYSTEM = le système satellite {0} est non valide
+
+# IONEX file {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILE_FOR_DATE = le fichier IONEX {0} ne contient pas de données de TEC pour la date {1}
+
+# number of maps {0} is inconsistent with header specification: {1}
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = le nombre de cartes {0} est incompatible avec les specifications de l''en-tête: {1}
+
+# The first column of itrf-versions.conf is a plain prefix that is matched against the
+# name of each loaded file. It should not contain any regular expression syntax or
+# directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
+ITRF_VERSIONS_PREFIX_ONLY = la première colonne du fichier itrf-versions.conf est un simple préfixe qui est comparé aux noms des fichiers chargés. Ce préfixe ne doit comporter aucune expression rationelle et aucun séparateur de chemin tel que \"/\" ou \"\\\". La valeur courante est : \"{0}\".
+
+# cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = impossible de calculer la direction de pointage pour le point singulier: latitude = {0}, longitude = {1}

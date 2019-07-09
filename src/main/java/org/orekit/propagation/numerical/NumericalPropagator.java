@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,15 +32,18 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
+import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -145,6 +146,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
 
+    /** boolean to ignore or not the creation of a NewtonianAttraction. */
+    private boolean ignoreCentralAttraction = false;
+
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
@@ -157,13 +161,17 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final ODEIntegrator integrator) {
-        super(integrator, true);
+        super(integrator, PropagationType.MEAN);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
         setAttitudeProvider(DEFAULT_LAW);
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
+    }
+
+    public void setIgnoreCentralAttraction(final boolean ignoreCentralAttraction) {
+        this.ignoreCentralAttraction = ignoreCentralAttraction;
     }
 
      /** Set the central attraction coefficient μ.
@@ -177,7 +185,11 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @see #getAllForceModels()
      */
     public void setMu(final double mu) {
-        addForceModel(new NewtonianAttraction(mu));
+        if (ignoreCentralAttraction) {
+            superSetMu(mu);
+        } else {
+            addForceModel(new NewtonianAttraction(mu));
+        }
     }
 
     /** Set the central attraction coefficient μ only in upper class.
@@ -275,14 +287,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation
+     * @param orbitType orbit type to use for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     public void setOrbitType(final OrbitType orbitType) {
         super.setOrbitType(orbitType);
     }
 
     /** Get propagation parameter type.
-     * @return orbit type used for propagation
+     * @return orbit type used for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     public OrbitType getOrbitType() {
         return super.getOrbitType();
@@ -338,10 +352,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Internal mapper using directly osculating parameters. */
-    private static class OsculatingMapper extends StateMapper implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20130621L;
+    private static class OsculatingMapper extends StateMapper {
 
         /** Simple constructor.
          * <p>
@@ -352,7 +363,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
          * </p>
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
-         * @param orbitType orbit type to use for mapping
+         * @param orbitType orbit type to use for mapping (can be null for {@link AbsolutePVCoordinates})
          * @param positionAngleType angle type to use for propagation
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
@@ -365,84 +376,56 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
-                                               final boolean meanOnly) {
-            // the parameter meanOnly is ignored for the Numerical Propagator
+                                               final PropagationType type) {
+            // the parameter type is ignored for the Numerical Propagator
 
             final double mass = y[6];
             if (mass <= 0.0) {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
-            final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
-            final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
+            if (getOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                final Vector3D p = new Vector3D(y[0],    y[1],    y[2]);
+                final Vector3D v = new Vector3D(y[3],    y[4],    y[5]);
+                final Vector3D a;
+                final AbsolutePVCoordinates absPva;
+                if (yDot == null) {
+                    absPva = new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v));
+                } else {
+                    a = new Vector3D(yDot[3], yDot[4], yDot[5]);
+                    absPva = new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v, a));
+                }
 
-            return new SpacecraftState(orbit, attitude, mass);
+                final Attitude attitude = getAttitudeProvider().getAttitude(absPva, date, getFrame());
+                return new SpacecraftState(absPva, attitude, mass);
+            } else {
+                // propagation uses regular orbits
+                final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
+                final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
+
+                return new SpacecraftState(orbit, attitude, mass);
+            }
 
         }
 
         /** {@inheritDoc} */
         public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot) {
-            getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y, yDot);
-            y[6] = state.getMass();
-        }
-
-        /** Replace the instance with a data transfer object for serialization.
-         * @return data transfer object that will be serialized
-         * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
-         */
-        private Object writeReplace() throws NotSerializableException {
-            return new DataTransferObject(getReferenceDate(), getMu(), getOrbitType(),
-                                          getPositionAngleType(), getAttitudeProvider(), getFrame());
-        }
-
-        /** Internal class used only for serialization. */
-        private static class DataTransferObject implements Serializable {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20130621L;
-
-            /** Reference date. */
-            private final AbsoluteDate referenceDate;
-
-            /** Central attraction coefficient (m³/s²). */
-            private final double mu;
-
-            /** Orbit type to use for mapping. */
-            private final OrbitType orbitType;
-
-            /** Angle type to use for propagation. */
-            private final PositionAngle positionAngleType;
-
-            /** Attitude provider. */
-            private final AttitudeProvider attitudeProvider;
-
-            /** Inertial frame. */
-            private final Frame frame;
-
-            /** Simple constructor.
-             * @param referenceDate reference date
-             * @param mu central attraction coefficient (m³/s²)
-             * @param orbitType orbit type to use for mapping
-             * @param positionAngleType angle type to use for propagation
-             * @param attitudeProvider attitude provider
-             * @param frame inertial frame
-             */
-            DataTransferObject(final AbsoluteDate referenceDate, final double mu,
-                                      final OrbitType orbitType, final PositionAngle positionAngleType,
-                                      final AttitudeProvider attitudeProvider, final Frame frame) {
-                this.referenceDate     = referenceDate;
-                this.mu                = mu;
-                this.orbitType         = orbitType;
-                this.positionAngleType = positionAngleType;
-                this.attitudeProvider  = attitudeProvider;
-                this.frame             = frame;
+            if (getOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                final Vector3D p = state.getAbsPVA().getPosition();
+                final Vector3D v = state.getAbsPVA().getVelocity();
+                y[0] = p.getX();
+                y[1] = p.getY();
+                y[2] = p.getZ();
+                y[3] = v.getX();
+                y[4] = v.getY();
+                y[5] = v.getZ();
+                y[6] = state.getMass();
             }
-
-            /** Replace the deserialized data transfer object with a {@link OsculatingMapper}.
-             * @return replacement {@link OsculatingMapper}
-             */
-            private Object readResolve() {
-                return new OsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
+            else {
+                getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y, yDot);
+                y[6] = state.getMass();
             }
         }
 
@@ -459,8 +442,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Derivatives array. */
         private final double[] yDot;
 
-        /** Current orbit. */
-        private Orbit orbit;
+        /** Current state. */
+        private SpacecraftState currentState;
 
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
         private double[][] jacobian;
@@ -477,6 +460,15 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 forceModel.getEventsDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
+            if (getOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                // we can set Jacobian once and for all
+                for (int i = 0; i < jacobian.length; ++i) {
+                    Arrays.fill(jacobian[i], 0.0);
+                    jacobian[i][i] = 1.0;
+                }
+            }
+
         }
 
         /** {@inheritDoc} */
@@ -491,9 +483,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         @Override
         public double[] computeDerivatives(final SpacecraftState state) {
 
-            orbit = state.getOrbit();
+            currentState = state;
             Arrays.fill(yDot, 0.0);
-            orbit.getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+            if (getOrbitType() != null) {
+                // propagation uses regular orbits
+                currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+            }
 
             // compute the contributions of all perturbing forces,
             // using the Kepler contribution at the end since
@@ -502,6 +497,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 forceModel.addContribution(state, this);
             }
 
+            if (getOrbitType() == null) {
+                // position derivative is velocity, and was not added above in the force models
+                // (it is added when orbit type is non-null because NewtonianAttraction considers it)
+                final Vector3D velocity = currentState.getPVCoordinates().getVelocity();
+                yDot[0] += velocity.getX();
+                yDot[1] += velocity.getY();
+                yDot[2] += velocity.getZ();
+            }
+
+
             return yDot.clone();
 
         }
@@ -509,7 +514,23 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** {@inheritDoc} */
         @Override
         public void addKeplerContribution(final double mu) {
-            orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
+            if (getOrbitType() == null) {
+
+                // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
+                if (mu > 0) {
+                    // velocity derivative is Newtonian acceleration
+                    final Vector3D position = currentState.getPVCoordinates().getPosition();
+                    final double r2         = position.getNormSq();
+                    final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
+                    yDot[3] += coeff * position.getX();
+                    yDot[4] += coeff * position.getY();
+                    yDot[5] += coeff * position.getZ();
+                }
+
+            } else {
+                // propagation uses regular orbits
+                currentState.getOrbit().addKeplerContribution(getPositionAngleType(), mu, yDot);
+            }
         }
 
         /** {@inheritDoc} */
@@ -531,7 +552,41 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
-    /** Estimate tolerance vectors for integrators.
+    /** Estimate tolerance vectors for integrators when propagating in absolute position-velocity-acceleration.
+     * @param dP user specified position error
+     * @param absPva reference absolute position-velocity-acceleration
+     * @return a two rows array, row 0 being the absolute tolerance error and row 1
+     * being the relative tolerance error
+     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
+     */
+    public static double[][] tolerances(final double dP, final AbsolutePVCoordinates absPva) {
+
+        final double relative = dP / absPva.getPosition().getNorm();
+        final double dV = relative * absPva.getVelocity().getNorm();
+
+        final double[] absTol = new double[7];
+        final double[] relTol = new double[7];
+
+        absTol[0] = dP;
+        absTol[1] = dP;
+        absTol[2] = dP;
+        absTol[3] = dV;
+        absTol[4] = dV;
+        absTol[5] = dV;
+
+        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
+        // with trust, this often has no influence at all on propagation
+        absTol[6] = 1.0e-6;
+
+        Arrays.fill(relTol, relative);
+
+        return new double[][] {
+            absTol, relTol
+        };
+
+    }
+
+    /** Estimate tolerance vectors for integrators when propagating in orbits.
      * <p>
      * The errors are estimated from partial derivatives properties of orbits,
      * starting from a scalar position error specified by the user.
@@ -609,5 +664,24 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
-}
+    /** {@inheritDoc} */
+    @Override
+    protected void beforeIntegration(final SpacecraftState initialState, final AbsoluteDate tEnd) {
 
+        if (!getFrame().isPseudoInertial()) {
+
+            // inspect all force models to find InertialForces
+            for (ForceModel force : forceModels) {
+                if (force instanceof InertialForces) {
+                    return;
+                }
+            }
+
+            // throw exception if no inertial forces found
+            throw new OrekitException(OrekitMessages.INERTIAL_FORCE_MODEL_MISSING, getFrame().getName());
+
+        }
+
+    }
+
+}

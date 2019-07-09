@@ -34,7 +34,7 @@ import org.orekit.utils.Constants;
  * other words the different locations of an event with respect to two different
  * time scales (say {@link TAIScale TAI} and {@link UTCScale UTC} for example) are
  * simply different perspective related to a single object. Only one
- * <code>FieldAbsoluteDate<T></code> instance is needed, both representations being available
+ * <code>FieldAbsoluteDate&lt;T&gt;</code> instance is needed, both representations being available
  * from this single instance by specifying the time scales as parameter when calling
  * the ad-hoc methods.</p>
  *
@@ -58,9 +58,9 @@ import org.orekit.utils.Constants;
  *   #FieldAbsoluteDate(Field, int, int, int, int, int, double, TimeScale)}, {@link
  *   #FieldAbsoluteDate(Field, int, int, int, TimeScale)}, {@link #FieldAbsoluteDate(Field,
  *   Date, TimeScale)}, {@link #createGPSDate(int, RealFieldElement)}, {@link
- *   #parseCCSDSCalendarSegmentedTimeCode(byte, byte[])}, toString(){@link
- *   #toDate(TimeScale)}, {@link #toString(TimeScale) toString(timeScale)},
- *   {@link #toString()}, and {@link #timeScalesOffset}.</p>
+ *   #parseCCSDSCalendarSegmentedTimeCode(byte, byte[])}, {@link #toDate(TimeScale)},
+ *   {@link #toString(TimeScale) toString(timeScale)}, {@link #toString()},
+ *   and {@link #timeScalesOffset}.</p>
  *   </li>
  *   <li><p>offset view (mainly for physical computation)</p>
  *   <p>offsets represent either the flow of time between two events
@@ -87,7 +87,7 @@ import org.orekit.utils.Constants;
  * a min or max date.
  * </p>
  * <p>
- * Instances of the <code>FieldAbsoluteDate<T></code> class are guaranteed to be immutable.
+ * Instances of the <code>FieldAbsoluteDate&lt;T&gt;</code> class are guaranteed to be immutable.
  * </p>
  * @author Luc Maisonobe
  * @see TimeScale
@@ -671,18 +671,14 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * <p>According to Lieske paper: <a
      * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&amp;defaultprint=YES&amp;filetype=.pdf.">
      * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>, Astronomy and Astrophysics,
-     * vol. 73, no. 3, Mar. 1979, p. 282-284, Julian Epoch is related to Julian Ephemeris Date as:</p>
-     * <pre>
-     * JE = 2000.0 + (JED - 2451545.0) / 365.25
-     * </pre>
-     * <p>
-     * This method reverts the formula above and computes an {@code FieldAbsoluteDate<T>} from the Julian Epoch.
-     * </p>
+     * vol. 73, no. 3, Mar. 1979, p. 282-284, Julian Epoch is related to Julian Ephemeris Date as:
+     * <pre>JE = 2000.0 + (JED - 2451545.0) / 365.25</pre>
+     * <p>This method reverts the formula above and computes an {@code FieldAbsoluteDate<T>} from the Julian Epoch.
+     * @param <T> the type of the field elements
      * @param julianEpoch Julian epoch, like 2000.0 for defining the classical reference J2000.0
      * @return a new instant
      * @see #getJ2000Epoch(Field)
      * @see #createBesselianEpoch(RealFieldElement)
-     * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createJulianEpoch(final T julianEpoch) {
         return new FieldAbsoluteDate<>(getJ2000Epoch(julianEpoch.getField()),
@@ -700,10 +696,10 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * <p>
      * This method reverts the formula above and computes an {@code FieldAbsoluteDate<T>} from the Besselian Epoch.
      * </p>
+     * @param <T> the type of the field elements
      * @param besselianEpoch Besselian epoch, like 1950 for defining the classical reference B1950.0
      * @return a new instant
      * @see #createJulianEpoch(RealFieldElement)
-     * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createBesselianEpoch(final T besselianEpoch) {
         return new FieldAbsoluteDate<>(getJ2000Epoch(besselianEpoch.getField()),
@@ -717,65 +713,72 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * years -1 and +1, hence this reference date lies in year -4712 and not
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#JULIAN_EPOCH}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return the reference epoch for julian dates as a FieldAbsoluteDate
+     * @see AbsoluteDate#JULIAN_EPOCH
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJulianEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.JULIAN_EPOCH);
     }
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time.
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#MODIFIED_JULIAN_EPOCH}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return the reference epoch for modified julian dates as a FieldAbsoluteDate
+     * @see AbsoluteDate#MODIFIED_JULIAN_EPOCH
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getModifiedJulianEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.MODIFIED_JULIAN_EPOCH);
     }
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time.
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#FIFTIES_EPOCH}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return the reference epoch for 1950 dates as a FieldAbsoluteDate
+     * @see AbsoluteDate#FIFTIES_EPOCH
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getFiftiesEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.FIFTIES_EPOCH);
     }
+
     /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4):
      * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC).
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#CCSDS_EPOCH}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return the reference epoch for CCSDS Time Code Format as a FieldAbsoluteDate
+     * @see AbsoluteDate#CCSDS_EPOCH
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getCCSDSEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.CCSDS_EPOCH);
     }
 
     /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 UTC.
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#GALILEO_EPOCH}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return the reference epoch for Galileo System Time as a FieldAbsoluteDate
+     * @see AbsoluteDate#GALILEO_EPOCH
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getGalileoEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.GALILEO_EPOCH);
     }
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time.
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#GPS_EPOCH}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return the reference epoch for GPS weeks as a FieldAbsoluteDate
+     * @see AbsoluteDate#GPS_EPOCH
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getGPSEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.GPS_EPOCH);
     }
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
-     * @param field field for the components
-     * @see #createJulianEpoch(RealFieldElement)
-     * @see #createBesselianEpoch(RealFieldElement)
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#J2000_EPOCH}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return the J2000.0 reference epoch as a FieldAbsoluteDate
+     * @see #createJulianEpoch(RealFieldElement)
+     * @see AbsoluteDate#J2000_EPOCH
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJ2000Epoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
@@ -786,27 +789,30 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * Between 1968-02-01 and 1972-01-01, UTC-TAI = 4.213 170 0s + (MJD - 39 126) x 0.002 592s.
      * As on 1970-01-01 MJD = 40587, UTC-TAI = 8.000082s
      * </p>
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#JAVA_EPOCH}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return the Java reference epoch as a FieldAbsoluteDate
+     * @see AbsoluteDate#JAVA_EPOCH
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJavaEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.JAVA_EPOCH);
     }
 
     /** Dummy date at infinity in the past direction.
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#PAST_INFINITY}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return a dummy date at infinity in the past direction as a FieldAbsoluteDate
+     * @see AbsoluteDate#PAST_INFINITY
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getPastInfinity(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.PAST_INFINITY);
     }
 
     /** Dummy date at infinity in the future direction.
-     * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#FUTURE_INFINITY}
      * @param <T> the type of the field elements
+     * @param field field for the components
+     * @return a dummy date at infinity in the future direction as a FieldAbsoluteDate
+     * @see AbsoluteDate#FUTURE_INFINITY
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getFutureInfinity(final Field<T> field) {
         return new FieldAbsoluteDate<>(field, AbsoluteDate.FUTURE_INFINITY);

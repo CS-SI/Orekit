@@ -403,10 +403,26 @@ UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = impossibile calcolare l''orbita media a
 # derivation order {0} is out of range
 OUT_OF_RANGE_DERIVATION_ORDER = l''ordine di derivazione {0} è al di fuori dell''intervallo
 
-# out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = latitudine {0} fuori dall''intervallo [{1}, {2}]
-
 # orbit type {0} not allowed here, allowed types: {1}
+ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# non pseudo-inertial frame {0} is not suitable as reference for inertial forces
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
+
+# method not available in the absence of a central body
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = <MISSING TRANSLATION>
+
+# operation not available between frames {0} and {1}
+INCOMPATIBLE_FRAMES = <MISSING TRANSLATION>
+
+# orbit not defined, state rather contains an absolute position-velocity-acceleration
+UNDEFINED_ORBIT = <MISSING TRANSLATION>
+
+# absolute position-velocity-acceleration not defined, state rather contains an orbit
+UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
+
+# an inertial force model has to be used when propagating in non-inertial frame {0}
+INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>
 ORBIT_TYPE_NOT_ALLOWED = tipo di orbita {0} non autorizzato in questo contesto, tipi autorizzati: {1}
 
 # no SEM almanac file found
@@ -463,6 +479,9 @@ UNKNOWN_SATELLITE_SYSTEM = sistema satellitare {0} sconosciuto
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = codice d''antenna satellite {0} sconosciuto
 
+# frequency {0} is not supported by antenna {1}
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = <MISSING TRANSLATION>
+
 # cannot find satellite {0} in satellite system {1}
 CANNOT_FIND_SATELLITE_IN_SYSTEM = satellite {0} introvabile nel sistema satellitare {1}
 
@@ -503,13 +522,30 @@ UNEXPECTED_END_OF_FILE = fine inattesa del file {0}
 CORRUPTED_FILE = dati corrotti nel file {0}
 
 # Vienna coefficients ah or aw or zh or zw could not be loaded from {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = <MISSING TRANSLATION>
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = impossibile caricare i coefficienti di Vienna ah o aw o zh o zw da {0}
 
 # Vienna coefficients ah or aw or zh or zw not available for date {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = coefficienti di Vienna ah o aw o zh o zw non disponibili per la data {0}
 
 # file {0} does not contain Vienna coefficients ah, aw, zh or zw
-NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = il file {0} non contiene i coefficienti di Vienna ah, aw, zh o zw
 
 # irregular or incomplete grid in file {0}
-IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
+IRREGULAR_OR_INCOMPLETE_GRID = griglia irregolare o incompleta nel file {0}
+
+# invalid satellite system {0}
+INVALID_SATELLITE_SYSTEM = sistema satellitare invalido {0}
+
+# IONEX file {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILE_FOR_DATE = il file IONEX {0} non contiene dati TEC per la data {1}
+
+# number of maps {0} is inconsistent with header specification: {1}
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = il numero di mappe {0} è incoerente con le specifiche dell''intestazione: {1} 
+
+# The first column of itrf-versions.conf is a plain prefix that is matched against the
+# name of each loaded file. It should not contain any regular expression syntax or
+# directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
+ITRF_VERSIONS_PREFIX_ONLY = la prima colonna di itrf-versions.conf è un prefisso semplice che viene confrontato con il nome di ciascun file caricato. Non dovrebbe contenere alcuna sintassi di espressioni regolari o componenti di directory, ad esempio \"/\" or \"\\\". Valore effettivo: \"{0}\".
+
+# cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = impossibile calcolare la direzione di mira al punto singolare: latitudine = {0}, longitudine = {1}

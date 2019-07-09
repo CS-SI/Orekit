@@ -30,9 +30,6 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class BeidouGeo extends AbstractGNSSAttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
     /** Simple constructor.
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider

@@ -26,7 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.models.earth.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -90,7 +90,8 @@ public class TroposphericDSConverter {
 
         final FieldOrbit<DerivativeStructure> dsOrbit =
                         new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posDS, velDS, accDS),
-                                                  state.getFrame(), state.getMu());
+                                                  state.getFrame(),
+                                                  factory.getDerivativeField().getZero().add(state.getMu()));
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
         if (freeStateParameters > 3) {
@@ -146,7 +147,7 @@ public class TroposphericDSConverter {
                                                                                           extend(pv0.getPosition(),     factory),
                                                                                           extend(pv0.getVelocity(),     factory),
                                                                                           extend(pv0.getAcceleration(), factory)),
-                                                      s0.getFrame(), s0.getMu());
+                                                      s0.getFrame(), extend(s0.getMu(), factory));
 
             // attitude
             final FieldAngularCoordinates<DerivativeStructure> ac0 = s0.getAttitude().getOrientation();

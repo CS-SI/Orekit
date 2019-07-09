@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -73,14 +74,69 @@ public class CircularFieldOfViewDetectorTest {
         final Vector3D center = Vector3D.PLUS_I;
         final double aperture = FastMath.toRadians(35);
 
+        final CircularSunVisiHandler handler = new CircularSunVisiHandler(initialOrbit.getDate(),
+                                                                          new double[] {
+                                                                              667.822332,
+                                                                              1518.227375,
+                                                                              Double.NaN // never checked
+                                                                          });
         final CircularFieldOfViewDetector sunVisi =
-            new CircularFieldOfViewDetector(maxCheck, sunPV, center, aperture).withHandler(new CircularSunVisiHandler());
+            new CircularFieldOfViewDetector(maxCheck, sunPV, center, aperture).
+            withThreshold(1.0e-10).
+            withHandler(handler);
         Assert.assertEquals(0, Vector3D.distance(center, sunVisi.getCenter()), 1.0e-15);
         Assert.assertEquals(aperture, sunVisi.getHalfAperture(), 1.0e-15);
         Assert.assertSame(sunPV, sunVisi.getPVTarget());
 
         // Add event to be detected
         propagator.addEventDetector(sunVisi);
+
+        // Extrapolate from the initial to the final date
+        propagator.propagate(initDate.shiftedBy(6000.));
+
+    }
+
+    @Test
+    public void testRadius() {
+
+        // Definition of initial conditions with position and velocity
+        //------------------------------------------------------------
+
+        // Extrapolator definition
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, earthCenterAttitudeLaw);
+
+        // Event definition : circular field of view, along X axis, aperture 35°
+        final double maxCheck  = 1.;
+        final PVCoordinatesProvider sunPV = CelestialBodyFactory.getSun();
+        final Vector3D center = Vector3D.PLUS_I;
+        final double aperture = FastMath.toRadians(35);
+
+        final CircularSunVisiHandler handler = new CircularSunVisiHandler(initialOrbit.getDate(),
+                                                                          new double[] {
+                                                                              653.497633,
+                                                                              667.822332,
+                                                                              682.723244,
+                                                                              1497.118891,
+                                                                              1518.227375,
+                                                                              1538.812269,
+                                                                              Double.NaN // never checked
+                                                                          });
+        // Add event to be detected
+        propagator.addEventDetector(new CircularFieldOfViewDetector(maxCheck, sunPV, center, aperture).
+                                    withThreshold(1.0e-10).
+                                    withHandler(handler));
+        propagator.addEventDetector(new CircularFieldOfViewDetector(maxCheck, sunPV,
+                                                                    Constants.SUN_RADIUS,
+                                                                    VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV,
+                                                                    center, aperture).
+                                    withThreshold(1.0e-10).
+                                    withHandler(handler));
+        propagator.addEventDetector(new CircularFieldOfViewDetector(maxCheck, sunPV,
+                                                                    Constants.SUN_RADIUS,
+                                                                    VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV,
+                                                                    center, aperture).
+                                    withThreshold(1.0e-10).
+                                    withHandler(handler));
 
         // Extrapolate from the initial to the final date
         propagator.propagate(initDate.shiftedBy(6000.));
@@ -125,24 +181,23 @@ public class CircularFieldOfViewDetectorTest {
     /** Handler for visibility event. */
     private static class CircularSunVisiHandler implements EventHandler<EventDetector> {
 
+        private final AbsoluteDate reference;
+        private final double[]     expected;
+        private       int          count;
+
+        CircularSunVisiHandler(final AbsoluteDate reference, final double[] expected) {
+            this.reference = reference;
+            this.expected  = expected.clone();
+        }
+
+        public void init(final SpacecraftState s, AbsoluteDate target) {
+            count = 0;
+        }
+
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
-                                    final boolean increasing)
-            {
-            if (increasing) {
-                // System.err.println(" Sun visibility starts " + s.getDate());
-                AbsoluteDate startVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
-                                                            new TimeComponents(0, 11 , 7.820),
-                                                            TimeScalesFactory.getUTC());
-              Assert.assertTrue(s.getDate().durationFrom(startVisiDate) <= 1);
-                return Action.CONTINUE;
-            } else {
-                // System.err.println(" Sun visibility ends at " + s.getDate());
-                AbsoluteDate endVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
-                                                            new TimeComponents(0, 25 , 18.224),
-                                                            TimeScalesFactory.getUTC());
-                Assert.assertTrue(s.getDate().durationFrom(endVisiDate) <= 1);
-                return Action.CONTINUE;//STOP;
-            }
+                                    final boolean increasing) {
+              Assert.assertEquals(expected[count++], s.getDate().durationFrom(reference), 1.0e-6);
+              return Action.CONTINUE;
         }
 
     }

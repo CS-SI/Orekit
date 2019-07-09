@@ -43,14 +43,23 @@ as required.
 
 |  package |                                              link                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------------|
-|  source  | orekit-9.3.1-sources.zip (URL to be defined after official release)                                                                   |
-|  binary  | orekit-9.3.1.jar (URL to be defined after official release)                                                                           |
+|  source  | [orekit-10.0-sources.zip](https://www.orekit.org/download/orekit-latest-sources.zip)                                                 |
+|  binary  | [orekit-10.0.jar](https://www.orekit.org/download/orekit-latest.jar)                                                                 |
+|  javadoc | [orekit-10.0-javadoc.jar](https://www.orekit.org/download/orekit-latest-javadoc.jar)                                                 |
+version 10.0 downloads (release date: 2019-06-24)
+
+|  package |                                              link                                                                                     |
+|----------|---------------------------------------------------------------------------------------------------------------------------------------|
+|  source  | [orekit-9.3.1-sources.zip](https://gitlab.orekit.org/orekit/orekit/uploads/ccca6f6903ed8a58b9bea338f5db5c74/orekit-9.3.1-sources.zip) |
+|  binary  | [orekit-9.3.1.jar](https://gitlab.orekit.org/orekit/orekit/uploads/c5496a7b856612935f5dbc6e119ef7f6/orekit-9.3.1.jar)                 |
+|  javadoc | [orekit-9.3.1-javadoc.jar](https://gitlab.orekit.org/orekit/orekit/uploads/07305ad084ee8dfc2d013dac7bea576d/orekit-9.3.1-javadoc.jar) |
 version 9.3.1 downloads (release date: 2019-03-16)
 
 |  package |                                              link                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------------|
-|  source  | [orekit-9.3-sources.zip](https://gitlab.orekit.org/orekit/orekit/uploads/e313519415d0313043587739d417abcb/orekit-9.3-sources.zip)      |
-|  binary  | [orekit-9.3.jar](https://gitlab.orekit.org/orekit/orekit/uploads/32bc68ad2f4e58d1e8de71dbc4ff3494/orekit-9.3.jar)                      |
+|  source  | [orekit-9.3-sources.zip](https://gitlab.orekit.org/orekit/orekit/uploads/e313519415d0313043587739d417abcb/orekit-9.3-sources.zip)     |
+|  binary  | [orekit-9.3.jar](https://gitlab.orekit.org/orekit/orekit/uploads/32bc68ad2f4e58d1e8de71dbc4ff3494/orekit-9.3.jar)                     |
+|  javadoc | [orekit-9.3-javadoc.jar](https://gitlab.orekit.org/orekit/orekit/uploads/743ab552c3a64437510b2a280c7e07d0/orekit-9.3-javadoc.jar)     |
 version 9.3 downloads (release date: 2019-01-25)
 
 |  package |                                              link                                                                                     |

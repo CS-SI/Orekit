@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -33,8 +34,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -57,13 +56,12 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * to different activation patterns depending on which events are triggered first. An example
  * of this feature is handling switches to safe mode if some contingency condition is met, in
  * addition to the nominal switches that correspond to proper operations. Another example
- * is handling of maneuver mode.<p>
+ * is handling of maneuver mode.
  * <p>
  * Note that this attitude provider is stateful, it keeps in memory the sequence of active
  * underlying providers with their switch dates and the transitions from one provider to
  * the other. This implies that this provider should <em>not</em> be shared among different
  * propagators at the same time, each propagator should use its own instance of this provider.
- * </p>
  * <p>
  * The sequence kept in memory is reset when {@link #resetActiveProvider(AttitudeProvider)}
  * is called, and only the specify provider is kept. The sequence is also partially
@@ -82,11 +80,8 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class AttitudesSequence implements AttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20180326L;
-
     /** Providers that have been activated. */
-    private TimeSpanMap<AttitudeProvider> activated;
+    private transient TimeSpanMap<AttitudeProvider> activated;
 
     /** Switching events list. */
     private final List<Switch<?>> switches;
@@ -175,17 +170,8 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
-                    switch(sw.eventOccurred(s.toSpacecraftState(), increasing)) {
-                        case STOP :
-                            return FieldEventHandler.Action.STOP;
-                        case RESET_DERIVATIVES :
-                            return FieldEventHandler.Action.RESET_DERIVATIVES;
-                        case RESET_STATE :
-                            return FieldEventHandler.Action.RESET_STATE;
-                        default :
-                            return FieldEventHandler.Action.CONTINUE;
-                    }
+                public Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
+                    return sw.eventOccurred(s.toSpacecraftState(), increasing);
                 }
 
                 /** {@inheritDoc} */
@@ -318,9 +304,6 @@ public class AttitudesSequence implements AttitudeProvider {
      */
     private class Switch<T extends EventDetector> implements EventDetector {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20150604L;
-
         /** Event. */
         private final T event;
 
@@ -403,9 +386,9 @@ public class AttitudesSequence implements AttitudeProvider {
             if (activated.getTransitions().size() > 1) {
                 // remove transitions that will be overridden during upcoming propagation
                 if (forward) {
-                    activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate());
+                    activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate().shiftedBy(transitionTime));
                 } else {
-                    activated = activated.extractRange(s0.getDate(), AbsoluteDate.FUTURE_INFINITY);
+                    activated = activated.extractRange(s0.getDate().shiftedBy(-transitionTime), AbsoluteDate.FUTURE_INFINITY);
                 }
             }
 
@@ -485,9 +468,6 @@ public class AttitudesSequence implements AttitudeProvider {
          * @since 9.2
          */
         private class TransitionProvider implements AttitudeProvider {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20180326L;
 
             /** Attitude at preceding transition. */
             private final Attitude transitionPreceding;

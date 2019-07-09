@@ -58,7 +58,7 @@
         end note
 
         class Generator {
-          +int addPropagator(Propagator)
+          +ObservableSatellite addPropagator(Propagator)
           +Propagator getPropagator(index)
           +addScheduler(Scheduler)
           +SortedSet<ObservedMeasurements> generate(startDate, endDate)

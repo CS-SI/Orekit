@@ -49,9 +49,6 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
     /** Default yaw rates for all spacecrafts in radians per seconds. */
     public static final double DEFAULT_YAW_RATE = FastMath.toRadians(0.250);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
     /** Satellite-Sun angle limit for a midnight turn maneuver. */
     private static final double NIGHT_TURN_LIMIT = FastMath.toRadians(180.0 - 14.20);
 

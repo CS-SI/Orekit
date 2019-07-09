@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
@@ -31,6 +30,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AbstractDSConverter;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -41,7 +41,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 9.0
  */
-class DSConverter {
+class DSConverter extends AbstractDSConverter {
 
     /** Dimension of the state. */
     private final int freeStateParameters;
@@ -57,6 +57,7 @@ class DSConverter {
      */
     DSConverter(final SpacecraftState state, final int freeStateParameters, final AttitudeProvider provider) {
 
+        super(freeStateParameters);
         this.freeStateParameters = freeStateParameters;
 
         // prepare derivation variables, position, optionally velocity
@@ -90,9 +91,11 @@ class DSConverter {
         // mass never has derivatives
         final DerivativeStructure dsM = factory.constant(state.getMass());
 
+        final DerivativeStructure dsMu = factory.constant(state.getMu());
+
         final FieldOrbit<DerivativeStructure> dsOrbit =
                         new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posDS, velDS, accDS),
-                                                  state.getFrame(), state.getMu());
+                                                  state.getFrame(), dsMu);
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
         if (freeStateParameters > 3) {
@@ -107,13 +110,6 @@ class DSConverter {
         dsStates = new ArrayList<>();
         dsStates.add(new FieldSpacecraftState<>(dsOrbit, dsAttitude, dsM));
 
-    }
-
-    /** Get the number of free state parameters.
-     * @return number of free state parameters
-     */
-    public int getFreeStateParameters() {
-        return freeStateParameters;
     }
 
     /** Get the state with the number of parameters consistent with force model.
@@ -148,7 +144,8 @@ class DSConverter {
                                                                                           extend(pv0.getPosition(),     factory),
                                                                                           extend(pv0.getVelocity(),     factory),
                                                                                           extend(pv0.getAcceleration(), factory)),
-                                                      s0.getFrame(), s0.getMu());
+                                                      s0.getFrame(),
+                                                      extend(s0.getMu(), factory));
 
             // attitude
             final FieldAngularCoordinates<DerivativeStructure> ac0 = s0.getAttitude().getOrientation();
@@ -168,42 +165,6 @@ class DSConverter {
 
         return dsStates.get(nbParams);
 
-    }
-
-    /** Add zero derivatives.
-     * @param original original scalar
-     * @param factory factory for the extended derivatives
-     * @return extended scalar
-     */
-    private DerivativeStructure extend(final DerivativeStructure original, final DSFactory factory) {
-        final double[] originalDerivatives = original.getAllDerivatives();
-        final double[] extendedDerivatives = new double[factory.getCompiler().getSize()];
-        System.arraycopy(originalDerivatives, 0, extendedDerivatives, 0, originalDerivatives.length);
-        return factory.build(extendedDerivatives);
-    }
-
-    /** Add zero derivatives.
-     * @param original original vector
-     * @param factory factory for the extended derivatives
-     * @return extended vector
-     */
-    private FieldVector3D<DerivativeStructure> extend(final FieldVector3D<DerivativeStructure> original, final DSFactory factory) {
-        return new FieldVector3D<>(extend(original.getX(), factory),
-                        extend(original.getY(), factory),
-                        extend(original.getZ(), factory));
-    }
-
-    /** Add zero derivatives.
-     * @param original original rotation
-     * @param factory factory for the extended derivatives
-     * @return extended rotation
-     */
-    private FieldRotation<DerivativeStructure> extend(final FieldRotation<DerivativeStructure> original, final DSFactory factory) {
-        return new FieldRotation<>(extend(original.getQ0(), factory),
-                        extend(original.getQ1(), factory),
-                        extend(original.getQ2(), factory),
-                        extend(original.getQ3(), factory),
-                        false);
     }
 
     /** Get the force model parameters.

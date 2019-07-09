@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -29,17 +30,13 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>This class finds alignment events.</p>
  * <p>Alignment means the conjunction, with some threshold angle, between the satellite
  * position and the projection in the orbital plane of some body position.</p>
- * <p>The default handler behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * <p>The default handler behavior is to {@link Action#STOP stop}
  * propagation when alignment is reached. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
 public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** Body to align. */
     private final PVCoordinatesProvider body;

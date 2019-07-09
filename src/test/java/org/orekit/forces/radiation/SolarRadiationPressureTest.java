@@ -24,7 +24,6 @@ import java.text.ParseException;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -43,12 +42,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
@@ -80,8 +76,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
@@ -203,107 +197,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             }
         }
         Assert.assertTrue(3==count);
-    }
-
-    @Test
-    public void testParameterDerivativeIsotropicSingle() {
-
-        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
-        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       Constants.EIGEN5C_EARTH_MU));
-
-        RadiationSensitive rs = new IsotropicRadiationSingleCoefficient(2.5, 0.7);
-        SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                           rs);
-
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 2.0e-15);
-
-        try {
-            rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                             state.getPVCoordinates().getPosition(),
-                                             state.getAttitude().getRotation(),
-                                             state.getMass(), Vector3D.ZERO,
-                                             new double[2],
-                                             RadiationSensitive.ABSORPTION_COEFFICIENT);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
-        }
-        for (ParameterDriver driver : rs.getRadiationParametersDrivers()) {
-            Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                driver.getName());
-        }
-    }
-
-    @Test
-    public void testParameterDerivativeIsotropicClassical() {
-
-        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
-        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       Constants.EIGEN5C_EARTH_MU));
-
-        RadiationSensitive rs = new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2);
-        SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                           rs);
-
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 6.7e-16);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 5.1e-16);
-
-        try {
-            rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                             state.getPVCoordinates().getPosition(),
-                                             state.getAttitude().getRotation(),
-                                             state.getMass(), Vector3D.ZERO,
-                                             new double[2],
-                                             "UNKNOWN");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
-        }
-
-    }
-
-    @Test
-    public void testParameterDerivativeIsotropicCnes() {
-
-        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
-        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       Constants.EIGEN5C_EARTH_MU));
-
-        RadiationSensitive rs = new IsotropicRadiationCNES95Convention(2.5, 0.7, 0.2);
-        SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                           rs);
-
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.5e-15);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 2.0e-14);
-
-        try {
-            rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                             state.getPVCoordinates().getPosition(),
-                                             state.getAttitude().getRotation(),
-                                             state.getMass(), Vector3D.ZERO,
-                                             new double[2],
-                                             "UNKNOWN");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
-        }
-
     }
 
     @Test
@@ -616,7 +509,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
 
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
@@ -774,7 +667,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
 
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
@@ -819,45 +712,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        final CelestialBody sun = CelestialBodyFactory.getSun();
-        PVCoordinatesProvider nonFieldProvider = new PVCoordinatesProvider() {
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                {
-                return sun.getPVCoordinates(date, frame);
-            }
-        };
-        SolarRadiationPressure srp = new SolarRadiationPressure(nonFieldProvider,
-                                                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
-        DSFactory factory = new DSFactory(6, 0);
-        DerivativeStructure a_0 = factory.variable(0, 7e7);
-        DerivativeStructure e_0 = factory.variable(1, 0.4);
-        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
-        DerivativeStructure R_0 = factory.variable(3, 0.7);
-        DerivativeStructure O_0 = factory.variable(4, 0.5);
-        DerivativeStructure n_0 = factory.variable(5, 0.1);
-
-        Field<DerivativeStructure> field = a_0.getField();
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
-        Frame EME = FramesFactory.getEME2000();
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
-                                                                                 EME,
-                                                                                 J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
-        FieldSpacecraftState<DerivativeStructure> s = new FieldSpacecraftState<>(FKO);
-
-        try {
-            srp.acceleration(s, srp.getParameters(field));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(LocalizedCoreFormats.UNSUPPORTED_OPERATION, oiae.getSpecifier());
-        }
     }
 
     @Before

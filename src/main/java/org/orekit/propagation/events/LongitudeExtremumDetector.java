@@ -32,9 +32,6 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  */
 public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremumDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150824L;
-
     /** Body on which the longitude is defined. */
     private OneAxisEllipsoid body;
 

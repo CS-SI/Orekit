@@ -152,7 +152,7 @@ public class FieldPropagation {
         Frame frame = FramesFactory.getEME2000();
 
         //initialize the orbit
-        double mu = 3.9860047e14;
+        DerivativeStructure mu = factory.constant(3.9860047e14);
 
         FieldKeplerianOrbit<DerivativeStructure> KO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, pa_0, raan_0, ni_0, PositionAngle.ECCENTRIC, frame, date_0, mu);
 

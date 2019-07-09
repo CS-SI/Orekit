@@ -445,7 +445,7 @@ public class TopocentricFrameTest {
             new FieldCircularOrbit<>(zero.add(7178000.0), zero.add(0.5e-8), zero.add(-0.5e-8),
                                      zero.add(FastMath.toRadians(50.)), zero.add(FastMath.toRadians(120.)),
                                      zero.add(FastMath.toRadians(90.)), PositionAngle.MEAN,
-                                     FramesFactory.getEME2000(), fieldDate, mu);
+                                     FramesFactory.getEME2000(), fieldDate, zero.add(mu));
 
         // Transform satellite position to position/velocity parameters in body frame
         final FieldTransform<T> eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), fieldDate);

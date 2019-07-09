@@ -21,7 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
 
@@ -86,6 +88,48 @@ public class JacobiPolynomials {
 
     }
 
+    /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
+     * <p>
+     * This method is guaranteed to be thread-safe
+     * </p>
+     * @param <T> the type of the field elements
+     * @param l degree of the polynomial
+     * @param v v value
+     * @param w w value
+     * @param gamma γ value
+     * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
+     */
+    public static <T extends RealFieldElement<T>> FieldDerivativeStructure<T> getValue(final int l, final int v, final int w,
+                                                                                       final FieldDerivativeStructure<T> gamma) {
+
+        final List<PolynomialFunction> polyList;
+        synchronized (MAP) {
+
+            final JacobiKey key = new JacobiKey(v, w);
+
+            // Check the existence of the corresponding key in the map.
+            if (!MAP.containsKey(key)) {
+                MAP.put(key, new ArrayList<PolynomialFunction>());
+            }
+
+            polyList = MAP.get(key);
+
+        }
+
+        final PolynomialFunction polynomial;
+        synchronized (polyList) {
+            // If the l-th degree polynomial has not been computed yet, the polynomials
+            // up to this degree are computed.
+            for (int degree = polyList.size(); degree <= l; degree++) {
+                polyList.add(degree, PolynomialsUtils.createJacobiPolynomial(degree, v, w));
+            }
+            polynomial = polyList.get(l);
+        }
+
+        // compute value and derivative
+        return polynomial.value(gamma);
+
+    }
 
     /** Inner class for Jacobi polynomials keys.
      * <p>

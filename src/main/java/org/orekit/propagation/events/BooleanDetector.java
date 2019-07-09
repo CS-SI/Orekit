@@ -59,9 +59,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class BooleanDetector extends AbstractDetector<BooleanDetector> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170410L;
-
     /** Original detectors: the operands. */
     private final List<EventDetector> detectors;
 
@@ -250,7 +247,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
         }
     }
 
-    /** Local, serializable class for operator. */
+    /** Local class for operator. */
     private enum Operator {
 
         /** And operator. */

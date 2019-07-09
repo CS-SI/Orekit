@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>9.3.1</version>
+  <version>10.0</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -20,33 +20,33 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.spotbugs-maven-plugin.version>3.1.7</orekit.spotbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.8.2</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-assembly-plugin.version>3.1.0</orekit.maven-assembly-plugin.version>
-    <orekit.maven-bundle-plugin.version>4.1.0</orekit.maven-bundle-plugin.version>
+    <orekit.spotbugs-maven-plugin.version>3.1.12</orekit.spotbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.4</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-assembly-plugin.version>3.1.1</orekit.maven-assembly-plugin.version>
+    <orekit.maven-bundle-plugin.version>4.2.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>3.0.0</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.14</orekit.checkstyle.version>
+    <orekit.maven-checkstyle-plugin.version>3.1.0</orekit.maven-checkstyle-plugin.version>
+    <orekit.checkstyle.version>8.18</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.8.0</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>3.0.1</orekit.maven-javadoc-plugin.version>
-    <orekit.maven-jar-plugin.version>3.1.0</orekit.maven-jar-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.8.1</orekit.maven-compiler-plugin.version>
+    <orekit.maven-javadoc-plugin.version>3.1.0</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-jar-plugin.version>3.1.1</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>3.0.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
     <orekit.plantuml.version>1.2018.12</orekit.plantuml.version>
     <orekit.maven-project-info-reports-plugin.version>3.0.0</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>3.1.0</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.7.1</orekit.maven-site-plugin.version>
-    <orekit.maven-source-plugin.version>3.0.1</orekit.maven-source-plugin.version>
-    <orekit.maven-surefire-plugin.version>2.22.1</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>2.22.1</orekit.maven-surefire-report-plugin.version>
-    <orekit.mockito-core.version>2.23.0</orekit.mockito-core.version>
+    <orekit.maven-source-plugin.version>3.1.0</orekit.maven-source-plugin.version>
+    <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>2.22.2</orekit.maven-surefire-report-plugin.version>
+    <orekit.mockito-core.version>2.28.2</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.0.0</orekit.build-helper-maven-plugin.version>
     <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
-    <orekit.hipparchus.version>1.4</orekit.hipparchus.version>
+    <orekit.hipparchus.version>1.5</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -59,6 +59,13 @@
       <id>luc</id>
       <roles>
         <role>architect</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Bryan Cazabonne</name>
+      <id>bryan</id>
+      <roles>
         <role>developer</role>
       </roles>
     </developer>
@@ -170,13 +177,13 @@
       <name>Petre Bazavan</name>
     </contributor>
     <contributor>
+      <name>Laurene Beauvalet</name>
+    </contributor>
+    <contributor>
       <name>Nicolas Bernard</name>
     </contributor>
     <contributor>
       <name>Espen Bj&#248;rntvedt</name>
-    </contributor>
-    <contributor>
-      <name>Bryan Cazabonne</name>
     </contributor>
     <contributor>
       <name>Paul Cefola</name>
@@ -185,10 +192,16 @@
       <name>Francesco Coccoluto</name>
     </contributor>
     <contributor>
+      <name>Sébastien Dinot</name>
+    </contributor>
+    <contributor>
       <name>&#201;douard Delente</name>
     </contributor>
     <contributor>
       <name>Christine Fernandez-Martin</name>
+    </contributor>
+    <contributor>
+      <name>Romaric Her</name>
     </contributor>
     <contributor>
       <name>James Housden</name>
@@ -198,6 +211,9 @@
     </contributor>
     <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
+    </contributor>
+    <contributor>
+      <name>Vincent Mouraux</name>
     </contributor>
     <contributor>
       <name>Lars N&#230;sbye Christensen</name>
@@ -260,8 +276,6 @@
       <groupId>org.hipparchus</groupId>
       <artifactId>hipparchus-geometry</artifactId>
       <version>${orekit.hipparchus.version}</version>
-      <type>jar</type>
-      <optional>false</optional>
     </dependency>
     <dependency>
       <groupId>org.hipparchus</groupId>
@@ -295,8 +309,6 @@
       <groupId>org.hipparchus</groupId>
       <artifactId>hipparchus-stat</artifactId>
       <version>${orekit.hipparchus.version}</version>
-      <type>jar</type>
-      <optional>false</optional>
     </dependency>
     <!-- test dependencies -->
     <dependency>
@@ -627,7 +639,7 @@
         <artifactId>maven-changes-plugin</artifactId>
         <version>${orekit.maven-changes-plugin.version}</version>
         <configuration>
-          <xmlPath>${basedir}/src/site/xdoc/changes.xml</xmlPath>
+          <teamlist>team.html</teamlist>
         </configuration>
         <reportSets>
           <reportSet>
@@ -658,6 +670,7 @@
             <link>https://www.hipparchus.org/apidocs/</link>
           </links>
           <source>${orekit.compiler.source}</source>
+          <doclint>none</doclint>
         </configuration>
         <reportSets>
           <reportSet>
@@ -718,6 +731,16 @@
     </profile>
     <profile>
       <id>release</id>
+      <distributionManagement>
+        <repository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+      </distributionManagement>
       <build>
         <plugins>
           <plugin>
@@ -787,6 +810,7 @@
               <gpgArguments>
                 <arg>--digest-algo=SHA512</arg>
               </gpgArguments>
+              <keyname>0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B</keyname>
             </configuration>
             <executions>
               <execution>

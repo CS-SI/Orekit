@@ -403,11 +403,26 @@ UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = unable to compute mean orbit from oscul
 # derivation order {0} is out of range
 OUT_OF_RANGE_DERIVATION_ORDER = derivation order {0} is out of range
 
-# out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = out of range latitude: {0}, [{1}, {2}]
-
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = orbit type {0} not allowed here, allowed types: {1}
+
+# non pseudo-inertial frame {0} is not suitable as reference for inertial forces
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = non pseudo-inertial frame {0} is not suitable as reference for inertial forces
+
+# method not available in the absence of a central body
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = method not available in the absence of a central body
+
+# operation not available between frames {0} and {1}
+INCOMPATIBLE_FRAMES = operation not available between frames {0} and {1}
+
+# orbit not defined, state rather contains an absolute position-velocity-acceleration
+UNDEFINED_ORBIT = orbit not defined, state rather contains an absolute position-velocity-acceleration
+
+# absolute position-velocity-acceleration not defined, state rather contains an orbit
+UNDEFINED_ABSOLUTE_PVCOORDINATES = absolute position-velocity-acceleration not defined, state rather contains an orbit
+
+# an inertial force model has to be used when propagating in non-inertial frame {0}
+INERTIAL_FORCE_MODEL_MISSING = an inertial force model has to be used when propagating in non-inertial frame {0}
 
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = no SEM almanac file found
@@ -463,6 +478,9 @@ UNKNOWN_SATELLITE_SYSTEM = unknown satellite system {0}
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = unknown satellite antenna code {0}
 
+# frequency {0} is not supported by antenna {1}
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frequency {0} is not supported by antenna {1}
+
 # cannot find satellite {0} in satellite system {1}
 CANNOT_FIND_SATELLITE_IN_SYSTEM = cannot find satellite {0} in satellite system {1}
 
@@ -513,3 +531,21 @@ NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = file {0} does not contain Vienna coeff
 
 # irregular or incomplete grid in file {0}
 IRREGULAR_OR_INCOMPLETE_GRID = irregular or incomplete grid in file {0}
+
+# invalid satellite system {0}
+INVALID_SATELLITE_SYSTEM = invalid satellite system {0}
+
+# IONEX file {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILE_FOR_DATE = IONEX file {0} does not contain TEC data for date {1}
+
+# number of maps {0} is inconsistent with header specification: {1}
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = number of maps {0} is inconsistent with header specification: {1}
+
+# The first column of itrf-versions.conf is a plain prefix that is matched against the
+# name of each loaded file. It should not contain any regular expression syntax or
+# directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
+ITRF_VERSIONS_PREFIX_ONLY = The first column of itrf-versions.conf is a plain prefix that is matched against the name of each loaded file. It should not contain any regular expression syntax or directory components, i.e. "/" or "\\". Actual value: "{0}".
+
+# cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
+

@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.hipparchus.ode.events.Action;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdapterDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
@@ -76,8 +76,15 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
      * {@link Propagator#addEventDetector(EventDetector) added} to the propagator by this
      * constructor.
      * </p>
+     * <p>
+     * BEWARE! Dates selectors often store internally the last selected dates, so they are not
+     * reusable across several {@link EventBasedScheduler instances}. A separate selector
+     * should be used for each scheduler.
+     * </p>
      * @param builder builder for individual measurements
-     * @param selector selector for dates
+     * @param selector selector for dates (beware that selectors are generally not
+     * reusable across several {@link EventBasedScheduler instances}, each selector should
+     * be dedicated to one scheduler
      * @param propagator propagator associated with this scheduler
      * @param detector detector for checking measurements feasibility
      * @param signSemantic semantic of the detector g function sign to use
@@ -125,9 +132,6 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
 
     /** Adapter for managing feasibility status changes. */
     private class FeasibilityAdapter extends AdapterDetector {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20181206L;
 
         /** Build an adaptor wrapping an existing detector.
          * @param detector detector to wrap

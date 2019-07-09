@@ -61,30 +61,6 @@ public class SatelliteAntenna extends Antenna {
      * @param patterns frequencies patterns
      * @param satelliteSystem satellite system
      * @param prnNumber PRN number
-     * @param satelliteCode satellite code
-     * @param cosparID COSPAR ID
-     * @param validFrom start of validity
-     * @param validUntil end of validity
-     * @deprecated since 9.3 replaced by {@link #SatelliteAntenna(String, String, Map,
-     * SatelliteSystem, int, SatelliteType, int, String, AbsoluteDate, AbsoluteDate)}
-     */
-    @Deprecated
-    public SatelliteAntenna(final String type, final String sinexCode,
-                            final Map<Frequency, FrequencyPattern> patterns,
-                            final SatelliteSystem satelliteSystem, final int prnNumber,
-                            final int satelliteCode, final String cosparID,
-                            final AbsoluteDate validFrom, final AbsoluteDate validUntil) {
-        this(type, sinexCode, patterns, satelliteSystem, prnNumber,
-             SatelliteType.parseSatelliteType(type), satelliteCode, cosparID,
-             validFrom, validUntil);
-    }
-
-    /** Simple constructor.
-     * @param type antenna type
-     * @param sinexCode sinex code
-     * @param patterns frequencies patterns
-     * @param satelliteSystem satellite system
-     * @param prnNumber PRN number
      * @param satelliteType satellite type
      * @param satelliteCode satellite code
      * @param cosparID COSPAR ID
@@ -153,7 +129,7 @@ public class SatelliteAntenna extends Antenna {
     /** Get end of validity.
      * @return end of validity
      */
-    public AbsoluteDate getValidFUntil() {
+    public AbsoluteDate getValidUntil() {
         return validUntil;
     }
 

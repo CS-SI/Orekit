@@ -111,7 +111,7 @@ public class FieldKeplerianPropagatorTest {
                                                   PositionAngle.MEAN,
                                                   FramesFactory.getEME2000(),
                                                   new FieldAbsoluteDate<>(initDate, new Tuple(0.0, 0.0)),
-                                                  mu);
+                                                  new Tuple(mu, mu));
         Field<Tuple> field = twoOrbits.getDate().getField();
         FieldPropagator<Tuple> propagator = new FieldKeplerianPropagator<>(twoOrbits);
         Min minTangential = new Min();
@@ -267,7 +267,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                                 FramesFactory.getEME2000(), initDate, mu);
+                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
         // -----------------------
@@ -306,7 +306,7 @@ public class FieldKeplerianPropagatorTest {
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
                                                                zero.add(6.2), PositionAngle.TRUE,
-                                                               FramesFactory.getEME2000(), initDate, mu);
+                                                               FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
         // -----------------------
@@ -349,7 +349,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                                 FramesFactory.getEME2000(), initDate, mu);
+                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
         // -----------------------
@@ -439,7 +439,7 @@ public class FieldKeplerianPropagatorTest {
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
                                                                zero.add(6.2), PositionAngle.TRUE,
-                                                               FramesFactory.getEME2000(), initDate, mu);
+                                                               FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
         // -----------------------
@@ -526,9 +526,8 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         AttitudeProvider wrongLaw = new AttitudeProvider() {
-            private static final long serialVersionUID = 1L;
             @Override
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
@@ -548,7 +547,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldOrekitStepHandlerMultiplexer<T> multiplexer = new FieldOrekitStepHandlerMultiplexer<>();
         propagator.setMasterMode(multiplexer);
@@ -571,11 +570,9 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit,
                         new AttitudeProvider() {
-            private static final long serialVersionUID =
-                            1L;
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }
@@ -592,7 +589,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
@@ -608,7 +605,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>()));
@@ -621,7 +618,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.addEventDetector(new FieldApsideDetector<>(orbit));
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
@@ -636,7 +633,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         BodyShape bodyShape =
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -658,7 +655,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final FieldAbsoluteDate<T> stopDate = new FieldAbsoluteDate<>(field).shiftedBy(500.0);
         propagator.addEventDetector(new FieldDateDetector<>(stopDate));
@@ -671,7 +668,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final OneAxisEllipsoid earthShape =
             new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -696,7 +693,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final T step = zero.add(100.0);
         propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
@@ -717,7 +714,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final T step = orbit.getKeplerianPeriod().divide(100);
         propagator.setMasterMode(new FieldOrekitStepHandler<T>() {
@@ -740,7 +737,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.setEphemerisMode();
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
@@ -756,7 +753,7 @@ public class FieldKeplerianPropagatorTest {
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> initialOrbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), initialDate, 3.986004415e14);
+                                      FramesFactory.getEME2000(), initialDate, zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(initialOrbit);
 
         propagator.setEphemerisMode();
@@ -779,7 +776,7 @@ public class FieldKeplerianPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(505.848), zero.add( 942.781), zero.add(7435.922));
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
         final FieldOrbit<T> orbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                             FramesFactory.getEME2000(), date, mu);
+                                                             FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<T>(orbit) {
             FieldAbsoluteDate<T> lastDate = FieldAbsoluteDate.getPastInfinity(field);
@@ -804,11 +801,11 @@ public class FieldKeplerianPropagatorTest {
         final FieldKeplerianOrbit<T> orbit1 =
                 new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
                                           FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
-                                          Constants.WGS84_EARTH_MU);
+                                          zero.add(Constants.WGS84_EARTH_MU));
         final FieldKeplerianOrbit<T> orbit2 =
                 new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
                                           FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
-                                          Constants.EIGEN5C_EARTH_MU);
+                                          zero.add(Constants.EIGEN5C_EARTH_MU));
         final FieldAbsoluteDate<T> target = orbit1.getDate().shiftedBy(10000.0);
         FieldPVCoordinates<T> pv1       = new FieldKeplerianPropagator<>(orbit1).propagate(target).getPVCoordinates();
         FieldPVCoordinates<T> pv2       = new FieldKeplerianPropagator<>(orbit2).propagate(target).getPVCoordinates();
@@ -829,14 +826,14 @@ public class FieldKeplerianPropagatorTest {
             final FieldVector3D<T>     velocity     = new FieldVector3D<>(zero.add(505.848),
                                                                           zero.add(942.781),
                                                                           zero.add(7435.922));
-            final FieldVector3D<T>     keplerAcceleration = new FieldVector3D<>(position.getNormSq().reciprocal().multiply(-mu),
+            final FieldVector3D<T>     keplerAcceleration = new FieldVector3D<>(position.getNormSq().reciprocal().multiply(zero.add(mu).negate()),
                                                                                position.normalize());
             final FieldVector3D<T>     nonKeplerAcceleration = new FieldVector3D<>(zero.add(0.001),
                                                                                    zero.add(0.002),
                                                                                    zero.add(0.003));
             final FieldVector3D<T>     acceleration = keplerAcceleration.add(nonKeplerAcceleration);
             final TimeStampedFieldPVCoordinates<T> pva = new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
-            final FieldOrbit<T> initial = type.convertType(new FieldCartesianOrbit<>(pva, FramesFactory.getEME2000(), mu));
+            final FieldOrbit<T> initial = type.convertType(new FieldCartesianOrbit<>(pva, FramesFactory.getEME2000(), zero.add(mu)));
             Assert.assertEquals(type, initial.getType());
 
             // the derivatives are available at this stage

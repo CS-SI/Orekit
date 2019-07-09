@@ -45,9 +45,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class LofOffset implements AttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -713570668596014285L;
-
     /** Type of Local Orbital Frame. */
     private LOFType type;
 

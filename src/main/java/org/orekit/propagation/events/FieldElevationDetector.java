@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
@@ -34,10 +35,8 @@ import org.orekit.utils.ElevationMask;
  * setting of azimuth and/or elevation bounds or a ground azimuth/elevation
  * mask input. Each calculation be configured to use atmospheric refraction
  * as well.
- * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.FieldEventHandler.Action#CONTINUE continue}
- * propagation at raising and to {@link
- * org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP stop} propagation
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at raising and to {@link Action#STOP stop} propagation
  * at setting. This can be changed by calling
  * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * @author Hank Grabowski

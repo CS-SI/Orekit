@@ -28,6 +28,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -46,10 +47,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * A typical use case is for numerically integrated orbits, which can be used by
  * algorithms that need to wander around according to their own algorithm without
  * cumbersome tight links with the integrator.
- * </p>
- * <p>
- * Another use case is persistence, as this class is one of the few propagators
- * to be serializable.
  * </p>
  * <p>
  * As this class implements the {@link org.orekit.propagation.Propagator Propagator}
@@ -75,13 +72,13 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     /** Mapper between raw double components and spacecraft state. */
     private final FieldStateMapper<T> mapper;
 
-    /** Output only the mean orbit. <br/>
+    /** Type of orbit to output (mean or osculating).
      * <p>
      * This is used only in the case of semianalitical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
-    private boolean meanFieldOrbit;
+    private PropagationType type;
 
     /** Start date of the integration (can be min or max). */
     private final FieldAbsoluteDate<T> startDate;
@@ -103,7 +100,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
      * @param minDate first date of the range
      * @param maxDate last date of the range
      * @param mapper mapper between raw double components and spacecraft state
-     * @param meanFieldOrbit output only the mean orbit
+     * @param type type of orbit to output (mean or osculating)
      * @param model underlying raw mathematical model
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
@@ -111,7 +108,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
      */
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
-                               final FieldStateMapper<T> mapper, final boolean meanFieldOrbit,
+                               final FieldStateMapper<T> mapper, final PropagationType type,
                                final FieldDenseOutputModel<T> model,
                                final Map<String, T[]> unmanaged,
                                final List<FieldAdditionalStateProvider<T>> providers,
@@ -123,7 +120,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         this.minDate   = minDate;
         this.maxDate   = maxDate;
         this.mapper    = mapper;
-        this.meanFieldOrbit = meanFieldOrbit;
+        this.type      = type;
         this.model     = model;
         this.unmanaged = unmanaged;
         // set up the pre-integrated providers
@@ -164,7 +161,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
         FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                                os.getPrimaryState(), os.getPrimaryDerivative(),
-                                                               meanFieldOrbit);
+                                                               type);
         for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
             state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }

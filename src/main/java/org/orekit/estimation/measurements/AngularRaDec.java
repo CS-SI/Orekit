@@ -53,46 +53,6 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
     private final Frame referenceFrame;
 
     /** Simple constructor.
-     * <p>
-     * This constructor uses 0 as the index of the propagator related
-     * to this measurement, thus being well suited for mono-satellite
-     * orbit determination.
-     * </p>
-     * @param station ground station from which measurement is performed
-     * @param referenceFrame Reference frame in which the right ascension - declination angles are given
-     * @param date date of the measurement
-     * @param angular observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @deprecated since 9.3, replaced by {@link #AngularRaDec(GroundStation, Frame, AbsoluteDate,
-     * double[], double[], double[], ObservableSatellite)}
-     */
-    @Deprecated
-    public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
-                        final double[] angular, final double[] sigma, final double[] baseWeight) {
-        this(station, referenceFrame, date, angular, sigma, baseWeight, new ObservableSatellite(0));
-    }
-
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param referenceFrame Reference frame in which the right ascension - declination angles are given
-     * @param date date of the measurement
-     * @param angular observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param propagatorIndex index of the propagator related to this measurement
-     * @since 9.0
-     * @deprecated since 9.3, replaced by {@link #AngularRaDec(GroundStation, Frame, AbsoluteDate,
-     * double[], double[], double[], ObservableSatellite)}
-     */
-    @Deprecated
-    public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
-                        final double[] angular, final double[] sigma, final double[] baseWeight,
-                        final int propagatorIndex) {
-        this(station, referenceFrame, date, angular, sigma, baseWeight, new ObservableSatellite(propagatorIndex));
-    }
-
-    /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given
      * @param date date of the measurement

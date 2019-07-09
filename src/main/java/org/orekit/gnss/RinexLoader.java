@@ -43,8 +43,8 @@ import org.orekit.time.TimeScalesFactory;
  * 3.00, 3.01, 3.02, and 3.03.
  * </p>
  * @see <a href="ftp://igs.org/pub/data/format/rinex2.txt">rinex 2.0</a>
- * @see <a href="ftp://igs.org/pub/data/forma/rinex210.txt">rinex 2.10</a>
- * @see <a href="ftp://igs.org/pub/data/forma/rinex211.txt">rinex 2.11</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex210.txt">rinex 2.10</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex211.txt">rinex 2.11</a>
  * @see <a href="http://www.aiub.unibe.ch/download/rinex/rinex212.txt">unofficial rinex 2.12</a>
  * @see <a href="http://www.aiub.unibe.ch/download/rinex/rnx_leo.txt">unofficial rinex 2.20</a>
  * @see <a href="ftp://igs.org/pub/data/format/rinex300.pdf">rinex 3.00</a>
@@ -133,25 +133,6 @@ public class RinexLoader {
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
-    }
-
-    /** Get parsed rinex observations.
-     * @return unmodifiable view of parsed rinex observations
-     * @deprecated as of 9.3 replaced by {@link #getObservationDataSets()}
-     */
-    @Deprecated
-    public Map<RinexHeader, List<ObservationDataSet>> getObservations() {
-        final Map<RinexHeader, List<ObservationDataSet>> map = new HashMap<>();
-        for (final ObservationDataSet dataSet : observationDataSets) {
-            List<ObservationDataSet> l = map.get(dataSet.getHeader());
-            if (l == null) {
-                // first time we see this header
-                l = new ArrayList<>();
-                map.put(dataSet.getHeader(), l);
-            }
-            l.add(dataSet);
-        }
-        return map;
     }
 
     /** Get parsed rinex observations data sets.
@@ -1172,7 +1153,7 @@ public class RinexLoader {
              */
             public String[] getSatsCorrected() {
                 //If empty, all the satellites of this constellation are affected for this Observation type
-                return satsPhaseShift;
+                return satsPhaseShift == null ? null : satsPhaseShift.clone();
             }
         }
 

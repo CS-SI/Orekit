@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 
 
@@ -30,13 +31,13 @@ public class UpperBounds {
     }
 
     /** Get the upper bound value D<sub>n</sub><sup>l</sup>(&Chi;).
-     *
-     * @param xx value of &Chi;²
-     * @param xpl value of &Chi; * (&Chi;² / 2)<sup>l</sup>
-     * @param n index n (power of a/R)
-     * @param l index l (power of eccentricity)
-     * @return the upper bound D<sub>n</sub><sup>l</sup>(&Chi;)
-     */
+    *
+    * @param xx value of &Chi;²
+    * @param xpl value of &Chi; * (&Chi;² / 2)<sup>l</sup>
+    * @param n index n (power of a/R)
+    * @param l index l (power of eccentricity)
+    * @return the upper bound D<sub>n</sub><sup>l</sup>(&Chi;)
+    */
     public static double getDnl(final double xx, final double xpl, final int n, final int l) {
         final int lp2 = l + 2;
         if (n > lp2) {
@@ -53,6 +54,36 @@ public class UpperBounds {
             return dB;
         } else if (n == lp2) {
             return  (l + 1) * xx * xpl;
+        } else {
+            return xpl;
+        }
+    }
+
+    /** Get the upper bound value D<sub>n</sub><sup>l</sup>(&Chi;).
+     *
+     * @param xx value of &Chi;²
+     * @param xpl value of &Chi; * (&Chi;² / 2)<sup>l</sup>
+     * @param n index n (power of a/R)
+     * @param l index l (power of eccentricity)
+     * @param <T> the type of the field elements
+     * @return the upper bound D<sub>n</sub><sup>l</sup>(&Chi;)
+     */
+    public static <T extends RealFieldElement<T>> T getDnl(final T xx, final T xpl, final int n, final int l) {
+        final int lp2 = l + 2;
+        if (n > lp2) {
+            final int ll = l * l;
+            T dM = xpl;
+            T dL = dM;
+            T dB = xx.multiply(xpl).multiply(l + 1);
+            for (int j = l + 3; j <= n; j++) {
+                final int jm1 = j - 1;
+                dL = dM;
+                dM = dB;
+                dB = xx.multiply(jm1).multiply(dM.multiply(2 * j - 3).subtract(dL.multiply(j - 2))).divide(jm1 * jm1 - ll);
+            }
+            return dB;
+        } else if (n == lp2) {
+            return  xx.multiply(xpl).multiply(l + 1);
         } else {
             return xpl;
         }
@@ -119,6 +150,74 @@ public class UpperBounds {
             }
             // Bound for index > 0
             rBound *= FastMath.sqrt(pnml * pnml + dpnml * dpnml * sinisq / ((n - l) * (n + lp1)));
+        }
+
+        return rBound;
+    }
+
+    /** Get the upper bound value R<sup>ε</sup><sub>n,m,l</sub>(γ).
+    *
+    * @param gamma value of γ
+    * @param n index n
+    * @param l index l
+    * @param m index m
+    * @param eps ε value (+1/-1)
+    * @param irf retrograde factor I (+1/-1)
+    * @param <T> the type of the field elements
+    * @return the upper bound R<sup>ε</sup><sub>n,m,l</sub>(γ)
+    */
+    public static <T extends RealFieldElement<T>> T getRnml(final T gamma,
+                                final int n, final int l, final int m,
+                                final int eps, final int irf) {
+        final T zero = gamma.getField().getZero();
+        // Initialization
+        final int mei = m * eps * irf;
+        final T sinisq = gamma.multiply(gamma).negate().add(1.);
+        // Set a lower bound for inclination
+        final T sininc = FastMath.max(zero.add(0.03), FastMath.sqrt(sinisq));
+        final T onepig = gamma.multiply(irf).add(1.);
+        final T sinincPowLmMEI = FastMath.pow(sininc, l - mei);
+        final T onepigPowLmMEI = FastMath.pow(onepig, mei);
+
+        // Bound for index 0
+        T rBound = sinincPowLmMEI.multiply(onepigPowLmMEI);
+
+        // If index > 0
+        if (n > l) {
+            final int lp1 = l + 1;
+
+            T dpnml  = zero.add(lp1 * eps);
+            T pnml   = gamma.multiply(dpnml).subtract(m);
+
+            // If index > 1
+            if (n > l + 1) {
+                final int ll  = l * l;
+                final int ml  = m * l;
+                final int mm  = m * m;
+
+                T pn1ml  = zero.add(1.);
+                T dpn1ml = zero;
+                T pn2ml  = zero.add(1.);
+                T dpn2ml = zero;
+                for (int in = l + 2; in <= n; in++) {
+                    final int nm1   = in - 1;
+                    final int tnm1  = in + nm1;
+                    final int nnlnl = nm1 * (in * in - ll);
+                    final int nnmnm = in * (nm1 * nm1 - mm);
+                    final int c2nne = tnm1 * in * nm1 * eps;
+                    final int c2nml = tnm1 * ml;
+                    final T coef = gamma.multiply(c2nne).subtract(c2nml);
+
+                    pn2ml  = pn1ml;
+                    dpn2ml = dpn1ml;
+                    pn1ml  = pnml;
+                    dpn1ml = dpnml;
+                    pnml   = (coef.multiply(pn1ml).subtract(pn2ml.multiply(nnmnm))).divide(nnlnl);
+                    dpnml  = (coef.multiply(dpn1ml).subtract(dpn2ml.multiply(nnmnm)).add(pn1ml.multiply(c2nne))).divide(nnlnl);
+                }
+            }
+            // Bound for index > 0
+            rBound = rBound.multiply(FastMath.sqrt(pnml.multiply(pnml).add(dpnml.multiply(dpnml).multiply(sinisq).divide((n - l) * (n + lp1)))));
         }
 
         return rBound;

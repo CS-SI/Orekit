@@ -44,14 +44,13 @@ import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -87,24 +86,24 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
 
-    /** Output only the mean orbit. <br/>
+    /** Type of orbit to output (mean or osculating) <br/>
      * <p>
      * This is used only in the case of semianalitical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
-    private boolean meanOrbit;
+    private PropagationType propagationType;
 
     /** Build a new instance.
      * @param integrator numerical integrator to use for propagation.
-     * @param meanOrbit output only the mean orbit.
+     * @param propagationType type of orbit to output (mean or osculating).
      */
-    protected AbstractIntegratedPropagator(final ODEIntegrator integrator, final boolean meanOrbit) {
-        detectors           = new ArrayList<EventDetector>();
-        additionalEquations = new ArrayList<AdditionalEquations>();
-        this.integrator     = integrator;
-        this.meanOrbit      = meanOrbit;
-        this.resetAtEnd     = true;
+    protected AbstractIntegratedPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
+        detectors            = new ArrayList<EventDetector>();
+        additionalEquations  = new ArrayList<AdditionalEquations>();
+        this.integrator      = integrator;
+        this.propagationType = propagationType;
+        this.resetAtEnd      = true;
     }
 
     /** Allow/disallow resetting the initial state at end of propagation.
@@ -137,7 +136,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation
+     * @param orbitType orbit type to use for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates AbsolutePVCoordinates}
+     * rather than {@link org.orekit.orbits Orbit}
      */
     protected void setOrbitType(final OrbitType orbitType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
@@ -146,17 +147,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Get propagation parameter type.
-     * @return orbit type used for propagation
+     * @return orbit type used for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates AbsolutePVCoordinates}
+     * rather than {@link org.orekit.orbits Orbit}
      */
     protected OrbitType getOrbitType() {
         return stateMapper.getOrbitType();
     }
 
     /** Check if only the mean elements should be used in a semianalitical propagation.
-     * @return true if only mean elements have to be used
+     * @return {@link PropagationType MEAN} if only mean elements have to be used or
+     *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
      */
-    protected boolean isMeanOrbit() {
-        return meanOrbit;
+    protected PropagationType isMeanOrbit() {
+        return propagationType;
     }
 
     /** Set position angle type.
@@ -292,7 +296,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -306,7 +310,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -320,7 +324,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, PropagationType) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {
@@ -336,7 +340,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      *
      * <p>Note that this method has the side effect of replacing the step handlers of the
      * underlying integrator set up in the {@link #AbstractIntegratedPropagator(ODEIntegrator,
-     * boolean) constructor}.</p>
+     * PropagationType) constructor}.</p>
      */
     @Override
     public void setEphemerisMode(final OrekitStepHandler handler) {
@@ -430,10 +434,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
 
 
-            // set propagation orbit type
-            final Orbit initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
             if (Double.isNaN(getMu())) {
-                setMu(initialOrbit.getMu());
+                setMu(getInitialState().getMu());
             }
 
             if (getInitialState().getMass() <= 0.0) {
@@ -471,7 +473,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                                                     tEnd),
                                                         mathFinalState.getPrimaryState(),
                                                         mathFinalState.getPrimaryDerivative(),
-                                                        meanOrbit);
+                                                        propagationType);
+
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
                 final double[] secondary = mathFinalState.getSecondaryState(i + 1);
@@ -587,7 +590,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private SpacecraftState getCompleteState(final double t, final double[] y, final double[] yDot) {
 
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, meanOrbit);
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, propagationType);
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);
@@ -652,7 +655,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         @Override
         public void init(final double t0, final double[] y0, final double finalTime) {
             // update space dynamics view
-            SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, true);
+            SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, PropagationType.MEAN);
             initialState = updateAdditionalStates(initialState);
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
             main.init(initialState, target);
@@ -665,7 +668,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             ++calls;
 
             // update space dynamics view
-            SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, true);
+            SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
             currentState = updateAdditionalStates(currentState);
 
             // compute main state differentials
@@ -705,7 +708,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void init(final double t0, final double[] primary0,
                          final double[] secondary0, final double finalTime) {
             // update space dynamics view
-            SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
+            SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, PropagationType.MEAN);
             initialState = updateAdditionalStates(initialState);
             initialState = initialState.addAdditionalState(equations.getName(), secondary0);
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
@@ -719,20 +722,21 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                            final double[] primaryDot, final double[] secondary) {
 
             // update space dynamics view
-            SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
+            SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
             currentState = updateAdditionalStates(currentState);
             currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
             // compute additional derivatives
             final double[] secondaryDot = new double[secondary.length];
             final double[] additionalMainDot =
-                    equations.computeDerivatives(currentState, secondaryDot);
+                            equations.computeDerivatives(currentState, secondaryDot);
             if (additionalMainDot != null) {
                 // the additional equations have an effect on main equations
                 for (int i = 0; i < additionalMainDot.length; ++i) {
                     primaryDot[i] += additionalMainDot[i];
                 }
             }
+
             return secondaryDot;
 
         }
@@ -741,7 +745,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Adapt an {@link org.orekit.propagation.events.EventDetector}
      * to Hipparchus {@link org.hipparchus.ode.events.ODEEventHandler} interface.
-     * @param <T> class type for the generic version
      * @author Fabien Maussion
      */
     private class AdaptedEventDetector implements ODEEventHandler {
@@ -783,21 +786,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final ODEStateAndDerivative s, final boolean increasing) {
-            final EventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
-                                                                                         s.getCompleteState(),
-                                                                                         s.getCompleteDerivative()),
-                                                                        increasing);
-
-            switch (whatNext) {
-                case STOP :
-                    return Action.STOP;
-                case RESET_STATE :
-                    return Action.RESET_STATE;
-                case RESET_DERIVATIVES :
-                    return Action.RESET_DERIVATIVES;
-                default :
-                    return Action.CONTINUE;
-            }
+            return detector.eventOccurred(
+                    getCompleteState(
+                            s.getTime(),
+                            s.getCompleteState(),
+                            s.getCompleteDerivative()),
+                    increasing);
         }
 
         /** {@inheritDoc} */
@@ -921,7 +915,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                             stateMapper.mapArrayToState(os.getTime(),
                                                         os.getPrimaryState(),
                                                         os.getPrimaryDerivative(),
-                                                        meanOrbit);
+                                                        propagationType);
             s = updateAdditionalStates(s);
             for (int i = 0; i < additionalEquations.size(); ++i) {
                 final double[] secondary = os.getSecondaryState(i + 1);
@@ -1046,9 +1040,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                     final double tF = model.getFinalTime();
                     // tI is almost? always zero
                     final AbsoluteDate startDate =
-                            stateMapper.mapDoubleToDate(tI);
+                                    stateMapper.mapDoubleToDate(tI);
                     final AbsoluteDate finalDate =
-                            stateMapper.mapDoubleToDate(tF, this.endDate);
+                                    stateMapper.mapDoubleToDate(tF, this.endDate);
                     final AbsoluteDate minDate;
                     final AbsoluteDate maxDate;
                     if (tF < tI) {
@@ -1077,11 +1071,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                     // create the ephemeris
                     ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                        stateMapper, meanOrbit, model, unmanaged,
+                                                        stateMapper, propagationType, model, unmanaged,
                                                         getAdditionalStateProviders(), names);
 
                 }
             }
+
         }
 
         /** {@inheritDoc} */

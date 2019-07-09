@@ -55,7 +55,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   </ul>
  * where Ω stands for the Right Ascension of the Ascending Node and
  * α<sub>v</sub> stands for the true latitude argument
- * </p>
  * <p>
  * The conversion equations from and to Keplerian elements given above hold only
  * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
@@ -149,7 +148,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     public FieldCircularOrbit(final T a, final T ex, final T ey,
                               final T i, final T raan,
                               final T alpha, final PositionAngle type,
-                              final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                              final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, i, raan, alpha,
              null, null, null, null, null, null,
@@ -182,7 +181,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
                               final T aDot, final T exDot, final T eyDot,
                               final T iDot, final T raanDot, final T alphaDot,
                               final PositionAngle type,
-                              final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                              final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         if (ex.getReal() * ex.getReal() + ey.getReal() * ey.getReal() >= 1.0) {
@@ -266,7 +265,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldCircularOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
-                              final Frame frame, final double mu)
+                              final Frame frame, final T mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
 
@@ -337,7 +336,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
             getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
 
-            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu), pvP);
+            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
             final T   aX                       = nonKeplerianAcceleration.getX();
             final T   aY                       = nonKeplerianAcceleration.getY();
@@ -390,7 +389,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldCircularOrbit(final FieldPVCoordinates<T> PVCoordinates, final Frame frame,
-                              final FieldAbsoluteDate<T> date, final double mu)
+                              final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(new TimeStampedFieldPVCoordinates<>(date, PVCoordinates), frame, mu);
     }
@@ -750,78 +749,6 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         return alphaE.subtract(ex.multiply(alphaE.sin()).subtract(ey.multiply(alphaE.cos())));
     }
 
-    /** Compute position from circular parameters.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param i inclination (rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param alphaV  v + ω true latitude argument (rad)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param <T> type of the fiels elements
-     * @return position vector
-     * @deprecated as of 9.3, replaced by {@link #FieldCircularOrbit(RealFieldElement, RealFieldElement,
-     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, PositionAngle, Frame,
-     * FieldAbsoluteDate, double)} and {@link #getPVCoordinates()}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> circularToPosition(final T a, final T ex, final T ey,
-                                                                                      final T i, final T raan, final T alphaV,
-                                                                                      final double mu) {
-
-        final T zero = a.getField().getZero();
-
-        // get equinoctial parameters
-        final T equEx = ex.multiply(raan.cos()).subtract(ey.multiply(raan.sin()));
-        final T equEy = ey.multiply(raan.cos()).add(ex.multiply(raan.sin()));
-        final T hx;
-        final T hy;
-        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
-            hx = zero.add(Double.NaN);
-            hy = zero.add(Double.NaN);
-        } else {
-            final T tan = i.divide(2).tan();
-            hx = raan.cos().multiply(tan);
-            hy = raan.sin().multiply(tan);
-        }
-        final T lE = trueToEccentric(alphaV, ex, ey).add(raan);
-
-        // inclination-related intermediate parameters
-        final T hx2   = hx.multiply(hx);
-        final T hy2   = hy.multiply(hy);
-        final T factH = (hx2.add(1).add(hy2)).reciprocal();
-
-        // reference axes defining the orbital plane
-        final T ux = (hx2.add(1).subtract(hy2)).multiply(factH);
-        final T uy =  hx.multiply(2).multiply(hy).multiply(factH);
-        final T uz = hy.multiply(-2).multiply(factH);
-
-        final T vx = uy;
-        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
-        final T vz =  hx.multiply(factH).multiply(2);
-
-        // eccentricity-related intermediate parameters
-        final T exey = equEx.multiply(equEy);
-        final T ex2  = equEx.multiply(equEx);
-        final T ey2  = equEy.multiply(equEy);
-        final T e2   = ex2.add(ey2);
-        final T eta  = e2.negate().add(1).sqrt().add(1);
-        final T beta = eta.reciprocal();
-
-        // eccentric latitude argument
-        final T cLe    = lE.cos();
-        final T sLe    = lE.sin();
-
-        // coordinates of position and velocity in the orbital plane
-        final T x      = a.multiply(beta.negate().multiply(ey2).add(1).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(equEx));
-        final T y      = a.multiply(beta.negate().multiply(ex2).add(1).multiply(sLe).add(beta.multiply(exey).multiply(cLe)).subtract(equEy));
-
-        return new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
-                                   x.multiply(uy).add(y.multiply(vy)),
-                                   x.multiply(uz).add(y.multiply(vz)));
-
-    }
-
     /** {@inheritDoc} */
     public T getE() {
         return ex.multiply(ex).add(ey.multiply(ey)).sqrt();
@@ -1001,7 +928,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         // acceleration
         final T r2 = partialPV.getPosition().getNormSq();
-        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(-getMu()),
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
         final FieldVector3D<T> acceleration = hasDerivatives() ?
                                               keplerianAcceleration.add(nonKeplerianAcceleration()) :
@@ -1038,7 +965,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             final T   fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, keplerianShifted.partialPV.getVelocity(),
                                                                  dt, nonKeplerianAcceleration);
-            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(-getMu()),
+            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
                                                                  keplerianShifted.partialPV.getPosition(),
                                                                  one, nonKeplerianAcceleration);
 
@@ -1162,7 +1089,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T r          = r2.sqrt();
         final T v2         = velocity.getNormSq();
 
-        final double mu         = getMu();
+        final T mu         = getMu();
         final T oOsqrtMuA  = one.divide(a.multiply(mu).sqrt());
         final T rOa        = r.divide(a);
         final T aOr        = a.divide(r);
@@ -1185,7 +1112,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         // da
         fillHalfRow(aOr.multiply(2.0).multiply(aOr2), position, jacobian[0], 0);
-        fillHalfRow(a2.multiply(2.0 / mu), velocity, jacobian[0], 3);
+        fillHalfRow(a2.multiply(mu.divide(2.).reciprocal()), velocity, jacobian[0], 3);
 
         // differentials of the normalized momentum
         final FieldVector3D<T> danP = new FieldVector3D<>(v2, position, pv.negate(), velocity);
@@ -1371,7 +1298,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngle type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
@@ -1414,9 +1341,9 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * Normalize an angle in a 2&pi; wide interval around a center value.
      * <p>This method has three main uses:</p>
      * <ul>
-     *   <li>normalize an angle between 0 and 2&pi;:<br/>
+     *   <li>normalize an angle between 0 and 2&pi;:<br>
      *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
-     *   <li>normalize an angle between -&pi; and +&pi;<br/>
+     *   <li>normalize an angle between -&pi; and +&pi;<br>
      *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
      *   <li>compute the angle between two defining angular positions:<br>
      *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
@@ -1441,12 +1368,12 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
                                      aDot.getReal(), exDot.getReal(), eyDot.getReal(),
                                      iDot.getReal(), raanDot.getReal(), alphaVDot.getReal(),
                                      PositionAngle.TRUE, getFrame(),
-                                     getDate().toAbsoluteDate(), getMu());
+                                     getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                      i.getReal(), raan.getReal(), alphaV.getReal(),
                                      PositionAngle.TRUE, getFrame(),
-                                     getDate().toAbsoluteDate(), getMu());
+                                     getDate().toAbsoluteDate(), getMu().getReal());
         }
     }
 

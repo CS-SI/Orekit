@@ -16,18 +16,12 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -325,77 +319,13 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testNonSerializable() throws IOException {
-        try {
-            final EventEnablingPredicateFilter<DateDetector> filter =
-                            new EventEnablingPredicateFilter<DateDetector>(new DateDetector(AbsoluteDate.J2000_EPOCH),
-                                                                           new  DummyNonSerializablePredicate());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream    oos = new ObjectOutputStream(bos);
-            oos.writeObject(filter);
-            Assert.fail("an exception should habe been thrown");
-        } catch (NotSerializableException nse) {
-            Assert.assertTrue(nse.getMessage().contains("DummyNonSerializablePredicate"));
-        }
-    }
-
-    private static class DummyNonSerializablePredicate implements EnablingPredicate<DateDetector> {
-
-        @Override
-        public boolean eventIsEnabled(final SpacecraftState state,
-                                      final DateDetector eventDetector,
-                                      final double g) {
-            return true;
-        }
-
-    }
-
-    @Test
-    public void testSerializable()
-        throws IOException, IllegalArgumentException, IllegalAccessException,
-               ClassNotFoundException, NoSuchFieldException, SecurityException {
-        final EventEnablingPredicateFilter<DateDetector> filter =
-                        new EventEnablingPredicateFilter<DateDetector>(new DateDetector(AbsoluteDate.J2000_EPOCH),
-                                                                       new  DummySerializablePredicate());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(filter);
-
-        Assert.assertTrue(bos.size() >  900);
-        Assert.assertTrue(bos.size() < 1000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        @SuppressWarnings("unchecked")
-        EventEnablingPredicateFilter<DateDetector> deserialized  =
-                        (EventEnablingPredicateFilter<DateDetector>) ois.readObject();
-        Field enabler = EventEnablingPredicateFilter.class.getDeclaredField("enabler");
-        enabler.setAccessible(true);
-        Assert.assertEquals(DummySerializablePredicate.class, enabler.get(deserialized).getClass());
-    }
-
-    private static class DummySerializablePredicate implements EnablingPredicate<DateDetector>, Serializable {
-
-        private static final long serialVersionUID = 20160321L;
-
-        @Override
-        public boolean eventIsEnabled(final SpacecraftState state,
-                                      final DateDetector eventDetector,
-                                      final double g) {
-            return true;
-        }
-
-    }
-
-    @Test
     public void testGenerics() {
         // setup
         DateDetector detector = new DateDetector(orbit.getDate());
         EnablingPredicate<EventDetector> predicate = (state, eventDetector, g) -> true;
 
         // action + verify. Just make sure it compiles with generics
-        EventEnablingPredicateFilter<DateDetector> filter =
-                new EventEnablingPredicateFilter<>(detector, predicate);
+        new EventEnablingPredicateFilter<>(detector, predicate);
     }
 
     @Before

@@ -24,6 +24,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
@@ -43,10 +44,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.DTM2000;
-import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.Relativity;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -56,6 +54,8 @@ import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.atmosphere.DTM2000;
+import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -71,7 +71,6 @@ import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldAdditionalEquations;
@@ -116,23 +115,6 @@ public class FieldNumericalPropagatorTest {
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add((10.0))));
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedMethods() {
-        doTestDeprecatedMethods(Decimal64Field.getInstance());
-    }
-
-    @Deprecated
-    private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestDeprecatedMethods(Field<T> field)
-        {
-        FieldNumericalPropagator<T>  propagator = createPropagator(field);
-        propagator.addForceModel(new Relativity(mu));
-        Assert.assertEquals(2, propagator.getAllForceModels().size());
-        Assert.assertEquals(1, propagator.getForceModels().size());
-        Assert.assertSame(propagator.getAllForceModels().get(0), propagator.getForceModels().get(0));
-        Assert.assertSame(propagator.getAllForceModels().get(1), propagator.getNewtonianAttractionForceModel());
     }
 
     @Test
@@ -272,7 +254,7 @@ public class FieldNumericalPropagatorTest {
         FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(field, "2015-07-04", tai);
         Frame eci = FramesFactory.getGCRF();
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
-                                                                 PositionAngle.TRUE, eci, initialDate, mu);
+                                                                 PositionAngle.TRUE, eci, initialDate, zero.add(mu));
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = NumericalPropagator.tolerances(1e-3, orbit.toOrbit(), type);
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
@@ -317,7 +299,7 @@ public class FieldNumericalPropagatorTest {
         FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(field, "2015-07-04", tai);
         Frame eci = FramesFactory.getGCRF();
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
-                                                                 PositionAngle.TRUE, eci, initialDate, mu);
+                                                                 PositionAngle.TRUE, eci, initialDate, zero.add(mu));
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = NumericalPropagator.tolerances(1e-3, orbit.toOrbit(), type);
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
@@ -363,7 +345,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -413,7 +395,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -430,7 +412,7 @@ public class FieldNumericalPropagatorTest {
             propagator.propagate(initDate.shiftedBy(-60), initDate.shiftedBy(dt));
 
         // Check results
-        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA().getReal()) / initialState.getA().getReal();
+        final double n = FastMath.sqrt(initialState.getMu().divide(initialState.getA())).getReal() / initialState.getA().getReal();
         Assert.assertEquals(initialState.getA().getReal(),    finalState.getA().getReal(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEx().getReal(),    finalState.getEquinoctialEx().getReal(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEy().getReal(),    finalState.getEquinoctialEy().getReal(),    1.0e-10);
@@ -455,7 +437,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -505,7 +487,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -583,7 +565,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -598,7 +580,7 @@ public class FieldNumericalPropagatorTest {
             new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(2.5), zero.add(0.3), zero, zero, zero,
                                                                  PositionAngle.TRUE,
                                                                  FramesFactory.getEME2000(), initDate,
-                                                                 mu));
+                                                                 zero.add(mu)));
 
         ForceModel gravityField =
             new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -669,7 +651,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -714,7 +696,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -753,7 +735,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -791,7 +773,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -812,7 +794,7 @@ public class FieldNumericalPropagatorTest {
             propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertEquals(dt, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
         checking.assertEvent(true);
-        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA().getReal()) / initialState.getA().getReal();
+        final double n = FastMath.sqrt(initialState.getMu().getReal() / initialState.getA().getReal()) / initialState.getA().getReal();
         Assert.assertEquals(initialState.getA().getReal(),    finalState.getA().getReal(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEx().getReal(),    finalState.getEquinoctialEx().getReal(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEy().getReal(),    finalState.getEquinoctialEy().getReal(),    1.0e-10);
@@ -836,7 +818,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -861,7 +843,7 @@ public class FieldNumericalPropagatorTest {
             propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
         checking.assertEvent(true);
-        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA().getReal()) / initialState.getA().getReal();
+        final double n = FastMath.sqrt(initialState.getMu().getReal() / initialState.getA().getReal()) / initialState.getA().getReal();
         Assert.assertEquals(initialState.getA().getReal(),    finalState.getA().getReal(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEx().getReal(),    finalState.getEquinoctialEx().getReal(),    1.0e-10);
         Assert.assertEquals(initialState.getEquinoctialEy().getReal(),    finalState.getEquinoctialEy().getReal(),    1.0e-10);
@@ -885,7 +867,7 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
@@ -1061,7 +1043,7 @@ public class FieldNumericalPropagatorTest {
         double vApogee = FastMath.sqrt(mu*(1-e)/(a*(1+e)));
         FieldOrbit<T> geo = new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(rApogee), zero, zero),
                                                                                new FieldVector3D<>(zero, zero.add(vApogee), zero)),
-                                                       EME2000, initialDate, mu);
+                                                       EME2000, initialDate, zero.add(mu));
 
 
         duration = geo.getKeplerianPeriod();
@@ -1228,7 +1210,7 @@ public class FieldNumericalPropagatorTest {
                                                             PositionAngle.MEAN,
                                                             FramesFactory.getTOD(false),
                                                             new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
-                                                            Constants.EIGEN5C_EARTH_MU);
+                                                            field.getZero().add(Constants.EIGEN5C_EARTH_MU));
             FieldNumericalPropagator.tolerances(field.getZero().add(1.0), orbit, OrbitType.KEPLERIAN);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -1770,7 +1752,7 @@ public class FieldNumericalPropagatorTest {
         final TimeStampedFieldPVCoordinates<T> pv = new TimeStampedFieldPVCoordinates<>(date, position, velocity, FieldVector3D.getZero(field));
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;
-        return new FieldCartesianOrbit<>(pv, frame, mu);
+        return new FieldCartesianOrbit<>(pv, frame, zero.add(mu));
     }
 
     private static <T extends RealFieldElement<T>> FieldCartesianOrbit<T> createHyperbolicOrbit(Field<T> field) {
@@ -1785,7 +1767,7 @@ public class FieldNumericalPropagatorTest {
         final TimeStampedFieldPVCoordinates<T> pv = new TimeStampedFieldPVCoordinates<>(date, position, velocity, FieldVector3D.getZero(field));
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;
-        return new FieldCartesianOrbit<>(pv, frame, mu);
+        return new FieldCartesianOrbit<>(pv, frame, zero.add(mu));
     }
 
     private class CheckingHandler<D extends FieldEventDetector<T>, T extends RealFieldElement<T>> implements FieldEventHandler<D, T> {
@@ -1820,7 +1802,7 @@ public class FieldNumericalPropagatorTest {
                                                               zero.add(1000.0));
         FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), initDate, mu);
+                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = FieldNumericalPropagator.tolerances(zero.add(0.001), orbit, type);

@@ -43,7 +43,7 @@
         <module name="MissingSwitchDefault"/>
         <module name="ModifierOrder"/>
         <module name="MultipleStringLiterals">
-            <property name="ignoreStringsRegexp" value='^(("")|("."))$'/>
+            <property name="ignoreStringsRegexp" value='^(("")|(".")|("\\\\"))$'/>
         </module>
         <module name="MultipleVariableDeclarations"/>
         <module name="NoWhitespaceAfter"/>
@@ -95,6 +95,11 @@
           <property name="offCommentFormat" value="CHECKSTYLE\: stop MultipleStringLiterals check"/>
           <property name="onCommentFormat" value="CHECKSTYLE\: resume MultipleStringLiterals check"/>
           <property name="checkFormat" value="MultipleStringLiteralsCheck"/>
+        </module>
+        <module name="SuppressionCommentFilter">
+          <property name="offCommentFormat" value="CHECKSTYLE\: stop IllegalCatch check"/>
+          <property name="onCommentFormat" value="CHECKSTYLE\: resume IllegalCatch check"/>
+          <property name="checkFormat" value="IllegalCatchCheck"/>
         </module>
     </module>
     <module name="RegexpHeader">

@@ -50,6 +50,9 @@
       <Class name="~.*\.TIRFProvider$" />
       <Class name="~.*\.CartesianOrbit$" />
       <Class name="~.*\.EstimatedEarthFrameProvider$" />
+      <Class name="~.*\.GNSSDate$" />
+      <Class name="~.*\.GLONASSDate$" />
+      <Class name="~.*\.PositionAngleDetector$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
@@ -117,6 +120,65 @@
     <Local name="epsPhi" />
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
+  <Match>
+    <Class name="~.*\.RangeTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Local name="djac" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.RangeRateTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Local name="djac" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.TurnAroundRangeTroposphericDelayModifier$"/>
+    <Method name="modify" />
+    <Or>
+      <Local name="masterDjac" />
+      <Local name="slaveDjac" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$1"/>
+    <Method name="getEOPTidalCorrection" />
+    <Or>
+      <Local name="deciMilliS" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$1"/>
+    <Method name="getXYSpXY2Function" />
+    <Or>
+      <Local name="fYCosOm" />
+      <Local name="fYCos2FDOm" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$1"/>
+    <Method name="getXYSpXY2Function" />
+    <Or>
+      <Local name="fST" />
+      <Local name="fST3" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$2"/>
+    <Method name="getGASTFunction" />
+    <Local name="microAS" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IERSConventions\$2"/>
+    <Method name="getSolidPoleTide" />
+    <Local name="xp0" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
 
   <!-- the approximate constants do belong to the models -->
   <Match>
@@ -149,6 +211,11 @@
     </Or>
     <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
   </Match>
+  <Match>
+    <Class name="org.orekit.propagation.analytical.tle.TLE" />
+    <Method name="equals" params="java.lang.Object" returns="boolean" />
+    <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
+  </Match>
 
   <!-- The following internal representation exposure are intentional,
        They are used to pass data back and forth between classes
@@ -164,11 +231,19 @@
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
+    <Class name="org.orekit.estimation.measurements.gnss.AbstractLambdaReducer"/>
+    <Or>  
+      <Method name ="getDiagReference" params="" returns="double[]" />
+      <Method name ="getLowReference" params="" returns="double[]" />
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
     <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
     <Or>  
       <Method name="getGradient" params="" returns="double[]" />
       <Method name="getHessian" params="" returns="double[][]" />
-      </Or>
+    </Or>
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
@@ -176,7 +251,13 @@
     <Method name="&lt;init>"  params="double[],double[][]" returns="void" />
     <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
-  
+
+  <!-- The following is a false positive from SpotBugs -->
+  <Match>
+  	<Class name="org.orekit.estimation.measurements.gnss.IntegerLeastSquareSolution" />
+    <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
+  </Match>
+
   <!-- the following is an intended switch fall-through in the SP3Parser -->
   <Match>
     <Class name="~.*\.SP3Parser$"/>
@@ -206,6 +287,14 @@
     <Class name="~.*\.Mesh$"/>
     <Method name="getTaxicabBoundary"   params="boolean" />
     <Bug pattern="NP_NULL_PARAM_DEREF" />
+  </Match>
+
+  <!-- the following is a false positive as this should never happen
+       with files embedded in Orekit -->
+  <Match>
+    <Class name="~.*\.IERSConventions$"/>
+    <Method name="loadLoveNumbers" />
+    <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
   </Match>
 
 </FindBugsFilter>

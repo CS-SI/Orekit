@@ -40,9 +40,21 @@ pipeline {
                     archiveArtifacts artifacts: 'target/*.zip', fingerprint: true
                 }
             }
-            checkstyle pattern: 'target/checkstyle-result.xml'
-            junit 'target/surefire-reports/*.xml'
-            jacoco execPattern:'target/**.exec', classPattern: '**/classes', sourcePattern: '**/src/main/java'
+            junit testResults: '**/target/surefire-reports/*.xml'
+            jacoco execPattern: 'target/**.exec',
+                   classPattern: '**/classes',
+                   sourcePattern: '**/src/main/java',
+                   exclusionPattern: 'fr/cs/examples/**/*.class',
+                   changeBuildStatus: true,
+                   minimumBranchCoverage: '80', maximumBranchCoverage: '85',
+                   minimumClassCoverage: '95', maximumClassCoverage: '100',
+                   minimumComplexityCoverage: '80', maximumComplexityCoverage: '85',
+                   minimumInstructionCoverage: '85', maximumInstructionCoverage: '90',
+                   minimumLineCoverage: '85', maximumLineCoverage: '90',
+                   minimumMethodCoverage: '90', maximumMethodCoverage: '95'
+            recordIssues enabledForFailure: true, tools: [mavenConsole(), java(), javaDoc()]
+            recordIssues enabledForFailure: true, tool:  checkStyle()
+            recordIssues enabledForFailure: true, tool:  spotBugs()
         }
     }
 }

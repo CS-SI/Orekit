@@ -59,7 +59,7 @@ public class FieldNodeDetectorTest {
         Frame inertialFrame = FramesFactory.getEME2000();
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, 2014, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
         FieldAbsoluteDate<T> finalDate = initialDate.shiftedBy(5000);
-        FieldKeplerianOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(a, e, i, w, raan, v, PositionAngle.TRUE, inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
+        FieldKeplerianOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(a, e, i, w, raan, v, PositionAngle.TRUE, inertialFrame, initialDate, zero.add(Constants.WGS84_EARTH_MU));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit, zero.add(1000));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(initialOrbit);
 
@@ -110,14 +110,14 @@ public class FieldNodeDetectorTest {
 
         // highly eccentric, inclined orbit
         final FieldKeplerianOrbit<T> orbit1 =
-                new FieldKeplerianOrbit<>(a, e1, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
+                new FieldKeplerianOrbit<>(a, e1, i, pa, raan, m, PositionAngle.MEAN, frame, date, zero.add(mu));
         FieldEventDetector<T> detector1 = new FieldNodeDetector<>(orbit1, orbit1.getFrame());
         T t1 = orbit1.getKeplerianPeriod();
         Assert.assertEquals(t1.getReal() / 28.82, detector1.getMaxCheckInterval().getReal(), t1.getReal() / 10000);
 
         // nearly circular, inclined orbit
         final FieldKeplerianOrbit<T> orbit2 =
-                new FieldKeplerianOrbit<>(a, e2, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
+                new FieldKeplerianOrbit<>(a, e2, i, pa, raan, m, PositionAngle.MEAN, frame, date, zero.add(mu));
         FieldEventDetector<T> detector2 = new FieldNodeDetector<>(orbit2, orbit2.getFrame());
         T t2 = orbit2.getKeplerianPeriod();
         Assert.assertEquals(t1.getReal(), t2.getReal(), t1.getReal() / 10000);
