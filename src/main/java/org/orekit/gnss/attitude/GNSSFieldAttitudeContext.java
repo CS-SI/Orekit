@@ -297,11 +297,11 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         final double dtMin    = FastMath.min(turnSpan.getTurnStartDate().durationFrom(date).getReal(), dt0 - 60.0);
         final double dtMax    = FastMath.max(dtMin + fullTurn, dt0 + 60.0);
         double[] bracket = UnivariateSolverUtils.bracket(yawReached, dt0,
-                                                         dtMin, dtMax, 1.0, 2.0, 15);
+                                                         dtMin, dtMax, fullTurn / 100, 1.0, 100);
         if (yawReached.value(bracket[0]) <= 0.0) {
             // we have bracketed the wrong crossing
             bracket = UnivariateSolverUtils.bracket(yawReached, 0.5 * (bracket[0] + bracket[1] + fullTurn),
-                                                    bracket[1], bracket[1] + fullTurn, 1.0, 2.0, 15);
+                                                    bracket[1], bracket[1] + fullTurn, fullTurn / 100, 1.0, 100);
         }
         final double dt = new BracketingNthOrderBrentSolver(1.0e-3, 5).
                           solve(100, yawReached, bracket[0], bracket[1]);
