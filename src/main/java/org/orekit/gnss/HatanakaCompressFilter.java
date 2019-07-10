@@ -78,15 +78,6 @@ public class HatanakaCompressFilter implements DataFilter {
     /** Filtering of Hatanaka compressed stream. */
     private static class HatanakaInputStream extends InputStream {
 
-        /** Index of label in data lines. */
-        private static final int LABEL_START = 60;
-
-        /** Label for compact Rinex version. */
-        private static final String CRINEX_VERSION_TYPE  = "CRINEX VERS   / TYPE";
-
-        /** Label for compact Rinex program. */
-        private static final String CRINEX_PROG_DATE     = "CRINEX PROG / DATE";
-
         /** Default number of satellites (used if not present in the file). */
         private static final int    DEFAULT_NB_SAT               = 500;
 
@@ -97,7 +88,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private final BufferedReader reader;
 
         /** Format of the current file. */
-        private final RinexFormat format;
+        private final CompactRinexFormat format;
 
         /** Maximum number of observations for one satellite. */
         private int maxObs;
@@ -142,14 +133,8 @@ public class HatanakaCompressFilter implements DataFilter {
 
             // check header
             final String line1 = reader.readLine();
-            if (!CRINEX_VERSION_TYPE.equals(parseString(line1, LABEL_START, CRINEX_VERSION_TYPE.length()))) {
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
-            }
-            format = RinexFormat.getFormat(name, line1);
             final String line2 = reader.readLine();
-            if (!CRINEX_PROG_DATE.equals(parseString(line2, LABEL_START, CRINEX_PROG_DATE.length()))) {
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
-            }
+            format = CompactRinexFormat.getFormat(name, line1, line2);
 
             maxObs       = 0;
             nbSat        = DEFAULT_NB_SAT;
@@ -219,62 +204,6 @@ public class HatanakaCompressFilter implements DataFilter {
         @Override
         public void close() throws IOException {
             reader.close();
-        }
-
-        /** Extract a string from a line.
-         * @param line to parse
-         * @param start start index of the string
-         * @param length length of the string
-         * @return parsed string
-         */
-        private static String parseString(final String line, final int start, final int length) {
-            if (line.length() > start) {
-                return line.substring(start, FastMath.min(line.length(), start + length)).trim();
-            } else {
-                return null;
-            }
-        }
-
-        /** Extract an integer from a line.
-         * @param line to parse
-         * @param start start index of the integer
-         * @param length length of the integer
-         * @return parsed integer
-         */
-        private static int parseInt(final String line, final int start, final int length) {
-            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
-                return Integer.parseInt(parseString(line, start, length));
-            } else {
-                return 0;
-            }
-        }
-
-        /** Extract a long integer from a line.
-         * @param line to parse
-         * @param start start index of the integer
-         * @param length length of the integer
-         * @return parsed long integer
-         */
-        private static long parseLong(final String line, final int start, final int length) {
-            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
-                return Long.parseLong(parseString(line, start, length));
-            } else {
-                return 0l;
-            }
-        }
-
-        /** Extract a double from a line.
-         * @param line to parse
-         * @param start start index of the real
-         * @param length length of the real
-         * @return parsed real, or {@code Double.NaN} if field was empty
-         */
-        private static double parseDouble(final String line, final int start, final int length) {
-            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
-                return Double.parseDouble(parseString(line, start, length));
-            } else {
-                return Double.NaN;
-            }
         }
 
     }
@@ -386,10 +315,10 @@ public class HatanakaCompressFilter implements DataFilter {
     }
 
     /** Enumerate for rinex formats. */
-    private enum RinexFormat {
+    private enum CompactRinexFormat {
 
-        /** Rinex 2 format. */
-        RINEX_2 {
+        /** Compact RINEX 1 format (for RINEX 2.x). */
+        COMPACT_RINEX_1 {
 
             /** Label for number of observations. */
             private static final String NB_TYPES_OF_OBSERV   = "# / TYPES OF OBSERV";
@@ -422,7 +351,7 @@ public class HatanakaCompressFilter implements DataFilter {
             @Override
             /** {@inheritDoc} */
             public String parseEpochAndClockLines(final HatanakaInputStream his,
-                                                 final String epochLine, final String clockLine) {
+                                                  final String epochLine, final String clockLine) {
 
                 // check reset
                 final boolean reset = epochLine.charAt(0) == '&';
@@ -434,7 +363,7 @@ public class HatanakaCompressFilter implements DataFilter {
                                               null :
                                               new NumericDifferential(CLOCK_LENGTH,
                                                                       CLOCK_DECIMAL_PLACES,
-                                                                      HatanakaInputStream.parseInt(clockLine, 0, 1));
+                                                                      parseInt(clockLine, 0, 1));
                 }
 
                 // parse epoch
@@ -451,7 +380,7 @@ public class HatanakaCompressFilter implements DataFilter {
                     clockPart = EMPTY_CLOCK;
                 } else {
                     final int skip = reset ? 2 : 0;
-                    clockPart = his.clockDifferential.accept(HatanakaInputStream.parseLong(clockLine, skip, clockLine.length() - skip));
+                    clockPart = his.clockDifferential.accept(parseLong(clockLine, skip, clockLine.length() - skip));
                 }
 
                 his.lineInEpoch = 1;
@@ -472,7 +401,7 @@ public class HatanakaCompressFilter implements DataFilter {
             /** {@inheritDoc} */
             public String parseHeaderLine(final HatanakaInputStream his, final String line) {
                 if (isHeaderLine(NB_TYPES_OF_OBSERV, line)) {
-                    his.maxObs = FastMath.max(his.maxObs, HatanakaInputStream.parseInt(line, 0, 6));
+                    his.maxObs = FastMath.max(his.maxObs, parseInt(line, 0, 6));
                     return line;
                 } else {
                     return super.parseHeaderLine(his, line);
@@ -481,8 +410,8 @@ public class HatanakaCompressFilter implements DataFilter {
 
         },
 
-        /** Rinex 3 format. */
-        RINEX_3 {
+        /** Compact RINEX 3 format (for RINEX 3.x). */
+        COMPACT_RINEX_3 {
 
             /** Label for number of observation types. */
             private static final String SYS_NB_OBS_TYPES     = "SYS / # / OBS TYPES";
@@ -520,7 +449,7 @@ public class HatanakaCompressFilter implements DataFilter {
                                               null :
                                               new NumericDifferential(CLOCK_LENGTH,
                                                                       CLOCK_DECIMAL_PLACES,
-                                                                      HatanakaInputStream.parseInt(clockLine, 0, 1));
+                                                                      parseInt(clockLine, 0, 1));
                 }
 
                 // parse epoch
@@ -537,7 +466,7 @@ public class HatanakaCompressFilter implements DataFilter {
                     clockPart = null;
                 } else {
                     final int skip = reset ? 2 : 0;
-                    clockPart = his.clockDifferential.accept(HatanakaInputStream.parseLong(clockLine, skip, clockLine.length() - skip));
+                    clockPart = his.clockDifferential.accept(parseLong(clockLine, skip, clockLine.length() - skip));
                 }
 
                 his.lineInEpoch = 1;
@@ -551,7 +480,7 @@ public class HatanakaCompressFilter implements DataFilter {
             /** {@inheritDoc} */
             public String parseHeaderLine(final HatanakaInputStream his, final String line) {
                 if (isHeaderLine(SYS_NB_OBS_TYPES, line)) {
-                    his.maxObs = FastMath.max(his.maxObs, HatanakaInputStream.parseInt(line, 1, 5));
+                    his.maxObs = FastMath.max(his.maxObs, parseInt(line, 1, 5));
                     return line;
                 } else {
                     return super.parseHeaderLine(his, line);
@@ -559,6 +488,15 @@ public class HatanakaCompressFilter implements DataFilter {
             }
 
         };
+
+        /** Index of label in data lines. */
+        private static final int LABEL_START = 60;
+
+        /** Label for compact Rinex version. */
+        private static final String CRINEX_VERSION_TYPE  = "CRINEX VERS   / TYPE";
+
+        /** Label for compact Rinex program. */
+        private static final String CRINEX_PROG_DATE     = "CRINEX PROG / DATE";
 
         /** Label for number of satellites. */
         private static final String NB_OF_SATELLITES = "# OF SATELLITES";
@@ -578,7 +516,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
             if (isHeaderLine(NB_OF_SATELLITES, line)) {
                 // number of satellites
-                his.nbSat = HatanakaInputStream.parseInt(line, 0, 6);
+                his.nbSat = parseInt(line, 0, 6);
             } else if (isHeaderLine(END_OF_HEADER, line)) {
                 // we have reached end of header, prepare parsing of data records
                 his.lineInEpoch = 0;
@@ -600,14 +538,21 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Get the rinex format corresponding to this compact rinex format.
          * @param name file name
          * @param line1 first compact rinex line
+         * @param line2 second compact rinex line
          * @return rinex format associated with this compact rinex format
          */
-        public static RinexFormat getFormat(final String name, final String line1) {
-            final int cVersion100 = (int) FastMath.rint(100 * HatanakaInputStream.parseDouble(line1, 0, 9));
+        public static CompactRinexFormat getFormat(final String name, final String line1, final String line2) {
+            final int cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
             if ((cVersion100 != 100) && (cVersion100 != 300)) {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
             }
-            return cVersion100 < 300 ? RINEX_2 : RINEX_3;
+            if (!CRINEX_VERSION_TYPE.equals(parseString(line1, LABEL_START, CRINEX_VERSION_TYPE.length()))) {
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
+            }
+            if (!CRINEX_PROG_DATE.equals(parseString(line2, LABEL_START, CRINEX_PROG_DATE.length()))) {
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
+            }
+            return cVersion100 < 300 ? COMPACT_RINEX_1 : COMPACT_RINEX_3;
         }
 
         /** Check if a line corresponds to a header.
@@ -616,9 +561,63 @@ public class HatanakaCompressFilter implements DataFilter {
          * @return true if line corresponds to header
          */
         private static boolean isHeaderLine(final String label, final String line) {
-            return label.equals(HatanakaInputStream.parseString(line,
-                                HatanakaInputStream.LABEL_START,
-                                label.length()));
+            return label.equals(parseString(line, LABEL_START, label.length()));
+        }
+
+        /** Extract a string from a line.
+         * @param line to parse
+         * @param start start index of the string
+         * @param length length of the string
+         * @return parsed string
+         */
+        private static String parseString(final String line, final int start, final int length) {
+            if (line.length() > start) {
+                return line.substring(start, FastMath.min(line.length(), start + length)).trim();
+            } else {
+                return null;
+            }
+        }
+
+        /** Extract an integer from a line.
+         * @param line to parse
+         * @param start start index of the integer
+         * @param length length of the integer
+         * @return parsed integer
+         */
+        private static int parseInt(final String line, final int start, final int length) {
+            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
+                return Integer.parseInt(parseString(line, start, length));
+            } else {
+                return 0;
+            }
+        }
+
+        /** Extract a long integer from a line.
+         * @param line to parse
+         * @param start start index of the integer
+         * @param length length of the integer
+         * @return parsed long integer
+         */
+        private static long parseLong(final String line, final int start, final int length) {
+            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
+                return Long.parseLong(parseString(line, start, length));
+            } else {
+                return 0l;
+            }
+        }
+
+        /** Extract a double from a line.
+         * @param line to parse
+         * @param start start index of the real
+         * @param length length of the real
+         * @return parsed real, or {@code Double.NaN} if field was empty
+         */
+        private static double parseDouble(final String line, final int start, final int length) {
+            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
+                return Double.parseDouble(parseString(line, start, length));
+            } else {
+                return Double.NaN;
+            }
         }
 
     }
