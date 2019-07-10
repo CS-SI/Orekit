@@ -236,7 +236,10 @@ public enum OrekitMessages implements Localizable {
             "prefix that is matched against the name of each loaded file. It should " +
             "not contain any regular expression syntax or directory components, i.e. " +
             "\"/\" or \"\\\". Actual value: \"{0}\"."),
-    CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT("cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}");
+    CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT("cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}"),
+    STEC_INTEGRATION_DID_NOT_CONVERGE("STEC integration did not converge"),
+    MODIP_GRID_NOT_LOADED("MODIP grid not be loaded from {0}"),
+    NEQUICK_F2_FM3_NOT_LOADED("NeQuick coefficient f2 or fm3 not be loaded from {0}");
 
     // CHECKSTYLE: resume JavadocVariable check
 

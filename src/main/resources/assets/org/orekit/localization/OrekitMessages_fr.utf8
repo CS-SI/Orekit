@@ -548,3 +548,12 @@ ITRF_VERSIONS_PREFIX_ONLY = la première colonne du fichier itrf-versions.conf e
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
 CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = impossible de calculer la direction de pointage pour le point singulier: latitude = {0}, longitude = {1}
+
+# STEC integration did not converge
+STEC_INTEGRATION_DID_NOT_CONVERGE = l''integration du STEC n''a pas convergée
+
+# MODIP grid not be loaded from {0}
+MODIP_GRID_NOT_LOADED = impossible de charger la grille de MODIP depuis {0}
+
+# NeQuick coefficient f2 or fm3 not be loaded from {0}
+NEQUICK_F2_FM3_NOT_LOADED = impossible de charger les coefficients NeQuick f2 et fm3 depuis {0}
