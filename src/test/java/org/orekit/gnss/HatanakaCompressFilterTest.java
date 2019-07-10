@@ -89,6 +89,28 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
+    public void testRinex2MoreThan12Satellites() throws IOException {
+
+        final String name = "rinex/bogi1210.09d.Z";
+        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        RinexLoader loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
+
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(135, ods.size());
+        AbsoluteDate lastEpoch = AbsoluteDate.PAST_INFINITY;
+        int epochCount = 0;
+        for (final ObservationDataSet ds : ods) {
+            if (ds.getDate().durationFrom(lastEpoch) > 1.0e-3) {
+                ++epochCount;
+                lastEpoch = ds.getDate();
+            }
+        }
+        Assert.assertEquals(9, epochCount);
+    }
+
+    @Test
     public void testHatanakaRinex2() throws IOException {
 
         final String name = "rinex/arol0090.01d.Z";
@@ -256,12 +278,10 @@ public class HatanakaCompressFilterTest {
             final Constructor<?> cstr = differentialClass.getDeclaredConstructor(Integer.TYPE, Integer.TYPE, Integer.TYPE);
             cstr.setAccessible(true);
             final Object differential = cstr.newInstance(fieldLength, decimalPlaces, order);
-            final Method acceptMethod = differentialClass.getDeclaredMethod("accept", Long.TYPE, Appendable.class);
+            final Method acceptMethod = differentialClass.getDeclaredMethod("accept", Long.TYPE);
 
             for (int i = 0; i < compressed.length; ++i) {
-                final StringBuilder output = new StringBuilder();
-                acceptMethod.invoke(differential, compressed[i], output);
-                Assert.assertEquals(uncompressed[i], output.toString());
+                Assert.assertEquals(uncompressed[i], acceptMethod.invoke(differential, compressed[i]));
             }
 
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
@@ -322,20 +342,16 @@ public class HatanakaCompressFilterTest {
             cstr.setAccessible(true);
             final Object differentialClass = cstr.newInstance(fieldLength);
             final Method acceptMethod = textClass.getDeclaredMethod("accept", CharSequence.class,
-                                                                    Integer.TYPE, Integer.TYPE,
-                                                                    Appendable.class);
+                                                                    Integer.TYPE, Integer.TYPE);
 
             for (int i = 0; i < compressed.length; ++i) {
-                final StringBuilder output = new StringBuilder();
-                acceptMethod.invoke(differentialClass,
-                                    compressed[i], compressed[i].indexOf('@') + 1, compressed[i].lastIndexOf('@'),
-                                    output);
-                Assert.assertEquals(uncompressed[i], output.toString());
+                Assert.assertEquals(uncompressed[i],
+                                    acceptMethod.invoke(differentialClass,
+                                    compressed[i], compressed[i].indexOf('@') + 1, compressed[i].lastIndexOf('@')));
             }
 
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
                  IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            e.printStackTrace();
             Assert.fail(e.getLocalizedMessage());
         }
     }

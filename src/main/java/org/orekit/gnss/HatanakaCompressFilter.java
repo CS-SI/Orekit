@@ -335,6 +335,9 @@ public class HatanakaCompressFilter implements DataFilter {
             /** End of satellites list field. */
             private static final int    SAT_LIST_LENGTH      = 36;
 
+            /** Maximum number of satellites per epoch line. */
+            private static final int    MAX_SAT_EPOCH_LINE   = 12;
+
             /** Start of receiver clock field. */
             private static final int    CLOCK_START          = SAT_LIST_START + SAT_LIST_LENGTH;
 
@@ -385,14 +388,29 @@ public class HatanakaCompressFilter implements DataFilter {
 
                 his.lineInEpoch = 1;
 
-                // concatenate everything
+                // build uncompressed lines, taking care of clock being put
+                // back in line 1 and satellites after 12th put in continuation lines
                 final StringBuilder builder = new StringBuilder();
                 builder.append(epochPart);
-                builder.append(satListPart);
+                int iSat = 0;
+                while (iSat < FastMath.min(his.satellites.size(), MAX_SAT_EPOCH_LINE)) {
+                    builder.append(his.satellites.get(iSat++));
+                }
                 while (builder.length() < CLOCK_START) {
                     builder.append(' ');
                 }
                 builder.append(clockPart);
+
+                while (iSat < his.satellites.size()) {
+                    // add a continuation line
+                    builder.append('\n');
+                    for (int k = 0; k < SAT_LIST_START; ++k) {
+                        builder.append(' ');
+                    }
+                    while (iSat < FastMath.min(his.satellites.size(), MAX_SAT_EPOCH_LINE)) {
+                        builder.append(his.satellites.get(iSat++));
+                    }
+                }
                 return builder.toString();
 
             }
@@ -461,13 +479,11 @@ public class HatanakaCompressFilter implements DataFilter {
                 }
 
                 // parse clock offset
-                final String clockPart;
-                if (clockLine.isEmpty()) {
-                    clockPart = null;
-                } else {
-                    final int skip = reset ? 2 : 0;
-                    clockPart = his.clockDifferential.accept(parseLong(clockLine, skip, clockLine.length() - skip));
-                }
+                final String clockPart = clockLine.isEmpty() ?
+                                         null :
+                                         his.clockDifferential.accept(parseLong(clockLine,
+                                                                                reset ? 2 : 0,
+                                                                                clockLine.length()));
 
                 his.lineInEpoch = 1;
 
