@@ -216,7 +216,6 @@ public class RinexLoader {
                 int                              leapSeconds            = 0;
                 AbsoluteDate                     tObs                   = AbsoluteDate.PAST_INFINITY;
                 String[]                         satsObsList            = null;
-                String                           strYear                = null;
                 int                              eventFlag              = -1;
                 int                              nbSatObs               = -1;
                 int                              nbLinesSat             = -1;
@@ -473,7 +472,6 @@ public class RinexLoader {
                                 nbSatObs          = -1;
                                 satsObsList       = null;
                                 tObs              = null;
-                                strYear           = null;
 
                                 eventFlag = parseInt(28, 1);
                                 //If eventFlag>1, we skip the corresponding lines to the next observation
@@ -494,13 +492,13 @@ public class RinexLoader {
                                     }
                                 } else {
 
-                                    final int y = Integer.parseInt(parseString(0, 3));
+                                    int y = parseInt(0, 3);
                                     if (79 < y && y <= 99) {
-                                        strYear = "19" + y;
+                                        y += 1900;
                                     } else if (0 <= y && y <= 79) {
-                                        strYear = "20" + parseString(0, 3);
+                                        y += 2000;
                                     }
-                                    tObs = new AbsoluteDate(Integer.parseInt(strYear),
+                                    tObs = new AbsoluteDate(y,
                                                             parseInt(3, 3),
                                                             parseInt(6, 3),
                                                             parseInt(9, 3),
