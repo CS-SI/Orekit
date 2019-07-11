@@ -475,7 +475,7 @@ public class RinexLoader {
 
                                 eventFlag = parseInt(28, 1);
                                 //If eventFlag>1, we skip the corresponding lines to the next observation
-                                if (eventFlag != 0) {
+                                if (eventFlag > 1) {
                                     if (eventFlag == 6) {
                                         nbSatObs  = parseInt(29, 3);
                                         nbLinesSat = (nbSatObs + 12 - 1) / 12;
