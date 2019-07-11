@@ -174,6 +174,28 @@ public class RinexLoaderTest {
     }
 
     @Test
+    public void testMoreThan12Sats() {
+        RinexLoader  loader = new RinexLoader("^bogi1210.09o$");
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(135, ods.size());
+        AbsoluteDate lastEpoch = null;
+        int[] satsPerEpoch = { 16, 15, 15, 15, 15, 15, 15, 14, 15 };
+        int epochCount = 0;
+        int n = 0;
+        for (final ObservationDataSet ds : ods) {
+            if (lastEpoch != null && ds.getDate().durationFrom(lastEpoch) > 1.0e-3) {
+                Assert.assertEquals(satsPerEpoch[epochCount], n);
+                ++epochCount;
+                n = 0;
+            }
+            ++n;
+            lastEpoch = ds.getDate();
+        }
+        Assert.assertEquals(satsPerEpoch[epochCount], n);
+        Assert.assertEquals(satsPerEpoch.length, epochCount + 1);
+    }
+
+    @Test
     public void testGPSGlonassFile() {
         //Tests Rinex 2 with GPS and GLONASS Constellations
         RinexLoader  loader = new RinexLoader("^aiub0000\\.00o$");
