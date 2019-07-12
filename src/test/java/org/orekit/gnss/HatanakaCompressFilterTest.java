@@ -99,15 +99,21 @@ public class HatanakaCompressFilterTest {
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(135, ods.size());
-        AbsoluteDate lastEpoch = AbsoluteDate.PAST_INFINITY;
+        AbsoluteDate lastEpoch = null;
+        int[] satsPerEpoch = { 16, 15, 15, 15, 15, 15, 15, 14, 15 };
         int epochCount = 0;
+        int n = 0;
         for (final ObservationDataSet ds : ods) {
-            if (ds.getDate().durationFrom(lastEpoch) > 1.0e-3) {
+            if (lastEpoch != null && ds.getDate().durationFrom(lastEpoch) > 1.0e-3) {
+                Assert.assertEquals(satsPerEpoch[epochCount], n);
                 ++epochCount;
-                lastEpoch = ds.getDate();
+                n = 0;
             }
+            ++n;
+            lastEpoch = ds.getDate();
         }
-        Assert.assertEquals(9, epochCount);
+        Assert.assertEquals(satsPerEpoch[epochCount], n);
+        Assert.assertEquals(satsPerEpoch.length, epochCount + 1);
     }
 
     @Test
