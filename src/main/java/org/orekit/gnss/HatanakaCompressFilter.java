@@ -78,68 +78,32 @@ public class HatanakaCompressFilter implements DataFilter {
     /** Filtering of Hatanaka compressed stream. */
     private static class HatanakaInputStream extends InputStream {
 
-        /** Default number of satellites (used if not present in the file). */
-        private static final int    DEFAULT_NB_SAT               = 500;
-
-        /** File name. */
-        private final String name;
+        /** Format of the current file. */
+        private final CompactRinexFormat format;
 
         /** Line-oriented input. */
         private final BufferedReader reader;
 
-        /** Format of the current file. */
-        private final CompactRinexFormat format;
-
-        /** Maximum number of observations for one satellite. */
-        private int maxObs;
-
-        /** Number of satellites. */
-        private int nbSat;
-
-        /** Line number within epoch. */
-        private int lineInEpoch;
-
-        /** Differential engine for epoch. */
-        private TextDifferential epochDifferential;
-
-        /** Receiver clock offset differential. */
-        private NumericDifferential clockDifferential;
-
-        /** Differential engine for satellites list. */
-        private TextDifferential satListDifferential;
-
-        /** Satellites observed at current epoch. */
-        private List<CharSequence> satellites;
-
-        /** Differential engines for each satellite. */
-        private Map<CharSequence, List<NumericDifferential>> differentials;
-
-        /** Line pending output. */
+        /** Pending uncompressed output lines. */
         private String pending;
 
-        /** Number of characters already output in pending line. */
+        /** Number of characters already output in pending lines. */
         private int countOut;
 
         /** Simple constructor.
          * @param name file name
          * @param input underlying compressed stream
-         * @exception IOException if first bytes cannot be read
+         * @exception IOException if first lines cannot be read
          */
         HatanakaInputStream(final String name, final InputStream input)
             throws IOException {
 
-            this.name   = name;
-            this.reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+            reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // check header
-            final String line1 = reader.readLine();
-            final String line2 = reader.readLine();
-            format = CompactRinexFormat.getFormat(name, line1, line2);
+            format = CompactRinexFormat.getFormat(name, reader);
 
-            maxObs       = 0;
-            nbSat        = DEFAULT_NB_SAT;
-            lineInEpoch  = -1;
-            pending      = null;
+            pending  = null;
 
         }
 
@@ -148,11 +112,14 @@ public class HatanakaCompressFilter implements DataFilter {
         public int read() throws IOException {
 
             if (pending == null) {
-                // we need to read another line from the underlying stream and uncompress it
-                uncompressLine();
-                if (pending == null) {
+                // we need to read another section from the underlying stream and uncompress it
+                countOut = 0;
+                final String firstLine = reader.readLine();
+                if (firstLine == null) {
                     // there are no lines left
                     return -1;
+                } else {
+                    pending = format.uncompressSection(firstLine);
                 }
             }
 
@@ -165,39 +132,6 @@ public class HatanakaCompressFilter implements DataFilter {
                 return pending.charAt(countOut++);
             }
 
-        }
-
-        /** Read and uncompress one line.
-         * @exception IOException if we cannot read a line from underlying stream
-         */
-        private void uncompressLine() throws IOException {
-            countOut = 0;
-            final String inLine = reader.readLine();
-            if (inLine == null) {
-                // there are no lines left
-                pending = null;
-            } else {
-                if (lineInEpoch < 0) {
-
-                    // pick up a few data on the fly
-                    pending = format.parseHeaderLine(this, inLine);
-
-                } else if (lineInEpoch == 0) {
-
-                    // epoch line
-                    final String clockLine = reader.readLine().trim();
-                    if (clockLine == null) {
-                        throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE, name);
-                    }
-                    pending = format.parseEpochAndClockLines(this, inLine, clockLine);
-
-                } else {
-
-                    // observation line
-                    // TODO
-
-                }
-            }
         }
 
         /** {@inheritDoc} */
@@ -314,196 +248,8 @@ public class HatanakaCompressFilter implements DataFilter {
 
     }
 
-    /** Enumerate for rinex formats. */
-    private enum CompactRinexFormat {
-
-        /** Compact RINEX 1 format (for RINEX 2.x). */
-        COMPACT_RINEX_1 {
-
-            /** Label for number of observations. */
-            private static final String NB_TYPES_OF_OBSERV   = "# / TYPES OF OBSERV";
-
-            /** Start of epoch field. */
-            private static final int    EPOCH_START          = 0;
-
-            /** End of epoch field. */
-            private static final int    EPOCH_LENGTH         = 32;
-
-            /** Start of satellites list field. */
-            private static final int    SAT_LIST_START       = EPOCH_START + EPOCH_LENGTH;
-
-            /** End of satellites list field. */
-            private static final int    SAT_LIST_LENGTH      = 36;
-
-            /** Maximum number of satellites per epoch line. */
-            private static final int    MAX_SAT_EPOCH_LINE   = 12;
-
-            /** Start of receiver clock field. */
-            private static final int    CLOCK_START          = SAT_LIST_START + SAT_LIST_LENGTH;
-
-            /** End of receiver clock field. */
-            private static final int    CLOCK_LENGTH         = 12;
-
-            /** Field for empty clock. */
-            private static final String EMPTY_CLOCK          = "            ";
-
-            /** Empty clock field. */
-            /** Number of decimal places for receiver clock offset. */
-            private static final int    CLOCK_DECIMAL_PLACES = 9;
-
-            @Override
-            /** {@inheritDoc} */
-            public String parseEpochAndClockLines(final HatanakaInputStream his,
-                                                  final String epochLine, final String clockLine) {
-
-                // check reset
-                final boolean reset = epochLine.charAt(0) == '&';
-                if (reset) {
-                    his.epochDifferential   = new TextDifferential(EPOCH_LENGTH);
-                    his.satListDifferential = new TextDifferential(SAT_LIST_LENGTH);
-                    his.differentials       = new HashMap<>();
-                    his.clockDifferential   = clockLine.isEmpty() ?
-                                              null :
-                                              new NumericDifferential(CLOCK_LENGTH,
-                                                                      CLOCK_DECIMAL_PLACES,
-                                                                      parseInt(clockLine, 0, 1));
-                }
-
-                // parse epoch
-                final String epochPart   = his.epochDifferential.accept(epochLine, EPOCH_START, EPOCH_START + EPOCH_LENGTH);
-                final String satListPart = his.satListDifferential.accept(epochLine, SAT_LIST_START, epochLine.length());
-                his.satellites = new ArrayList<>();
-                for (int i = 0; i < satListPart.length(); i += 3) {
-                    his.satellites.add(satListPart.subSequence(i, i + 3));
-                }
-
-                // parse clock offset
-                final String clockPart;
-                if (clockLine.isEmpty()) {
-                    clockPart = EMPTY_CLOCK;
-                } else {
-                    final int skip = reset ? 2 : 0;
-                    clockPart = his.clockDifferential.accept(parseLong(clockLine, skip, clockLine.length() - skip));
-                }
-
-                his.lineInEpoch = 1;
-
-                // build uncompressed lines, taking care of clock being put
-                // back in line 1 and satellites after 12th put in continuation lines
-                final StringBuilder builder = new StringBuilder();
-                builder.append(epochPart);
-                int iSat = 0;
-                while (iSat < FastMath.min(his.satellites.size(), MAX_SAT_EPOCH_LINE)) {
-                    builder.append(his.satellites.get(iSat++));
-                }
-                while (builder.length() < CLOCK_START) {
-                    builder.append(' ');
-                }
-                builder.append(clockPart);
-
-                while (iSat < his.satellites.size()) {
-                    // add a continuation line
-                    builder.append('\n');
-                    for (int k = 0; k < SAT_LIST_START; ++k) {
-                        builder.append(' ');
-                    }
-                    while (iSat < FastMath.min(his.satellites.size(), MAX_SAT_EPOCH_LINE)) {
-                        builder.append(his.satellites.get(iSat++));
-                    }
-                }
-                return builder.toString();
-
-            }
-
-            @Override
-            /** {@inheritDoc} */
-            public String parseHeaderLine(final HatanakaInputStream his, final String line) {
-                if (isHeaderLine(NB_TYPES_OF_OBSERV, line)) {
-                    his.maxObs = FastMath.max(his.maxObs, parseInt(line, 0, 6));
-                    return line;
-                } else {
-                    return super.parseHeaderLine(his, line);
-                }
-            }
-
-        },
-
-        /** Compact RINEX 3 format (for RINEX 3.x). */
-        COMPACT_RINEX_3 {
-
-            /** Label for number of observation types. */
-            private static final String SYS_NB_OBS_TYPES     = "SYS / # / OBS TYPES";
-
-            /** Start of epoch field. */
-            private static final int    EPOCH_START          = 0;
-
-            /** End of epoch field. */
-            private static final int    EPOCH_LENGTH         = 41;
-
-            /** Start of receiver clock field. */
-            private static final int    CLOCK_START          = EPOCH_START + EPOCH_LENGTH;
-
-            /** End of receiver clock field. */
-            private static final int    CLOCK_LENGTH         = 15;
-
-            /** Number of decimal places for receiver clock offset. */
-            private static final int    CLOCK_DECIMAL_PLACES = 12;
-
-            /** Start of satellites list field (only in the compact rinex). */
-            private static final int    SAT_LIST_START       = CLOCK_START + CLOCK_LENGTH;
-
-            @Override
-            /** {@inheritDoc} */
-            public String parseEpochAndClockLines(final HatanakaInputStream his,
-                                                  final String epochLine, final String clockLine) {
-
-                // check reset
-                final boolean reset = epochLine.charAt(0) == '>';
-                if (reset) {
-                    his.epochDifferential   = new TextDifferential(EPOCH_LENGTH);
-                    his.satListDifferential = new TextDifferential(his.nbSat * 3);
-                    his.differentials       = new HashMap<>();
-                    his.clockDifferential   = clockLine.isEmpty() ?
-                                              null :
-                                              new NumericDifferential(CLOCK_LENGTH,
-                                                                      CLOCK_DECIMAL_PLACES,
-                                                                      parseInt(clockLine, 0, 1));
-                }
-
-                // parse epoch
-                final String epochPart   = his.epochDifferential.accept(epochLine, EPOCH_START, EPOCH_START + EPOCH_LENGTH);
-                final String satListPart = his.satListDifferential.accept(epochLine, SAT_LIST_START, epochLine.length());
-                his.satellites = new ArrayList<>();
-                for (int i = 0; i < satListPart.length(); i += 3) {
-                    his.satellites.add(satListPart.subSequence(i, i + 3));
-                }
-
-                // parse clock offset
-                final String clockPart = clockLine.isEmpty() ?
-                                         null :
-                                         his.clockDifferential.accept(parseLong(clockLine,
-                                                                                reset ? 2 : 0,
-                                                                                clockLine.length()));
-
-                his.lineInEpoch = 1;
-
-                // concatenate everything
-                return (clockPart == null) ? epochPart : epochPart + clockPart;
-
-            }
-
-            @Override
-            /** {@inheritDoc} */
-            public String parseHeaderLine(final HatanakaInputStream his, final String line) {
-                if (isHeaderLine(SYS_NB_OBS_TYPES, line)) {
-                    his.maxObs = FastMath.max(his.maxObs, parseInt(line, 1, 5));
-                    return line;
-                } else {
-                    return super.parseHeaderLine(his, line);
-                }
-            }
-
-        };
+    /** Base class for parsing compact RINEX format. */
+    private abstract static class CompactRinexFormat {
 
         /** Index of label in data lines. */
         private static final int LABEL_START = 60;
@@ -520,22 +266,132 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Label for end of header. */
         private static final String END_OF_HEADER    = "END OF HEADER";
 
-        /** Length of a data field. */
-        private static final int    DATA_LENGTH      = 19;
+        /** Default number of satellites (used if not present in the file). */
+        private static final int DEFAULT_NB_SAT = 500;
+
+        /** File name. */
+        private final String name;
+
+        /** Line-oriented input. */
+        private final BufferedReader reader;
+
+        /** Maximum number of observations for one satellite. */
+        private int maxObs;
+
+        /** Number of satellites. */
+        private int nbSat;
+
+        /** Indicator for current section type. */
+        private Section section;
+
+        /** Uncompressed epoch part. */
+        private String epochPart;
+
+        /** Uncompressed clock part. */
+        private String clockPart;
+
+        /** Satellites observed at current epoch. */
+        private List<CharSequence> satellites;
+
+        /** Differential engine for epoch. */
+        private TextDifferential epochDifferential;
+
+        /** Receiver clock offset differential. */
+        private NumericDifferential clockDifferential;
+
+        /** Differential engine for satellites list. */
+        private TextDifferential satListDifferential;
+
+        /** Differential engines for each satellite. */
+        private Map<CharSequence, List<NumericDifferential>> differentials;
+
+        /** Simple constructor.
+         * @param name file name
+         * @param reader line-oriented input
+         */
+        protected CompactRinexFormat(final String name, final BufferedReader reader) {
+            this.name    = name;
+            this.reader  = reader;
+            this.maxObs  = 0;
+            this.nbSat   = DEFAULT_NB_SAT;
+            this.section = Section.HEADER;
+        }
+
+        /** Uncompress a section.
+         * @param firstLine first line of the section
+         * @return uncompressed section (contains several lines)
+         * @exception IOException if we cannot read lines from underlying stream
+         */
+        public String uncompressSection(final String firstLine)
+            throws IOException {
+            final String uncompressed;
+            switch (section) {
+
+                case HEADER : {
+                    // header lines
+                    final StringBuilder builder = new StringBuilder();
+                    String line = firstLine;
+                    while (section == Section.HEADER) {
+                        if (line == null) {
+                            line = reader.readLine();
+                            if (line == null) {
+                                throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE, name);
+                            }
+                        }
+                        if (builder.length() > 0) {
+                            builder.append('\n');
+                        }
+                        builder.append(parseHeaderLine(line));
+                        line = null;
+                    }
+                    uncompressed = builder.toString();
+                    section      = Section.EPOCH;
+                    break;
+                }
+
+                case EPOCH : {
+                    // epoch and receiver clock offset lines
+                    final String clockLine = reader.readLine();
+                    if (clockLine == null) {
+                        throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE, name);
+                    }
+                    uncompressed = parseEpochAndClockLines(firstLine, clockLine.trim());
+                    section      = Section.OBSERVATION;
+                    break;
+                }
+
+                default : {
+                    // observation lines
+                    final String[] lines = new String[satellites.size()];
+                    lines[0] = firstLine;
+                    for (int i = 1; i < lines.length; ++i) {
+                        lines[i] = reader.readLine();
+                        if (lines[i] == null) {
+                            throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE, name);
+                        }
+                    }
+                    uncompressed = parseObservationLines(lines);
+                    section      = Section.EPOCH;
+                }
+
+            }
+
+            return uncompressed;
+
+        }
 
         /** Parse a header line.
-         * @param his Hatanaka input stream
          * @param line header line
          * @return uncompressed line
          */
-        public String parseHeaderLine(final HatanakaInputStream his, final String line) {
+        public String parseHeaderLine(final String line) {
 
             if (isHeaderLine(NB_OF_SATELLITES, line)) {
                 // number of satellites
-                his.nbSat = parseInt(line, 0, 6);
+                nbSat = parseInt(line, 0, 6);
             } else if (isHeaderLine(END_OF_HEADER, line)) {
                 // we have reached end of header, prepare parsing of data records
-                his.lineInEpoch = 0;
+                section = Section.EPOCH;
             }
 
             // within header, lines are simply copied
@@ -544,20 +400,115 @@ public class HatanakaCompressFilter implements DataFilter {
         }
 
         /** Parse epoch and receiver clock offset lines.
-         * @param his Hatanaka input stream
          * @param epochLine epoch line
          * @param clockLine receiver clock offset line
          * @return uncompressed line
          */
-        public abstract String parseEpochAndClockLines(HatanakaInputStream his, String epochLine, String clockLine);
+        public abstract String parseEpochAndClockLines(String epochLine, String clockLine);
+
+        /** Parse epoch and receiver clock offset lines.
+         * @param epochStart start of the epoch field
+         * @param epochLength length of epoch field
+         * @param nbSatStart start of the number of satellites field
+         * @param satListStart start of the satellites list
+         * @param clockLength length of receiver clock field
+         * @param clockDecimalPlaces number of decimal places for receiver clock offset
+         * @param epochLine epoch line
+         * @param clockLine receiver clock offset line
+         * @param resetChar character indicating differentials reset
+         */
+        protected void doParseEpochAndClockLines(final int epochStart, final int epochLength,
+                                                 final int nbSatStart, final int satListStart,
+                                                 final int clockLength, final int clockDecimalPlaces,
+                                                 final String epochLine, final String clockLine, final char resetChar) {
+
+            // check if differentials should be reset
+            final boolean reset = (epochDifferential == null) || (epochLine.charAt(0) == resetChar);
+            if (reset) {
+                epochDifferential   = new TextDifferential(epochLength);
+                satListDifferential = new TextDifferential(nbSat * 3);
+                differentials       = new HashMap<>();
+                clockDifferential   = clockLine.isEmpty() ?
+                                      null :
+                                      new NumericDifferential(clockLength, clockDecimalPlaces, parseInt(clockLine, 0, 1));
+            }
+
+            // parse epoch
+            epochPart   = epochDifferential.accept(epochLine, epochStart, epochStart + epochLength);
+            nbSat                    = parseInt(epochPart, nbSatStart, 3);
+            final String satListPart = satListDifferential.accept(epochLine, satListStart, epochLine.length());
+            satellites = new ArrayList<>(nbSat);
+            for (int i = 0; i < nbSat; ++i) {
+                satellites.add(satListPart.subSequence(i * 3, (i + 1) * 3));
+            }
+
+            // parse clock offset
+            if (clockLine.isEmpty()) {
+                clockPart = null;
+            } else {
+                final int skip = reset ? 2 : 0;
+                clockPart = clockDifferential.accept(parseLong(clockLine, skip, clockLine.length() - skip));
+            }
+
+        }
+
+        /** Get the uncompressed epoch part.
+         * @return uncompressed epoch part
+         */
+        protected String getEpochPart() {
+            return epochPart;
+        }
+
+        /** Get the uncompressed clock part.
+         * @return uncompressed clock part
+         */
+        protected String getClockPart() {
+            return clockPart;
+        }
+
+        /** Get the satellites for current observations.
+         * @return satellites for current observation
+         */
+        protected List<CharSequence> getSatellites() {
+            return satellites;
+        }
+
+        /** Parse observation lines.
+         * @param observationLines observation lines
+         * @return uncompressed lines
+         */
+        public abstract String parseObservationLines(String[] observationLines);
+
+        /** Check if a line corresponds to a header.
+         * @param label header label
+         * @param line header line
+         * @return true if line corresponds to header
+         */
+        protected boolean isHeaderLine(final String label, final String line) {
+            return label.equals(parseString(line, LABEL_START, label.length()));
+        }
+
+        /** Update the max number of observations.
+         * @param nbObs number of observations
+         */
+        protected void updateMaxObs(final int nbObs) {
+            maxObs = FastMath.max(maxObs, nbObs);
+        }
 
         /** Get the rinex format corresponding to this compact rinex format.
          * @param name file name
-         * @param line1 first compact rinex line
-         * @param line2 second compact rinex line
+         * @param reader line-oriented input
          * @return rinex format associated with this compact rinex format
+         * @exception IOException if first lines cannot be read
          */
-        public static CompactRinexFormat getFormat(final String name, final String line1, final String line2) {
+        public static CompactRinexFormat getFormat(final String name, final BufferedReader reader)
+            throws IOException {
+
+            // read the first two lines of the file
+            final String line1 = reader.readLine();
+            final String line2 = reader.readLine();
+
+            // extract format version
             final int cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
             if ((cVersion100 != 100) && (cVersion100 != 300)) {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
@@ -568,16 +519,10 @@ public class HatanakaCompressFilter implements DataFilter {
             if (!CRINEX_PROG_DATE.equals(parseString(line2, LABEL_START, CRINEX_PROG_DATE.length()))) {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
             }
-            return cVersion100 < 300 ? COMPACT_RINEX_1 : COMPACT_RINEX_3;
-        }
 
-        /** Check if a line corresponds to a header.
-         * @param label header label
-         * @param line header line
-         * @return true if line corresponds to header
-         */
-        private static boolean isHeaderLine(final String label, final String line) {
-            return label.equals(parseString(line, LABEL_START, label.length()));
+            // build the appropriate parser
+            return cVersion100 < 300 ? new CompactRinex1(name, reader) : new CompactRinex3(name, reader);
+
         }
 
         /** Extract a string from a line.
@@ -586,7 +531,7 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param length length of the string
          * @return parsed string
          */
-        private static String parseString(final String line, final int start, final int length) {
+        public static String parseString(final String line, final int start, final int length) {
             if (line.length() > start) {
                 return line.substring(start, FastMath.min(line.length(), start + length)).trim();
             } else {
@@ -600,7 +545,7 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param length length of the integer
          * @return parsed integer
          */
-        private static int parseInt(final String line, final int start, final int length) {
+        public static int parseInt(final String line, final int start, final int length) {
             if (line.length() > start && !parseString(line, start, length).isEmpty()) {
                 return Integer.parseInt(parseString(line, start, length));
             } else {
@@ -614,7 +559,7 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param length length of the integer
          * @return parsed long integer
          */
-        private static long parseLong(final String line, final int start, final int length) {
+        public static long parseLong(final String line, final int start, final int length) {
             if (line.length() > start && !parseString(line, start, length).isEmpty()) {
                 return Long.parseLong(parseString(line, start, length));
             } else {
@@ -628,12 +573,196 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param length length of the real
          * @return parsed real, or {@code Double.NaN} if field was empty
          */
-        private static double parseDouble(final String line, final int start, final int length) {
+        public static double parseDouble(final String line, final int start, final int length) {
             if (line.length() > start && !parseString(line, start, length).isEmpty()) {
                 return Double.parseDouble(parseString(line, start, length));
             } else {
                 return Double.NaN;
             }
+        }
+
+        /** Enumerate for parsing sections. */
+        private enum Section {
+
+            /** Header section. */
+            HEADER,
+
+            /** Epoch and receiver clock offset section. */
+            EPOCH,
+
+            /** Observation section. */
+            OBSERVATION;
+
+        }
+
+    }
+
+    /** Compact RINEX 1 format (for RINEX 2.x). */
+    private static class CompactRinex1 extends CompactRinexFormat {
+
+        /** Label for number of observations. */
+        private static final String NB_TYPES_OF_OBSERV   = "# / TYPES OF OBSERV";
+
+        /** Start of epoch field. */
+        private static final int    EPOCH_START          = 0;
+
+        /** Length of epoch field. */
+        private static final int    EPOCH_LENGTH         = 32;
+
+        /** Start of number of satellites field. */
+        private static final int    NB_SAT_START         = EPOCH_START + EPOCH_LENGTH - 3;
+
+        /** Start of satellites list field. */
+        private static final int    SAT_LIST_START       = EPOCH_START + EPOCH_LENGTH;
+
+        /** Length of satellites list field. */
+        private static final int    SAT_LIST_LENGTH      = 36;
+
+        /** Maximum number of satellites per epoch line. */
+        private static final int    MAX_SAT_EPOCH_LINE   = 12;
+
+        /** Start of receiver clock field. */
+        private static final int    CLOCK_START          = SAT_LIST_START + SAT_LIST_LENGTH;
+
+        /** Length of receiver clock field. */
+        private static final int    CLOCK_LENGTH         = 12;
+
+        /** Number of decimal places for receiver clock offset. */
+        private static final int    CLOCK_DECIMAL_PLACES = 9;
+
+        /** Length of a data field. */
+        private static final int    DATA_LENGTH          = 14;
+
+        /** Simple constructor.
+         * @param name file name
+         * @param reader line-oriented input
+         */
+        CompactRinex1(final String name, final BufferedReader reader) {
+            super(name, reader);
+        }
+
+        @Override
+        /** {@inheritDoc} */
+        public String parseHeaderLine(final String line) {
+            if (isHeaderLine(NB_TYPES_OF_OBSERV, line)) {
+                updateMaxObs(parseInt(line, 0, 6));
+                return line;
+            } else {
+                return super.parseHeaderLine(line);
+            }
+        }
+
+        @Override
+        /** {@inheritDoc} */
+        public String parseEpochAndClockLines(final String epochLine, final String clockLine) {
+
+            doParseEpochAndClockLines(EPOCH_START, EPOCH_LENGTH, NB_SAT_START, SAT_LIST_START,
+                                      CLOCK_LENGTH, CLOCK_DECIMAL_PLACES,
+                                      epochLine, clockLine, '&');
+
+            // build uncompressed lines, taking care of clock being put
+            // back in line 1 and satellites after 12th put in continuation lines
+            final List<CharSequence> satellites = getSatellites();
+            final StringBuilder builder = new StringBuilder();
+            builder.append(getEpochPart());
+            int iSat = 0;
+            while (iSat < FastMath.min(satellites.size(), MAX_SAT_EPOCH_LINE)) {
+                builder.append(satellites.get(iSat++));
+            }
+            if (getClockPart() != null) {
+                while (builder.length() < CLOCK_START) {
+                    builder.append(' ');
+                }
+                builder.append(getClockPart());
+            }
+
+            while (iSat < satellites.size()) {
+                // add a continuation line
+                builder.append('\n');
+                for (int k = 0; k < SAT_LIST_START; ++k) {
+                    builder.append(' ');
+                }
+                while (iSat < FastMath.min(satellites.size(), MAX_SAT_EPOCH_LINE)) {
+                    builder.append(satellites.get(iSat++));
+                }
+            }
+            return builder.toString();
+
+        }
+
+        @Override
+        /** {@inheritDoc} */
+        public String parseObservationLines(final String[] observationLines) {
+            // TODO
+            return null;
+        }
+
+    }
+
+    /** Compact RINEX 3 format (for RINEX 3.x). */
+    private static class CompactRinex3 extends CompactRinexFormat {
+
+        /** Label for number of observation types. */
+        private static final String SYS_NB_OBS_TYPES     = "SYS / # / OBS TYPES";
+
+        /** Start of epoch field. */
+        private static final int    EPOCH_START          = 0;
+
+        /** Length of epoch field. */
+        private static final int    EPOCH_LENGTH         = 41;
+
+        /** Start of receiver clock field. */
+        private static final int    CLOCK_START          = EPOCH_START + EPOCH_LENGTH;
+
+        /** Length of receiver clock field. */
+        private static final int    CLOCK_LENGTH         = 15;
+
+        /** Number of decimal places for receiver clock offset. */
+        private static final int    CLOCK_DECIMAL_PLACES = 12;
+
+        /** Start of number of satellites field. */
+        private static final int    NB_SAT_START         = EPOCH_START + EPOCH_LENGTH - 3; // TBC
+
+        /** Start of satellites list field (only in the compact rinex). */
+        private static final int    SAT_LIST_START       = CLOCK_START + CLOCK_LENGTH;
+
+        /** Simple constructor.
+         * @param name file name
+         * @param reader line-oriented input
+         */
+        CompactRinex3(final String name, final BufferedReader reader) {
+            super(name, reader);
+        }
+
+        @Override
+        /** {@inheritDoc} */
+        public String parseHeaderLine(final String line) {
+            if (isHeaderLine(SYS_NB_OBS_TYPES, line)) {
+                updateMaxObs(parseInt(line, 1, 5));
+                return line;
+            } else {
+                return super.parseHeaderLine(line);
+            }
+        }
+
+        @Override
+        /** {@inheritDoc} */
+        public String parseEpochAndClockLines(final String epochLine, final String clockLine) {
+
+            doParseEpochAndClockLines(EPOCH_START, EPOCH_LENGTH, NB_SAT_START, SAT_LIST_START,
+                                      CLOCK_LENGTH, CLOCK_DECIMAL_PLACES,
+                                      epochLine, clockLine, '>');
+
+            // concatenate everything
+            return (getClockPart() == null) ? getEpochPart() : getEpochPart() + getClockPart();
+
+        }
+
+        @Override
+        /** {@inheritDoc} */
+        public String parseObservationLines(final String[] observationLines) {
+            // TODO
+            return null;
         }
 
     }
