@@ -285,9 +285,11 @@ public class HatanakaCompressFilterTest {
             cstr.setAccessible(true);
             final Object differential = cstr.newInstance(fieldLength, decimalPlaces, order);
             final Method acceptMethod = differentialClass.getDeclaredMethod("accept", Long.TYPE);
+            final Method getUncompressedMethod = differentialClass.getDeclaredMethod("getUncompressed");
 
             for (int i = 0; i < compressed.length; ++i) {
-                Assert.assertEquals(uncompressed[i], acceptMethod.invoke(differential, compressed[i]));
+                acceptMethod.invoke(differential, compressed[i]);
+                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differential));
             }
 
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
@@ -349,11 +351,14 @@ public class HatanakaCompressFilterTest {
             final Object differentialClass = cstr.newInstance(fieldLength);
             final Method acceptMethod = textClass.getDeclaredMethod("accept", CharSequence.class,
                                                                     Integer.TYPE, Integer.TYPE);
+            final Method getUncompressedMethod = textClass.getDeclaredMethod("getUncompressed");
 
             for (int i = 0; i < compressed.length; ++i) {
-                Assert.assertEquals(uncompressed[i],
-                                    acceptMethod.invoke(differentialClass,
-                                    compressed[i], compressed[i].indexOf('@') + 1, compressed[i].lastIndexOf('@')));
+                acceptMethod.invoke(differentialClass,
+                                    compressed[i],
+                                    compressed[i].indexOf('@') + 1,
+                                    compressed[i].lastIndexOf('@'));
+                Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differentialClass));
             }
 
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
