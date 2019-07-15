@@ -270,6 +270,33 @@ public class SaastamoinenModelTest {
         }
     }
 
+    @Test
+    public void testIssue572() {
+        Utils.setDataRoot("atmosphere");
+        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        final double height = 6000.0;
+        for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
+            Assert.assertEquals(model.pathDelay(elevation, 5000.0, null, AbsoluteDate.J2000_EPOCH), model.pathDelay(elevation, height, null, AbsoluteDate.J2000_EPOCH), 1.e-10);
+        }
+    }
+
+    @Test
+    public void testFieldIssue572() {
+        doTestFieldIssue572(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFieldIssue572(final Field<T> field) {
+        final T zero = field.getZero();
+        Utils.setDataRoot("atmosphere");
+        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        final T height = zero.add(6000.0);
+        for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
+            Assert.assertEquals(model.pathDelay(zero.add(elevation), zero.add(5000.0), null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
+                                model.pathDelay(zero.add(elevation), height, null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
+                                1.e-10);
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
         heights = new double[] {
