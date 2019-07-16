@@ -283,7 +283,7 @@ class NeQuickParameters {
      */
     private double computeMODIP(final double lat, final double lon, final double[][] stModip) {
 
-        // For the MODIP computation, latitude and longitude have to be converted in radians
+        // For the MODIP computation, latitude and longitude have to be converted in degrees
         final double latitude = FastMath.toDegrees(lat);
         final double longitude = FastMath.toDegrees(lon);
 

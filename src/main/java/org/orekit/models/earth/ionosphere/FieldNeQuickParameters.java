@@ -298,7 +298,7 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // Zero
         final T zero = lat.getField().getZero();
 
-        // For the MODIP computation, latitude and longitude have to be converted in radians
+        // For the MODIP computation, latitude and longitude have to be converted in degrees
         final T latitude  = lat.multiply(RAD_TO_DEG);
         final T longitude = lon.multiply(RAD_TO_DEG);
 
