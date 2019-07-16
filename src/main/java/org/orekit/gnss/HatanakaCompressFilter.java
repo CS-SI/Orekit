@@ -173,12 +173,12 @@ public class HatanakaCompressFilter implements DataFilter {
         }
 
         /** Handle a new compressed value.
-         * @param value value to add
+         * @param sequence sequence containing the value to consider
          */
-        public void accept(final long value) {
+        public void accept(final CharSequence sequence) {
 
             // store the value as the last component of state vector
-            state[nbComponents] = value;
+            state[nbComponents] = Long.parseLong(sequence.toString());
 
             // update state vector
             for (int i = nbComponents; i > 0; --i) {
@@ -230,16 +230,14 @@ public class HatanakaCompressFilter implements DataFilter {
         }
 
         /** Handle a new compressed value.
-         * @param complete sequence containing the value to consider
-         * @param start start index of the value within the sequence
-         * @param end end index of the value within the sequence
+         * @param sequence sequence containing the value to consider
          */
-        public void accept(final CharSequence complete, final int start, final int end) {
+        public void accept(final CharSequence sequence) {
 
             // update state
-            final int length = FastMath.min(state.capacity(), end - start);
+            final int length = FastMath.min(state.capacity(), sequence.length());
             for (int i = 0; i < length; ++i) {
-                final char c = complete.charAt(start + i);
+                final char c = sequence.charAt(i);
                 if (c == '&') {
                     // update state with disappearing character
                     state.put(i, ' ');
@@ -264,18 +262,18 @@ public class HatanakaCompressFilter implements DataFilter {
     private static class CombinedDifferentials {
 
         /** Observation differentials. */
-        private final NumericDifferential[] observations;
+        private NumericDifferential[] observations;
 
         /** Flags differential. */
-        private final TextDifferential flags;
+        private TextDifferential flags;
 
         /** Simple constructor.
-         * @param observations observation differentials
-         * @param flags flags differential
+         * Build an empty container.
+         * @param nbObs number of observations
          */
-        CombinedDifferentials(final NumericDifferential[] observations, final TextDifferential flags) {
-            this.observations = observations;
-            this.flags        = flags;
+        CombinedDifferentials(final int nbObs) {
+            this.observations = new NumericDifferential[nbObs];
+            this.flags        = null;
         }
 
     }
@@ -311,7 +309,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private int lineNumber;
 
         /** Maximum number of observations for one satellite. */
-        private int maxObs;
+        private final Map<SatelliteSystem, Integer> maxObs;
 
         /** Number of satellites. */
         private int nbSat;
@@ -341,7 +339,10 @@ public class HatanakaCompressFilter implements DataFilter {
         protected CompactRinexFormat(final String name, final BufferedReader reader) {
             this.name    = name;
             this.reader  = reader;
-            this.maxObs  = 0;
+            this.maxObs  = new HashMap<>();
+            for (final SatelliteSystem system : SatelliteSystem.values()) {
+                maxObs.put(system, 0);
+            }
             this.nbSat   = DEFAULT_NB_SAT;
             this.section = Section.HEADER;
         }
@@ -454,19 +455,22 @@ public class HatanakaCompressFilter implements DataFilter {
             }
 
             // parse epoch
-            epochDifferential.accept(epochLine, epochStart, epochStart + epochLength);
-            nbSat = parseInt(epochDifferential.getUncompressed(), nbSatStart, 3);
-            satellites = new ArrayList<>(nbSat);
-            satListDifferential.accept(epochLine, satListStart, epochLine.length());
+            epochDifferential.accept(epochLine.subSequence(epochStart,
+                                                           FastMath.min(epochLine.length(), epochStart + epochLength)));
+            final int n = parseInt(epochDifferential.getUncompressed(), nbSatStart, 3);
+            satellites = new ArrayList<>(n);
+            if (satListStart < epochLine.length()) {
+                satListDifferential.accept(epochLine.subSequence(satListStart, epochLine.length()));
+            }
             final String satListPart = satListDifferential.getUncompressed();
-            for (int i = 0; i < nbSat; ++i) {
+            for (int i = 0; i < n; ++i) {
                 satellites.add(satListPart.subSequence(i * 3, (i + 1) * 3));
             }
 
             // parse clock offset
             if (!clockLine.isEmpty()) {
                 final int skip = reset ? 2 : 0;
-                clockDifferential.accept(parseLong(clockLine, skip, clockLine.length() - skip));
+                clockDifferential.accept(clockLine.subSequence(skip, clockLine.length() - skip));
             }
 
         }
@@ -509,51 +513,73 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Parse observation lines.
          * @param dataLength length of data fields
          * @param dataDecimalPlaces number of decimal places for data fields
-         * @param observationsInitializationPattern pattern for observation initialization lines
          * @param observationLines observation lines
          */
         protected void doParseObservationLines(final int dataLength, final int dataDecimalPlaces,
-                                               final Pattern observationsInitializationPattern,
                                                final String[] observationLines) {
 
-            if (differentials.isEmpty()) {
-                // initialize differentials
-                for (int i = 0; i < observationLines.length; ++i) {
+            for (int i = 0; i < observationLines.length; ++i) {
 
-                    final Matcher matcher = observationsInitializationPattern.matcher(observationLines[i]);
-                    if (!matcher.matches()) {
+                final CharSequence line = observationLines[i];
+
+                // get the differentials associated with this observations line
+                final CharSequence sat = satellites.get(i);
+                CombinedDifferentials satDiffs = differentials.get(sat);
+                if (satDiffs == null) {
+                    final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(sat.subSequence(0, 1).toString());
+                    satDiffs = new CombinedDifferentials(maxObs.get(system));
+                    differentials.put(sat, satDiffs);
+                }
+
+                // parse observations
+                int k = 0;
+                for (int j = 0; j < satDiffs.observations.length; ++j) {
+
+                    if (k >= line.length()) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, name, observationLines[i]);
+                                                  lineNumber + i - (observationLines.length - 1),
+                                                  name, observationLines[i]);
                     }
 
-                    // initialize observation differentials
-                    final NumericDifferential[] diffs = new NumericDifferential[(matcher.groupCount() - 1) / 2];
-                    for (int k = 0; k < diffs.length; ++k) {
-                        diffs[k] = new NumericDifferential(dataLength, dataDecimalPlaces,
-                                                           Integer.parseInt(matcher.group(2 * i + 1)));
-                        diffs[k].accept(Long.parseLong(matcher.group(2 * i + 2)));
+                    if (line.charAt(k) == ' ') {
+                        // the data field is missing
+                        satDiffs.observations[j] = null;
+                    } else {
+                        // the data field is present
+
+                        if (k + 1 < line.length() &&
+                            Character.isDigit(line.charAt(k)) &&
+                            line.charAt(k + 1) == '&') {
+                            // reinitialize differentials
+                            satDiffs.observations[j] = new NumericDifferential(dataLength, dataDecimalPlaces,
+                                                                               Character.digit(line.charAt(k), 10));
+                            k += 2;
+                        }
+
+                        // extract the compressed differenced value
+                        final int start = k;
+                        while (k < line.length() && line.charAt(k) != ' ') {
+                            ++k;
+                        }
+                        satDiffs.observations[j].accept(line.subSequence(start, k));
+
                     }
 
+                    // skip blank separator
+                    ++k;
+
+                }
+
+                if (satDiffs.flags == null) {
                     // initialize flags differential (all flags combined in one text part)
-                    final String flagsPart = matcher.group(matcher.groupCount());
-                    final TextDifferential flags = new TextDifferential(flagsPart.length());
-                    flags.accept(flagsPart, 0, flagsPart.length());
-
-                    // store the differentials for current satellite;
-                    differentials.put(getSatellites().get(i), new CombinedDifferentials(diffs, flags));
-
+                    satDiffs.flags = new TextDifferential(line.length() - k);
                 }
-            } else {
-                // update differentials
-                for (int i = 0; i < observationLines.length; ++i) {
-                    final CombinedDifferentials cd = differentials.get(getSatellites().get(i));
-                    final String[] fields = observationLines[i].split("\\s");
-                    for (int k = 0; k < cd.observations.length; ++k) {
-                        cd.observations[k].accept(Long.parseLong(fields[k]));
-                    }
-                    cd.flags.accept(fields[fields.length - 1], 0, fields[fields.length - 1].length());
+                if (k < line.length()) {
+                    satDiffs.flags.accept(line.subSequence(k, line.length()));
                 }
+
             }
+
         }
 
         /** Check if a line corresponds to a header.
@@ -566,10 +592,11 @@ public class HatanakaCompressFilter implements DataFilter {
         }
 
         /** Update the max number of observations.
+         * @param system satellite system
          * @param nbObs number of observations
          */
-        protected void updateMaxObs(final int nbObs) {
-            maxObs = FastMath.max(maxObs, nbObs);
+        protected void updateMaxObs(final SatelliteSystem system, final int nbObs) {
+            maxObs.put(system, FastMath.max(maxObs.get(system), nbObs));
         }
 
         /** Read a new line.
@@ -644,20 +671,6 @@ public class HatanakaCompressFilter implements DataFilter {
             }
         }
 
-        /** Extract a long integer from a line.
-         * @param line to parse
-         * @param start start index of the integer
-         * @param length length of the integer
-         * @return parsed long integer
-         */
-        public static long parseLong(final String line, final int start, final int length) {
-            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
-                return Long.parseLong(parseString(line, start, length));
-            } else {
-                return 0l;
-            }
-        }
-
         /** Extract a double from a line.
          * @param line to parse
          * @param start start index of the real
@@ -727,9 +740,6 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Number of decimal places for data fields. */
         private static final int    DATA_DECIMAL_PLACES  = 3;
 
-        /** Pattern for splitting observation lines at initialization. */
-        private static final Pattern OBS_INITIALIZATION_PATTERN = Pattern.compile("^(?:(?:([0-9])&(-?[0-9]+) )+)([ 0-9]*)$");
-
         /** Simple constructor.
          * @param name file name
          * @param reader line-oriented input
@@ -742,7 +752,9 @@ public class HatanakaCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         public String parseHeaderLine(final String line) {
             if (isHeaderLine(NB_TYPES_OF_OBSERV, line)) {
-                updateMaxObs(parseInt(line, 0, 6));
+                for (final SatelliteSystem system : SatelliteSystem.values()) {
+                    updateMaxObs(system, parseInt(line, 0, 6));
+                }
                 return line;
             } else {
                 return super.parseHeaderLine(line);
@@ -766,7 +778,7 @@ public class HatanakaCompressFilter implements DataFilter {
             while (iSat < FastMath.min(satellites.size(), MAX_SAT_EPOCH_LINE)) {
                 builder.append(satellites.get(iSat++));
             }
-            if (getClockPart() != null) {
+            if (!getClockPart().isEmpty()) {
                 while (builder.length() < CLOCK_START) {
                     builder.append(' ');
                 }
@@ -779,7 +791,8 @@ public class HatanakaCompressFilter implements DataFilter {
                 for (int k = 0; k < SAT_LIST_START; ++k) {
                     builder.append(' ');
                 }
-                while (iSat < FastMath.min(satellites.size(), MAX_SAT_EPOCH_LINE)) {
+                final int iSatStart = iSat;
+                while (iSat < FastMath.min(satellites.size(), iSatStart + MAX_SAT_EPOCH_LINE)) {
                     builder.append(satellites.get(iSat++));
                 }
             }
@@ -792,8 +805,7 @@ public class HatanakaCompressFilter implements DataFilter {
         public String parseObservationLines(final String[] observationLines) {
 
             // parse the observation lines
-            doParseObservationLines(DATA_LENGTH, DATA_DECIMAL_PLACES, OBS_INITIALIZATION_PATTERN,
-                                    observationLines);
+            doParseObservationLines(DATA_LENGTH, DATA_DECIMAL_PLACES, observationLines);
 
             final StringBuilder builder = new StringBuilder();
             for (final CharSequence sat : getSatellites()) {
@@ -803,8 +815,23 @@ public class HatanakaCompressFilter implements DataFilter {
                 final CombinedDifferentials cd    = getCombinedDifferentials(sat);
                 final String                flags = cd.flags.getUncompressed();
                 for (int i = 0; i < cd.observations.length; ++i) {
-                    builder.append(cd.observations[i].getUncompressed());
-                    builder.append(flags.subSequence(2 * i, 2 * i + 2));
+                    if (cd.observations[i] == null) {
+                        // missing observation
+                        for (int j = 0; j < DATA_LENGTH + 2; ++j) {
+                            builder.append(' ');
+                        }
+                    } else {
+                        builder.append(cd.observations[i].getUncompressed());
+                        if (2 * i < flags.length()) {
+                            builder.append(flags.charAt(2 * i));
+                        }
+                        if (2 * i + 1 < flags.length()) {
+                            builder.append(flags.charAt(2 * i + 1));
+                        }
+                    }
+                    if (i % 5 == 4) {
+                        builder.append('\n');
+                    }
                 }
             }
             return builder.toString();
@@ -846,9 +873,6 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Number of decimal places for data fields. */
         private static final int    DATA_DECIMAL_PLACES  = 3;
 
-        /** Pattern for splitting observation lines at initialization. */
-        private static final Pattern OBS_INITIALIZATION_PATTERN = Pattern.compile("^(?:(?:([0-9])&(-?[0-9]+) )+)([&0-9]*)$");
-
         /** Simple constructor.
          * @param name file name
          * @param reader line-oriented input
@@ -861,7 +885,8 @@ public class HatanakaCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         public String parseHeaderLine(final String line) {
             if (isHeaderLine(SYS_NB_OBS_TYPES, line)) {
-                updateMaxObs(parseInt(line, 1, 5));
+                updateMaxObs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
+                             parseInt(line, 1, 5));
                 return line;
             } else {
                 return super.parseHeaderLine(line);
@@ -886,8 +911,7 @@ public class HatanakaCompressFilter implements DataFilter {
         public String parseObservationLines(final String[] observationLines) {
 
             // parse the observation lines
-            doParseObservationLines(DATA_LENGTH, DATA_DECIMAL_PLACES, OBS_INITIALIZATION_PATTERN,
-                                    observationLines);
+            doParseObservationLines(DATA_LENGTH, DATA_DECIMAL_PLACES, observationLines);
 
             // TODO
             return null;

@@ -284,11 +284,11 @@ public class HatanakaCompressFilterTest {
             final Constructor<?> cstr = differentialClass.getDeclaredConstructor(Integer.TYPE, Integer.TYPE, Integer.TYPE);
             cstr.setAccessible(true);
             final Object differential = cstr.newInstance(fieldLength, decimalPlaces, order);
-            final Method acceptMethod = differentialClass.getDeclaredMethod("accept", Long.TYPE);
+            final Method acceptMethod = differentialClass.getDeclaredMethod("accept", CharSequence.class);
             final Method getUncompressedMethod = differentialClass.getDeclaredMethod("getUncompressed");
 
             for (int i = 0; i < compressed.length; ++i) {
-                acceptMethod.invoke(differential, compressed[i]);
+                acceptMethod.invoke(differential, Long.toString(compressed[i]));
                 Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differential));
             }
 
@@ -349,15 +349,13 @@ public class HatanakaCompressFilterTest {
             final Constructor<?> cstr = textClass.getDeclaredConstructor(Integer.TYPE);
             cstr.setAccessible(true);
             final Object differentialClass = cstr.newInstance(fieldLength);
-            final Method acceptMethod = textClass.getDeclaredMethod("accept", CharSequence.class,
-                                                                    Integer.TYPE, Integer.TYPE);
+            final Method acceptMethod = textClass.getDeclaredMethod("accept", CharSequence.class);
             final Method getUncompressedMethod = textClass.getDeclaredMethod("getUncompressed");
 
             for (int i = 0; i < compressed.length; ++i) {
                 acceptMethod.invoke(differentialClass,
-                                    compressed[i],
-                                    compressed[i].indexOf('@') + 1,
-                                    compressed[i].lastIndexOf('@'));
+                                    compressed[i].subSequence(compressed[i].indexOf('@') + 1,
+                                                              compressed[i].lastIndexOf('@')));
                 Assert.assertEquals(uncompressed[i], getUncompressedMethod.invoke(differentialClass));
             }
 
