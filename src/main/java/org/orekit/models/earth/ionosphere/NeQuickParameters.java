@@ -97,10 +97,10 @@ class NeQuickParameters {
                       final double[][][] fm3, final double latitude, final double longitude,
                       final double[] alpha, final double[][] modipGrip) {
 
-        // MODIP in radians
+        // MODIP in degrees
         final double modip = computeMODIP(latitude, longitude, modipGrip);
         // Effective ionisation level Az
-        final double az = computeAz(FastMath.toDegrees(modip), alpha);
+        final double az = computeAz(modip, alpha);
         // Effective sunspot number (Eq. 19)
         final double azr = FastMath.sqrt(167273.0 + (az - 63.7) * 1123.6) - 408.99;
         // Date and Time components
@@ -279,7 +279,7 @@ class NeQuickParameters {
      * @param lat receiver latitude, radians
      * @param lon receiver longitude, radians
      * @param stModip modip grid
-     * @return the MODIP in radians
+     * @return the MODIP in degrees
      */
     private double computeMODIP(final double lat, final double lon, final double[][] stModip) {
 
@@ -323,7 +323,7 @@ class NeQuickParameters {
         // MODIP (Ref Eq. 16)
         final double modip = interpolate(z1, z2, z3, z4, y);
 
-        return FastMath.toRadians(modip);
+        return modip;
     }
 
     /**
@@ -485,7 +485,7 @@ class NeQuickParameters {
 
     /**
      * This method computes the F2 layer critical frequency.
-     * @param modip modified DIP latitude, in radians
+     * @param modip modified DIP latitude, in degrees
      * @param cf2 Fourier time series for foF2
      * @param latitude latitude in radians
      * @param longitude longitude in radians
@@ -504,7 +504,7 @@ class NeQuickParameters {
         g[0] = 1.0;
 
         // MODIP coefficients Eq. 57
-        final double sinMODIP = FastMath.sin(modip);
+        final double sinMODIP = FastMath.sin(FastMath.toRadians(modip));
         final double[] m = new double[12];
         m[0] = 1.0;
         for (int i = 1; i < q[0]; i++) {
@@ -536,7 +536,7 @@ class NeQuickParameters {
 
     /**
      * This method computes the Maximum Usable Frequency factor.
-     * @param modip modified DIP latitude, in radians
+     * @param modip modified DIP latitude, in degrees
      * @param cm3 Fourier time series for M(3000)F2
      * @param latitude latitude in radians
      * @param longitude longitude in radians
@@ -555,7 +555,7 @@ class NeQuickParameters {
         g[0] = 1.0;
 
         // MODIP coefficients Eq. 57
-        final double sinMODIP = FastMath.sin(modip);
+        final double sinMODIP = FastMath.sin(FastMath.toRadians(modip));
         final double[] m = new double[12];
         m[0] = 1.0;
         for (int i = 1; i < 12; i++) {

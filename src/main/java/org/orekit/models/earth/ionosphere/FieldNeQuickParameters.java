@@ -109,7 +109,7 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // Zero
         final T zero = field.getZero();
 
-        // MODIP in radians
+        // MODIP in degrees
         final T modip = computeMODIP(latitude, longitude, modipGrip);
         // Effective ionisation level Az
         final T az = computeAz(modip, alpha);
@@ -291,7 +291,7 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
      * @param lat receiver latitude, radians
      * @param lon receiver longitude, radians
      * @param stModip modip grid
-     * @return the MODIP in radians
+     * @return the MODIP in degrees
      */
     private T computeMODIP(final T lat, final T lon, final double[][] stModip) {
 
@@ -342,7 +342,7 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // MODIP (Ref Eq. 16)
         final T modip = interpolate(z1, z2, z3, z4, y);
 
-        return modip.multiply(DEG_TO_RAD);
+        return modip;
     }
 
     /**
@@ -359,14 +359,12 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         final Field<T> field = modip.getField();
         // Zero
         final T zero = field.getZero();
-        // Convert modip to degrees
-        final T modipDeg = modip.multiply(RAD_TO_DEG);
         // Particular condition (Eq. 17)
         if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
             return zero.add(63.7);
         }
         // Az = a0 + modip * a1 + modip^2 * a2 (Eq. 18)
-        T az = modipDeg.multiply(alpha[2]).add(alpha[1]).multiply(modipDeg).add(alpha[0]);
+        T az = modip.multiply(alpha[2]).add(alpha[1]).multiply(modip).add(alpha[0]);
         // If Az < 0 -> Az = 0
         az = FastMath.max(zero, az);
         // If Az > 400 -> Az = 400
@@ -518,7 +516,7 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
     /**
      * This method computes the F2 layer critical frequency.
      * @param field field of the elements
-     * @param modip modified DIP latitude, in radians
+     * @param modip modified DIP latitude, in degrees
      * @param cf2 Fourier time series for foF2
      * @param latitude latitude in radians
      * @param longitude longitude in radians
@@ -540,7 +538,7 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         g[0] = one;
 
         // MODIP coefficients Eq. 57
-        final T sinMODIP = FastMath.sin(modip);
+        final T sinMODIP = FastMath.sin(modip.multiply(DEG_TO_RAD));
         final T[] m = MathArrays.buildArray(field, 12);
         m[0] = one;
         for (int i = 1; i < q[0]; i++) {
@@ -573,7 +571,7 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
     /**
      * This method computes the Maximum Usable Frequency factor.
      * @param field field of the elements
-     * @param modip modified DIP latitude, in radians
+     * @param modip modified DIP latitude, in degrees
      * @param cm3 Fourier time series for M(3000)F2
      * @param latitude latitude in radians
      * @param longitude longitude in radians
@@ -594,7 +592,7 @@ public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         g[0] = one;
 
         // MODIP coefficients Eq. 57
-        final T sinMODIP = FastMath.sin(modip);
+        final T sinMODIP = FastMath.sin(modip.multiply(DEG_TO_RAD));
         final T[] m = MathArrays.buildArray(field, 12);
         m[0] = one;
         for (int i = 1; i < 12; i++) {
