@@ -35,7 +35,7 @@ import org.orekit.time.TimeComponents;
  *
  * @since 10.1
  */
-public class FieldNeQuickParameters <T extends RealFieldElement<T>> {
+class FieldNeQuickParameters <T extends RealFieldElement<T>> {
 
     /** Radians to degrees converter. */
     private static final double RAD_TO_DEG = 180.0 / FastMath.PI;
