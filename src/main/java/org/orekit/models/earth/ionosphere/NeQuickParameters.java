@@ -38,18 +38,6 @@ class NeQuickParameters {
     /** Solar zenith angle at day night transition, degrees. */
     private static final double X0 = 86.23292796211615;
 
-    /** Rows number for af2 array. */
-    private static final int ROWS_AF2 = 76;
-
-    /** Columns number for af2 array. */
-    private static final int COLUMNS_AF2 = 13;
-
-    /** Rows number for am3 array. */
-    private static final int ROWS_AM3 = 49;
-
-    /** Columns number for am3 array. */
-    private static final int COLUMNS_AM3 = 9;
-
     /** F2 layer maximum density. */
     private final double nmF2;
 
@@ -113,17 +101,17 @@ class NeQuickParameters {
 
         // Coefficients for F2 layer parameters
         // Compute the array of interpolated coefficients for foF2 (Eq. 44)
-        final double[][] af2 = new double[ROWS_AF2][COLUMNS_AF2];
-        for (int j = 0; j < ROWS_AF2; j++) {
-            for (int k = 0; k < COLUMNS_AF2; k++ ) {
+        final double[][] af2 = new double[76][13];
+        for (int j = 0; j < 76; j++) {
+            for (int k = 0; k < 13; k++ ) {
                 af2[j][k] = f2[0][j][k] * (1.0 - (azr * 0.01)) + f2[1][j][k] * (azr * 0.01);
             }
         }
 
         // Compute the array of interpolated coefficients for M(3000)F2 (Eq. 46)
-        final  double[][] am3 = new double[ROWS_AM3][COLUMNS_AM3];
-        for (int j = 0; j < ROWS_AM3; j++) {
-            for (int k = 0; k < COLUMNS_AM3; k++ ) {
+        final  double[][] am3 = new double[49][9];
+        for (int j = 0; j < 49; j++) {
+            for (int k = 0; k < 9; k++ ) {
                 am3[j][k] = fm3[0][j][k] * (1.0 - (azr * 0.01)) + fm3[1][j][k] * (azr * 0.01);
             }
         }

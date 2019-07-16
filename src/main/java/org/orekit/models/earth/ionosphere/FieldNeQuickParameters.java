@@ -37,26 +37,8 @@ import org.orekit.time.TimeComponents;
  */
 class FieldNeQuickParameters <T extends RealFieldElement<T>> {
 
-    /** Radians to degrees converter. */
-    private static final double RAD_TO_DEG = 180.0 / FastMath.PI;
-
-    /** Degrees to radians converter. */
-    private static final double DEG_TO_RAD = FastMath.PI / 180.0;
-
     /** Solar zenith angle at day night transition, degrees. */
     private static final double X0 = 86.23292796211615;
-
-    /** Rows number for af2 array. */
-    private static final int ROWS_AF2 = 76;
-
-    /** Columns number for af2 array. */
-    private static final int COLUMNS_AF2 = 13;
-
-    /** Rows number for am3 array. */
-    private static final int ROWS_AM3 = 49;
-
-    /** Columns number for am3 array. */
-    private static final int COLUMNS_AM3 = 9;
 
     /** F2 layer maximum density. */
     private final T nmF2;
@@ -125,17 +107,17 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
 
         // Coefficients for F2 layer parameters
         // Compute the array of interpolated coefficients for foF2 (Eq. 44)
-        final T[][] af2 = MathArrays.buildArray(field, ROWS_AF2, COLUMNS_AF2);
-        for (int j = 0; j < ROWS_AF2; j++) {
-            for (int k = 0; k < COLUMNS_AF2; k++ ) {
+        final T[][] af2 = MathArrays.buildArray(field, 76, 13);
+        for (int j = 0; j < 76; j++) {
+            for (int k = 0; k < 13; k++ ) {
                 af2[j][k] = azr.multiply(0.01).negate().add(1.0).multiply(f2[0][j][k]).add(azr.multiply(0.01).multiply(f2[1][j][k]));
             }
         }
 
         // Compute the array of interpolated coefficients for M(3000)F2 (Eq. 46)
-        final T[][] am3 = MathArrays.buildArray(field, ROWS_AM3, COLUMNS_AM3);
-        for (int j = 0; j < ROWS_AM3; j++) {
-            for (int k = 0; k < COLUMNS_AM3; k++ ) {
+        final T[][] am3 = MathArrays.buildArray(field, 49, 9);
+        for (int j = 0; j < 49; j++) {
+            for (int k = 0; k < 9; k++ ) {
                 am3[j][k] = azr.multiply(0.01).negate().add(1.0).multiply(fm3[0][j][k]).add(azr.multiply(0.01).multiply(fm3[1][j][k]));
             }
         }
@@ -298,9 +280,9 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // Zero
         final T zero = lat.getField().getZero();
 
-        // For the MODIP computation, latitude and longitude have to be converted in degrees
-        final T latitude  = lat.multiply(RAD_TO_DEG);
-        final T longitude = lon.multiply(RAD_TO_DEG);
+        // For the MODIP computation, the latitude and longitude have to be converted in degrees
+        final T latitude  = FastMath.toDegrees(lat);
+        final T longitude = FastMath.toDegrees(lon);
 
         // Extreme cases
         if (latitude.getReal() == 90.0 || latitude.getReal() == -90.0) {
@@ -407,10 +389,10 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         final T coef    = lt.negate().add(12.0).multiply(FastMath.PI / 12);
         final T cZenith = scLat.sin().multiply(sDec).add(scLat.cos().multiply(cDec).multiply(FastMath.cos(coef)));
         final T angle   = FastMath.atan2(FastMath.sqrt(cZenith.multiply(cZenith).negate().add(1.0)), cZenith);
-        final T x       = angle.multiply(RAD_TO_DEG);
+        final T x       = FastMath.toDegrees(angle);
         // Effective solar zenith angle (Eq. 28)
         final T xeff = join(clipExp(x.multiply(0.2).negate().add(20.0)).multiply(0.24).negate().add(90.0), x, zero.add(12.0), x.subtract(X0));
-        return xeff.multiply(DEG_TO_RAD);
+        return FastMath.toRadians(xeff);
     }
 
     /**
@@ -424,7 +406,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
     private T computefoE(final int month, final T az,
                          final T xeff, final T latitude) {
         // The latitude has to be converted in degrees
-        final T lat = latitude.multiply(RAD_TO_DEG);
+        final T lat = FastMath.toDegrees(latitude);
         // Square root of the effective ionisation level
         final T sqAz = FastMath.sqrt(az);
         // seas parameter (Eq. 30 to 32)
@@ -482,7 +464,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
      */
     private T[] computeCF2(final Field<T> field, final T[][] af2, final double t) {
         // Eq. 50
-        final T[] cf2 = MathArrays.buildArray(field, ROWS_AF2);
+        final T[] cf2 = MathArrays.buildArray(field, 76);
         for (int i = 0; i < cf2.length; i++) {
             T sum = field.getZero();
             for (int k = 0; k < 6; k++) {
@@ -502,7 +484,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
      */
     private T[] computeCm3(final Field<T> field, final T[][] am3, final double t) {
         // Eq. 51
-        final T[] cm3 = MathArrays.buildArray(field, ROWS_AM3);
+        final T[] cm3 = MathArrays.buildArray(field, 49);
         for (int i = 0; i < cm3.length; i++) {
             T sum = field.getZero();
             for (int k = 0; k < 4; k++) {
@@ -538,7 +520,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         g[0] = one;
 
         // MODIP coefficients Eq. 57
-        final T sinMODIP = FastMath.sin(modip.multiply(DEG_TO_RAD));
+        final T sinMODIP = FastMath.sin(FastMath.toRadians(modip));
         final T[] m = MathArrays.buildArray(field, 12);
         m[0] = one;
         for (int i = 1; i < q[0]; i++) {
@@ -592,7 +574,7 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         g[0] = one;
 
         // MODIP coefficients Eq. 57
-        final T sinMODIP = FastMath.sin(modip.multiply(DEG_TO_RAD));
+        final T sinMODIP = FastMath.sin(FastMath.toRadians(modip));
         final T[] m = MathArrays.buildArray(field, 12);
         m[0] = one;
         for (int i = 1; i < 12; i++) {
