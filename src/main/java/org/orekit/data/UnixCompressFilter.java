@@ -232,7 +232,14 @@ public class UnixCompressFilter implements DataFilter {
 
             if (previousSequence != null && available < table.length) {
                 // update the table with the next uncompressed byte appended to previous sequence
-                final byte nextByte = (key == available) ? previousSequence.getByte(0) : table[key].getByte(0);
+                final byte nextByte;
+                if (key == available) {
+                    nextByte = previousSequence.getByte(0);
+                } else if (table[key] != null) {
+                    nextByte = table[key].getByte(0);
+                } else {
+                    throw new OrekitIOException(OrekitMessages.CORRUPTED_FILE, name);
+                }
                 table[available++] = new UncompressedSequence(previousSequence, nextByte);
                 if (available > currentMaxKey && currentWidth < maxWidth) {
                     // we need to increase the key size
