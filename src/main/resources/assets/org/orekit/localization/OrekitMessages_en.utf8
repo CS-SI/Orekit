@@ -549,3 +549,5 @@ ITRF_VERSIONS_PREFIX_ONLY = The first column of itrf-versions.conf is a plain pr
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
 CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
 
+# file {0} is not a supported Hatanaka-compressed file
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = file {0} is not a supported Hatanaka-compressed file
