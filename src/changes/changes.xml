@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="574">
+        Cope with input stream readers that keep asking for new bytes after end
+        of Unix compressed files has been reached.
+      </action>
       <action dev="luc" type="fix" issue="573">
         Added detection of some corrupted Unix-compressed files.
       </action>

@@ -82,6 +82,18 @@ public class UnixCompressFilterTest {
     }
 
     @Test
+    public void testReadPasteEnd() throws IOException {
+        final byte[] array = new byte[] { (byte) 0x1f, (byte) 0x9d, (byte) 0x90, (byte) 0x0a, (byte) 0x00 };
+        NamedData filtered = new UnixCompressFilter().
+                        filter(new NamedData("empty-line.Z", () -> new ByteArrayInputStream(array)));
+        InputStream is = filtered.getStreamOpener().openStream();
+        Assert.assertEquals('\n', is.read());
+        for (int i = 0; i < 1000; ++i) {
+            Assert.assertEquals(-1,   is.read());
+        }
+    }
+
+    @Test
     public void testSmallText() throws IOException, OrekitException {
         // for such a small text, compressed file is actually larger than initial file
         int[] uncompressed = tryRead("small-text.Z",
