@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
@@ -23,6 +24,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.NamedData;
+import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -175,7 +178,7 @@ public class RinexLoaderTest {
 
     @Test
     public void testMoreThan12Sats() {
-        RinexLoader  loader = load("rinex/bogi1210.09o");
+        RinexLoader  loader = loadCompressed("rinex/bogi1210.09d.Z");
         List<ObservationDataSet> ods = loader.getObservationDataSets();
         Assert.assertEquals(135, ods.size());
         AbsoluteDate lastEpoch = null;
@@ -588,6 +591,19 @@ public class RinexLoaderTest {
 
     private RinexLoader load(final String name) {
         return new RinexLoader(Utils.class.getClassLoader().getResourceAsStream(name), name);
+     }
+
+    private RinexLoader loadCompressed(final String name) {
+        RinexLoader loader = null;
+        try {
+            final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+                                                () -> Utils.class.getClassLoader().getResourceAsStream(name));
+            NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+            loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
+        } catch (IOException ioe) {
+            Assert.fail(ioe.getLocalizedMessage());
+        }
+        return loader;
      }
 
 }

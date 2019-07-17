@@ -273,7 +273,7 @@ public class HatanakaCompressFilter implements DataFilter {
          */
         CombinedDifferentials(final int nbObs) {
             this.observations = new NumericDifferential[nbObs];
-            this.flags        = null;
+            this.flags        = new TextDifferential(2 * nbObs);
         }
 
     }
@@ -368,6 +368,7 @@ public class HatanakaCompressFilter implements DataFilter {
                             line = readLine();
                         }
                         builder.append(parseHeaderLine(line));
+                        trimTrailingSpaces(builder);
                     }
                     uncompressed = builder.toString();
                     section      = Section.EPOCH;
@@ -444,14 +445,10 @@ public class HatanakaCompressFilter implements DataFilter {
                                                  final String clockLine, final char resetChar) {
 
             // check if differentials should be reset
-            final boolean reset = (epochDifferential == null) || (epochLine.charAt(0) == resetChar);
-            if (reset) {
+            if (epochDifferential == null || epochLine.charAt(0) == resetChar) {
                 epochDifferential   = new TextDifferential(epochLength);
                 satListDifferential = new TextDifferential(nbSat * 3);
                 differentials       = new HashMap<>();
-                clockDifferential   = clockLine.isEmpty() ?
-                                      null :
-                                      new NumericDifferential(clockLength, clockDecimalPlaces, parseInt(clockLine, 0, 1));
             }
 
             // parse epoch
@@ -469,8 +466,15 @@ public class HatanakaCompressFilter implements DataFilter {
 
             // parse clock offset
             if (!clockLine.isEmpty()) {
-                final int skip = reset ? 2 : 0;
-                clockDifferential.accept(clockLine.subSequence(skip, clockLine.length() - skip));
+                if (clockLine.length() > 2 && clockLine.charAt(1) == '&') {
+                    clockDifferential = new NumericDifferential(clockLength, clockDecimalPlaces, parseInt(clockLine, 0, 1));
+                    clockDifferential.accept(clockLine.subSequence(2, clockLine.length()));
+                } else if (clockDifferential == null) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, name, clockLine);
+                } else {
+                    clockDifferential.accept(clockLine);
+                }
             }
 
         }
@@ -535,13 +539,7 @@ public class HatanakaCompressFilter implements DataFilter {
                 int k = 0;
                 for (int j = 0; j < satDiffs.observations.length; ++j) {
 
-                    if (k >= line.length()) {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber + i - (observationLines.length - 1),
-                                                  name, observationLines[i]);
-                    }
-
-                    if (line.charAt(k) == ' ') {
+                    if (k >= line.length() || line.charAt(k) == ' ') {
                         // the data field is missing
                         satDiffs.observations[j] = null;
                     } else {
@@ -561,7 +559,14 @@ public class HatanakaCompressFilter implements DataFilter {
                         while (k < line.length() && line.charAt(k) != ' ') {
                             ++k;
                         }
-                        satDiffs.observations[j].accept(line.subSequence(start, k));
+                        try {
+                            satDiffs.observations[j].accept(line.subSequence(start, k));
+                        } catch (NumberFormatException nfe) {
+                            throw new OrekitException(nfe,
+                                                      OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber + i - (observationLines.length - 1),
+                                                      name, observationLines[i]);
+                        }
 
                     }
 
@@ -570,10 +575,6 @@ public class HatanakaCompressFilter implements DataFilter {
 
                 }
 
-                if (satDiffs.flags == null) {
-                    // initialize flags differential (all flags combined in one text part)
-                    satDiffs.flags = new TextDifferential(line.length() - k);
-                }
                 if (k < line.length()) {
                     satDiffs.flags.accept(line.subSequence(k, line.length()));
                 }
@@ -685,6 +686,15 @@ public class HatanakaCompressFilter implements DataFilter {
             }
         }
 
+        /** Trim trailing spaces in a builder.
+         * @param builder builder to trim
+         */
+        public static void trimTrailingSpaces(final StringBuilder builder) {
+            for (int i = builder.length() - 1; i >= 0 && builder.charAt(i) == ' '; --i) {
+                builder.deleteCharAt(i);
+            }
+        }
+
         /** Enumerate for parsing sections. */
         private enum Section {
 
@@ -787,6 +797,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
             while (iSat < satellites.size()) {
                 // add a continuation line
+                trimTrailingSpaces(builder);
                 builder.append('\n');
                 for (int k = 0; k < SAT_LIST_START; ++k) {
                     builder.append(' ');
@@ -796,6 +807,7 @@ public class HatanakaCompressFilter implements DataFilter {
                     builder.append(satellites.get(iSat++));
                 }
             }
+            trimTrailingSpaces(builder);
             return builder.toString();
 
         }
@@ -807,9 +819,11 @@ public class HatanakaCompressFilter implements DataFilter {
             // parse the observation lines
             doParseObservationLines(DATA_LENGTH, DATA_DECIMAL_PLACES, observationLines);
 
+            // build uncompressed lines
             final StringBuilder builder = new StringBuilder();
             for (final CharSequence sat : getSatellites()) {
                 if (builder.length() > 0) {
+                    trimTrailingSpaces(builder);
                     builder.append('\n');
                 }
                 final CombinedDifferentials cd    = getCombinedDifferentials(sat);
@@ -830,10 +844,12 @@ public class HatanakaCompressFilter implements DataFilter {
                         }
                     }
                     if (i % 5 == 4) {
+                        trimTrailingSpaces(builder);
                         builder.append('\n');
                     }
                 }
             }
+            trimTrailingSpaces(builder);
             return builder.toString();
 
         }
@@ -862,10 +878,10 @@ public class HatanakaCompressFilter implements DataFilter {
         private static final int    CLOCK_DECIMAL_PLACES = 12;
 
         /** Start of number of satellites field. */
-        private static final int    NB_SAT_START         = EPOCH_START + EPOCH_LENGTH - 3; // TBC
+        private static final int    NB_SAT_START         = EPOCH_START + EPOCH_LENGTH - 9;
 
         /** Start of satellites list field (only in the compact rinex). */
-        private static final int    SAT_LIST_START       = CLOCK_START + CLOCK_LENGTH;
+        private static final int    SAT_LIST_START       = EPOCH_START + EPOCH_LENGTH;
 
         /** Length of a data field. */
         private static final int    DATA_LENGTH          = 14;
@@ -901,8 +917,18 @@ public class HatanakaCompressFilter implements DataFilter {
                                       CLOCK_LENGTH, CLOCK_DECIMAL_PLACES, epochLine,
                                       clockLine, '>');
 
-            // concatenate everything
-            return (getClockPart() == null) ? getEpochPart() : getEpochPart() + getClockPart();
+            // build uncompressed line
+            final StringBuilder builder = new StringBuilder();
+            builder.append(getEpochPart());
+            if (!getClockPart().isEmpty()) {
+                while (builder.length() < CLOCK_START) {
+                    builder.append(' ');
+                }
+                builder.append(getClockPart());
+            }
+
+            trimTrailingSpaces(builder);
+            return builder.toString();
 
         }
 
@@ -913,8 +939,35 @@ public class HatanakaCompressFilter implements DataFilter {
             // parse the observation lines
             doParseObservationLines(DATA_LENGTH, DATA_DECIMAL_PLACES, observationLines);
 
-            // TODO
-            return null;
+            // build uncompressed lines
+            final StringBuilder builder = new StringBuilder();
+            for (final CharSequence sat : getSatellites()) {
+                if (builder.length() > 0) {
+                    trimTrailingSpaces(builder);
+                    builder.append('\n');
+                }
+                builder.append(sat);
+                final CombinedDifferentials cd    = getCombinedDifferentials(sat);
+                final String                flags = cd.flags.getUncompressed();
+                for (int i = 0; i < cd.observations.length; ++i) {
+                    if (cd.observations[i] == null) {
+                        // missing observation
+                        for (int j = 0; j < DATA_LENGTH + 2; ++j) {
+                            builder.append(' ');
+                        }
+                    } else {
+                        builder.append(cd.observations[i].getUncompressed());
+                        if (2 * i < flags.length()) {
+                            builder.append(flags.charAt(2 * i));
+                        }
+                        if (2 * i + 1 < flags.length()) {
+                            builder.append(flags.charAt(2 * i + 1));
+                        }
+                    }
+                }
+            }
+            trimTrailingSpaces(builder);
+            return builder.toString();
 
         }
 
