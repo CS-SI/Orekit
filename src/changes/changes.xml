@@ -21,6 +21,16 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="574">
+        Cope with input stream readers that keep asking for new bytes after end
+        of Unix compressed files has been reached.
+      </action>
+      <action dev="luc" type="fix" issue="573">
+        Added detection of some corrupted Unix-compressed files.
+      </action>
+      <action dev="bryan" type="fix" issue="572">
+        Fixed the Saastamoinen model when station altitude is bigger than 5000.0 meters.
+      </action>
       <action dev="luc" type="fix" issue="568">
         Fixed too fast step increase in a bracketing attempt.
       </action>
