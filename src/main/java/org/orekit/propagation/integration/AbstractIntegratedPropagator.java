@@ -423,6 +423,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     protected SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers) {
         try {
 
+            initializePropagation();
+
             if (getInitialState().getDate().equals(tEnd)) {
                 // don't extrapolate
                 return getInitialState();
@@ -799,6 +801,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             final SpacecraftState oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
             final SpacecraftState newState = detector.resetState(oldState);
+            stateChanged(newState);
 
             // main part
             final double[] primary    = new double[s.getPrimaryStateDimension()];

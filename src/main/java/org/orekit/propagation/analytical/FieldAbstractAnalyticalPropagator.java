@@ -115,6 +115,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> target) {
         try {
+
+            initializePropagation();
+
             lastPropagationStart = start;
 
             final T dt       = target.durationFrom(start);
@@ -170,8 +173,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
             setStartDate(state.getDate());
             return state;
 
-        } catch (OrekitException pe) {
-            throw pe;
         } catch (MathRuntimeException mrte) {
             throw OrekitException.unwrap(mrte);
         }
