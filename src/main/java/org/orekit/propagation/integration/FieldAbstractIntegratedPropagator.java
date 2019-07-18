@@ -437,6 +437,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     protected FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tEnd, final boolean activateHandlers) {
         try {
 
+            initializePropagation();
+
             if (getInitialState().getDate().equals(tEnd)) {
                 // don't extrapolate
                 return getInitialState();
@@ -814,6 +816,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
             final FieldSpacecraftState<T> oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
             final FieldSpacecraftState<T> newState = detector.resetState(oldState);
+            stateChanged(newState);
 
             // main part
             final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());

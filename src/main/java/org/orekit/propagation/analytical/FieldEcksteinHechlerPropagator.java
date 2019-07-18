@@ -294,6 +294,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         } else {
             models.addValidBefore(newModel, state.getDate());
         }
+        stateChanged(state);
     }
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
