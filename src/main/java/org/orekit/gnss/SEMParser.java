@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,10 +103,8 @@ public class SEMParser implements DataLoader {
      * <p>This feature is useful when the file selection is already set up by
      * the {@link DataProvidersManager data providers manager} configuration.</p>
      *
-     * @exception OrekitException if some data can't be read, some
-     * file content is corrupted or no GPS almanac is available.
      */
-    public void loadData() throws OrekitException {
+    public void loadData() {
         // load the data from the configured data providers
         DataProvidersManager.getInstance().feed(supportedNames, this);
         if (almanacs.isEmpty()) {
@@ -122,7 +121,7 @@ public class SEMParser implements DataLoader {
         prnList.clear();
 
         // Creates the reader
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
         try {
             // Reads the number of almanacs in the file from the first line

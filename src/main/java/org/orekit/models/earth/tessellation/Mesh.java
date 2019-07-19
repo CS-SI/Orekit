@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Class creating a mesh for spherical zones tessellation.
  * @author Luc Maisonobe
@@ -78,12 +79,10 @@ class Mesh {
      * @param alongGap distance between nodes in the along direction
      * @param acrossGap distance between nodes in the across direction
      * @param start location of the first node.
-     * @exception OrekitException if along direction of first tile cannot be computed
      */
     Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
-                final TileAiming aiming, final double alongGap, final double acrossGap,
-                final S2Point start)
-        throws OrekitException {
+         final TileAiming aiming, final double alongGap, final double acrossGap,
+         final S2Point start) {
         this.ellipsoid      = ellipsoid;
         this.zone           = zone;
         this.coverage       = null;
@@ -95,6 +94,16 @@ class Mesh {
         this.maxAlongIndex  = 0;
         this.minAcrossIndex = 0;
         this.maxAcrossIndex = 0;
+
+        // safety check for singular points (typically poles)
+        for (final GeodeticPoint singular : aiming.getSingularPoints()) {
+            final S2Point s2p = new S2Point(singular.getLongitude(), 0.5 * FastMath.PI - singular.getLatitude());
+            if (zone.checkPoint(s2p) != Location.OUTSIDE) {
+                throw new OrekitException(OrekitMessages.CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT,
+                                          FastMath.toDegrees(singular.getLatitude()),
+                                          FastMath.toDegrees(singular.getLongitude()));
+            }
+        }
 
         // create an enabled first node at origin
         final Node origin = new Node(start, 0, 0);
@@ -212,11 +221,9 @@ class Mesh {
      * @param alongIndex index in the along direction
      * @param acrossIndex index in the across direction
      * @return node at specified indices, guaranteed to be non-null
-     * @exception OrekitException if tile direction cannot be computed
-     * @see #getNode(int, int)
+          * @see #getNode(int, int)
      */
-    public Node addNode(final int alongIndex, final int acrossIndex)
-        throws OrekitException {
+    public Node addNode(final int alongIndex, final int acrossIndex) {
 
         // create intermediate (disabled) nodes, up to specified indices
         Node node = getExistingAncestor(alongIndex, acrossIndex);
@@ -502,10 +509,8 @@ class Mesh {
          * @param s2p position in spherical coordinates (my be null)
          * @param alongIndex index in the along direction
          * @param acrossIndex index in the across direction
-         * @exception OrekitException if tile direction cannot be computed
          */
-        private Node(final S2Point s2p, final int alongIndex, final int acrossIndex)
-            throws OrekitException {
+        private Node(final S2Point s2p, final int alongIndex, final int acrossIndex) {
             final GeodeticPoint gp = new GeodeticPoint(0.5 * FastMath.PI - s2p.getPhi(), s2p.getTheta(), 0.0);
             this.v           = ellipsoid.transform(gp);
             this.s2p         = s2p;
@@ -602,10 +607,8 @@ class Mesh {
          * </p>
          * @param motion straight motion, which must be curved back to surface
          * @return arrival point, approximately at specified distance from node
-         * @exception OrekitException if points cannot be converted to geodetic coordinates
          */
-        public S2Point move(final Vector3D motion)
-            throws OrekitException {
+        public S2Point move(final Vector3D motion) {
 
             // safety check for too small motion
             if (motion.getNorm() < Precision.EPSILON * v.getNorm()) {

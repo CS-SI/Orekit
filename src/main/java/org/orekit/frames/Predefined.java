@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ package org.orekit.frames;
 public enum Predefined {
 
     /** GCRF frame.*/
-    GCRF(Frame.getRoot().getName()),
+    GCRF("GCRF"),
 
     /** ICRF frame.*/
     ICRF("ICRF"),
@@ -252,7 +252,10 @@ public enum Predefined {
     MOD_CONVENTIONS_1996("MOD/1996"),
 
     /** TEME frame. */
-    TEME("TEME");
+    TEME("TEME"),
+
+    /** PZ-90.11 frame. */
+    PZ90_11("PZ90.11");
 
     /** Name fo the frame. */
     private final String name;

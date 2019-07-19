@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -33,25 +32,21 @@ public interface FieldOrekitStepInterpolator<T extends RealFieldElement<T>> {
     /**
      * Get the state at previous grid point date.
      * @return state at previous grid point date
-     * @exception OrekitException if state cannot be retrieved
      */
-    FieldSpacecraftState<T> getPreviousState() throws OrekitException;
+    FieldSpacecraftState<T> getPreviousState();
 
     /**
      * Get the state at previous grid point date.
      * @return state at previous grid point date
-     * @exception OrekitException if state cannot be retrieved
      */
-    FieldSpacecraftState<T> getCurrentState() throws OrekitException;
+    FieldSpacecraftState<T> getCurrentState();
 
     /** Get the state at interpolated date.
      * @param date date of the interpolated state
      * @return state at interpolated date
-     * @exception OrekitException if underlying interpolator cannot handle
-     * the date
+          * the date
      */
-    FieldSpacecraftState<T> getInterpolatedState(FieldAbsoluteDate<T> date)
-        throws OrekitException;
+    FieldSpacecraftState<T> getInterpolatedState(FieldAbsoluteDate<T> date);
 
     /** Check is integration direction is forward in date.
      * @return true if integration is forward in date

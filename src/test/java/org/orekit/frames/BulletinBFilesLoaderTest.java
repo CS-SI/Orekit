@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import org.orekit.utils.IERSConventions;
 public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testMissingMonths() throws OrekitException {
+    public void testMissingMonths() {
         setRoot("missing-months");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -45,7 +45,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testStartDate() throws OrekitException {
+    public void testStartDate() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -56,7 +56,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testEndDate() throws OrekitException {
+    public void testEndDate() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -68,7 +68,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testNewFormatNominal() throws OrekitException {
+    public void testNewFormatNominal() {
         setRoot("new-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -82,7 +82,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testOldFormatContent() throws OrekitException {
+    public void testOldFormatContent() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -97,7 +97,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testOldFormat1980() throws OrekitException {
+    public void testOldFormat1980() {
         setRoot("old-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -111,7 +111,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testOldFormat1980RemovedFirstDates() throws OrekitException {
+    public void testOldFormat1980RemovedFirstDates() {
         setRoot("old-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -125,7 +125,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testOldFormatTruncated() throws OrekitException {
+    public void testOldFormatTruncated() {
         setRoot("old-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -139,7 +139,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testNewFormatContent() throws OrekitException {
+    public void testNewFormatContent() {
         setRoot("new-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -156,7 +156,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testNewFormatRemovedFirstDates() throws OrekitException {
+    public void testNewFormatRemovedFirstDates() {
         setRoot("new-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -180,7 +180,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNewFormatTruncated() throws OrekitException {
+    public void testNewFormatTruncated() {
         setRoot("new-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -189,7 +189,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNewFormatTruncatedEarly() throws OrekitException {
+    public void testNewFormatTruncatedEarly() {
         setRoot("new-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -198,7 +198,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNewFormatInconsistent() throws OrekitException {
+    public void testNewFormatInconsistent() {
         setRoot("new-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -207,7 +207,7 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testNewFormatInconsistentDate() throws OrekitException {
+    public void testNewFormatInconsistentDate() {
         setRoot("new-bulletinB");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();

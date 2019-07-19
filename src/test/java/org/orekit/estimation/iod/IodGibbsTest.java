@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,9 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
@@ -49,7 +49,7 @@ import org.orekit.time.TimeScalesFactory;
 public class IodGibbsTest {
 
     @Test
-    public void testGibbs1() throws OrekitException {
+    public void testGibbs1() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final double mu = context.initialOrbit.getMu();
         final Frame frame = context.initialOrbit.getFrame();
@@ -61,6 +61,7 @@ public class IodGibbsTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
 
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -70,17 +71,17 @@ public class IodGibbsTest {
         final Vector3D position1 = new Vector3D(measurements.get(0).getObservedValue()[0],
                                                 measurements.get(0).getObservedValue()[1],
                                                 measurements.get(0).getObservedValue()[2]);
-        final PV pv1 = new PV(measurements.get(0).getDate(), position1, Vector3D.ZERO, 0., 0., 1.);
+        final PV pv1 = new PV(measurements.get(0).getDate(), position1, Vector3D.ZERO, 0., 0., 1., satellite);
 
         final Vector3D position2 = new Vector3D(measurements.get(1).getObservedValue()[0],
                                                 measurements.get(1).getObservedValue()[1],
                                                 measurements.get(1).getObservedValue()[2]);
-        final PV pv2 = new PV(measurements.get(1).getDate(), position2, Vector3D.ZERO, 0., 0., 1.);
+        final PV pv2 = new PV(measurements.get(1).getDate(), position2, Vector3D.ZERO, 0., 0., 1., satellite);
 
         final Vector3D position3 = new Vector3D(measurements.get(2).getObservedValue()[0],
                                                 measurements.get(2).getObservedValue()[1],
                                                 measurements.get(2).getObservedValue()[2]);
-        final PV pv3 = new PV(measurements.get(2).getDate(), position3, Vector3D.ZERO, 0., 0., 1.);
+        final PV pv3 = new PV(measurements.get(2).getDate(), position3, Vector3D.ZERO, 0., 0., 1., satellite);
 
         // instantiate the IOD method
         final IodGibbs gibbs = new IodGibbs(mu);
@@ -92,7 +93,7 @@ public class IodGibbsTest {
     }
 
     @Test
-    public void testGibbs2() throws OrekitException {
+    public void testGibbs2() {
 
         // test extracted from "Fundamentals of astrodynamics & applications", D. Vallado, 3rd ed, chap Initial Orbit Determination, Exple 7-3, p457
 
@@ -125,7 +126,7 @@ public class IodGibbsTest {
     }
 
     @Test
-    public void testGibbs3() throws OrekitException {
+    public void testGibbs3() {
 
         // test extracted from "Fundamentals of astrodynamics & applications", D. Vallado, 3rd ed, chap Initial Orbit Determination, Exple 7-4, p463
         // Remark: the test value in Vallado is performed with an Herrick-Gibbs methods but results are very close with Gibbs method.

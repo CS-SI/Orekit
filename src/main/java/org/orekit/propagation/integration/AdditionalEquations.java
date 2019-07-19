@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.integration;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -31,9 +30,10 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * <p>
  * This interface allows users to add such equations to a {@link
- * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}. Users provide the
+ * org.orekit.propagation.numerical.NumericalPropagator numerical propagator} or a {@link
+ * org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSST propagator}. Users provide the
  * equations as an implementation of this interface and register it to the propagator thanks to
- * its {@link org.orekit.propagation.numerical.NumericalPropagator#addAdditionalEquations(AdditionalEquations)}
+ * its {@link org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(AdditionalEquations)}
  * method. Several such objects can be registered with each numerical propagator, but it is
  * recommended to gather in the same object the sets of parameters which equations can interact
  * on each others states.
@@ -53,7 +53,8 @@ import org.orekit.time.AbsoluteDate;
  * This interface is the numerical (read not already integrated) counterpart of
  * the {@link org.orekit.propagation.AdditionalStateProvider} interface.
  * It allows to append various additional state parameters to any {@link
- * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}.
+ * org.orekit.propagation.numerical.NumericalPropagator numerical propagator} or {@link
+ * org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSST propagator}.
  * </p>
  * @see AbstractIntegratedPropagator
  * @see org.orekit.propagation.AdditionalStateProvider
@@ -71,7 +72,7 @@ public interface AdditionalEquations {
      *
      * <p>
      * This method will be called once at propagation start,
-     * before any calls to {@link #computeDerivatives(SpacecraftState)}.
+     * before any calls to {@link #computeDerivatives(SpacecraftState, double[])}.
      * </p>
      *
      * <p>
@@ -81,11 +82,8 @@ public interface AdditionalEquations {
      * @param initialState initial state information at the start of propagation.
      * @param target       date of propagation. Not equal to {@code
      *                     initialState.getDate()}.
-     * @throws OrekitException if there is an Orekit related error during
-     *                         initialization.
      */
-    default void init(final SpacecraftState initialState, final AbsoluteDate target)
-        throws OrekitException {
+    default void init(final SpacecraftState initialState, final AbsoluteDate target) {
         // nothing by default
     }
 
@@ -104,9 +102,7 @@ public interface AdditionalEquations {
      * should be put
      * @return cumulative effect of the equations on the main state (may be null if
      * equations do not change main state at all)
-     * @exception OrekitException if some specific error occurs
      */
-    double[] computeDerivatives(SpacecraftState s,  double[] pDot)
-        throws OrekitException;
+    double[] computeDerivatives(SpacecraftState s,  double[] pDot);
 
 }

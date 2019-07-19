@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -32,7 +31,7 @@ import org.orekit.utils.PVCoordinates;
 public class VEISFrameTest {
 
     @Test
-    public void testRefLEO() throws OrekitException {
+    public void testRefLEO() {
 
         AbsoluteDate date0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                               new TimeComponents(07, 51, 28.386009),
@@ -69,7 +68,7 @@ public class VEISFrameTest {
     }
 
     @Test
-    public void testRefGEO() throws OrekitException{
+    public void testRefGEO() {
 
         AbsoluteDate date0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
                                               TimeComponents.H00,

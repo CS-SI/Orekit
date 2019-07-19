@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -46,9 +47,8 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
         /** Convert a row.
          * @param rawFields raw row fields, as read from the file
          * @return converted row
-         * @exception OrekitException if conversion cannot be performed
          */
-        S convert(double[] rawFields) throws OrekitException;
+        S convert(double[] rawFields);
     }
 
     /** Pattern for fields with real type. */
@@ -74,9 +74,8 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
      * @param stream stream containing the table
      * @param name name of the resource file (for error messages only)
      * @return parsed table
-     * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public List<T> parse(final InputStream stream, final String name) throws OrekitException {
+    public List<T> parse(final InputStream stream, final String name) {
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
@@ -95,7 +94,7 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
         try {
 
             // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 
             final List<T> table = new ArrayList<T>();
 

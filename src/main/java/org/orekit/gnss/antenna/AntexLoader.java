@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,10 +64,8 @@ public class AntexLoader {
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
-     * @exception OrekitException if no antex file can be read
      */
-    public AntexLoader(final String supportedNames)
-        throws OrekitException {
+    public AntexLoader(final String supportedNames) {
         satellitesAntennas = new ArrayList<>();
         receiversAntennas  = new ArrayList<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
@@ -98,11 +97,9 @@ public class AntexLoader {
      * @param satelliteSystem satellite system
      * @param prnNumber number within the satellite system
      * @return time map for the antenna
-     * @exception OrekitException if satellite cannot be found
      */
     public TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(final SatelliteSystem satelliteSystem,
-                                                              final int prnNumber)
-        throws OrekitException {
+                                                              final int prnNumber) {
         final Optional<TimeSpanMap<SatelliteAntenna>> existing =
                         satellitesAntennas.
                         stream().
@@ -159,13 +156,13 @@ public class AntexLoader {
         public void loadData(final InputStream input, final String name)
             throws IOException, OrekitException {
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
                 // placeholders for parsed data
                 int                              lineNumber           = 0;
                 SatelliteSystem                  satelliteSystem      = null;
                 String                           antennaType          = null;
-                SatelliteAntennaCode             satelliteAntennaCode = null;
+                SatelliteType                    satelliteType        = null;
                 String                           serialNumber         = null;
                 int                              prnNumber            = -1;
                 int                              satelliteCode        = -1;
@@ -210,7 +207,7 @@ public class AntexLoader {
                             // reset antenna data
                             satelliteSystem      = null;
                             antennaType          = null;
-                            satelliteAntennaCode = null;
+                            satelliteType        = null;
                             serialNumber         = null;
                             prnNumber            = -1;
                             satelliteCode        = -1;
@@ -234,7 +231,7 @@ public class AntexLoader {
                         case "TYPE / SERIAL NO" :
                             antennaType = parseString(line, 0, 20);
                             try {
-                                satelliteAntennaCode = SatelliteAntennaCode.parseSatelliteAntennaCode(antennaType);
+                                satelliteType = SatelliteType.parseSatelliteType(antennaType);
                                 final String satField = parseString(line, 20, 20);
                                 if (satField.length() > 0) {
                                     satelliteSystem = SatelliteSystem.parseSatelliteSystem(satField);
@@ -324,9 +321,9 @@ public class AntexLoader {
                             break;
                         case "END OF FREQUENCY" : {
                             final String endFrequency = parseString(line, 3, 3);
-                            if (!frequency.toString().equals(endFrequency)) {
+                            if (frequency == null || !frequency.toString().equals(endFrequency)) {
                                 throw new OrekitException(OrekitMessages.MISMATCHED_FREQUENCIES,
-                                                          name, lineNumber, frequency.toString(), endFrequency);
+                                                          name, lineNumber, frequency, endFrequency);
 
                             }
 
@@ -359,11 +356,12 @@ public class AntexLoader {
                             inRMS = false;
                             break;
                         case "END OF ANTENNA" :
-                            if (satelliteAntennaCode == null) {
+                            if (satelliteType == null) {
                                 addReceiverAntenna(new ReceiverAntenna(antennaType, sinexCode, patterns, serialNumber));
                             } else {
                                 addSatelliteAntenna(new SatelliteAntenna(antennaType, sinexCode, patterns,
-                                                                         satelliteSystem, prnNumber, satelliteCode,
+                                                                         satelliteSystem, prnNumber,
+                                                                         satelliteType, satelliteCode,
                                                                          cosparID, validFrom, validUntil));
                             }
                             break;

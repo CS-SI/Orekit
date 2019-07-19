@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,21 +32,21 @@ import org.orekit.errors.OrekitException;
 public class DirectoryCrawlerTest {
 
     @Test(expected=OrekitException.class)
-    public void testNoDirectory() throws OrekitException, URISyntaxException {
+    public void testNoDirectory() throws URISyntaxException {
         File existing = new File(getClass().getClassLoader().getResource("regular-data").toURI().getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
         new DirectoryCrawler(inexistent).feed(Pattern.compile(".*"), new CountingLoader());
    }
 
     @Test(expected=OrekitException.class)
-    public void testNotADirectory() throws OrekitException, URISyntaxException {
+    public void testNotADirectory() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
         new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new CountingLoader());
     }
 
     @Test
-    public void testNominal() throws OrekitException, URISyntaxException {
+    public void testNominal() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         CountingLoader crawler = new CountingLoader();
@@ -55,7 +55,7 @@ public class DirectoryCrawlerTest {
     }
 
     @Test
-    public void testCompressed() throws OrekitException, URISyntaxException {
+    public void testCompressed() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
         CountingLoader crawler = new CountingLoader();
@@ -64,7 +64,7 @@ public class DirectoryCrawlerTest {
     }
 
     @Test
-    public void testMultiZipClasspath() throws OrekitException, URISyntaxException {
+    public void testMultiZipClasspath() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         File parent = new File(url.toURI().getPath()).getParentFile();
@@ -74,7 +74,7 @@ public class DirectoryCrawlerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testIOException() throws OrekitException, URISyntaxException {
+    public void testIOException() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
@@ -89,7 +89,7 @@ public class DirectoryCrawlerTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testParseException() throws OrekitException, URISyntaxException {
+    public void testParseException() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {

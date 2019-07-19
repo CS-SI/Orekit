@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.hipparchus.util.Pair;
 import org.orekit.data.DataLoader;
@@ -40,7 +42,7 @@ import org.orekit.errors.OrekitMessages;
  * <p>The format of the files holding Yuma almanacs is not precisely specified,
  * so the parsing rules have been deduced from the downloadable files at
  * <a href="http://www.navcen.uscg.gov/?pageName=gpsAlmanacs">NAVCEN</a>
- * and at <a href="http://celestrak.com/GPS/almanac/Yuma/">CelesTrak</a>.</p>
+ * and at <a href="https://celestrak.com/GPS/almanac/Yuma/">CelesTrak</a>.</p>
  *
  * @author Pascal Parraud
  * @since 8.0
@@ -113,10 +115,8 @@ public class YUMAParser implements DataLoader {
      * <p>This feature is useful when the file selection is already set up by
      * the {@link DataProvidersManager data providers manager} configuration.</p>
      *
-     * @exception OrekitException if some data can't be read, some
-     * file content is corrupted or no GPS almanac is available.
      */
-    public void loadData() throws OrekitException {
+    public void loadData() {
         // load the data from the configured data providers
         DataProvidersManager.getInstance().feed(supportedNames, this);
         if (almanacs.isEmpty()) {
@@ -133,7 +133,7 @@ public class YUMAParser implements DataLoader {
         prnList.clear();
 
         // Creates the reader
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
         try {
             // Gathers data to create one GPSAlmanac from 13 consecutive lines
@@ -203,10 +203,8 @@ public class YUMAParser implements DataLoader {
      * @param entries the data read from the file
      * @param name name of the file
      * @return a {@link GPSAlmanac GPS almanac}
-     * @throws OrekitException if a GPSAlmanac can't be built from the gathered entries
      */
-    private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name)
-        throws OrekitException {
+    private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name) {
         try {
             // Initializes fields
             int prn = 0;
@@ -226,55 +224,56 @@ public class YUMAParser implements DataLoader {
             final boolean[] checks = new boolean[KEY.length];
             // Loop over entries
             for (Pair<String, String> entry: entries) {
-                if (entry.getKey().toLowerCase().startsWith(KEY[0])) {
+                final String lowerCaseKey = entry.getKey().toLowerCase(Locale.US);
+                if (lowerCaseKey.startsWith(KEY[0])) {
                     // Gets the PRN of the SVN
                     prn = Integer.parseInt(entry.getValue());
                     checks[0] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[1])) {
+                } else if (lowerCaseKey.startsWith(KEY[1])) {
                     // Gets the Health status
                     health = Integer.parseInt(entry.getValue());
                     checks[1] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[2])) {
+                } else if (lowerCaseKey.startsWith(KEY[2])) {
                     // Gets the eccentricity
                     ecc = Double.parseDouble(entry.getValue());
                     checks[2] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[3])) {
+                } else if (lowerCaseKey.startsWith(KEY[3])) {
                     // Gets the Time of Applicability
                     toa = Double.parseDouble(entry.getValue());
                     checks[3] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[4])) {
+                } else if (lowerCaseKey.startsWith(KEY[4])) {
                     // Gets the Inclination
                     inc = Double.parseDouble(entry.getValue());
                     checks[4] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[5])) {
+                } else if (lowerCaseKey.startsWith(KEY[5])) {
                     // Gets the Rate of Right Ascension
                     dom = Double.parseDouble(entry.getValue());
                     checks[5] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[6])) {
+                } else if (lowerCaseKey.startsWith(KEY[6])) {
                     // Gets the square root of the semi-major axis
                     sqa = Double.parseDouble(entry.getValue());
                     checks[6] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[7])) {
+                } else if (lowerCaseKey.startsWith(KEY[7])) {
                     // Gets the Right Ascension of Ascending Node
                     om0 = Double.parseDouble(entry.getValue());
                     checks[7] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[8])) {
+                } else if (lowerCaseKey.startsWith(KEY[8])) {
                     // Gets the Argument of Perigee
                     aop = Double.parseDouble(entry.getValue());
                     checks[8] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[9])) {
+                } else if (lowerCaseKey.startsWith(KEY[9])) {
                     // Gets the Mean Anomalie
                     anom = Double.parseDouble(entry.getValue());
                     checks[9] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[10])) {
+                } else if (lowerCaseKey.startsWith(KEY[10])) {
                     // Gets the SV clock bias
                     af0 = Double.parseDouble(entry.getValue());
                     checks[10] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[11])) {
+                } else if (lowerCaseKey.startsWith(KEY[11])) {
                     // Gets the SV clock Drift
                     af1 = Double.parseDouble(entry.getValue());
                     checks[11] = true;
-                } else if (entry.getKey().toLowerCase().startsWith(KEY[12])) {
+                } else if (lowerCaseKey.startsWith(KEY[12])) {
                     // Gets the week number
                     week = Integer.parseInt(entry.getValue());
                     checks[12] = true;

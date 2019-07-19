@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,13 @@
 package org.orekit.propagation.analytical;
 
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -48,10 +50,8 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
      * @param initialFieldOrbit initial orbit
-     * @exception OrekitException if initial attitude cannot be computed
      */
-    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit)
-        throws OrekitException {
+    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit) {
         this(initialFieldOrbit, DEFAULT_LAW, initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -59,10 +59,8 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialFieldOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
-     * @exception OrekitException if initial attitude cannot be computed
      */
-    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final double mu)
-        throws OrekitException {
+    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final T mu) {
         this(initialFieldOrbit, DEFAULT_LAW, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -72,11 +70,9 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * non-null arbitrary value.</p>
      * @param initialFieldOrbit initial orbit
      * @param attitudeProv  attitude provider
-     * @exception OrekitException if initial attitude cannot be computed
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
-                                    final AttitudeProvider attitudeProv)
-        throws OrekitException {
+                                    final AttitudeProvider attitudeProv) {
         this(initialFieldOrbit, attitudeProv, initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -86,12 +82,10 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param initialFieldOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m³/s²)
-     * @exception OrekitException if initial attitude cannot be computed
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
                                     final AttitudeProvider attitudeProv,
-                                    final double mu)
-                                                    throws OrekitException {
+                                    final T mu) {
         this(initialFieldOrbit, attitudeProv, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -101,11 +95,9 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m³/s²)
      * @param mass spacecraft mass (kg)
-     * @exception OrekitException if initial attitude cannot be computed
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialOrbit, final AttitudeProvider attitudeProv,
-                                    final double mu, final T mass)
-        throws OrekitException {
+                                    final T mu, final T mass) {
 
         super(initialOrbit.getA().getField(), attitudeProv);
 
@@ -114,7 +106,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
                                 getAttitudeProvider().getAttitude(initialOrbit,
                                                                   initialOrbit.getDate(),
                                                                   initialOrbit.getFrame()),
-                                mass, mu);
+                                mass, mu, Collections.emptyMap());
         states = new FieldTimeSpanMap<>(initialState, initialOrbit.getA().getField());
         super.resetInitialState(initialState);
     }
@@ -128,28 +120,33 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param attitude current attitude
      * @param mass current mass
      * @param mu gravity coefficient to use
+     * @param additionalStates additional states
      * @return fixed orbit
      */
     private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
-                                     final double mu) {
+                                     final T mu, final Map<String, T[]> additionalStates) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
         final FieldOrbit<T> fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
                                                               orbit.getDate(), mu, orbit.getFrame());
-        return new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
+        FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
+        for (final Map.Entry<String, T[]> entry : additionalStates.entrySet()) {
+            fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+        }
+        return fixedState;
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final FieldSpacecraftState<T> state)
-        throws OrekitException {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
-        final double mu = initialState == null ? state.getMu() : initialState.getMu();
+        final T mu = initialState == null ? state.getMu() : initialState.getMu();
         final FieldSpacecraftState<T> fixedState = fixState(state.getOrbit(),
                                                             state.getAttitude(),
                                                             state.getMass(),
-                                                            mu);
+                                                            mu,
+                                                            state.getAdditionalStates());
 
         initialState = fixedState;
         states       = new FieldTimeSpanMap<>(initialState, state.getDate().getField());
@@ -158,18 +155,17 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
-        throws OrekitException {
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         if (forward) {
             states.addValidAfter(state, state.getDate());
         } else {
             states.addValidBefore(state, state.getDate());
         }
+        stateChanged(state);
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
         do {

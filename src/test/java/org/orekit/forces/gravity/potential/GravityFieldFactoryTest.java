@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ import org.orekit.time.TimeScalesFactory;
 public class GravityFieldFactoryTest {
 
     @Test
-    public void testDefaultEGMMissingCoefficients() throws OrekitException {
+    public void testDefaultEGMMissingCoefficients() {
         Utils.setDataRoot("potential/egm-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
@@ -51,7 +51,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testDefaultGRGSMissingCoefficients() throws OrekitException {
+    public void testDefaultGRGSMissingCoefficients() {
         Utils.setDataRoot("potential/grgs-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
@@ -65,7 +65,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testDefaultIncludesICGEM() throws OrekitException {
+    public void testDefaultIncludesICGEM() {
         Utils.setDataRoot("potential/icgem-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
@@ -78,7 +78,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testDefaultIncludesSHM() throws OrekitException {
+    public void testDefaultIncludesSHM() {
         Utils.setDataRoot("potential/shm-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
@@ -91,7 +91,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizationFirstElements() throws OrekitException {
+    public void testNormalizationFirstElements() {
         int max = 50;
         double[][] factors = GravityFieldFactory.getUnnormalizationFactors(max, max);
         Assert.assertEquals(max + 1, factors.length);
@@ -110,7 +110,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizationSquareField() throws OrekitException {
+    public void testNormalizationSquareField() {
         int max = 89;
         double[][] factors = GravityFieldFactory.getUnnormalizationFactors(max, max);
         Assert.assertEquals(max + 1, factors.length);
@@ -123,7 +123,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizationLowOrder() throws OrekitException {
+    public void testNormalizationLowOrder() {
         int maxDegree = 393;
         int maxOrder  = 63;
         double[][] factors = GravityFieldFactory.getUnnormalizationFactors(maxDegree, maxOrder);
@@ -137,23 +137,23 @@ public class GravityFieldFactoryTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNormalizationUnderflowSquareField() throws OrekitException {
+    public void testNormalizationUnderflowSquareField() {
         GravityFieldFactory.getUnnormalizationFactors(90, 90);
     }
 
     @Test(expected=OrekitException.class)
-    public void testNormalizationUnderflowLowOrder1() throws OrekitException {
+    public void testNormalizationUnderflowLowOrder1() {
         GravityFieldFactory.getUnnormalizationFactors(394, 63);
     }
 
     @Test(expected=OrekitException.class)
-    public void testNormalizationUnderflowLowOrde2() throws OrekitException {
+    public void testNormalizationUnderflowLowOrde2() {
         GravityFieldFactory.getUnnormalizationFactors(393, 64);
     }
 
     @Deprecated
     @Test
-    public void testDeprecated() throws OrekitException {
+    public void testDeprecated() {
         Utils.setDataRoot("potential/icgem-format");
         UnnormalizedSphericalHarmonicsProvider ref =
                 GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -196,7 +196,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizer() throws OrekitException {
+    public void testNormalizer() {
         Utils.setDataRoot("potential/icgem-format");
         final AbsoluteDate refDate = new AbsoluteDate(2004, 10, 1, 12, 0, 0.0, TimeScalesFactory.getTT());
         final double shift = 1.23456e8;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import java.util.SortedSet;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.IERSConventions;
 
 /** Interface for loading Earth Orientation Parameters history.
@@ -30,10 +29,8 @@ public interface EOPHistoryLoader {
     /** Load celestial body.
      * @param converter converter to use for nutation corrections
      * @param history history to fill up
-     * @throws OrekitException if the history cannot be loaded
      */
     void fillHistory(IERSConventions.NutationCorrectionConverter converter,
-                     SortedSet<EOPEntry> history)
-        throws OrekitException;
+                     SortedSet<EOPEntry> history);
 
 }

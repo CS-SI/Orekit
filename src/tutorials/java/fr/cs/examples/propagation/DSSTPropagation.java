@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,8 +47,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.Atmosphere;
-import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -57,6 +57,8 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.atmosphere.Atmosphere;
+import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -65,6 +67,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -111,20 +114,23 @@ public class DSSTPropagation {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
             DataProvidersManager manager = DataProvidersManager.getInstance();
             manager.addProvider(new DirectoryCrawler(orekitData));
-
+            
             // input/output (in user's home directory)
-            File input  = new File(new File(System.getProperty("user.home")), "dsst-propagation.in");
+            File input  = new File(DSSTPropagation.class.getResource("/dsst-propagation.in").toURI().getPath());
             File output = new File(input.getParentFile(), "dsst-propagation.out");
 
             new DSSTPropagation().run(input, output);
-
+            
+        } catch (URISyntaxException use) {
+                System.err.println(use.getLocalizedMessage());
+                System.exit(1);
         } catch (IOException ioe) {
             System.err.println(ioe.getLocalizedMessage());
             System.exit(1);
@@ -265,13 +271,15 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.MASS)) {
             mass = parser.getDouble(ParameterKey.MASS);
         }
-        boolean initialIsOsculating = false;
+        PropagationType initialType = PropagationType.MEAN;
         if (parser.containsKey(ParameterKey.INITIAL_ORBIT_IS_OSCULATING)) {
-            initialIsOsculating = parser.getBoolean(ParameterKey.INITIAL_ORBIT_IS_OSCULATING);
+            initialType = parser.getBoolean(ParameterKey.INITIAL_ORBIT_IS_OSCULATING) ?
+                          PropagationType.OSCULATING : PropagationType.MEAN;
         }
-        boolean outputIsOsculating = initialIsOsculating;
+        PropagationType outputType = initialType;
         if (parser.containsKey(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING)) {
-            outputIsOsculating = parser.getBoolean(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING);
+            outputType = parser.getBoolean(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING) ?
+                         PropagationType.OSCULATING : PropagationType.MEAN;
         }
         List<String> shortPeriodCoefficients = null;
         if (parser.containsKey(ParameterKey.OUTPUT_SHORT_PERIOD_COEFFICIENTS)) {
@@ -287,7 +295,7 @@ public class DSSTPropagation {
                 // general case, we have an explicit list of coefficients names
                 Collections.sort(shortPeriodCoefficients);
             }
-            if (shortPeriodCoefficients != null && !outputIsOsculating) {
+            if (shortPeriodCoefficients != null && outputType != PropagationType.OSCULATING) {
                 System.out.println("\nWARNING:");
                 System.out.println("Short periodic coefficients can be output only if output orbit is osculating.");
                 System.out.println("No coefficients will be computed here.\n");
@@ -311,7 +319,7 @@ public class DSSTPropagation {
             }
         }
         final DSSTPropagator dsstProp = createDSSTProp(orbit, mass,
-                                                       initialIsOsculating, outputIsOsculating,
+                                                       initialType, outputType,
                                                        fixedStepSize, minStep, maxStep, dP,
                                                        shortPeriodCoefficients);
 
@@ -377,7 +385,7 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.NUMERICAL_COMPARISON)
                 && parser.getBoolean(ParameterKey.NUMERICAL_COMPARISON)) {
 
-            if ( !outputIsOsculating ) {
+            if (outputType == PropagationType.MEAN) {
                 System.out.println("\nWARNING:");
                 System.out.println("The DSST propagator considers a mean orbit while the numerical will consider an osculating one.");
                 System.out.println("The comparison will be meaningless.\n");
@@ -414,13 +422,12 @@ public class DSSTPropagation {
      * @param parser input file parser
      * @param scale  time scale
      * @param mu     central attraction coefficient
-     * @throws OrekitException if inertial frame cannot be retrieved
      * @throws NoSuchElementException if input parameters are missing
      * @throws IOException if input parameters are invalid
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
                               final TimeScale scale, final double mu)
-        throws OrekitException, NoSuchElementException, IOException {
+        throws NoSuchElementException, IOException {
 
         final Frame frame;
         if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
@@ -504,18 +511,16 @@ public class DSSTPropagation {
      *  @param shortPeriodCoefficients list of short periodic coefficients
      *  to output (null means no coefficients at all, empty list means all
      *  possible coefficients)
-     *  @throws OrekitException
      */
     private DSSTPropagator createDSSTProp(final Orbit orbit,
                                           final double mass,
-                                          final boolean initialIsOsculating,
-                                          final boolean outputIsOsculating,
+                                          final PropagationType initialType,
+                                          final PropagationType outputType,
                                           final double fixedStepSize,
                                           final double minStep,
                                           final double maxStep,
                                           final double dP,
-                                          final List<String> shortPeriodCoefficients)
-        throws OrekitException {
+                                          final List<String> shortPeriodCoefficients) {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
@@ -525,8 +530,8 @@ public class DSSTPropagation {
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
         }
 
-        DSSTPropagator dsstProp = new DSSTPropagator(integrator, !outputIsOsculating);
-        dsstProp.setInitialState(new SpacecraftState(orbit, mass), initialIsOsculating);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator, outputType);
+        dsstProp.setInitialState(new SpacecraftState(orbit, mass), initialType);
         dsstProp.setSelectedCoefficients(shortPeriodCoefficients == null ?
                                          null : new HashSet<String>(shortPeriodCoefficients));
 
@@ -537,9 +542,8 @@ public class DSSTPropagation {
      *
      *  @param orbit initial orbit
      *  @param mass S/C mass (kg)
-     *  @throws OrekitException
      */
-    private NumericalPropagator createNumProp(final Orbit orbit, final double mass) throws OrekitException {
+    private NumericalPropagator createNumProp(final Orbit orbit, final double mass) {
         final double[][] tol = NumericalPropagator.tolerances(1.0, orbit, orbit.getType());
         final double minStep = 1.e-3;
         final double maxStep = 1.e+3;
@@ -560,14 +564,14 @@ public class DSSTPropagation {
      *  @param rotationRate central body rotation rate (rad/s)
      *  @param dsstProp DSST propagator
      *  @throws IOException
-     *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final UnnormalizedSphericalHarmonicsProvider unnormalized,
                                final Frame earthFrame, final double rotationRate,
-                               final DSSTPropagator dsstProp) throws IOException, OrekitException {
+                               final DSSTPropagator dsstProp) throws IOException {
 
         final double ae = unnormalized.getAe();
+        final double mu = unnormalized.getMu();
 
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
@@ -592,12 +596,12 @@ public class DSSTPropagation {
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
-            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun()));
+            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun(), mu));
         }
 
         // 3rd body (MOON)
         if (parser.containsKey(ParameterKey.THIRD_BODY_MOON) && parser.getBoolean(ParameterKey.THIRD_BODY_MOON)) {
-            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
+            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu));
         }
 
         // Drag
@@ -606,14 +610,15 @@ public class DSSTPropagation {
             final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
             dsstProp.addForceModel(new DSSTAtmosphericDrag(atm,
                                                            parser.getDouble(ParameterKey.DRAG_CD),
-                                                           parser.getDouble(ParameterKey.DRAG_SF)));
+                                                           parser.getDouble(ParameterKey.DRAG_SF),
+                                                           mu));
         }
 
         // Solar Radiation Pressure
         if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
             dsstProp.addForceModel(new DSSTSolarRadiationPressure(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR),
                                                                   parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
-                                                                  CelestialBodyFactory.getSun(), ae));
+                                                                  CelestialBodyFactory.getSun(), ae, mu));
         }
     }
 
@@ -624,12 +629,11 @@ public class DSSTPropagation {
      *  @param earthFrame Earth rotating frame
      *  @param numProp numerical propagator
      *  @throws IOException
-     *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final NormalizedSphericalHarmonicsProvider normalized,
                                final Frame earthFrame,
-                               final NumericalPropagator numProp) throws IOException, OrekitException {
+                               final NumericalPropagator numProp) throws IOException {
 
         final double ae = normalized.getAe();
 
@@ -741,10 +745,10 @@ public class DSSTPropagation {
 
         /** {@inheritDoc} */
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step)
-            throws OrekitException {
+            {
             try {
                 nbColumns           = 0;
-                outputStream        = new PrintStream(outputFile, "UTF-8");
+                outputStream        = new PrintStream(outputFile, StandardCharsets.UTF_8.name());
                 describeNextColumn("time from start (s)");
                 if (outputKeplerian) {
                     describeNextColumn("semi major axis a (km)");
@@ -787,7 +791,7 @@ public class DSSTPropagation {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(SpacecraftState s, boolean isLast) throws OrekitException {
+        public void handleStep(SpacecraftState s, boolean isLast) {
             if (isFirst) {
                 if (shortPeriodCoefficients != null) {
                     if (shortPeriodCoefficients.isEmpty()) {

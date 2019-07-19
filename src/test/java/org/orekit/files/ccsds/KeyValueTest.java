@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,7 +49,7 @@ public class KeyValueTest {
     }
 
     @Test
-    public void testUserDefined() throws OrekitException {
+    public void testUserDefined() {
         KeyValue kv = new KeyValue("USER_DEFINED_TEST_KEY = Orekit", 3, "dummy");
         Assert.assertEquals(Keyword.USER_DEFINED_X, kv.getKeyword());
         Assert.assertEquals("USER_DEFINED_TEST_KEY", kv.getKey());
@@ -57,7 +57,7 @@ public class KeyValueTest {
     }
 
     @Test
-    public void testUnknownKey() throws OrekitException {
+    public void testUnknownKey() {
         KeyValue kv = new KeyValue("INEXISTENT_KEY = 1.0e-5", 5, "dummy");
         Assert.assertNull(kv.getKeyword());
         Assert.assertEquals("INEXISTENT_KEY", kv.getKey());
@@ -66,7 +66,7 @@ public class KeyValueTest {
     }
 
     @Test
-    public void testBadSyntax() throws OrekitException {
+    public void testBadSyntax() {
         KeyValue kv = new KeyValue("there are no equal sign in this line", 17, "dummy");
         Assert.assertNull(kv.getKeyword());
         Assert.assertEquals("", kv.getKey());
@@ -74,14 +74,14 @@ public class KeyValueTest {
     }
 
     @Test
-    public void testUnderscoreEqualsBlank() throws OrekitException {
+    public void testUnderscoreEqualsBlank() {
         KeyValue kv = new KeyValue("CENTER_NAME = EARTH_BARYCENTER", 1, "dummy");
         Assert.assertEquals(Keyword.CENTER_NAME, kv.getKeyword());
         Assert.assertEquals("EARTH BARYCENTER", kv.getValue());
     }
 
     @Test
-    public void testCoalescedBlanks() throws OrekitException {
+    public void testCoalescedBlanks() {
         KeyValue kv = new KeyValue("CENTER_NAME = EARTH    ___     BARYCENTER    ", 1, "dummy");
         Assert.assertEquals(Keyword.CENTER_NAME, kv.getKeyword());
         Assert.assertEquals("EARTH BARYCENTER", kv.getValue());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -35,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 class MeasurementHandler implements MultiSatStepHandler {
 
     /** Least squares model. */
-    private final Model model;
+    private final BatchLSODModel model;
 
     /** Underlying measurements. */
     private final List<PreCompensation> precompensated;
@@ -50,12 +49,10 @@ class MeasurementHandler implements MultiSatStepHandler {
      * @param model least squares model
      * @param precompensated underlying measurements
      */
-    MeasurementHandler(final Model model, final List<PreCompensation> precompensated) {
+    MeasurementHandler(final BatchLSODModel model, final List<PreCompensation> precompensated) {
         this.model          = model;
         this.precompensated = precompensated;
     }
-
-    /**
 
     /** {@inheritDoc} */
     @Override
@@ -66,8 +63,7 @@ class MeasurementHandler implements MultiSatStepHandler {
 
     /** {@inheritDoc} */
     @Override
-    public void handleStep(final List<OrekitStepInterpolator> interpolators, final boolean isLast)
-        throws OrekitException {
+    public void handleStep(final List<OrekitStepInterpolator> interpolators, final boolean isLast) {
 
         while (number < precompensated.size()) {
 
@@ -92,8 +88,7 @@ class MeasurementHandler implements MultiSatStepHandler {
             final ObservedMeasurement<?> observed = next.getMeasurement();
 
             // estimate the theoretical measurement
-            final List<Integer>           indices  = observed.getPropagatorsIndices();
-            final SpacecraftState[]       states   = new SpacecraftState[indices.size()];
+            final SpacecraftState[] states = new SpacecraftState[observed.getSatellites().size()];
             for (int i = 0; i < states.length; ++i) {
                 states[i] = interpolators.get(i).getInterpolatedState(next.getDate());
             }

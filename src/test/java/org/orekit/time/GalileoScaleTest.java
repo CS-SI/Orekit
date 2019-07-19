@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
 
 public class GalileoScaleTest {
@@ -32,12 +31,12 @@ public class GalileoScaleTest {
         TimeScale scale = TimeScalesFactory.getGST();
         Assert.assertEquals("GST", scale.toString());
         AbsoluteDate t0 =
-            new AbsoluteDate(new DateComponents(1999, 8, 22), new TimeComponents(0, 0, 13), scale);
+            new AbsoluteDate(new DateComponents(1999, 8, 22), TimeComponents.H00, scale);
         Assert.assertEquals(AbsoluteDate.GALILEO_EPOCH, t0);
     }
 
     @Test
-    public void test2006() throws OrekitException {
+    public void test2006() {
         AbsoluteDate tGalileo =
             new AbsoluteDate(new DateComponents(2006, 1, 2), TimeComponents.H00, TimeScalesFactory.getGST());
         AbsoluteDate tUTC =
@@ -47,7 +46,7 @@ public class GalileoScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getGST();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),

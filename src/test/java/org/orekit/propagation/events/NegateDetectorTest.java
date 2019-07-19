@@ -4,8 +4,8 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -15,12 +15,16 @@ import org.orekit.time.AbsoluteDate;
  */
 public class NegateDetectorTest {
 
-    /** check {@link NegateDetector#init(SpacecraftState, AbsoluteDate)}. */
+    /**
+     * check {@link NegateDetector#init(SpacecraftState, AbsoluteDate)}.
+     */
     @Test
     public void testInit() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        NegateDetector detector = new NegateDetector(a);
+        @SuppressWarnings("unchecked")
+        EventHandler<EventDetector> c = Mockito.mock(EventHandler.class);
+        NegateDetector detector = new NegateDetector(a).withHandler(c);
         AbsoluteDate t = AbsoluteDate.GPS_EPOCH;
         SpacecraftState s = Mockito.mock(SpacecraftState.class);
         Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
@@ -30,15 +34,14 @@ public class NegateDetectorTest {
 
         //verify
         Mockito.verify(a).init(s, t);
+        Mockito.verify(c).init(s, t);
     }
 
     /**
      * check g function is negated.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testG() throws OrekitException {
+    public void testG() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         NegateDetector detector = new NegateDetector(a);

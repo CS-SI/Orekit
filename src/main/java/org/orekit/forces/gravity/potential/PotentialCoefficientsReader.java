@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -207,12 +207,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param s raw tesseral-sectorial coefficients matrix
      * (a reference to the array will be stored)
      * @param name name of the file (or zip entry)
-     * @exception OrekitException if a coefficient is missing
      */
     protected void setRawCoefficients(final boolean rawNormalized,
                                       final double[][] c, final double[][] s,
-                                      final String name)
-        throws OrekitException {
+                                      final String name) {
 
         // normalization indicator
         normalized = rawNormalized;
@@ -312,13 +310,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order or if no gravity field has read yet
      * @see #getConstantProvider(boolean, int, int)
      * @since 6.0
      */
-    public abstract RawSphericalHarmonicsProvider getProvider(boolean wantNormalized, int degree, int order)
-        throws OrekitException;
+    public abstract RawSphericalHarmonicsProvider getProvider(boolean wantNormalized, int degree, int order);
 
     /** Get a time-independent provider for read spherical harmonics coefficients.
      * @param wantNormalized if true, the raw provider must provide normalized coefficients,
@@ -326,14 +321,11 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider, with no time-dependent parts
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order or if no gravity field has read yet
      * @see #getProvider(boolean, int, int)
      * @since 6.0
      */
     protected ConstantSphericalHarmonics getConstantProvider(final boolean wantNormalized,
-                                                             final int degree, final int order)
-        throws OrekitException {
+                                                             final int degree, final int order) {
 
         if (!readComplete) {
             throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
@@ -436,12 +428,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param j second index in the list
      * @param cName name of the coefficient
      * @param name name of the file
-     * @exception OrekitException if the coefficient is already set
      */
     protected void parseCoefficient(final String field, final List<List<Double>> list,
                                     final int i, final int j,
-                                    final String cName, final String name)
-        throws OrekitException {
+                                    final String cName, final String name) {
         final double value    = parseDouble(field);
         final double oldValue = list.get(i).get(j);
         if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
@@ -460,12 +450,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param j second index in the list
      * @param cName name of the coefficient
      * @param name name of the file
-     * @exception OrekitException if the coefficient is already set
      */
     protected void parseCoefficient(final String field, final double[][] array,
                                     final int i, final int j,
-                                    final String cName, final String name)
-        throws OrekitException {
+                                    final String cName, final String name) {
         final double value    = parseDouble(field);
         final double oldValue = array[i][j];
         if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
@@ -485,14 +473,11 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param wantNormalized if true, the rescaled coefficients must be normalized
      * @param rescaledC cosine part of the rescaled coefficients to fill in (may be the originC array)
      * @param rescaledS sine part of the rescaled coefficients to fill in (may be the originS array)
-     * @exception OrekitException if normalization/unnormalization fails because of an underflow
-     * due to too high degree/order
      */
     protected static void rescale(final double scale,
                                   final boolean normalizedOrigin, final double[][] originC,
                                   final double[][] originS, final boolean wantNormalized,
-                                  final double[][] rescaledC, final double[][] rescaledS)
-        throws OrekitException {
+                                  final double[][] rescaledC, final double[][] rescaledS) {
 
         if (wantNormalized == normalizedOrigin) {
             // apply only the general scaling factor

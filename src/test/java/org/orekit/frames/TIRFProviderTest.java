@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -53,7 +52,7 @@ import org.orekit.utils.PVCoordinates;
 public class TIRFProviderTest {
 
     @Test
-    public void testAASReferenceLEO() throws OrekitException {
+    public void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -101,7 +100,7 @@ public class TIRFProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() throws OrekitException {
+    public void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -148,7 +147,7 @@ public class TIRFProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         TIRFProvider provider = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -177,7 +176,7 @@ public class TIRFProviderTest {
      */
     @Test
     public void testConcurrentGetTransform()
-        throws OrekitException, InterruptedException, ExecutionException {
+        throws InterruptedException, ExecutionException {
 
         // subject under test
         final TIRFProvider tirf = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false));

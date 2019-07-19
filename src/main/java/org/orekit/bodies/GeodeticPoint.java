@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,16 @@ import org.hipparchus.util.MathUtils;
  * @author Luc Maisonobe
  */
 public class GeodeticPoint implements Serializable {
+
+    /** North pole.
+     * @since 10.0
+     */
+    public static final GeodeticPoint NORTH_POLE = new GeodeticPoint(+0.5 * FastMath.PI, 0.0, 0.0);
+
+    /** South pole.
+     * @since 10.0
+     */
+    public static final GeodeticPoint SOUTH_POLE = new GeodeticPoint(-0.5 * FastMath.PI, 0.0, 0.0);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 7862466825590075399L;
@@ -66,9 +76,9 @@ public class GeodeticPoint implements Serializable {
      * Build a new instance. The angular coordinates will be normalized so that
      * the latitude is between ±π/2 and the longitude is between ±π.
      *
-     * @param latitude latitude of the point
-     * @param longitude longitude of the point
-     * @param altitude altitude of the point
+     * @param latitude latitude of the point (rad)
+     * @param longitude longitude of the point (rad)
+     * @param altitude altitude of the point (m)
      */
     public GeodeticPoint(final double latitude, final double longitude,
                          final double altitude) {
@@ -200,9 +210,9 @@ public class GeodeticPoint implements Serializable {
 
     @Override
     public int hashCode() {
-        return new Double(this.getLatitude()).hashCode() ^
-               new Double(this.getLongitude()).hashCode() ^
-               new Double(this.getAltitude()).hashCode();
+        return Double.valueOf(this.getLatitude()).hashCode() ^
+               Double.valueOf(this.getLongitude()).hashCode() ^
+               Double.valueOf(this.getAltitude()).hashCode();
     }
 
     @Override

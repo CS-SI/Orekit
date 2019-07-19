@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -122,8 +123,8 @@ import org.orekit.utils.OrekitConfiguration;
  * and {@link EOPHistory#getEndDate()}.
  * <p>
  * For more information on configuring the EOP data Orekit uses see
- * <a href="https://www.orekit.org/forge/projects/orekit/wiki/Configuration">
- * https://www.orekit.org/forge/projects/orekit/wiki/Configuration</a>.
+ * <a href="https://gitlab.orekit.org/orekit/orekit/blob/master/src/site/markdown/configuration.md">
+ * https://gitlab.orekit.org/orekit/orekit/blob/master/src/site/markdown/configuration.md</a>.
  * <p>
  * Here is a schematic representation of the predefined reference frames tree:
  * </p>
@@ -386,10 +387,8 @@ public class FramesFactory {
      * @param conventions conventions for which EOP history is requested
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return Earth Orientation Parameters history
-     * @exception OrekitException if the data cannot be loaded
      */
-    public static EOPHistory getEOPHistory(final IERSConventions conventions, final boolean simpleEOP)
-        throws OrekitException {
+    public static EOPHistory getEOPHistory(final IERSConventions conventions, final boolean simpleEOP) {
 
         synchronized (EOP_HISTORY_LOADERS) {
 
@@ -429,10 +428,8 @@ public class FramesFactory {
     /** Get one of the predefined frames.
      * @param factoryKey key of the frame within the factory
      * @return the predefined frame
-     * @exception OrekitException if frame cannot be built due to missing data
      */
-    public static Frame getFrame(final Predefined factoryKey)
-        throws OrekitException {
+    public static Frame getFrame(final Predefined factoryKey) {
         switch (factoryKey) {
             case GCRF :
                 return getGCRF();
@@ -534,6 +531,8 @@ public class FramesFactory {
                 return getMOD(IERSConventions.IERS_1996, true);
             case TEME :
                 return getTEME();
+            case PZ90_11 :
+                return getPZ9011(IERSConventions.IERS_2010, true);
             default :
                 // this should never happen
                 throw new OrekitInternalError(null);
@@ -552,9 +551,8 @@ public class FramesFactory {
      * <p>The ICRF frame is centered at solar system barycenter and aligned
      * with GCRF.</p>
      * @return the unique instance of the ICRF frame
-     * @exception OrekitException if solar system ephemerides cannot be loaded
      */
-    public static Frame getICRF() throws OrekitException {
+    public static Frame getICRF() {
         return CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame();
     }
 
@@ -567,9 +565,8 @@ public class FramesFactory {
      * <p> This implementation agrees with the JPL 406 ephemerides to within 0.5 arc seconds.
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static Frame getEcliptic(final IERSConventions conventions) throws OrekitException {
+    public static Frame getEcliptic(final IERSConventions conventions) {
         synchronized (FramesFactory.class) {
 
             final Predefined factoryKey;
@@ -644,13 +641,11 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
-     * @see #getITRF(ITRFVersion, IERSConventions, boolean)
+          * @see #getITRF(ITRFVersion, IERSConventions, boolean)
      * @since 6.1
      */
     public static FactoryManagedFrame getITRF(final IERSConventions conventions,
-                                              final boolean simpleEOP)
-        throws OrekitException {
+                                              final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -695,10 +690,9 @@ public class FramesFactory {
     /** Get the TIRF reference frame, ignoring tidal effects.
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
+          * library cannot be read.
      */
-    public static FactoryManagedFrame getTIRF(final IERSConventions conventions) throws OrekitException {
+    public static FactoryManagedFrame getTIRF(final IERSConventions conventions) {
         return getTIRF(conventions, true);
     }
 
@@ -713,13 +707,11 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
-     * @since 9.2
+          * @since 9.2
      */
     public static VersionedITRF getITRF(final ITRFVersion version,
                                         final IERSConventions conventions,
-                                        final boolean simpleEOP)
-        throws OrekitException {
+                                        final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
             // try to find an already built frame
             final ITRFKey key = new ITRFKey(version, conventions, simpleEOP);
@@ -745,13 +737,10 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
      * @since 6.1
      */
     public static FactoryManagedFrame getTIRF(final IERSConventions conventions,
-                                              final boolean simpleEOP)
-        throws OrekitException {
+                                              final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -798,12 +787,9 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
      */
     public static FactoryManagedFrame getCIRF(final IERSConventions conventions,
-                                              final boolean simpleEOP)
-        throws OrekitException {
+                                              final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -852,9 +838,8 @@ public class FramesFactory {
     /** Get the VEIS 1950 reference frame.
      * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.<p>
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getVeis1950() throws OrekitException {
+    public static FactoryManagedFrame getVeis1950() {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -877,12 +862,10 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
-     * @since 6.1
+          * @since 6.1
      */
     public static FactoryManagedFrame getITRFEquinox(final IERSConventions conventions,
-                                                     final boolean simpleEOP)
-        throws OrekitException {
+                                                     final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -937,9 +920,8 @@ public class FramesFactory {
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) throws OrekitException {
+    public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) {
         return getGTOD(IERSConventions.IERS_1996, applyEOPCorr, true);
     }
 
@@ -947,11 +929,9 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
     public static FactoryManagedFrame getGTOD(final IERSConventions conventions,
-                                              final boolean simpleEOP)
-        throws OrekitException {
+                                              final boolean simpleEOP) {
         return getGTOD(conventions, true, simpleEOP);
     }
 
@@ -968,12 +948,10 @@ public class FramesFactory {
      * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
     private static FactoryManagedFrame getGTOD(final IERSConventions conventions,
                                                final boolean applyEOPCorr,
-                                               final boolean simpleEOP)
-        throws OrekitException {
+                                               final boolean simpleEOP) {
 
         synchronized (FramesFactory.class) {
 
@@ -1036,10 +1014,8 @@ public class FramesFactory {
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr)
-        throws OrekitException {
+    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr) {
         return getTOD(IERSConventions.IERS_1996, applyEOPCorr, false);
     }
 
@@ -1047,11 +1023,9 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
     public static FactoryManagedFrame getTOD(final IERSConventions conventions,
-                                             final boolean simpleEOP)
-        throws OrekitException {
+                                             final boolean simpleEOP) {
         return getTOD(conventions, true, simpleEOP);
     }
 
@@ -1068,12 +1042,10 @@ public class FramesFactory {
      * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
     private static FactoryManagedFrame getTOD(final IERSConventions conventions,
                                               final boolean applyEOPCorr,
-                                              final boolean simpleEOP)
-        throws OrekitException {
+                                              final boolean simpleEOP) {
 
         synchronized (FramesFactory.class) {
 
@@ -1141,20 +1113,16 @@ public class FramesFactory {
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getMOD(final boolean applyEOPCorr)
-        throws OrekitException {
+    public static FactoryManagedFrame getMOD(final boolean applyEOPCorr) {
         return getMOD(IERSConventions.IERS_1996, applyEOPCorr);
     }
 
     /** Get the MOD reference frame.
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getMOD(final IERSConventions conventions)
-        throws OrekitException {
+    public static FactoryManagedFrame getMOD(final IERSConventions conventions) {
         return getMOD(conventions, true);
     }
 
@@ -1170,10 +1138,8 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
-    private static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr)
-        throws OrekitException {
+    private static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr) {
 
         synchronized (FramesFactory.class) {
 
@@ -1224,9 +1190,8 @@ public class FramesFactory {
      * blue book.
      * </p>
      * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getTEME() throws OrekitException {
+    public static FactoryManagedFrame getTEME() {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -1256,6 +1221,46 @@ public class FramesFactory {
         }
     }
 
+    /** Get the PZ-90.11 (Parametry Zemly  – 1990.11) reference frame.
+     * <p>
+     * The PZ-90.11 reference system was updated on all operational
+     * GLONASS satellites starting from 3:00 pm on December 31, 2013.
+     * </p>
+     * <p>
+     * The transition between parent frame (ITRF-2008) and PZ-90.11 frame is performed using
+     * a seven parameters Helmert transformation.
+     * <pre>
+     *    From       To      ΔX(m)   ΔY(m)   ΔZ(m)   RX(mas)   RY(mas)  RZ(mas)   Epoch
+     * ITRF-2008  PZ-90.11  +0.003  +0.001  -0.000   +0.019    -0.042   +0.002     2010
+     * </pre>
+     * @see "Springer Handbook of Global Navigation Satellite Systems, Peter Teunissen & Oliver Montenbruck"
+     *
+     * @param convention IERS conventions to apply
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @return the selected reference frame singleton.
+     */
+    public static FactoryManagedFrame getPZ9011(final IERSConventions convention,
+                                                final boolean simpleEOP) {
+        synchronized (FramesFactory.class) {
+
+            // try to find an already built frame
+            final Predefined factoryKey = Predefined.PZ90_11;
+            FactoryManagedFrame frame = FRAMES.get(factoryKey);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+                final Frame itrf = getITRF(ITRFVersion.ITRF_2008, convention, simpleEOP);
+                final HelmertTransformation pz90Raw = new HelmertTransformation(new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
+                                                                                +3.0, +1.0, -0.0, +0.019, -0.042, +0.002, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+                frame = new FactoryManagedFrame(itrf, pz90Raw, false, factoryKey);
+                FRAMES.put(factoryKey, frame);
+            }
+
+            return frame;
+
+        }
+    }
+
     /** Get the transform between two frames, suppressing all interpolation.
      * <p>
      * This method is similar to {@link Frame#getTransformTo(Frame, AbsoluteDate)}
@@ -1272,11 +1277,9 @@ public class FramesFactory {
      * @param to frame to which transformation ends
      * @param date date of the transform
      * @return transform between the two frames, avoiding interpolation
-     * @throws OrekitException if transform cannot be computed at this date
      */
     public static Transform getNonInterpolatingTransform(final Frame from, final Frame to,
-                                                         final AbsoluteDate date)
-        throws OrekitException {
+                                                         final AbsoluteDate date) {
 
         // common ancestor to both frames in the frames tree
         Frame currentF = from.getDepth() > to.getDepth() ? from.getAncestor(from.getDepth() - to.getDepth()) : from;
@@ -1325,12 +1328,10 @@ public class FramesFactory {
      * @param date date of the transform
      * @param <T> type of the field elements
      * @return transform between the two frames, avoiding interpolation
-     * @throws OrekitException if transform cannot be computed at this date
      * @since 9.0
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
-                                                                                                 final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+                                                                                                 final FieldAbsoluteDate<T> date) {
 
         // common ancestor to both frames in the frames tree
         Frame currentF = from.getDepth() > to.getDepth() ? from.getAncestor(from.getDepth() - to.getDepth()) : from;
@@ -1404,10 +1405,8 @@ public class FramesFactory {
     /** Peel interpolation and shifting from a transform provider.
      * @param provider transform provider to peel
      * @return peeled transform provider
-     * @exception OrekitException if EOP cannot be retrieved
      */
-    private static TransformProvider peel(final TransformProvider provider)
-        throws OrekitException {
+    private static TransformProvider peel(final TransformProvider provider) {
 
         TransformProvider peeled = provider;
 

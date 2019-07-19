@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,7 +63,7 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
 
     /** Get the reference date for the harmonics.
      * @return reference date for the harmonics (may be null if no reference date is defined)
-     * @deprecated as of 9.2, this method is deprecated as newer gravity fields are piecewise
+     * @deprecated as of 10.1, this method is deprecated as newer gravity fields are piecewise
      * and therefore may have more than one reference date, which is used only internally
      */
     @Deprecated
@@ -74,7 +74,7 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
      * @return offset between current date and reference date if there is a reference
      * date, or 0.0 if there are no reference dates (i.e. if {@link #getReferenceDate}
      * returns null)
-     * @deprecated as of 9.2, this method is deprecated as newer gravity fields are piecewise
+     * @deprecated as of 10.1, this method is deprecated as newer gravity fields are piecewise
      * and therefore may have more than one reference date, which is used only internally
      */
     @Deprecated

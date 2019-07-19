@@ -16,22 +16,23 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.errors.OrekitException;
+import java.util.function.ToDoubleFunction;
+
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 
 /**
- * A detector that implements the {@link #g(SpacecraftState)} function using a
- * {@link GFunction lambda} that can be set using {@link #withGFunction(GFunction)}.
+ * A detector that implements the {@link #g(SpacecraftState)} function using a lambda that
+ * can be set using {@link #withFunction(ToDoubleFunction)}.
  *
  * <p>For example, to create a simple date detector use:
  *
- * <code><pre>
+ * <pre>
  * FunctionalDetector d = new FunctionalDetector()
- *     .withGFunction((s)-> s.getDate().durationFrom(triggerDate))
+ *     .withGFunction((s) -&gt; s.getDate().durationFrom(triggerDate))
  *     .withMaxCheck(1e10);
- * </pre></code>
+ * </pre>
  *
  * @author Evan Ward
  * @since 9.2
@@ -39,7 +40,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
 
     /** The g function. */
-    private final GFunction gFunction;
+    private final ToDoubleFunction<SpacecraftState> function;
 
     /**
      * Create an event detector with the default values. These are {@link
@@ -48,7 +49,8 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      */
     public FunctionalDetector() {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                new ContinueOnEvent<>(), a -> 1.0);
+                new ContinueOnEvent<>(),
+                (ToDoubleFunction<SpacecraftState>) value -> 1.0);
     }
 
     /**
@@ -58,20 +60,21 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
-     * @param gFunction the switching function.
+     * @param function  the switching function.
      */
     private FunctionalDetector(final double maxCheck,
                                final double threshold,
                                final int maxIter,
                                final EventHandler<? super FunctionalDetector> handler,
-                               final GFunction gFunction) {
+                               final ToDoubleFunction<SpacecraftState> function) {
         super(maxCheck, threshold, maxIter, handler);
-        this.gFunction = gFunction;
+        this.function = function;
     }
 
+
     @Override
-    public double g(final SpacecraftState s) throws OrekitException {
-        return gFunction.apply(s);
+    public double g(final SpacecraftState s) {
+        return function.applyAsDouble(s);
     }
 
     @Override
@@ -82,20 +85,21 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
             final EventHandler<? super FunctionalDetector> newHandler) {
 
         return new FunctionalDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                gFunction);
+                                      function);
     }
 
     /**
      * Create a new event detector with a new g function, keeping all other attributes the
-     * same. It is recommended to use {@link #withMaxCheck(double)} and
-     * {@link #withThreshold(double)} to set appropriate values for this g function.
+     * same. It is recommended to use {@link #withMaxCheck(double)} and {@link
+     * #withThreshold(double)} to set appropriate values for this g function.
      *
      * @param newGFunction the new g function.
      * @return a new detector with the new g function.
      */
-    public FunctionalDetector withGFunction(final GFunction newGFunction) {
+    public FunctionalDetector withFunction(
+            final ToDoubleFunction<SpacecraftState> newGFunction) {
         return new FunctionalDetector(getMaxCheckInterval(), getThreshold(),
-                getMaxIterationCount(), getHandler(), newGFunction);
+                                      getMaxIterationCount(), getHandler(), newGFunction);
     }
 
     /**
@@ -103,23 +107,8 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      *
      * @return the function used in {@link #g(SpacecraftState)}.
      */
-    public GFunction getGFunction() {
-        return gFunction;
-    }
-
-    /** A functional interface for the {@link #g(SpacecraftState)} function. */
-    @FunctionalInterface
-    public interface GFunction {
-
-        /**
-         * Applies this function to the given argument.
-         *
-         * @param value the function argument
-         * @return the function result
-         * @throws OrekitException if one is thrown while computing the result.
-         */
-        double apply(SpacecraftState value) throws OrekitException;
-
+    public ToDoubleFunction<SpacecraftState> getFunction() {
+        return function;
     }
 
 }

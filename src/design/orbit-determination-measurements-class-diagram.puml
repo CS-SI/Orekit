@@ -1,4 +1,4 @@
-' Copyright 2002-2018 CS Systèmes d'Information
+' Copyright 2002-2019 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -26,54 +26,59 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit.estimation.measurements #ECEBD8 {
+  package org.orekit #ECEBD8 {
 
-    interface ObservedMeasurement {
-      +getDimension()
-      +isEnabled()
-      +setEnabled()
-      +getObservedValue()
-      +getParametersDrivers()
-      +getTheoreticalStandardDeviation()
-      +getBaseWeight()
-      +addModifier(modifier)
-      +getModifiers()
-      +estimate(iteration, evaluation, state)
-    }
+    package estimation.measurements #DDEBD8 {
+
+      interface ObservedMeasurement {
+        +getDimension()
+        +isEnabled()
+        +setEnabled()
+        +getObservedValue()
+        +getParametersDrivers()
+        +getTheoreticalStandardDeviation()
+        +getBaseWeight()
+        +addModifier(modifier)
+        +getModifiers()
+        +estimate(iteration, evaluation, state)
+      }
     
-    class EstimatedMeasurement {
-      +getObservedMeasurement()
-      +getIteration()
-      +getState()
-      +getTimeOffset()
-      +[get|set]Value()
-      +[get|set]CurrentWeight()
-      +[get|set]StateDerivatives()
-      +[get|set]ParameterDerivatives()
-    }
+      class EstimatedMeasurement {
+        +getObservedMeasurement()
+        +getIteration()
+        +getState()
+        +getTimeOffset()
+        +[get|set]Value()
+        +[get|set]CurrentWeight()
+        +[get|set]StateDerivatives()
+        +[get|set]ParameterDerivatives()
+      }
     
-    interface EstimationModifier {
-      +getParametersDrivers()
-      +modify(estimated)
-    }
+      interface EstimationModifier {
+        +getParametersDrivers()
+        +modify(estimated)
+      }
     
-    class "On-board antenna" as Onboard
-    ObservedMeasurement *--> "*" EstimationModifier
-    ObservedMeasurement --> EstimatedMeasurement : create
-    EstimatedMeasurement <-- EstimationModifier : modify
-    Range              ..|> ObservedMeasurement
-    RangeRate          ..|> ObservedMeasurement
-    AngularAzEl        ..|> ObservedMeasurement
-    AngularRaDec       ..|> ObservedMeasurement
-    PV                 ..|> ObservedMeasurement
-    ObservedMeasurement <|.. TurnAroundRange
-    ObservedMeasurement <|.. InterSatellitesRange
-    EstimationModifier <|.. Bias
-    EstimationModifier <|.. OutlierFilter
-    EstimationModifier <|.. Tropo
-    EstimationModifier <|.. Iono
-    EstimationModifier <|.. Onboard
+      class "On-board antenna" as Onboard
+      ObservedMeasurement *--> "*" EstimationModifier
+      ObservedMeasurement --> EstimatedMeasurement : create
+      EstimatedMeasurement <-- EstimationModifier : modify
+      Range              ..|> ObservedMeasurement
+      RangeRate          ..|> ObservedMeasurement
+      AngularAzEl        ..|> ObservedMeasurement
+      AngularRaDec       ..|> ObservedMeasurement
+      PV                 ..|> ObservedMeasurement
+      Position           ..|> ObservedMeasurement
+      ObservedMeasurement <|.. TurnAroundRange
+      ObservedMeasurement <|.. InterSatellitesRange
+      EstimationModifier <|.. Bias
+      EstimationModifier <|.. OutlierFilter
+      EstimationModifier <|.. Tropo
+      EstimationModifier <|.. Iono
+      EstimationModifier <|.. Onboard
  
+    }
+
   }
 
   package mission.specific #C4D2C5 {

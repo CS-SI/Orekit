@@ -17,9 +17,7 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
@@ -45,8 +43,8 @@ import org.orekit.time.FieldAbsoluteDate;
  * the pDot array, which is the time-derivative of the p array. Since the additional parameters
  * p may also have an influence on the equations of motion themselves that should be accumulated
  * to the main state derivatives (for example an equation linked to a complex thrust model may
- * induce an acceleration and a mass change), the {@link #computeDerivatives(FieldSpacecraftState, RealFieldElement[])
- * computeDerivatives} method can return a double array that will be
+ * induce an acceleration and a mass change), the {@link #computeDerivatives(FieldSpacecraftState,
+ * RealFieldElement[]) computeDerivatives} method can return a double array that will be
  * <em>added</em> to the main state derivatives. This means these equations can be used as an
  * additional force model if needed. If the additional parameters have no influence at all on
  * the main spacecraft state, a null reference may be returned.
@@ -73,7 +71,7 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      *
      * <p>
      * This method will be called once at propagation start,
-     * before any calls to {@link #computeDerivatives(SpacecraftState)}.
+     * before any calls to {@link #computeDerivatives(FieldSpacecraftState , RealFieldElement[])}.
      * </p>
      *
      * <p>
@@ -83,11 +81,8 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      * @param initialState initial state information at the start of propagation.
      * @param target       date of propagation. Not equal to {@code
      *                     initialState.getDate()}.
-     * @throws OrekitException if there is an Orekit related error during
-     *                         initialization.
      */
-    default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target)
-        throws OrekitException {
+    default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         // nothing by default
     }
 
@@ -106,9 +101,7 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      * should be put
      * @return cumulative effect of the equations on the main state (may be null if
      * equations do not change main state at all)
-     * @exception OrekitException if some specific error occurs
      */
-    T[] computeDerivatives(FieldSpacecraftState<T> s,  T[] pDot)
-        throws OrekitException;
+    T[] computeDerivatives(FieldSpacecraftState<T> s,  T[] pDot);
 
 }

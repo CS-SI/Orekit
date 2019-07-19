@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -34,7 +34,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * method is called. This class can be used to add a global logging
  * feature registering all events with their corresponding states in
  * a chronological sequence (or reverse-chronological if propagation
- * occurs backward).<p>
+ * occurs backward).
  * <p>This class works by wrapping user-provided {@link FieldEventDetector
  * events detectors} before they are registered to the propagator. The
  * wrapper monitor the calls to {@link
@@ -69,7 +69,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
      * <pre>
      * Propagator propagator = new XyzPropagator(...);
      * EventsLogger logger = new EventsLogger();
-     * FieldEventDetector<T> detector = new UvwDetector(...);
+     * FieldEventDetector&lt;T&gt; detector = new UvwDetector(...);
      * propagator.addEventDetector(logger.monitorDetector(detector));
      * </pre>
      * <p>
@@ -207,12 +207,14 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
         }
 
         /** {@inheritDoc} */
-        public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        public void init(final FieldSpacecraftState<T> s0,
+                         final FieldAbsoluteDate<T> t) {
+            super.init(s0, t);
             detector.init(s0, t);
         }
 
         /** {@inheritDoc} */
-        public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+        public T g(final FieldSpacecraftState<T> s) {
             return detector.g(s);
         }
 
@@ -224,16 +226,14 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
     private class FieldLocalHandler<D extends FieldEventDetector<T>> implements FieldEventHandler<FieldLoggingWrapper<D>, T> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldLoggingWrapper<D> wrapper, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldLoggingWrapper<D> wrapper, final boolean increasing) {
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public FieldSpacecraftState<T> resetState(final FieldLoggingWrapper<D> wrapper, final FieldSpacecraftState<T> oldState)
-            throws OrekitException {
+        public FieldSpacecraftState<T> resetState(final FieldLoggingWrapper<D> wrapper, final FieldSpacecraftState<T> oldState) {
             return wrapper.detector.resetState(oldState);
         }
 

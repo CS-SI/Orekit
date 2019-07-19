@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -137,9 +137,8 @@ public class TDMFile {
     }
 
     /** Check that, according to the CCSDS standard, every ObservationsBlock has the same time system.
-     *  @exception OrekitException if some blocks do not have the same time system
      */
-    public void checkTimeSystems() throws OrekitException {
+    public void checkTimeSystems() {
         final CcsdsTimeScale timeSystem = getObservationsBlocks().get(0).getMetaData().getTimeSystem();
         for (final ObservationsBlock block : observationsBlocks) {
             if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {

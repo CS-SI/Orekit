@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,6 @@ import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -35,14 +34,14 @@ import org.orekit.utils.PVCoordinates;
 public class TransformProviderUtilTest {
 
     @Test
-    public void testIdentity() throws OrekitException {
+    public void testIdentity() {
         RandomGenerator random = new Well19937a(0x87c3a5c51fb0235el);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         checkNoTransform(TransformProviderUtils.IDENTITY_PROVIDER.getTransform(date), random);
     }
 
     @Test
-    public void testIdentityField() throws OrekitException {
+    public void testIdentityField() {
         RandomGenerator random = new Well19937a(0x7086a8e4ad1265b0l);
         final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
@@ -50,7 +49,7 @@ public class TransformProviderUtilTest {
     }
 
     @Test
-    public void testReverse() throws OrekitException {
+    public void testReverse() {
         RandomGenerator random = new Well19937a(0xba49d4909717ec6cl);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
@@ -62,7 +61,7 @@ public class TransformProviderUtilTest {
     }
 
     @Test
-    public void testReverseField() throws OrekitException {
+    public void testReverseField() {
         RandomGenerator random = new Well19937a(0xd74443b3079403e7l);
         final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
@@ -75,7 +74,7 @@ public class TransformProviderUtilTest {
     }
 
     @Test
-    public void testCombine() throws OrekitException {
+    public void testCombine() {
         RandomGenerator random = new Well19937a(0x6e3b2c793680e7e3l);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
@@ -90,7 +89,7 @@ public class TransformProviderUtilTest {
     }
 
     @Test
-    public void testCombineField() throws OrekitException {
+    public void testCombineField() {
         RandomGenerator random = new Well19937a(0x1f8bf20bfa4b54eal);
         final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
@@ -110,11 +109,11 @@ public class TransformProviderUtilTest {
         return new TransformProvider() {
             private static final long serialVersionUID = 20180330L;
             public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date)
-                throws OrekitException {
+                {
                 return new FieldTransform<>(date.getField(), combined);
             }
             public Transform getTransform(AbsoluteDate date)
-                throws OrekitException {
+                {
                 return combined;
             }
         };

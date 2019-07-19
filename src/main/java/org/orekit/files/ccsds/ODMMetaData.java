@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -239,9 +239,8 @@ public class ODMMetaData {
      * Keplerian elements data (and for the covariance reference frame if none is given).
      *
      * @return the reference frame
-     * @throws OrekitException if the reference frame cannot be created.
      */
-    public Frame getFrame() throws OrekitException {
+    public Frame getFrame() {
         final Frame frame = this.getRefFrame();
         final CelestialBody body = this.getCenterBody();
         if (body == null) {

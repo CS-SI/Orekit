@@ -33,10 +33,10 @@ public class GeoMagneticElements implements Serializable {
     /** The magnetic field vector (East=X, North=Y, Nadir=Z). */
     private Vector3D b;
 
-    /** The magnetic inclination in deg. down is positive, up is negative */
+    /** The magnetic inclination in radians. */
     private double inclination;
 
-    /** The magnetic declination in deg. east is positive, west is negative */
+    /** The magnetic declination in radians. */
     private double declination;
 
     /** The magnetic total intensity, in nano Teslas. */
@@ -54,8 +54,8 @@ public class GeoMagneticElements implements Serializable {
 
         horizontalIntensity = FastMath.hypot(b.getX(), b.getY());
         totalIntensity = b.getNorm();
-        declination = FastMath.toDegrees(FastMath.atan2(b.getY(), b.getX()));
-        inclination = FastMath.toDegrees(FastMath.atan2(b.getZ(), horizontalIntensity));
+        declination = FastMath.atan2(b.getY(), b.getX());
+        inclination = FastMath.atan2(b.getZ(), horizontalIntensity);
     }
 
     /** Returns the magnetic field vector in nTesla.
@@ -65,15 +65,15 @@ public class GeoMagneticElements implements Serializable {
         return b;
     }
 
-    /** Returns the inclination of the magnetic field in degrees.
-     * @return the inclination (dip) in degrees
+    /** Returns the inclination of the magnetic field in radians.
+     * @return the inclination (dip) in radians
      */
     public double getInclination() {
         return inclination;
     }
 
-    /** Returns the declination of the magnetic field in degrees.
-     * @return the declination (dec) in degrees
+    /** Returns the declination of the magnetic field in radians.
+     * @return the declination (dec) in radians
      */
     public double getDeclination() {
         return declination;

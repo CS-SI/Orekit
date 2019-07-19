@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
@@ -94,12 +93,10 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * (typically set to the expected standard deviation of the position)
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
-     * @exception OrekitException if parameters drivers cannot be scaled
-     * @since 8.0
+          * @since 8.0
      */
     protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
-                                        final double positionScale, final boolean addDriverForCentralAttraction)
-        throws OrekitException {
+                                        final double positionScale, final boolean addDriverForCentralAttraction) {
 
         this.initialOrbitDate    = templateOrbit.getDate();
         this.frame               = templateOrbit.getFrame();
@@ -239,12 +236,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Set the selected parameters.
      * @param normalizedParameters normalized values for the selected parameters
-     * @exception OrekitException if some parameter cannot be set to the specified value
-     * @exception OrekitIllegalArgumentException if the number of parameters is not the
-     * number of selected parameters (adding orbits and models parameters)
      */
-    protected void setParameters(final double[] normalizedParameters)
-        throws OrekitException, OrekitIllegalArgumentException {
+    protected void setParameters(final double[] normalizedParameters) {
 
 
         if (normalizedParameters.length != getNbSelected()) {
@@ -273,29 +266,28 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Add a supported parameter.
      * @param driver driver for the parameter
-     * @exception OrekitException if the name is already supported
      */
-    protected void addSupportedParameter(final ParameterDriver driver)
-        throws OrekitException {
+    protected void addSupportedParameter(final ParameterDriver driver) {
         propagationDrivers.add(driver);
         propagationDrivers.sort();
     }
 
     /** Reset the orbit in the propagator builder.
      * @param newOrbit New orbit to set in the propagator builder
-     * @exception OrekitException if a parameter observer throws an exception during reset
      */
-    public void resetOrbit(final Orbit newOrbit)
-        throws OrekitException {
+    public void resetOrbit(final Orbit newOrbit) {
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];
         orbitType.mapOrbitToArray(newOrbit, getPositionAngle(), orbitArray, null);
 
         // Update all the orbital drivers, selected or unselected
+        // Reset values and reference values
         final List<DelegatingDriver> orbitalDriversList = getOrbitalParametersDrivers().getDrivers();
-        for (int i = 0; i < 6; i++) {
-            orbitalDriversList.get(i).setValue(orbitArray[i]);
+        int i = 0;
+        for (DelegatingDriver driver : orbitalDriversList) {
+            driver.setReferenceValue(orbitArray[i]);
+            driver.setValue(orbitArray[i++]);
         }
 
         // Change the initial orbit date in the builder

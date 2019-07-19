@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,23 +124,23 @@ public class OMMParser extends ODMParser {
 
     /** {@inheritDoc} */
     @Override
-    public OMMFile parse(final String fileName) throws OrekitException {
+    public OMMFile parse(final String fileName) {
         return (OMMFile) super.parse(fileName);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OMMFile parse(final InputStream stream) throws OrekitException {
+    public OMMFile parse(final InputStream stream) {
         return (OMMFile) super.parse(stream);
     }
 
     /** {@inheritDoc} */
-    public OMMFile parse(final InputStream stream, final String fileName) throws OrekitException {
+    public OMMFile parse(final InputStream stream, final String fileName) {
 
         try {
 
             final BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                    new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();

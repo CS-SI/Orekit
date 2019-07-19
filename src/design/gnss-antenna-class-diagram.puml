@@ -1,0 +1,110 @@
+' Copyright 2002-2019 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package org.orekit.gnss #ECEBD8 {
+
+    enum SatelliteSystem {
+      +GPS
+      +GLONASS
+      +GALILEO
+      +BEIDOU
+      +QZSS
+      +IRNSS
+      +SBAS
+      +MIXED
+    }
+
+    enum Frequency {
+      +G01
+      +G02
+      +...
+      +E01
+      +E07
+      +...
+      +S05
+    }
+
+    SatelliteSystem "1" <--* Frequency
+
+    package antenna #DDEBD8 {
+
+      enum SatelliteType {
+        +BEIDOU_2G
+        +BEIDOU_2I
+        +...
+        +QZSS_2G
+      }
+
+      class AntexLoader {
+        +List<ReceiverAntenna> getReceiversAntennas() 
+        +List<TimeSpanMap<SatelliteAntenna>> getSatellitesAntennas()
+        +TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(satelliteSystem, prnNumber)
+      }
+
+      class Antenna {
+        +Vector3D getEccentricities(frequency)
+        +double   getPhaseCenterVariation(frequency, direction)
+      }
+
+      class ReceiverAntenna {
+        +String getSerialNumber()
+      }
+
+      class SatelliteAntenna {
+        +SatelliteSystem getSatelliteSystem()
+        +int             getPrnNumber()
+        +SatelliteType   getSatelliteType()
+        +AbsoluteDate    getValidFrom()
+        +AbsoluteDate    getValidUntil()
+      }
+
+      class FrequencyPattern {
+        +Vector3D getEccentricities()
+        +double getPhaseCenterVariation(direction)
+      }
+
+      interface PhaseCenterVariationFunction {
+        +double value(polarAngle, azimuthAngle)
+      }
+
+      FrequencyPattern "1" <--* PhaseCenterVariationFunction
+      Frequency        "*" <-left-* Antenna
+      Antenna *-right-> "*" FrequencyPattern
+      SatelliteAntenna     ..|> Antenna
+      ReceiverAntenna     ..|> Antenna
+      SatelliteSystem  "1" <--* SatelliteAntenna
+      SatelliteType    "1" <--* SatelliteAntenna
+      AntexLoader *--> "*" SatelliteAntenna
+      AntexLoader *--> "*" ReceiverAntenna
+
+    }
+
+  }
+
+@enduml
+

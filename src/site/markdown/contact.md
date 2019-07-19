@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -14,23 +14,20 @@
 
 # Contacts
 
-## Mailing lists
+## Forums
 
-Most discussions should occur on the public mailing lists.
+Most discussions should occur on the public forums [https://forum.orekit.org/](https://forum.orekit.org/).
+The main categories are:
 
-|     topic     |         post address         |                                            subscribe URL                                                           |                                               archive URL                                            |
-|---------------|------------------------------|--------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-|  announces    | orekit-announces@orekit.org  |   [https://www.orekit.org/wws/subscribe/orekit-announces](https://www.orekit.org/wws/subscribe/orekit-announces)   | [https://www.orekit.org/wws/arc/orekit-announces](https://www.orekit.org/wws/arc/orekit-announces)   |
-|     users     |   orekit-users@orekit.org    |   [https://www.orekit.org/wws/subscribe/orekit-users](https://www.orekit.org/wws/subscribe/orekit-users)           | [https://www.orekit.org/wws/arc/orekit-users](https://www.orekit.org/wws/arc/orekit-users)           |
-|   developers  | orekit-developers@orekit.org |   [https://www.orekit.org/wws/subscribe/orekit-developers](https://www.orekit.org/wws/subscribe/orekit-developers) | [https://www.orekit.org/wws/arc/orekit-developers](https://www.orekit.org/wws/arc/orekit-developers) |
-
-Please register to these mailing lists before attempting to post!
-
-We're preventing unregistered members from posting in order to prevent spam. Thank you.
+|   category    |                                     URL                                                            |
+|---------------|----------------------------------------------------------------------------------------------------|
+|  announces    | [https://forum.orekit.org/c/orekit-announcements](https://forum.orekit.org/c/orekit-announcements) |
+|     users     | [https://forum.orekit.org/c/orekit-usage](https://forum.orekit.org/c/orekit-usage)                 |
+|   developers  | [https://forum.orekit.org/c/orekit-development](https://forum.orekit.org/c/orekit-development )    |
 
 ## Technical contact
 
-If for some reason you cannot use the public lists, you can reach the CS
+If for some reason you cannot use the public forums, you can reach the CS
 Systèmes d'Information Orekit team for any question (either technically
 oriented or administrative) at the following email address:
 [orekit@c-s.fr](mailto:orekit@c-s.fr)

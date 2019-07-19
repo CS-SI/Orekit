@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -157,7 +157,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testLimb() throws OrekitException {
+    public void testLimb() {
         final Ellipsoid ellipsoid =
                         new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
         RandomGenerator random = new Well1024a(0xa69c430a67475af7l);

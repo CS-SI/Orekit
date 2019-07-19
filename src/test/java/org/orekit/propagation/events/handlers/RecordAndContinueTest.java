@@ -16,9 +16,11 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import java.util.List;
+
+import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -26,12 +28,9 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-
-import java.util.List;
 
 /**
  * Unit tests for {@link RecordAndContinue}.
@@ -42,11 +41,9 @@ public class RecordAndContinueTest {
 
     /**
      * check add and clear behavior.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testGetEvents() throws OrekitException {
+    public void testGetEvents() {
         // setup
         RecordAndContinue<DateDetector> handler =
                 new RecordAndContinue<DateDetector>();

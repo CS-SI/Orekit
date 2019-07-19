@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,13 @@ package org.orekit.time;
 import org.hipparchus.RealFieldElement;
 
 
+/** IRNSS time scale (also called IRNWT for IRNSS NetWork Time).
+ * <p>By convention, TIRNSS = TAI - 19 s.</p>
+ * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * so there is no public constructor.</p>
+ * @author Luc Maisonobe
+ * @see AbsoluteDate
+ */
 public class IRNSSScale implements TimeScale {
 
     /** Serializable UID. */

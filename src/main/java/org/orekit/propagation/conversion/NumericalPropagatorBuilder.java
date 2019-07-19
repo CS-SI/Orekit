@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,11 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
+import org.orekit.estimation.leastsquares.BatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -30,12 +34,13 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -63,14 +68,12 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @exception OrekitException if parameters drivers cannot be scaled
-     * @since 8.0
+          * @since 8.0
      */
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
                                       final PositionAngle positionAngle,
-                                      final double positionScale)
-        throws OrekitException {
+                                      final double positionScale) {
         super(referenceOrbit, positionAngle, positionScale, true);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
@@ -80,9 +83,8 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Create a copy of a NumericalPropagatorBuilder object.
      * @return Copied version of the NumericalPropagatorBuilder
-     * @throws OrekitException if parameters drivers cannot be scaled
      */
-    public NumericalPropagatorBuilder copy() throws OrekitException {
+    public NumericalPropagatorBuilder copy() {
         final NumericalPropagatorBuilder copyBuilder =
                         new NumericalPropagatorBuilder(createInitialOrbit(),
                                                        builder,
@@ -118,10 +120,8 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      * <p>If this method is not called at all, the integrated orbit will follow
      * a Keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
-     * @exception OrekitException if model parameters cannot be set
      */
-    public void addForceModel(final ForceModel model)
-        throws OrekitException {
+    public void addForceModel(final ForceModel model) {
         forceModels.add(model);
         for (final ParameterDriver driver : model.getParametersDrivers()) {
             addSupportedParameter(driver);
@@ -161,8 +161,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public NumericalPropagator buildPropagator(final double[] normalizedParameters)
-        throws OrekitException {
+    public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
         final Orbit           orbit    = createInitialOrbit();
@@ -180,4 +179,20 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
         return propagator;
     }
+
+    /** {@inheritDoc} */
+    public BatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
+                            final List<ObservedMeasurement<?>> measurements,
+                            final ParameterDriversList estimatedMeasurementsParameters,
+                            final ModelObserver observer) {
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+    }
+
+    /** {@inheritDoc} */
+    public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                  final ParameterDriversList estimatedMeasurementsParameters) {
+        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
+    }
+
 }

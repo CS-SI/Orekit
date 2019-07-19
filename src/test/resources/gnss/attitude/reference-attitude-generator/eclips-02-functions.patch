@@ -1,0 +1,20 @@
+--- eclips_Dec2017.f.orig	2018-09-20 11:52:56.580130048 +0200
++++ eclips_Dec2017.f	2018-09-20 12:41:13.700202875 +0200
+@@ -100,6 +100,8 @@
+ C                      Feb 02, 2018  FIXED NUMERICAL NOISE APPEARING AT
+ C                                    EXACT SUN ALIGNMENT AND LEADING TO
+ C                                    NaN BEING PRODUCED (Luc Maisonobe)
++C                      May 20, 2018  ENSURE WE USE THE DOUBLE PRECISION VERSION
++C                                    OF ALL MATHEMATICAL FUNCTIONS (Luc Maisonobe)
+ C     PARAMETERS        DESCRIPTION
+ C
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -213,6 +215,8 @@
+ C    &          SMTH, BETAE
+      &          BETAE
+       REAL*8    YAWEND
++      REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
++      REAL*8    DABS, ABS, SIGN, DMOD, MAX
+ C Dec 12, 2013
+       REAL*8 YBIAS
+       INTEGER*4 IBLK(*), J, I

@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -25,7 +27,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -33,16 +34,10 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.ElevationDetector;
-import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
-import org.orekit.propagation.events.FieldOfView;
-import org.orekit.propagation.events.GroundFieldOfViewDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.util.List;
 
 /**
  * Unit tests for {@link GroundFieldOfViewDetector}.
@@ -59,11 +54,9 @@ public class GroundFieldOfViewDetectorTest {
     /**
      * Check FoV detector is similar to {@link ElevationDetector} when using
      * zenith pointing.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testCaseSimilarToElevationDetector() throws OrekitException {
+    public void testCaseSimilarToElevationDetector() {
         //setup
         double pi = FastMath.PI;
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH; //arbitrary date

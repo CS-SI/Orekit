@@ -1,0 +1,145 @@
+/* Copyright 2002-2019 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.estimation.measurements.generation;
+
+import java.util.Map;
+import java.util.SortedSet;
+
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.hipparchus.random.GaussianRandomGenerator;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.FastMath;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.TurnAroundRange;
+import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.events.BooleanDetector;
+import org.orekit.propagation.events.ElevationDetector;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FixedStepSelector;
+import org.orekit.time.TimeScalesFactory;
+
+public class TurnAroundRangeBuilderTest {
+
+    private static final double SIGMA = 10.0;
+    private static final double BIAS  = -7.0;
+
+    private MeasurementBuilder<TurnAroundRange> getBuilder(final RandomGenerator random,
+                                                           final GroundStation master,
+                                                           final GroundStation slave,
+                                                           final ObservableSatellite satellite) {
+        final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
+        MeasurementBuilder<TurnAroundRange> rb =
+                        new TurnAroundRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
+                                                                                                               1.0e-10,
+                                                                                                               new GaussianRandomGenerator(random)),
+                                                   master, slave, SIGMA, 1.0, satellite);
+        rb.addModifier(new Bias<>(new String[] { "bias" },
+                        new double[] { BIAS },
+                        new double[] { 1.0 },
+                        new double[] { Double.NEGATIVE_INFINITY },
+                        new double[] { Double.POSITIVE_INFINITY }));
+        return rb;
+    }
+
+    @Test
+    public void testForward() {
+        doTest(0xf50c0ce7c8c1dab2l, 0.0, 1.2, 3.2 * SIGMA);
+    }
+
+    @Test
+    public void testBackward() {
+        doTest(0x453a681440d01832l, 0.0, -1.0, 2.6 * SIGMA);
+    }
+
+    private Propagator buildPropagator() {
+        return EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
+    }
+
+    private void doTest(long seed, double startPeriod, double endPeriod, double tolerance) {
+        Generator generator = new Generator();
+        final double step = 60.0;
+        final Map.Entry<GroundStation, GroundStation> entry = context.TARstations.entrySet().iterator().next();
+        final GroundStation master = entry.getKey();
+        final GroundStation slave  = entry.getValue();
+        final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), master, slave, satellite),
+                                                         new FixedStepSelector(step, TimeScalesFactory.getUTC()),
+                                                         generator.getPropagator(satellite),
+                                                         BooleanDetector.andCombine(new ElevationDetector(master.getBaseFrame()).
+                                                                                    withConstantElevation(FastMath.toRadians(5.0)),
+                                                                                    new ElevationDetector(slave.getBaseFrame()).
+                                                                                    withConstantElevation(FastMath.toRadians(5.0))),
+                                                         SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
+        final double period = context.initialOrbit.getKeplerianPeriod();
+        AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
+        AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
+        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(t0, t1);
+        Propagator propagator = buildPropagator();
+        double maxError = 0;
+        AbsoluteDate previous = null;
+        AbsoluteDate tInf = t0.compareTo(t1) < 0 ? t0 : t1;
+        AbsoluteDate tSup = t0.compareTo(t1) < 0 ? t1 : t0;
+        for (ObservedMeasurement<?> measurement : measurements) {
+            AbsoluteDate date = measurement.getDate();
+            double[] m = measurement.getObservedValue();
+            Assert.assertTrue(date.compareTo(tInf) >= 0);
+            Assert.assertTrue(date.compareTo(tSup) <= 0);
+            if (previous != null) {
+                // measurements are always chronological, even with backward propagation,
+                // due to the SortedSet (which is intended for combining several
+                // measurements types with different builders and schedulers)
+                Assert.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+            }
+            previous = date;
+            SpacecraftState state = propagator.propagate(date);
+            double[] e = measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+            for (int i = 0; i < m.length; ++i) {
+                maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
+            }
+        }
+        Assert.assertEquals(0.0, maxError, tolerance);
+     }
+
+     @Before
+     public void setUp() {
+         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                                   1.0e-6, 300.0, 0.001, Force.POTENTIAL,
+                                                   Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
+     }
+
+     Context context;
+     NumericalPropagatorBuilder propagatorBuilder;
+
+}

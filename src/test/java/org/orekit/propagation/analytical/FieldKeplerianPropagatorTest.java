@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -90,7 +90,7 @@ public class FieldKeplerianPropagatorTest {
     private double mu;
 
     @Test
-    public void testTuple() throws OrekitException {
+    public void testTuple() {
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         KeplerianOrbit k0 = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -111,7 +111,7 @@ public class FieldKeplerianPropagatorTest {
                                                   PositionAngle.MEAN,
                                                   FramesFactory.getEME2000(),
                                                   new FieldAbsoluteDate<>(initDate, new Tuple(0.0, 0.0)),
-                                                  mu);
+                                                  new Tuple(mu, mu));
         Field<Tuple> field = twoOrbits.getDate().getField();
         FieldPropagator<Tuple> propagator = new FieldKeplerianPropagator<>(twoOrbits);
         Min minTangential = new Min();
@@ -149,116 +149,116 @@ public class FieldKeplerianPropagatorTest {
     }
 
     @Test
-    public void testSameDateCartesian() throws OrekitException {
+    public void testSameDateCartesian() {
         doTestSameDateCartesian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testSameDateKeplerian() throws OrekitException {
+    public void testSameDateKeplerian() {
         doTestSameDateKeplerian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedCartesian() throws OrekitException {
+    public void testPropagatedCartesian() {
         doTestPropagatedCartesian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedKeplerian() throws OrekitException {
+    public void testPropagatedKeplerian() {
         doTestPropagatedKeplerian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testAscendingNode() throws OrekitException {
+    public void testAscendingNode() {
         doTestAscendingNode(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testStopAtTargetDate() throws OrekitException {
+    public void testStopAtTargetDate() {
         doTestStopAtTargetDate(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testFixedStep() throws OrekitException {
+    public void testFixedStep() {
         doTestFixedStep(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testVariableStep() throws OrekitException {
+    public void testVariableStep() {
         doTestVariableStep(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testEphemeris() throws OrekitException {
+    public void testEphemeris() {
         doTestEphemeris(Decimal64Field.getInstance());}
 
 
     @Test
-    public void testIssue14() throws OrekitException {
+    public void testIssue14() {
         doTestIssue14(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue107() throws OrekitException {
+    public void testIssue107() {
         doTestIssue107(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testMu() throws OrekitException {
+    public void testMu() {
         doTestMu(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testNoDerivatives() throws OrekitException {
+    public void testNoDerivatives() {
         doTestNoDerivatives(Decimal64Field.getInstance());
     }
 
     @Test(expected = OrekitException.class)
-    public void testWrongAttitude() throws OrekitException{
+    public void testWrongAttitude() {
         doTestWrongAttitude(Decimal64Field.getInstance());
     }
 
     @Test(expected = OrekitException.class)
-    public void testStepException() throws OrekitException{
+    public void testStepException() {
         doTestStepException(Decimal64Field.getInstance());
     }
 
     @Test(expected = OrekitException.class)
-    public void testWrappedAttitudeException() throws OrekitException{
+    public void testWrappedAttitudeException() {
         doTestWrappedAttitudeException(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testPerigee() throws OrekitException{
+    public void testPerigee() {
         doTestPerigee(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testAltitude() throws OrekitException{
+    public void testAltitude() {
         doTestAltitude(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testDate() throws OrekitException{
+    public void testDate() {
         doTestDate(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testSetting() throws OrekitException{
+    public void testSetting() {
         doTestSetting(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSameDateCartesian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSameDateCartesian(Field<T> field) {
         T zero = field.getZero();
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -267,7 +267,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                                 FramesFactory.getEME2000(), initDate, mu);
+                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
         // -----------------------
@@ -299,14 +299,14 @@ public class FieldKeplerianPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestSameDateKeplerian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSameDateKeplerian(Field<T> field) {
         T zero = field.getZero();
         // Definition of initial conditions with Keplerian parameters
         //-----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
                                                                zero.add(6.2), PositionAngle.TRUE,
-                                                               FramesFactory.getEME2000(), initDate, mu);
+                                                               FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
         // -----------------------
@@ -339,7 +339,7 @@ public class FieldKeplerianPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestPropagatedCartesian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestPropagatedCartesian(Field<T> field) {
         T zero = field.getZero();
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -349,7 +349,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                                 FramesFactory.getEME2000(), initDate, mu);
+                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
         // -----------------------
@@ -432,14 +432,14 @@ public class FieldKeplerianPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestPropagatedKeplerian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestPropagatedKeplerian(Field<T> field) {
         T zero = field.getZero();
         // Definition of initial conditions with Keplerian parameters
         //-----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
                                                                zero.add(6.2), PositionAngle.TRUE,
-                                                               FramesFactory.getEME2000(), initDate, mu);
+                                                               FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
         // -----------------------
@@ -522,21 +522,20 @@ public class FieldKeplerianPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestWrongAttitude(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestWrongAttitude(Field<T> field) {
         T zero = field.getZero();
         FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         AttitudeProvider wrongLaw = new AttitudeProvider() {
-            private static final long serialVersionUID = 1L;
             @Override
-            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) throws OrekitException {
+            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
             @Override
             public <Q extends RealFieldElement<Q>> FieldAttitude<Q> getAttitude(FieldPVCoordinatesProvider<Q> pvProv,
                                                                                 FieldAbsoluteDate<Q> date,
-                                                                                Frame frame) throws OrekitException {
+                                                                                Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
         };
@@ -544,11 +543,11 @@ public class FieldKeplerianPropagatorTest {
         propagator.propagate(new FieldAbsoluteDate<>(field).shiftedBy(10.0));
     }
 
-    private <T extends RealFieldElement<T>> void doTestStepException(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestStepException(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldOrekitStepHandlerMultiplexer<T> multiplexer = new FieldOrekitStepHandlerMultiplexer<>();
         propagator.setMasterMode(multiplexer);
@@ -556,7 +555,7 @@ public class FieldKeplerianPropagatorTest {
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
             }
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
-                                   boolean isLast) throws OrekitException {
+                                   boolean isLast) {
                 if (isLast) {
                     throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
                 }
@@ -567,32 +566,30 @@ public class FieldKeplerianPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestWrappedAttitudeException(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestWrappedAttitudeException(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit,
                         new AttitudeProvider() {
-            private static final long serialVersionUID =
-                            1L;
-            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) throws OrekitException {
+            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }
             public <Q extends RealFieldElement<Q>> FieldAttitude<Q> getAttitude(FieldPVCoordinatesProvider<Q> pvProv,
                                                                                 FieldAbsoluteDate<Q> date,
-                                                                                Frame frame) throws OrekitException {
+                                                                                Frame frame) {
                 throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }
         });
         propagator.propagate(orbit.getDate().shiftedBy(10.09));
     }
 
-    private <T extends RealFieldElement<T>> void doTestAscendingNode(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestAscendingNode(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
@@ -604,11 +601,11 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertTrue(pv.getVelocity().getZ().getReal() > 0);
     }
 
-    private <T extends RealFieldElement<T>> void doTestStopAtTargetDate(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestStopAtTargetDate(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>()));
@@ -617,11 +614,11 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
     }
 
-    private <T extends RealFieldElement<T>> void doTestPerigee(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestPerigee(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.addEventDetector(new FieldApsideDetector<>(orbit));
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
@@ -632,11 +629,11 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), pv.getPosition().getNorm().getReal(), 1.0e-6);
     }
 
-    private <T extends RealFieldElement<T>> void doTestAltitude(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestAltitude(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         BodyShape bodyShape =
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -654,11 +651,11 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertEquals(1500000, gp.getAltitude().getReal(), 0.1);
     }
 
-    private <T extends RealFieldElement<T>> void doTestDate(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDate(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final FieldAbsoluteDate<T> stopDate = new FieldAbsoluteDate<>(field).shiftedBy(500.0);
         propagator.addEventDetector(new FieldDateDetector<>(stopDate));
@@ -667,11 +664,11 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertEquals(0, stopDate.durationFrom(propagated.getDate()).getReal(), 1.0e-10);
     }
 
-    private <T extends RealFieldElement<T>> void doTestSetting(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSetting(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final OneAxisEllipsoid earthShape =
             new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -692,17 +689,17 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertTrue(zVelocity.getReal() < 0);
     }
 
-    private <T extends RealFieldElement<T>> void doTestFixedStep(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestFixedStep(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final T step = zero.add(100.0);
         propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
             public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
-            throws OrekitException {
+            {
                 if (previous != null) {
                     Assert.assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }
@@ -713,11 +710,11 @@ public class FieldKeplerianPropagatorTest {
         propagator.propagate(farTarget);
     }
 
-    private <T extends RealFieldElement<T>> void doTestVariableStep(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestVariableStep(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final T step = orbit.getKeplerianPeriod().divide(100);
         propagator.setMasterMode(new FieldOrekitStepHandler<T>() {
@@ -725,7 +722,7 @@ public class FieldKeplerianPropagatorTest {
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
             }
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
-                                   boolean isLast) throws OrekitException {
+                                   boolean isLast) {
                 if ((previous != null) && !isLast) {
                     Assert.assertEquals(step.getReal(), interpolator.getCurrentState().getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }
@@ -736,11 +733,11 @@ public class FieldKeplerianPropagatorTest {
         propagator.propagate(farTarget);
     }
 
-    private <T extends RealFieldElement<T>> void doTestEphemeris(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEphemeris(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
+                                      FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.setEphemerisMode();
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
@@ -751,12 +748,12 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertEquals(0.0, ephemeris.getMaxDate().durationFrom(farTarget).getReal(), 1.0e-10);
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue14(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue14(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> initialOrbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), initialDate, 3.986004415e14);
+                                      FramesFactory.getEME2000(), initialDate, zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(initialOrbit);
 
         propagator.setEphemerisMode();
@@ -772,19 +769,19 @@ public class FieldKeplerianPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue107(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue107(Field<T> field) {
         T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.56), zero.add(-25767.257));
         final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(505.848), zero.add( 942.781), zero.add(7435.922));
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
         final FieldOrbit<T> orbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                             FramesFactory.getEME2000(), date, mu);
+                                                             FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<T>(orbit) {
             FieldAbsoluteDate<T> lastDate = FieldAbsoluteDate.getPastInfinity(field);
 
-            protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) throws OrekitException {
+            protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
                 if (date.compareTo(lastDate) < 0) {
                     throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                    "no backward propagation allowed");
@@ -799,16 +796,16 @@ public class FieldKeplerianPropagatorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestMu(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestMu(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit1 =
                 new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
                                           FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
-                                          Constants.WGS84_EARTH_MU);
+                                          zero.add(Constants.WGS84_EARTH_MU));
         final FieldKeplerianOrbit<T> orbit2 =
                 new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
                                           FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
-                                          Constants.EIGEN5C_EARTH_MU);
+                                          zero.add(Constants.EIGEN5C_EARTH_MU));
         final FieldAbsoluteDate<T> target = orbit1.getDate().shiftedBy(10000.0);
         FieldPVCoordinates<T> pv1       = new FieldKeplerianPropagator<>(orbit1).propagate(target).getPVCoordinates();
         FieldPVCoordinates<T> pv2       = new FieldKeplerianPropagator<>(orbit2).propagate(target).getPVCoordinates();
@@ -817,7 +814,7 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertEquals(0.0,      FieldVector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()).getReal(), 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void doTestNoDerivatives(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNoDerivatives(Field<T> field) {
         T zero = field.getZero();
         for (OrbitType type : OrbitType.values()) {
 
@@ -829,14 +826,14 @@ public class FieldKeplerianPropagatorTest {
             final FieldVector3D<T>     velocity     = new FieldVector3D<>(zero.add(505.848),
                                                                           zero.add(942.781),
                                                                           zero.add(7435.922));
-            final FieldVector3D<T>     keplerAcceleration = new FieldVector3D<>(position.getNormSq().reciprocal().multiply(-mu),
+            final FieldVector3D<T>     keplerAcceleration = new FieldVector3D<>(position.getNormSq().reciprocal().multiply(zero.add(mu).negate()),
                                                                                position.normalize());
             final FieldVector3D<T>     nonKeplerAcceleration = new FieldVector3D<>(zero.add(0.001),
                                                                                    zero.add(0.002),
                                                                                    zero.add(0.003));
             final FieldVector3D<T>     acceleration = keplerAcceleration.add(nonKeplerAcceleration);
             final TimeStampedFieldPVCoordinates<T> pva = new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
-            final FieldOrbit<T> initial = type.convertType(new FieldCartesianOrbit<>(pva, FramesFactory.getEME2000(), mu));
+            final FieldOrbit<T> initial = type.convertType(new FieldCartesianOrbit<>(pva, FramesFactory.getEME2000(), zero.add(mu)));
             Assert.assertEquals(type, initial.getType());
 
             // the derivatives are available at this stage

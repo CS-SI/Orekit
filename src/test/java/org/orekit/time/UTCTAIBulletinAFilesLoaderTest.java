@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitMessages;
 public class UTCTAIBulletinAFilesLoaderTest {
 
     @Test
-    public void test2006Leap() throws OrekitException {
+    public void test2006Leap() {
         Utils.setDataRoot("bulletinA");
         // this file contains a single leap second on 2006-01-01, from 32s to 33s
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xix-001\\.txt$"));
@@ -55,7 +55,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void test2009WrongLeap() throws OrekitException {
+    public void test2009WrongLeap() {
         Utils.setDataRoot("bulletinA");
         // this file contains a single leap second on 2009-01-01, from 33s to 34s,
         // but it has a known ERROR in it, as line 66 reads:
@@ -81,7 +81,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void test2009FixedLeap() throws OrekitException {
+    public void test2009FixedLeap() {
         Utils.setDataRoot("bulletinA");
         // this file is a fixed version of IERS bulletin
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi-053-fixed\\.txt$"));
@@ -103,7 +103,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void testNoLeap() throws OrekitException {
+    public void testNoLeap() {
         Utils.setDataRoot("bulletinA");
         // these files contains no leap seconds
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxvi.*\\.txt$"));
@@ -133,13 +133,13 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void testMissingTimeSteps() throws OrekitException {
+    public void testMissingTimeSteps() {
         checkException("bulletina-(?:xix|xxii)-001\\.txt",
                        OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES);
     }
 
     @Test
-    public void testMissingRapidSections() throws OrekitException {
+    public void testMissingRapidSections() {
         checkException("bulletina-missing-eop-rapid-service.txt",
                        OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE);
         checkException("bulletina-missing-eop-rapid-service.txt",
@@ -147,7 +147,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void testMissingData() throws OrekitException {
+    public void testMissingData() {
         checkException("bulletina-truncated-in-prediction-header.txt",
                        OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE);
         checkException("bulletina-truncated-after-prediction-header.txt",
@@ -155,13 +155,13 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void testInconsistentDate() throws OrekitException {
+    public void testInconsistentDate() {
         checkException("bulletina-inconsistent-year.txt", OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
         checkException("bulletina-inconsistent-month.txt", OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
         checkException("bulletina-inconsistent-day.txt", OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
     }
 
-    private void checkOffset(final String s, final double expected) throws OrekitException {
+    private void checkOffset(final String s, final double expected) {
         final AbsoluteDate date = new AbsoluteDate(s, TimeScalesFactory.getTAI());
         Assert.assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date), 10e-8);
     }

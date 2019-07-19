@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
  * <p>
@@ -26,7 +25,7 @@ import org.orekit.errors.OrekitException;
  * {@link TLEPropagator}.
  * </p>
  * <p>This implementation is largely inspired from the paper and source code <a
- * href="http://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
+ * href="https://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
  * Report #3</a> and is fully compliant with its results and tests cases.</p>
  * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
@@ -57,10 +56,9 @@ public class SGP4 extends TLEPropagator {
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-     * @exception OrekitException if some specific error occurs
      */
     public SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                       final double mass) throws OrekitException {
+                       final double mass) {
         super(initialTLE, attitudeProvider, mass);
     }
 

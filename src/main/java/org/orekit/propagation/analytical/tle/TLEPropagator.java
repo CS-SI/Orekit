@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,11 +47,11 @@ import org.orekit.utils.PVCoordinates;
  * and can compute {@link PVCoordinates position and velocity coordinates} at any
  * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided
  * TLE epoch (of course this accuracy is not really measurable nor predictable: according to
- * <a href="http://www.celestrak.com/">CelesTrak</a>, the precision is close to one kilometer
+ * <a href="https://www.celestrak.com/">CelesTrak</a>, the precision is close to one kilometer
  * and error won't probably rise above 2 km).
  * </p>
  * <p>This implementation is largely inspired from the paper and source code <a
- * href="http://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
+ * href="https://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
  * Report #3</a> and is fully compliant with its results and tests cases.</p>
  * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
@@ -166,11 +166,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param initialTLE the unique TLE to propagate
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-     * @exception OrekitException if some specific error occurs
      */
     protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                            final double mass)
-        throws OrekitException {
+                            final double mass) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
         this.tle  = initialTLE;
@@ -187,9 +185,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** Selects the extrapolator to use with the selected TLE.
      * @param tle the TLE to propagate.
      * @return the correct propagator.
-     * @exception OrekitException if the underlying model cannot be initialized
      */
-    public static TLEPropagator selectExtrapolator(final TLE tle) throws OrekitException {
+    public static TLEPropagator selectExtrapolator(final TLE tle) {
         return selectExtrapolator(tle, DEFAULT_LAW, DEFAULT_MASS);
     }
 
@@ -198,10 +195,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @return the correct propagator.
-     * @exception OrekitException if the underlying model cannot be initialized
      */
     public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
-                                                   final double mass) throws OrekitException {
+                                                   final double mass) {
 
         final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         final double cosi0 = FastMath.cos(tle.getI());
@@ -232,10 +228,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** Get the extrapolated position and velocity from an initial TLE.
      * @param date the final date
      * @return the final PVCoordinates
-     * @exception OrekitException if propagation cannot be performed at given date
      */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date)
-        throws OrekitException {
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date) {
 
         sxpPropagate(date.durationFrom(tle.getDate()) / 60.0);
 
@@ -335,10 +329,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** Retrieves the position and velocity.
      * @return the computed PVCoordinates.
-     * @exception OrekitException if current orbit is out of supported range
-     * (too large eccentricity, too low perigee ...)
      */
-    private PVCoordinates computePVCoordinates() throws OrekitException {
+    private PVCoordinates computePVCoordinates() {
 
         // Long period periodics
         final double axn = e * FastMath.cos(omega);
@@ -457,25 +449,21 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
-     * @exception OrekitException if some specific error occurs
      */
-    protected abstract void sxpInitialize() throws OrekitException;
+    protected abstract void sxpInitialize();
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param t the offset from initial epoch (min)
-     * @exception OrekitException if current state cannot be propagated
      */
-    protected abstract void sxpPropagate(double t) throws OrekitException;
+    protected abstract void sxpPropagate(double t);
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state)
-        throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws OrekitException {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
@@ -485,7 +473,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) {
         return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
     }
 

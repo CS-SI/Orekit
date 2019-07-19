@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.orekit.errors.OrekitMessages;
 public class FESCnmSnmReaderTest {
 
     @Test
-    public void testCorruptedNumberFile() throws OrekitException {
+    public void testCorruptedNumberFile() {
         try {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004-corrupted-line.dat", 1.0e-11);
             reader.setMaxParseDegree(5);
@@ -44,7 +44,7 @@ public class FESCnmSnmReaderTest {
     }
 
     @Test
-    public void testUnsupportedDegreeFile() throws OrekitException {
+    public void testUnsupportedDegreeFile() {
         try {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
             reader.setMaxParseDegree(20);
@@ -59,7 +59,7 @@ public class FESCnmSnmReaderTest {
     }
 
     @Test
-    public void testUnsupportedOrderFile() throws OrekitException {
+    public void testUnsupportedOrderFile() {
         try {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
             reader.setMaxParseDegree(5);
@@ -75,7 +75,7 @@ public class FESCnmSnmReaderTest {
 
     @Test
     public void testTruncatedModelFile()
-        throws OrekitException {
+        {
         OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
         reader.setMaxParseDegree(5);
         reader.setMaxParseOrder(5);

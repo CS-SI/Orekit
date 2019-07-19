@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +95,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             setTideSystem(TideSystem.TIDE_FREE);
         }
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         final List<List<Double>> c = new ArrayList<List<Double>>();
         final List<List<Double>> s = new ArrayList<List<Double>>();
         boolean okFields = true;
@@ -154,13 +155,10 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order or if no gravity field has read yet
      * @since 6.0
      */
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
-                                                     final int degree, final int order)
-        throws OrekitException {
+                                                     final int degree, final int order) {
         return getConstantProvider(wantNormalized, degree, order);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +57,7 @@ public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
 
     /** {@inheritDoc} */
     @Override
-    public List<OffsetModel> loadOffsets() throws OrekitException {
+    public List<OffsetModel> loadOffsets() {
         final Parser parser = new Parser();
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         return parser.getOffsets();
@@ -156,16 +157,14 @@ public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
          * @exception ParseException if data can't be parsed
-         * @exception OrekitException if some data is missing
-         * or if some loader specific error occurs
          */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException, ParseException {
+            throws IOException, ParseException {
 
             offsets.clear();
 
             // set up a reader for line-oriented file
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // read all file, ignoring not recognized lines
             int lineNumber = 0;

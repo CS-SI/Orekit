@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -54,11 +53,9 @@ public interface BodyShape extends Serializable {
      * @param date date of the line in given frame
      * @return intersection point at altitude zero or null if the line does
      * not intersect the surface
-     * @exception OrekitException if line cannot be converted to body frame
      */
     GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
-                                       Frame frame, AbsoluteDate date)
-        throws OrekitException;
+                                       Frame frame, AbsoluteDate date);
 
     /** Get the intersection point of a line with the surface of the body.
      * <p>A line may have several intersection points with a closed
@@ -73,12 +70,10 @@ public interface BodyShape extends Serializable {
      * @param <T> type of the field elements
      * @return intersection point at altitude zero or null if the line does
      * not intersect the surface
-     * @exception OrekitException if line cannot be converted to body frame
      * @since 9.0
      */
     <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(FieldLine<T> line, FieldVector3D<T> close,
-                                                                               Frame frame, FieldAbsoluteDate<T> date)
-        throws OrekitException;
+                                                                               Frame frame, FieldAbsoluteDate<T> date);
 
     /** Project a point to the ground.
      * @param point point to project
@@ -86,34 +81,28 @@ public interface BodyShape extends Serializable {
      * @param frame frame in which moving point is expressed
      * @return ground point exactly at the local vertical of specified point,
      * in the same frame as specified point
-     * @exception OrekitException if point cannot be converted to body frame
      * @see #projectToGround(TimeStampedPVCoordinates, Frame)
      * @since 7.0
      */
-    Vector3D projectToGround(Vector3D point, AbsoluteDate date, Frame frame)
-        throws OrekitException;
+    Vector3D projectToGround(Vector3D point, AbsoluteDate date, Frame frame);
 
     /** Project a moving point to the ground.
      * @param pv moving point
      * @param frame frame in which moving point is expressed
      * @return ground point exactly at the local vertical of specified point,
      * in the same frame as specified point
-     * @exception OrekitException if point cannot be converted to body frame
      * @see #projectToGround(Vector3D, AbsoluteDate, Frame)
      * @since 7.0
      */
-    TimeStampedPVCoordinates projectToGround(TimeStampedPVCoordinates pv, Frame frame)
-        throws OrekitException;
+    TimeStampedPVCoordinates projectToGround(TimeStampedPVCoordinates pv, Frame frame);
 
     /** Transform a Cartesian point to a surface-relative point.
      * @param point Cartesian point
      * @param frame frame in which Cartesian point is expressed
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point
-     * @exception OrekitException if point cannot be converted to body frame
      */
-    GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
-        throws OrekitException;
+    GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date);
 
     /** Transform a Cartesian point to a surface-relative point.
      * @param point Cartesian point
@@ -121,12 +110,10 @@ public interface BodyShape extends Serializable {
      * @param frame frame in which Cartesian point is expressed
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point
-     * @exception OrekitException if point cannot be converted to body frame
      * @since 9.0
      */
     <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(FieldVector3D<T> point, Frame frame,
-                                                                    FieldAbsoluteDate<T> date)
-        throws OrekitException;
+                                                                    FieldAbsoluteDate<T> date);
 
     /** Transform a surface-relative point to a Cartesian point.
      * @param point surface-relative point

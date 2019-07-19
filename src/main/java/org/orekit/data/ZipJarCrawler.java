@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,19 +94,16 @@ public class ZipJarCrawler implements DataProvider {
      * argument.
      * </p>
      * @param resource name of the zip file to browse
-     * @exception OrekitException if resource name is malformed
      */
-    public ZipJarCrawler(final String resource) throws OrekitException {
+    public ZipJarCrawler(final String resource) {
         this(ZipJarCrawler.class.getClassLoader(), resource);
     }
 
     /** Build a zip crawler for an archive file in classpath.
      * @param classLoader class loader to use to retrieve the resources
      * @param resource name of the zip file to browse
-     * @exception OrekitException if resource name is malformed
      */
-    public ZipJarCrawler(final ClassLoader classLoader, final String resource)
-        throws OrekitException {
+    public ZipJarCrawler(final ClassLoader classLoader, final String resource) {
         try {
             this.file        = null;
             this.resource    = resource;
@@ -120,9 +117,8 @@ public class ZipJarCrawler implements DataProvider {
 
     /** Build a zip crawler for an archive file on network.
      * @param url URL of the zip file on network
-     * @exception OrekitException if url syntax is malformed
      */
-    public ZipJarCrawler(final URL url) throws OrekitException {
+    public ZipJarCrawler(final URL url) {
         try {
             this.file        = null;
             this.resource    = null;
@@ -135,36 +131,36 @@ public class ZipJarCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final Pattern supported, final DataLoader visitor)
-        throws OrekitException {
+    public boolean feed(final Pattern supported, final DataLoader visitor) {
 
         try {
 
             // open the raw data stream
-            Archive archive = null;
-            try {
-                if (file != null) {
-                    archive = new Archive(new FileInputStream(file));
-                } else if (resource != null) {
-                    archive = new Archive(classLoader.getResourceAsStream(resource));
-                } else {
-                    archive = new Archive(url.openConnection().getInputStream());
-                }
-
+            try (InputStream in = openStream();
+                 Archive archive = new Archive(in)) {
                 return feed(name, supported, visitor, archive);
-
-            } finally {
-                if (archive != null) {
-                    archive.close();
-                }
             }
 
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } catch (ParseException pe) {
-            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
+        } catch (IOException | ParseException e) {
+            throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }
 
+    }
+
+    /**
+     * Open a stream to the raw archive.
+     *
+     * @return an open stream.
+     * @throws IOException if the stream could not be opened.
+     */
+    private InputStream openStream() throws IOException {
+        if (file != null) {
+            return new FileInputStream(file);
+        } else if (resource != null) {
+            return classLoader.getResourceAsStream(resource);
+        } else {
+            return url.openConnection().getInputStream();
+        }
     }
 
     /** Feed a data file loader by browsing the entries in a zip/jar.
@@ -172,15 +168,13 @@ public class ZipJarCrawler implements DataProvider {
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @param archive archive to read
-     * @exception OrekitException if some data is missing, duplicated
-     * or can't be read
      * @return true if something has been loaded
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
     private boolean feed(final String prefix, final Pattern supported,
                          final DataLoader visitor, final Archive archive)
-        throws OrekitException, IOException, ParseException {
+        throws IOException, ParseException {
 
         OrekitException delayedException = null;
         boolean loaded = false;
@@ -192,7 +186,7 @@ public class ZipJarCrawler implements DataProvider {
 
                 if (visitor.stillAcceptsData() && !entry.isDirectory()) {
 
-                    final String fullName = prefix + "!" + entry.getName();
+                    final String fullName = prefix + "!/" + entry.getName();
 
                     if (ZIP_ARCHIVE_PATTERN.matcher(entry.getName()).matches()) {
 

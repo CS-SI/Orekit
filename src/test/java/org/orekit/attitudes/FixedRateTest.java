@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -56,7 +55,7 @@ import org.orekit.utils.PVCoordinates;
 public class FixedRateTest {
 
     @Test
-    public void testZeroRate() throws OrekitException {
+    public void testZeroRate() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                              new TimeComponents(13, 17, 7.865),
                                              TimeScalesFactory.getUTC());
@@ -78,7 +77,7 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testNonZeroRate() throws OrekitException {
+    public void testNonZeroRate() {
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                    new TimeComponents(13, 17, 7.865),
                                                    TimeScalesFactory.getUTC());
@@ -104,7 +103,7 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
@@ -151,12 +150,12 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testZeroRateField() throws OrekitException {
+    public void testZeroRateField() {
         doTestZeroRate(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestZeroRate(final Field<T> field)
-        throws OrekitException {
+        {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
                                                             new DateComponents(2004, 3, 2),
@@ -170,7 +169,7 @@ public class FixedRateTest {
             new FieldPVCoordinates<>(field.getOne(),
                                      new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                                                        new Vector3D(0, 0, 3680.853673522056)));
-        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, date, 3.986004415e14);
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, date, zero.add(3.986004415e14));
         FieldRotation<T> attitude0 = law.getAttitude(orbit, date, frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
         FieldRotation<T> attitude1 = law.getAttitude(orbit.shiftedBy(zero.add(10.0)), date.shiftedBy(10.0), frame).getRotation();
@@ -181,11 +180,11 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testNonZeroRateField() throws OrekitException {
+    public void testNonZeroRateField() {
         doTestNonZeroRate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNonZeroRate(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNonZeroRate(final Field<T> field) {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
                                                             new DateComponents(2004, 3, 2),
@@ -200,7 +199,7 @@ public class FixedRateTest {
                         new FieldPVCoordinates<>(field.getOne(),
                                                  new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                                                                    new Vector3D(0, 0, 3680.853673522056)));
-        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
         FieldRotation<T> attitude0 = law.getAttitude(orbit, date, frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude0.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
         FieldRotation<T> attitude1 = law.getAttitude(orbit.shiftedBy(zero.add(10.0)), date.shiftedBy(10.0), frame).getRotation();
@@ -214,11 +213,11 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testSpinField() throws OrekitException {
+    public void testSpinField() {
         doTestSpin(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) {
 
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
@@ -240,7 +239,7 @@ public class FixedRateTest {
                                       zero.add(FastMath.toRadians(10.)),
                                       zero.add(FastMath.toRadians(20.)),
                                       zero.add(FastMath.toRadians(30.)), PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, 3.986004415e14);
+                                      FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit, law);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -72,14 +71,13 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public VersionedITRFProvider getNonInterpolatingProvider()
-        throws OrekitException {
+    public VersionedITRFProvider getNonInterpolatingProvider() {
         return new VersionedITRFProvider(version, rawProvider.getNonInterpolatingProvider());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // get the transform from the current EOP
         final Transform rawTransform = rawProvider.getTransform(date);
@@ -96,8 +94,7 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // get the transform from the current EOP
         final FieldTransform<T> rawTransform = rawProvider.getTransform(date);

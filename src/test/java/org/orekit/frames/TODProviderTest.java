@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -48,7 +47,7 @@ import org.orekit.utils.PVCoordinates;
 public class TODProviderTest {
 
     @Test
-    public void testRotationRate() throws OrekitException {
+    public void testRotationRate() {
         TransformProvider provider =
                 new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null),
                                                    CartesianDerivativesFilter.USE_PVA,
@@ -63,7 +62,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testAASReferenceLEO() throws OrekitException {
+    public void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -117,7 +116,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() throws OrekitException {
+    public void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -173,7 +172,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testInterpolationAccuracyWithEOP() throws OrekitException, FileNotFoundException {
+    public void testInterpolationAccuracyWithEOP() throws FileNotFoundException {
 
         // max interpolation error observed on a one month period with 60 seconds step
         //
@@ -237,7 +236,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testInterpolationAccuracyWithoutEOP() throws OrekitException, FileNotFoundException {
+    public void testInterpolationAccuracyWithoutEOP() throws FileNotFoundException {
 
         // max interpolation error observed on a one month period with 60 seconds step
         //
@@ -291,7 +290,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testSofaPnm80() throws OrekitException {
+    public void testSofaPnm80() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -346,7 +345,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testTOD1976vs2006() throws OrekitException {
+    public void testTOD1976vs2006() {
 
         final Frame tod1976 = FramesFactory.getTOD(IERSConventions.IERS_1996, true);
         final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010, true);
@@ -361,7 +360,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testTOD2000vs2006() throws OrekitException {
+    public void testTOD2000vs2006() {
 
         final Frame tod2000 = FramesFactory.getTOD(IERSConventions.IERS_2003, true);
         final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010, true);
@@ -376,7 +375,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         TODProvider provider = new TODProvider(IERSConventions.IERS_2010,
                                                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
 

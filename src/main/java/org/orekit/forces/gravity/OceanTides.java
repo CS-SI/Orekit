@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
@@ -68,8 +67,6 @@ public class OceanTides extends AbstractForceModel {
      * @param order order of the tide model to load
      * @param conventions IERS conventions used for loading ocean pole tide
      * @param ut1 UT1 time scale
-     * @exception OrekitException if the ocean tides model cannot be read or the
-     * model does not support requested degree or order
      * @see #DEFAULT_STEP
      * @see #DEFAULT_POINTS
      * @see #OceanTides(Frame, double, double, boolean, double, int, int, int, IERSConventions, UT1Scale)
@@ -77,8 +74,7 @@ public class OceanTides extends AbstractForceModel {
      */
     public OceanTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final int degree, final int order,
-                      final IERSConventions conventions, final UT1Scale ut1)
-        throws OrekitException {
+                      final IERSConventions conventions, final UT1Scale ut1) {
         this(centralBodyFrame, ae, mu, true,
              DEFAULT_STEP, DEFAULT_POINTS, degree, order,
              conventions, ut1);
@@ -96,15 +92,12 @@ public class OceanTides extends AbstractForceModel {
      * @param order order of the tide model to load
      * @param conventions IERS conventions used for loading ocean pole tide
      * @param ut1 UT1 time scale
-     * @exception OrekitException if the ocean tides model cannot be read or the
-     * model does not support requested degree or order
      * @see GravityFieldFactory#getOceanTidesWaves(int, int)
      */
     public OceanTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final boolean poleTide, final double step, final int nbPoints,
                       final int degree, final int order,
-                      final IERSConventions conventions, final UT1Scale ut1)
-        throws OrekitException {
+                      final IERSConventions conventions, final UT1Scale ut1) {
 
         // load the ocean tides model
         final List<OceanTidesWave> waves = GravityFieldFactory.getOceanTidesWaves(degree, order);
@@ -137,8 +130,7 @@ public class OceanTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
         // delegate to underlying model
         return attractionModel.acceleration(s, parameters);
     }
@@ -146,8 +138,7 @@ public class OceanTides extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
         // delegate to underlying model
         return attractionModel.acceleration(s, parameters);
     }

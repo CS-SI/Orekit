@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -146,13 +146,11 @@ public abstract class OceanTidesReader implements DataLoader {
      * @param sMinus S-(n,m)
      * @param lineNumber number of the parsed line
      * @param line text of the line
-     * @exception OrekitException if coefficients for waves are interleaved
      */
     protected void addWaveCoefficients(final int doodson, final int n, final int m,
                                        final double cPlus, final double sPlus,
                                        final double cMinus, final double sMinus,
-                                       final int lineNumber, final String line)
-        throws OrekitException {
+                                       final int lineNumber, final String line) {
 
         if (!coefficients.containsKey(doodson)) {
             // prepare the triangular array to hold coefficients
@@ -179,9 +177,8 @@ public abstract class OceanTidesReader implements DataLoader {
      * <p>
      * This method must be called by subclasses when they end parsing a file
      * </p>
-     * @exception OrekitException if expected degree and order were not met
      */
-    protected void endParse() throws OrekitException {
+    protected void endParse() {
 
         // check requested degree and order
         if (maxDegree < getMaxParseDegree() || maxOrder < getMaxParseOrder()) {

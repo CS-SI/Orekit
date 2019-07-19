@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.PolynomialNutation;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -46,7 +45,7 @@ import org.orekit.utils.PVCoordinates;
 public class MODProviderTest {
 
     @Test
-    public void testEuler1976() throws OrekitException {
+    public void testEuler1976() {
 
         TransformProvider eulerBasedProvider = new TransformProvider() {
             private static final long serialVersionUID = 1L;
@@ -95,7 +94,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testEuler2000() throws OrekitException {
+    public void testEuler2000() {
 
         // this alternate representation of the transform
         // is from equation 33 in IERS conventions 2003
@@ -152,7 +151,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testAASReferenceLEO() throws OrekitException {
+    public void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -190,7 +189,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() throws OrekitException {
+    public void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -227,7 +226,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testSofaPmat76() throws OrekitException {
+    public void testSofaPmat76() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -279,7 +278,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testSofaBp00() throws OrekitException {
+    public void testSofaBp00() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -334,7 +333,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testSofaBp06() throws OrekitException {
+    public void testSofaBp06() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -389,7 +388,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testMOD1976vs2006() throws OrekitException {
+    public void testMOD1976vs2006() {
 
         final Frame mod1976 = FramesFactory.getMOD(IERSConventions.IERS_1996);
         final Frame mod2006 = FramesFactory.getMOD(IERSConventions.IERS_2010);
@@ -402,7 +401,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testMOD2000vs2006() throws OrekitException {
+    public void testMOD2000vs2006() {
 
         final Frame mod2000 = FramesFactory.getMOD(IERSConventions.IERS_2003);
         final Frame mod2006 = FramesFactory.getMOD(IERSConventions.IERS_2010);
@@ -415,7 +414,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         MODProvider provider = new MODProvider(IERSConventions.IERS_2010);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

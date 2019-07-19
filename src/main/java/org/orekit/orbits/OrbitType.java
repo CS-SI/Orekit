@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -135,7 +135,7 @@ public enum OrbitType {
                                                                                       final T[] stateVectorDot,
                                                                                       final PositionAngle type,
                                                                                       final FieldAbsoluteDate<T> date,
-                                                                                      final double mu, final Frame frame) {
+                                                                                      final T mu, final Frame frame) {
             final FieldVector3D<T> p = new FieldVector3D<>(stateVector[0], stateVector[1], stateVector[2]);
             final FieldVector3D<T> v = new FieldVector3D<>(stateVector[3], stateVector[4], stateVector[5]);
             final FieldVector3D<T> a;
@@ -152,8 +152,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
-            throws OrekitException {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -268,7 +267,7 @@ public enum OrbitType {
         public <T extends RealFieldElement<T>> FieldCircularOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                      final T[] stateVectorDot, final PositionAngle type,
                                                                                      final FieldAbsoluteDate<T> date,
-                                                                                     final double mu, final Frame frame) {
+                                                                                     final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldCircularOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -286,8 +285,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
-            throws OrekitException {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -408,7 +406,7 @@ public enum OrbitType {
                                                                                         final T[] stateVectorDot,
                                                                                         final PositionAngle type,
                                                                                         final FieldAbsoluteDate<T> date,
-                                                                                        final double mu, final Frame frame) {
+                                                                                        final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldEquinoctialOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -426,8 +424,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
-            throws OrekitException {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -548,7 +545,7 @@ public enum OrbitType {
                                                                                       final T[] stateVectorDot,
                                                                                       final PositionAngle type,
                                                                                       final FieldAbsoluteDate<T> date,
-                                                                                      final double mu, final Frame frame) {
+                                                                                      final T mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
                 return new FieldKeplerianOrbit<>(stateVector[0], stateVector[1], stateVector[2],
@@ -566,8 +563,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
-            throws OrekitException {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -757,18 +753,16 @@ public enum OrbitType {
                                                                                   T[] arrayDot,
                                                                                   PositionAngle type,
                                                                                   FieldAbsoluteDate<T> date,
-                                                                                  double mu, Frame frame);
+                                                                                  T mu, Frame frame);
 
     /** Get parameters drivers initialized from a reference orbit.
      * @param dP user specified position error
      * @param orbit reference orbit
      * @param type type of the angle
      * @return parameters drivers initialized from reference orbit
-     * @exception OrekitException if Jacobian is singular
      */
     public abstract ParameterDriversList getDrivers(double dP, Orbit orbit,
-                                                    PositionAngle type)
-        throws OrekitException;
+                                                    PositionAngle type);
 
     /** Compute scaling factor for parameters drivers.
      * <p>
@@ -786,10 +780,8 @@ public enum OrbitType {
      * @param dP user specified position error
      * @param orbit reference orbit
      * @return scaling factor array
-     * @exception OrekitException if Jacobian is singular
      */
-    protected double[] scale(final double dP, final Orbit orbit)
-        throws OrekitException {
+    protected double[] scale(final double dP, final Orbit orbit) {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();

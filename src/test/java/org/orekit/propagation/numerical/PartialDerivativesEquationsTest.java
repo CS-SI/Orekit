@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -68,11 +67,9 @@ public class PartialDerivativesEquationsTest {
 
     /**
      * set up {@link #pde} and dependencies.
-     *
-     * @throws OrekitException on error
      */
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         propagator = new NumericalPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
         forceModel = new MockForceModel();
         propagator.addForceModel(forceModel);
@@ -89,11 +86,9 @@ public class PartialDerivativesEquationsTest {
     /**
      * check {@link PartialDerivativesEquations#computeDerivatives(SpacecraftState,
      * double[])} correctly sets the satellite velocity.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testComputeDerivativesStateVelocity() throws OrekitException {
+    public void testComputeDerivativesStateVelocity() {
         //setup
         double[] pdot = new double[36];
 
@@ -134,7 +129,7 @@ public class PartialDerivativesEquationsTest {
 
         @Override
         public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-            throws OrekitException {
+            {
             return s.getPVCoordinates().getPosition();
         }
 
@@ -142,7 +137,7 @@ public class PartialDerivativesEquationsTest {
         @Override
         public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
-            throws OrekitException {
+            {
             this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
             this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getVelocity();
             return s.getPVCoordinates().getPosition();

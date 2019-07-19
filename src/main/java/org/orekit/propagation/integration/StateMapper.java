@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,10 @@
 package org.orekit.propagation.integration;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -57,7 +57,9 @@ public abstract class StateMapper {
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
-     * @param orbitType orbit type to use for mapping
+     * @param orbitType orbit type to use for mapping, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates AbsolutePVCoordinates}
+     * rather than {@link org.orekit.orbits Orbit}
      * @param positionAngleType angle type to use for propagation
      * @param attitudeProvider attitude provider
      * @param frame inertial frame
@@ -158,33 +160,27 @@ public abstract class StateMapper {
      * @param t date offset
      * @param y state components
      * @param yDot time derivatives of the state components (null if unknown, in which case Keplerian motion is assumed)
-     * @param meanOnly use only the mean elements to build the state
+     * @param type type of the elements used to build the state (mean or osculating).
      * @return spacecraft state
-     * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public SpacecraftState mapArrayToState(final double t, final double[] y, final double[] yDot, final boolean meanOnly)
-            throws OrekitException {
-        return mapArrayToState(mapDoubleToDate(t), y, yDot, meanOnly);
+    public SpacecraftState mapArrayToState(final double t, final double[] y, final double[] yDot, final PropagationType type) {
+        return mapArrayToState(mapDoubleToDate(t), y, yDot, type);
     }
 
     /** Map the raw double components to a spacecraft state.
      * @param date of the state components
      * @param y state components
      * @param yDot time derivatives of the state components (null if unknown, in which case Keplerian motion is assumed)
-     * @param meanOnly use only the mean elements to build the state
+     * @param type type of the elements used to build the state (mean or osculating).
      * @return spacecraft state
-     * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, double[] yDot, boolean meanOnly)
-        throws OrekitException;
+    public abstract SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, double[] yDot, PropagationType type);
 
     /** Map a spacecraft state to raw double components.
      * @param state state to map
      * @param y placeholder where to put the components
      * @param yDot placeholder where to put the components derivatives
-     * @exception OrekitException if state is inconsistent or cannot be mapped
      */
-    public abstract void mapStateToArray(SpacecraftState state, double[] y, double[] yDot)
-        throws OrekitException;
+    public abstract void mapStateToArray(SpacecraftState state, double[] y, double[] yDot);
 
 }

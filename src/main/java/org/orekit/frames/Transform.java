@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,6 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
@@ -383,10 +382,8 @@ public class Transform
      * {@link AngularDerivativesFilter#USE_RRA}
      * set to true.
      * </p>
-     * @exception OrekitException if the number of point is too small for interpolating
      */
-    public Transform interpolate(final AbsoluteDate interpolationDate, final Stream<Transform> sample)
-        throws OrekitException {
+    public Transform interpolate(final AbsoluteDate interpolationDate, final Stream<Transform> sample) {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
                            sample.collect(Collectors.toList()));
@@ -414,14 +411,12 @@ public class Transform
      * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
-     * @since 7.0
+          * @since 7.0
      */
     public static Transform interpolate(final AbsoluteDate date,
                                         final CartesianDerivativesFilter cFilter,
                                         final AngularDerivativesFilter aFilter,
-                                        final Collection<Transform> sample)
-        throws OrekitException {
+                                        final Collection<Transform> sample) {
         final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
         final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<TimeStampedAngularCoordinates>(sample.size());
         for (final Transform t : sample) {

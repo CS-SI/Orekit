@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.utils.Constants;
 public class GRGSFormatReaderTest {
 
     @Test
-    public void testAdditionalColumn() throws OrekitException {
+    public void testAdditionalColumn() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
@@ -67,7 +67,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testRegular05cNormalized() throws OrekitException {
+    public void testRegular05cNormalized() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         Assert.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
@@ -88,7 +88,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testRegular05cUnnormalized() throws OrekitException {
+    public void testRegular05cUnnormalized() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
@@ -110,7 +110,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testReadLimits() throws OrekitException {
+    public void testReadLimits() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(new AbsoluteDate(1997, 1, 1, 12, 0, 0.0, TimeScalesFactory.getTT()));
@@ -136,19 +136,19 @@ public class GRGSFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile1() throws OrekitException {
+    public void testCorruptedFile1() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-1-grim5.dat", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile2() throws OrekitException {
+    public void testCorruptedFile2() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-2-grim5.dat", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile3() throws OrekitException {
+    public void testCorruptedFile3() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-3-grim5.dat", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
@@ -163,7 +163,7 @@ public class GRGSFormatReaderTest {
                             final int refYear, final int refMonth, final int refDay,
                             final double constant, final double trend,
                             final int maxUlps)
-        throws OrekitException {
+        {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         AbsoluteDate refDate = new AbsoluteDate(refYear, refMonth, refDay, 12, 0, 0, TimeScalesFactory.getTT());
         double dtYear = date.durationFrom(refDate) / Constants.JULIAN_YEAR;

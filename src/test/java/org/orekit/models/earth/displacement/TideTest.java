@@ -30,7 +30,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
@@ -42,7 +41,7 @@ import org.orekit.utils.IERSConventions;
 public class TideTest {
 
     @Test
-    public void testDoodsonMultipliers() throws OrekitException {
+    public void testDoodsonMultipliers() {
         Assert.assertArrayEquals(new int[] { 2,  0,  0,  0,  0,  0 }, Tide.M2.getDoodsonMultipliers());
         Assert.assertArrayEquals(new int[] { 2,  2, -2,  0,  0,  0 }, Tide.S2.getDoodsonMultipliers());
         Assert.assertArrayEquals(new int[] { 2, -1,  0,  1,  0,  0 }, Tide.N2.getDoodsonMultipliers());
@@ -57,7 +56,7 @@ public class TideTest {
     }
 
     @Test
-    public void testDelaunayMultipliers() throws OrekitException {
+    public void testDelaunayMultipliers() {
         Assert.assertArrayEquals(new int[] {  0,  0,  2,  0,  2 }, Tide.M2.getDelaunayMultipliers());
         Assert.assertArrayEquals(new int[] {  0,  0,  2, -2,  2 }, Tide.S2.getDelaunayMultipliers());
         Assert.assertArrayEquals(new int[] {  1,  0,  2,  0,  2 }, Tide.N2.getDelaunayMultipliers());
@@ -95,7 +94,7 @@ public class TideTest {
     }
 
     @Test
-    public void testPhase() throws OrekitException {
+    public void testPhase() {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(new AbsoluteDate("2003-05-17T13:41:54",
@@ -114,21 +113,21 @@ public class TideTest {
     }
 
     @Test
-    public void testSortedRatesSemiLongPeriod() throws OrekitException {
+    public void testSortedRatesSemiLongPeriod() {
         doTestSort(0, Tide.SSA, Tide.MM, Tide.MF);
     }
 
     @Test
-    public void testSortedRatesDiurnal() throws OrekitException {
+    public void testSortedRatesDiurnal() {
         doTestSort(1, Tide.Q1, Tide.O1, Tide.P1, Tide.K1);
     }
 
     @Test
-    public void testSortedRatesSemiDiurnal() throws OrekitException {
+    public void testSortedRatesSemiDiurnal() {
         doTestSort(2, Tide.N2, Tide.M2, Tide.S2, Tide.K2 );
     }
 
-    private void doTestSort(int tauMultiplier, Tide... tides) throws OrekitException {
+    private void doTestSort(int tauMultiplier, Tide... tides) {
         // this test checks that tides sort order is date-independent for a large time range
         // (almost 180000 years long)
         // tides sort-order is based on rate, but the rates varies slightly with dates
@@ -154,7 +153,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTable65a() throws OrekitException {
+    public void testTable65a() {
         doTestTable(new double[][] {
             { 12.85429,  125755, 1, -3,  0,  2,   0,  0,   2,  0,  2,  0,  2  },
             { 12.92714,  127555, 1, -3,  2,  0,   0,  0,   0,  0,  2,  2,  2  },
@@ -208,7 +207,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTable65b() throws OrekitException {
+    public void testTable65b() {
         doTestTable(new double[][] {
             {  0.00221, 55565,  0, 0,  0,  0,  1,  0,  0,  0,  0,  0,  1 },
             {  0.00441, 55575,  0, 0,  0,  0,  2,  0,  0,  0,  0,  0,  2 },
@@ -235,7 +234,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTable65c() throws OrekitException {
+    public void testTable65c() {
         doTestTable(new double[][] {
             { 28.43973, 245655,  2, -1, 0, 1, 0,   0, 1, 0,  2, 0, 2 },
             { 28.98410, 255555,  2,  0, 0, 0, 0,   0, 0, 0,  2, 0, 2 }
@@ -243,7 +242,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPH1OriginalEarthRotation() throws OrekitException {
+    public void testTDFRPH1OriginalEarthRotation() {
         // this is test 1 from the TDFRPH subroutine in IERS HARDISP program
         // using the reference routine hard coded simplified model for Earth rotation
         doTestTDFRPH(true,
@@ -253,7 +252,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPH1IERSEarthRotation() throws OrekitException {
+    public void testTDFRPH1IERSEarthRotation() {
         // this is test 1 from the TDFRPH subroutine in IERS HARDISP program
         // but using regular IERS model for Earth rotation
         doTestTDFRPH(false,
@@ -263,7 +262,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPH2OriginalEarthRotation() throws OrekitException {
+    public void testTDFRPH2OriginalEarthRotation() {
         doTestTDFRPH(true,
                      2009, 6, 25, 12, 1, 45.0, Tide.M2,
                      1.9322736160568872, 291.997959322689,
@@ -271,7 +270,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPH2IERSEarthRotation() throws OrekitException {
+    public void testTDFRPH2IERSEarthRotation() {
         // this is test 2 from the TDFRPH subroutine in IERS HARDISP program
         // but using regular IERS model for Earth rotation
         doTestTDFRPH(false,
@@ -281,7 +280,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditional1OriginalEarthRotation() throws OrekitException {
+    public void testTDFRPHAdditional1OriginalEarthRotation() {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(true,
@@ -303,7 +302,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditional1IERSEarthRotation() throws OrekitException {
+    public void testTDFRPHAdditional1IERSEarthRotation() {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(false,
@@ -325,7 +324,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditional2OriginalEarthRotation() throws OrekitException {
+    public void testTDFRPHAdditional2OriginalEarthRotation() {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(true,
@@ -347,7 +346,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditional2IERSEarthRotation() throws OrekitException {
+    public void testTDFRPHAdditional2IERSEarthRotation() {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(false,
@@ -372,7 +371,7 @@ public class TideTest {
                               int year, int month, int day, int hour, int minute, double second,
                               Tide tide, double refRate, double refPhase,
                               double toleranceRate, double tolerancePhase)
-        throws OrekitException {
+        {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         if (patchEarthRotation) {
@@ -450,7 +449,7 @@ public class TideTest {
         }
     }
 
-    private void doTestTable(final double[][] table) throws OrekitException {
+    private void doTestTable(final double[][] table) {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(AbsoluteDate.J2000_EPOCH);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.hipparchus.RealFieldElement;
  * between the Doodson arguments and the traditional Delaunay
  * arguments ensures the proper sign is known.
  * </p>
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
 class TideTerm extends SeriesTerm {

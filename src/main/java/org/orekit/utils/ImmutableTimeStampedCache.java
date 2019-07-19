@@ -109,8 +109,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     }
 
     /** {@inheritDoc} */
-    public Stream<T> getNeighbors(final AbsoluteDate central)
-        throws TimeStampedCacheException {
+    public Stream<T> getNeighbors(final AbsoluteDate central) {
 
         // find central index
         final int i = findIndex(central);
@@ -192,8 +191,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         /** {@inheritDoc} */
         @Override
-        public Stream<T> getNeighbors(final AbsoluteDate central)
-            throws TimeStampedCacheException {
+        public Stream<T> getNeighbors(final AbsoluteDate central) {
             throw new TimeStampedCacheException(OrekitMessages.NO_CACHED_ENTRIES);
         }
 

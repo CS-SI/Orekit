@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,10 +52,10 @@ import org.orekit.utils.ParameterDriver;
  * The algorithm implemented in this class has been designed by S. A. Holmes
  * and W. E. Featherstone from Department of Spatial Sciences, Curtin University
  * of Technology, Perth, Australia. It is described in their 2002 paper: <a
- * href="http://cct.gfy.ku.dk/publ_others/ccta1870.pdf">A unified approach to
- * the Clenshaw summation and the recursive computation of very high degree and
- * order normalised associated Legendre functions</a> (Journal of Geodesy (2002)
- * 76: 279–299).
+ * href="https://www.researchgate.net/publication/226460594_A_unified_approach_to_the_Clenshaw_summation_and_the_recursive_computation_of_very_high_degree_and_order_normalised_associated_Legendre_functions">
+ * A unified approach to he Clenshaw summation and the recursive computation of
+ * very high degree and order normalised associated Legendre functions</a>
+ * (Journal of Geodesy (2002) 76: 279–299).
  * </p>
  * <p>
  * This model directly uses normalized coefficients and stable recursion algorithms
@@ -187,11 +187,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
      * @return value of the gravity field (central and non-central parts summed together)
-     * @exception OrekitException if position cannot be converted to central body frame
      */
     public double value(final AbsoluteDate date, final Vector3D position,
-                        final double mu)
-        throws OrekitException {
+                        final double mu) {
         return mu / position.getNorm() + nonCentralPart(date, position, mu);
     }
 
@@ -200,10 +198,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
      * @return value of the non-central part of the gravity field
-     * @exception OrekitException if position cannot be converted to central body frame
      */
-    public double nonCentralPart(final AbsoluteDate date, final Vector3D position, final double mu)
-        throws OrekitException {
+    public double nonCentralPart(final AbsoluteDate date, final Vector3D position, final double mu) {
 
         final int degree = provider.getMaxDegree();
         final int order  = provider.getMaxOrder();
@@ -280,10 +276,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
      * @return gradient of the non-central part of the gravity field
-     * @exception OrekitException if position cannot be converted to central body frame
      */
-    public double[] gradient(final AbsoluteDate date, final Vector3D position, final double mu)
-        throws OrekitException {
+    public double[] gradient(final AbsoluteDate date, final Vector3D position, final double mu) {
 
         final int degree = provider.getMaxDegree();
         final int order  = provider.getMaxOrder();
@@ -397,11 +391,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param mu central attraction coefficient to use
      * @param <T> type of field used
      * @return gradient of the non-central part of the gravity field
-     * @exception OrekitException if position cannot be converted to central body frame
      */
     public <T extends RealFieldElement<T>> T[] gradient(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
-                                                        final T mu)
-        throws OrekitException {
+                                                        final T mu) {
 
         final int degree = provider.getMaxDegree();
         final int order  = provider.getMaxOrder();
@@ -540,10 +532,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
      * @return gradient and hessian of the non-central part of the gravity field
-     * @exception OrekitException if position cannot be converted to central body frame
      */
-    private GradientHessian gradientHessian(final AbsoluteDate date, final Vector3D position, final double mu)
-        throws OrekitException {
+    private GradientHessian gradientHessian(final AbsoluteDate date, final Vector3D position, final double mu) {
 
         final int degree = provider.getMaxDegree();
         final int order  = provider.getMaxOrder();
@@ -1038,8 +1028,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final double mu = parameters[0];
 
@@ -1056,8 +1045,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
 
         final T mu = parameters[0];
 
@@ -1158,13 +1146,11 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @param mu central attraction coefficient to use
      * @return acceleration with all derivatives specified by the input parameters
      * own derivatives
-     * @exception OrekitException if derivatives cannot be computed
-     * @since 6.0
+          * @since 6.0
      */
     private FieldVector3D<DerivativeStructure> accelerationWrtState(final AbsoluteDate date, final Frame frame,
                                                                     final FieldVector3D<DerivativeStructure> position,
-                                                                    final DerivativeStructure mu)
-        throws OrekitException {
+                                                                    final DerivativeStructure mu) {
 
         // get the position in body frame
         final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);

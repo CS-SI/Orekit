@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,12 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.orekit.errors.OrekitException;
+import org.hipparchus.RealFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for Beidou geostationary orbit navigation satellites.
@@ -29,9 +30,6 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  */
 public class BeidouGeo extends AbstractGNSSAttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
-
     /** Simple constructor.
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
@@ -39,14 +37,22 @@ public class BeidouGeo extends AbstractGNSSAttitudeProvider {
      * @param inertialFrame inertial frame where velocity are computed
      */
     public BeidouGeo(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                     final PVCoordinatesProvider sun, final Frame inertialFrame) {
+                     final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context)
-        throws OrekitException {
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
+
+        // geostationary Beidou spacecraft are always in Orbit Normal (ON) yaw
+        return context.orbitNormalYaw();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected  <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
         // geostationary Beidou spacecraft are always in Orbit Normal (ON) yaw
         return context.orbitNormalYaw();

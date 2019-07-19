@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -98,13 +99,12 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * </p>
      * @param input input stream
      * @exception IOException if input file cannot be read
-     * @exception OrekitException if a line cannot be read properly
      */
     public void parseInput(final String name, final InputStream input)
         throws IOException, OrekitException {
 
         final Pattern        arrayPattern = Pattern.compile("([\\w\\.]+)\\s*\\[([0-9]+)\\]");
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             int lineNumber = 0;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++lineNumber;
@@ -399,7 +399,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param key parameter key
      * @return inertial frame corresponding to the key
      * @exception NoSuchElementException if key is not in the map
-     * @exception OrekitException if frame cannot be built
      */
     public Frame getInertialFrame(final Key key) throws NoSuchElementException, OrekitException {
 
@@ -431,7 +430,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param parameters key/value map containing the parameters
      * @return Earth frame corresponding to the key
      * @exception NoSuchElementException if key is not in the map
-     * @exception OrekitException if frame cannot be built
      */
     public Frame getEarthFrame(final Key key)
             throws NoSuchElementException, OrekitException {

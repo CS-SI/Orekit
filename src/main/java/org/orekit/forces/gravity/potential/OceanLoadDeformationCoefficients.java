@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -111,25 +111,21 @@ public enum OceanLoadDeformationCoefficients {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getCoefficients() throws OrekitException {
-
-            final InputStream stream =
-                    OceanLoadDeformationCoefficients.class.getResourceAsStream(RESOURCE_NAME);
-            if (stream == null) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, RESOURCE_NAME);
-            }
-
-            // regular lines are simply a degree index followed by the coefficient for this degree
-            final StringBuilder builder = new StringBuilder("^\\p{Space}*");
-            builder.append("(").append(INTEGER_TYPE_PATTERN).append(")");
-            builder.append("\\p{Space}+");
-            builder.append("(").append(REAL_TYPE_PATTERN).append(")");
-            builder.append("\\p{Space}*$");
-            final Pattern regularLinePattern = Pattern.compile(builder.toString());
+        public double[] getCoefficients() {
 
             int lineNumber = 0;
             String line = null;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            try (InputStream stream =
+                            checkNull(OceanLoadDeformationCoefficients.class.getResourceAsStream(RESOURCE_NAME));
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+
+                // regular lines are simply a degree index followed by the coefficient for this degree
+                final StringBuilder builder = new StringBuilder("^\\p{Space}*");
+                builder.append("(").append(INTEGER_TYPE_PATTERN).append(")");
+                builder.append("\\p{Space}+");
+                builder.append("(").append(REAL_TYPE_PATTERN).append(")");
+                builder.append("\\p{Space}*$");
+                final Pattern regularLinePattern = Pattern.compile(builder.toString());
 
                 // setup the reader
                 lineNumber = 0;
@@ -163,12 +159,25 @@ public enum OceanLoadDeformationCoefficients {
 
         }
 
+        /**
+         * Helper method to check for null resources. Throws an exception if {@code
+         * stream} is null.
+         *
+         * @param stream loaded from the class resources.
+         * @return {@code stream}.
+         */
+        private InputStream checkNull(final InputStream stream) {
+            if (stream == null) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, RESOURCE_NAME);
+            }
+            return stream;
+        }
+
     };
 
     /** Get the load deformation coefficients for ocean tides.
      * @return load deformation coefficients for ocean tides
-     * @exception OrekitException if coefficients cannot be loaded
      */
-    public abstract double[] getCoefficients() throws OrekitException;
+    public abstract double[] getCoefficients();
 
 }

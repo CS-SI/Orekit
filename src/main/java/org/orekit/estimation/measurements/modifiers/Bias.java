@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -45,11 +44,9 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
      * @param scale scale of the bias, for normalization
      * @param min minimum value of the bias
      * @param max maximum value of the bias
-     * @exception OrekitException if reference value cannot be set
      */
     public Bias(final String[] name, final double[] bias, final double[] scale,
-                final double[] min, final double[] max)
-        throws OrekitException {
+                final double[] min, final double[] max) {
 
         drivers = new ArrayList<>(bias.length);
         for (int i = 0; i < bias.length; ++i) {

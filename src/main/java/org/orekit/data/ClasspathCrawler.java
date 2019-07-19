@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,19 +74,16 @@ public class ClasspathCrawler implements DataProvider {
      * argument.
      * </p>
      * @param list list of data file names within the classpath
-     * @exception OrekitException if a list elements is not an existing resource
      */
-    public ClasspathCrawler(final String... list) throws OrekitException {
+    public ClasspathCrawler(final String... list) {
         this(ClasspathCrawler.class.getClassLoader(), list);
     }
 
     /** Build a data classpath crawler.
      * @param classLoader class loader to use to retrieve the resources
      * @param list list of data file names within the classpath
-     * @exception OrekitException if a list elements is not an existing resource
      */
-    public ClasspathCrawler(final ClassLoader classLoader, final String... list)
-        throws OrekitException {
+    public ClasspathCrawler(final ClassLoader classLoader, final String... list) {
 
         listElements = new ArrayList<String>();
         this.classLoader = classLoader;
@@ -113,8 +110,7 @@ public class ClasspathCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final Pattern supported, final DataLoader visitor)
-        throws OrekitException {
+    public boolean feed(final Pattern supported, final DataLoader visitor) {
 
         try {
             OrekitException delayedException = null;

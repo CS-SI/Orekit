@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -42,7 +41,7 @@ import org.orekit.utils.IERSConventions;
 public class UT1ScaleTest {
 
     @Test
-    public void testLeap2006() throws OrekitException {
+    public void testLeap2006() {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate dateA = new AbsoluteDate(2005, 12, 30, 23, 59,  0.0, utc);
         AbsoluteDate dateB = new AbsoluteDate(2006,  1,  2,  0,  1,  0.0, utc);
@@ -64,7 +63,7 @@ public class UT1ScaleTest {
     }
 
     @Test
-    public void testSymmetry() throws OrekitException {
+    public void testSymmetry() {
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             double dt1 = ut1.offsetFromTAI(date);
@@ -112,7 +111,7 @@ public class UT1ScaleTest {
     }
 
     @Test
-    public void testAAS06134() throws OrekitException {
+    public void testAAS06134() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -142,7 +141,7 @@ public class UT1ScaleTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -163,7 +162,7 @@ public class UT1ScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
@@ -177,7 +176,7 @@ public class UT1ScaleTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
     }

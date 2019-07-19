@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,8 @@
  *
  * <ul>
  *   <li>Tropospheric Delay</li>
+ *   <li>Ionospheric Delay</li>
+ *   <li>Global weather</li>
  *   <li>Geomagnetic Field</li>
  *   <li>Geoid</li>
  *   <li>Atmospheric refraction</li>

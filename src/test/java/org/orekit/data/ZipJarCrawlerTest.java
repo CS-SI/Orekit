@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,21 +23,21 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 
 public class ZipJarCrawlerTest {
 
     @Test
-    public void testMultiZipClasspath() throws OrekitException {
+    public void testMultiZipClasspath() {
         CountingLoader crawler = new CountingLoader();
         new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test
-    public void testMultiZip() throws OrekitException, URISyntaxException {
+    public void testMultiZip() throws URISyntaxException {
         URL url =
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader();
@@ -52,6 +52,7 @@ public class ZipJarCrawlerTest {
         }
         public void loadData(InputStream input, String name) {
             ++count;
+            Assert.assertThat(name, CoreMatchers.containsString("!/"));
         }
         public int getCount() {
             return count;

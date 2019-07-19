@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -27,8 +28,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -37,6 +36,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class used to orient tiles along an orbit track.
  * @see ConstantAzimuthAiming
+ * @see DivertedSingularityAiming
  * @author Luc Maisonobe
  */
 public class AlongTrackAiming implements TileAiming {
@@ -47,6 +47,9 @@ public class AlongTrackAiming implements TileAiming {
     /** Ground track over one half orbit. */
     private final List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> halfTrack;
 
+    /** Indicator for orbit type. */
+    private final boolean retrogradeOrbit;
+
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
 
@@ -55,27 +58,29 @@ public class AlongTrackAiming implements TileAiming {
      * @param orbit orbit along which tiles should be aligned
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
-     * @exception OrekitException if some frame conversion fails
      */
-    public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending)
-        throws OrekitException {
-        this.halfTrack = findHalfTrack(orbit, ellipsoid, isAscending);
-        this.factory   = new DSFactory(1, 1);
+    public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending) {
+        this.halfTrack       = findHalfTrack(orbit, ellipsoid, isAscending);
+        this.retrogradeOrbit = orbit.getPVCoordinates().getMomentum().getZ() < 0;
+        this.factory         = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp)
-        throws OrekitException {
+    public List<GeodeticPoint> getSingularPoints() {
+        return Arrays.asList(GeodeticPoint.NORTH_POLE, GeodeticPoint.SOUTH_POLE);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp) {
 
         final double lStart = halfTrack.get(0).getFirst().getLatitude();
         final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
-        // check the point can be reached
+
+        // special handling for out of range latitudes
         if (gp.getLatitude() < FastMath.min(lStart, lEnd) || gp.getLatitude() > FastMath.max(lStart, lEnd)) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_LATITUDE,
-                                      FastMath.toDegrees(gp.getLatitude()),
-                                      FastMath.toDegrees(FastMath.min(lStart, lEnd)),
-                                      FastMath.toDegrees(FastMath.max(lStart, lEnd)));
+            return retrogradeOrbit ? gp.getWest() : gp.getEast();
         }
 
         // bracket the point in the half track sample
@@ -131,12 +136,10 @@ public class AlongTrackAiming implements TileAiming {
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
      * @return time stamped ground points on the selected half track
-     * @exception OrekitException if some frame conversion fails
      */
     private static List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> findHalfTrack(final Orbit orbit,
                                                                                      final OneAxisEllipsoid ellipsoid,
-                                                                                     final boolean isAscending)
-        throws OrekitException {
+                                                                                     final boolean isAscending) {
 
         // find the span of the next half track
         final Propagator propagator = new KeplerianPropagator(orbit);

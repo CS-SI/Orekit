@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2018 CS Systèmes d'Information
+<!--- Copyright 2002-2019 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -360,6 +360,14 @@ Semianalytical propagation is implemented using Draper Semianalytical Satellite 
 Since version 7.0, both mean elements equations of motion models and short periodic terms
 have been implemented and validated.
 
+Since version 10.0 propagating both equations of motions and additional equations is available
+for the semianalytical propagation.
+
+![DSST partial derivatives class diagram](../images/design/dsst-partial-derivatives-class-diagram.png)
+
+The above class diagram shows the design of the partial derivatives equations for the semianalytical
+propagation. As can be seen, the process is very close the one for the numerical propagation.
+
 ## Field propagation
 
 Since 9.0, most of the Orekit propagators (in fact all of them except DSST) have both a regular
@@ -429,4 +437,5 @@ the other components of the tuple will follow the same branch in the algorithm, 
 they may not be in the same conditions. This means that using `Tuple` for orbit propagation
 works only for close enough spacecrafts. This is well suited for finite differences,
 formation flying or co-positioning, but this is not suited for constellations.
+
 

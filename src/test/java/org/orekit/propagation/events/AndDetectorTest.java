@@ -3,13 +3,13 @@ package org.orekit.propagation.events;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 
+import org.hipparchus.ode.events.Action;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -39,11 +39,9 @@ public class AndDetectorTest {
 
     /**
      * check {@link BooleanDetector#g(SpacecraftState)}.
-     *
-     * @throws OrekitException on error
      */
     @Test
-    public void testG() throws OrekitException {
+    public void testG() {
         // test both zero
         a.g = b.g = 0.0;
         Assert.assertEquals(0.0, and.g(s), 0);
@@ -82,11 +80,9 @@ public class AndDetectorTest {
 
     /**
      * check {@link BooleanDetector} for cancellation.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testCancellation() throws OrekitException {
+    public void testCancellation() {
         a.g = -1e-10;
         b.g = 1e10;
         Assert.assertTrue("negative", and.g(s) < 0);
@@ -101,13 +97,17 @@ public class AndDetectorTest {
         Assert.assertTrue("positive", and.g(s) > 0);
     }
 
-    /** Check wrapped detectors are initialized. */
+    /**
+     * Check wrapped detectors are initialized.
+     */
     @Test
     public void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
         EventDetector b = Mockito.mock(EventDetector.class);
-        BooleanDetector and = BooleanDetector.andCombine(a, b);
+        @SuppressWarnings("unchecked")
+        EventHandler<EventDetector> c = Mockito.mock(EventHandler.class);
+        BooleanDetector and = BooleanDetector.andCombine(a, b).withHandler(c);
         AbsoluteDate t = AbsoluteDate.CCSDS_EPOCH;
         s = Mockito.mock(SpacecraftState.class);
         Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
@@ -118,6 +118,7 @@ public class AndDetectorTest {
         // verify
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
+        Mockito.verify(c).init(s, t);
     }
 
     /** check when no operands are passed to the constructor. */
@@ -135,9 +136,6 @@ public class AndDetectorTest {
     /** Mock detector to set the g function to arbitrary values. */
     private static class MockDetector implements EventDetector {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 1L;
-
         /** value to return from {@link #g(SpacecraftState)}. */
         public double g = 0;
 
@@ -147,7 +145,7 @@ public class AndDetectorTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             return this.g;
         }
 
@@ -167,12 +165,12 @@ public class AndDetectorTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+        public Action eventOccurred(SpacecraftState s, boolean increasing) {
             return null;
         }
 
         @Override
-        public SpacecraftState resetState(SpacecraftState oldState) throws OrekitException {
+        public SpacecraftState resetState(SpacecraftState oldState) {
             return null;
         }
     }

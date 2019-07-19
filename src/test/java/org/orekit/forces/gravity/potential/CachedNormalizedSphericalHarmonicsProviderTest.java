@@ -20,7 +20,6 @@ import org.junit.Assert;
 import org.hipparchus.util.Precision;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -66,7 +65,7 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolation() {
         //setup
         //generate points on grid with date as the origin
         cache.onDate(date);
@@ -89,7 +88,7 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     }
 
     @Test
-    public void testReverseEntryGeneration() throws OrekitException {
+    public void testReverseEntryGeneration() {
         //setup
         //generate points on grid with date as the origin
         cache.onDate(date);
@@ -119,16 +118,16 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         }
 
         @Override
-        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
             final double t = date.durationFrom(this.date);
             return new NormalizedSphericalHarmonics() {
                 @Override
-                public double getNormalizedCnm(int n, int m) throws OrekitException {
+                public double getNormalizedCnm(int n, int m) {
                     return n + m + t * t;
                 }
 
                 @Override
-                public double getNormalizedSnm(int n, int m) throws OrekitException {
+                public double getNormalizedSnm(int n, int m) {
                     return n + m + t * t + 1;
                 }
 

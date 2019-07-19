@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.GraggBulirschStoerIntegrator;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -52,8 +51,7 @@ public class GraggBulirschStoerIntegratorBuilder implements ODEIntegratorBuilder
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
-        throws OrekitException {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new GraggBulirschStoerIntegrator(minStep, maxStep, tol[0], tol[1]);
     }

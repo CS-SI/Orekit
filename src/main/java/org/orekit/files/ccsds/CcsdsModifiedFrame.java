@@ -18,7 +18,6 @@ package org.orekit.files.ccsds;
 
 import org.hipparchus.RealFieldElement;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -110,14 +109,13 @@ public class CcsdsModifiedFrame extends Frame {
         }
 
         @Override
-        public Transform getTransform(final AbsoluteDate date)
-                throws OrekitException {
+        public Transform getTransform(final AbsoluteDate date) {
             return new Transform(date, body.getPVCoordinates(date, frame));
         }
 
         @Override
         public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(
-                final FieldAbsoluteDate<T> date) throws OrekitException {
+                final FieldAbsoluteDate<T> date) {
             return new FieldTransform<>(
                     date,
                     body.getPVCoordinates(date, frame));

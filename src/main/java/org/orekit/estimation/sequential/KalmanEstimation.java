@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
 
 /** Interface for accessing {@link KalmanEstimator Kalman filter} estimations.
+ * The "physical" term used to characterize the states and matrices is used per opposition to
+ * the "normalized" states and matrices used to perform the computation.
  * @author Luc Maisonobe
  * @since 9.2
  */
@@ -64,6 +66,34 @@ public interface KalmanEstimation {
      */
     RealMatrix getPhysicalEstimatedCovarianceMatrix();
 
+    /** Get physical state transition matrix between previous state and estimated (but not yet corrected) state.
+     * @return state transition matrix between previous state and estimated state (but not yet corrected)
+     * (may be null for initial process estimate)
+     * @since 9.3
+     */
+    RealMatrix getPhysicalStateTransitionMatrix();
+
+    /** Get the physical Jacobian of the measurement with respect to the state (H matrix).
+     * @return physical Jacobian of the measurement with respect to the state (may be null for initial
+     * process estimate or if the measurement has been ignored)
+     * @since 9.3
+     */
+    RealMatrix getPhysicalMeasurementJacobian();
+
+    /** Get the physical innovation covariance matrix.
+     * @return physical innovation covariance matrix (may be null for initial
+     * process estimate or if the measurement has been ignored)
+     * @since 9.3
+     */
+    RealMatrix getPhysicalInnovationCovarianceMatrix();
+
+    /** Get the physical Kalman gain matrix.
+     * @return Kalman gain matrix (may be null for initial
+     * process estimate or if the measurement has been ignored)
+     * @since 9.3
+     */
+    RealMatrix getPhysicalKalmanGain();
+
     /** Get the current measurement number.
      * @return current measurement number
      */
@@ -89,5 +119,4 @@ public interface KalmanEstimation {
      * @return corrected measurement
      */
     EstimatedMeasurement<?> getCorrectedMeasurement();
-
 }

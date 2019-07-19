@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -90,7 +89,7 @@ public class LocalOrbitalFrame extends Frame {
         }
 
         /** {@inheritDoc} */
-        public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+        public Transform getTransform(final AbsoluteDate date) {
             return type.transformFromInertial(date, provider.getPVCoordinates(date, reference));
         }
 

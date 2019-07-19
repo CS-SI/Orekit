@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import org.orekit.time.TimeStamped;
-
-
 /** This interface provides the minimal set of orbital elements needed by the {@link GPSPropagator}.
  *
  * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
@@ -26,7 +23,7 @@ import org.orekit.time.TimeStamped;
  * @since 8.0
  *
  */
-public interface GPSOrbitalElements extends TimeStamped {
+public interface GPSOrbitalElements extends GNSSOrbitalElements {
 
     // Constants
     /** WGS 84 value of the Earth's universal gravitational parameter for GPS user in m³/s². */
@@ -42,129 +39,33 @@ public interface GPSOrbitalElements extends TimeStamped {
     int GPS_WEEK_NB = 1024;
 
     /**
-     * Gets the PRN number of the GPS satellite.
+     * Gets the Issue Of Data Clock (IODC).
      *
-     * @return the PRN number of the GPS satellite
+     * @return the Issue Of Data Clock (IODC)
+     * @since 9.3
      */
-    int getPRN();
+    default int getIODC() {
+        return 0;
+    }
 
     /**
-     * Gets the Reference Week of the GPS orbit.
+     * Gets the Issue Of Data Ephemeris (IODE).
      *
-     * @return the Reference Week of the GPS orbit within [0, 1024[
+     * @return the Issue Of Data Ephemeris (IODE)
+     * @since 9.3
      */
-    int getWeek();
+    default int getIODE() {
+        return 0;
+    }
 
     /**
-     * Gets the Reference Time of the GPS orbit as a duration from week start.
+     * Gets the estimated group delay differential TGD for L1-L2 correction.
      *
-     * @return the Reference Time of the GPS orbit (s)
+     * @return the estimated group delay differential TGD for L1-L2 correction (s)
+     * @since 9.3
      */
-    double getTime();
-
-    /**
-     * Gets the Semi-Major Axis.
-     *
-     * @return the Semi-Major Axis (m)
-     */
-    double getSma();
-
-    /**
-     * Gets the Mean Motion.
-     *
-     * @return the Mean Motion (rad/s)
-     */
-    double getMeanMotion();
-
-    /**
-     * Gets the Eccentricity.
-     *
-     * @return the Eccentricity
-     */
-    double getE();
-
-    /**
-     * Gets the Inclination Angle at Reference Time.
-     *
-     * @return the Inclination Angle at Reference Time (rad)
-     */
-    double getI0();
-
-    /**
-     * Gets the Rate of Inclination Angle.
-     *
-     * @return the Rate of Inclination Angle (rad/s)
-     */
-    double getIDot();
-
-    /**
-     * Gets the Longitude of Ascending Node of Orbit Plane at Weekly Epoch.
-     *
-     * @return the Longitude of Ascending Node of Orbit Plane at Weekly Epoch (rad)
-     */
-    double getOmega0();
-
-    /**
-     * Gets the Rate of Right Ascension.
-     *
-     * @return the Rate of Right Ascension (rad/s)
-     */
-    double getOmegaDot();
-
-    /**
-     * Gets the Argument of Perigee.
-     *
-     * @return the Argument of Perigee (rad)
-     */
-    double getPa();
-
-    /**
-     * Gets the Mean Anomaly at Reference Time.
-     *
-     * @return the Mean Anomaly at Reference Time (rad)
-     */
-    double getM0();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude (rad)
-     */
-    double getCuc();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude (rad)
-     */
-    double getCus();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius (m)
-     */
-    double getCrc();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Orbit Radius.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Orbit Radius (m)
-     */
-    double getCrs();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination (rad)
-     */
-    double getCic();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination (rad)
-     */
-    double getCis();
+    default double getTGD() {
+        return 0.0;
+    }
 
 }

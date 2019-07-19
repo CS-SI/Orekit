@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -149,8 +150,7 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history)
-        throws OrekitException {
+                            final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter, isNonRotatingOrigin);
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         history.addAll(parser.history);
@@ -180,11 +180,9 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
         /** Simple constructor.
          * @param converter converter to use
          * @param isNonRotatingOrigin type of nutation correction
-         * @exception OrekitException if ITRF version loader cannot be parsed
          */
         Parser(final IERSConventions.NutationCorrectionConverter converter,
-                      final boolean isNonRotatingOrigin)
-            throws OrekitException {
+               final boolean isNonRotatingOrigin) {
             this.converter           = converter;
             this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.isNonRotatingOrigin = isNonRotatingOrigin;
@@ -199,12 +197,12 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
         /** {@inheritDoc} */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
             // set up a reader for line-oriented bulletin B files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // reset parse info to start new file (do not clear history!)
             lineNumber = 0;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,12 @@ package org.orekit.forces.gravity.potential;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 
 public class OceanLoadDeformationCoefficientsTest {
 
     @Test
     public void testIERS1996EqualsIERS2003()
-        throws OrekitException {
+        {
         double[] coeff1996 = OceanLoadDeformationCoefficients.IERS_1996.getCoefficients();
         double[] coeff2003 = OceanLoadDeformationCoefficients.IERS_2003.getCoefficients();
         Assert.assertEquals(coeff1996.length, coeff2003.length);
@@ -36,7 +35,7 @@ public class OceanLoadDeformationCoefficientsTest {
 
     @Test
     public void testIERS1996EqualsIERS2010()
-        throws OrekitException {
+        {
         double[] coeff1996 = OceanLoadDeformationCoefficients.IERS_1996.getCoefficients();
         double[] coeff2010 = OceanLoadDeformationCoefficients.IERS_2010.getCoefficients();
         Assert.assertEquals(coeff1996.length, coeff2010.length);
@@ -47,13 +46,13 @@ public class OceanLoadDeformationCoefficientsTest {
 
     @Test
     public void testGegoutHighDegree()
-        throws OrekitException {
+        {
         Assert.assertEquals(251, OceanLoadDeformationCoefficients.GEGOUT.getCoefficients().length);
     }
 
     @Test
     public void testGegoutNotEqualToIERS()
-        throws OrekitException {
+        {
         double[] coeff1996   = OceanLoadDeformationCoefficients.IERS_1996.getCoefficients();
         double[] coeffGegout = OceanLoadDeformationCoefficients.GEGOUT.getCoefficients();
         for (int i = 0; i < coeff1996.length; ++i) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,14 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
-import org.orekit.gnss.RinexLoader.Parser.AppliedDCBs;
+import org.orekit.gnss.RinexLoader.Parser.AppliedDCBS;
 import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.gnss.RinexLoader.Parser.PhaseShiftCorrection;
 import org.orekit.time.AbsoluteDate;
 
+/** Container for Rinex file header.
+ * @since 9.2
+ */
 public class RinexHeader {
 
     /** Rinex Version. */
@@ -111,7 +114,7 @@ public class RinexHeader {
     private final int clkOffset;
 
     /** List of applied differential code bias corrections. */
-    private List<AppliedDCBs> listAppliedDCBs;
+    private List<AppliedDCBS> listAppliedDCBS;
 
     /** List of antenna center variation corrections. */
     private List<AppliedPCVS> listAppliedPCVS;
@@ -139,6 +142,7 @@ public class RinexHeader {
      * @param satelliteSystem Satellite System of the observation file (G/R/S/E/M)
      * @param markerName name of the antenna marker
      * @param markerNumber number of the antenna marker
+     * @param markerType Type of Antenna marker
      * @param observerName name of the observer
      * @param agencyName name of the agency
      * @param receiverNumber number of the receiver
@@ -149,6 +153,9 @@ public class RinexHeader {
      * @param approxPos Approximate Marker Position (WGS84)
      * @param antHeight antenna height
      * @param eccentricities Eccentricities of antenna center
+     * @param antRefPoint Position of antenna reference point for antenna on vehicle
+     * @param antBSight Antenna B.Sight
+     * @param centerMass Current center of mass of vehicle in body fixed coordinate system
      * @param interval Observation interval in seconds
      * @param tFirstObs Time of First observation record
      * @param tLastObs Time of last observation record
@@ -156,16 +163,18 @@ public class RinexHeader {
      * @param leapSeconds Number of leap seconds since 6-Jan-1980
      */
     public RinexHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
-                       final String markerName, final String markerNumber, final String observerName,
-                       final String agencyName, final String receiverNumber, final String receiverType,
-                       final String receiverVersion, final String antennaNumber, final String antennaType,
-                       final Vector3D approxPos, final double antHeight, final Vector2D eccentricities,
-                       final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
+                       final String markerName, final String markerNumber, final String markerType,
+                       final String observerName, final String agencyName, final String receiverNumber,
+                       final String receiverType, final String receiverVersion, final String antennaNumber,
+                       final String antennaType, final Vector3D approxPos, final double antHeight,
+                       final Vector2D eccentricities, final Vector3D antRefPoint, final Vector3D antBSight,
+                       final Vector3D centerMass, final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
                        final int clkOffset, final int leapSeconds) {
         this.rinexVersion = rinexVersion;
         this.satelliteSystem = satelliteSystem;
         this.markerName = markerName;
         this.markerNumber = markerNumber;
+        this.markerType = markerType;
         this.observerName = observerName;
         this.agencyName = agencyName;
         this.receiverNumber = receiverNumber;
@@ -176,6 +185,9 @@ public class RinexHeader {
         this.approxPos = approxPos;
         this.antHeight = antHeight;
         this.eccentricities = eccentricities;
+        this.antRefPoint = antRefPoint;
+        this.antBSight = antBSight;
+        this.centerMass = centerMass;
         this.interval = interval;
         this.tFirstObs = tFirstObs;
         this.tLastObs = tLastObs;
@@ -212,7 +224,7 @@ public class RinexHeader {
     * @param tFirstObs Time of First observation record
     * @param tLastObs Time of last observation record
     * @param clkOffset Realtime-derived receiver clock offset
-    * @param listAppliedDCBs List of applied differential code bias corrections
+    * @param listAppliedDCBS List of applied differential code bias corrections
     * @param listAppliedPCVS List of antenna center variation corrections
     * @param phaseShiftCorrections List of phase shift correction used to generate phases consistent w/r to cycle shifts
     * @param leapSeconds Number of leap seconds since 6-Jan-1980
@@ -229,7 +241,7 @@ public class RinexHeader {
                        final Vector3D antPhaseCenter, final Vector3D antBSight, final double antAzi,
                        final Vector3D antZeroDir, final Vector3D centerMass, final String sigStrengthUnit,
                        final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
-                       final int clkOffset, final List<AppliedDCBs> listAppliedDCBs,
+                       final int clkOffset, final List<AppliedDCBS> listAppliedDCBS,
                        final List<AppliedPCVS> listAppliedPCVS,
                        final List<PhaseShiftCorrection> phaseShiftCorrections, final int leapSeconds,
                        final int leapSecondsFuture, final int leapSecondsWeekNum, final int leapSecondsDayNum) {
@@ -256,7 +268,7 @@ public class RinexHeader {
         this.sigStrengthUnit = sigStrengthUnit;
         this.phaseShiftCorrections = phaseShiftCorrections;
         this.obsCode = obsCode;
-        this.listAppliedDCBs = listAppliedDCBs;
+        this.listAppliedDCBS = listAppliedDCBS;
         this.listAppliedPCVS = listAppliedPCVS;
         this.leapSecondsDayNum = leapSecondsDayNum;
         this.leapSecondsFuture = leapSecondsFuture;
@@ -490,8 +502,8 @@ public class RinexHeader {
     /** Get the list of applied differential code bias corrections.
      * @return list of applied differential code bias corrections
      */
-    public List<AppliedDCBs> getListAppliedDCBs() {
-        return listAppliedDCBs;
+    public List<AppliedDCBS> getListAppliedDCBS() {
+        return listAppliedDCBS;
     }
 
     /** Get the list of antenna center variation corrections.

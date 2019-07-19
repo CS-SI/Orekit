@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,6 @@
 package org.orekit.forces.radiation;
 
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -26,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -59,9 +56,6 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     /** Cross section (m²). */
     private final double crossSection;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Constructor with reflection coefficient min/max set to ±∞.
      * @param crossSection Surface (m²)
      * @param cr reflection coefficient
@@ -84,7 +78,6 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
             reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
                                                             cr, SCALE,
                                                             crMin, crMax);
-            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -118,31 +111,9 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
-                                      final T[] parameters)
-        throws OrekitException {
+                                      final T[] parameters) {
         final T cr = parameters[0];
         return new FieldVector3D<>(mass.reciprocal().multiply(crossSection).multiply(cr), flux);
 
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                                            final Rotation rotation, final double mass,
-                                                                            final Vector3D flux, final double[] parameters,
-                                                                            final String paramName)
-        throws OrekitException {
-
-        final DerivativeStructure crDS;
-        if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            crDS = factory.variable(0, parameters[0]);
-        } else {
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
-                                      ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
-        }
-
-        return new FieldVector3D<>(crDS.multiply(crossSection / mass), flux);
-
-    }
-
 }

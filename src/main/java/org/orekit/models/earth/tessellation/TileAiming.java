@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,35 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 
 /** Interface defining the aiming direction of {@link Tile tiles}.
  * @author Luc Maisonobe
  */
 public interface TileAiming {
 
+    /** Get points at which aiming direction cannot be computed.
+     * <p>
+     * As per Brouwer's <a href="http://mathworld.wolfram.com/HairyBallTheorem.html">hairy
+     * ball theorem</a>, any vector field on the 2-sphere has at least one zero.
+     * This implies that any implementation of this interface has at least one point
+     * where the aiming direction cannot be computed. The most typical example is aiming
+     * always towards North pole, for which both poles are singular points.
+     * </p>
+     * @return a non-empty (as per hairy ball theorem) list of points where aiming direction
+     * is either zero or cannot be computed
+     * @since 10.0
+     */
+    List<GeodeticPoint> getSingularPoints();
+
     /** Find the along tile direction for tessellation at specified point.
      * @param point point on the ellipsoid (Cartesian coordinates)
      * @param gp point on the ellipsoid (geodetic coordinates)
      * @return normalized along tile direction
-     * @exception OrekitException if direction cannot be estimated
      */
-    Vector3D alongTileDirection(Vector3D point, GeodeticPoint gp) throws OrekitException;
+    Vector3D alongTileDirection(Vector3D point, GeodeticPoint gp);
 
 }

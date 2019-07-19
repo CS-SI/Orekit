@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeShiftable;
@@ -69,15 +68,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p> The transform to apply then is defined as follows :
  *
- * <pre><code>
+ * <pre>
  * Vector3D translation  = new Vector3D(-1, 0, 0);
  * Vector3D velocity     = new Vector3D(-2, 0, 0);
  * Vector3D acceleration = new Vector3D(-3, 0, 0);
  *
  * Transform R1toR2 = new Transform(date, translation, velocity, acceleration);
  *
- * PVB = R1toR2.transformPVCoordinates<T>(PVA);
- * </code></pre>
+ * PVB = R1toR2.transformPVCoordinate(PVA);
+ * </pre>
  *
  * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
  * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
@@ -88,14 +87,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p> The transform to apply then is defined as follows :
  *
- * <pre><code>
+ * <pre>
  * Rotation rotation = new Rotation(Vector3D.PLUS_K, FastMath.PI / 2);
  * Vector3D rotationRate = new Vector3D(0, 0, -2);
  *
  * Transform R1toR2 = new Transform(rotation, rotationRate);
  *
- * PVB = R1toR2.transformPVCoordinates<T>(PVA);
- * </code></pre>
+ * PVB = R1toR2.transformPVCoordinates(PVA);
+ * </pre>
  *
  * @author Luc Maisonobe
  * @author Fabien Maussion
@@ -425,7 +424,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param dt time shift in seconds
      * @return a new instance, shifted with respect to instance (which is not changed)
      */
-    FieldTransform<T> shiftedBy(final T dt) {
+    public FieldTransform<T> shiftedBy(final T dt) {
         return new FieldTransform<>(date.shiftedBy(dt), aDate.shiftedBy(dt.getReal()),
                                     cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }
@@ -442,11 +441,9 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
-                                                                                final Collection<FieldTransform<T>> sample)
-        throws OrekitException {
+                                                                                final Collection<FieldTransform<T>> sample) {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
                            sample);
@@ -474,14 +471,12 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
-     * @param <T> the type of the field elements
+          * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
-                                                                                final Collection<FieldTransform<T>> sample)
-        throws OrekitException {
+                                                                                final Collection<FieldTransform<T>> sample) {
         return interpolate(date, cFilter, aFilter, sample.stream());
     }
 
@@ -507,14 +502,12 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
-     * @param <T> the type of the field elements
+          * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
-                                                                                final Stream<FieldTransform<T>> sample)
-        throws OrekitException {
+                                                                                final Stream<FieldTransform<T>> sample) {
         final List<TimeStampedFieldPVCoordinates<T>>      datedPV = new ArrayList<>();
         final List<TimeStampedFieldAngularCoordinates<T>> datedAC = new ArrayList<>();
         sample.forEach(t -> {
@@ -735,14 +728,10 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * </p>
      * <p>
      * This definition implies that if we define position-velocity coordinates
-     * <pre>
-     * PV₁ = transform.transformPVCoordinates<T>(PV₀), then
-     * </pre>
-     * <p> their differentials dPV₁ and dPV₀ will obey the following relation
+     * <pre>PV₁ = transform.transformPVCoordinates(PV₀)</pre>
+     * then their differentials dPV₁ and dPV₀ will obey the following relation
      * where J is the matrix computed by this method:
-     * <pre>
-     * dPV₁ = J &times; dPV₀
-     * </pre>
+     * <pre>dPV₁ = J &times; dPV₀</pre>
      *
      * @param selector selector specifying the size of the upper left corner that must be filled
      * (either 3x3 for positions only, 6x6 for positions and velocities, 9x9 for positions,

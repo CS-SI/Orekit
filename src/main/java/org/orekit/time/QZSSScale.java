@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import org.hipparchus.RealFieldElement;
 /** QZSS time scale.
  * <p>By convention, TQZSS = TAI - 19 s.</p>
  * <p>The time scale is defined in <a
- * href="http://qz-vision.jaxa.jp/USE/is-qzss/DOCS/IS-QZSS_16_E.pdf">Quasi-Zenith
- * Satellite System Navigation Service - Interface Specification for QZSS</a> version 1.6, 2014.
+ * href="http://qzss.go.jp/en/technical/download/pdf/ps-is-qzss/is-qzss-pnt-003.pdf?t=1549268771755">
+ * Quasi-Zenith Satellite System Navigation Service - Interface Specification for QZSS</a> version 1.6, 2014.
  * </p>
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
  * so there is no public constructor.</p>

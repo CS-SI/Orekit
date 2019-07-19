@@ -1,0 +1,22 @@
+--- eclips_Dec2017.f.orig	2018-09-20 14:47:49.208393811 +0200
++++ eclips_Dec2017.f	2018-09-20 14:48:56.916395513 +0200
+@@ -104,6 +104,9 @@
+ C                                    OF ALL MATHEMATICAL FUNCTIONS (Luc Maisonobe)
+ C                      Jun 08, 2018  ENSURE ALL LITTERAL CONSTANTS ARE DOUBLE
+ C                                    PRECISION (Luc Maisonobe)
++C                      Jun 25, 2018  FIXED TOO EARLY ABRUPT SWITCH BACK TO
++C                                    NOMINAL YAW WHEN BETA SIGN CHANGES DURING
++C                                    THE TURN (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -400,7 +403,8 @@
+ C      IF(BETADG.LT.0.d0.AND.IBLK(IPRN).GE.4.AND.IBLK(IPRN).LE.5)
+ C    &            YANGLE=-YANGLE
+ c      IF(BETADG.GT.0.d0.AND.IBLK(IPRN).NE.4.AND.IBLK(IPRN).NE.5)
+-       IF(BETADG.GT.0.d0)
++       IF((BETAINI(IPRN).EQ.0.0D0.AND.BETADG.GT.0.0d0)
++     &    .OR.BETAINI(IPRN).GT.0)
+      &            YANGLE=-YANGLE
+ C
+ C Jan 10, 2017 - Start

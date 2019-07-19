@@ -1,0 +1,64 @@
+--- eclips_Dec2017.f.orig	2018-09-21 17:48:42.317409717 +0200
++++ eclips_Dec2017.f	2018-09-21 17:49:55.007789083 +0200
+@@ -115,6 +115,13 @@
+ C                                    FOR SOLVING SOME TRIANGLES (Luc Maisonobe)
+ C                      Jul 10, 2018  TAKE ECCENTRICITY INTO ACCOUNT WHEN
+ C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
++C                      Sep 14, 2018  FIXED BODY-X UNIT VECTOR COMPUTATION
++C                                    EXACTLY AT NODE (AVOID NaNs), IMPROVE
++C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
++C                                    ORBITS, APPLY DIRECTLY LINEAR PHI FROM
++C                                    LOCAL ORBITAL FRAME INSTEAD OF APPLYING
++C                                    A CORRECTION TO NUMERICALLY UNSTABLE
++C                                    NOMINAL YAW (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -223,11 +230,11 @@
+       REAL*8    DTR, DTTAG
+       REAL*8    XSV(*), SANTXYZ(*), VSVC(*), BETA, MURATE, YANGLE, DET,
+ C Jan 10, 2017
+-C    &          YRATE(64), BETADG, PHI, SANTX, SANTY,        v(3),r(3)
+-     &          YRATE(136),BETADG, PHI, SANTX, SANTY, v(3),r(3), BETA0,
++C    &          YRATE(64), BETADG, PHI, SANTX,        v(3),r(3)
++     &          YRATE(136),BETADG, PHI, SANTX, v(3),r(3), BETA0,
+ C    &          SMTH, BETAE
+      &          BETAE, P2, V2, PV, COEFFP, COEFFV, TMP, OMG(3), OMGN
+-      REAL*8    YAWEND
++      REAL*8    YAWEND, LOFI(3), LOFIN, CPHI, SPHI
+       REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
+       REAL*8    DABS, ABS, SIGN, DMOD, MAX, MIN
+ C Dec 12, 2013
+@@ -928,19 +935,20 @@
+      & BETADG, ECLSTM(IPRN,I),beta0                  
+              IECLIPS=2
+            END IF
+-C ROTATE X-VECTOR TO ECLIPSING YAW ANGLE PHI 
++C SET X-VECTOR ACCORDING TO ECLIPSING YAW ANGLE PHI 
+ C ECLIPSING (II/IIA) NOT TO BE USED  A HALF HR AFTER SHADOW !
+-       SANTX=(COS((PHI-YANGLE)*DTR)*(V(2)-V(3)*R(2)/R(3))-COS(PHI*
+-     & DTR)*
+-     &(SANTXYZ(2)-SANTXYZ(3)*R(2)/R(3)))/(SANTXYZ(1)*V(2)-SANTXYZ(2)*v(1
+-     &)+((SANTXYZ(2)*V(3)-SANTXYZ(3)*V(2))*R(1)+(SANTXYZ(3)*V(1)-SANTXYZ
+-     &(1)*V(3))*R(2))/R(3))
+-       SANTY = (COS(PHI*DTR) - (V(1)-V(3)*R(1)/R(3))*SANTX)/
+-     & (V(2)-V(3)*R(2)/R(3))
+-C THE BODY-X UNIT VECTOR ROTATED BY (PHI-YANGLE) RETURNED
+-          SANTXYZ(1)= SANTX
+-          SANTXYZ(2)= SANTY
+-          SANTXYZ(3)= (-R(1)*SANTX-R(2)*SANTY)/R(3)
++          LOFI(1) = P2 * VSVC(1) - PV * XSV(1) 
++          LOFI(2) = P2 * VSVC(2) - PV * XSV(2) 
++          LOFI(3) = P2 * VSVC(3) - PV * XSV(3)
++          LOFIN   = SQRT(LOFI(1) * LOFI(1)
++     &                 + LOFI(2) * LOFI(2)
++     &                 + LOFI(3) * LOFI(3))
++          CPHI  = COS(PHI*DTR)
++          SPHI  = SIN(PHI*DTR)
++C THE BODY-X UNIT VECTOR RETURNED
++          SANTXYZ(1)= CPHI * LOFI(1) / LOFIN - SPHI * OMG(1) / OMGN
++          SANTXYZ(2)= CPHI * LOFI(2) / LOFIN - SPHI * OMG(2) / OMGN
++          SANTXYZ(3)= CPHI * LOFI(3) / LOFIN - SPHI * OMG(3) / OMGN
+       END IF
+       ENDIF
+ 1     CONTINUE

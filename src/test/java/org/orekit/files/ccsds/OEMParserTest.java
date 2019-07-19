@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,7 +66,7 @@ public class OEMParserTest {
     }
 
     @Test
-    public void testParseOEM1() throws OrekitException, IOException {
+    public void testParseOEM1() throws IOException {
         //
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -160,7 +160,7 @@ public class OEMParserTest {
     }
 
     @Test
-    public void testParseOEM1OrbitFile() throws OrekitException, IOException {
+    public void testParseOEM1OrbitFile() throws IOException {
 
         final String ex = "/ccsds/OEMExample3.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -213,7 +213,7 @@ public class OEMParserTest {
     }
 
     @Test
-    public void testParseOemMissingOptionalData() throws OrekitException, IOException {
+    public void testParseOemMissingOptionalData() throws IOException {
 
         final String ex = "/ccsds/OEMExample6.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -293,7 +293,7 @@ public class OEMParserTest {
 
     @Test
     public void testParseOEM2()
-            throws OrekitException, URISyntaxException {
+            throws URISyntaxException {
 
         final String name = getClass().getResource("/ccsds/OEMExample2.txt").toURI().getPath();
         OEMParser parser = new OEMParser().
@@ -391,7 +391,7 @@ public class OEMParserTest {
     }
 
     @Test
-    public void testLowerCaseValue() throws OrekitException {
+    public void testLowerCaseValue() {
         //setup
         String file = "/ccsds/oemLowerCaseValue.oem";
         InputStream in = getClass().getResourceAsStream(file);
@@ -407,7 +407,7 @@ public class OEMParserTest {
 
     @Test
     public void testWrongKeyword()
-        throws OrekitException, URISyntaxException {
+        throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = getClass().getResource("/ccsds/OEM-wrong-keyword.txt").toURI().getPath();
@@ -423,7 +423,7 @@ public class OEMParserTest {
 
     @Test
     public void testKeywordWithinEphemeris()
-        throws OrekitException, URISyntaxException {
+        throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = getClass().getResource("/ccsds/OEM-keyword-within-ephemeris.txt").toURI().getPath();
@@ -439,7 +439,7 @@ public class OEMParserTest {
 
     @Test
     public void testKeywordWithinCovariance()
-        throws OrekitException, URISyntaxException {
+        throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = getClass().getResource("/ccsds/OEM-keyword-within-covariance.txt").toURI().getPath();
@@ -455,11 +455,9 @@ public class OEMParserTest {
 
     /**
      * Check the parser can parse several ITRF frames. Test case for #361.
-     *
-     * @throws OrekitException on error.
      */
     @Test
-    public void testITRFFrames() throws OrekitException {
+    public void testITRFFrames() {
         // setup
         Charset utf8 = StandardCharsets.UTF_8;
         IERSConventions conventions = IERSConventions.IERS_2010;

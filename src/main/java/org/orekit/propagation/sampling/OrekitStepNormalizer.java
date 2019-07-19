@@ -17,7 +17,6 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -66,8 +65,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t)
-        throws OrekitException {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
         lastState = null;
         forward   = true;
         handler.init(s0, t, h);
@@ -83,11 +81,8 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * should build a local copy using the clone method and store this
      * copy.
      * @param isLast true if the step is the last one
-     * @throws OrekitException this exception is propagated to the
-     * caller if the underlying user function triggers one
      */
-    public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-        throws OrekitException {
+    public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
 
         if (lastState == null) {
             // initialize lastState in the first step case

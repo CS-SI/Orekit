@@ -1,0 +1,39 @@
+--- eclips_Dec2017.f.orig	2018-09-21 17:51:23.227141405 +0200
++++ eclips_Dec2017.f	2018-09-21 17:51:51.498861980 +0200
+@@ -130,6 +130,8 @@
+ C                                    LOCAL ORBITAL FRAME INSTEAD OF APPLYING
+ C                                    A CORRECTION TO NUMERICALLY UNSTABLE
+ C                                    NOMINAL YAW (Luc Maisonobe)
++C                      Sep 17, 2018  COMPUTE ORBIT ANGLE INSTEAD OF USING
++C                                    LINEAR MODEL IN GALILEO (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -836,8 +838,11 @@
+ C              IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
+                IF((IPRN.GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
+ C  SIN ORB ANGLE MU => YAWEND
+-               YAWEND=
+-     &         SIN((ttag-ECLCTM(IPRN,I))*MURATE*DTR)
++               YAWEND=SIN(ACOS(MAX(-1.0D0, MIN(1.0D0,
++     &                 -SVBCOS / COS(BETADG*DTR)))))
++               IF (DABS(YANGLE).GE.90.0D0) THEN
++                  YAWEND = -YAWEND
++               END IF
+ C Jan 10, 2017 - start
+ C GAL ECLIPS MODEL: Shy => BETAE
+              BETAE=0.5D0*(-SIGN(SIN(BETA0*DTR),BETADG)-SIN(BETADG*DTR))
+@@ -918,8 +923,11 @@
+ C              IF(IPRN.GT.64.AND.IPRN.LE.100) THEN
+                IF((IPRN.GT.64.AND.IPRN.LE.100).OR.IPRN.EQ.INPRN) THEN
+ C  SIN ORB ANGLE MU => YAWEND
+-               YAWEND= SIN(
+-     &         PI +(TTAG-ECLCTM(IPRN,I))*MURATE*DTR)
++               YAWEND= SIN(ACOS(MAX(-1.0D0,MIN(1.0D0,
++     &                         SVBCOS / COS(BETADG*DTR)))))
++               IF (DABS(YANGLE).GE.90.0D0) THEN
++                  YAWEND = -YAWEND
++               END IF
+ C Jan 10, 2017
+ C GAL ECLIPS MODEL: Shy => BETAE
+              BETAE=0.5D0*(-SIGN(SIN(BETA0*DTR),BETADG)-SIN(BETADG*DTR))

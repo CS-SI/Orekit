@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.HatanakaCompressFilter;
 
 /** Singleton class managing all supported {@link DataProvider data providers}.
 
@@ -102,6 +103,7 @@ public class DataProvidersManager {
         // set up predefined filters
         addFilter(new GzipFilter());
         addFilter(new UnixCompressFilter());
+        addFilter(new HatanakaCompressFilter());
 
         predefinedFilters = filters.size();
 
@@ -135,10 +137,8 @@ public class DataProvidersManager {
      * System.getProperty("path.separator")}. This standard path separator is ":" on
      * Linux and Unix type systems and ";" on Windows types systems.
      * </p>
-     * @exception OrekitException if an element of the list does not exist or exists but
-     * is neither a directory nor a zip/jar archive
      */
-    public void addDefaultProviders() throws OrekitException {
+    public void addDefaultProviders() {
 
         // get the path containing all components
         final String path = System.getProperty(OREKIT_DATA_PATH);
@@ -337,11 +337,8 @@ public class DataProvidersManager {
      * @param supportedNames regular expression for file names supported by the visitor
      * @param loader data loader to use
      * @return true if some data has been loaded
-     * @exception OrekitException if the data loader cannot be fed (read error ...)
-     * or if the default configuration cannot be set up
      */
-    public boolean feed(final String supportedNames, final DataLoader loader)
-        throws OrekitException {
+    public boolean feed(final String supportedNames, final DataLoader loader) {
 
         final Pattern supported = Pattern.compile(supportedNames);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import org.hipparchus.RealFieldElement;
  * underlying comparator. An example using for {@link org.orekit.orbits.Orbit
  * Orbit} instances is given here:</p>
  * <pre>
- *     SortedSet&lt;Orbit> sortedOrbits =
- *         new TreeSet&lt;Orbit>(new ChronologicalComparator());
+ *     SortedSet&lt;Orbit&gt; sortedOrbits =
+ *         new TreeSet&lt;Orbit&gt;(new ChronologicalComparator());
  *     sortedOrbits.add(orbit1);
  *     sortedOrbits.add(orbit2);
  *     ...

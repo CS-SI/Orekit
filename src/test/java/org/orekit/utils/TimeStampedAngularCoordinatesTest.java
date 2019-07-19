@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ import org.orekit.time.TimeScalesFactory;
 public class TimeStampedAngularCoordinatesTest {
 
     @Test
-    public void testZeroRate() throws OrekitException {
+    public void testZeroRate() {
         TimeStampedAngularCoordinates ac =
                 new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
                                                   new Rotation(0.48, 0.64, 0.36, 0.48, false),
@@ -58,7 +58,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testOnePair() throws OrekitException, java.io.IOException {
+    public void testOnePair() throws java.io.IOException {
         RandomGenerator random = new Well1024a(0xed7dd911a44c5197l);
 
         for (int i = 0; i < 20; ++i) {
@@ -82,7 +82,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testTwoPairs() throws OrekitException, java.io.IOException {
+    public void testTwoPairs() throws java.io.IOException {
         RandomGenerator random = new Well1024a(0x976ad943966c9f00l);
 
         for (int i = 0; i < 20; ++i) {
@@ -111,7 +111,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures2() throws OrekitException {
+    public void testDerivativesStructures2() {
         RandomGenerator random = new Well1024a(0x75fbebbdbf127b3dl);
 
         Rotation r    = randomRotation(random);
@@ -128,7 +128,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testShift() throws OrekitException {
+    public void testShift() {
         double rate = 2 * FastMath.PI / (12 * 60);
         TimeStampedAngularCoordinates ac =
                 new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
@@ -151,7 +151,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
         double rate = 2 * FastMath.PI / (12 * 60);
         TimeStampedAngularCoordinates ac =
                 new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
@@ -245,7 +245,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationAroundPI() throws OrekitException {
+    public void testInterpolationAroundPI() {
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
 
@@ -279,7 +279,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationWithoutAcceleration() throws OrekitException {
+    public void testInterpolationWithoutAcceleration() {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5   * FastMath.PI;
         double omega  = 0.05  * FastMath.PI;
@@ -296,7 +296,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationWithAcceleration() throws OrekitException {
+    public void testInterpolationWithAcceleration() {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5   * FastMath.PI;
         double omega  = 0.05  * FastMath.PI;
@@ -314,7 +314,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     private double[] interpolationErrors(final TimeStampedAngularCoordinates reference, double dt)
-        throws OrekitException {
+        {
 
         final OrdinaryDifferentialEquation ode = new OrdinaryDifferentialEquation() {
             public int getDimension() {
@@ -380,7 +380,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationNeedOffsetWrongRate() throws OrekitException {
+    public void testInterpolationNeedOffsetWrongRate() {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double omega  = 2.0 * FastMath.PI;
         TimeStampedAngularCoordinates reference =
@@ -409,7 +409,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationRotationOnly() throws OrekitException {
+    public void testInterpolationRotationOnly() {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
@@ -438,7 +438,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationTooSmallSample() throws OrekitException {
+    public void testInterpolationTooSmallSample() {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
@@ -464,7 +464,7 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationGTODIssue() throws OrekitException {
+    public void testInterpolationGTODIssue() {
         AbsoluteDate t0 = new AbsoluteDate("2004-04-06T19:59:28.000", TimeScalesFactory.getTAI());
         double[][] params = new double[][] {
             { 0.0, -0.3802356750911964, -0.9248896320037013, 7.292115030462892e-5 },

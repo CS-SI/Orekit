@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 9.2
  */
-class MeasurementDecorator implements Measurement {
+public class MeasurementDecorator implements Measurement {
 
     /** Wrapped observed measurement. */
     private final ObservedMeasurement<?> observedMeasurement;
@@ -44,8 +44,8 @@ class MeasurementDecorator implements Measurement {
      * @param covariance measurement covariance
      * @param reference reference date
      */
-    MeasurementDecorator(final ObservedMeasurement<?> observedMeasurement,
-                         final RealMatrix covariance, final AbsoluteDate reference) {
+    public MeasurementDecorator(final ObservedMeasurement<?> observedMeasurement,
+                                final RealMatrix covariance, final AbsoluteDate reference) {
         this.observedMeasurement = observedMeasurement;
         this.covariance          = covariance;
         this.reference           = reference;

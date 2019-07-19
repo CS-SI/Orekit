@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,12 +42,12 @@ import org.hipparchus.util.FastMath;
  *  <p> Internally, the Modified Newcomb Operators are stored as an array of
  *  {@link PolynomialFunction} :
  *
- *  <p> Y<sub>ρ,σ</sub><sup>n,s</sup> = P<sub>k₀</sub> + P<sub>k₁</sub>n + ... +
- *  P<sub>k<sub>j</sub></sub>n<sup>j</sup>
+ *  <p> Y<sub>ρ,σ</sub><sup>n,s</sup> = P<sub>k0</sub> + P<sub>k1</sub>n + ... +
+ *  P<sub>kj</sub>n<sup>j</sup>
  *
- * <p> where the P<sub>k<sub>j</sub></sub> are given by
+ * <p> where the P<sub>kj</sub> are given by
  *
- * <p> P<sub>k<sub>j</sub></sub> = ∑<sub>j=0;ρ</sub> a<sub>j</sub>s<sup>j</sup>
+ * <p> P<sub>kj</sub> = ∑<sub>j=0;ρ</sub> a<sub>j</sub>s<sup>j</sup>
  *
  * @author Romain Di Costanzo
  * @author Pascal Parraud

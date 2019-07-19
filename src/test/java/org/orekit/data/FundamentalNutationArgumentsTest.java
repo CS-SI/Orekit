@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -67,11 +68,11 @@ public class FundamentalNutationArgumentsTest {
     }
 
     @Test
-    public void testModifiedData() throws OrekitException, IOException {
+    public void testModifiedData() throws IOException {
 
         String directory = "/assets/org/orekit/IERS-conventions/";
         InputStream is = getClass().getResourceAsStream(directory + "2010/nutation-arguments.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         StringBuilder builder = new StringBuilder();
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             builder.append(line);
@@ -116,7 +117,7 @@ public class FundamentalNutationArgumentsTest {
     }
 
     @Test
-    public void testDotDouble() throws OrekitException {
+    public void testDotDouble() {
         final IERSConventions conventions = IERSConventions.IERS_2010;
         final TimeScale ut1 = TimeScalesFactory.getUT1(conventions, false);
         final FundamentalNutationArguments fna = conventions.getNutationArguments(ut1);
@@ -198,7 +199,7 @@ public class FundamentalNutationArgumentsTest {
     }
 
     @Test
-    public void testDotField() throws OrekitException {
+    public void testDotField() {
         final IERSConventions conventions = IERSConventions.IERS_2010;
         final TimeScale ut1 = TimeScalesFactory.getUT1(conventions, false);
         final FundamentalNutationArguments fna = conventions.getNutationArguments(ut1);
@@ -281,27 +282,27 @@ public class FundamentalNutationArgumentsTest {
     }
 
     @Test
-    public void testSerializationNoTidalCorrection() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerializationNoTidalCorrection() throws IOException, ClassNotFoundException {
         IERSConventions conventions = IERSConventions.IERS_2010;
         TimeScale ut1 = TimeScalesFactory.getUT1(conventions, true);
         checkSerialization(295000, 300000, conventions.getNutationArguments(ut1));
     }
 
     @Test
-    public void testSerializationTidalCorrection() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerializationTidalCorrection() throws IOException, ClassNotFoundException {
         IERSConventions conventions = IERSConventions.IERS_2010;
         TimeScale ut1 = TimeScalesFactory.getUT1(conventions, false);
         checkSerialization(295000, 300000, conventions.getNutationArguments(ut1));
     }
 
     @Test
-    public void testSerializationNoUT1Correction() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerializationNoUT1Correction() throws IOException, ClassNotFoundException {
         IERSConventions conventions = IERSConventions.IERS_2010;
         checkSerialization(850, 950, conventions.getNutationArguments(null));
     }
 
     private void checkSerialization(int low, int high, FundamentalNutationArguments nutation)
-        throws OrekitException, IOException, ClassNotFoundException {
+        throws IOException, ClassNotFoundException {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);

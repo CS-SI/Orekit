@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -36,7 +35,7 @@ import org.orekit.utils.PVCoordinates;
 public class JPLEphemeridesLoaderTest {
 
     @Test
-    public void testConstantsJPL() throws OrekitException {
+    public void testConstantsJPL() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
 
         JPLEphemeridesLoader loader =
@@ -48,7 +47,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testConstantsInpop() throws OrekitException {
+    public void testConstantsInpop() {
         Utils.setDataRoot("inpop");
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES,
@@ -58,7 +57,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testGMJPL() throws OrekitException {
+    public void testGMJPL() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
 
         JPLEphemeridesLoader loader =
@@ -100,7 +99,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testGMInpop() throws OrekitException {
+    public void testGMInpop() {
 
         Utils.setDataRoot("inpop");
 
@@ -143,7 +142,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testDerivative405() throws OrekitException {
+    public void testDerivative405() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                         new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()),
@@ -151,7 +150,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testDerivative406() throws OrekitException {
+    public void testDerivative406() {
         Utils.setDataRoot("regular-data:regular-data/de406-ephemerides");
         checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                         new AbsoluteDate(2964, 9, 26, TimeScalesFactory.getTT()),
@@ -159,7 +158,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testDummyEarth() throws OrekitException {
+    public void testDummyEarth() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         JPLEphemeridesLoader loader =
                 new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
@@ -175,7 +174,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testEndianness() throws OrekitException {
+    public void testEndianness() {
         Utils.setDataRoot("inpop");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
         JPLEphemeridesLoader loaderInpopTCBBig =
@@ -200,7 +199,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testInpopvsJPL() throws OrekitException {
+    public void testInpopvsJPL() {
         Utils.setDataRoot("regular-data:inpop");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
         JPLEphemeridesLoader loaderDE405 =
@@ -230,7 +229,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testOverlappingEphemeridesData() throws OrekitException, IOException {
+    public void testOverlappingEphemeridesData() throws IOException {
         Utils.setDataRoot("overlapping-data/data.zip");
 
         // the data root contains two ephemerides files (JPL DE 405), which overlap in the period
@@ -263,7 +262,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     private void checkDerivative(String supportedNames, AbsoluteDate date, double maxChunkDuration)
-        throws OrekitException {
+        {
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY);
         CelestialBody body = loader.loadCelestialBody(CelestialBodyFactory.MERCURY);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,7 +67,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testBuildFromYear() throws OrekitException {
+    public void testBuildFromYear() {
         Assert.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion(2014));
         Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion(2008));
         Assert.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion(2005));
@@ -95,7 +95,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testBuildFromName() throws OrekitException {
+    public void testBuildFromName() {
         Assert.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion("itrf-2014"));
         Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion("itrf-2008"));
         Assert.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion("itrf-2005"));
@@ -123,7 +123,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testAllConverters() throws OrekitException {
+    public void testAllConverters() {
 
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2014
         Frame itrf2014 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

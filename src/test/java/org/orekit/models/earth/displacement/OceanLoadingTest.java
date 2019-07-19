@@ -32,7 +32,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -45,7 +44,7 @@ public class OceanLoadingTest {
     private OneAxisEllipsoid earth;
 
     @Test
-    public void testSemiDiurnal() throws OrekitException {
+    public void testSemiDiurnal() {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 0, 0, 0.0, ut1));
@@ -59,7 +58,7 @@ public class OceanLoadingTest {
     }
 
     @Test
-    public void testDiurnal() throws OrekitException {
+    public void testDiurnal() {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 0, 0, 0.0, ut1));
@@ -73,7 +72,7 @@ public class OceanLoadingTest {
     }
 
     @Test
-    public void testLongPeriod() throws OrekitException {
+    public void testLongPeriod() {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 0, 0, 0.0, ut1));
@@ -87,7 +86,7 @@ public class OceanLoadingTest {
     }
 
     @Test
-    public void testNoExtra() throws OrekitException {
+    public void testNoExtra() {
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] > 2) {
                 Assert.fail("unexpected tide " + tide.getDoodsonNumber());
@@ -96,7 +95,7 @@ public class OceanLoadingTest {
     }
 
     @Test
-    public void testStableRates() throws OrekitException {
+    public void testStableRates() {
         // this test checks that tides sort order is date-independent for a large time range
         // (almost 180000 years long)
         // tides sort-order is based on rate, but the rates varies slightly with dates
@@ -124,7 +123,7 @@ public class OceanLoadingTest {
     }
 
     @Test
-    public void testTidesRatesPastInversion() throws OrekitException {
+    public void testTidesRatesPastInversion() {
         // on -122502-11-09, the rates for semidiurnal tides 245556 and 245635 cross over
         final TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         final FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
@@ -142,7 +141,7 @@ public class OceanLoadingTest {
     }
 
     @Test
-    public void testTidesRatesFutureInversion() throws OrekitException {
+    public void testTidesRatesFutureInversion() {
         // on 56824-11-02, the rates for semidiurnal tides 274554 (R₂) and 274556 cross over
         final TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         final FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
@@ -160,18 +159,18 @@ public class OceanLoadingTest {
     }
 
     @Test
-    public void testOnsalaOriginalEarthRotation() throws OrekitException {
+    public void testOnsalaOriginalEarthRotation() {
         // this test is the first test case for HARDISP.F program
         doTestOnsala(true, 4.7e-6);
     }
 
     @Test
-    public void testOnsalaIERSEarthRotation() throws OrekitException {
+    public void testOnsalaIERSEarthRotation() {
         // this test is the first test case for HARDISP.F program
         doTestOnsala(false, 3.4e-6);
     }
 
-    private void doTestOnsala(boolean patchEarthRotation, double tolerance) throws OrekitException {
+    private void doTestOnsala(boolean patchEarthRotation, double tolerance) {
         OceanLoadingCoefficientsBLQFactory factory      = new OceanLoadingCoefficientsBLQFactory("^hardisp\\.blq$");
         OceanLoadingCoefficients           coefficients = factory.getCoefficients("Onsala");
         Vector3D                           refPoint     = earth.transform(coefficients.getSiteLocation());
@@ -218,18 +217,18 @@ public class OceanLoadingTest {
     }
 
     @Test
-    public void testReykjavikOriginalEarthRotation() throws OrekitException {
+    public void testReykjavikOriginalEarthRotation() {
         // this test is the second test case for HARDISP.F program
         doTestReykjavik(true, 9.3e-6);
     }
 
     @Test
-    public void testReykjavikIERSEarthRotation() throws OrekitException {
+    public void testReykjavikIERSEarthRotation() {
         // this test is the second test case for HARDISP.F program
         doTestReykjavik(false, 16.9e-6);
     }
 
-    private void doTestReykjavik(boolean patchEarthRotation, double tolerance) throws OrekitException {
+    private void doTestReykjavik(boolean patchEarthRotation, double tolerance) {
         // the coordinates for Reykjavik are *known* to be wrong in this test file
         // these test data have been extracted from the HARDISP.F file in September 2017
         // and it seems longitude and latitude have been exchanged...

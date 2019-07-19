@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -181,7 +181,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVectorNeg() throws OrekitException {
+    public void testToDerivativeStructureVectorNeg() {
         try {
             FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructureVector(-1);
             Assert.fail("an exception should have been thrown");
@@ -192,7 +192,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector3() throws OrekitException {
+    public void testToDerivativeStructureVector3() {
         try {
             FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructureVector(3);
             Assert.fail("an exception should have been thrown");
@@ -203,7 +203,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector0() throws OrekitException {
+    public void testToDerivativeStructureVector0() {
         FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
                 new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
                                          new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
@@ -221,7 +221,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector1() throws OrekitException {
+    public void testToDerivativeStructureVector1() {
         FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
                         new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
                                                  new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
@@ -242,7 +242,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector2() throws OrekitException {
+    public void testToDerivativeStructureVector2() {
         FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
                         new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
                                                  new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
@@ -276,7 +276,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePVNeg() throws OrekitException {
+    public void testToDerivativeStructurePVNeg() {
         try {
             FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructurePV(-1);
             Assert.fail("an exception should have been thrown");
@@ -287,7 +287,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV3() throws OrekitException {
+    public void testToDerivativeStructurePV3() {
         try {
             FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructurePV(3);
             Assert.fail("an exception should have been thrown");
@@ -298,7 +298,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV0() throws OrekitException {
+    public void testToDerivativeStructurePV0() {
         FieldPVCoordinates<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
@@ -317,7 +317,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV1() throws OrekitException {
+    public void testToDerivativeStructurePV1() {
         FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv =
                         new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
                                                  new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
@@ -345,7 +345,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructurePV2() throws OrekitException {
+    public void testToDerivativeStructurePV2() {
         FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv =
                         new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
                                                  new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
@@ -388,13 +388,13 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testJerkIsVelocitySecondDerivative() throws OrekitException {
+    public void testJerkIsVelocitySecondDerivative() {
         final FieldCartesianOrbit<Decimal64> orbit =
                         new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
                                                                            new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
                                                         FramesFactory.getEME2000(),
                                                         FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
-                                                        Constants.EIGEN5C_EARTH_MU);
+                                                        new Decimal64(Constants.EIGEN5C_EARTH_MU));
         FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
         FieldVector3D<Decimal64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
         Assert.assertEquals(numericalJerk.getX().getReal(),
@@ -410,13 +410,13 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testJerkIsAccelerationDerivative() throws OrekitException {
+    public void testJerkIsAccelerationDerivative() {
         final FieldCartesianOrbit<Decimal64> orbit =
                         new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
                                                                            new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
                                                         FramesFactory.getEME2000(),
                                                         FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
-                                                        Constants.EIGEN5C_EARTH_MU);
+                                                        new Decimal64(Constants.EIGEN5C_EARTH_MU));
         FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv1 = orbit.getPVCoordinates().toDerivativeStructurePV(1);
         FieldVector3D<Decimal64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
         Assert.assertEquals(numericalJerk.getX().getReal(),
@@ -443,13 +443,13 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testJounceIsAccelerationSecondDerivative() throws OrekitException {
+    public void testJounceIsAccelerationSecondDerivative() {
         final FieldCartesianOrbit<Decimal64> orbit =
                         new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
                                                                            new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
                                                         FramesFactory.getEME2000(),
                                                         FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
-                                                        Constants.EIGEN5C_EARTH_MU);
+                                                        new Decimal64(Constants.EIGEN5C_EARTH_MU));
         FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
         FieldVector3D<Decimal64> numericalJounce = differentiate(orbit, o -> {
         FieldVector3D<FieldDerivativeStructure<Decimal64>> a = o.getPVCoordinates().toDerivativeStructurePV(1).getAcceleration();
@@ -470,7 +470,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    public void testMomentumDerivative() throws OrekitException {
+    public void testMomentumDerivative() {
         final FieldPVCoordinates<Decimal64> pva =
                         new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
                                                  new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.)));
@@ -601,7 +601,7 @@ public class FieldPVCoordinatesTest {
     }
 
     private interface OrbitFunction<T extends RealFieldElement<T>>  {
-        FieldVector3D<T> apply(final FieldCartesianOrbit<T> o) throws OrekitException;
+        FieldVector3D<T> apply(final FieldCartesianOrbit<T> o);
     }
 
     private <T extends RealFieldElement<T>> FieldVector3D<T> differentiate(FieldCartesianOrbit<T> orbit,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
 
 public class GLONASSScaleTest {
@@ -30,7 +29,16 @@ public class GLONASSScaleTest {
     private GLONASSScale glonass;
 
     @Test
-    public void testArbitrary() throws OrekitException {
+    public void testT0() {
+        TimeScale scale = TimeScalesFactory.getGLONASS();
+        Assert.assertEquals("GLONASS", scale.toString());
+        AbsoluteDate t0 =
+            new AbsoluteDate(new DateComponents(1996, 1, 1), TimeComponents.H00, scale);
+        Assert.assertEquals(AbsoluteDate.GLONASS_EPOCH, t0);
+    }
+
+    @Test
+    public void testArbitrary() {
         AbsoluteDate tGLONASS =
             new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, glonass);
         AbsoluteDate tUTC =
@@ -40,7 +48,7 @@ public class GLONASSScaleTest {
     }
 
     @Test
-    public void testLeap2006() throws OrekitException {
+    public void testLeap2006() {
         final UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate leapDate =
             new AbsoluteDate(new DateComponents(2006, 1, 1), TimeComponents.H00, utc);
@@ -66,7 +74,7 @@ public class GLONASSScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
                                           new TimeComponents(23, 59, 59),
                                           TimeScalesFactory.getUTC());
@@ -122,7 +130,7 @@ public class GLONASSScaleTest {
     }
 
     @Test
-    public void testWrapBeforeLeap() throws OrekitException {
+    public void testWrapBeforeLeap() {
         AbsoluteDate t = new AbsoluteDate("2015-07-01T02:59:59.999999", glonass);
         Assert.assertEquals("2015-07-01T02:59:60.000", t.toString(glonass));
     }
@@ -145,7 +153,7 @@ public class GLONASSScaleTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         glonass = TimeScalesFactory.getGLONASS();
     }

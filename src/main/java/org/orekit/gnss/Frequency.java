@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,10 @@
  */
 package org.orekit.gnss;
 
+import org.orekit.utils.Constants;
+
 /**
- * Enumerate for satellite system.
+ * Enumerate for GNSS frequencies.
  *
  * @author Luc Maisonobe
  * @since 9.2
@@ -39,6 +41,9 @@ public enum Frequency {
 
     /** GLONASS, "G2" (1246 MHz). */
     R02(SatelliteSystem.GLONASS, "G2", 1246.0 / 10.23),
+
+    /** GLONASS, "G3" (1202.025 MHz). */
+    R03(SatelliteSystem.GLONASS, "G3", 117.5),
 
     /** Galileo, "E1" (1575.42 MHz). */
     E01(SatelliteSystem.GALILEO, "E1", 154),
@@ -148,12 +153,22 @@ public enum Frequency {
     }
 
     /** Get the value of the frequency in MHz.
-     * @return satellite system for which this frequency is defined
+     * @return value of the frequency in MHz
      * @see #F0
      * @see #getRatio()
+     * @see #getWavelength()
      */
     public double getMHzFrequency() {
         return ratio * F0;
+    }
+
+    /** Get the wavelength in meters.
+     * @return wavelength in meters
+     * @see #getMHzFrequency()
+     * @since 10.1
+     */
+    public double getWavelength() {
+        return Constants.SPEED_OF_LIGHT / (1.0e6 * getMHzFrequency());
     }
 
 }

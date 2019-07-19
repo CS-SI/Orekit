@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.data;
 import org.hipparchus.RealFieldElement;
 
 /** Class for terms that do not depend on far planets and some other elements.
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
 class NoFarPlanetsTerm extends SeriesTerm {

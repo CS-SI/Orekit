@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -33,8 +34,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.EventHandler.Action;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -57,13 +56,12 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * to different activation patterns depending on which events are triggered first. An example
  * of this feature is handling switches to safe mode if some contingency condition is met, in
  * addition to the nominal switches that correspond to proper operations. Another example
- * is handling of maneuver mode.<p>
+ * is handling of maneuver mode.
  * <p>
  * Note that this attitude provider is stateful, it keeps in memory the sequence of active
  * underlying providers with their switch dates and the transitions from one provider to
  * the other. This implies that this provider should <em>not</em> be shared among different
  * propagators at the same time, each propagator should use its own instance of this provider.
- * </p>
  * <p>
  * The sequence kept in memory is reset when {@link #resetActiveProvider(AttitudeProvider)}
  * is called, and only the specify provider is kept. The sequence is also partially
@@ -82,11 +80,8 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class AttitudesSequence implements AttitudeProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20180326L;
-
     /** Providers that have been activated. */
-    private TimeSpanMap<AttitudeProvider> activated;
+    private transient TimeSpanMap<AttitudeProvider> activated;
 
     /** Switching events list. */
     private final List<Switch<?>> switches;
@@ -144,14 +139,14 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+                public void init(final FieldSpacecraftState<T> s0,
+                                 final FieldAbsoluteDate<T> t) {
                     sw.init(s0.toSpacecraftState(), t.toAbsoluteDate());
                 }
 
                 /** {@inheritDoc} */
                 @Override
-                public T g(final FieldSpacecraftState<T> s)
-                    throws OrekitException {
+                public T g(final FieldSpacecraftState<T> s) {
                     return field.getZero().add(sw.g(s.toSpacecraftState()));
                 }
 
@@ -175,24 +170,13 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing)
-                    throws OrekitException {
-                    switch(sw.eventOccurred(s.toSpacecraftState(), increasing)) {
-                        case STOP :
-                            return FieldEventHandler.Action.STOP;
-                        case RESET_DERIVATIVES :
-                            return FieldEventHandler.Action.RESET_DERIVATIVES;
-                        case RESET_STATE :
-                            return FieldEventHandler.Action.RESET_STATE;
-                        default :
-                            return FieldEventHandler.Action.CONTINUE;
-                    }
+                public Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
+                    return sw.eventOccurred(s.toSpacecraftState(), increasing);
                 }
 
                 /** {@inheritDoc} */
                 @Override
-                public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState)
-                    throws OrekitException {
+                public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) {
                     return new FieldSpacecraftState<>(field, sw.resetState(oldState.toSpacecraftState()));
                 }
 
@@ -274,7 +258,6 @@ public class AttitudesSequence implements AttitudeProvider {
      * should match past and future attitude laws
      * @param handler handler to call for notifying when switch occurs (may be null)
      * @param <T> class type for the switch event
-     * @exception OrekitException if transition time is shorter than event convergence threshold
      * @since 7.1
      */
     public <T extends EventDetector> void addSwitchingCondition(final AttitudeProvider past,
@@ -284,8 +267,7 @@ public class AttitudesSequence implements AttitudeProvider {
                                                                 final boolean switchOnDecrease,
                                                                 final double transitionTime,
                                                                 final AngularDerivativesFilter transitionFilter,
-                                                                final SwitchHandler handler)
-        throws OrekitException {
+                                                                final SwitchHandler handler) {
 
         // safety check, for ensuring attitude continuity
         if (transitionTime < switchEvent.getThreshold()) {
@@ -306,16 +288,14 @@ public class AttitudesSequence implements AttitudeProvider {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                final AbsoluteDate date, final Frame frame) {
         return activated.get(date).getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        throws OrekitException {
+                                                                        final Frame frame) {
         return activated.get(date.toAbsoluteDate()).getAttitude(pvProv, date, frame);
     }
 
@@ -323,9 +303,6 @@ public class AttitudesSequence implements AttitudeProvider {
      * @param <T> class type for the generic version
      */
     private class Switch<T extends EventDetector> implements EventDetector {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20150604L;
 
         /** Event. */
         private final T event;
@@ -400,7 +377,8 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        public void init(final SpacecraftState s0,
+                         final AbsoluteDate t) {
 
             // reset the transition parameters (this will be done once for each switch,
             //  despite doing it only once would have sufficient; its not really a problem)
@@ -408,9 +386,9 @@ public class AttitudesSequence implements AttitudeProvider {
             if (activated.getTransitions().size() > 1) {
                 // remove transitions that will be overridden during upcoming propagation
                 if (forward) {
-                    activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate());
+                    activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate().shiftedBy(transitionTime));
                 } else {
-                    activated = activated.extractRange(s0.getDate(), AbsoluteDate.FUTURE_INFINITY);
+                    activated = activated.extractRange(s0.getDate().shiftedBy(-transitionTime), AbsoluteDate.FUTURE_INFINITY);
                 }
             }
 
@@ -420,14 +398,12 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public double g(final SpacecraftState s)
-            throws OrekitException {
+        public double g(final SpacecraftState s) {
             return event.g(forward ? s : s.shiftedBy(-transitionTime));
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
 
             final AbsoluteDate date = s.getDate();
             if (activated.get(date) == (forward ? past : future) &&
@@ -483,8 +459,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final SpacecraftState oldState)
-            throws OrekitException {
+        public SpacecraftState resetState(final SpacecraftState oldState) {
             // delegate to underlying event
             return event.resetState(oldState);
         }
@@ -493,9 +468,6 @@ public class AttitudesSequence implements AttitudeProvider {
          * @since 9.2
          */
         private class TransitionProvider implements AttitudeProvider {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20180326L;
 
             /** Attitude at preceding transition. */
             private final Attitude transitionPreceding;
@@ -514,8 +486,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
             /** {@inheritDoc} */
             public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                        final AbsoluteDate date, final Frame frame)
-                throws OrekitException {
+                                        final AbsoluteDate date, final Frame frame) {
 
                 // interpolate between the two boundary attitudes
                 final TimeStampedAngularCoordinates start =
@@ -533,8 +504,7 @@ public class AttitudesSequence implements AttitudeProvider {
             /** {@inheritDoc} */
             public <S extends RealFieldElement<S>> FieldAttitude<S> getAttitude(final FieldPVCoordinatesProvider<S> pvProv,
                                                                                 final FieldAbsoluteDate<S> date,
-                                                                                final Frame frame)
-                                                                                                throws OrekitException {
+                                                                                final Frame frame) {
 
                 // interpolate between the two boundary attitudes
                 final TimeStampedFieldAngularCoordinates<S> start =
@@ -572,10 +542,8 @@ public class AttitudesSequence implements AttitudeProvider {
          * of the switch event for a forward propagation, or in the past
          * of the switch event for a backward propagation)
          * @param state state at switch time (with attitude computed using the {@code preceding} law)
-         * @exception OrekitException if some unexpected condition occurs
          */
-        void switchOccurred(AttitudeProvider preceding, AttitudeProvider following, SpacecraftState state)
-            throws OrekitException;
+        void switchOccurred(AttitudeProvider preceding, AttitudeProvider following, SpacecraftState state);
 
     }
 

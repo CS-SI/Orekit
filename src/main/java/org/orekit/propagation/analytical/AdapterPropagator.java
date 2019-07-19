@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -64,9 +63,8 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
          * @param original original state <em>without</em> the effect
          * @return updated state at the same date, taking the effect
          * into account if meaningful
-         * @exception OrekitException if effect cannot be computed
          */
-        SpacecraftState apply(SpacecraftState original) throws OrekitException;
+        SpacecraftState apply(SpacecraftState original);
 
     }
 
@@ -110,20 +108,18 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() {
         return reference.getInitialState();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void resetInitialState(final SpacecraftState state)
-        throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         reference.resetInitialState(state);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws OrekitException {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         if (reference instanceof AbstractAnalyticalPropagator) {
             ((AbstractAnalyticalPropagator) reference).resetIntermediateState(state, forward);
         } else {
@@ -133,43 +129,35 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
 
-        try {
+        // compute reference state
+        SpacecraftState state = reference.propagate(date);
+        final Map<String, double[]> before = state.getAdditionalStates();
 
-            // compute reference state
-            SpacecraftState state = reference.propagate(date);
-            final Map<String, double[]> before = state.getAdditionalStates();
-
-            // add all the effects
-            for (final DifferentialEffect effect : effects) {
-                state = effect.apply(state);
-            }
-
-            // forward additional states from the reference propagator
-            for (final Map.Entry<String, double[]> entry : before.entrySet()) {
-                if (!state.hasAdditionalState(entry.getKey())) {
-                    state = state.addAdditionalState(entry.getKey(), entry.getValue());
-                }
-            }
-
-            return state;
-
-        } catch (OrekitExceptionWrapper oew) {
-            throw new OrekitException(oew.getException());
+        // add all the effects
+        for (final DifferentialEffect effect : effects) {
+            state = effect.apply(state);
         }
+
+        // forward additional states from the reference propagator
+        for (final Map.Entry<String, double[]> entry : before.entrySet()) {
+            if (!state.hasAdditionalState(entry.getKey())) {
+                state = state.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return state;
 
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date)
-        throws OrekitException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc}*/
-    protected double getMass(final AbsoluteDate date)
-        throws OrekitException {
+    protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -59,8 +60,8 @@ public class VisibilityCircle {
             if (!orekitData.exists()) {
                 System.err.format(Locale.US, "Failed to find %s folder%n",
                                   orekitData.getAbsolutePath());
-                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
-                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                System.err.format(Locale.US, "You need to download %s from %s, unzip it in %s and rename it 'orekit-data' for this tutorial to work%n",
+                                  "orekit-data-master.zip", "https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip",
                                   home.getAbsolutePath());
                 System.exit(1);
             }
@@ -131,7 +132,7 @@ public class VisibilityCircle {
         // create a 2 columns csv file representing the visibility circle
         // in the user home directory, with latitude in column 1 and longitude in column 2
         DecimalFormat format = new DecimalFormat("#00.00000", new DecimalFormatSymbols(Locale.US));
-        PrintStream csvFile = new PrintStream(output, "UTF-8");
+        PrintStream csvFile = new PrintStream(output, StandardCharsets.UTF_8.name());
         for (GeodeticPoint p : circle) {
             csvFile.println(format.format(FastMath.toDegrees(p.getLatitude())) + "," +
                             format.format(FastMath.toDegrees(p.getLongitude())));
@@ -142,7 +143,7 @@ public class VisibilityCircle {
 
     private static List<GeodeticPoint> computeCircle(double latitude, double longitude, double altitude,
                                                      String name, double minElevation, double radius, int points)
-        throws OrekitException {
+        {
 
         // define Earth shape, using WGS84 model
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

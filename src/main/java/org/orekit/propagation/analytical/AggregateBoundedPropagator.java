@@ -56,10 +56,9 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      *                    BoundedPropagator#getMinDate()} of the next propagator then the
      *                    propagator with the latest {@link BoundedPropagator#getMinDate()}
      *                    is used.
-     * @throws OrekitException if {@code propagators} does not have at least one element.
      */
     public AggregateBoundedPropagator(
-            final Collection<? extends BoundedPropagator> propagators) throws OrekitException {
+            final Collection<? extends BoundedPropagator> propagators) {
         super(DEFAULT_LAW);
         if (propagators.isEmpty()) {
             throw new OrekitException(OrekitMessages.NOT_ENOUGH_PROPAGATORS);
@@ -75,13 +74,12 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
 
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
-                                                     final Frame frame)
-            throws OrekitException {
+                                                     final Frame frame) {
         return getPropagator(date).getPVCoordinates(date, frame);
     }
 
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) {
         return getPropagator(date).propagate(date).getOrbit();
     }
 
@@ -96,23 +94,23 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    protected double getMass(final AbsoluteDate date) throws OrekitException {
+    protected double getMass(final AbsoluteDate date) {
         return getPropagator(date).propagate(date).getMass();
     }
 
     @Override
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() {
         return propagators.firstEntry().getValue().getInitialState();
     }
 
     @Override
     protected void resetIntermediateState(final SpacecraftState state,
-                                          final boolean forward) throws OrekitException {
+                                          final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     @Override
-    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -46,7 +47,7 @@ import org.orekit.utils.IERSConventions;
 public class EllipsoidTessellatorTest {
 
     @Test
-    public void testTilesAlongDescendingTrackWithoutTruncation() throws OrekitException {
+    public void testTilesAlongDescendingTrackWithoutTruncation() {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 16);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -59,7 +60,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesAlongDescendingTrackWithTruncation() throws OrekitException {
+    public void testTilesAlongDescendingTrackWithTruncation() {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 16);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -72,7 +73,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testSampleAlongDescendingTrack() throws OrekitException {
+    public void testSampleAlongDescendingTrack() {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 4);
         final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(), 25000.0, 50000.0);
@@ -82,7 +83,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesAlongAscendingTrack() throws OrekitException {
+    public void testTilesAlongAscendingTrack() {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -94,7 +95,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testSampleAlongAscendingTrack() throws OrekitException {
+    public void testSampleAlongAscendingTrack() {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true), 4);
         final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(),
@@ -105,7 +106,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesConstantAzimuth() throws OrekitException {
+    public void testTilesConstantAzimuth() {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120)), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -118,7 +119,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testSampleConstantAzimuth() throws OrekitException {
+    public void testSampleConstantAzimuth() {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120)), 4);
         final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(), 25000.0, 50000.0);
@@ -128,7 +129,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesIslandJoining() throws OrekitException {
+    public void testTilesIslandJoining() {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120.0)), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -140,7 +141,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesSmallZoneWithoutTruncation() throws OrekitException, IOException {
+    public void testTilesSmallZoneWithoutTruncation() throws IOException {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
         EllipsoidTessellator tessellator =
@@ -179,7 +180,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTilesSmallZoneWithTruncation() throws OrekitException, IOException {
+    public void testTilesSmallZoneWithTruncation() throws IOException {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
         EllipsoidTessellator tessellator =
@@ -216,7 +217,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testStairedTruncatedTiles() throws OrekitException {
+    public void testStairedTruncatedTiles() {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(170.0));
         EllipsoidTessellator tessellator =
@@ -248,7 +249,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testTooThinRemainingRegion() throws OrekitException {
+    public void testTooThinRemainingRegion() {
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, -0.2185);
         EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, aiming, 16);
@@ -281,24 +282,24 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testNormalZoneTolerance() throws OrekitException {
+    public void testNormalZoneTolerance() {
         doTestVariableTolerance(1.0e-10);
     }
 
     @Test
-    public void testLargeZoneTolerance() throws OrekitException {
+    public void testLargeZoneTolerance() {
         // this used to trigger an exception in EllipsoidTessellator.recurseMeetInside (Orekit)
         doTestVariableTolerance(1.0e-6);
     }
 
     @Test
-    public void testHugeZoneTolerance() throws OrekitException {
+    public void testHugeZoneTolerance() {
         // this used to trigger an exception in Characterization.characterize (Apache Commons Math)
         // this was due to issue MATH-1266, solved in Apache Commons Math 3.6
         doTestVariableTolerance(1.0e-4);
     }
 
-    private void doTestVariableTolerance(final double tolerance) throws OrekitException {
+    private void doTestVariableTolerance(final double tolerance) {
         final ConstantAzimuthAiming aiming = new ConstantAzimuthAiming(ellipsoid,
                                                                        FastMath.toRadians(-168.178485));
         EllipsoidTessellator tessellator =
@@ -346,12 +347,48 @@ public class EllipsoidTessellatorTest {
         }
     }
 
+    @Test
+    public void testSampleAroundPoleConstantAzimuth() {
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, new S2Point[] {
+            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
+            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
+            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
+        });
+        doTestSampleAroundPole(aoi, new ConstantAzimuthAiming(ellipsoid, 0.0), -1);
+    }
+
+    @Test
+    public void testSampleAroundPoleDivertedSingularity() {
+        SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, new S2Point[] {
+            new S2Point(FastMath.toRadians(-120.0), FastMath.toRadians(5.0)),
+            new S2Point(FastMath.toRadians(   0.0), FastMath.toRadians(5.0)),
+            new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
+        });
+        doTestSampleAroundPole(aoi, new DivertedSingularityAiming(aoi), 993);
+    }
+
+    private void doTestSampleAroundPole(final SphericalPolygonsSet aoi, final TileAiming aiming, final int expectedNodes) {
+        EllipsoidTessellator tessellator = new EllipsoidTessellator(ellipsoid, aiming, 1);
+        try {
+            List<List<GeodeticPoint>> sampledZone = tessellator.sample(aoi, 20000.0, 20000.0);
+            if (expectedNodes < 0) {
+                Assert.fail("an exception should have been thrown");
+            } else {
+                Assert.assertEquals(1,             sampledZone.size());
+                Assert.assertEquals(expectedNodes, sampledZone.get(0).size());
+            }
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT, oe.getSpecifier());
+        }
+
+    }
+
     private S2Point toS2Point(final GeodeticPoint point) {
         return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         // the following orbital parameters have been computed using
         // Orekit tutorial about phasing, using the following configuration:

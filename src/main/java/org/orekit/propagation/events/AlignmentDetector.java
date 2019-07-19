@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -30,17 +30,13 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>This class finds alignment events.</p>
  * <p>Alignment means the conjunction, with some threshold angle, between the satellite
  * position and the projection in the orbital plane of some body position.</p>
- * <p>The default handler behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * <p>The default handler behavior is to {@link Action#STOP stop}
  * propagation when alignment is reached. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
 public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
 
     /** Body to align. */
     private final PVCoordinatesProvider body;
@@ -148,9 +144,8 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
      * orbital plane.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         final PVCoordinates pv = s.getPVCoordinates();
         final Vector3D a  = pv.getPosition().normalize();
         final Vector3D b  = Vector3D.crossProduct(pv.getMomentum(), a).normalize();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@ public class UnixCompressFilterTest {
     }
 
     @Test
-    public void testPrematureEnd() throws OrekitException {
+    public void testPrematureEnd() {
         try {
             tryRead("premature-end.Z", 0x1f, 0x9d, 0x90, 0x23);
             Assert.fail("an exception should have been thrown");
@@ -58,7 +58,7 @@ public class UnixCompressFilterTest {
     }
 
     @Test
-    public void testUninitializedRepetition() throws OrekitException {
+    public void testUninitializedRepetition() {
         try {
             tryRead("uninitialized-repetition.Z", 0x1f, 0x9d, 0x90, 0x01, 0x01, 0x00);
             Assert.fail("an exception should have been thrown");
@@ -66,6 +66,30 @@ public class UnixCompressFilterTest {
             OrekitIOException oioe = (OrekitIOException) ioe;
             Assert.assertEquals(OrekitMessages.CORRUPTED_FILE, oioe.getSpecifier());
             Assert.assertEquals("uninitialized-repetition.Z", oioe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testKeyPastTable() {
+        try {
+            tryRead("key-past-table-end.Z", 0x1f, 0x9d, 0x90, 0x31, 0x5c, 0xff);
+            Assert.fail("an exception should have been thrown");
+        } catch (IOException ioe) {
+            OrekitIOException oioe = (OrekitIOException) ioe;
+            Assert.assertEquals(OrekitMessages.CORRUPTED_FILE, oioe.getSpecifier());
+            Assert.assertEquals("key-past-table-end.Z", oioe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testReadPasteEnd() throws IOException {
+        final byte[] array = new byte[] { (byte) 0x1f, (byte) 0x9d, (byte) 0x90, (byte) 0x0a, (byte) 0x00 };
+        NamedData filtered = new UnixCompressFilter().
+                        filter(new NamedData("empty-line.Z", () -> new ByteArrayInputStream(array)));
+        InputStream is = filtered.getStreamOpener().openStream();
+        Assert.assertEquals('\n', is.read());
+        for (int i = 0; i < 1000; ++i) {
+            Assert.assertEquals(-1,   is.read());
         }
     }
 
@@ -124,7 +148,7 @@ public class UnixCompressFilterTest {
         }
     }
 
-    private int[] tryRead(String name, int... bytes) throws OrekitException, IOException {
+    private int[] tryRead(String name, int... bytes) throws IOException {
         final byte[] array = new byte[bytes.length];
         for (int i = 0; i < bytes.length; ++i) {
             array[i] = (byte) bytes[i];

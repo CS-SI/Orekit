@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ public class FESCHatEpsilonReaderTest {
 
     @Test
     public void testTooLargeDegree()
-        throws OrekitException {
+        {
 
         try {
         AstronomicalAmplitudeReader aaReader =
@@ -56,21 +56,21 @@ public class FESCHatEpsilonReaderTest {
 
     @Test
     public void testCoefficientsConversion2010()
-        throws OrekitException, SecurityException, NoSuchFieldException,
+        throws SecurityException, NoSuchFieldException,
                IllegalArgumentException, IllegalAccessException {
         checkConversion(OceanLoadDeformationCoefficients.IERS_2010, 1.0e-14);
     }
 
     @Test
     public void testCoefficientsConversionGegout()
-        throws OrekitException, SecurityException, NoSuchFieldException,
+        throws SecurityException, NoSuchFieldException,
                IllegalArgumentException, IllegalAccessException {
         checkConversion(OceanLoadDeformationCoefficients.GEGOUT, 1.7e-12);
     }
 
     private void checkConversion(OceanLoadDeformationCoefficients oldc,
                                  double threshold)
-        throws OrekitException, SecurityException, NoSuchFieldException,
+        throws SecurityException, NoSuchFieldException,
                IllegalArgumentException, IllegalAccessException {
 
         Field cGammaField = OceanTidesWave.class.getDeclaredField("cGamma");

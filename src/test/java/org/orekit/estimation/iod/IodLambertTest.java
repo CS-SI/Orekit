@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -53,7 +52,7 @@ import org.orekit.utils.Constants;
 public class IodLambertTest {
 
     @Test
-    public void testLambert() throws OrekitException {
+    public void testLambert() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();
@@ -113,7 +112,7 @@ public class IodLambertTest {
     }
 
     @Test
-    public void testMultiRevolutions() throws OrekitException {
+    public void testMultiRevolutions() {
 
         Utils.setDataRoot("regular-data");
         TLE aussatB1 = new TLE("1 22087U 92054A   17084.21270512 -.00000243 +00000-0 +00000-0 0  9999",

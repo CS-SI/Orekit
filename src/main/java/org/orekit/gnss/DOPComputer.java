@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -125,9 +125,8 @@ public class DOPComputer {
      * @param date the computation date
      * @param gnss the propagators for GNSS spacecraft involved in the DOP computation
      * @return the {@link DOP} at the location
-     * @throws OrekitException if something wrong occurs
      */
-    public DOP compute(final AbsoluteDate date, final List<Propagator> gnss) throws OrekitException {
+    public DOP compute(final AbsoluteDate date, final List<Propagator> gnss) {
 
         // Checks the number of provided propagators
         if (gnss.size() < DOP_MIN_PROPAGATORS) {

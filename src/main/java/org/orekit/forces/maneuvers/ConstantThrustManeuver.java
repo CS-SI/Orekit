@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -35,8 +36,6 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
@@ -332,8 +331,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
-        throws OrekitException {
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         if (firing) {
 
@@ -351,8 +349,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     @Override
     public <T extends RealFieldElement<T>> void
         addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-        throws OrekitException {
+                        final FieldTimeDerivativesEquations<T> adder) {
         if (firing) {
 
             final T[] parameters = getParameters(s.getDate().getField());
@@ -367,8 +364,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState state, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
         if (firing) {
             final double thrust = parameters[0];
             final Attitude attitude =
@@ -387,8 +383,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
         if (firing) {
             // compute thrust acceleration in inertial frame
             final T thrust = parameters[0];
@@ -416,12 +411,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         final DateDetector startDetector = new DateDetector(startDate).
             withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
                 firing = d.isForward();
-                return EventHandler.Action.RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             });
         final DateDetector endDetector = new DateDetector(endDate).
             withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
                 firing = !d.isForward();
-                return EventHandler.Action.RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             });
         return Stream.of(startDetector, endDetector);
     }
@@ -444,12 +439,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         final FieldDateDetector<T> startDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, startDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
                 firing = d.isForward();
-                return FieldEventHandler.Action.RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             });
         final FieldDateDetector<T> endDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, endDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
                 firing = !d.isForward();
-                return FieldEventHandler.Action.RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             });
         return Stream.of(startDetector, endDetector);
     }

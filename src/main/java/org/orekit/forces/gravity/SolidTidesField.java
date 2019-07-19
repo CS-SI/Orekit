@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.forces.gravity;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
@@ -37,10 +36,10 @@ import org.orekit.utils.LoveNumbers;
  * The computation of the spherical harmonics part is done using the algorithm
  * designed by S. A. Holmes and W. E. Featherstone from Department of Spatial Sciences,
  * Curtin University of Technology, Perth, Australia and described in their 2002 paper:
- * <a href="http://cct.gfy.ku.dk/publ_others/ccta1870.pdf">A unified approach to
- * the Clenshaw summation and the recursive computation of very high degree and
- * order normalised associated Legendre functions</a> (Journal of Geodesy (2002)
- * 76: 279–299).
+ * <a href="https://www.researchgate.net/publication/226460594_A_unified_approach_to_the_Clenshaw_summation_and_the_recursive_computation_of_very_high_degree_and_order_normalised_associated_Legendre_functions">
+ * A unified approach to the Clenshaw summation and the recursive computation of
+ * very high degree and order normalised associated Legendre functions</a>
+ * (Journal of Geodesy (2002) 76: 279–299).
  * </p>
  * <p>
  * Note that this class is <em>not</em> thread-safe, and that tides computation
@@ -183,7 +182,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
 
         // computed Cnm and Snm coefficients
         final double[][] cnm = buildTriangularArray(5, true);
@@ -424,15 +423,13 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedCnm(final int n, final int m)
-            throws OrekitException {
+        public double getNormalizedCnm(final int n, final int m) {
             return cnm[n][m];
         }
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedSnm(final int n, final int m)
-            throws OrekitException {
+        public double getNormalizedSnm(final int n, final int m) {
             return snm[n][m];
         }
 

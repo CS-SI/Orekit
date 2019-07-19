@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -618,7 +618,7 @@ public class KeplerianOrbit extends Orbit {
      * </p>
      * @param M mean anomaly (rad)
      * @param e eccentricity
-     * @return v the true anomaly
+     * @return E the eccentric anomaly
      */
     public static double meanToEllipticEccentric(final double M, final double e) {
 
@@ -687,7 +687,7 @@ public class KeplerianOrbit extends Orbit {
         double term = E;
         double d    = 0;
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (double x0 = Double.NaN; x != x0;) {
+        for (double x0 = Double.NaN; !Double.valueOf(x).equals(Double.valueOf(x0));) {
             d += 2;
             term *= mE2 / (d * (d + 1));
             x0 = x;

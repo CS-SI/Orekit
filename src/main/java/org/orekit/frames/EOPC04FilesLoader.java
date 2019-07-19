@@ -1,4 +1,4 @@
-/* Copyright 2002-2018 CS Systèmes d'Information
+/* Copyright 2002-2019 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -152,8 +153,7 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history)
-        throws OrekitException {
+                            final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter);
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         history.addAll(parser.history);
@@ -185,10 +185,8 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
 
         /** Simple constructor.
          * @param converter converter to use
-         * @exception OrekitException if ITRF version loader cannot be parsed
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter)
-            throws OrekitException {
+        Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter           = converter;
             this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.history             = new ArrayList<EOPEntry>();
@@ -209,7 +207,7 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
             ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
             // set up a reader for line-oriented bulletin B files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // reset parse info to start new file (do not clear history!)
             lineNumber          = 0;
