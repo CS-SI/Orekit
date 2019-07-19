@@ -341,10 +341,11 @@ public class SpacecraftState
         final Map<String, double[]> newMap = new HashMap<String, double[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
-        if (absPva == null)
+        if (absPva == null) {
             return new SpacecraftState(orbit, attitude, mass, newMap);
-        else
+        } else {
             return new SpacecraftState(absPva, attitude, mass, newMap);
+        }
     }
 
     /** Check orbit and attitude dates are equal.
@@ -435,12 +436,13 @@ public class SpacecraftState
      * except for the mass and additional states which stay unchanged
      */
     public SpacecraftState shiftedBy(final double dt) {
-        if (absPva == null)
+        if (absPva == null) {
             return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
                     mass, additional);
-        else
+        } else {
             return new SpacecraftState(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
                     mass, additional);
+        }
     }
 
     /** {@inheritDoc}

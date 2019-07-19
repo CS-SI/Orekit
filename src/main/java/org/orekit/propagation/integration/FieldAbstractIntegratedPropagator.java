@@ -829,8 +829,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                 final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
                 final T[] NState = newState.getAdditionalState(additional.getName());
                 secondary[i] = MathArrays.buildArray(getField(), NState.length);
-                for (int j = 0; j < NState.length; j++)
+                for (int j = 0; j < NState.length; j++) {
                     secondary[i][j] = NState[j];
+                }
             }
 
             return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
