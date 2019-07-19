@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +122,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         // 0  0     .99999999988600E+00  .00000000000000E+00  .153900E-09  .000000E+00
         // 2  0   -0.48416511550920E-03 0.00000000000000E+00  .204904E-10  .000000E+00
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
         double[][] c   = null;
         double[][] s   = null;

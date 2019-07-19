@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -1374,7 +1375,7 @@ public class DSSTOrbitDeterminationTest {
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         BufferedReader br = null;
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
             int lineNumber = 0;
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;

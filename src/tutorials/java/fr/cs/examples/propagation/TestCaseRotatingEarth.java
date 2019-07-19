@@ -19,6 +19,7 @@ package fr.cs.examples.propagation;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -190,7 +191,7 @@ public class TestCaseRotatingEarth {
         private TutorialStepHandler(final String fileName, final Frame frame) throws OrekitException {
             try {
                 outFile = new File(new File(System.getProperty("user.home")), fileName);
-                out = new PrintWriter(outFile, "UTF-8");
+                out = new PrintWriter(outFile, StandardCharsets.UTF_8.name());
                 outputFrame = frame;
             } catch (IOException ioe) {
                 throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());

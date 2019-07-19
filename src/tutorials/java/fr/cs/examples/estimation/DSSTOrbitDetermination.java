@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -216,7 +217,7 @@ public class DSSTOrbitDetermination {
         if (parser.containsKey(ParameterKey.OUTPUT_BASE_NAME) &&
             parser.getString(ParameterKey.OUTPUT_BASE_NAME).length() > 0) {
             baseName  = parser.getString(ParameterKey.OUTPUT_BASE_NAME);
-            logStream = new PrintStream(new File(home, baseName + "-log.out"), "UTF-8");
+            logStream = new PrintStream(new File(home, baseName + "-log.out"), StandardCharsets.UTF_8.name());
         } else {
             baseName  = null;
             logStream = null;
@@ -1434,7 +1435,7 @@ public class DSSTOrbitDetermination {
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         BufferedReader br = null;
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
             int lineNumber = 0;
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
@@ -1877,7 +1878,7 @@ public class DSSTOrbitDetermination {
                 this.stream  = null;
             } else {
                 this.file    = new File(home, baseName + "-" + name + "-residuals.out");
-                this.stream  = new PrintStream(file, "UTF-8");
+                this.stream  = new PrintStream(file, StandardCharsets.UTF_8.name());
             }
         }
 

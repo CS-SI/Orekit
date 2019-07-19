@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -131,7 +132,7 @@ public class VisibilityCircle {
         // create a 2 columns csv file representing the visibility circle
         // in the user home directory, with latitude in column 1 and longitude in column 2
         DecimalFormat format = new DecimalFormat("#00.00000", new DecimalFormatSymbols(Locale.US));
-        PrintStream csvFile = new PrintStream(output, "UTF-8");
+        PrintStream csvFile = new PrintStream(output, StandardCharsets.UTF_8.name());
         for (GeodeticPoint p : circle) {
             csvFile.println(format.format(FastMath.toDegrees(p.getLatitude())) + "," +
                             format.format(FastMath.toDegrees(p.getLongitude())));
