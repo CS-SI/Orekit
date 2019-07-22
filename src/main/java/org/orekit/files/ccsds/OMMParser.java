@@ -169,10 +169,6 @@ public class OMMParser extends ODMParser {
                         file.setFormatVersion(pi.keyValue.getDoubleValue());
                         break;
 
-                    case MEAN_ELEMENT_THEORY:
-                        file.getMetaData().setMeanElementTheory(pi.keyValue.getValue());
-                        break;
-
                     case MEAN_MOTION:
                         file.setMeanMotion(pi.keyValue.getDoubleValue() * FastMath.PI / 43200.0);
                         break;
@@ -227,6 +223,18 @@ public class OMMParser extends ODMParser {
             return file;
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected boolean parseMetaDataEntry(final KeyValue keyValue,
+                                         final ODMMetaData metaData, final List<String> comment) {
+        if (keyValue.getKeyword() == Keyword.MEAN_ELEMENT_THEORY) {
+            ((OMMFile.OMMMetaData) metaData).setMeanElementTheory(keyValue.getValue());
+            return true;
+        } else {
+            return super.parseMetaDataEntry(keyValue, metaData, comment);
         }
     }
 

@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,6 +51,9 @@ class KeyValue {
     /** Regular expression for user defined keywords. */
     private final Pattern USER_DEFINED_KEYWORDS =
             Pattern.compile("USER_DEFINED_[A-Z][A-Z_]*");
+
+    /** Regular expression for splitting comma-separated lists. */
+    private final String COMMA_SEPARATORS = "\\s*,\\s*";
 
     /** Line from which pair is extracted. */
     private final String line;
@@ -175,8 +180,7 @@ class KeyValue {
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException nfe) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      lineNumber, fileName, line);
+            throw generateException();
         }
     }
 
@@ -187,9 +191,24 @@ class KeyValue {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException nfe) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      lineNumber, fileName, line);
+            throw generateException();
         }
+    }
+
+    /** Get the value as a list.
+     * @return value
+     * @since 10.1
+     */
+    public List<String> getListValue() {
+        return Arrays.asList(value.split(COMMA_SEPARATORS));
+    }
+
+    /** Generate a parse exception for this key value pair.
+     * @return exception for this key value pair
+     */
+    public OrekitException generateException() {
+        return new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                   lineNumber, fileName, line);
     }
 
 }

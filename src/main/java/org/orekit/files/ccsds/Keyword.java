@@ -37,13 +37,17 @@ public enum Keyword {
 
     /** Comments specific to a ODM file. */
     COMMENT,
-    /** CCSDS OEM format version. */
+    /** File creation date in UTC. */
     CREATION_DATE,
     /** Creating agency or operator. */
     ORIGINATOR,
-    /** Unique ID identifying a message from a given originator. */
+    /** Unique ID identifying a message from a given originator.
+     * @since 10.0
+     */
     MESSAGE_ID,
-    /** Classification of this message. */
+    /** Classification of this message.
+     * @since 10.0
+     */
     MESSAGE_CLASSIF,
     /** Time system used for state vector, maneuver, and covariance data. */
     TIME_SYSTEM,
@@ -78,10 +82,219 @@ public enum Keyword {
     CCSDS_OPM_VERS,
     /** CCSDS OMM format version. */
     CCSDS_OMM_VERS,
-    /** File creation date in UTC. */
+    /** CCSDS OEM format version. */
     CCSDS_OEM_VERS,
+    /** CCSDS OCM format version.
+     * @since 10.0
+     */
+    CCSDS_OCM_VERS,
+    /** Programmatic Point Of Contact at originator.
+     * @since 10.0
+     */
+    ORIGINATOR_POC,
+    /** Position of Programmatic Point Of Contact at originator.
+     * @since 10.0
+     */
+    ORIGINATOR_POSITION,
+    /** Phone number of Programmatic Point Of Contact at originator.
+     * @since 10.0
+     */
+    ORIGINATOR_PHONE,
+    /** Address of Programmatic Point Of Contact at originator.
+     * @since 10.0
+     */
+    ORIGINATOR_ADDRESS,
+    /** Creating agency or operator.
+     * @since 10.0
+     */
+    TECH_ORG,
+    /** Position of Technical Point Of Contact at originator.
+     * @since 10.0
+     */
+    TECH_POSITION,
+    /** Phone number of Technical Point Of Contact at originator.
+     * @since 10.0
+     */
+    TECH_PHONE,
+    /** Address of Technical Point Of Contact at originator.
+     * @since 10.0
+     */
+    TECH_ADDRESS,
+    /** Unique ID identifying previous message from a given originator.
+     * @since 10.0
+     */
+    PREV_MESSAGE_ID,
+    /** Creation date of previous message from a given originator.
+     * @since 10.0
+     */
+    PREV_MESSAGE_EPOCH,
+    /** Unique ID identifying next message from a given originator.
+     * @since 10.0
+     */
+    NEXT_MESSAGE_ID,
+    /** Creation date of next message from a given originator.
+     * @since 10.0
+     */
+    NEXT_MESSAGE_EPOCH,
+    /** Names of Attitude Data Messages link to this Orbit Data Message.
+     * @since 10.0
+     */
+    ATT_MESSAGE_LINK,
+    /** Names of Conjunction Data Messages link to this Orbit Data Message.
+     * @since 10.0
+     */
+    CDM_MESSAGE_LINK,
+    /** Names of Pointing Request Messages link to this Orbit Data Message.
+     * @since 10.0
+     */
+    PRM_MESSAGE_LINK,
+    /** Names of Reentry Data Messages link to this Orbit Data Message.
+     * @since 10.0
+     */
+    RDM_MESSAGE_LINK,
+    /** Names of Tracking Data Messages link to this Orbit Data Message.
+     * @since 10.0
+     */
+    TDM_MESSAGE_LINK,
     /** Spacecraft name for which the orbit state is provided. */
     OBJECT_NAME,
+    /** International designator for the object as assigned by the UN Committee
+     * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC).
+     * @since 10.0
+     */
+    INTERNATIONAL_DESIGNATOR,
+    /** Operator of the space object.
+     * @since 10.0
+     */
+    OPERATOR,
+    /** Owner of the space object.
+     * @since 10.0
+     */
+    OWNER,
+    /** Name of the space object mission.
+     * @since 10.0
+     */
+    MISSION,
+    /** Name of the constellation this space object belongs to.
+     * @since 10.0
+     */
+    CONSTELLATION,
+    /** Epoch of initial launch.
+     * @since 10.0
+     */
+    LAUNCH_EPOCH,
+    /** Country of launch.
+     * @since 10.0
+     */
+    LAUNCH_COUNTRY,
+    /** Site of launch.
+     * @since 10.0
+     */
+    LAUNCH_SITE,
+    /** Provider of launch.
+     * @since 10.0
+     */
+    LAUNCH_PROVIDER,
+    /** Integrator of launch.
+     * @since 10.0
+     */
+    LAUNCH_INTEGRATOR,
+    /** Pad of launch.
+     * @since 10.0
+     */
+    LAUNCH_PAD,
+    /** Launch platform.
+     * @since 10.0
+     */
+    LAUNCH_PLATFORM,
+    /** Epoch of the <em>most recent</em> deployement of this space object in the parent/child deployement sequence.
+     * @since 10.0
+     */
+    RELEASE_EPOCH,
+    /** Epoch of the beginning of mission operations.
+     * @since 10.0
+     */
+    MISSION_START_EPOCH,
+    /** Epoch of the cessation of mission operations.
+     * @since 10.0
+     */
+    MISSION_END_EPOCH,
+    /** Epoch (actual or estimated) of the space object reentry.
+     * @since 10.0
+     */
+    REENTRY_EPOCH,
+    /** Estimated remaining lifetime in days.
+     * @since 10.0
+     */
+    LIFETIME,
+    /** Specification of satellite catalog source.
+     * @since 10.0
+     */
+    CATALOG_NAME,
+    /** Type of object.
+     * @see CCSDSObjectType
+     * @since 10.0
+     */
+    OBJECT_TYPE,
+    /** Operational status.
+     * @see CCSDSOpsStatus
+     * @since 10.0
+     */
+    OPS_STATUS,
+    /** Orbit type.
+     * @see CCSDSOrbitType
+     * @since 10.0
+     */
+    ORBIT_TYPE,
+    /** List of elements of information data blocks included in this message.
+     * @since 10.0
+     */
+    OCM_DATA_ELEMENTS,
+    /** Default epoch to which <em>all</em> relative times are referenced in data blocks,
+     * unless overridden by block-specific {@link #EPOCH_TZERO} values.
+     * @since 10.0
+     */
+    DEF_EPOCH_TZERO,
+    /** Time system in which {@link #DEF_EPOCH_TZERO} is defined.
+     * @since 10.0
+     */
+    DEF_TIME_SYSTEM,
+    /** Number of clock seconds occurring during one SI second.
+     * @since 10.0
+     */
+    SEC_CLK_PER_SI_SEC,
+    /** Number of SI seconds in the chosen central body’s “day”.
+     * @since 10.0
+     */
+    SEC_PER_DAY,
+    /** Time of the earliest data contained in the OCM.
+     * @since 10.0
+     */
+    EARLIEST_TIME,
+    /** Time of the latest data contained in the OCM.
+     * @since 10.0
+     */
+    LATEST_TIME,
+    /** Span of time that the OCM covers.
+     * @since 10.0
+     */
+    TIME_SPAN,
+    /** Difference (TAI – UTC) in seconds at epoch {@link #DEF_EPOCH_TZERO}.
+     * @since 10.0
+     */
+    TAIMUTC_AT_TZERO,
+    /** Difference (UT1 – UTC) in seconds at epoch {@link #DEF_EPOCH_TZERO}.
+     * @since 10.0
+     */
+    UT1MUTC_AT_TZERO,
+    /** Source and version of Earth Orientation Parameters.
+     * @since 10.0
+     */
+    EOP_SOURCE,
+    /** Interpolation method for Earth Orientation Parameters.
+     * @since 10.0
+     */
+    INTERP_METHOD_EOP,
     /** Object identifier of the object for which the orbit state is provided. */
     OBJECT_ID,
     /** Origin of reference frame. */
