@@ -253,6 +253,14 @@ public abstract class ODMParser {
                 odmFile.setOriginator(keyValue.getValue());
                 return true;
 
+            case MESSAGE_ID:
+                odmFile.setMessageID(keyValue.getValue());
+                return true;
+
+            case MESSAGE_CLASSIF:
+                odmFile.setClassification(keyValue.getValue());
+                return true;
+
             default:
                 return false;
 

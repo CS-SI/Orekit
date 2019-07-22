@@ -46,6 +46,16 @@ public abstract class ODMFile {
     /** Creating agency or operator. */
     private String originator;
 
+    /** Unique ID identifying this message from a given originator.
+     * @since 10.1
+     */
+    private String messageID;
+
+    /** Classification for this message.
+     * @since 10.1
+     */
+    private String classification;
+
     /** Gravitational coefficient set by the user in the parser. */
     private double muSet;
 
@@ -132,7 +142,7 @@ public abstract class ODMFile {
     }
 
     /**
-     * Set the gravitational coefficient created from the knowledge of the central body.
+     * Set the gravitational coefficient to use.
      * In order of decreasing priority, finalMU is set equal to:
      * <ol>
      *   <li>the coefficient parsed in the file,</li>
@@ -238,6 +248,38 @@ public abstract class ODMFile {
      */
     void setOriginator(final String originator) {
         this.originator = originator;
+    }
+
+    /** Get the message ID.
+     * @return unique (wrt originator) message ID.
+     * @since 10.1
+     */
+    public String getMessageID() {
+        return messageID;
+    }
+
+    /** Set the message ID.
+     * @param messageID unique (wrt originator) message ID
+     * @since 10.1
+     */
+    void setMessageID(final String messageID) {
+        this.messageID = messageID;
+    }
+
+    /** Get the message classification.
+     * @return message classification.
+     * @since 10.1
+     */
+    public String getClassification() {
+        return classification;
+    }
+
+    /** Set the message classification.
+     * @param classification message classification
+     * @since 10.1
+     */
+    void setClassification(final String classification) {
+        this.classification = classification;
     }
 
 }

@@ -68,10 +68,10 @@ public class OEMParserTest {
     @Test
     public void testParseOEM1() throws IOException {
         //
-        final String ex = "/ccsds/OEMExample.txt";
+        final String ex = "/ccsds/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
-        final OEMFile file = parser.parse(inEntry, "OEMExample.txt");
+        final OEMFile file = parser.parse(inEntry, "OEMExample1.txt");
         Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetaData().getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
         Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
@@ -329,12 +329,12 @@ public class OEMParserTest {
     @Test
     public void testWrongODMType() {
         try {
-            new OEMParser().parse(getClass().getResourceAsStream("/ccsds/OPMExample.txt"), "OPMExample.txt");
+            new OEMParser().parse(getClass().getResourceAsStream("/ccsds/OPMExample1.txt"), "OPMExample1.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
-            Assert.assertEquals("OPMExample.txt", oe.getParts()[1]);
-            Assert.assertEquals("CCSDS_OPM_VERS = 2.0", oe.getParts()[2]);
+            Assert.assertEquals("OPMExample1.txt", oe.getParts()[1]);
+            Assert.assertEquals("CCSDS_OPM_VERS = 3.0", oe.getParts()[2]);
         }
     }
 
@@ -368,7 +368,7 @@ public class OEMParserTest {
 
     @Test
     public void testNonExistentFile() throws URISyntaxException {
-        final String realName = getClass().getResource("/ccsds/OEMExample.txt").toURI().getPath();
+        final String realName = getClass().getResource("/ccsds/OEMExample1.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         try {
             new OEMParser().parse(wrongName);

@@ -42,6 +42,17 @@ public enum CCSDSFrame {
 
     },
 
+    /** Earth Mean Equator and Equinox of J2000. */
+    J2000(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+            return FramesFactory.getEME2000();
+        }
+
+    },
+
     /** Geocentric Celestial Reference Frame. */
     GCRF(null) {
 

@@ -55,7 +55,13 @@ public class StreamingOemWriterTest {
             if (!ccsdsFrame.isLof()) {
                 Frame frame = ccsdsFrame.getFrame(IERSConventions.IERS_2010, true);
                 String actual = StreamingOemWriter.guessFrame(frame);
-                assertThat(actual, CoreMatchers.is(ccsdsFrame.name()));
+                if (ccsdsFrame == CCSDSFrame.J2000) {
+                    // CCSDS allows both J2000 and EME2000 names
+                    // Orekit chose to use EME2000 when guessing name from frame instance
+                    assertThat(actual, CoreMatchers.is(CCSDSFrame.EME2000.name()));
+                } else {
+                    assertThat(actual, CoreMatchers.is(ccsdsFrame.name()));
+                }
             }
         }
 
@@ -158,7 +164,7 @@ public class StreamingOemWriterTest {
             OEMParser parser = new OEMParser()
                     .withMu(CelestialBodyFactory.getEarth().getGM())
                     .withConventions(IERSConventions.IERS_2010);
-            OEMFile oemFile = parser.parse(inEntry, "OEMExample.txt");
+            OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
 
             OemSatelliteEphemeris satellite =
                     oemFile.getSatellites().values().iterator().next();

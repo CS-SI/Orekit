@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 public class OMMParserTest {
@@ -48,7 +50,7 @@ public class OMMParserTest {
         {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
-        final String ex = "/ccsds/OMMExample.txt";
+        final String ex = "/ccsds/OMMExample1.txt";
 
         // initialize parser with purposely wrong international designator
         // (in order to check it is correctly overridden when parsing)
@@ -59,11 +61,13 @@ public class OMMParserTest {
         final OMMFile file = parser.parse(inEntry);
 
         // Check Header Block;
-        Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
+        Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-10);
         Assert.assertEquals(new AbsoluteDate(2007, 03, 06, 16, 00, 00,
                                              TimeScalesFactory.getUTC()),
                                              file.getCreationDate());
         Assert.assertEquals("NOAA/USA", file.getOriginator());
+        Assert.assertNull(file.getMessageID());
+        Assert.assertNull(file.getClassification());
 
         // Check Metadata Block;
 
@@ -136,6 +140,38 @@ public class OMMParserTest {
                                  withInternationalDesignator(1998, 1, "a");
 
         final OMMFile file = parser.parse(name);
+        Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-10);
+        Assert.assertEquals(1.00273272, Constants.JULIAN_DAY * file.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
+        try {
+            file.getMass();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SPACECRAFT_MASS, oe.getSpecifier());
+        }
+        Assert.assertEquals(FramesFactory.getTEME(), file.getCovRefFrame());
+         file.getCovarianceMatrix();
+        Assert.assertTrue(file.hasCovarianceMatrix());
+        Assert.assertEquals(1995, file.getMetaData().getLaunchYear());
+        Assert.assertEquals(25, file.getMetaData().getLaunchNumber());
+        Assert.assertEquals("A", file.getMetaData().getLaunchPiece());
+        file.generateKeplerianOrbit();
+
+    }
+
+    @Test
+    public void testParseOMM3()
+        throws URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OMMExample3.txt").toURI().getPath();
+        final OMMParser parser = new OMMParser().
+                                 withMissionReferenceDate(new AbsoluteDate()).
+                                 withConventions(IERSConventions.IERS_1996).
+                                 withSimpleEOP(true).
+                                 withInternationalDesignator(1998, 1, "a");
+
+        final OMMFile file = parser.parse(name);
+        Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
         Assert.assertEquals(file.getMissionReferenceDate().shiftedBy(210840), file.getMetaData().getFrameEpoch());
         Assert.assertEquals(6800e3, file.getA(), 1e-10);
         Assert.assertEquals(300, file.getMass(), 1e-10);
@@ -195,7 +231,7 @@ public class OMMParserTest {
     @Test
     public void testOrbitFileInterface() {
         // simple test for OMM file, contains p/v entries and other mandatory data.
-        final String ex = "/ccsds/OMMExample.txt";
+        final String ex = "/ccsds/OMMExample1.txt";
 
         // initialize parser with purposely wrong international designator
         // (in order to check it is correctly overridden when parsing)
@@ -203,7 +239,7 @@ public class OMMParserTest {
                 new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OMMFile file = parser.parse(inEntry, "OMMExample.txt");
+        final OMMFile file = parser.parse(inEntry, "OMMExample1.txt");
 
         final String satId = "1995-025A";
         Assert.assertEquals(satId, file.getMetaData().getObjectID());
@@ -213,12 +249,12 @@ public class OMMParserTest {
     @Test
     public void testWrongODMType() {
         try {
-            new OMMParser().parse(getClass().getResourceAsStream("/ccsds/OEMExample.txt"), "OEMExample.txt");
+            new OMMParser().parse(getClass().getResourceAsStream("/ccsds/OEMExample1.txt"), "OEMExample1.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
-            Assert.assertEquals("OEMExample.txt", oe.getParts()[1]);
-            Assert.assertEquals("CCSDS_OEM_VERS = 2.0", oe.getParts()[2]);
+            Assert.assertEquals("OEMExample1.txt", oe.getParts()[1]);
+            Assert.assertEquals("CCSDS_OEM_VERS = 3.0", oe.getParts()[2]);
         }
     }
 
@@ -237,7 +273,7 @@ public class OMMParserTest {
 
     @Test
     public void testNonExistentFile() throws URISyntaxException {
-        final String realName = getClass().getResource("/ccsds/OMMExample.txt").toURI().getPath();
+        final String realName = getClass().getResource("/ccsds/OMMExample1.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         try {
             new OMMParser().parse(wrongName);

@@ -65,11 +65,11 @@ public class OEMWriterTest {
 
     @Test
     public void testWriteOEM1() throws IOException {
-        final String ex = "/ccsds/OEMExample.txt";
+        final String ex = "/ccsds/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample.txt");
+        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String originator = oemFile.getOriginator();
@@ -87,11 +87,11 @@ public class OEMWriterTest {
 
     @Test
     public void testUnfoundSpaceId() throws IOException {
-        final String ex = "/ccsds/OEMExample.txt";
+        final String ex = "/ccsds/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample.txt");
+        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String badObjectId = "12345";
@@ -111,11 +111,11 @@ public class OEMWriterTest {
 
     @Test
     public void testNullFile() throws IOException {
-        final String ex = "/ccsds/OEMExample.txt";
+        final String ex = "/ccsds/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample.txt");
+        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
         String originator = oemFile.getOriginator();
         String objectName = oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectName();
@@ -152,11 +152,11 @@ public class OEMWriterTest {
 
     @Test
     public void testUnisatelliteFileWithDefault() throws IOException {
-        final String ex = "/ccsds/OEMExample.txt";
+        final String ex = "/ccsds/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample.txt");
+        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();

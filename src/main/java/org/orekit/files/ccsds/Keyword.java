@@ -41,6 +41,10 @@ public enum Keyword {
     CREATION_DATE,
     /** Creating agency or operator. */
     ORIGINATOR,
+    /** Unique ID identifying a message from a given originator. */
+    MESSAGE_ID,
+    /** Classification of this message. */
+    MESSAGE_CLASSIF,
     /** Time system used for state vector, maneuver, and covariance data. */
     TIME_SYSTEM,
     /** Epoch of state vector and optional Keplerian elements.
