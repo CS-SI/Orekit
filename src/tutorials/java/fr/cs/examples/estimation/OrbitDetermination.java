@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -28,6 +29,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -59,8 +61,12 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataFilter;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
+import org.orekit.data.GzipFilter;
+import org.orekit.data.NamedData;
+import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
@@ -101,6 +107,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
@@ -266,16 +273,26 @@ public class OrbitDetermination {
             // measurements
             final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
             for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
-                if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, fileName) ||
-                    Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, fileName)) {
+
+                // set up filtering for measurements files
+                NamedData nd = new NamedData(fileName,
+                                             () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+                for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                             new UnixCompressFilter(),
+                                                             new HatanakaCompressFilter())) {
+                    nd = filter.filter(nd);
+                }
+
+                if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
+                    Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
                     // the measurements come from a Rinex file
-                    measurements.addAll(readRinex(new File(input.getParentFile(), fileName),
+                    measurements.addAll(readRinex(nd,
                                                   parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
                                                   stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
                                                   rangeOutliersManager, rangeRateOutliersManager));
                 } else {
                     // the measurements come from an Orekit custom file
-                    measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
+                    measurements.addAll(readMeasurements(nd,
                                                          stations, pvData, satellite,
                                                          satRangeBias, satAntennaRangeModifier, weights,
                                                          rangeOutliersManager,
@@ -1355,7 +1372,7 @@ public class OrbitDetermination {
     }
 
     /** Read a RINEX measurements file.
-     * @param file measurements file
+     * @param nd named data containing measurements
      * @param satId satellite we are interested in
      * @param stations name to stations data map
      * @param satellite satellite reference
@@ -1366,7 +1383,7 @@ public class OrbitDetermination {
      * @param rangeRateOutliersManager manager for range-rate measurements outliers (null if none configured)
      * @return measurements list
      */
-    private List<ObservedMeasurement<?>> readRinex(final File file, final String satId,
+    private List<ObservedMeasurement<?>> readRinex(final NamedData nd, final String satId,
                                                    final Map<String, StationData> stations,
                                                    final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
@@ -1391,7 +1408,7 @@ public class OrbitDetermination {
                 prnNumber = -1;
         }
         final Iono iono = new Iono(false);
-        final RinexLoader loader = new RinexLoader(new FileInputStream(file), file.getAbsolutePath());
+        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
@@ -1452,7 +1469,7 @@ public class OrbitDetermination {
     }
 
     /** Read a measurements file.
-     * @param file measurements file
+     * @param nd named data containing measurements
      * @param stations name to stations data map
      * @param pvData PV measurements data
      * @param satellite satellite reference
@@ -1465,7 +1482,7 @@ public class OrbitDetermination {
      * @param pvOutliersManager manager for PV measurements outliers (null if none configured)
      * @return measurements list
      */
-    private List<ObservedMeasurement<?>> readMeasurements(final File file,
+    private List<ObservedMeasurement<?>> readMeasurements(final NamedData nd,
                                                           final Map<String, StationData> stations,
                                                           final PVData pvData,
                                                           final ObservableSatellite satellite,
@@ -1479,9 +1496,9 @@ public class OrbitDetermination {
         throws UnsupportedEncodingException, IOException, OrekitException {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
+        try (InputStream is = nd.getStreamOpener().openStream();
+             InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader br = new BufferedReader(isr)) {
             int lineNumber = 0;
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
@@ -1490,13 +1507,13 @@ public class OrbitDetermination {
                     String[] fields = line.split("\\s+");
                     if (fields.length < 2) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, file.getName(), line);
+                                                  lineNumber, nd.getName(), line);
                     }
                     switch (fields[1]) {
                         case "RANGE" :
                             final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
                                                                               satRangeBias, weights,
-                                                                              line, lineNumber, file.getName());
+                                                                              line, lineNumber, nd.getName());
                             if (satAntennaRangeModifier != null) {
                                 range.addModifier(satAntennaRangeModifier);
                             }
@@ -1508,7 +1525,7 @@ public class OrbitDetermination {
                         case "RANGE_RATE" :
                             final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
                                                                                           satRangeBias, weights,
-                                                                                          line, lineNumber, file.getName());
+                                                                                          line, lineNumber, nd.getName());
                             if (rangeRateOutliersManager != null) {
                                 rangeRate.addModifier(rangeRateOutliersManager);
                             }
@@ -1517,7 +1534,7 @@ public class OrbitDetermination {
                         case "AZ_EL" :
                             final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData, satellite,
                                                                                      satRangeBias, weights,
-                                                                                     line, lineNumber, file.getName());
+                                                                                     line, lineNumber, nd.getName());
                             if (azElOutliersManager != null) {
                                 angular.addModifier(azElOutliersManager);
                             }
@@ -1526,7 +1543,7 @@ public class OrbitDetermination {
                         case "PV" :
                             final PV pv = new PVParser().parseFields(fields, stations, pvData, satellite,
                                                                      satRangeBias, weights,
-                                                                     line, lineNumber, file.getName());
+                                                                     line, lineNumber, nd.getName());
                             if (pvOutliersManager != null) {
                                 pv.addModifier(pvOutliersManager);
                             }
@@ -1536,19 +1553,15 @@ public class OrbitDetermination {
                             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                       "unknown measurement type " + fields[1] +
                                                       " at line " + lineNumber +
-                                                      " in file " + file.getName());
+                                                      " in file " + nd.getName());
                     }
                 }
-            }
-        } finally {
-            if (br != null) {
-                br.close();
             }
         }
 
         if (measurements.isEmpty()) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                      "not measurements read from file " + file.getAbsolutePath());
+                                      "not measurements read from file " + nd.getName());
         }
 
         return measurements;

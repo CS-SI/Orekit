@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="578">
+        Orbit determination tutorials (and tests too) now supports compressed
+        measurement files (gzip, Unix compress, Hatanaka Compact RINEX).
+      </action>
       <action dev="luc" type="fix" issue="579">
         Handle properly special events flags in Hatanaka Compact RINEX format.
       </action>
