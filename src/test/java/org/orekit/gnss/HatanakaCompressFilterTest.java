@@ -312,6 +312,31 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
+    public void testSplice() throws IOException, NoSuchAlgorithmException {
+
+        final String name = "rinex/aber0440.16d.Z";
+        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+                                             filtered.getName());
+
+        AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, TimeScalesFactory.getGPS());
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(114, ods.size());
+
+        Assert.assertEquals("ABER",              ods.get(0).getHeader().getMarkerName());
+        Assert.assertEquals(SatelliteSystem.GPS, ods.get(0).getSatelliteSystem());
+        Assert.assertEquals(18,                  ods.get(0).getPrnNumber());
+        Assert.assertEquals(0.0,                 ods.get(0).getDate().durationFrom(t0), 1.0e-15);
+
+        // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
+        checkDigest("b2bc4c32c144f8e6fdda15c9a041c17cbd6b48653c0866dd121f9ad5663f3895", md);
+
+    }
+
+    @Test
     public void testDifferential3rdOrder() {
         doTestDifferential(15, 3, 3,
                            new long[] {

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="579">
+        Handle properly special events flags in Hatanaka Compact RINEX format.
+      </action>
       <action dev="luc" type="fix" issue="483">
         Reset additional state changed by event handlers and not managed by any
         additional state providers.
