@@ -108,6 +108,10 @@ public enum Keyword {
      * @since 10.0
      */
     TECH_ORG,
+    /** Technical Point Of Contact at originator.
+     * @since 10.0
+     */
+    TECH_POC,
     /** Position of Technical Point Of Contact at originator.
      * @since 10.0
      */

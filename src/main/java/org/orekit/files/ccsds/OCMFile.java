@@ -77,6 +77,9 @@ public class OCMFile extends OGMFile {
         /** Creating agency or operator. */
         private String techOrg;
 
+        /** Technical Point Of Contact at originator. */
+        private String techPOC;
+
         /** Position of Technical Point Of Contact at originator. */
         private String techPosition;
 
@@ -297,6 +300,20 @@ public class OCMFile extends OGMFile {
          */
         void setTechOrg(final String techOrg) {
             this.techOrg = techOrg;
+        }
+
+        /** Get the Technical Point Of Contact at originator.
+         * @return Technical Point Of Contact at originator
+         */
+        public String getTechPOC() {
+            return techPOC;
+        }
+
+        /** Set the Technical Point Of Contact at originator.
+         * @param techPOC Technical Point Of Contact at originator
+         */
+        void setTechPOC(final String techPOC) {
+            this.techPOC = techPOC;
         }
 
         /** Get the position of Technical Point Of Contact at originator.

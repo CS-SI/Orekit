@@ -208,6 +208,10 @@ public class OCMParser extends ODMParser {
                 cMetaData.setTechOrg(keyValue.getValue());
                 break;
 
+            case TECH_POC:
+                cMetaData.setTechPOC(keyValue.getValue());
+                break;
+
             case TECH_POSITION:
                 cMetaData.setTechPosition(keyValue.getValue());
                 break;
