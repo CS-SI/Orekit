@@ -301,6 +301,9 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lunghezza non valida per il campo del tem
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = epoca di riferimento specifica dell''agenzia mancante nella data CCSDS
 
+# missing mandatory key {0} in CCSDS file {1}
+CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = parola-chiave inattesa alla linea {0} del file CCSDS {1}:\n{2}
 

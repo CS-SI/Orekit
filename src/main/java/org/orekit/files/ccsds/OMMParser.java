@@ -37,6 +37,18 @@ import org.orekit.utils.IERSConventions;
  */
 public class OMMParser extends ODMParser {
 
+    /** Mandatory keywords.
+     * @since 10.1
+     */
+    private static final Keyword[] MANDATORY_KEYWORDS = {
+        Keyword.CCSDS_OMM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
+        Keyword.OBJECT_NAME, Keyword.OBJECT_ID, Keyword.CENTER_NAME,
+        Keyword.REF_FRAME, Keyword.TIME_SYSTEM, Keyword.MEAN_ELEMENT_THEORY,
+        Keyword.EPOCH, Keyword.SEMI_MAJOR_AXIS, Keyword.MEAN_MOTION,
+        Keyword.ECCENTRICITY, Keyword.INCLINATION, Keyword.RA_OF_ASC_NODE,
+        Keyword.ARG_OF_PERICENTER, Keyword.MEAN_ANOMALY
+    };
+
     /** Simple constructor.
      * <p>
      * This class is immutable, and hence thread safe. When parts
@@ -137,10 +149,13 @@ public class OMMParser extends ODMParser {
     /** {@inheritDoc} */
     public OMMFile parse(final InputStream stream, final String fileName) {
 
-        try {
+        // declare the mandatory keywords as expected
+        for (final Keyword keyword : MANDATORY_KEYWORDS) {
+            declareExpected(keyword);
+        }
 
-            final BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(isr)) {
 
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
@@ -164,12 +179,17 @@ public class OMMParser extends ODMParser {
                 if (pi.keyValue.getKeyword() == null) {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
+
+                declareFound(pi.keyValue.getKeyword());
+
                 switch (pi.keyValue.getKeyword()) {
                     case CCSDS_OMM_VERS:
                         file.setFormatVersion(pi.keyValue.getDoubleValue());
                         break;
 
                     case MEAN_MOTION:
+                        // as we have found mean motion, we don't expect semi majar axis anymore
+                        declareFound(Keyword.SEMI_MAJOR_AXIS);
                         file.setMeanMotion(pi.keyValue.getDoubleValue() * FastMath.PI / 43200.0);
                         break;
 
@@ -219,7 +239,10 @@ public class OMMParser extends ODMParser {
                         }
                 }
             }
-            reader.close();
+
+            // check all mandatory keywords have been found
+            checkExpected(fileName);
+
             return file;
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

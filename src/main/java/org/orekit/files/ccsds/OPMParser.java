@@ -37,6 +37,17 @@ import org.orekit.utils.IERSConventions;
  */
 public class OPMParser extends ODMParser {
 
+    /** Mandatory keywords.
+     * @since 10.1
+     */
+    private static final Keyword[] MANDATORY_KEYWORDS = {
+        Keyword.CCSDS_OPM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
+        Keyword.OBJECT_NAME, Keyword.OBJECT_ID, Keyword.CENTER_NAME,
+        Keyword.REF_FRAME, Keyword.TIME_SYSTEM, Keyword.EPOCH,
+        Keyword.X, Keyword.Y, Keyword.Z,
+        Keyword.X_DOT, Keyword.Y_DOT, Keyword.Z_DOT
+    };
+
     /** Simple constructor.
      * <p>
      * This class is immutable, and hence thread safe. When parts
@@ -132,8 +143,14 @@ public class OPMParser extends ODMParser {
     /** {@inheritDoc} */
     public OPMFile parse(final InputStream stream, final String fileName) {
 
-        try {
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        // declare the mandatory keywords as expected
+        for (final Keyword keyword : MANDATORY_KEYWORDS) {
+            declareExpected(keyword);
+        }
+
+        try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(isr)) {
+
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
             pi.fileName = fileName;
@@ -156,6 +173,9 @@ public class OPMParser extends ODMParser {
                 if (pi.keyValue.getKeyword() == null) {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
+
+                declareFound(pi.keyValue.getKeyword());
+
                 switch (pi.keyValue.getKeyword()) {
 
                     case CCSDS_OPM_VERS:
@@ -246,12 +266,15 @@ public class OPMParser extends ODMParser {
 
             }
 
+            // check all mandatory keywords have been found
+            checkExpected(fileName);
+
             file.setPosition(new Vector3D(pi.x, pi.y, pi.z));
             file.setVelocity(new Vector3D(pi.x_dot, pi.y_dot, pi.z_dot));
             if (pi.maneuver != null) {
                 file.addManeuver(pi.maneuver);
             }
-            reader.close();
+
             return file;
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

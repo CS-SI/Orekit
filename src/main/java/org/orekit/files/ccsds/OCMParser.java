@@ -37,6 +37,14 @@ import org.orekit.utils.IERSConventions;
  */
 public class OCMParser extends ODMParser {
 
+    /** Mandatory keywords.
+     * @since 10.1
+     */
+    private static final Keyword[] MANDATORY_KEYWORDS = {
+        Keyword.CCSDS_OCM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
+        Keyword.DEF_EPOCH_TZERO, Keyword.DEF_TIME_SYSTEM
+    };
+
     /** Simple constructor.
      * <p>
      * This class is immutable, and hence thread safe. When parts
@@ -132,6 +140,11 @@ public class OCMParser extends ODMParser {
     /** {@inheritDoc} */
     public OCMFile parse(final InputStream stream, final String fileName) {
 
+        // declare the mandatory keywords as expected
+        for (final Keyword keyword : MANDATORY_KEYWORDS) {
+            declareExpected(keyword);
+        }
+
         try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
             // initialize internal data structures
@@ -156,6 +169,9 @@ public class OCMParser extends ODMParser {
                 if (pi.keyValue.getKeyword() == null) {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
+
+                declareFound(pi.keyValue.getKeyword());
+
                 switch (pi.keyValue.getKeyword()) {
 
                     case CCSDS_OCM_VERS:
@@ -175,6 +191,9 @@ public class OCMParser extends ODMParser {
                 }
 
             }
+
+            // check all mandatory keywords have been found
+            checkExpected(fileName);
 
             return file;
         } catch (IOException ioe) {

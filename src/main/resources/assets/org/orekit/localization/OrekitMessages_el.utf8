@@ -301,6 +301,9 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = μη έγκυρο πεδίου χρόνο
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = ελλιπής ημερομηνία της υπηρεσίας για την ημερομηνία CCSDS
 
+# missing mandatory key {0} in CCSDS file {1}
+CCSDS_MISSING_KEYWORD = <MISSING TRANSLATION>
+
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = μη αναμενόμενη λέξη-κλειδί στη γραμμή {0} του CCSDS αρχείου {1}: \ n {2}
 

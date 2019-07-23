@@ -45,6 +45,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OEMParser extends ODMParser implements EphemerisFileParser {
 
+    /** Mandatory keywords.
+     * @since 10.1
+     */
+    private static final Keyword[] MANDATORY_KEYWORDS = {
+        Keyword.CCSDS_OEM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
+        Keyword.OBJECT_NAME, Keyword.OBJECT_ID, Keyword.CENTER_NAME,
+        Keyword.REF_FRAME, Keyword.TIME_SYSTEM,
+        Keyword.START_TIME, Keyword.STOP_TIME
+    };
+
     /** Simple constructor.
      * <p>
      * This class is immutable, and hence thread safe. When parts
@@ -149,6 +159,11 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
     @Override
     public OEMFile parse(final BufferedReader reader, final String fileName) {
 
+        // declare the mandatory keywords as expected
+        for (final Keyword keyword : MANDATORY_KEYWORDS) {
+            declareExpected(keyword);
+        }
+
         try {
 
             // initialize internal data structures
@@ -170,6 +185,9 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                 if (pi.keyValue.getKeyword() == null) {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
+
+                declareFound(pi.keyValue.getKeyword());
+
                 switch (pi.keyValue.getKeyword()) {
                     case CCSDS_OEM_VERS:
                         file.setFormatVersion(pi.keyValue.getDoubleValue());
@@ -234,6 +252,10 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                         }
                 }
             }
+
+            // check all mandatory keywords have been found
+            checkExpected(fileName);
+
             file.checkTimeSystems();
             return file;
         } catch (IOException ioe) {

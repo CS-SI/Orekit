@@ -19,7 +19,9 @@ package org.orekit.files.ccsds;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,6 +73,11 @@ public abstract class ODMParser {
     /** Piece of launch (from "A" to "ZZZ"). */
     private String launchPiece;
 
+    /** Indicators for expected keywords.
+     * @since 10.1
+     */
+    private Set<Keyword> expected;
+
     /** Complete constructor.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
@@ -90,6 +97,7 @@ public abstract class ODMParser {
         this.launchYear           = launchYear;
         this.launchNumber         = launchNumber;
         this.launchPiece          = launchPiece;
+        this.expected             = new HashSet<>();
     }
 
     /** Set initial date.
@@ -361,6 +369,8 @@ public abstract class ODMParser {
                 return true;
 
             case SEMI_MAJOR_AXIS:
+                // as we have found semi major axis we don't expect mean motion anymore
+                declareFound(Keyword.MEAN_MOTION);
                 general.setKeplerianElementsComment(comment);
                 comment.clear();
                 general.setA(keyValue.getDoubleValue() * 1000);
@@ -552,6 +562,34 @@ public abstract class ODMParser {
      */
     protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
         return timeSystem.parseDate(date, conventions, missionReferenceDate);
+    }
+
+    /** Declare a keyword to be expected later during parsing.
+     * @param keyword keyword that is expected
+     * @since 10.1
+     */
+    protected void declareExpected(final Keyword keyword) {
+        expected.add(keyword);
+    }
+
+    /** Declare a keyword as found during parsing.
+     * @param keyword keyword found
+     * @since 10.1
+     */
+    protected void declareFound(final Keyword keyword) {
+        expected.remove(keyword);
+    }
+
+    /** Check if all expected keywords have been found.
+     * @param fileName name of the file
+     * @exception OrekitException if some expected keywords are missing
+     * @since 10.1
+     */
+    protected void checkExpected(final String fileName) throws OrekitException {
+        if (!expected.isEmpty()) {
+            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                      expected.iterator().next(), fileName);
+        }
     }
 
 }
