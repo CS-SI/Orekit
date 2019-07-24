@@ -23,30 +23,46 @@ package org.orekit.files.ccsds;
 public enum CCSDSObjectType {
 
     /** Payload. */
-    PL,
+    PL("Payload"),
 
     /** Payload mission-related. */
-    PM,
+    PM("Payload mission-related"),
 
     /** Payload fragmentation debris. */
-    PF,
+    PF("Payload fragmentation debris"),
 
     /** Payload debris. */
-    PD,
+    PD("Payload debris"),
 
     /** Rocket body. */
-    RB,
+    RB("Rocket body"),
 
     /** Rocket mission-related. */
-    RM,
+    RM("Rocket mission-related"),
 
     /** Rocket fragmentation debris. */
-    RF,
+    RF("Rocket fragmentation debris"),
 
     /** Rocket debris. */
-    RD,
+    RD("Rocket debris"),
 
     /** Unidentified. */
-    UI;
+    UI("Unidentified");
+
+    /** Description. */
+    private final String description;
+
+    /** Simple constructor.
+     * @param description description
+     */
+    CCSDSObjectType(final String description) {
+        this.description = description;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return description;
+    }
 
 }

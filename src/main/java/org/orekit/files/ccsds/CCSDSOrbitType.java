@@ -23,47 +23,64 @@ package org.orekit.files.ccsds;
 public enum CCSDSOrbitType {
 
     /** Extended Geostationary Orbit, 37948 < a < 46380 km, e < 0.25, i < 25°. */
-    EGO,
+    EGO("Extended Geostationary Orbit"),
 
-    /** Escape Orbits. */
-    ESO,
+    /** Escape Orbit. */
+    ESO("Escape Orbit"),
 
-    /** GEO-superGEO, Crossing Orbits 31570 < hp < 40002 km, 40002 km < ha. */
-    GHO,
+    /** GEO-superGEO, Crossing Orbit 31570 < hp < 40002 km, 40002 km < ha. */
+    GHO("GEO-superGEO, Crossing Orbit"),
+
     /** Geosynchronous Earth Orbit, with i > 3°, 35586 < hp < 35986 km, 35586 < ha < 35986 km. */
-    GEO,
+    GEO("Geosynchronous Earth Orbit"),
 
     /** GeoStationary Orbit, with 3° < i < 25°, 35586 < hp < 35986 km, 35586 < ha < 35986 km. */
-    GSO,
+    GSO("GeoStationary Orbit"),
 
     /** Geosynchronous Transfer Orbit, i < 90°, hp < 2000 km, 31570 < ha < 40002 km. */
-    GTO,
+    GTO("Geosynchronous Transfer Orbit"),
 
     /** High Altitude Earth Orbit, 40002 km < hp, 40002 km < ha. */
-    HAO,
+    HAO("High Altitude Earth Orbit"),
 
     /** Highly Eccentric Earth Orbit, hp < 31570 km, 40002 km < ha. */
-    HEO,
+    HEO("Highly Eccentric Earth Orbit"),
 
     /** Inclined Geosynchronous Orbit, 37948 < a < 46380 km, e < 0.25, 25° < i < 180°. */
-    IGO,
+    IGO("Inclined Geosynchronous Orbit"),
 
     /** Low Earth Orbit, hp < 2000 km, ha < 2000 km. */
-    LEO,
+    LEO("Low Earth Orbit"),
 
-    /** LEO-MEO Crossing Orbits, hp < 2000 km, 2000 < ha < 31570 km. */
-    LMO,
+    /** LEO-MEO Crossing Orbit, hp < 2000 km, 2000 < ha < 31570 km. */
+    LMO("LEO-MEO Crossing Orbit"),
 
     /** Medium Earth Orbit, 2000 < hp < 31570 km, 2000 < ha < 31570 km. */
-    MEO,
+    MEO("Medium Earth Orbit"),
 
-    /** MEO-GEO Crossing Orbits, 2000 < hp < 31570 km, 31570 < ha < 40002 km. */
-    MGO,
+    /** MEO-GEO Crossing Orbit, 2000 < hp < 31570 km, 31570 < ha < 40002 km. */
+    MGO("MEO-GEO Crossing Orbit"),
 
     /** Navigation Satellites Orbit 50° < i < 70°, 18100 < hp < 24300 km, 18100 < ha < 4300 km. */
-    NSO,
+    NSO("Navigation Satellites Orbit"),
 
     /** UFO: Undefined Orbit. */
-    UFO;
+    UFO("Undefined Orbit");
+
+    /** Description. */
+    private final String description;
+
+    /** Simple constructor.
+     * @param description description
+     */
+    CCSDSOrbitType(final String description) {
+        this.description = description;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return description;
+    }
 
 }

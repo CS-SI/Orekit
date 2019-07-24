@@ -23,30 +23,46 @@ package org.orekit.files.ccsds;
 public enum CCSDSOpsStatus {
 
     /** Operational object. */
-    OPERATIONAL,
+    OPERATIONAL("Operational"),
 
     /** Non-operational object. */
-    NONOPERATIONAL,
+    NONOPERATIONAL("Non-operational"),
 
     /** partially operational object. */
-    PARTIALLY_OPERATIONAL,
+    PARTIALLY_OPERATIONAL("Partially operational"),
 
     /** Backup object. */
-    BACKUP,
+    BACKUP("Backup"),
 
     /** Object in stand-by. */
-    STANBY,
+    STANBY("Stand-by"),
 
     /** Object in extended mission. */
-    EXTENDED_MISSION,
+    EXTENDED_MISSION("Extended mission"),
 
     /** Object in reentry mode. */
-    REENTRY_MODE,
+    REENTRY_MODE("Reentry mode"),
 
     /** Decayed object. */
-    DECAYED,
+    DECAYED("Decayed"),
 
     /** Unknown status. */
-    UNKNOWN;
+    UNKNOWN("Unknown");
+
+    /** Description. */
+    private final String description;
+
+    /** Simple constructor.
+     * @param description description
+     */
+    CCSDSOpsStatus(final String description) {
+        this.description = description;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return description;
+    }
 
 }
