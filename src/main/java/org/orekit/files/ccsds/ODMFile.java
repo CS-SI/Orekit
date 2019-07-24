@@ -54,7 +54,7 @@ public abstract class ODMFile {
     /** Classification for this message.
      * @since 10.1
      */
-    private String classification;
+    private String messageClassification;
 
     /** Gravitational coefficient set by the user in the parser. */
     private double muSet;
@@ -270,16 +270,16 @@ public abstract class ODMFile {
      * @return message classification.
      * @since 10.1
      */
-    public String getClassification() {
-        return classification;
+    public String getMessageClassification() {
+        return messageClassification;
     }
 
     /** Set the message classification.
-     * @param classification message classification
+     * @param messageClassification message classification
      * @since 10.1
      */
-    void setClassification(final String classification) {
-        this.classification = classification;
+    void setMessageClassification(final String messageClassification) {
+        this.messageClassification = messageClassification;
     }
 
 }

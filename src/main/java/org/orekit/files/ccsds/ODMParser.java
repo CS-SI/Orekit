@@ -266,7 +266,7 @@ public abstract class ODMParser {
                 return true;
 
             case MESSAGE_CLASSIF:
-                odmFile.setClassification(keyValue.getValue());
+                odmFile.setMessageClassification(keyValue.getValue());
                 return true;
 
             default:
