@@ -191,14 +191,24 @@ public class HatanakaCompressFilter implements DataFilter {
             }
 
             // output uncompressed value
-            final String unscaled = Long.toString(state[0]);
+            final String unscaled = Long.toString(FastMath.abs(state[0]));
+            final int    length   = unscaled.length();
+            final int    digits   = FastMath.max(length, decimalPlaces);
+            final int    padding  = fieldLength - (digits + (state[0] < 0 ? 2 : 1));
             final StringBuilder builder = new StringBuilder();
-            for (int padding = fieldLength - (unscaled.length() + 1); padding > 0; --padding) {
+            for (int i = 0; i < padding; ++i) {
                 builder.append(' ');
             }
-            builder.append(unscaled, 0, unscaled.length() - decimalPlaces);
+            if (state[0] < 0) {
+                builder.append('-');
+            }
+            if (length > decimalPlaces) {
+                builder.append(unscaled, 0, length - decimalPlaces);
+            }
             builder.append('.');
-            builder.append(unscaled, unscaled.length() - decimalPlaces, unscaled.length());
+            for (int i = decimalPlaces; i > 0; --i) {
+                builder.append(i > length ? '0' : unscaled.charAt(length - i));
+            }
 
             uncompressed = builder.toString();
 
