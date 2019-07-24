@@ -20,8 +20,7 @@ DEF_EPOCH_TZERO       = 1998-12-18T00:00:00.0000
 DEF_TIME_SYSTEM       = UT1
 
 TAIMUTC_TZERO         = 36      [s]
-UT2MUTC_TZERO         = .357    [s]
-UT1MUTC_RATE_TZERO    = 0.0001  [ms/day]
+UT1MUTC_TZERO         = .357    [s]
 META_STOP
 
 ORB_START
