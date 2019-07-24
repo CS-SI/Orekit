@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="580">
+        Fixed decompression of very small negative values in Hatanaka
+        Compact RINEX format.
+      </action>
       <action dev="luc" type="fix" issue="578">
         Orbit determination tutorials (and tests too) now supports compressed
         measurement files (gzip, Unix compress, Hatanaka Compact RINEX).
