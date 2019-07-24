@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="581">
+        Fixed spurious empty line insertion during Rinex 2 decompression
+        when the number of observations per satellite is a multiple of 5
+      </action>
       <action dev="luc" type="fix" issue="580">
         Fixed decompression of very small negative values in Hatanaka
         Compact RINEX format.

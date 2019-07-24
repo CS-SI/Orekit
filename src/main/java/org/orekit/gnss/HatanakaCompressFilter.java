@@ -879,6 +879,10 @@ public class HatanakaCompressFilter implements DataFilter {
                 final CombinedDifferentials cd    = getCombinedDifferentials(sat);
                 final String                flags = cd.flags.getUncompressed();
                 for (int i = 0; i < cd.observations.length; ++i) {
+                    if (i > 0 && i % 5 == 0) {
+                        trimTrailingSpaces(builder);
+                        builder.append('\n');
+                    }
                     if (cd.observations[i] == null) {
                         // missing observation
                         for (int j = 0; j < DATA_LENGTH + 2; ++j) {
@@ -892,10 +896,6 @@ public class HatanakaCompressFilter implements DataFilter {
                         if (2 * i + 1 < flags.length()) {
                             builder.append(flags.charAt(2 * i + 1));
                         }
-                    }
-                    if (i % 5 == 4) {
-                        trimTrailingSpaces(builder);
-                        builder.append('\n');
                     }
                 }
             }
