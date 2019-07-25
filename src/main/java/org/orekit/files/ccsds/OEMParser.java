@@ -52,7 +52,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
         Keyword.CCSDS_OEM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
         Keyword.OBJECT_NAME, Keyword.OBJECT_ID, Keyword.CENTER_NAME,
         Keyword.REF_FRAME, Keyword.TIME_SYSTEM,
-        Keyword.START_TIME, Keyword.STOP_TIME
+        Keyword.START_TIME, Keyword.STOP_TIME, Keyword.META_START, Keyword.META_STOP
     };
 
     /** Simple constructor.
