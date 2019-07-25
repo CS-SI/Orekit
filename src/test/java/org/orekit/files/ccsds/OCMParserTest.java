@@ -87,6 +87,19 @@ public class OCMParserTest {
     }
 
     @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = getClass().getResource("/ccsds/OCM-spurious-metadata-section.txt").toURI().getPath();
+        try {
+            new OCMParser().parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(15, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("META_START", oe.getParts()[2]);
+        }
+    }
+
+    @Test
     public void testParseOCM1() {
         final String   ex  = "/ccsds/OCMExample1.txt";
         final OCMFile file = new OCMParser().parse(getClass().getResourceAsStream(ex),

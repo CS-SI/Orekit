@@ -42,7 +42,8 @@ public class OCMParser extends ODMParser {
      */
     private static final Keyword[] MANDATORY_KEYWORDS = {
         Keyword.CCSDS_OCM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
-        Keyword.DEF_EPOCH_TZERO, Keyword.DEF_TIME_SYSTEM
+        Keyword.DEF_EPOCH_TZERO, Keyword.DEF_TIME_SYSTEM,
+        Keyword.META_START, Keyword.META_STOP
     };
 
     /** Simple constructor.
@@ -160,6 +161,8 @@ public class OCMParser extends ODMParser {
             pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
             pi.file.getMetaData().setLaunchPiece(getLaunchPiece());
 
+            boolean inHeaderSection   = true;
+            boolean inMetaDataSection = false;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
                 if (line.trim().length() == 0) {
@@ -178,12 +181,31 @@ public class OCMParser extends ODMParser {
                         file.setFormatVersion(pi.keyValue.getDoubleValue());
                         break;
 
+                    case META_START :
+                        if (inHeaderSection) {
+                            inHeaderSection   = false;
+                            inMetaDataSection = true;
+                        } else {
+                            // only one metadata section is allowed
+                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
+                                                      pi.lineNumber, pi.fileName, line);
+                        }
+                        break;
+
+                    case META_STOP :
+                        inMetaDataSection = false;
+                        break;
+
                     default:
                         boolean parsed = false;
                         parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
-                        parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                        if (inHeaderSection) {
+                            parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
+                        } else if (inMetaDataSection) {
+                            parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                        } else {
+                            parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                        }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
                                                       pi.lineNumber, pi.fileName, line);
@@ -207,6 +229,12 @@ public class OCMParser extends ODMParser {
                                          final ODMMetaData metaData, final List<String> comment) {
         final OCMFile.OCMMetaData cMetaData = (OCMFile.OCMMetaData) metaData;
         switch (keyValue.getKeyword()) {
+            case ORIGINATOR:
+                // special case for OCM: ORIGINATOR belongs to metadata section
+                // rather than to header section
+                metaData.getODMFile().setOriginator(keyValue.getValue());
+                break;
+
             case ORIGINATOR_POC:
                 cMetaData.setOriginatorPOC(keyValue.getValue());
                 break;
@@ -420,7 +448,7 @@ public class OCMParser extends ODMParser {
                 break;
 
             default:
-                return super.parseMetaDataEntry(keyValue, cMetaData, comment);
+                return super.parseMetaDataEntry(keyValue, metaData, comment);
         }
         return true;
     }
