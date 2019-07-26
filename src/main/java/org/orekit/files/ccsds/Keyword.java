@@ -307,6 +307,60 @@ public enum Keyword {
      * @since 10.0
      */
     ORB_STOP,
+    /** Orbit identification number.
+     * @since 10.0
+     */
+    ORB_ID,
+    /** Identification number of previous orbit.
+     * @since 10.0
+     */
+    ORB_PREV_ID,
+    /** Identification number of next orbit.
+     * @since 10.0
+     */
+    ORB_NEXT_ID,
+    /** Basis of this orbit state time history data.
+     * @see CCSDSOrbitBasis
+     * @since 10.0
+     */
+    ORB_BASIS,
+    /** Identification number of the orbit determination or simulation upon which this orbit is based.
+     * @since 10.0
+     */
+    ORB_BASIS_ID,
+    /** Type of averaging (Osculating, mean Brouwer, other...).
+     * @since 10.0
+     */
+    ORB_AVERAGING,
+    /** Reference epoch for all relative times in the orbit state block.
+     * @since 10.0
+     */
+    ORB_EPOCH_TZERO,
+    /** Time system for {@link #ORB_EPOCH_TZERO}.
+     * @since 10.0
+     */
+    ORB_TIME_SYSTEM,
+    /** Reference frame of the orbit.
+     * @since 10.0
+     */
+    ORB_REF_FRAME,
+    /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}.
+     * @since 10.0
+     */
+    ORB_FRAME_EPOCH,
+    /** Orbit element set type.
+     * @see CCSDSElementsType
+     * @since 10.0
+     */
+    ORB_TYPE,
+    /** Number of elements (excluding time) contain in the element set.
+     * @since 10.0
+     */
+    ORB_N,
+    /** Definition of orbit elements.
+     * @since 10.0
+     */
+    ORB_ELEMENTS,
     /** Start of object physical characteristics data section.
      * @since 10.0
      */

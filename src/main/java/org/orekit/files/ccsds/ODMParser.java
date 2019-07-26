@@ -335,13 +335,7 @@ public abstract class ODMParser {
                 return true;
 
             case TIME_SYSTEM:
-                if (!CcsdsTimeScale.contains(keyValue.getValue())) {
-                    throw new OrekitException(
-                            OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
-                            keyValue.getValue());
-                }
-                final CcsdsTimeScale timeSystem =
-                        CcsdsTimeScale.valueOf(keyValue.getValue());
+                final CcsdsTimeScale timeSystem = CcsdsTimeScale.parse(keyValue.getValue());
                 metaData.setTimeSystem(timeSystem);
                 if (metaData.getFrameEpochString() != null) {
                     metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));

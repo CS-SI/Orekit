@@ -151,6 +151,14 @@ class KeyValue {
         this.fileName = fileName;
     }
 
+    /** Get the line where the keyword was found.
+     * @return line where the keyword was found
+     * @since 10.1
+     */
+    public String getLine() {
+        return line;
+    }
+
     /** Keyword corresponding to the parsed key.
      * @return keyword corresponding to the parsed key
      * (null if not recognized)

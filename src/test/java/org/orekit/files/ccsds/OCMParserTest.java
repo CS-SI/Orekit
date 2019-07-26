@@ -17,9 +17,11 @@
 package org.orekit.files.ccsds;
 
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -102,7 +104,9 @@ public class OCMParserTest {
     @Test
     public void testParseOCM1() {
         final String   ex  = "/ccsds/OCMExample1.txt";
-        final OCMFile file = new OCMParser().parse(getClass().getResourceAsStream(ex),
+        final OCMFile file = new OCMParser().
+                             withConventions(IERSConventions.IERS_2010).
+                             parse(getClass().getResourceAsStream(ex),
                                                    ex.substring(ex.lastIndexOf('/') + 1));
 
         // check the default values that are not set in this simple file
@@ -116,22 +120,72 @@ public class OCMParserTest {
         Assert.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getCreationDate());
 
-        // OCM is the only message for which ORIGINATOR, OBJECT_NAME, OBJECT_ID,
+        // OCM is the only message for which OBJECT_NAME, OBJECT_ID,
         // CENTER_NAME and REF_FRAME are not mandatory, they are not present in this minimal file
-        Assert.assertNull(file.getOriginator());
         Assert.assertNull(file.getMetaData().getObjectName());
         Assert.assertNull(file.getMetaData().getObjectID());
         Assert.assertNull(file.getMetaData().getCenterName());
         Assert.assertNull(file.getMetaData().getRefFrame());
 
-        Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getDefEpochT0());
+        Assert.assertEquals("JPL", file.getOriginator());
+
+        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC());
+        Assert.assertEquals(t0, file.getMetaData().getDefEpochT0());
         Assert.assertEquals(TimeScalesFactory.getUTC(), file.getMetaData().getDefTimeSystem().getTimeScale(null));
 
-        // TODO test orbit data
+        // orbit data
+        Assert.assertEquals(1, file.getOrbitStateTimeHistories().size());
+        OCMFile.OrbitStateHistory history = file.getOrbitStateTimeHistories().get(0);
+        Assert.assertEquals("intervening data records omitted between DT=20.0 and DT=500.0", history.getComment().get(0));
+        Assert.assertEquals("OSCULATING", history.getOrbAveraging());
+        Assert.assertEquals("EARTH", history.getCenterName());
+        Assert.assertEquals(CCSDSFrame.ITRF2000, history.getOrbRefFrame());
+        Assert.assertEquals(CCSDSElementsType.CARTPV, history.getOrbType());
+        Assert.assertEquals(0.0, history.getOrbEpochT0().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(file.getMetaData().getDefTimeSystem(), history.getOrbTimeSystem());
+        List<OCMFile.OrbitalState> states = history.getOrbitalStates();
+        Assert.assertEquals(4, states.size());
+
+        Assert.assertEquals(0.0, states.get(0).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(6, states.get(0).getElements().length);
+        Assert.assertEquals( 2789600.0, states.get(0).getElements()[0], 1.0e-15);
+        Assert.assertEquals( -280000.0, states.get(0).getElements()[1], 1.0e-15);
+        Assert.assertEquals(-1746800.0, states.get(0).getElements()[2], 1.0e-15);
+        Assert.assertEquals(    4730.0, states.get(0).getElements()[3], 1.0e-15);
+        Assert.assertEquals(   -2500.0, states.get(0).getElements()[4], 1.0e-15);
+        Assert.assertEquals(   -1040.0, states.get(0).getElements()[5], 1.0e-15);
+
+        Assert.assertEquals(10.0, states.get(1).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(6, states.get(1).getElements().length);
+        Assert.assertEquals( 2783400.0, states.get(1).getElements()[0], 1.0e-15);
+        Assert.assertEquals( -308100.0, states.get(1).getElements()[1], 1.0e-15);
+        Assert.assertEquals(-1877100.0, states.get(1).getElements()[2], 1.0e-15);
+        Assert.assertEquals(    5190.0, states.get(1).getElements()[3], 1.0e-15);
+        Assert.assertEquals(   -2420.0, states.get(1).getElements()[4], 1.0e-15);
+        Assert.assertEquals(   -2000.0, states.get(1).getElements()[5], 1.0e-15);
+
+        Assert.assertEquals(20.0, states.get(2).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(6, states.get(2).getElements().length);
+        Assert.assertEquals( 2776000.0, states.get(2).getElements()[0], 1.0e-15);
+        Assert.assertEquals( -336900.0, states.get(2).getElements()[1], 1.0e-15);
+        Assert.assertEquals(-2008700.0, states.get(2).getElements()[2], 1.0e-15);
+        Assert.assertEquals(    5640.0, states.get(2).getElements()[3], 1.0e-15);
+        Assert.assertEquals(   -2340.0, states.get(2).getElements()[4], 1.0e-15);
+        Assert.assertEquals(   -1950.0, states.get(2).getElements()[5], 1.0e-15);
+
+        Assert.assertEquals(500.0, states.get(3).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(6, states.get(3).getElements().length);
+        Assert.assertEquals( 2164375.0,  states.get(3).getElements()[0], 1.0e-15);
+        Assert.assertEquals( 1115811.0,  states.get(3).getElements()[1], 1.0e-15);
+        Assert.assertEquals( -688131.0,  states.get(3).getElements()[2], 1.0e-15);
+        Assert.assertEquals(   -3533.28, states.get(3).getElements()[3], 1.0e-15);
+        Assert.assertEquals(   -2884.52, states.get(3).getElements()[4], 1.0e-15);
+        Assert.assertEquals(     885.35, states.get(3).getElements()[5], 1.0e-15);
 
     }
 
+    // temporarily ignore the test as reference frame EFG is not available
+    @Ignore
     @Test
     public void testParseOCM2() {
         final String   ex  = "/ccsds/OCMExample2.txt";
@@ -174,12 +228,14 @@ public class OCMParserTest {
     @Test
     public void testParseOCM3() {
         final String   ex  = "/ccsds/OCMExample3.txt";
-        final OCMFile file = new OCMParser().parse(getClass().getResourceAsStream(ex),
+        final OCMFile file = new OCMParser().
+                             withConventions(IERSConventions.IERS_2010).
+                             parse(getClass().getResourceAsStream(ex),
                                                    ex.substring(ex.lastIndexOf('/') + 1));
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-10);
-        Assert.assertNull(file.getMetaDataComment());
+        Assert.assertEquals(0, file.getMetaDataComment().size());
         Assert.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getCreationDate());
 

@@ -395,12 +395,7 @@ public class TDMParser extends DefaultHandler {
                 switch (keyValue.getKeyword()) {
                     case TIME_SYSTEM:
                         // Read the time system and ensure that it is supported by Orekit
-                        if (!CcsdsTimeScale.contains(keyValue.getValue())) {
-                            throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
-                                                      keyValue.getValue());
-                        }
-                        final CcsdsTimeScale timeSystem =
-                                        CcsdsTimeScale.valueOf(keyValue.getValue());
+                        final CcsdsTimeScale timeSystem = CcsdsTimeScale.parse(keyValue.getValue());
                         metaData.setTimeSystem(timeSystem);
 
                         // Convert start/stop time to AbsoluteDate if they have been read already

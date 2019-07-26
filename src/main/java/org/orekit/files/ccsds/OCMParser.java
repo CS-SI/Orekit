@@ -46,6 +46,12 @@ public class OCMParser extends ODMParser {
         Keyword.META_START, Keyword.META_STOP
     };
 
+    /** Prefix for relative times. */
+    private static final String RELATIVE_PREFIX = "DT=";
+
+    /** Prefix for absolute times. */
+    private static final String ABSOLUTE_PREFIX = "T=";
+
     /** Simple constructor.
      * <p>
      * This class is immutable, and hence thread safe. When parts
@@ -161,7 +167,8 @@ public class OCMParser extends ODMParser {
             pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
             pi.file.getMetaData().setLaunchPiece(getLaunchPiece());
 
-            Section section = Section.HEADER;
+            Section previousSection = Section.HEADER;
+            Section section         = Section.HEADER;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
                 if (line.trim().length() == 0) {
@@ -169,108 +176,160 @@ public class OCMParser extends ODMParser {
                 }
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                    // we do not change section, maybe the current section can deal with null keywords
+                    if (!section.parseEntry(this, pi)) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  pi.lineNumber, pi.fileName, line);
+                    }
+                } else {
+                    // there is a keyword in this line
+                    declareFound(pi.keyValue.getKeyword());
+
+                    switch (pi.keyValue.getKeyword()) {
+
+                        case CCSDS_OCM_VERS:
+                            file.setFormatVersion(pi.keyValue.getDoubleValue());
+                            break;
+
+                        case META_START :
+                            checkAllowedSection(pi, previousSection, Section.HEADER);
+                            previousSection = section;
+                            section         = Section.META_DATA;
+                            break;
+
+                        case META_STOP :
+                            checkAllowedSection(pi, section, Section.META_DATA);
+                            if (!pi.commentTmp.isEmpty()) {
+                                pi.file.getMetaData().setComment(pi.commentTmp);
+                                pi.commentTmp.clear();
+                            }
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+
+                        case ORB_START : {
+                            checkAllowedSection(pi, previousSection, Section.META_DATA, Section.ORBIT);
+                            final String defT0 = pi.file.getMetaData().getDefEpochT0String();
+                            final CcsdsTimeScale defTimSystem = pi.file.getMetaData().getDefTimeSystem();
+                            pi.file.getOrbitStateTimeHistories().add(pi.file.new OrbitStateHistory(defT0, defTimSystem));
+                            section = Section.ORBIT;
+                            break;
+                        }
+
+                        case ORB_STOP : {
+                            checkAllowedSection(pi, section, Section.ORBIT);
+                            final List<OCMFile.OrbitStateHistory> histories = pi.file.getOrbitStateTimeHistories();
+                            final OCMFile.OrbitStateHistory history = histories.get(histories.size() - 1);
+                            if (!pi.commentTmp.isEmpty()) {
+                                history.setComment(pi.commentTmp);
+                                pi.commentTmp.clear();
+                            }
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+                        }
+
+                        case PHYS_START :
+                            checkAllowedSection(pi, previousSection, Section.META_DATA, Section.ORBIT);
+                            section = Section.PHYSICS;
+                            break;
+
+                        case PHYS_STOP :
+                            checkAllowedSection(pi, section, Section.PHYSICS);
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+
+                        case COV_START :
+                            checkAllowedSection(pi, previousSection,
+                                                Section.META_DATA, Section.ORBIT, Section.PHYSICS,
+                                                Section.COVARIANCE);
+                            section = Section.COVARIANCE;
+                            break;
+
+                        case COV_STOP :
+                            checkAllowedSection(pi, section, Section.COVARIANCE);
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+
+                        case STM_START :
+                            checkAllowedSection(pi, previousSection,
+                                                Section.META_DATA, Section.ORBIT, Section.PHYSICS,
+                                                Section.COVARIANCE, Section.STM);
+                            section = Section.STM;
+                            break;
+
+                        case STM_STOP :
+                            checkAllowedSection(pi, section, Section.STM);
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+
+                        case MAN_START :
+                            checkAllowedSection(pi, previousSection,
+                                                Section.META_DATA, Section.ORBIT, Section.PHYSICS,
+                                                Section.COVARIANCE, Section.STM, Section.MANEUVER);
+                            section = Section.MANEUVER;
+                            break;
+
+                        case MAN_STOP :
+                            checkAllowedSection(pi, section, Section.MANEUVER);
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+
+                        case PERT_START :
+                            checkAllowedSection(pi, previousSection,
+                                                Section.META_DATA, Section.ORBIT, Section.PHYSICS,
+                                                Section.COVARIANCE, Section.STM, Section.MANEUVER);
+                            section = Section.PERTURBATIONS;
+                            break;
+
+                        case PERT_STOP :
+                            checkAllowedSection(pi, section, Section.PERTURBATIONS);
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+
+                        case OD_START :
+                            checkAllowedSection(pi, previousSection,
+                                                Section.META_DATA, Section.ORBIT, Section.PHYSICS,
+                                                Section.COVARIANCE, Section.STM, Section.MANEUVER,
+                                                Section.PERTURBATIONS);
+                            section = Section.ORBIT_DETERMINATION;
+                            break;
+
+                        case OD_STOP :
+                            checkAllowedSection(pi, section, Section.ORBIT_DETERMINATION);
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+
+                        case USER_START :
+                            checkAllowedSection(pi, previousSection,
+                                                Section.META_DATA, Section.ORBIT, Section.PHYSICS,
+                                                Section.COVARIANCE, Section.STM, Section.MANEUVER,
+                                                Section.PERTURBATIONS, Section.ORBIT_DETERMINATION);
+                            section = Section.USER_DEFINED;
+                            break;
+
+                        case USER_STOP :
+                            checkAllowedSection(pi, section, Section.USER_DEFINED);
+                            previousSection = section;
+                            section         = Section.UNDEFINED;
+                            break;
+
+                        default:
+                            if (pi.keyValue.getKeyword() == Keyword.COMMENT) {
+                                parseComment(pi.keyValue, pi.commentTmp);
+                            } else if (!section.parseEntry(this, pi)) {
+                                throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
+                                                          pi.lineNumber, pi.fileName, line);
+                            }
+                    }
+
                 }
-
-                declareFound(pi.keyValue.getKeyword());
-
-                switch (pi.keyValue.getKeyword()) {
-
-                    case CCSDS_OCM_VERS:
-                        file.setFormatVersion(pi.keyValue.getDoubleValue());
-                        break;
-
-                    case META_START :
-                        if (section == Section.HEADER) {
-                            section = Section.META_DATA;
-                        } else {
-                            // only one metadata section is allowed, just after header
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                      pi.lineNumber, pi.fileName, line);
-                        }
-                        break;
-
-                    case META_STOP :
-                        if (!pi.commentTmp.isEmpty()) {
-                            pi.file.getMetaData().setComment(pi.commentTmp);
-                            pi.commentTmp.clear();
-                        }
-                        section = Section.UNDEFINED;
-                        break;
-
-                    case ORB_START :
-                        section = Section.ORBIT;
-                        break;
-
-                    case ORB_STOP :
-                        section = Section.UNDEFINED;
-                        break;
-
-                    case PHYS_START :
-                        section = Section.PHYSICS;
-                        break;
-
-                    case PHYS_STOP :
-                        section = Section.UNDEFINED;
-                        break;
-
-                    case COV_START :
-                        section = Section.COVARIANCE;
-                        break;
-
-                    case COV_STOP :
-                        section = Section.UNDEFINED;
-                        break;
-
-                    case STM_START :
-                        section = Section.STM;
-                        break;
-
-                    case STM_STOP :
-                        section = Section.UNDEFINED;
-                        break;
-
-                    case MAN_START :
-                        section = Section.MANEUVER;
-                        break;
-
-                    case MAN_STOP :
-                        section = Section.UNDEFINED;
-                        break;
-
-                    case PERT_START :
-                        section = Section.PERTURBATIONS;
-                        break;
-
-                    case PERT_STOP :
-                        section = Section.UNDEFINED;
-                        break;
-
-                    case OD_START :
-                        section = Section.ORBIT_DETERMINATION;
-                        break;
-
-                    case OD_STOP :
-                        section = Section.UNDEFINED;
-                        break;
-
-                    case USER_START :
-                        section = Section.USER_DEFINED;
-                        break;
-
-                    case USER_STOP :
-                        section = Section.UNDEFINED;
-                        break;
-
-                    default:
-                        if (pi.keyValue.getKeyword() == Keyword.COMMENT) {
-                            parseComment(pi.keyValue, pi.commentTmp);
-                        } else if (!section.parseEntry(this, pi)) {
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                      pi.lineNumber, pi.fileName, line);
-                        }
-                }
-
             }
 
             // check all mandatory keywords have been found
@@ -280,6 +339,26 @@ public class OCMParser extends ODMParser {
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
+    }
+
+    /** Check section is allowed at this place.
+     * @param pi parse info
+     * @param section current section
+     * @param allowed allowed sections
+     */
+    private void checkAllowedSection(final ParseInfo pi, final Section section, final Section... allowed) {
+
+        // compare with allowed sections
+        for (final Section e : allowed) {
+            if (section == e) {
+                return;
+            }
+        }
+
+        // the current section was not allowed here
+        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
+                                  pi.lineNumber, pi.fileName, pi.keyValue.getLine());
+
     }
 
     /** {@inheritDoc} */
@@ -463,11 +542,7 @@ public class OCMParser extends ODMParser {
                 break;
 
             case DEF_TIME_SYSTEM:
-                if (!CcsdsTimeScale.contains(keyValue.getValue())) {
-                    throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
-                                              keyValue.getValue());
-                }
-                cMetaData.setDefTimeSystem(CcsdsTimeScale.valueOf(keyValue.getValue()));
+                cMetaData.setDefTimeSystem(CcsdsTimeScale.parse(keyValue.getValue()));
                 break;
 
             case SEC_CLK_PER_SI_SEC:
@@ -517,12 +592,9 @@ public class OCMParser extends ODMParser {
      * @return absolute or relative string
      */
     private String filterAbsoluteOrRelative(final KeyValue keyValue) {
-        if (keyValue.getValue().startsWith("DT=")) {
-            // this is a relative date
-            return keyValue.getValue().substring(3);
-        } else if (keyValue.getValue().startsWith("T=")) {
-            // this is an absolute date
-            return keyValue.getValue().substring(2);
+        if (keyValue.getValue().startsWith(RELATIVE_PREFIX) ||
+            keyValue.getValue().startsWith(ABSOLUTE_PREFIX)) {
+            return keyValue.getValue().substring(keyValue.getValue().indexOf('=') + 1);
         } else {
             throw keyValue.generateException();
         }
@@ -582,8 +654,72 @@ public class OCMParser extends ODMParser {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                // TODO
-                return false;
+                final List<OCMFile.OrbitStateHistory> histories = pi.file.getOrbitStateTimeHistories();
+                final OCMFile.OrbitStateHistory       history   = histories.get(histories.size() - 1);
+                if (pi.keyValue.getKeyword() == null) {
+                    // this is an orbital state line
+                    final String   trimmed  = pi.keyValue.getLine().trim();
+                    final int      k        = trimmed.indexOf(' ');
+                    final String[] elements = trimmed.substring(k).trim().split("\\s+");
+                    if (trimmed.startsWith(RELATIVE_PREFIX)) {
+                        return history.addStateRelative(trimmed.substring(trimmed.indexOf('=') + 1, trimmed.indexOf(' ')),
+                                                        elements);
+                    } else if (trimmed.startsWith(ABSOLUTE_PREFIX)) {
+                        return history.addStateAbsolute(trimmed.substring(trimmed.indexOf('=') + 1, trimmed.indexOf(' ')),
+                                                        elements);
+                    } else {
+                        return false;
+                    }
+                } else {
+                    // this is a key=value line
+                    switch (pi.keyValue.getKeyword()) {
+                        case ORB_ID :
+                            history.setOrbID(pi.keyValue.getValue());
+                            break;
+                        case ORB_PREV_ID :
+                            history.setOrbPrevID(pi.keyValue.getValue());
+                            break;
+                        case ORB_NEXT_ID :
+                            history.setOrbNextID(pi.keyValue.getValue());
+                            break;
+                        case ORB_BASIS :
+                            history.setOrbBasis(CCSDSOrbitBasis.valueOf(pi.keyValue.getValue()));
+                            break;
+                        case ORB_BASIS_ID :
+                            history.setOrbBasisID(pi.keyValue.getValue());
+                            break;
+                        case ORB_AVERAGING :
+                            history.setOrbAveraging(pi.keyValue.getValue());
+                            break;
+                        case ORB_EPOCH_TZERO :
+                            history.setOrbEpochT0(pi.keyValue.getValue());
+                            break;
+                        case ORB_TIME_SYSTEM :
+                            history.setOrbTimeSystem(CcsdsTimeScale.parse(pi.keyValue.getValue()));
+                            break;
+                        case CENTER_NAME :
+                            history.setCenterName(pi.keyValue.getValue());
+                            break;
+                        case ORB_REF_FRAME :
+                            history.setOrbRefFrame(parser.parseCCSDSFrame(pi.keyValue.getValue()));
+                            break;
+                        case ORB_FRAME_EPOCH :
+                            history.setOrbFrameEpoch(pi.keyValue.getValue());
+                            break;
+                        case ORB_TYPE :
+                            history.setOrbType(CCSDSElementsType.valueOf(pi.keyValue.getValue()));
+                            break;
+                        case ORB_N :
+                            history.setOrbN(Integer.parseInt(pi.keyValue.getValue()));
+                            break;
+                        case ORB_ELEMENTS :
+                            history.setOrbElements(pi.keyValue.getValue());
+                            break;
+                        default :
+                            return false;
+                    }
+                    return true;
+                }
             }
         },
 
@@ -593,7 +729,7 @@ public class OCMParser extends ODMParser {
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
                 // TODO
-                return false;
+                return true;
             }
         },
 
@@ -602,8 +738,13 @@ public class OCMParser extends ODMParser {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                // TODO
-                return false;
+                if (pi.keyValue.getKeyword() == null) {
+                    // TODO
+                    return true;
+                } else {
+                    // TODO
+                    return true;
+                }
             }
         },
 
@@ -612,8 +753,13 @@ public class OCMParser extends ODMParser {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                // TODO
-                return false;
+                if (pi.keyValue.getKeyword() == null) {
+                    // TODO
+                    return true;
+                } else {
+                    // TODO
+                    return true;
+                }
             }
         },
 
@@ -622,8 +768,13 @@ public class OCMParser extends ODMParser {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                // TODO
-                return false;
+                if (pi.keyValue.getKeyword() == null) {
+                    // TODO
+                    return true;
+                } else {
+                    // TODO
+                    return true;
+                }
             }
         },
 
@@ -633,7 +784,7 @@ public class OCMParser extends ODMParser {
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
                 // TODO
-                return false;
+                return true;
             }
         },
 
@@ -643,7 +794,7 @@ public class OCMParser extends ODMParser {
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
                 // TODO
-                return false;
+                return true;
             }
         },
 
@@ -653,7 +804,7 @@ public class OCMParser extends ODMParser {
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
                 // TODO
-                return false;
+                return true;
             }
         },
 
@@ -662,6 +813,7 @@ public class OCMParser extends ODMParser {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // always return false to trigger an exception
                 return false;
             }
         };

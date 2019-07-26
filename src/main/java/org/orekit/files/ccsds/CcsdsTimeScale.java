@@ -192,4 +192,17 @@ public enum CcsdsTimeScale {
         return false;
     }
 
+    /** Parse a value from a key=value entry.
+     * @param value value to parse
+     * @return CCSDS time system corresponding to the value
+     */
+    public static CcsdsTimeScale parse(final String value) {
+        for (final CcsdsTimeScale scale : values()) {
+            if (scale.name().equals(value)) {
+                return scale;
+            }
+        }
+        throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, value);
+    }
+
 }
