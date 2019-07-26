@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -138,7 +139,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
 
     /** {@inheritDoc} */
     public OEMFile parse(final InputStream stream, final String fileName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, fileName);
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

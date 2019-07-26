@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 
@@ -238,7 +239,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         throws IOException, ParseException {
 
         // Open stream and parse data
-        final BufferedReader br = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
         final String splitter = "\\s+";
 

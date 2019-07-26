@@ -75,6 +75,9 @@ public class UnixCompressFilter implements DataFilter {
         /** Underlying compressed stream. */
         private final InputStream input;
 
+        /** Indicator for end of input. */
+        private boolean endOfInput;
+
         /** Common sequences table. */
         private final UncompressedSequence[] table;
 
@@ -119,9 +122,9 @@ public class UnixCompressFilter implements DataFilter {
         ZInputStream(final String name, final InputStream input)
             throws IOException {
 
-            this.name  = name;
-            this.input = input;
-
+            this.name       = name;
+            this.input      = input;
+            this.endOfInput = false;
 
             // check header
             if (input.read() != MAGIC_HEADER_1 || input.read() != MAGIC_HEADER_2) {
@@ -232,7 +235,14 @@ public class UnixCompressFilter implements DataFilter {
 
             if (previousSequence != null && available < table.length) {
                 // update the table with the next uncompressed byte appended to previous sequence
-                final byte nextByte = (key == available) ? previousSequence.getByte(0) : table[key].getByte(0);
+                final byte nextByte;
+                if (key == available) {
+                    nextByte = previousSequence.getByte(0);
+                } else if (table[key] != null) {
+                    nextByte = table[key].getByte(0);
+                } else {
+                    throw new OrekitIOException(OrekitMessages.CORRUPTED_FILE, name);
+                }
                 table[available++] = new UncompressedSequence(previousSequence, nextByte);
                 if (available > currentMaxKey && currentWidth < maxWidth) {
                     // we need to increase the key size
@@ -258,8 +268,9 @@ public class UnixCompressFilter implements DataFilter {
         public int read() throws IOException {
 
             if (currentSequence == null) {
-                if (!selectNext()) {
+                if (endOfInput || !selectNext()) {
                     // we have reached end of data
+                    endOfInput = true;
                     return -1;
                 }
             }

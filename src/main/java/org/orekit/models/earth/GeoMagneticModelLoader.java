@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -93,7 +94,7 @@ public class GeoMagneticModelLoader implements DataLoader {
         throws IOException, ParseException {
 
         // open data file and parse values
-        final StreamTokenizer str = new StreamTokenizer(new InputStreamReader(input, "UTF-8"));
+        final StreamTokenizer str = new StreamTokenizer(new InputStreamReader(input, StandardCharsets.UTF_8));
 
         while (true) {
             final GeoMagneticField model = readModel(str);

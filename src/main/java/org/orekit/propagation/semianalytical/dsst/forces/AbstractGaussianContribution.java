@@ -421,8 +421,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         double maxDiff = FastMath.abs(meanRef[0] - meanCur[0]) / auxiliaryElements.getSma();
         // Corrects mean element rates
         for (int i = 1; i < meanRef.length; i++) {
-            final double diff = FastMath.abs(meanRef[i] - meanCur[i]);
-            if (maxDiff < diff) maxDiff = diff;
+            maxDiff = FastMath.max(maxDiff, FastMath.abs(meanRef[i] - meanCur[i]));
         }
         return maxDiff;
     }
@@ -443,8 +442,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         T maxDiff = FastMath.abs(meanRef[0].subtract(meanCur[0])).divide(auxiliaryElements.getSma());;
         // Corrects mean element rates
         for (int i = 1; i < meanRef.length; i++) {
-            final T diff = FastMath.abs(meanRef[i].subtract(meanCur[i]));
-            if (maxDiff.getReal() < diff.getReal()) maxDiff = diff;
+            maxDiff = FastMath.max(maxDiff, FastMath.abs(meanRef[i].subtract(meanCur[i])));
         }
         return maxDiff;
     }

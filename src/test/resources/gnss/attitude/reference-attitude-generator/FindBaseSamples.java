@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -225,7 +226,6 @@ public class FindBaseSamples {
 
     private static class BetaDetector extends AbstractDetector<BetaDetector> {
 
-        private static final long serialVersionUID = 20181003L;
         private final PVCoordinatesProvider sun;
         private final double targetAngle;
 

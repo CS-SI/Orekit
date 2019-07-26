@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -122,7 +123,7 @@ public class AstronomicalAmplitudeReader implements DataLoader {
         throws IOException {
 
         // parse the file
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber      = 0;
         for (String line = r.readLine(); line != null; line = r.readLine()) {
             ++lineNumber;

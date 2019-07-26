@@ -19,6 +19,7 @@ package org.orekit.frames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -121,7 +122,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 reader.setEntityResolver((publicId, systemId) -> new InputSource());
 
                 // read all file, ignoring header
-                reader.parse(new InputSource(new InputStreamReader(input, "UTF-8")));
+                reader.parse(new InputSource(new InputStreamReader(input, StandardCharsets.UTF_8)));
 
             } catch (SAXException se) {
                 if ((se.getCause() != null) && (se.getCause() instanceof OrekitException)) {

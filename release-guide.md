@@ -16,7 +16,7 @@ and Luc Maisonobe <luc.maisonobe@c-s.fr> for everything else.
 If you need help with either ask on the development section of the Orekit
 forum.
 
-Once you have a SonaType OSS accoutn, the corresponding credentials must be set
+Once you have a SonaType OSS account, the corresponding credentials must be set
 in the `servers` section of the `$HOME/.m2/settings.xml` file, using an id of
 `ossrh`:
 
@@ -191,11 +191,23 @@ checksums:
 - orekit-X.Y.jar
 - orekit-X.Y-sources.jar
 - orekit-X.Y-javadoc.jar
-- orekit-X.Y-src.zip
+
+The signature and checksum files have similar names with added extensions `.asc`,
+`.md5` and `.sha1`.
+
+Sometimes, the deployment to Sonatype OSS site also adds files with double extension
+`.asc.md5` and `.asc.sha1`, which are in fact checksum files on a signature file
+and serve no purpose and can be deleted.
+
+It is also possible that you get `orekit-X.Y-src.zip` (together with signature and
+checksums) uploaded to Sonatype OSS site. These files can also be deleted as they
+are not intended to be downloaded using maven but will rather be made available
+directly on Orekit website.
 
 Remove `orekit-X.Y.source-jar*` since they are duplicates of the
 `orekit-X.Y-sources.jar*` artifacts. (We can’t figure out how to make maven
 stop producing these duplicate artifacts). Then click the “Close” button.
+
 
 ## Site
 
@@ -209,13 +221,14 @@ Once generated, the site can be archived and uploaded to the Orekit site:
     scp -r * user@host:/var/www/www.orekit.org/staging/site-orekit-X.Y
 
 
-If you need help with this step ask Ask Sébastien Dinot
+If you need help with this step ask ask Sébastien Dinot
 <sebastien.dinot@c-s.fr>.
 
 ## Calling for the vote
 
 Everything is now ready so the developers and PMC can vote for the release.
-Send a mail to the developers list with a subject line of the form:
+Create a post in the Orekit development category of the forum with a subject
+line of the form:
 
     [VOTE] Releasing Orekit X.Y from release candidate n
 
@@ -242,6 +255,9 @@ and content of the form:
 
     The votes will be tallied in 120 hours for now, on 20yy-mm-ddThh:mm:00Z
     (this is UTC time).
+
+You should also ping PMC members so they are aware of the vote. Their
+vote is essential for a release as per project governance.
 
 ## Failed vote
 
@@ -300,7 +316,7 @@ Navigate to Self > Settings > Access Tokens. Enter a name, date, and check the
 “api” box, then click “Create personal access token”. Copy the token into the
 following command:
 
-    for f in $( ls target/orekit-X.Y*.jar{,.asc} ) ; do
+    for f in $( ls target/orekit-X.Y*{.zip,.jar}{,.asc} ) ; do
         curl --request POST --header "PRIVATE-TOKEN: <token>" --form "file=@$f" \
             https://gitlab.orekit.org/api/v4/projects/1/uploads
     done

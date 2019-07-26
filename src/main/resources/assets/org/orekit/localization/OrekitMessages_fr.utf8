@@ -557,3 +557,6 @@ MODIP_GRID_NOT_LOADED = impossible de charger la grille de MODIP depuis {0}
 
 # NeQuick coefficient f2 or fm3 not be loaded from {0}
 NEQUICK_F2_FM3_NOT_LOADED = impossible de charger les coefficients NeQuick f2 et fm3 depuis {0}
+
+# file {0} is not a supported Hatanaka-compressed file
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = le fichier {0} n''est pas reconnu en tant que fichier compressé par la méthode d''Hatakana

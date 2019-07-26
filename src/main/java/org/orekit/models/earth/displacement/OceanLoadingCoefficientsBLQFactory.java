@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -285,7 +286,7 @@ public class OceanLoadingCoefficientsBLQFactory {
                 data[i][2] = new double[4];
             }
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
                 int     lineNumber = 0;
                 int     dataLine   = -1;

@@ -57,6 +57,7 @@
             <property name="severity" value="warning"/>
         </module>
         <module name="UnnecessaryParentheses"/>
+        <module name="NeedBraces"/>
         <module name="UnusedImports"/>
         <module name="VisibilityModifier"/>
         <module name="WhitespaceAfter"/>

@@ -1,4 +1,5 @@
 #  Id    type     satCode  case         start (GPS)               end (GPS)              SP3 files
+  G07 BLOCK-IIA    G37     β≈0   2003-05-14T07:58:10.543   2003-05-14T09:28:10.543   ngs12183.sp3.Z
   C10 BEIDOU-2I    C10     β<0   2014-07-19T23:05:56.543   2014-07-25T23:05:56.543   gbm18016.sp3.Z gbm18020.sp3.Z gbm18021.sp3.Z gbm18022.sp3.Z gbm18023.sp3.Z gbm18024.sp3.Z gbm18025.sp3.Z
   C11 BEIDOU-2M    C12     β≪0   2014-07-27T14:26:43.452   2014-08-02T14:26:43.452   gbm18030.sp3.Z gbm18031.sp3.Z gbm18032.sp3.Z gbm18033.sp3.Z gbm18034.sp3.Z gbm18035.sp3.Z gbm18036.sp3.Z
   G11 BLOCK-IIR-A  G46     β≈0   2014-08-07T09:21:22.513   2014-08-07T10:51:22.513   gbm18044.sp3.Z

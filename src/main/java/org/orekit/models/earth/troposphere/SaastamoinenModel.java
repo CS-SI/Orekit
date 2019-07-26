@@ -151,9 +151,9 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
 
-        // there are no data in the model for negative altitudes
-        // we use the data for the lowest available altitude: 0.0
-        final double fixedHeight = FastMath.max(0.0, height);
+        // there are no data in the model for negative altitudes and altitude bigger than 5000 m
+        // limit the height to a range of [0, 5000] m
+        final double fixedHeight = FastMath.min(FastMath.max(0, height), 5000);
 
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final double T = t0 - 6.5e-3 * fixedHeight;
@@ -192,9 +192,9 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
 
         final Field<T> field = height.getField();
         final T zero = field.getZero();
-        // there are no data in the model for negative altitudes
-        // we use the data for the lowest available altitude: 0.0
-        final T fixedHeight = FastMath.max(zero, height);
+        // there are no data in the model for negative altitudes and altitude bigger than 5000 m
+        // limit the height to a range of [0, 5000] m
+        final T fixedHeight = FastMath.min(FastMath.max(zero, height), zero.add(5000));
 
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final T T = fixedHeight.multiply(6.5e-3).negate().add(t0);

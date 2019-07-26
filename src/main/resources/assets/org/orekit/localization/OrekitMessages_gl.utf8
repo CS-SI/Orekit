@@ -557,3 +557,6 @@ MODIP_GRID_NOT_LOADED = <MISSING TRANSLATION>
 
 # NeQuick coefficient f2 or fm3 not be loaded from {0}
 NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
+
+# file {0} is not a supported Hatanaka-compressed file
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
