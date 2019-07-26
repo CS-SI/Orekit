@@ -19,36 +19,30 @@ package org.orekit.frames;
 import org.orekit.bodies.CelestialBody;
 
 /**
- * Class creating the rotating frame centered on the barycenter of the CR3BP
- * System.
+ * Class creating the inertial barycenter frame from two bodies.
  * @author Vincent Mouraux
  */
-public class CR3BPRotatingFrame
+public class TwoBodiesBaryFrame
     extends
     Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20190520L;
+    private static final long serialVersionUID = 20190725L;
 
     /**
      * Simple constructor.
-     * @param distance distance between the two bodies, meters
-     * @param barycenter distance between the primary body and CR3BP barycenter,
-     *        meters
      * @param primaryBody Primary body.
      * @param secondaryBody Secondary body.
      */
-    public CR3BPRotatingFrame(final double distance, final double barycenter,
-                              final CelestialBody primaryBody,
+    public TwoBodiesBaryFrame(final CelestialBody primaryBody,
                               final CelestialBody secondaryBody) {
         super(primaryBody.getInertiallyOrientedFrame(),
-              new CR3BPRotatingTransformProvider(distance, barycenter,
-                                                 primaryBody, secondaryBody),
+              new TwoBodiesBaryTransformProvider(primaryBody, secondaryBody),
               primaryBody.getName() +
                                                                               "-" +
                                                                               secondaryBody
                                                                                   .getName() +
-                                                                              "-CR3BPBarycenter",
+                                                                              "-Barycenter",
               true);
     }
 
