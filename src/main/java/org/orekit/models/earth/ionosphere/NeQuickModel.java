@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,12 +33,9 @@ import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.data.DataLoader;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -62,6 +58,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 10.1
  */
 public class NeQuickModel implements IonosphericModel {
+
+    /** NeQuick resources base directory. */
+    private static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 201928051L;
@@ -648,6 +647,14 @@ public class NeQuickModel implements IonosphericModel {
         }
     }
 
+    /** Get a data stream.
+     * @param name file name of the resource stream
+     * @return stream
+     */
+    private static InputStream getStream(final String name) {
+        return NeQuickModel.class.getResourceAsStream(name);
+    }
+
     /**
      * Parser for Modified Dip Latitude (MODIP) grid file.
      * <p>
@@ -659,10 +666,10 @@ public class NeQuickModel implements IonosphericModel {
      * 10-degree in longitude.
      * </p>
      */
-    private static class MODIPLoader implements DataLoader {
+    private static class MODIPLoader {
 
         /** Supported name for MODIP grid. */
-        private static final String SUPPORTED_NAME = "modip.txt";
+        private static final String SUPPORTED_NAME = NEQUICK_BASE + "modip.txt";
 
         /** MODIP grid. */
         private double[][] grid;
@@ -685,7 +692,11 @@ public class NeQuickModel implements IonosphericModel {
          * Load the data using supported names.
          */
         public void loadMODIPGrid() {
-            DataProvidersManager.getInstance().feed(SUPPORTED_NAME, this);
+            try (InputStream in = getStream(SUPPORTED_NAME)) {
+                loadData(in, SUPPORTED_NAME);
+            } catch (IOException e) {
+                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
+            }
 
             // Throw an exception if MODIP grid was not loaded properly
             if (grid == null) {
@@ -693,14 +704,14 @@ public class NeQuickModel implements IonosphericModel {
             }
         }
 
-        @Override
-        public boolean stillAcceptsData() {
-            return grid == null;
-        }
-
-        @Override
+        /**
+         * Load data from a stream.
+         * @param input input stream
+         * @param name name of the file
+         * @throws IOException if data can't be read
+         */
         public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
+            throws IOException {
 
             // Grid size
             final int size = 39;
@@ -758,7 +769,7 @@ public class NeQuickModel implements IonosphericModel {
      * of the reference document.
      * </p>
      */
-    private static class CCIRLoader implements DataLoader {
+    private static class CCIRLoader {
 
         /** Default supported files name pattern. */
         public static final String DEFAULT_SUPPORTED_NAME = "ccir**.asc";
@@ -822,9 +833,12 @@ public class NeQuickModel implements IonosphericModel {
 
             // The files are named ccirXX.asc where XX substitute the month of the year + 10
             final int currentMonth = dateComponents.getMonth();
-            this.supportedName = String.format("ccir%02d.asc", currentMonth + 10);
-            DataProvidersManager.getInstance().feed(supportedName, this);
-
+            this.supportedName = NEQUICK_BASE + String.format("ccir%02d.asc", currentMonth + 10);
+            try (InputStream in = getStream(supportedName)) {
+                loadData(in, supportedName);
+            } catch (IOException e) {
+                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
+            }
             // Throw an exception if F2 or Fm3 were not loaded properly
             if (f2Loader == null || fm3Loader == null) {
                 throw new OrekitException(OrekitMessages.NEQUICK_F2_FM3_NOT_LOADED, supportedName);
@@ -832,14 +846,14 @@ public class NeQuickModel implements IonosphericModel {
 
         }
 
-        @Override
-        public boolean stillAcceptsData() {
-            return f2Loader == null || fm3Loader == null;
-        }
-
-        @Override
+        /**
+         * Load data from a stream.
+         * @param input input stream
+         * @param name name of the file
+         * @throws IOException if data can't be read
+         */
         public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
+            throws IOException {
 
             // Initialize arrays
             final double[][][] f2Temp  = new double[ROWS][TOTAL_COLUMNS_F2][DEPTH_F2];

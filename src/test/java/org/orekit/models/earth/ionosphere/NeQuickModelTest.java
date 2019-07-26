@@ -57,7 +57,7 @@ public class NeQuickModelTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data:nequick");
+        Utils.setDataRoot("regular-data");
         high = new double[] {
             236.831641, -0.39362878, 0.00402826613
         };
