@@ -454,7 +454,7 @@ public class FieldCircularOrbitTest {
                      kep.getRightAscensionOfAscendingNode().getReal(),
                      Utils.epsilonTest * FastMath.abs(kep.getRightAscensionOfAscendingNode().getReal()));
 
-        Assert.assertEquals(FieldCircularOrbit.normalizeAngle(zero.add(3.65750858649982), kep.getMeanAnomaly()).getReal(),
+        Assert.assertEquals(MathUtils.normalizeAngle(zero.add(3.65750858649982), kep.getMeanAnomaly()).getReal(),
                      kep.getMeanAnomaly().getReal(),
                      Utils.epsilonTest * 5 * FastMath.abs(kep.getMeanAnomaly().getReal())); //numerical propagation we changed to 6 time the precision used
 

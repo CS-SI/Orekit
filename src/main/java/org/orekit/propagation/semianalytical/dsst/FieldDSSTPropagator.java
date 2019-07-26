@@ -34,6 +34,7 @@ import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStepHandler;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
@@ -647,7 +648,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
             final T deltaEy = osculating.getEquinoctialEy().subtract(rebuilt.getEquinoctialEy());
             final T deltaHx = osculating.getHx().subtract(rebuilt.getHx());
             final T deltaHy = osculating.getHy().subtract(rebuilt.getHy());
-            final T deltaLv = aux.normalizeAngle(osculating.getLv().subtract(rebuilt.getLv()), zero);
+            final T deltaLv = MathUtils.normalizeAngle(osculating.getLv().subtract(rebuilt.getLv()), zero);
 
             // check convergence
             if (FastMath.abs(deltaA).getReal()  < thresholdA.getReal() &&

@@ -23,6 +23,7 @@ import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -331,10 +332,10 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             final T deltaEx     = osculating.getCircularEx().subtract(parameters[1].getValue());
             final T deltaEy     = osculating.getCircularEy().subtract(parameters[2].getValue());
             final T deltaI      = osculating.getI()         .subtract(parameters[3].getValue());
-            final T deltaRAAN   = normalizeAngle(osculating.getRightAscensionOfAscendingNode().subtract(
+            final T deltaRAAN   = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode().subtract(
                                                                 parameters[4].getValue()),
                                                                 zero);
-            final T deltaAlphaM = normalizeAngle(osculating.getAlphaM().subtract(parameters[5].getValue()), zero);
+            final T deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM().subtract(parameters[5].getValue()), zero);
             // update mean parameters
             current = new FieldEHModel<>(factory,
                                          new FieldCircularOrbit<>(current.mean.getA().add(deltaA),
@@ -608,13 +609,13 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
 
             // right ascension of ascending node
             final FieldDerivativeStructure<T> omm =
-                            factory.build(normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
+                            factory.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
                                                          zero.add(FastMath.PI)),
                                           ommD.multiply(xnotDot),
                                           zero);
             // latitude argument
             final FieldDerivativeStructure<T> xlm =
-                            factory.build(normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())), zero.add(FastMath.PI)),
+                            factory.build(MathUtils.normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())), zero.add(FastMath.PI)),
                                           aMD.multiply(xnotDot),
                                           zero);
 
@@ -817,7 +818,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param <T> the type of the field elements
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
      * @since 1.2
+     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
      */
+    @Deprecated
     public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
     }
