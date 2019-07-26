@@ -299,6 +299,70 @@ public enum Keyword {
      * @since 10.0
      */
     INTERP_METHOD_EOP,
+    /** Start of orbit data section.
+     * @since 10.0
+     */
+    ORB_START,
+    /** Stop of orbit data section.
+     * @since 10.0
+     */
+    ORB_STOP,
+    /** Start of object physical characteristics data section.
+     * @since 10.0
+     */
+    PHYS_START,
+    /** Stop of object physical characteristics data section.
+     * @since 10.0
+     */
+    PHYS_STOP,
+    /** Start of covariance data section.
+     * @since 10.0
+     */
+    COV_START,
+    /** Stop of covariance data section.
+     * @since 10.0
+     */
+    COV_STOP,
+    /** Start of state transition matrix data section.
+     * @since 10.0
+     */
+    STM_START,
+    /** Stop of state transition matrix data section.
+     * @since 10.0
+     */
+    STM_STOP,
+    /** Start of maneuver data section.
+     * @since 10.0
+     */
+    MAN_START,
+    /** Stop of maneuver data section.
+     * @since 10.0
+     */
+    MAN_STOP,
+    /** Start of perturbations data section.
+     * @since 10.0
+     */
+    PERT_START,
+    /** Stop of perturbations data section.
+     * @since 10.0
+     */
+    PERT_STOP,
+    /** Start of orbit determination data section.
+     * @since 10.0
+     */
+    OD_START,
+    /** Stop of orbit determination data section.
+     * @since 10.0
+     */
+    OD_STOP,
+    /** Start of user-defined parameters data section.
+     * @since 10.0
+     */
+    USER_START,
+    /** Stop of user-defined parameters data section.
+     * @since 10.0
+     */
+    USER_STOP,
     /** Object identifier of the object for which the orbit state is provided. */
     OBJECT_ID,
     /** Origin of reference frame. */

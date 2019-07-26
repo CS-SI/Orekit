@@ -261,14 +261,6 @@ public abstract class ODMParser {
                 odmFile.setOriginator(keyValue.getValue());
                 return true;
 
-            case MESSAGE_ID:
-                odmFile.setMessageID(keyValue.getValue());
-                return true;
-
-            case MESSAGE_CLASSIF:
-                odmFile.setMessageClassification(keyValue.getValue());
-                return true;
-
             default:
                 return false;
 
@@ -285,6 +277,15 @@ public abstract class ODMParser {
     protected boolean parseMetaDataEntry(final KeyValue keyValue,
                                          final ODMMetaData metaData, final List<String> comment) {
         switch (keyValue.getKeyword()) {
+
+            case MESSAGE_ID:
+                metaData.setMessageID(keyValue.getValue());
+                return true;
+
+            case MESSAGE_CLASSIF:
+                metaData.setMessageClassification(keyValue.getValue());
+                return true;
+
             case OBJECT_NAME:
                 if (!comment.isEmpty()) {
                     metaData.setComment(comment);

@@ -37,6 +37,16 @@ public class ODMMetaData {
     /** ODM file to which these meta-data belong. */
     private final ODMFile odmFile;
 
+    /** Unique ID identifying this message from a given originator.
+     * @since 10.1
+     */
+    private String messageID;
+
+    /** Classification for this message.
+     * @since 10.1
+     */
+    private String messageClassification;
+
     /** Time System: used for metadata, orbit state and covariance data. */
     private CcsdsTimeScale timeSystem;
 
@@ -97,6 +107,38 @@ public class ODMMetaData {
      */
     public ODMFile getODMFile() {
         return odmFile;
+    }
+
+    /** Get the message ID.
+     * @return unique (wrt originator) message ID.
+     * @since 10.1
+     */
+    public String getMessageID() {
+        return messageID;
+    }
+
+    /** Set the message ID.
+     * @param messageID unique (wrt originator) message ID
+     * @since 10.1
+     */
+    void setMessageID(final String messageID) {
+        this.messageID = messageID;
+    }
+
+    /** Get the message classification.
+     * @return message classification.
+     * @since 10.1
+     */
+    public String getMessageClassification() {
+        return messageClassification;
+    }
+
+    /** Set the message classification.
+     * @param messageClassification message classification
+     * @since 10.1
+     */
+    void setMessageClassification(final String messageClassification) {
+        this.messageClassification = messageClassification;
     }
 
     /** Get the Time System that: for OPM, is used for metadata, state vector,

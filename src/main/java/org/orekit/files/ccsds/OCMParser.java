@@ -161,8 +161,7 @@ public class OCMParser extends ODMParser {
             pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
             pi.file.getMetaData().setLaunchPiece(getLaunchPiece());
 
-            boolean inHeaderSection   = true;
-            boolean inMetaDataSection = false;
+            Section section = Section.HEADER;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
                 if (line.trim().length() == 0) {
@@ -182,31 +181,91 @@ public class OCMParser extends ODMParser {
                         break;
 
                     case META_START :
-                        if (inHeaderSection) {
-                            inHeaderSection   = false;
-                            inMetaDataSection = true;
+                        if (section == Section.HEADER) {
+                            section = Section.META_DATA;
                         } else {
-                            // only one metadata section is allowed
+                            // only one metadata section is allowed, just after header
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
                                                       pi.lineNumber, pi.fileName, line);
                         }
                         break;
 
                     case META_STOP :
-                        inMetaDataSection = false;
+                        if (!pi.commentTmp.isEmpty()) {
+                            pi.file.getMetaData().setComment(pi.commentTmp);
+                            pi.commentTmp.clear();
+                        }
+                        section = Section.UNDEFINED;
+                        break;
+
+                    case ORB_START :
+                        section = Section.ORBIT;
+                        break;
+
+                    case ORB_STOP :
+                        section = Section.UNDEFINED;
+                        break;
+
+                    case PHYS_START :
+                        section = Section.PHYSICS;
+                        break;
+
+                    case PHYS_STOP :
+                        section = Section.UNDEFINED;
+                        break;
+
+                    case COV_START :
+                        section = Section.COVARIANCE;
+                        break;
+
+                    case COV_STOP :
+                        section = Section.UNDEFINED;
+                        break;
+
+                    case STM_START :
+                        section = Section.STM;
+                        break;
+
+                    case STM_STOP :
+                        section = Section.UNDEFINED;
+                        break;
+
+                    case MAN_START :
+                        section = Section.MANEUVER;
+                        break;
+
+                    case MAN_STOP :
+                        section = Section.UNDEFINED;
+                        break;
+
+                    case PERT_START :
+                        section = Section.PERTURBATIONS;
+                        break;
+
+                    case PERT_STOP :
+                        section = Section.UNDEFINED;
+                        break;
+
+                    case OD_START :
+                        section = Section.ORBIT_DETERMINATION;
+                        break;
+
+                    case OD_STOP :
+                        section = Section.UNDEFINED;
+                        break;
+
+                    case USER_START :
+                        section = Section.USER_DEFINED;
+                        break;
+
+                    case USER_STOP :
+                        section = Section.UNDEFINED;
                         break;
 
                     default:
-                        boolean parsed = false;
-                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                        if (inHeaderSection) {
-                            parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        } else if (inMetaDataSection) {
-                            parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
-                        } else {
-                            parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
-                        }
-                        if (!parsed) {
+                        if (pi.keyValue.getKeyword() == Keyword.COMMENT) {
+                            parseComment(pi.keyValue, pi.commentTmp);
+                        } else if (!section.parseEntry(this, pi)) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
                                                       pi.lineNumber, pi.fileName, line);
                         }
@@ -284,7 +343,7 @@ public class OCMParser extends ODMParser {
                 break;
 
             case NEXT_MESSAGE_EPOCH:
-                cMetaData.setNextMessageID(keyValue.getValue());
+                cMetaData.setNextMessageEpoch(keyValue.getValue());
                 break;
 
             case ATT_MESSAGE_LINK:
@@ -469,7 +528,7 @@ public class OCMParser extends ODMParser {
         }
     }
 
-    /** Private class used to stock OPM parsing info.
+    /** Private class used to stock OCM parsing info.
      * @author sports
      */
     private static class ParseInfo {
@@ -496,4 +555,124 @@ public class OCMParser extends ODMParser {
             commentTmp = new ArrayList<String>();
         }
     }
+
+    /** Enumerate for various data sections. */
+    private enum Section {
+
+        /** Header section. */
+        HEADER {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                return parser.parseHeaderEntry(pi.keyValue, pi.file, pi.commentTmp);
+            }
+        },
+
+        /** Metadata section. */
+        META_DATA {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                return parser.parseMetaDataEntry(pi.keyValue, pi.file.getMetaData(), pi.commentTmp);
+            }
+        },
+
+        /** Orbit data section. */
+        ORBIT {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // TODO
+                return false;
+            }
+        },
+
+        /** Physical characteristics data section. */
+        PHYSICS {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // TODO
+                return false;
+            }
+        },
+
+        /** Covariance data section. */
+        COVARIANCE {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // TODO
+                return false;
+            }
+        },
+
+        /** State transition matrix data section. */
+        STM {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // TODO
+                return false;
+            }
+        },
+
+        /** Maneuver data section. */
+        MANEUVER {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // TODO
+                return false;
+            }
+        },
+
+        /** Perturbations data section. */
+        PERTURBATIONS {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // TODO
+                return false;
+            }
+        },
+
+        /** Orbit determination data section. */
+        ORBIT_DETERMINATION {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // TODO
+                return false;
+            }
+        },
+
+        /** User-defined parameters data section. */
+        USER_DEFINED {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                // TODO
+                return false;
+            }
+        },
+
+        /** Undefined section. */
+        UNDEFINED {
+            /** {@inheritDoc}*/
+            @Override
+            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
+                return false;
+            }
+        };
+
+        /** Parse an entry from the section.
+         * @param parser parser to use
+         * @param pi parse information
+         * @return true if the keyword was a section keyword and has been parsed
+         */
+        protected abstract boolean parseEntry(OCMParser parser, ParseInfo pi);
+
+    }
+
 }

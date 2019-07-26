@@ -66,8 +66,8 @@ public class OMMParserTest {
                                              TimeScalesFactory.getUTC()),
                                              file.getCreationDate());
         Assert.assertEquals("NOAA/USA", file.getOriginator());
-        Assert.assertNull(file.getMessageID());
-        Assert.assertNull(file.getMessageClassification());
+        Assert.assertNull(file.getMetaData().getMessageID());
+        Assert.assertNull(file.getMetaData().getMessageClassification());
 
         // Check Metadata Block;
 

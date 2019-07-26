@@ -500,8 +500,8 @@ public class OPMParserTest {
                             file.getMetaData().getFrameEpoch());
         Assert.assertEquals(1, file.getMetaDataComment().size());
         Assert.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetaDataComment().get(0));
-        Assert.assertEquals("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C", file.getMessageID());
-        Assert.assertEquals("UNCLASSIFIED", file.getMessageClassification());
+        Assert.assertEquals("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C", file.getMetaData().getMessageID());
+        Assert.assertEquals("UNCLASSIFIED", file.getMetaData().getMessageClassification());
 
         Assert.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assert.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);

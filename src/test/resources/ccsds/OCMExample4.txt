@@ -1,33 +1,33 @@
 CCSDS_OCM_VERS            = 3.0
 
 COMMENT  This file is a dummy example with inconsistent data
-COMENT   it is used to exercise all possible keys in Key-Value Notation
+COMMENT  it is used to exercise all possible keys in Key-Value Notation
 
 CREATION_DATE             = 2019-07-23T10:29:31.576Z
 
 META_START
-COMENT Metadata comment
+COMMENT Metadata comment
 ORIGINATOR                = JPL
 ORIGINATOR_POC            = Mr. Rodgers
 ORIGINATOR_POSITION       = Flight Dynamics Mission Design Lead
 ORIGINATOR_PHONE          = +49615130312
-ORIGINATOR_ADDRESS        = JOHN.DOE@SEXAMPLE.ORG
+ORIGINATOR_ADDRESS        = JOHN.DOE@EXAMPLE.ORG
 TECH_ORG                  = NASA
 TECH_POC                  = Maxwell Smart
 TECH_POSITION             = Flight Dynamics Mission Design Lead
 TECH_PHONE                = +49615130312
 TECH_ADDRESS              = MAX@EXAMPLE.ORG
-MESSAGE_ID                = ABC-12_34
-PREV_MESSAGE_ID           = ABC-12_33
+MESSAGE_ID                = ABC-12-34
+PREV_MESSAGE_ID           = ABC-12-33
 PREV_MESSAGE_EPOCH        = 2001-11-06T11:17:33
-NEXT_MESSAGE_ID           = ABC-12_35
+NEXT_MESSAGE_ID           = ABC-12-35
 NEXT_MESSAGE_EPOCH        = 2001-11-07T11:17:33
 MESSAGE_CLASSIF           = FOUO
-ATT_MESSAGE_LINK          = ADM_MSG_35132.txt
-CDM_MESSAGE_LINK          = CDM_MSG_35132.txt, CDM_MSG_35133.txt
-PRM_MESSAGE_LINK          = PRM_MSG_35132.txt, PRM_MSG_35133.txt
-RDM_MESSAGE_LINK          = RDM_MSG_35132.txt, RDM_MSG_35133.txt
-TDM_MESSAGE_LINK          = TDM_MSG_35132.txt, TDM_MSG_35133.txt, TDM_MSG_35134.txt
+ATT_MESSAGE_LINK          = ADM-MSG-35132.TXT
+CDM_MESSAGE_LINK          = CDM-MSG-35132.TXT, CDM-MSG-35133.TXT
+PRM_MESSAGE_LINK          = PRM-MSG-35132.TXT, PRM-MSG-35133.TXT
+RDM_MESSAGE_LINK          = RDM-MSG-35132.TXT, RDM-MSG-35133.TXT
+TDM_MESSAGE_LINK          = TDM-MSG-35132.TXT, TDM-MSG-35133.TXT, TDM-MSG-35134.TXT
 OBJECT_NAME               = UNKNOWN
 INTERNATIONAL_DESIGNATOR  = 9999-999Z
 OBJECT_ID                 = 22444
@@ -42,10 +42,10 @@ LAUNCH_PROVIDER           = ARIANESPACE
 LAUNCH_INTEGRATOR         = ULA
 LAUNCH_PAD                = LC-41
 LAUNCH_PLATFORM           = GROUND
-RELEASE_EPOCH             = 2021-11-06T11:17:33
-MISSION_START_EPOCH       = 2031-11-06T11:17:33
-MISSION_END_EPOCH         = 2041-11-06T11:17:33
-REENTRY_EPOCH             = 2051-11-06T11:17:33
+RELEASE_EPOCH             = 2021-11-08T11:17:33
+MISSION_START_EPOCH       = 2031-11-08T11:17:33
+MISSION_END_EPOCH         = 2041-11-08T11:17:33
+REENTRY_EPOCH             = 2051-11-08T11:17:33
 LIFETIME                  = 22.0
 CATALOG_NAME              = COMSPOC
 OBJECT_TYPE               = PL
