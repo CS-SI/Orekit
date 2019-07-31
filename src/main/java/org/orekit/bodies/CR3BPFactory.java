@@ -45,7 +45,7 @@ public class CR3BPFactory {
      * @return Sun-Earth CR3BP system
      */
     public static CR3BPSystem getSunEarthCR3BP() {
-        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth(), CR3BPConstants.EARTH_MOON_BARYCENTER_SEMI_MAJOR_AXIS);
+        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarthMoonBarycenter(), CR3BPConstants.EARTH_MOON_BARYCENTER_SEMI_MAJOR_AXIS);
     }
 
     /** Get the Earth-Moon CR3BP singleton bodies pair.

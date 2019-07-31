@@ -44,20 +44,19 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
     /** Celestial body with smaller mass, m2.*/
     private final CelestialBody secondaryBody;
 
-    /** barycenter of the system.*/
-    private final double barycenter;
+    /** Mass ratio of the system.*/
+    private final double mu;
 
 
     /** Simple constructor.
-     * @param distance distance between the two bodies
-     * @param barycenter CR3BP Barycenter.
+     * @param mu System mass ratio
      * @param primaryBody Primary body.
      * @param secondaryBody Secondary body.
      */
-    CR3BPRotatingTransformProvider(final double distance, final double barycenter, final CelestialBody primaryBody, final CelestialBody secondaryBody) {
+    CR3BPRotatingTransformProvider(final double mu, final CelestialBody primaryBody, final CelestialBody secondaryBody) {
         this.secondaryBody = secondaryBody;
         this.frame = primaryBody.getInertiallyOrientedFrame();
-        this.barycenter = barycenter;
+        this.mu = mu;
     }
 
     /** {@inheritDoc} */
@@ -113,6 +112,7 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
     private <T extends RealFieldElement<T>> FieldVector3D<T>
         getBary(final FieldVector3D<T> primaryToSecondary) {
         // Barycenter point is built
+        final T barycenter = primaryToSecondary.getNorm().multiply(mu);
         final FieldVector3D<T> normalized = primaryToSecondary.normalize();
         return new FieldVector3D<>(barycenter, normalized);
 

@@ -32,17 +32,15 @@ public class CR3BPRotatingFrame
 
     /**
      * Simple constructor.
-     * @param distance distance between the two bodies, meters
-     * @param barycenter distance between the primary body and CR3BP barycenter,
-     *        meters
+     * @param mu system mass ratio
      * @param primaryBody Primary body.
      * @param secondaryBody Secondary body.
      */
-    public CR3BPRotatingFrame(final double distance, final double barycenter,
+    public CR3BPRotatingFrame(final double mu,
                               final CelestialBody primaryBody,
                               final CelestialBody secondaryBody) {
         super(primaryBody.getInertiallyOrientedFrame(),
-              new CR3BPRotatingTransformProvider(distance, barycenter,
+              new CR3BPRotatingTransformProvider(mu,
                                                  primaryBody, secondaryBody),
               primaryBody.getName() +
                                                                               "-" +

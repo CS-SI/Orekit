@@ -130,7 +130,7 @@ public class CR3BPSystem {
         this.mu = mu;
 
         this.dDim = a;
-        this.vDim = FastMath.sqrt(mu1 / (dDim - mu * dDim));
+        this.vDim = FastMath.sqrt(mu1 / dDim); // - mu * dDim));
         this.tDim = 2 * FastMath.PI * dDim / vDim;
 
         // Calculation of Lagrangian Points position using CR3BP equations
@@ -278,7 +278,7 @@ public class CR3BPSystem {
      * @return CR3BP Rotating Frame
      */
     public Frame getRotatingFrame() {
-        final Frame baryFrame = new CR3BPRotatingFrame(dDim, mu * dDim, primaryBody, secondaryBody);
+        final Frame baryFrame = new CR3BPRotatingFrame(mu, primaryBody, secondaryBody);
         return baryFrame;
     }
 
