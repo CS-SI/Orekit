@@ -560,3 +560,9 @@ NEQUICK_F2_FM3_NOT_LOADED = impossible de charger les coefficients NeQuick f2 et
 
 # file {0} is not a supported Hatanaka-compressed file
 NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = le fichier {0} n''est pas reconnu en tant que fichier compressé par la méthode d''Hatakana
+
+# invalid measurement types {0} and {1} for the combination of measurements {3}
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = les types de mesure {0} et {1} sont incompatibles pour la combinaison de mesures {3}
+
+# frequencies {0} and {1} are incompatibles for the {3} combination, they shall be differents
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = les fréquences {0} et {1} sont incompatibles pour la combinaison {3}, elles doivent être différentes
