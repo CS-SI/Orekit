@@ -63,16 +63,21 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
     @Override
     public Transform getTransform(final AbsoluteDate date) {
         final FieldPVCoordinates<DerivativeStructure> pv21        = secondaryBody.getPVCoordinates(date, frame).toDerivativeStructurePV(2);
-        final FieldVector3D<DerivativeStructure>      translation = getBary(pv21.getPosition()).negate();
         final Field<DerivativeStructure>              field       = pv21.getPosition().getX().getField();
+        final FieldVector3D<DerivativeStructure>      translation = FieldVector3D.getPlusI(field).scalarMultiply(pv21.getPosition().getNorm().multiply(mu)).negate();
         final FieldRotation<DerivativeStructure>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getMomentum(),
                                                        FieldVector3D.getPlusI(field), FieldVector3D.getPlusK(field));
         final DerivativeStructure[] rotationRates = rotation.getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
+//        final DerivativeStructure[] rotationRates = rotation.getAngles(RotationOrder.XYZ, RotationConvention.VECTOR_OPERATOR);
         final Vector3D rotationRate = new Vector3D(rotationRates[0].getPartialDerivative(1), rotationRates[1].getPartialDerivative(1), rotationRates[2].getPartialDerivative(1));
         final Vector3D rotationAcc = new Vector3D(rotationRates[0].getPartialDerivative(2), rotationRates[1].getPartialDerivative(2), rotationRates[2].getPartialDerivative(2));
         final Vector3D velocity = new Vector3D(translation.getX().getPartialDerivative(1), translation.getY().getPartialDerivative(1), translation.getZ().getPartialDerivative(1));
         final Vector3D acceleration =  new Vector3D(translation.getX().getPartialDerivative(2), translation.getY().getPartialDerivative(2), translation.getZ().getPartialDerivative(2));
-        return new Transform(date, new Transform(date, translation.toVector3D(), velocity, acceleration), new Transform(date, rotation.toRotation(), rotationRate, rotationAcc));
+
+        final Vector3D zero = new Vector3D(0, 0, 0);
+        final Transform transform1 = new Transform(date, translation.toVector3D(), zero, zero);
+        final Transform transform2 = new Transform(date, rotation.toRotation(), zero, zero);
+        return new Transform(date, transform2, transform1);
     }
 
     /** {@inheritDoc} */
