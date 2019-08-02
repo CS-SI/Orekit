@@ -71,19 +71,19 @@ public class CR3BPSystem {
     private final CelestialBody secondaryBody;
 
     /** L1 Point position in the rotating frame. */
-    private final Vector3D l1Position;
+    private Vector3D l1Position;
 
     /** L2 Point position in the rotating frame. */
-    private final Vector3D l2Position;
+    private Vector3D l2Position;
 
     /** L3 Point position in the rotating frame. */
-    private final Vector3D l3Position;
+    private Vector3D l3Position;
 
     /** L4 Point position in the rotating frame. */
-    private final Vector3D l4Position;
+    private Vector3D l4Position;
 
     /** L5 Point position in the rotating frame. */
-    private final Vector3D l5Position;
+    private Vector3D l5Position;
 
     /** Distance between a L1 and the secondaryBody. */
     private final double gamma1;
@@ -132,7 +132,29 @@ public class CR3BPSystem {
         this.dDim = a;
         this.vDim = FastMath.sqrt(mu1 / dDim); // - mu * dDim));
         this.tDim = 2 * FastMath.PI * dDim / vDim;
+        
+        computeLagrangianPointsPosition();
 
+        // Calculation of collinear points gamma
+
+        // L1
+        final double x1 = getLPosition(LagrangianPoints.L1).getX();
+        final double DCP1 = 1 - mu;
+        this.gamma1 = DCP1 - x1;
+
+        // L2
+        final double x2 = getLPosition(LagrangianPoints.L2).getX();
+        final double DCP2 = 1 - mu;
+        this.gamma2 = x2 - DCP2;
+
+        // L3
+        final double x3 = getLPosition(LagrangianPoints.L3).getX();
+        final double DCP3 = -mu;
+        this.gamma3 = DCP3 - x3;
+
+    }
+
+    private void computeLagrangianPointsPosition() {
         // Calculation of Lagrangian Points position using CR3BP equations
 
         // L1
@@ -158,7 +180,7 @@ public class CR3BPSystem {
                         solver.solve(MAX_EVALUATIONS, l1Equation, searchInterval1[0],
                          searchInterval1[1], AllowedSolution.ANY_SIDE);
 
-        l1Position = new Vector3D(r1, 0.0, 0.0);
+        this.l1Position = new Vector3D(r1, 0.0, 0.0);
 
         // L2
 
@@ -178,7 +200,7 @@ public class CR3BPSystem {
             solver.solve(MAX_EVALUATIONS, l2Equation, searchInterval2[0],
                          searchInterval2[1], AllowedSolution.ANY_SIDE);
 
-        l2Position = new Vector3D(r2, 0.0, 0.0);
+        this.l2Position = new Vector3D(r2, 0.0, 0.0);
 
         // L3
 
@@ -198,31 +220,14 @@ public class CR3BPSystem {
             solver.solve(MAX_EVALUATIONS, l3Equation, searchInterval3[0],
                          searchInterval3[1], AllowedSolution.ANY_SIDE);
 
-        l3Position = new Vector3D(r3, 0.0, 0.0);
+        this.l3Position = new Vector3D(r3, 0.0, 0.0);
 
         // L4
-        l4Position = new Vector3D(0.5 - mu, FastMath.sqrt(3) / 2, 0);
+        this.l4Position = new Vector3D(0.5 - mu, FastMath.sqrt(3) / 2, 0);
 
         // L5
-        l5Position = new Vector3D(0.5 - mu, -FastMath.sqrt(3) / 2, 0);
-
-        // Calculation of collinear points gamma
-
-        // L1
-        final double x1 = getLPosition(LagrangianPoints.L1).getX();
-        final double DCP1 = 1 - mu;
-        this.gamma1 = DCP1 - x1;
-
-        // L2
-        final double x2 = getLPosition(LagrangianPoints.L2).getX();
-        final double DCP2 = 1 - mu;
-        this.gamma2 = x2 - DCP2;
-
-        // L3
-        final double x3 = getLPosition(LagrangianPoints.L3).getX();
-        final double DCP3 = -mu;
-        this.gamma3 = DCP3 - x3;
-
+        this.l5Position = new Vector3D(0.5 - mu, -FastMath.sqrt(3) / 2, 0);
+        
     }
 
     /** Get the CR3BP mass ratio of the system mu2/(mu1+mu2).
