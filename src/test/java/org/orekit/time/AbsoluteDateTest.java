@@ -651,14 +651,46 @@ public class AbsoluteDateTest {
     }
 
     @Test
+    public void testShiftPastInfinity() {
+        AbsoluteDate shifted = AbsoluteDate.PAST_INFINITY.shiftedBy(Constants.JULIAN_DAY);
+        Assert.assertEquals(AbsoluteDate.PAST_INFINITY.getEpoch(), shifted.getEpoch());
+        Assert.assertEquals(AbsoluteDate.PAST_INFINITY.getOffset(), shifted.getOffset(), 1.0e-15);
+    }
+
+    @Test
+    public void testShiftFutureInfinity() {
+        AbsoluteDate shifted = AbsoluteDate.FUTURE_INFINITY.shiftedBy(Constants.JULIAN_DAY);
+        Assert.assertEquals(AbsoluteDate.FUTURE_INFINITY.getEpoch(), shifted.getEpoch());
+        Assert.assertEquals(AbsoluteDate.FUTURE_INFINITY.getOffset(), shifted.getOffset(), 1.0e-15);
+    }
+
+    @Test
+    public void testSubAttoSecondPositiveShift() {
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate since = new AbsoluteDate(2008, 4, 7, 0, 53, 0.0078125, tai);
+        double deltaT = FastMath.scalb(1.0, -62);
+        AbsoluteDate shifted = since.shiftedBy(deltaT);
+        Assert.assertEquals(deltaT, shifted.durationFrom(since), 1.0e-15 * deltaT);
+    }
+
+    @Test
+    public void testSubAttoSecondNegativeShift() {
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate since = new AbsoluteDate(2008, 4, 7, 0, 53, 0.0078125, tai);
+        double deltaT = FastMath.scalb(-1.0, -62);
+        AbsoluteDate shifted = since.shiftedBy(deltaT);
+        Assert.assertEquals(deltaT, shifted.durationFrom(since), -1.0e-15 * deltaT);
+    }
+
+    @Test
     public void testIterationAccuracy() {
 
         final TimeScale tai = TimeScalesFactory.getTAI();
         final AbsoluteDate t0 = new AbsoluteDate(2010, 6, 21, 18, 42, 0.281, tai);
 
-        // 0.1 is not representable exactly in double precision
-        // we will accumulate error, between -0.5ULP and -3ULP at each iteration
-        checkIteration(0.1, t0, 10000, 3.0, -1.19, 1.0e-4);
+        // 0.1 is not representable exactly as a double, and is not either a multiple of 2⁻⁶²
+        // we will accumulate small errors at each iteration
+        checkIteration(0.1, t0, 10000, 3.0, 0.0124, 1.0e-4);
 
         // 0.125 is representable exactly in double precision
         // error will be null

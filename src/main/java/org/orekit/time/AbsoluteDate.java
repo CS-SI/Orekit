@@ -168,14 +168,22 @@ public class AbsoluteDate
     public static final AbsoluteDate FUTURE_INFINITY = JAVA_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 617061803741806846L;
+    private static final long serialVersionUID = 20190728L;
+
+    /** Shift for offset. */
+    private static final int SHIFT = 62;
+
+    /** Offset mask. */
+    private static final long MASK = (0x1L << SHIFT) - 1;
 
     /** Reference epoch in seconds from 2000-01-01T12:00:00 TAI.
      * <p>Beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT.</p> */
     private final long epoch;
 
-    /** Offset from the reference epoch in seconds. */
-    private final double offset;
+    /** Offset from the reference epoch in units of 2^-SHIFT seconds (about 0.217 attoseconds, 2.17 10⁻¹⁹s).
+     * Negative values denote dates at infinity.
+     */
+    private final long offset;
 
     /** Create an instance with a default value ({@link #J2000_EPOCH}).
      */
@@ -221,23 +229,16 @@ public class AbsoluteDate
         final double seconds  = time.getSecond();
         final double tsOffset = timeScale.offsetToTAI(date, time);
 
-        // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
-        // at the end, the EXACT result of addition seconds + tsOffset
-        // is sum + residual, where sum is the closest representable number to the exact
-        // result and residual is the missing part that does not fit in the first number
-        final double sum      = seconds + tsOffset;
-        final double sPrime   = sum - tsOffset;
-        final double tPrime   = sum - sPrime;
-        final double deltaS   = seconds  - sPrime;
-        final double deltaT   = tsOffset - tPrime;
-        final double residual = deltaS   + deltaT;
-        final long   dl       = (long) FastMath.floor(sum);
+        final double tiSeconds = FastMath.floor(seconds);
+        final long   tiSub     = FastMath.round(FastMath.scalb(seconds - tiSeconds, SHIFT));
+        final double tsSeconds = FastMath.floor(tsOffset);
+        final long   tsSub     = FastMath.round(FastMath.scalb(tsOffset - tsSeconds, SHIFT));
+        final long   sumSub    = tiSub + tsSub;
 
-        offset = (sum - dl) + residual;
+        offset = sumSub & MASK;
         epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
-                        time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
+                        time.getMinute() - time.getMinutesFromUTC() - 720l) +
+                 (long) (tiSeconds + tsSeconds) + (sumSub >>> SHIFT);
 
     }
 
@@ -342,26 +343,25 @@ public class AbsoluteDate
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-
-        final double sum = since.offset + elapsedDuration;
-        if (Double.isInfinite(sum)) {
-            offset = sum;
-            epoch  = (sum < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+        if (since.offset < 0) {
+            // date was already at infinity
+            offset = since.offset;
+            epoch  = since.epoch;
+        } else if (Double.isInfinite(elapsedDuration)) {
+            // date at infinity
+            offset = -1L;
+            epoch  = (elapsedDuration < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
-            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-            // the following statements must NOT be simplified, they rely on floating point
-            // arithmetic properties (rounding and representable numbers)
-            // at the end, the EXACT result of addition since.offset + elapsedDuration
-            // is sum + residual, where sum is the closest representable number to the exact
-            // result and residual is the missing part that does not fit in the first number
-            final double oPrime   = sum - elapsedDuration;
-            final double dPrime   = sum - oPrime;
-            final double deltaO   = since.offset - oPrime;
-            final double deltaD   = elapsedDuration - dPrime;
-            final double residual = deltaO + deltaD;
-            final long   dl       = (long) FastMath.floor(sum);
-            offset = (sum - dl) + residual;
-            epoch  = since.epoch  + dl;
+            // regular offset
+            double dSeconds = FastMath.rint(elapsedDuration);
+            long   sumSub   = since.offset +
+                              FastMath.round(FastMath.scalb(elapsedDuration - dSeconds, SHIFT));
+            if (sumSub < 0) {
+                dSeconds -= 1.0;
+                sumSub   += 0x1L << SHIFT;
+            }
+            offset = sumSub & MASK;
+            epoch  = since.epoch  + (long) dSeconds + (sumSub >>> SHIFT);
         }
     }
 
@@ -400,7 +400,7 @@ public class AbsoluteDate
      */
     AbsoluteDate(final long epoch, final double offset) {
         this.epoch  = epoch;
-        this.offset = offset;
+        this.offset = FastMath.round(FastMath.scalb(offset, SHIFT));
     }
 
     /** Extract time components from a number of milliseconds within the day.
@@ -433,7 +433,7 @@ public class AbsoluteDate
      * @since 9.0
      */
     double getOffset() {
-        return offset;
+        return FastMath.scalb((double) offset, -SHIFT);
     }
 
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
@@ -786,10 +786,18 @@ public class AbsoluteDate
      * @see #AbsoluteDate(AbsoluteDate, double)
      */
     public double durationFrom(final AbsoluteDate instant) {
-        return (epoch - instant.epoch) + (offset - instant.offset);
+        if (offset < 0) {
+            // date at infinity
+            return epoch < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+        } else if (instant.offset < 0) {
+            // date at infinity
+            return instant.epoch < 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+        } else {
+            return (epoch - instant.epoch) + FastMath.scalb((double) (offset - instant.offset), -SHIFT);
+        }
     }
 
-    /** Compute the apparent clock offset between two instant <em>in the
+    /** Compute the apparent <em>clock</em> offset between two instant <em>in the
      * perspective of a specific {@link TimeScale time scale}</em>.
      * <p>The offset is the number of seconds counted in the given
      * time scale between the locations of the two instants, with
@@ -797,8 +805,9 @@ public class AbsoluteDate
      * days are exactly 86400 seconds long). This method will give
      * a result that may not have a physical meaning if the time scale
      * is irregular. For example since a leap second was introduced at
-     * the end of 2005, the apparent offset between 2005-12-31T23:59:59
-     * and 2006-01-01T00:00:00 is 1 second, but the physical duration
+     * the end of 2005, the apparent clock offset between 2005-12-31T23:59:59
+     * and 2006-01-01T00:00:00 is 1 second and is the value this method
+     * will return. On the other hand, the physical duration
      * of the corresponding time interval as returned by the {@link
      * #durationFrom(AbsoluteDate)} method is 2 seconds.</p>
      * <p>This method is the reverse of the {@link #AbsoluteDate(AbsoluteDate,
@@ -813,9 +822,10 @@ public class AbsoluteDate
      */
     public double offsetFrom(final AbsoluteDate instant, final TimeScale timeScale) {
         final long   elapsedDurationA = epoch - instant.epoch;
-        final double elapsedDurationB = (offset         + timeScale.offsetFromTAI(this)) -
-                                        (instant.offset + timeScale.offsetFromTAI(instant));
-        return  elapsedDurationA + elapsedDurationB;
+        final long   subDuration      = offset - instant.offset;
+        final double elapsedDurationB = timeScale.offsetFromTAI(this) -
+                                        timeScale.offsetFromTAI(instant);
+        return  elapsedDurationA + FastMath.scalb((double) subDuration, -SHIFT) + elapsedDurationB;
     }
 
     /** Compute the offset between two time scales at the current instant.
@@ -841,7 +851,7 @@ public class AbsoluteDate
      * of the instant in the time scale
      */
     public Date toDate(final TimeScale timeScale) {
-        final double time = epoch + (offset + timeScale.offsetFromTAI(this));
+        final double time = epoch + (FastMath.scalb((double) offset, -SHIFT) + timeScale.offsetFromTAI(this));
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
     }
 
@@ -851,9 +861,9 @@ public class AbsoluteDate
      */
     public DateTimeComponents getComponents(final TimeScale timeScale) {
 
-        if (Double.isInfinite(offset)) {
+        if (offset < 0) {
             // special handling for past and future infinity
-            if (offset < 0) {
+            if (epoch < 0) {
                 return new DateTimeComponents(DateComponents.MIN_EPOCH, TimeComponents.H00);
             } else {
                 return new DateTimeComponents(DateComponents.MAX_EPOCH,
@@ -861,29 +871,13 @@ public class AbsoluteDate
             }
         }
 
-        // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
-        // using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
-        // at the end, the EXACT result of addition offset + timeScale.offsetFromTAI(this)
-        // is sum + residual, where sum is the closest representable number to the exact
-        // result and residual is the missing part that does not fit in the first number
-        final double taiOffset = timeScale.offsetFromTAI(this);
-        final double sum       = offset + taiOffset;
-        final double oPrime    = sum - taiOffset;
-        final double dPrime    = sum - oPrime;
-        final double deltaO    = offset - oPrime;
-        final double deltaD    = taiOffset - dPrime;
-        final double residual  = deltaO + deltaD;
+        final double taiOffset  = timeScale.offsetFromTAI(this);
+        final double taiSeconds = FastMath.floor(taiOffset);
+        final long   taiSub     = FastMath.round(FastMath.scalb(taiOffset - taiSeconds, SHIFT));
+        final long   sumSub     = offset + taiSub;
 
         // split date and time
-        final long   carry = (long) FastMath.floor(sum);
-        double offset2000B = (sum - carry) + residual;
-        long   offset2000A = epoch + carry + 43200l;
-        if (offset2000B < 0) {
-            offset2000A -= 1;
-            offset2000B += 1;
-        }
+        final long offset2000A = epoch + FastMath.round(taiSeconds) + (sumSub >>> SHIFT) + 43200l;
         long time = offset2000A % 86400l;
         if (time < 0l) {
             time += 86400l;
@@ -892,7 +886,7 @@ public class AbsoluteDate
 
         // extract calendar elements
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
-        TimeComponents timeComponents = new TimeComponents((int) time, offset2000B);
+        TimeComponents timeComponents = new TimeComponents((int) time, FastMath.scalb((double) (sumSub & MASK), -SHIFT));
 
         if (timeScale.insideLeap(this)) {
             // fix the seconds number to take the leap into account
@@ -972,18 +966,19 @@ public class AbsoluteDate
     }
 
     /** Check if the instance represent the same time as another instance.
-     * @param date other date
+     * @param other other date
      * @return true if the instance and the other date refer to the same instant
      */
-    public boolean equals(final Object date) {
+    public boolean equals(final Object other) {
 
-        if (date == this) {
+        if (other == this) {
             // first fast check
             return true;
         }
 
-        if ((date != null) && (date instanceof AbsoluteDate)) {
-            return durationFrom((AbsoluteDate) date) == 0;
+        if ((other != null) && (other instanceof AbsoluteDate)) {
+            final AbsoluteDate date = (AbsoluteDate) other;
+            return epoch == date.epoch && offset == date.offset;
         }
 
         return false;
@@ -994,8 +989,7 @@ public class AbsoluteDate
      * @return hashcode
      */
     public int hashCode() {
-        final long l = Double.doubleToLongBits(durationFrom(J2000_EPOCH));
-        return (int) (l ^ (l >>> 32));
+        return (int) ((epoch ^ (epoch >>> 32)) ^ (offset ^ (offset >>> 32)));
     }
 
     /** Get a String representation of the instant location in UTC time scale.
