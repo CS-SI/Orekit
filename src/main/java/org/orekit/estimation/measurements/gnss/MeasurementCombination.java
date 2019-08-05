@@ -16,22 +16,30 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.orekit.gnss.CombinedObservationData;
-import org.orekit.gnss.ObservationData;
+import org.orekit.gnss.CombinedObservationDataSet;
+import org.orekit.gnss.ObservationDataSet;
 
 /**
- * Interface for dual frequency combination of measurements.
+ * Interface for combination of measurements.
  * @author Bryan Cazabonne
  * @since 10.1
  */
-public interface DualFrequencyMeasurementCombination extends MeasurementCombination {
+public interface MeasurementCombination {
 
     /**
-     * Combines observation data using a dual frequency combination of measurements.
-     * @param od1 first observation data to combined
-     * @param od2 second observation data to combined
-     * @return a combined observation data
+     * Combines observation data using a combination of measurements.
+     * <p>
+     * Current implementation only support <b>observations</b> from RINEX 2 files.
+     * </p>
+     * @param observations observation data set
+     * @return a combined observation data set
      */
-    CombinedObservationData combine(ObservationData od1, ObservationData od2);
+    CombinedObservationDataSet combine(ObservationDataSet observations);
+
+    /**
+     * Get the name of the combination of measurements.
+     * @return name of the combination of measurements
+     */
+    String getName();
 
 }

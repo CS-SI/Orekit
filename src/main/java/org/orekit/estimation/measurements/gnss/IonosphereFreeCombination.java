@@ -16,13 +16,19 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.CombinedObservationData;
+import org.orekit.gnss.CombinedObservationDataSet;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
+import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 
@@ -104,10 +110,53 @@ public class IonosphereFreeCombination implements DualFrequencyMeasurementCombin
         // Ionosphere-Free combination
         final double valueIF = MathArrays.linearCombination(f1Sq, value1, -f2Sq, value2) / (f1Sq - f2Sq);
         final double f0      = Frequency.F0;
-        final double freqIF  = (f1Sq - f2Sq) / f0;
+        final double freqIF  = FastMath.abs(f1Sq - f2Sq) / f0;
 
         // Combined observation data
         return new CombinedObservationData(CombinationType.IONO_FREE, measType1, valueIF, freqIF);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CombinedObservationDataSet combine(final ObservationDataSet observations) {
+
+        // Initialize list of measurements
+        final List<ObservationData> pseudoRanges = new ArrayList<>();
+        final List<ObservationData> phases       = new ArrayList<>();
+
+        // Loop on observation data to fill lists
+        for (final ObservationData od : observations.getObservationData()) {
+            if (!Double.isNaN(od.getValue())) {
+                if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+                    pseudoRanges.add(od);
+                } else if (od.getObservationType().getMeasurementType() == MeasurementType.CARRIER_PHASE) {
+                    phases.add(od);
+                }
+            }
+        }
+
+        // Initialize list of combined observation data
+        final List<CombinedObservationData> combined = new ArrayList<>();
+        // Combine pseudo-ranges
+        for (int i = 0; i < pseudoRanges.size() - 1; i++) {
+            for (int j = 1; j < pseudoRanges.size(); j++) {
+                if (i != j) {
+                    combined.add(combine(pseudoRanges.get(i), pseudoRanges.get(j)));
+                }
+            }
+        }
+        // Combine carrier-phases
+        for (int i = 0; i < phases.size() - 1; i++) {
+            for (int j = 1; j < phases.size(); j++) {
+                if (i != j) {
+                    combined.add(combine(phases.get(i), phases.get(j)));
+                }
+            }
+        }
+
+        return new CombinedObservationDataSet(observations.getHeader(), observations.getSatelliteSystem(),
+                                              observations.getPrnNumber(), observations.getDate(),
+                                              observations.getRcvrClkOffset(), combined);
     }
 
     /** {@inheritDoc} */
