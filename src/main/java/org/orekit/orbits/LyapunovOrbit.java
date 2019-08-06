@@ -29,21 +29,21 @@ import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
-/** Class calculating different parameters of a Halo Orbit.
+/** Class calculating different parameters of a Lyapunov Orbit.
  * @author Vincent Mouraux
  */
-public class HaloOrbit {
+public class LyapunovOrbit {
 
-    /** Orbital Period of the Halo Orbit. */
+    /** Orbital Period of the Lissajous Orbit. */
     private double orbitalPeriod;
 
-    /** CR3BP System of the Halo Orbit. */
+    /** CR3BP System of the Lissajous Orbit. */
     private final CR3BPSystem cr3bpSystem;
 
-    /** Position-Velocity first guess for a point on a Halo Orbit. */
+    /** Position-Velocity first guess for a point on a Lyapunov Orbit. */
     private final PVCoordinates firstGuess;
 
-    /** Position-Velocity initial position on a Halo Orbit. */
+    /** Position-Velocity initial position on a Lyapunov Orbit. */
     private PVCoordinates initialPV;
 
     /** Name of the needed additional state. */
@@ -53,17 +53,17 @@ public class HaloOrbit {
      * Simple Constructor.
      * <p>
      * This constructor can be used if the user wants to use a first guess from
-     * any other sources or if he has the initial conditions of a well defined Halo Orbit. In that case, it is assumed that the user knows the
-     * characteristics of the Halo Orbit leading to this first guess/point. Also, the
-     * orbital period of this Halo Orbit has to be specified for further
+     * any other sources or if he has the initial conditions of a well defined Lyapunov Orbit. In that case, it is assumed that the user knows the
+     * characteristics of the Lyapunov Orbit leading to this first guess/point. Also, the
+     * orbital period of this Lyapunov Orbit has to be specified for further
      * computation.
      * </p>
      * @param syst CR3BP System considered
      * @param pv PVCoordinates of the initial point or of the first guess
-     * @param orbitalPeriod Normalized orbital period linked to the given Halo
+     * @param orbitalPeriod Normalized orbital period linked to the given Lyapunov
      *        Orbit first guess
      */
-    public HaloOrbit(final CR3BPSystem syst,
+    public LyapunovOrbit(final CR3BPSystem syst,
                      final PVCoordinates pv, final double orbitalPeriod) {
         this.cr3bpSystem = syst;
         this.initialPV = pv;
@@ -79,11 +79,10 @@ public class HaloOrbit {
      * </p>
      * @param syst CR3BP System considered
      * @param point Lagrangian Point considered
-     * @param az z-axis Amplitude of the required Halo Orbit, meters
-     * @param type type of the Halo Orbit (Northern or Southern)
+     * @param ay y-axis amplitude of the required Lyapunov Orbit, meters
      */
-    public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double az, final LibrationOrbitType type) {
-        this(syst, point, az, type, 0.0, 0.0);
+    public LyapunovOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double ay) {
+        this(syst, point, ay, 0.0, 0.0);
     }
 
     /**
@@ -94,23 +93,20 @@ public class HaloOrbit {
      * </p>
      * @param syst CR3BP System considered
      * @param point Lagrangian Point considered
-     * @param az z-axis Amplitude of the required Halo Orbit, meters
-     * @param type type of the Halo Orbit ("Northern" or "Southern")
+     * @param ay y-axis Amplitude of the required Lyapunov Orbit, meters
      * @param t time, seconds (!=0)
      * @param phi Orbit phase, rad
      */
-    private HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double az,
-                     final LibrationOrbitType type, final double t, final double phi) {
+    private LyapunovOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double ay, final double t, final double phi) {
         this.cr3bpSystem = syst;
 
         firstGuess =
             new RichardsonExpansion(cr3bpSystem, point)
-                .computeHaloFirstGuess(az, type, t, phi);
+                .computeLyapunovFirstGuess(ay, t, phi);
+
         orbitalPeriod =
             new RichardsonExpansion(cr3bpSystem, point)
-                .getHaloOrbitalPeriod(az);
-        initialPV = firstGuess;
-
+                .getLyapunovOrbitalPeriod(ay);
     }
 
     /** Apply differential correction.
@@ -121,42 +117,40 @@ public class HaloOrbit {
     public void ApplyDifferentialCorrection() {
         final CR3BPDifferentialCorrection diff = new CR3BPDifferentialCorrection(firstGuess, cr3bpSystem,
                                           orbitalPeriod);
-        initialPV = diff.compute();
+        initialPV = diff.LyapunovCompute();
         orbitalPeriod = diff.getOrbitalPeriod();
     }
 
-    /** Return the orbital period of the Halo Orbit.
-     * @return orbitalPeriod  orbital period of the Halo Orbit
+    /** Return the orbital period of the Lyapunov Orbit.
+     * @return orbitalPeriod  orbital period of the Lyapunov Orbit
      */
     public double getOrbitalPeriod() {
         return orbitalPeriod;
     }
 
-    /** Return the first guess Position-Velocity of a point on the Halo Orbit.
-     * @return firstGuess first guess Position-Velocity of a point on the Halo Orbit
+    /** Return the first guess Position-Velocity of a point on the Lyapunov Orbit.
+     * @return firstGuess first guess Position-Velocity of a point on the Lyapunov Orbit
      */
     public PVCoordinates getFirstGuess() {
         return firstGuess;
     }
 
-    /**
-     * Return the initialPV on the Halo Orbit after differential correction on a
-     * first approximation.
+    /** Return the initialPV on the Lyapunov Orbit.
      * <p>
      * This will return the exact initialPV only if you applied a prior
-     * differential correction If you did not, you can use the method
+     * differential correction. If you did not, you can use the method
      * ApplyDifferentialCorrection()
      * </p>
-     * @return initialPV initialPV on the Halo Orbit
+     * @return initialPV initialPV on the Lyapunov Orbit
      */
     public PVCoordinates getExactInitialPV() {
         return initialPV;
     }
 
-    /** Return a manifold direction from one position on a Halo Orbit.
+    /** Return a manifold direction from one position on a Lyapunov Orbit.
      * @param s SpacecraftState with additionnal equations
      * @param isStable True if...
-     * @return manifold first guess Position-Velocity of a point on the Halo Orbit
+     * @return manifold first guess Position-Velocity of a point on the Lyapunov Orbit
      */
     public PVCoordinates getManifolds(final SpacecraftState s,
                                       final boolean isStable) {
@@ -177,9 +171,9 @@ public class HaloOrbit {
 
     }
 
-    /** Return the stable manifold direction for several positions on a Halo Orbit.
+    /** Return the stable manifold direction for several positions on a Lyapunov Orbit.
      * @param s SpacecraftStates (with STM equations) to compute from
-     * @return Stable manifold first direction from a point on the Halo Orbit
+     * @return Stable manifold first direction from a point on the Lyapunov Orbit
      */
     public PVCoordinates[]
         getStableManifolds(final SpacecraftState[] s) {
@@ -222,9 +216,9 @@ public class HaloOrbit {
         return pv;
     }
 
-    /** Return the Unstable manifold direction for several positions on a Halo Orbit.
+    /** Return the Unstable manifold direction for several positions on a Lyapunov Orbit.
      * @param s SpacecraftStates (with STM equations) to compute from
-     * @return Unstable manifold first direction from a point on the Halo Orbit
+     * @return Unstable manifold first direction from a point on the Lyapunov Orbit
      */
     public PVCoordinates[] getUnstableManifolds(final SpacecraftState[] s) {
 

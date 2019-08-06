@@ -20,7 +20,7 @@ package org.orekit.orbits;
 /** Enumerate for {@link HaloOrbit Halo Orbit} types.
  * @author Vincent Mouraux
  */
-public enum HaloOrbitType {
+public enum LibrationOrbitType {
 
     /** Northern. */
     NORTHERN,

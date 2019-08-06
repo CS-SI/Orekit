@@ -38,17 +38,17 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
-public class HaloOrbitTest {
+public class LyapunovOrbitTest {
 
     
     @Test
-    public void testHaloOrbit() {
+    public void testLyapunovOrbit() {
     CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
     
     final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
-    final HaloOrbit h1 = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, LibrationOrbitType.NORTHERN);
-    final HaloOrbit h2 = new HaloOrbit(syst, firstGuess, 2.0);
-    final HaloOrbit h3 = new HaloOrbit(syst, LagrangianPoints.L2, 8E6, LibrationOrbitType.SOUTHERN);
+    final LyapunovOrbit h1 = new LyapunovOrbit(syst, LagrangianPoints.L1, 8E6);
+    final LyapunovOrbit h2 = new LyapunovOrbit(syst, firstGuess, 2.0);
+    final LyapunovOrbit h3 = new LyapunovOrbit(syst, LagrangianPoints.L2, 8E6);
     
     final double orbitalPeriod1 = h1.getOrbitalPeriod();
     final double orbitalPeriod2 = h2.getOrbitalPeriod();
@@ -100,19 +100,11 @@ public class HaloOrbitTest {
 
         final Frame Frame = syst.getRotatingFrame();
 
-        // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
-        // of 8 000 km
-        HaloOrbit h = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, LibrationOrbitType.SOUTHERN);
-
+        LyapunovOrbit h = new LyapunovOrbit(syst, LagrangianPoints.L1, 8E6);
+        h.ApplyDifferentialCorrection();
         final double orbitalPeriod = h.getOrbitalPeriod();
-
-        double integrationTime = orbitalPeriod * 0.9;
-
-        final PVCoordinates firstGuess = h.getFirstGuess();
-
-        final PVCoordinates initialConditions =
-            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)
-                .compute();
+        double integrationTime = orbitalPeriod * 0.1;
+        final PVCoordinates initialConditions = h.getExactInitialPV();
 
         final AbsolutePVCoordinates initialAbsPV =
             new AbsolutePVCoordinates(Frame, initialDate, initialConditions);
@@ -159,11 +151,9 @@ public class HaloOrbitTest {
         
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialUnstableManifold.getPosition().getX(), 1E-7);
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialUnstableManifold.getPosition().getY(), 1E-7);
-        Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getZ(), initialUnstableManifold.getPosition().getZ(), 1E-7);
         
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
-        Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getZ(), initialStableManifold.getPosition().getZ(), 1E-7);
     }
     
     @Test(expected=OrekitException.class)
@@ -201,7 +191,7 @@ public class HaloOrbitTest {
 
         final PVCoordinates initialConditions =
             new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod, propagator)
-                .compute();
+                .LyapunovCompute();
         initialConditions.toString();
     }
     
@@ -217,7 +207,7 @@ public class HaloOrbitTest {
 
         // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
         // of 8 000 km
-        HaloOrbit h = new HaloOrbit(syst, LagrangianPoints.L1, 8E6, LibrationOrbitType.SOUTHERN);
+        LyapunovOrbit h = new LyapunovOrbit(syst, LagrangianPoints.L1, 8E6);
 
         final PVCoordinates pv = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 

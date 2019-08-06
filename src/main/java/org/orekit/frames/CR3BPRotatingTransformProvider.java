@@ -49,7 +49,7 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
 
 
     /** Simple constructor.
-     * @param mu System mass ratio
+     * @param mu Mass ratio.
      * @param primaryBody Primary body.
      * @param secondaryBody Secondary body.
      */
@@ -63,28 +63,28 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
     @Override
     public Transform getTransform(final AbsoluteDate date) {
         final FieldPVCoordinates<DerivativeStructure> pv21        = secondaryBody.getPVCoordinates(date, frame).toDerivativeStructurePV(2);
-        final FieldVector3D<DerivativeStructure>      translation = getBary(pv21.getPosition()).negate();
-        final Field<DerivativeStructure>              field       = pv21.getPosition().getX().getField();
-        final FieldRotation<DerivativeStructure>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getMomentum(),
+        final Field<DerivativeStructure>              field       = pv21.getPosition().getZ().getField();
+        final FieldVector3D<DerivativeStructure>      translation = pv21.getPosition().scalarMultiply(mu).negate();
+        final FieldRotation<DerivativeStructure>      rotation    = new FieldRotation<>(pv21.getPosition().normalize(), pv21.getMomentum().normalize(),
                                                        FieldVector3D.getPlusI(field), FieldVector3D.getPlusK(field));
         final DerivativeStructure[] rotationRates = rotation.getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
         final Vector3D rotationRate = new Vector3D(rotationRates[0].getPartialDerivative(1), rotationRates[1].getPartialDerivative(1), rotationRates[2].getPartialDerivative(1));
         final Vector3D rotationAcc = new Vector3D(rotationRates[0].getPartialDerivative(2), rotationRates[1].getPartialDerivative(2), rotationRates[2].getPartialDerivative(2));
         final Vector3D velocity = new Vector3D(translation.getX().getPartialDerivative(1), translation.getY().getPartialDerivative(1), translation.getZ().getPartialDerivative(1));
         final Vector3D acceleration =  new Vector3D(translation.getX().getPartialDerivative(2), translation.getY().getPartialDerivative(2), translation.getZ().getPartialDerivative(2));
-        return new Transform(date, new Transform(date, translation.toVector3D(), velocity, acceleration), new Transform(date, rotation.toRotation(), rotationRate, rotationAcc));
+        return new Transform(date, new Transform(date, translation.toVector3D(), velocity.negate(), acceleration.negate()), new Transform(date, rotation.toRotation(), rotationRate, rotationAcc));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
-        final FieldVector3D<T>      translation = getBary(pv21.getPosition()).negate();
+        final FieldVector3D<T>      translation = pv21.getPosition().scalarMultiply(mu).negate();
         final Field<T>              field       = pv21.getPosition().getX().getField();
         final FieldRotation<T>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getMomentum(),
                                                                       FieldVector3D.getPlusI(field),
                                                                       FieldVector3D.getPlusK(field));
-        final FieldPVCoordinates<FieldDerivativeStructure<T>> pv21f = pv21.toDerivativeStructurePV(1);
+        final FieldPVCoordinates<FieldDerivativeStructure<T>> pv21f = pv21.toDerivativeStructurePV(2);
         final Field<FieldDerivativeStructure<T>> fieldf =
             pv21f.getPosition().getX().getField();
 
@@ -101,20 +101,5 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
         return new FieldTransform<T>(date,
                                      new FieldTransform<>(date, translation, velocity, acceleration),
                                      new FieldTransform<>(date, rotation, rotationRate, rotationAcc));
-    }
-
-
-    /** Compute the coordinates of the barycenter.
-     * @param <T> type of the field elements
-     * @param primaryToSecondary relative position of secondary body with respect to primary body
-     * @return coordinates of the barycenter given in frame: primaryBody.getInertiallyOrientedFrame()
-     */
-    private <T extends RealFieldElement<T>> FieldVector3D<T>
-        getBary(final FieldVector3D<T> primaryToSecondary) {
-        // Barycenter point is built
-        final T barycenter = primaryToSecondary.getNorm().multiply(mu);
-        final FieldVector3D<T> normalized = primaryToSecondary.normalize();
-        return new FieldVector3D<>(barycenter, normalized);
-
     }
 }

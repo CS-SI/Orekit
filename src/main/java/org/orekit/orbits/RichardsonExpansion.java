@@ -254,7 +254,7 @@ public class RichardsonExpansion {
      * @param phi Orbit phase, rad
      * @return firstGuess PVCoordinates of the first guess
     */
-    public PVCoordinates computeFirstGuess(final double azr, final HaloOrbitType type,
+    public PVCoordinates computeHaloFirstGuess(final double azr, final LibrationOrbitType type,
                                            final double t, final double phi) {
 
         // Z-Axis Halo Orbit Amplitude
@@ -345,15 +345,95 @@ public class RichardsonExpansion {
         return pvf;
     }
 
+    /** Calculate first Guess.
+     * @param ayr x-axis Amplitude of the required Lyapunov Orbit, meters
+     * @param t time
+     * @param phi Orbit phase, rad
+     * @return firstGuess PVCoordinates of the first guess
+    */
+    public PVCoordinates
+        computeLyapunovFirstGuess(final double ayr, final double t, final double phi) {
+
+        // Z-Axis Lyapunov Orbit Amplitude
+        final double az = 0;
+
+        // y-Axis Lyapunov Orbit Amplitude
+        final double ay = ayr / (gamma * dDim);
+
+        final double ax = ay / k;
+
+        final double nu = 1.0 + s1 * ax * ax + s2 * az * az;
+
+        final double tau = nu * t;
+
+        final double tau1 = wp * tau + phi;
+
+        final PVCoordinates pvf;
+
+        // First guess position relative to its Lagrangian point
+        final double firstx = -ax * FastMath.cos(tau1);
+
+        final double firsty = 0;
+
+        final double firstz = 0;
+
+        // First guess Velocity relative to its Lagrangian point
+        final double vx = 0;
+
+        final double vy = k * ax * wp * nu * FastMath.cos(tau1);
+
+        final double vz = 0.0;
+
+        switch (point) {
+            case L1:
+                pvf =
+                    new PVCoordinates(new Vector3D(firstx * gamma +
+                                                   1.0 - mu - gamma,
+                                                   firsty * gamma,
+                                                   firstz * gamma),
+                                      new Vector3D(vx * gamma, vy * gamma,
+                                                   vz * gamma));
+                break;
+            default:
+                pvf =
+                    new PVCoordinates(new Vector3D(firstx * gamma +
+                                                   1.0 - mu + gamma,
+                                                   firsty * gamma,
+                                                   firstz * gamma),
+                                      new Vector3D(vx * gamma, vy * gamma,
+                                                   vz * gamma));
+                break;
+        }
+        ;
+        return pvf;
+    }
+
     /** Return the orbital period of the Halo Orbit.
      * @param azr z-axis Amplitude of the required Halo Orbit, meters
      * @return the orbitalPeriod
      */
-    public double getOrbitalPeriod(final double azr) {
+    public double getHaloOrbitalPeriod(final double azr) {
 
         final double az = azr / (gamma * dDim);
 
         final double ax = FastMath.sqrt((delta + l2 * az * az) / -l1);
+
+        final double nu = 1.0 + s1 * ax * ax + s2 * az * az;
+
+        orbitalPeriod = FastMath.abs(2.0 * FastMath.PI / (wp * nu));
+
+        return orbitalPeriod;
+    }
+
+    /** Return the orbital period of the Halo Orbit.
+     * @param axr x-axis Amplitude of the required Lyapunov Orbit, meters
+     * @return the orbitalPeriod
+     */
+    public double getLyapunovOrbitalPeriod(final double axr) {
+
+        final double az = 0;
+
+        final double ax = axr / (gamma * dDim);
 
         final double nu = 1.0 + s1 * ax * ax + s2 * az * az;
 

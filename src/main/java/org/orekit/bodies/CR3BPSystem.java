@@ -64,6 +64,9 @@ public class CR3BPSystem {
     /** CR3BP System name. */
     private final String name;
 
+    /** Rotating Frame for the system. */
+    private final Frame rotatingFrame;
+
     /** Primary body. */
     private final CelestialBody primaryBody;
 
@@ -128,6 +131,8 @@ public class CR3BPSystem {
         final double mu1 = primaryBody.getGM();
 
         this.mu = mu;
+
+        rotatingFrame = new CR3BPRotatingFrame(mu, primaryBody, secondaryBody);
 
         this.dDim = a;
         this.vDim = FastMath.sqrt(mu1 / dDim); // - mu * dDim));
@@ -278,8 +283,7 @@ public class CR3BPSystem {
      * @return CR3BP Rotating Frame
      */
     public Frame getRotatingFrame() {
-        final Frame baryFrame = new CR3BPRotatingFrame(mu, primaryBody, secondaryBody);
-        return baryFrame;
+        return rotatingFrame;
     }
 
     /**
