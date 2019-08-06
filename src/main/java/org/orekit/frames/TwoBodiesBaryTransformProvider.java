@@ -17,14 +17,13 @@
 package org.orekit.frames;
 
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.PVCoordinates;
 
 /** Transform provider for the inertial Barycentered frame.
  * @author Vincent Mouraux
@@ -57,37 +56,18 @@ class TwoBodiesBaryTransformProvider implements TransformProvider {
     /** {@inheritDoc} */
     @Override
     public Transform getTransform(final AbsoluteDate date) {
-        final FieldPVCoordinates<DerivativeStructure> pv21        = secondaryBody.getPVCoordinates(date, frame).toDerivativeStructurePV(2);
-        final FieldVector3D<DerivativeStructure>      translation = getBary(pv21.getPosition()).negate();
-        final Vector3D velocity = new Vector3D(translation.getX().getPartialDerivative(1), translation.getY().getPartialDerivative(1), translation.getZ().getPartialDerivative(1));
-        final Vector3D acceleration =  new Vector3D(translation.getX().getPartialDerivative(2), translation.getY().getPartialDerivative(2), translation.getZ().getPartialDerivative(2));
-        return new Transform(date, translation.toVector3D(), velocity, acceleration);
+        final PVCoordinates pv21 = secondaryBody.getPVCoordinates(date, frame);
+        final double massRatio = secondaryBody.getGM() / (primaryBody.getGM() + secondaryBody.getGM());
+        final Vector3D translation = pv21.getPosition().scalarMultiply(massRatio).negate();
+        return new Transform(date, translation);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
-        final FieldVector3D<T>      translation = getBary(pv21.getPosition()).negate();
-        final FieldPVCoordinates<FieldDerivativeStructure<T>> pv21f = pv21.toDerivativeStructurePV(1);
-        final FieldVector3D<T> velocity = new FieldVector3D<>(pv21f.getPosition().getX().getPartialDerivative(1), pv21f.getPosition().getY().getPartialDerivative(1), pv21f.getPosition().getZ().getPartialDerivative(1));
-        final FieldVector3D<T> acceleration =  new FieldVector3D<>(pv21f.getPosition().getX().getPartialDerivative(2), pv21f.getPosition().getY().getPartialDerivative(2), pv21f.getPosition().getZ().getPartialDerivative(2));
-        return new FieldTransform<>(date, translation, velocity, acceleration);
-    }
-
-
-    /** Compute the coordinates of the barycenter.
-     * @param <T> type of the field elements
-     * @param primaryToSecondary relative position of secondary body with respect to primary body
-     * @return coordinates of the barycenter given in frame: primaryBody.getInertiallyOrientedFrame()
-     */
-    private <T extends RealFieldElement<T>> FieldVector3D<T>
-        getBary(final FieldVector3D<T> primaryToSecondary) {
-        // Barycenter point is built
         final double massRatio = secondaryBody.getGM() / (primaryBody.getGM() + secondaryBody.getGM());
-        final T barycenter = primaryToSecondary.getNorm().multiply(massRatio);
-        final FieldVector3D<T> normalized = primaryToSecondary.normalize();
-        return new FieldVector3D<>(barycenter, normalized);
-
+        final FieldVector3D<T> translation = pv21.getPosition().scalarMultiply(massRatio).negate();
+        return new FieldTransform<>(date, translation);
     }
 }

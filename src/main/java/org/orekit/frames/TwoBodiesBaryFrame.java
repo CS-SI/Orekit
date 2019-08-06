@@ -17,6 +17,10 @@
 package org.orekit.frames;
 
 import org.orekit.bodies.CelestialBody;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.Constants;
+import org.orekit.utils.OrekitConfiguration;
 
 /**
  * Class creating the inertial barycenter frame from two bodies.
@@ -37,12 +41,17 @@ public class TwoBodiesBaryFrame
     public TwoBodiesBaryFrame(final CelestialBody primaryBody,
                               final CelestialBody secondaryBody) {
         super(primaryBody.getInertiallyOrientedFrame(),
-              new TwoBodiesBaryTransformProvider(primaryBody, secondaryBody),
-              primaryBody.getName() +
-                                                                              "-" +
-                                                                              secondaryBody
-                                                                                  .getName() +
-                                                                              "-Barycenter",
+              new ShiftingTransformProvider(new TwoBodiesBaryTransformProvider(primaryBody,
+                                                                               secondaryBody),
+                                            CartesianDerivativesFilter.USE_P,
+                                            AngularDerivativesFilter.USE_R, 5,
+                                            Constants.JULIAN_DAY / 24,
+                                            OrekitConfiguration
+                                                .getCacheSlotsNumber(),
+                                            Constants.JULIAN_YEAR,
+                                            30 * Constants.JULIAN_DAY),
+              primaryBody
+                  .getName() + "-" + secondaryBody.getName() + "-Barycenter",
               true);
     }
 
