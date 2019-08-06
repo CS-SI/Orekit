@@ -75,294 +75,28 @@ public class MeasurementCombinationFactoryTest {
 
     @Test
     public void testEmptyDataSetGeometryFree() {
-        // Initialize combination of measurements
-        final GeometryFreeCombination combination = MeasurementCombinationFactory.getGeometryFreeCombination(system);
-
-        // Build empty observation data set
-        final ObservationDataSet emptyDataSet = new ObservationDataSet(dataSetRinex2.getHeader(), dataSetRinex2.getSatelliteSystem(),
-                                                                       dataSetRinex2.getPrnNumber(), dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
-                                                                       new ArrayList<ObservationData>());
-        // Test first method signature
-        final CombinedObservationDataSet combinedData = combination.combine(emptyDataSet);
-        Assert.assertEquals(0, combinedData.getObservationData().size());
-    }
-
-    @Test
-    public void testRinex2GeometryFree() {
-        // Initialize combination of measurements
-        final GeometryFreeCombination combination = MeasurementCombinationFactory.getGeometryFreeCombination(system);
-
-        // Perform combination on the observation data set
-        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex2);
-        checkCombinedDataSet(combinedDataSet);
-
-        // Verify the combined observation data
-        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
-
-            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-
-                Assert.assertEquals(27534453.519,                  cod.getValue(),                eps);
-                Assert.assertEquals(Double.NaN,                    cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.GEOMETRY_FREE, cod.getCombinationType());
-
-            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-
-                Assert.assertEquals(6.953,                         cod.getValue(),                eps);
-                Assert.assertEquals(Double.NaN,                    cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.GEOMETRY_FREE, cod.getCombinationType());
-
-            }
-
-        }
-    }
-
-    @Test
-    public void testRinex3GeometryFree() {
-        // Initialize combination of measurements
-        final GeometryFreeCombination combination = MeasurementCombinationFactory.getGeometryFreeCombination(system);
-
-        // Perform combination on the observation data set
-        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
-        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
-
-        // Verify the combined observation data
-        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
-
-            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-
-                Assert.assertEquals(3821708.096,                  cod.getValue(),                eps);
-                Assert.assertEquals(Double.NaN,                    cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.GEOMETRY_FREE, cod.getCombinationType());
-
-            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-
-                Assert.assertEquals(2.187,                         cod.getValue(),                eps);
-                Assert.assertEquals(Double.NaN,                    cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.GEOMETRY_FREE, cod.getCombinationType());
-
-            }
-
-        }
-    }
-
-    @Test
-    public void testExceptionsGeometryFree() {
-        final GeometryFreeCombination combination = MeasurementCombinationFactory.getGeometryFreeCombination(system);
-
-        // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
-        try {
-            final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
-            combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
-        }
-
-        // Test INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS exception
-        try {
-            final ObservationData observation = new ObservationData(ObservationType.D2, 12345678.0, 0, 0);
-            combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
-        }
+        doTestEmptyDataSet(MeasurementCombinationFactory.getGeometryFreeCombination(system));
     }
 
     @Test
     public void testEmptyDataSetIonoFree() {
-        // Initialize combination of measurements
-        final IonosphereFreeCombination combination = MeasurementCombinationFactory.getIonosphereFreeCombination(system);
-
-        // Build empty observation data set
-        final ObservationDataSet emptyDataSet = new ObservationDataSet(dataSetRinex2.getHeader(), dataSetRinex2.getSatelliteSystem(),
-                                                                       dataSetRinex2.getPrnNumber(), dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
-                                                                       new ArrayList<ObservationData>());
-        // Test first method signature
-        final CombinedObservationDataSet combinedData = combination.combine(emptyDataSet);
-        Assert.assertEquals(0, combinedData.getObservationData().size());
-    }
-
-    @Test
-    public void testRinex2IonoFree() {
-        // Initialize combination of measurements
-        final IonosphereFreeCombination combination = MeasurementCombinationFactory.getIonosphereFreeCombination(system);
-
-        // Perform combination on the observation data set
-        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex2);
-        checkCombinedDataSet(combinedDataSet);
-
-        // Verify the combined observation data
-        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
-
-            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-
-                Assert.assertEquals(167275826.4529,            cod.getValue(),                eps);
-                Assert.assertEquals(9316 * Frequency.F0,       cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.IONO_FREE, cod.getCombinationType());
-
-            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-
-                Assert.assertEquals(23732467.5026,             cod.getValue(),                eps);
-                Assert.assertEquals(9316 * Frequency.F0,       cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.IONO_FREE, cod.getCombinationType());
-
-            }
-
-        }
-    }
-
-    @Test
-    public void testRinex3IonoFree() {
-        // Initialize combination of measurements
-        final IonosphereFreeCombination combination = MeasurementCombinationFactory.getIonosphereFreeCombination(system);
-
-        // Perform combination on the observation data set
-        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
-        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
-
-        // Verify the combined observation data
-        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
-
-            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-
-                Assert.assertEquals(134735627.3126,            cod.getValue(),                eps);
-                Assert.assertEquals(1175 * Frequency.F0,       cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.IONO_FREE, cod.getCombinationType());
-
-            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-
-                Assert.assertEquals(22399214.1934,             cod.getValue(),                eps);
-                Assert.assertEquals(1175 * Frequency.F0,       cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.IONO_FREE, cod.getCombinationType());
-
-            }
-
-        }
-    }
-
-    @Test
-    public void testExceptionsIonoFree() {
-        final IonosphereFreeCombination combination = MeasurementCombinationFactory.getIonosphereFreeCombination(system);
-
-        // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
-        try {
-            final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
-            combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
-        }
-
-        // Test INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS exception
-        try {
-            final ObservationData observation = new ObservationData(ObservationType.D2, 12345678.0, 0, 0);
-            combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
-        }
+        doTestEmptyDataSet(MeasurementCombinationFactory.getIonosphereFreeCombination(system));
     }
 
     @Test
     public void testEmptyDataSetWideLane() {
-        // Initialize combination of measurements
-        final WideLaneCombination combination = MeasurementCombinationFactory.getWideLaneCombination(system);
-
-        // Build empty observation data set
-        final ObservationDataSet emptyDataSet = new ObservationDataSet(dataSetRinex2.getHeader(), dataSetRinex2.getSatelliteSystem(),
-                                                                       dataSetRinex2.getPrnNumber(), dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
-                                                                       new ArrayList<ObservationData>());
-        // Test first method signature
-        final CombinedObservationDataSet combinedData = combination.combine(emptyDataSet);
-        Assert.assertEquals(0, combinedData.getObservationData().size());
-    }
-
-    @Test
-    public void testRinex2WideLane() {
-        // Initialize combination of measurements
-        final WideLaneCombination combination = MeasurementCombinationFactory.getWideLaneCombination(system);
-
-        // Perform combination on the observation data set
-        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex2);
-        checkCombinedDataSet(combinedDataSet);
-
-        // Verify the combined observation data
-        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
-
-            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-
-                Assert.assertEquals(221895480.9217,            cod.getValue(),                eps);
-                Assert.assertEquals(34 * Frequency.F0,         cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.WIDE_LANE, cod.getCombinationType());
-
-            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-
-                Assert.assertEquals(23732453.7100,             cod.getValue(),                eps);
-                Assert.assertEquals(34 * Frequency.F0,         cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.WIDE_LANE, cod.getCombinationType());
-
-            }
-
-        }
-    }
-
-    @Test
-    public void testRinex3WideLane() {
-        // Initialize combination of measurements
-        final WideLaneCombination combination = MeasurementCombinationFactory.getWideLaneCombination(system);
-
-        // Perform combination on the observation data set
-        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
-        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
-
-        // Verify the combined observation data
-        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
-
-            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-
-                Assert.assertEquals(179620369.2060,            cod.getValue(),                eps);
-                Assert.assertEquals(5 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.WIDE_LANE, cod.getCombinationType());
-
-            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-
-                Assert.assertEquals(22399239.8790,             cod.getValue(),                eps);
-                Assert.assertEquals(5 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.WIDE_LANE, cod.getCombinationType());
-
-            }
-
-        }
-    }
-
-    @Test
-    public void testExceptionsWideLane() {
-        final WideLaneCombination combination = MeasurementCombinationFactory.getWideLaneCombination(system);
-
-        // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
-        try {
-            final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
-            combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
-        }
-
-        // Test INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS exception
-        try {
-            final ObservationData observation = new ObservationData(ObservationType.D2, 12345678.0, 0, 0);
-            combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
-        }
+        doTestEmptyDataSet(MeasurementCombinationFactory.getWideLaneCombination(system));
     }
 
     @Test
     public void testEmptyDataSetNarrowLane() {
-        // Initialize combination of measurements
-        final NarrowLaneCombination combination = MeasurementCombinationFactory.getNarrowLaneCombination(system);
+        doTestEmptyDataSet(MeasurementCombinationFactory.getNarrowLaneCombination(system));
+    }
 
+    /**
+     * Test code stability if an empty observation data set is used. 
+     */
+    private void doTestEmptyDataSet(final MeasurementCombination combination) {
         // Build empty observation data set
         final ObservationDataSet emptyDataSet = new ObservationDataSet(dataSetRinex2.getHeader(), dataSetRinex2.getSatelliteSystem(),
                                                                        dataSetRinex2.getPrnNumber(), dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
@@ -373,67 +107,29 @@ public class MeasurementCombinationFactoryTest {
     }
 
     @Test
-    public void testRinex2NarrowLane() {
-        // Initialize combination of measurements
-        final NarrowLaneCombination combination = MeasurementCombinationFactory.getNarrowLaneCombination(system);
-
-        // Perform combination on the observation data set
-        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex2);
-        checkCombinedDataSet(combinedDataSet);
-
-        // Verify the combined observation data
-        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
-
-            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-
-                Assert.assertEquals(112656171.9842,              cod.getValue(),                eps);
-                Assert.assertEquals(274 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.NARROW_LANE, cod.getCombinationType());
-
-            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-
-                Assert.assertEquals(23732481.2951,               cod.getValue(),                eps);
-                Assert.assertEquals(274 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.NARROW_LANE, cod.getCombinationType());
-
-            }
-
-        }
+    public void testExceptionsGeometryFree() {
+        doTestExceptions(MeasurementCombinationFactory.getGeometryFreeCombination(system));
     }
 
     @Test
-    public void testRinex3NarrowLane() {
-        // Initialize combination of measurements
-        final NarrowLaneCombination combination = MeasurementCombinationFactory.getNarrowLaneCombination(system);
+    public void testExceptionsIonoFree() {
+        doTestExceptions(MeasurementCombinationFactory.getIonosphereFreeCombination(system));
+    }
 
-        // Perform combination on the observation data set
-        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
-        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
-
-        // Verify the combined observation data
-        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
-
-            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-
-                Assert.assertEquals(89850885.4191,               cod.getValue(),                eps);
-                Assert.assertEquals(235 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.NARROW_LANE, cod.getCombinationType());
-
-            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-
-                Assert.assertEquals(22399188.5078,               cod.getValue(),                eps);
-                Assert.assertEquals(235 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(CombinationType.NARROW_LANE, cod.getCombinationType());
-
-            }
-
-        }
+    @Test
+    public void testExceptionsWideLane() {
+        doTestExceptions(MeasurementCombinationFactory.getWideLaneCombination(system));
     }
 
     @Test
     public void testExceptionsNarrowLane() {
-        final NarrowLaneCombination combination = MeasurementCombinationFactory.getNarrowLaneCombination(system);
+        doTestExceptions(MeasurementCombinationFactory.getNarrowLaneCombination(system));
+    }
 
+    /**
+     * Test exceptions. 
+     */
+    private void doTestExceptions(final AbstractDualFrequencyCombination combination) {
         // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
             final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
@@ -450,6 +146,91 @@ public class MeasurementCombinationFactoryTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2GeometryFree() {
+        doTestRinex(MeasurementCombinationFactory.getGeometryFreeCombination(system),
+                     CombinationType.GEOMETRY_FREE, 6.953, 27534453.519, Double.NaN, 2);
+    }
+
+    @Test
+    public void testRinex2IonoFree() {
+        doTestRinex(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
+                     CombinationType.IONO_FREE, 23732467.5026, 167275826.4529, 9316 * Frequency.F0, 2);
+    }
+
+    @Test
+    public void testRinex2WideLane() {
+        doTestRinex(MeasurementCombinationFactory.getWideLaneCombination(system),
+                     CombinationType.WIDE_LANE, 23732453.7100, 221895480.9217, 34 * Frequency.F0, 2);
+    }
+
+    @Test
+    public void testRinex2NarrowLane() {
+        doTestRinex(MeasurementCombinationFactory.getNarrowLaneCombination(system),
+                     CombinationType.NARROW_LANE, 23732481.2951, 112656171.9842, 274 * Frequency.F0, 2);
+    }
+
+    @Test
+    public void testRinex3GeometryFree() {
+        doTestRinex(MeasurementCombinationFactory.getGeometryFreeCombination(system),
+                     CombinationType.GEOMETRY_FREE, 2.187, 3821708.096, Double.NaN, 3);
+    }
+
+    @Test
+    public void testRinex3IonoFree() {
+        doTestRinex(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
+                     CombinationType.IONO_FREE, 22399214.1934, 134735627.3126, 1175 * Frequency.F0, 3);
+    }
+
+    @Test
+    public void testRinex3WideLane() {
+        doTestRinex(MeasurementCombinationFactory.getWideLaneCombination(system),
+                     CombinationType.WIDE_LANE, 22399239.8790, 179620369.2060, 5 * Frequency.F0, 3);
+    }
+
+    @Test
+    public void testRinex3NarrowLane() {
+        doTestRinex(MeasurementCombinationFactory.getNarrowLaneCombination(system),
+                    CombinationType.NARROW_LANE, 22399188.5078, 89850885.4191, 235 * Frequency.F0, 3);
+    }
+
+    /**
+     * Test if Rinex formats can be used for the combination of measurements
+     */
+    private void doTestRinex(final MeasurementCombination combination, final CombinationType expectedType,
+                             final double expectedRangeValue, final double expectedPhaseValue,
+                             final double expectedFrequency, final int rinexVersion) {
+
+        // Perform combination on the observation data set depending the Rinex version
+        final CombinedObservationDataSet combinedDataSet;
+        if (rinexVersion == 2) {
+            combinedDataSet = combination.combine(dataSetRinex2);
+            checkCombinedDataSet(combinedDataSet);
+        } else {
+            combinedDataSet = combination.combine(dataSetRinex3);
+            Assert.assertEquals(2, combinedDataSet.getObservationData().size());
+        }
+
+        // Verify the combined observation data
+        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
+
+            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
+
+                Assert.assertEquals(expectedPhaseValue, cod.getValue(),                eps);
+                Assert.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(expectedType,       cod.getCombinationType());
+
+            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+
+                Assert.assertEquals(expectedRangeValue, cod.getValue(),                eps);
+                Assert.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(expectedType,       cod.getCombinationType());
+
+            }
+
         }
     }
 

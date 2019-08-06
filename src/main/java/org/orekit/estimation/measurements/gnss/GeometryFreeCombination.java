@@ -16,20 +16,8 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.CombinedObservationData;
-import org.orekit.gnss.CombinedObservationDataSet;
-import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.RinexHeader;
 import org.orekit.gnss.SatelliteSystem;
 
 /**
@@ -55,158 +43,29 @@ import org.orekit.gnss.SatelliteSystem;
  * @author Bryan Cazabonne
  * @since 10.1
  */
-public class GeometryFreeCombination implements DualFrequencyMeasurementCombination {
-
-    /** Satellite system for wich the combination is applied. */
-    private final SatelliteSystem system;
+public class GeometryFreeCombination extends AbstractDualFrequencyCombination {
 
     /**
      * Package private constructor for the factory.
      * @param system satellite system for wich the combination is applied
      */
     GeometryFreeCombination(final SatelliteSystem system) {
-        this.system = system;
+        super(CombinationType.GEOMETRY_FREE, system);
     }
 
     /** {@inheritDoc} */
     @Override
-    public CombinedObservationData combine(final ObservationData od1, final ObservationData od2) {
-
-        // Observation types
-        final ObservationType obsType1 = od1.getObservationType();
-        final ObservationType obsType2 = od2.getObservationType();
-
-        // Frequencies
-        final Frequency freq1 = obsType1.getFrequency(system);
-        final Frequency freq2 = obsType2.getFrequency(system);
-        // Check if the combination of measurements if performed for two different frequencies
-        if (freq1 == freq2) {
-            throw new OrekitException(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS,
-                                      freq1, freq2, getName());
-        }
-
-        // Measurements types
-        final MeasurementType measType1 = obsType1.getMeasurementType();
-        final MeasurementType measType2 = obsType2.getMeasurementType();
-
-        // Check if measurement types are the same
-        if (measType1 != measType2) {
-            // If the measurement types are differents, an exception is thrown
-            throw new OrekitException(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS,
-                                      measType1, measType2, getName());
-        }
-
-        // Geometry-Free combination
-        final double valueGF = FastMath.abs(od2.getValue() - od1.getValue());
-
-        //Combined observation data
-        return new CombinedObservationData(CombinationType.GEOMETRY_FREE, measType1, valueGF, Double.NaN);
-
+    protected double getCombinedValue(final double obs1, final double f1,
+                                      final double obs2, final double f2) {
+        // Combined observed value does not depend on frequency for the Geometry-Free combination
+        return FastMath.abs(obs2 - obs1);
     }
 
     /** {@inheritDoc} */
     @Override
-    public CombinedObservationDataSet combine(final ObservationDataSet observations) {
-
-        // Rinex file header
-        final RinexHeader header = observations.getHeader();
-        // Rinex version to integer
-        final int version = (int) header.getRinexVersion();
-
-        // Initialize list of measurements
-        final List<ObservationData> pseudoRanges = new ArrayList<>();
-        final List<ObservationData> phases       = new ArrayList<>();
-
-        // Loop on observation data to fill lists
-        for (final ObservationData od : observations.getObservationData()) {
-            if (!Double.isNaN(od.getValue())) {
-                // Double.NaN values are not used
-                if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-                    pseudoRanges.add(od);
-                } else if (od.getObservationType().getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-                    phases.add(od);
-                }
-            }
-        }
-
-        // Initialize list of combined observation data
-        final List<CombinedObservationData> combined = new ArrayList<>();
-        // Combine pseudo-ranges
-        for (int i = 0; i < pseudoRanges.size() - 1; i++) {
-            for (int j = 1; j < pseudoRanges.size(); j++) {
-                final boolean combine = isCombinationPossible(version, pseudoRanges.get(i), pseudoRanges.get(j));
-                if (combine) {
-                    combined.add(combine(pseudoRanges.get(i), pseudoRanges.get(j)));
-                }
-            }
-        }
-        // Combine carrier-phases
-        for (int i = 0; i < phases.size() - 1; i++) {
-            for (int j = 1; j < phases.size(); j++) {
-                final boolean combine = isCombinationPossible(version, phases.get(i), phases.get(j));
-                if (combine) {
-                    combined.add(combine(phases.get(i), phases.get(j)));
-                }
-            }
-        }
-
-        return new CombinedObservationDataSet(observations.getHeader(), observations.getSatelliteSystem(),
-                                              observations.getPrnNumber(), observations.getDate(),
-                                              observations.getRcvrClkOffset(), combined);
-    }
-
-    /**
-     * Verifies if two observation data can be combine.
-     * @param version Rinex file version (integer part)
-     * @param data1 first observation data
-     * @param data2 second observation data
-     * @return true if observation data can be combined
-     */
-    private boolean isCombinationPossible(final int version, final ObservationData data1, final ObservationData data2) {
-
-        // Observation types
-        final ObservationType obsType1 = data1.getObservationType();
-        final ObservationType obsType2 = data2.getObservationType();
-
-        // Geometry-Free combination is possible only if data frequencies are diffrents
-        if (obsType1.getFrequency(system) != obsType2.getFrequency(system)) {
-
-            // Switch on Rinex version
-            switch (version) {
-                case 2:
-                    // Rinex 2 version
-                    if (obsType1.name().charAt(0) == obsType2.name().charAt(0)) {
-                        // Observation code is the same. Combination of measurements can be performed
-                        return true;
-                    } else {
-                        // Observation code is not the same. Combination of measurements can not be performed
-                        return false;
-                    }
-                case 3:
-                    // Rinex 3 version
-                    if (obsType1.name().charAt(2) == obsType2.name().charAt(2)) {
-                        // Observation code is the same. Combination of measurements can be performed
-                        return true;
-                    } else {
-                        // Observation code is the same. Combination of measurements can not be performed
-                        return false;
-                    }
-                default:
-                    // Not supported Rinex version. Combination is not possible
-                    return false;
-            }
-
-        } else {
-            // False because observation data have the same frequency
-            return false;
-        }
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getName() {
-        return CombinationType.GEOMETRY_FREE.getName();
+    protected double getCombinedFrequency(final double f1, final double f2) {
+        // There is not combined frequency for the Geometry-Free combination
+        return Double.NaN;
     }
 
 }
