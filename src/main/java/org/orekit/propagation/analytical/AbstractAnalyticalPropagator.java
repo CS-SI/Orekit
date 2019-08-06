@@ -116,6 +116,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     public SpacecraftState propagate(final AbsoluteDate start, final AbsoluteDate target) {
         try {
 
+            initializePropagation();
+
             lastPropagationStart = start;
 
             final double dt       = target.durationFrom(start);

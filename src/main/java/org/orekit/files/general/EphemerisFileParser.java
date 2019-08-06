@@ -40,20 +40,19 @@ public interface EphemerisFileParser {
     /**
      * Parse an ephemeris file from a file on the local file system.
      *
-     * <p> For Implementors: Most subclasses should implement this method as follows, but
+     * <p>For Implementors: Most subclasses should implement this method as follows, but
      * there is no default implementation because most subclasses should use a specialized
      * return type.
      *
-     * <code><pre>
+     * <pre>
      * try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
      *     return parse(reader, fileName);
      * }
-     * </pre></code>
+     * </pre>
      *
      * @param fileName path to the ephemeris file.
      * @return parsed ephemeris file.
-     * @throws IOException     if one is thrown while opening or reading from {@code
-     *                         fileName}.
+     * @throws IOException if one is thrown while opening or reading from {@code fileName}
      */
     EphemerisFile parse(String fileName) throws IOException;
 

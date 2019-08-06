@@ -90,7 +90,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <ol> <li>Dru A. Smith. There is no such thing as "The" EGM96 geoid: Subtle
  * points on the use of a global geopotential model. IGeS Bulletin No. 8:17-28,
  * 1998. <a href= "http://www.ngs.noaa.gov/PUBS_LIB/EGM96_GEOID_PAPER/egm96_geoid_paper.html"
- * >http ://www.ngs.noaa.gov/PUBS_LIB/EGM96_GEOID_PAPER/egm96_geoid_paper.html</a></li>
+ * >http://www.ngs.noaa.gov/PUBS_LIB/EGM96_GEOID_PAPER/egm96_geoid_paper.html</a></li>
  *
  * <li> Martin Losch, Verena Seufer. How to Compute Geoid Undulations (Geoid
  * Height Relative to a Given Reference Ellipsoid) from Spherical Harmonic

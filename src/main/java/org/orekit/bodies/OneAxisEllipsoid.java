@@ -407,7 +407,6 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      *   <li>in order to handle properly corner cases near the equatorial plane, even far inside the ellipsoid</li>
      *   <li>in order to handle very flat ellipsoids</li>
      * </ul>
-     * </p>
      */
     public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date) {
 
@@ -527,7 +526,6 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      *   <li>in order to handle properly corner cases near the equatorial plane, even far inside the ellipsoid</li>
      *   <li>in order to handle very flat ellipsoids</li>
      * </ul>
-     * </p>
      */
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
                                                                            final Frame frame,

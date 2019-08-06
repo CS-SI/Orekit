@@ -287,7 +287,7 @@ based on a classical fixed step Runge-Kutta integrator provided
 by the underlying Hipparchus library.
 
     double stepSize = 10;
-    FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);
+    AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);
     NumericalPropagator propagator = new NumericalPropagator(integrator);
 
 The initial state is set for this propagator:

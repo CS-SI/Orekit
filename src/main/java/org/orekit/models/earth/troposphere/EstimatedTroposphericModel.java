@@ -28,9 +28,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** An estimated tropospheric model. The tropospheric delay is computed according to the formula:
- * <pre>
+ * <p>
  * δ = δ<sub>h</sub> * m<sub>h</sub> + (δ<sub>t</sub> - δ<sub>h</sub>) * m<sub>w</sub>
- * </pre>
+ * <p>
  * With:
  * <ul>
  * <li>δ<sub>h</sub>: Tropospheric zenith hydro-static delay.</li>

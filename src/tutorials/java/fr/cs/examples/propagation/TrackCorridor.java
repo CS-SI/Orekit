@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -173,7 +174,7 @@ public class TrackCorridor {
         // center track latitude in column 4 and center track longitude in column 5
         // right limit latitude in column 6 and right limit longitude in column 7
         DecimalFormat format = new DecimalFormat("#00.00000", new DecimalFormatSymbols(Locale.US));
-        try (final PrintStream stream = new PrintStream(output, "UTF-8")) {
+        try (final PrintStream stream = new PrintStream(output, StandardCharsets.UTF_8.name())) {
             for (CorridorPoint p : corridor) {
                 stream.println(p.getDate() + separator +
                                format.format(FastMath.toDegrees(p.getLeft().getLatitude()))    + separator +

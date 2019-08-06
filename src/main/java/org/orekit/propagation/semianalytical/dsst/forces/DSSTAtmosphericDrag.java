@@ -116,10 +116,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(final SpacecraftState state, final AbstractGaussianContributionContext context) {
-
-        // AuxiliaryElements auxiliary elements related to the current orbit
-        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+    protected double[] getLLimits(final SpacecraftState state, final AuxiliaryElements auxiliaryElements) {
 
         final double perigee = auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc());
 
@@ -141,13 +138,10 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
-                                                             final FieldAbstractGaussianContributionContext<T> context) {
+                                                             final FieldAuxiliaryElements<T> auxiliaryElements) {
 
         final Field<T> field = state.getDate().getField();
         final T zero = field.getZero();
-
-        // AuxiliaryElements auxiliary elements related to the current orbit
-        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
         final T[] tab = MathArrays.buildArray(field, 2);
 
@@ -159,8 +153,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final T apogee  = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().add(1.));
         // Trajectory entirely within of the atmosphere
         if (apogee.getReal() < rbar) {
-            tab[0] = auxiliaryElements.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
-            tab[1] = auxiliaryElements.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+            tab[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
+            tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
             return tab;
         }
         // Else, trajectory partialy within of the atmosphere

@@ -325,7 +325,7 @@ public class HarrisPriester implements Atmosphere {
      * @param sunInEarth position of the Sun in Earth frame (m)
      * @param posInEarth target position in Earth frame (m)
      * @return the local density (kg/m³)
-     * @param <T> instance of RealFieldElement<T>
+     * @param <T> instance of RealFieldElement&lt;T&gt;
      */
     public <T extends RealFieldElement<T>> T getDensity(final Vector3D sunInEarth, final FieldVector3D<T> posInEarth) {
         final T zero = posInEarth.getX().getField().getZero();

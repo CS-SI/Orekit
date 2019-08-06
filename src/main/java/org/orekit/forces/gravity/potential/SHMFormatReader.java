@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ import org.orekit.utils.Constants;
  * <p> This format was used to describe the gravity field of EIGEN models
  * published by the GFZ Potsdam up to 2003. It was then replaced by
  * {@link ICGEMFormatReader ICGEM format}. The SHM format is described in
- * <a href="http://www.gfz-potsdam.de/grace/results/"> Potsdam university
+ * <a href="http://op.gfz-potsdam.de/champ/docs_CHAMP/CH-FORMAT-REFLINKS.html"> Potsdam university
  * website</a>.
  *
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
@@ -90,7 +91,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         boolean    normalized = false;
         TideSystem tideSystem = TideSystem.UNKNOWN;
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         boolean okEarth            = false;
         boolean okSHM              = false;
         boolean okCoeffs           = false;

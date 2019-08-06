@@ -70,6 +70,30 @@ public class UnixCompressFilterTest {
     }
 
     @Test
+    public void testKeyPastTable() {
+        try {
+            tryRead("key-past-table-end.Z", 0x1f, 0x9d, 0x90, 0x31, 0x5c, 0xff);
+            Assert.fail("an exception should have been thrown");
+        } catch (IOException ioe) {
+            OrekitIOException oioe = (OrekitIOException) ioe;
+            Assert.assertEquals(OrekitMessages.CORRUPTED_FILE, oioe.getSpecifier());
+            Assert.assertEquals("key-past-table-end.Z", oioe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testReadPasteEnd() throws IOException {
+        final byte[] array = new byte[] { (byte) 0x1f, (byte) 0x9d, (byte) 0x90, (byte) 0x0a, (byte) 0x00 };
+        NamedData filtered = new UnixCompressFilter().
+                        filter(new NamedData("empty-line.Z", () -> new ByteArrayInputStream(array)));
+        InputStream is = filtered.getStreamOpener().openStream();
+        Assert.assertEquals('\n', is.read());
+        for (int i = 0; i < 1000; ++i) {
+            Assert.assertEquals(-1,   is.read());
+        }
+    }
+
+    @Test
     public void testSmallText() throws IOException, OrekitException {
         // for such a small text, compressed file is actually larger than initial file
         int[] uncompressed = tryRead("small-text.Z",

@@ -50,7 +50,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <li>one compliant with OREKIT Atmosphere interface, necessary to the
  *     {@link org.orekit.forces.drag.DragForce drag force model} computation.</li>
  * </ul>
- * </p>
  * <p>
  * This model provides dense output for all altitudes and positions. Output data are :
  * <ul>
@@ -58,7 +57,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <li>Temperature at Input Position (deg K)</li>
  * <li>Total Mass-Density at Input Position (kg/m³)</li>
  * </ul>
- * </p>
  * <p>
  * The model needs geographical and time information to compute general values,
  * but also needs space weather data : mean and daily solar flux, retrieved through

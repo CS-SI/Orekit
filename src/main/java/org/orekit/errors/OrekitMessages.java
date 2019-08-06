@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
@@ -188,7 +189,6 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
-    OUT_OF_RANGE_LATITUDE("out of range latitude: {0}, [{1}, {2}]"),
     ORBIT_TYPE_NOT_ALLOWED("orbit type {0} not allowed here, allowed types: {1}"),
     NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES("non pseudo-inertial frame {0} is not suitable as reference for inertial forces"),
     METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY("method not available in the absence of a central body"),
@@ -233,6 +233,15 @@ public enum OrekitMessages implements Localizable {
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
     NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
     INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
+    ITRF_VERSIONS_PREFIX_ONLY("The first column of itrf-versions.conf is a plain " +
+            "prefix that is matched against the name of each loaded file. It should " +
+            "not contain any regular expression syntax or directory components, i.e. " +
+            "\"/\" or \"\\\". Actual value: \"{0}\"."),
+    CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT("cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}"),
+    STEC_INTEGRATION_DID_NOT_CONVERGE("STEC integration did not converge"),
+    MODIP_GRID_NOT_LOADED("MODIP grid not be loaded from {0}"),
+    NEQUICK_F2_FM3_NOT_LOADED("NeQuick coefficient f2 or fm3 not be loaded from {0}"),
+    NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE("file {0} is not a supported Hatanaka-compressed file"),
     CANNOT_COMPUTE_LAGRANGIAN("Cannot compute around {0}"),
     TRAJECTORY_NOT_CROSSING_XZPLANE("The trajectory does not cross XZ Plane, it will not result in a Halo Orbit"),
     NO_STM_EQUATIONS("SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed");
@@ -318,7 +327,7 @@ public enum OrekitMessages implements Localizable {
             if (stream != null) {
                 try {
                     // Only this line is changed to make it to read properties files as UTF-8.
-                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, "UTF-8"));
+                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, StandardCharsets.UTF_8));
                 } finally {
                     stream.close();
                 }

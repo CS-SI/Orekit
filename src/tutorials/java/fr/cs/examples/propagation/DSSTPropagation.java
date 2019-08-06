@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -747,7 +748,7 @@ public class DSSTPropagation {
             {
             try {
                 nbColumns           = 0;
-                outputStream        = new PrintStream(outputFile, "UTF-8");
+                outputStream        = new PrintStream(outputFile, StandardCharsets.UTF_8.name());
                 describeNextColumn("time from start (s)");
                 if (outputKeplerian) {
                     describeNextColumn("semi major axis a (km)");

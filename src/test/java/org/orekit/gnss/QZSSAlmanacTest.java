@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -38,6 +40,7 @@ public class QZSSAlmanacTest {
 
     @Test
     public void testLoadData() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("regular-data");
         // the parser for reading Yuma files with a pattern
         QZSSYUMAParser reader = new QZSSYUMAParser(".*\\.yum$");
         // the YUMA file to read
@@ -153,7 +156,7 @@ public class QZSSAlmanacTest {
             prnList.clear();
 
             // Creates the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             try {
                 // Gathers data to create one QZSSAlmanac from 13 consecutive lines

@@ -29,17 +29,17 @@
  *
  * <p> For example to create a propagator from an OEM file one can use:
  *
- * <code><pre>
+ * <pre>
  * EphemerisFileParser parser = new OEMParser()
  *         .withConventions(IERSConventions.IERS_2010);
  * EphemerisFile file = parser.parse("my/ephemeris/file.oem");
  * BoundedPropagator propagator = file.getPropagator();
- * </pre></code>
+ * </pre>
  *
  * <p> The parsed ephemeris file also provides access to the individual data records in
  * the file.
  *
- * <code><pre>
+ * <pre>
  * // ... continued from previous example
  * // get a satellite by ID string
  * SatelliteEphemeris sat = file.getSatellites().get("satellite ID");
@@ -47,7 +47,7 @@
  * EphemerisSegment segment = sat.getSegments().get(0)
  * // get first state vector in segment
  * TimeStampedPVCoordinate pv = segment.getCoordinates().get(0);
- * </pre></code>
+ * </pre>
  *
  * @author T. Neidhart
  * @author Evan Ward

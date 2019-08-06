@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ import org.orekit.errors.OrekitMessages;
  * <p>The format of the files holding Yuma almanacs is not precisely specified,
  * so the parsing rules have been deduced from the downloadable files at
  * <a href="http://www.navcen.uscg.gov/?pageName=gpsAlmanacs">NAVCEN</a>
- * and at <a href="http://celestrak.com/GPS/almanac/Yuma/">CelesTrak</a>.</p>
+ * and at <a href="https://celestrak.com/GPS/almanac/Yuma/">CelesTrak</a>.</p>
  *
  * @author Pascal Parraud
  * @since 8.0
@@ -132,7 +133,7 @@ public class YUMAParser implements DataLoader {
         prnList.clear();
 
         // Creates the reader
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
         try {
             // Gathers data to create one GPSAlmanac from 13 consecutive lines

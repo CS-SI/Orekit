@@ -36,9 +36,6 @@ import org.hipparchus.util.FastMath;
  */
 public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
-    /** Margin factor to apply to estimated search limit parameter. */
-    private static final double CHI2_MARGIN_FACTOR = 1.1;
-
     /** Number of ambiguities. */
     private int n;
 
@@ -137,6 +134,41 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         return low;
     }
 
+    /** Get the reference decorrelated ambiguities.
+     * @return reference to the decorrelated ambiguities.
+     **/
+    protected double[] getDecorrelatedReference() {
+        return decorrelated;
+    }
+
+    /** Get the maximum number of solutions seeked.
+     * @return the maximum number of solutions seeked
+     */
+    protected int getMaxSolution() {
+        return maxSolutions;
+    }
+
+    /** Add a new solution.
+     * @param fixed solution array
+     * @param squaredNorm squared distance to the corresponding float solution
+     */
+    protected void addSolution(final long[] fixed, final double squaredNorm) {
+        solutions.add(new IntegerLeastSquareSolution(fixed, squaredNorm));
+    }
+
+    /** Remove spurious solution.
+     */
+    protected void removeSolution() {
+        solutions.remove(solutions.last());
+    }
+
+    /** Get the number of solutions found.
+     * @return the number of solutions found
+     */
+    protected int getSolutionsSize() {
+        return solutions.size();
+    }
+
     /** Perform Lᵀ.D.L = Q decomposition of the covariance matrix.
      */
     protected abstract void ltdlDecomposition();
@@ -144,6 +176,18 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Perform LAMBDA reduction.
      */
     protected abstract void reduction();
+
+    /** Find the best solutions to the Integer Least Square problem.
+     */
+    protected abstract void discreteSearch();
+
+    /** Inverse the decomposition.
+     * <p>
+     * This method transforms the Lᵀ.D.L = Q decomposition of covariance into
+     * the L⁻¹.D⁻¹.L⁻ᵀ = Q⁻¹ decomposition of the inverse of covariance.
+     * </p>
+     */
+    protected abstract void inverseDecomposition();
 
     /** Perform one integer Gauss transformation.
      * <p>
@@ -230,130 +274,6 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
     }
 
-    /** Inverse the decomposition.
-     * <p>
-     * This method transforms the Lᵀ.D.L = Q decomposition of covariance into
-     * the L⁻¹.D⁻¹.L⁻ᵀ = Q⁻¹ decomposition of the inverse of covariance.
-     * </p>
-     */
-    private void inverseDecomposition() {
-
-        // we rely on the following equation, where a low triangular
-        // matrix L of dimension n is split into sub-matrices of dimensions
-        // k, l and m with k + l + m = n
-        //
-        // [  A  |      |    ]  [        A⁻¹        |         |       ]   [  Iₖ  |      |     ]
-        // [  B  |  Iₗ  |    ]  [       -BA⁻¹       |   Iₗ    |       ] = [      |  Iₗ  |     ]
-        // [  C  |  D   |  E ]  [ E⁻¹ (DB - C) A⁻¹  | -E⁻¹D   |  E⁻¹  ]   [      |      |  Iₘ ]
-        //
-        // considering we have already computed A⁻¹ (i.e. inverted rows 0 to k-1
-        // of L), and using l = 1 in the previous expression (i.e. the middle matrix
-        // is only one row), we see that elements 0 to k-1 of row k are given by -BA⁻¹
-        // and that element k is I₁ = 1. We can therefore invert L row by row and we
-        // obtain an inverse matrix L⁻¹ which is a low triangular matrix with unit
-        // diagonal. A⁻¹ is therefore also a low triangular matrix with unit diagonal.
-        // This property is used in the loops below to speed up the computation of -BA⁻¹
-        final double[] row = new double[n - 1];
-        diag[0] = 1.0 / diag[0];
-        for (int k = 1; k < n; ++k) {
-
-            // compute row k of lower triangular part, by computing -BA⁻¹
-            final int iK = lIndex(k, 0);
-            System.arraycopy(low, iK, row, 0, k);
-            for (int j = 0; j < k; ++j) {
-                double sum = row[j];
-                for (int l = j + 1; l < k; ++l) {
-                    sum += row[l] * low[lIndex(l, j)];
-                }
-                low[iK + j] = -sum;
-            }
-
-            // diagonal part
-            diag[k] = 1.0 / diag[k];
-
-        }
-
-    }
-
-    /** Find the best solutions to the Integer Least Square problem.
-     */
-    private void discreteSearch() {
-
-        // estimate search domain limit
-        final long[]   fixed   = new long[n];
-        final double[] offsets = new double[n];
-        final double[] left    = new double[n];
-        final double[] right   = new double[n];
-        double chi2 = estimateChi2(fixed, offsets);
-
-        final AlternatingSampler[] samplers = new AlternatingSampler[n];
-
-        // set up top level sampling for last ambiguity
-        right[n - 1] = chi2 / diag[n - 1];
-        int index = n - 1;
-        while (index < n) {
-            if (index == -1) {
-
-                // all ambiguities have been fixed
-                final double squaredNorm = chi2 - diag[0] * (right[0] - left[0]);
-                solutions.add(new IntegerLeastSquareSolution(fixed, squaredNorm));
-                if (solutions.size() >= maxSolutions) {
-
-                    // shrink the ellipsoid
-                    chi2 = squaredNorm;
-                    right[n - 1] = chi2 / diag[n - 1];
-                    for (int i = n - 1; i > 0; --i) {
-                        samplers[i].setRadius(FastMath.sqrt(right[i]));
-                        right[i - 1] = diag[i] / diag[i - 1] * (right[i] - left[i]);
-                    }
-                    samplers[0].setRadius(FastMath.sqrt(right[0]));
-
-                    if (solutions.size() > maxSolutions) {
-                        // remove spurious solutions
-                        solutions.remove(solutions.last());
-                    }
-
-                }
-
-                ++index;
-
-            } else {
-
-                if (samplers[index] == null) {
-                    // we start exploring a new ambiguity
-                    samplers[index] = new AlternatingSampler(conditionalEstimate(index, offsets), FastMath.sqrt(right[index]));
-                } else {
-                    // continue exploring the same ambiguity
-                    samplers[index].generateNext();
-                }
-
-                if (samplers[index].inRange()) {
-                    fixed[index]       = samplers[index].getCurrent();
-                    offsets[index]     = fixed[index] - decorrelated[index];
-                    final double delta = fixed[index] - samplers[index].getMidPoint();
-                    left[index]        = delta * delta;
-                    if (index > 0) {
-                        right[index - 1]   = diag[index] / diag[index - 1] * (right[index] - left[index]);
-                    }
-
-                    // go down one level
-                    --index;
-
-                } else {
-
-                    // we have completed exploration of this ambiguity range
-                    samplers[index] = null;
-
-                    // go up one level
-                    ++index;
-
-                }
-
-            }
-        }
-
-    }
-
     /** Recover ambiguities prior to the Z-transformation.
      * @return recovered ambiguities
      */
@@ -380,87 +300,6 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
 
         return recovered;
 
-    }
-
-    /** Compute a safe estimate of search limit parameter χ².
-     * <p>
-     * The estimate is based on section 4.11 in de Jonge and Tiberius 1996,
-     * computing χ² such that it includes at least a few preset grid points
-     * </p>
-     * @param fixed placeholder for test fixed ambiguities
-     * @param offsets placeholder for offsets between fixed ambiguities and float ambiguities
-     * @return safe estimate of search limit parameter χ²
-     */
-    private double estimateChi2(final long[] fixed, final double[] offsets) {
-
-        // initialize test points, assuming ambiguities have been fully decorrelated
-        final AlternatingSampler[] samplers = new AlternatingSampler[n];
-        for (int i = 0; i < n; ++i) {
-            samplers[i] = new AlternatingSampler(decorrelated[i], 0.0);
-        }
-
-        final SortedSet<Double> squaredNorms = new TreeSet<>();
-
-        // first test point at center
-        for (int i = 0; i < n; ++i) {
-            fixed[i] = samplers[i].getCurrent();
-        }
-        squaredNorms.add(squaredNorm(fixed, offsets));
-
-        while (squaredNorms.size() < maxSolutions) {
-            // add a series of grid points, each shifted from center along a different axis
-            final int remaining = FastMath.min(n, maxSolutions - squaredNorms.size());
-            for (int i = 0; i < remaining; ++i) {
-                final long saved = fixed[i];
-                samplers[i].generateNext();
-                fixed[i] = samplers[i].getCurrent();
-                squaredNorms.add(squaredNorm(fixed, offsets));
-                fixed[i] = saved;
-            }
-        }
-
-        // select a limit ensuring at least the needed number of grid points are in the search domain
-        int count = 0;
-        for (final double s : squaredNorms) {
-            if (++count == maxSolutions) {
-                return s * CHI2_MARGIN_FACTOR;
-            }
-        }
-
-        // never reached
-        return Double.NaN;
-
-    }
-
-    /** Compute squared norm of a set of fixed ambiguities.
-     * @param fixed fixed ambiguities
-     * @param offsets placeholder for offsets between fixed ambiguities and float ambiguities
-     * @return squared norm of a set of fixed ambiguities
-     */
-    private double squaredNorm(final long[] fixed, final double[] offsets) {
-        double n2 = 0;
-        for (int i = n - 1; i >= 0; --i) {
-            offsets[i] = fixed[i] - decorrelated[i];
-            final double delta = fixed[i] - conditionalEstimate(i, offsets);
-            n2 += diag[i] * delta * delta;
-        }
-        return n2;
-    }
-
-    /** Compute conditional estimate of an ambiguity.
-     * <p>
-     * This corresponds to equation 4.4 in de Jonge and Tiberius 1996
-     * </p>
-     * @param i index of the ambiguity
-     * @param offsets offsets between already fixed ambiguities and float ambiguities
-     * @return conditional estimate of ambiguity â<sub>i|i+1...n</sub>
-     */
-    private double conditionalEstimate(final int i, final double[] offsets) {
-        double conditional = decorrelated[i];
-        for (int j = i + 1; j < n; ++j) {
-            conditional -= low[lIndex(j, i)] * offsets[j];
-        }
-        return conditional;
     }
 
     /** Get the index of an entry in the lower triangular matrix.

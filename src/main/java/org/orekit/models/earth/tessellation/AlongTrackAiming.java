@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -27,8 +28,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -37,6 +36,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class used to orient tiles along an orbit track.
  * @see ConstantAzimuthAiming
+ * @see DivertedSingularityAiming
  * @author Luc Maisonobe
  */
 public class AlongTrackAiming implements TileAiming {
@@ -46,6 +46,9 @@ public class AlongTrackAiming implements TileAiming {
 
     /** Ground track over one half orbit. */
     private final List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> halfTrack;
+
+    /** Indicator for orbit type. */
+    private final boolean retrogradeOrbit;
 
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
@@ -57,8 +60,15 @@ public class AlongTrackAiming implements TileAiming {
      * or descending orbits
      */
     public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending) {
-        this.halfTrack = findHalfTrack(orbit, ellipsoid, isAscending);
-        this.factory   = new DSFactory(1, 1);
+        this.halfTrack       = findHalfTrack(orbit, ellipsoid, isAscending);
+        this.retrogradeOrbit = orbit.getPVCoordinates().getMomentum().getZ() < 0;
+        this.factory         = new DSFactory(1, 1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<GeodeticPoint> getSingularPoints() {
+        return Arrays.asList(GeodeticPoint.NORTH_POLE, GeodeticPoint.SOUTH_POLE);
     }
 
     /** {@inheritDoc} */
@@ -67,12 +77,10 @@ public class AlongTrackAiming implements TileAiming {
 
         final double lStart = halfTrack.get(0).getFirst().getLatitude();
         final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
-        // check the point can be reached
+
+        // special handling for out of range latitudes
         if (gp.getLatitude() < FastMath.min(lStart, lEnd) || gp.getLatitude() > FastMath.max(lStart, lEnd)) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_LATITUDE,
-                                      FastMath.toDegrees(gp.getLatitude()),
-                                      FastMath.toDegrees(FastMath.min(lStart, lEnd)),
-                                      FastMath.toDegrees(FastMath.max(lStart, lEnd)));
+            return retrogradeOrbit ? gp.getWest() : gp.getEast();
         }
 
         // bracket the point in the half track sample

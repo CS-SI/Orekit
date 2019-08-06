@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.HatanakaCompressFilter;
 
 /** Singleton class managing all supported {@link DataProvider data providers}.
 
@@ -102,6 +103,7 @@ public class DataProvidersManager {
         // set up predefined filters
         addFilter(new GzipFilter());
         addFilter(new UnixCompressFilter());
+        addFilter(new HatanakaCompressFilter());
 
         predefinedFilters = filters.size();
 

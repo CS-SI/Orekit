@@ -20,6 +20,7 @@ package fr.cs.examples.conversion;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +55,13 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
 /** Orekit tutorial for propagator conversion.
+ * This tutorial will help you understand how a propagator can be converted to another with a different model.
+ * Here we convert a numerical propagator into an analytical Keplerian propagator.
+ * The fitting is performed with 250 points on two orbits.
+ * Both propagators are then run on a time span of 10 orbits to see how the differences evolve.
+ * Two files will be produced in your home directory:
+ *  - elements.dat: A comparison of the Keplerian elements of both propagators
+ *  - elts_pv.dat : A comparison of the PVT of both propagators
  * @author Pascal Parraud
  */
 public class PropagatorConversion {
@@ -143,8 +151,8 @@ public class PropagatorConversion {
             kepProp.setMasterMode(60., kepStepHandler);
 
             // Extrapolate from the initial to the final date
-            numProp.propagate(initialDate.shiftedBy(10.*period));
-            kepProp.propagate(initialDate.shiftedBy(10.*period));
+            numProp.propagate(initialDate, initialDate.shiftedBy(10.*period));
+            kepProp.propagate(initialDate, initialDate.shiftedBy(10.*period));
 
             // retrieve the states
             List<SpacecraftState> numStates = numStepHandler.getStates();
@@ -152,7 +160,7 @@ public class PropagatorConversion {
 
             // Print the results on the output file
             File output = new File(new File(System.getProperty("user.home")), "elements.dat");
-            try (final PrintStream stream = new PrintStream(output, "UTF-8")) {
+            try (final PrintStream stream = new PrintStream(output, StandardCharsets.UTF_8.name())) {
                 stream.println("# date Anum Akep Enum Ekep Inum Ikep LMnum LMkep");
                 for (SpacecraftState numState : numStates) {
                     for (SpacecraftState kepState : kepStates) {
@@ -174,7 +182,7 @@ public class PropagatorConversion {
             System.out.println("Results saved as file " + output);
 
             File output1 = new File(new File(System.getProperty("user.home")), "elts_pv.dat");
-            try (final PrintStream stream = new PrintStream(output1, "UTF-8")) {
+            try (final PrintStream stream = new PrintStream(output1, StandardCharsets.UTF_8.name())) {
                 stream.println("# date pxn pyn pzn vxn vyn vzn pxk pyk pzk vxk vyk vzk");
                 for (SpacecraftState numState : numStates) {
                     for (SpacecraftState kepState : kepStates) {

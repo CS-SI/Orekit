@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -128,7 +129,7 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
 
         // parse the file
         startParse(name);
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber      = 0;
         for (String line = r.readLine(); line != null; line = r.readLine()) {
             ++lineNumber;

@@ -73,9 +73,9 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
 
     /** Set the propagator to slave mode.
      * <p>This mode is used when the user needs only the final orbit at the target time.
-     *  The (slave) propagator computes this result and return it to the calling
-     *  (master) application, without any intermediate feedback.<p>
-     * <p>This is the default mode.</p>
+     * The (slave) propagator computes this result and return it to the calling
+     * (master) application, without any intermediate feedback.
+     * <p>This is the default mode.
      * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
      * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #setEphemerisMode()
@@ -175,7 +175,11 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * Additional states that are present in the {@link #getInitialState() initial state}
      * but have no evolution method registered are <em>not</em> considered as managed states.
      * These unmanaged additional states are not lost during propagation, though. Their
-     * value will simply be copied unchanged throughout propagation.
+     * value are piecewise constant between state resets that may change them if some
+     * event handler {@link
+     * org.orekit.propagation.events.handlers.FieldEventHandler#resetState(FieldEventDetector,
+     * FieldSpacecraftState) resetState} method is called at an event occurrence and happens
+     * to change the unmanaged additional state.
      * </p>
      * @param name name of the additional state
      * @return true if the additional state is managed

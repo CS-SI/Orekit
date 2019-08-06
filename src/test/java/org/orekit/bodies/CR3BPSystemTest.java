@@ -103,15 +103,15 @@ public class CR3BPSystemTest {
     final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
     
     final double l1Gamma = syst.getGamma(LagrangianPoints.L1);
-    Assert.assertEquals(1.491E9, l1Gamma * syst.getDdim(),1E6);
+    Assert.assertEquals(1.497655E9, l1Gamma * syst.getDdim(),1E3);
 
     
     final double l2Gamma = syst.getGamma(LagrangianPoints.L2);
-    Assert.assertEquals(1.501E9, l2Gamma * syst.getDdim(),1E6);
+    Assert.assertEquals(1.507691E9, l2Gamma * syst.getDdim(),1E3);
 
     
     final double l3Gamma = syst.getGamma(LagrangianPoints.L3);
-    Assert.assertEquals(1.495E11, l3Gamma * syst.getDdim(),1E8);
+    Assert.assertEquals(1.495981555E11, l3Gamma * syst.getDdim(),1E3);
 
     }
 }
