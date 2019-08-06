@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import org.junit.Assert;
@@ -49,18 +51,26 @@ public class MeasurementCombinationFactoryTest {
     /** RINEX 2 Observation data set. */
     private ObservationDataSet dataSetRinex2;
 
+    /** RINEX 3 Observation data set. */
+    private ObservationDataSet dataSetRinex3;
+
     @Before
-    public void setUp() {
+    public void setUp() throws NoSuchAlgorithmException, IOException {
         Utils.setDataRoot("gnss");
 
         // Observation data
         obs1 = new ObservationData(ObservationType.L1, 2.25E7, 0, 0);
-        // Satellite system
-        system = SatelliteSystem.GPS;
 
-        // Observation data set
-        RinexLoader loader = load("rinex/jnu10110.17o");
-        dataSetRinex2 = loader.getObservationDataSets().get(0);
+        // RINEX 2 Observation data set
+        RinexLoader loader2 = load("rinex/truncate-sbch0440.16o");
+        dataSetRinex2 = loader2.getObservationDataSets().get(0);
+
+        // RINEX 3 Observation data set
+        RinexLoader loader3 = load("rinex/aaaa0000.00o");
+        dataSetRinex3 = loader3.getObservationDataSets().get(1);
+
+        // Satellite system
+        system = dataSetRinex2.getSatelliteSystem();
     }
 
     @Test
@@ -91,13 +101,42 @@ public class MeasurementCombinationFactoryTest {
 
             if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
 
-                Assert.assertEquals(27477897.451,                  cod.getValue(),                eps);
+                Assert.assertEquals(27534453.519,                  cod.getValue(),                eps);
                 Assert.assertEquals(Double.NaN,                    cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(CombinationType.GEOMETRY_FREE, cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 
-                Assert.assertEquals(2.732,                         cod.getValue(),                eps);
+                Assert.assertEquals(6.953,                         cod.getValue(),                eps);
+                Assert.assertEquals(Double.NaN,                    cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(CombinationType.GEOMETRY_FREE, cod.getCombinationType());
+
+            }
+
+        }
+    }
+
+    @Test
+    public void testRinex3GeometryFree() {
+        // Initialize combination of measurements
+        final GeometryFreeCombination combination = MeasurementCombinationFactory.getGeometryFreeCombination(system);
+
+        // Perform combination on the observation data set
+        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
+        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
+
+        // Verify the combined observation data
+        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
+
+            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
+
+                Assert.assertEquals(3821708.096,                  cod.getValue(),                eps);
+                Assert.assertEquals(Double.NaN,                    cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(CombinationType.GEOMETRY_FREE, cod.getCombinationType());
+
+            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+
+                Assert.assertEquals(2.187,                         cod.getValue(),                eps);
                 Assert.assertEquals(Double.NaN,                    cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(CombinationType.GEOMETRY_FREE, cod.getCombinationType());
 
@@ -157,14 +196,43 @@ public class MeasurementCombinationFactoryTest {
 
             if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
 
-                Assert.assertEquals(166932002.3165,            cod.getValue(),                eps);
+                Assert.assertEquals(167275826.4529,            cod.getValue(),                eps);
                 Assert.assertEquals(9316 * Frequency.F0,       cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(CombinationType.IONO_FREE, cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 
-                Assert.assertEquals(23683687.8991,             cod.getValue(),                eps);
+                Assert.assertEquals(23732467.5026,             cod.getValue(),                eps);
                 Assert.assertEquals(9316 * Frequency.F0,       cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(CombinationType.IONO_FREE, cod.getCombinationType());
+
+            }
+
+        }
+    }
+
+    @Test
+    public void testRinex3IonoFree() {
+        // Initialize combination of measurements
+        final IonosphereFreeCombination combination = MeasurementCombinationFactory.getIonosphereFreeCombination(system);
+
+        // Perform combination on the observation data set
+        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
+        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
+
+        // Verify the combined observation data
+        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
+
+            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
+
+                Assert.assertEquals(134735627.3126,            cod.getValue(),                eps);
+                Assert.assertEquals(1175 * Frequency.F0,       cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(CombinationType.IONO_FREE, cod.getCombinationType());
+
+            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+
+                Assert.assertEquals(22399214.1934,             cod.getValue(),                eps);
+                Assert.assertEquals(1175 * Frequency.F0,       cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(CombinationType.IONO_FREE, cod.getCombinationType());
 
             }
@@ -223,14 +291,43 @@ public class MeasurementCombinationFactoryTest {
 
             if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
 
-                Assert.assertEquals(221439467.4189,            cod.getValue(),                eps);
+                Assert.assertEquals(221895480.9217,            cod.getValue(),                eps);
                 Assert.assertEquals(34 * Frequency.F0,         cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(CombinationType.WIDE_LANE, cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 
-                Assert.assertEquals(23683682.4796,             cod.getValue(),                eps);
+                Assert.assertEquals(23732453.7100,             cod.getValue(),                eps);
                 Assert.assertEquals(34 * Frequency.F0,         cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(CombinationType.WIDE_LANE, cod.getCombinationType());
+
+            }
+
+        }
+    }
+
+    @Test
+    public void testRinex3WideLane() {
+        // Initialize combination of measurements
+        final WideLaneCombination combination = MeasurementCombinationFactory.getWideLaneCombination(system);
+
+        // Perform combination on the observation data set
+        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
+        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
+
+        // Verify the combined observation data
+        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
+
+            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
+
+                Assert.assertEquals(179620369.2060,            cod.getValue(),                eps);
+                Assert.assertEquals(5 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(CombinationType.WIDE_LANE, cod.getCombinationType());
+
+            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+
+                Assert.assertEquals(22399239.8790,             cod.getValue(),                eps);
+                Assert.assertEquals(5 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(CombinationType.WIDE_LANE, cod.getCombinationType());
 
             }
@@ -289,14 +386,43 @@ public class MeasurementCombinationFactoryTest {
 
             if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
 
-                Assert.assertEquals(112424537.2140,              cod.getValue(),                eps);
+                Assert.assertEquals(112656171.9842,              cod.getValue(),                eps);
                 Assert.assertEquals(274 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(CombinationType.NARROW_LANE, cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 
-                Assert.assertEquals(23683693.3185,               cod.getValue(),                eps);
+                Assert.assertEquals(23732481.2951,               cod.getValue(),                eps);
                 Assert.assertEquals(274 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(CombinationType.NARROW_LANE, cod.getCombinationType());
+
+            }
+
+        }
+    }
+
+    @Test
+    public void testRinex3NarrowLane() {
+        // Initialize combination of measurements
+        final NarrowLaneCombination combination = MeasurementCombinationFactory.getNarrowLaneCombination(system);
+
+        // Perform combination on the observation data set
+        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
+        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
+
+        // Verify the combined observation data
+        for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
+
+            if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
+
+                Assert.assertEquals(89850885.4191,               cod.getValue(),                eps);
+                Assert.assertEquals(235 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(CombinationType.NARROW_LANE, cod.getCombinationType());
+
+            } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+
+                Assert.assertEquals(22399188.5078,               cod.getValue(),                eps);
+                Assert.assertEquals(235 * Frequency.F0,          cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(CombinationType.NARROW_LANE, cod.getCombinationType());
 
             }
@@ -334,12 +460,12 @@ public class MeasurementCombinationFactoryTest {
         final RinexHeader header = combinedDataSet.getHeader();
         Assert.assertEquals(2.11, header.getRinexVersion(), eps);
         // Verify satellite data
-        Assert.assertEquals(2, combinedDataSet.getPrnNumber());
+        Assert.assertEquals(30, combinedDataSet.getPrnNumber());
         Assert.assertEquals(SatelliteSystem.GPS, combinedDataSet.getSatelliteSystem());
         // Verify receiver clock
-        Assert.assertEquals(-0.03, combinedDataSet.getRcvrClkOffset(), eps);
+        Assert.assertEquals(0.0, combinedDataSet.getRcvrClkOffset(), eps);
         // Verify date
-        Assert.assertEquals("2017-01-10T23:59:43.000", combinedDataSet.getDate().toString());
+        Assert.assertEquals("2016-02-13T00:49:43.000", combinedDataSet.getDate().toString());
     }
 
     private RinexLoader load(final String name) {
