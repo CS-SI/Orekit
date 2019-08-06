@@ -24,7 +24,11 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.CR3BPRotatingFrame;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.LagrangianPoints;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Class creating, from two different celestial bodies, the corresponding system
@@ -74,19 +78,19 @@ public class CR3BPSystem {
     private final CelestialBody secondaryBody;
 
     /** L1 Point position in the rotating frame. */
-    private final Vector3D l1Position;
+    private Vector3D l1Position;
 
     /** L2 Point position in the rotating frame. */
-    private final Vector3D l2Position;
+    private Vector3D l2Position;
 
     /** L3 Point position in the rotating frame. */
-    private final Vector3D l3Position;
+    private Vector3D l3Position;
 
     /** L4 Point position in the rotating frame. */
-    private final Vector3D l4Position;
+    private Vector3D l4Position;
 
     /** L5 Point position in the rotating frame. */
-    private final Vector3D l5Position;
+    private Vector3D l5Position;
 
     /** Distance between a L1 and the secondaryBody. */
     private final double gamma1;
@@ -131,13 +135,35 @@ public class CR3BPSystem {
         final double mu1 = primaryBody.getGM();
 
         this.mu = mu;
-
-        rotatingFrame = new CR3BPRotatingFrame(mu, primaryBody, secondaryBody);
-
         this.dDim = a;
         this.vDim = FastMath.sqrt(mu1 / dDim); // - mu * dDim));
         this.tDim = 2 * FastMath.PI * dDim / vDim;
+        this.rotatingFrame = new CR3BPRotatingFrame(mu, primaryBody, secondaryBody);
 
+        computeLagrangianPointsPosition();
+
+        // Calculation of collinear points gamma
+
+        // L1 Gamma
+        final double x1 = l1Position.getX();
+        final double dCP1 = 1 - mu;
+        this.gamma1 = dCP1 - x1;
+
+        // L2 Gamma
+        final double x2 = l2Position.getX();
+        final double dCP2 = 1 - mu;
+        this.gamma2 = x2 - dCP2;
+
+        // L3 Gamma
+        final double x3 = l3Position.getX();
+        final double dCP3 = -mu;
+        this.gamma3 = dCP3 - x3;
+
+    }
+
+    /** Calculation of Lagrangian Points position using CR3BP equations.
+     */
+    private void computeLagrangianPointsPosition() {
         // Calculation of Lagrangian Points position using CR3BP equations
 
         // L1
@@ -163,10 +189,9 @@ public class CR3BPSystem {
                         solver.solve(MAX_EVALUATIONS, l1Equation, searchInterval1[0],
                          searchInterval1[1], AllowedSolution.ANY_SIDE);
 
-        l1Position = new Vector3D(r1, 0.0, 0.0);
+        this.l1Position = new Vector3D(r1, 0.0, 0.0);
 
         // L2
-
         final double baseR2 = 1 + FastMath.cbrt(mu / 3);
         final UnivariateFunction l2Equation = x -> {
             final double leq21 =
@@ -183,10 +208,9 @@ public class CR3BPSystem {
             solver.solve(MAX_EVALUATIONS, l2Equation, searchInterval2[0],
                          searchInterval2[1], AllowedSolution.ANY_SIDE);
 
-        l2Position = new Vector3D(r2, 0.0, 0.0);
+        this.l2Position = new Vector3D(r2, 0.0, 0.0);
 
         // L3
-
         final double baseR3 = -(1 + 5 * mu / 12);
         final UnivariateFunction l3Equation = x -> {
             final double leq31 =
@@ -203,31 +227,13 @@ public class CR3BPSystem {
             solver.solve(MAX_EVALUATIONS, l3Equation, searchInterval3[0],
                          searchInterval3[1], AllowedSolution.ANY_SIDE);
 
-        l3Position = new Vector3D(r3, 0.0, 0.0);
+        this.l3Position = new Vector3D(r3, 0.0, 0.0);
 
         // L4
-        l4Position = new Vector3D(0.5 - mu, FastMath.sqrt(3) / 2, 0);
+        this.l4Position = new Vector3D(0.5 - mu, FastMath.sqrt(3) / 2, 0);
 
         // L5
-        l5Position = new Vector3D(0.5 - mu, -FastMath.sqrt(3) / 2, 0);
-
-        // Calculation of collinear points gamma
-
-        // L1
-        final double x1 = getLPosition(LagrangianPoints.L1).getX();
-        final double DCP1 = 1 - mu;
-        this.gamma1 = DCP1 - x1;
-
-        // L2
-        final double x2 = getLPosition(LagrangianPoints.L2).getX();
-        final double DCP2 = 1 - mu;
-        this.gamma2 = x2 - DCP2;
-
-        // L3
-        final double x3 = getLPosition(LagrangianPoints.L3).getX();
-        final double DCP3 = -mu;
-        this.gamma3 = DCP3 - x3;
-
+        this.l5Position = new Vector3D(0.5 - mu, -FastMath.sqrt(3) / 2, 0);
     }
 
     /** Get the CR3BP mass ratio of the system mu2/(mu1+mu2).
@@ -286,8 +292,7 @@ public class CR3BPSystem {
         return rotatingFrame;
     }
 
-    /**
-     * Get the position of the Lagrangian point in the CR3BP Rotating frame.
+    /** Get the position of the Lagrangian point in the CR3BP Rotating frame.
      * @param lagrangianPoint Lagrangian Point to consider
      * @return position of the Lagrangian point in the CR3BP Rotating frame (m)
      */
@@ -347,5 +352,35 @@ public class CR3BPSystem {
                 gamma = 0;
         }
         return gamma;
+    }
+
+    /** Get the PVCoordinates from normalized units to standard units in an output frame.
+     * @param pv0 Normalized PVCoordinates in the rotating frame
+     * @param date Date of the transform
+     * @param outputFrame Frame in which the output PVCoordinates will be
+     * @return PVCoordinates in the output frame [m,m/s]
+     */
+    public PVCoordinates getRealPV(final PVCoordinates pv0, final AbsoluteDate date, final Frame outputFrame) {
+
+        final Frame primaryInertialFrame = primaryBody.getInertiallyOrientedFrame();
+        final TimeStampedPVCoordinates pv21 = secondaryBody.getPVCoordinates(date, primaryInertialFrame);
+        final double dist12 = pv21.getPosition().getNorm();
+
+        final double vCircular  = FastMath.sqrt(primaryBody.getGM() / dist12);
+        final PVCoordinates pvDim = new PVCoordinates(pv0.getPosition().scalarMultiply(dist12),
+                                                      pv0.getVelocity().scalarMultiply(vCircular));
+
+        final Transform rotatingToPrimaryInertial = rotatingFrame.getTransformTo(primaryInertialFrame, date);
+
+        final PVCoordinates pv  = rotatingToPrimaryInertial.transformPVCoordinates(pvDim);
+
+        final double h = pv.getPosition().getNorm() / dist12;
+
+        final Vector3D newVel = pv.getVelocity().add(pv21.getVelocity().scalarMultiply(h));
+        final PVCoordinates pv2 = new PVCoordinates(pv.getPosition(), newVel);
+
+        final Transform primaryInertialToOutputFrame = primaryInertialFrame.getTransformTo(outputFrame, date);
+
+        return primaryInertialToOutputFrame.transformPVCoordinates(pv2);
     }
 }
