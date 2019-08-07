@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
@@ -97,8 +98,8 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         // Combined frequency
         final double combinedFrequency = getCombinedFrequency(freq1.getMHzFrequency(), freq2.getMHzFrequency());
 
-        //Combined observation data
-        return new CombinedObservationData(type, measType1, combinedValue, combinedFrequency);
+        // Combined observation data
+        return new CombinedObservationData(type, measType1, combinedValue, combinedFrequency, Arrays.asList(od1, od2));
 
     }
 

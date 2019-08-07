@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss;
 
+import java.util.List;
+
 import org.orekit.estimation.measurements.gnss.CombinationType;
 
 /**
@@ -37,21 +39,27 @@ public class CombinedObservationData {
     /** Frequency of the combined observation data [MHz]. */
     private final double combinedFrequency;
 
+    /** Observation data used to perform the combination of measurements. */
+    private final List<ObservationData> usedData;
+
     /**
      * Constructor.
      * @param combinationType combination of measurements used to build the combined observation data
      * @param measurementType measurement type used for the combination of measurement
-     * @param value combined observed value
+     * @param combinedValue combined observed value
      * (may be {@code Double.NaN} if combined observation not available)
      * @param combinedFrequency frequency of the combined observation data in MHz
      * (may be {@code Double.NaN} if combined frequency is not available)
+     * @param usedData observation data used to perform the combination of measurements
      */
     public CombinedObservationData(final CombinationType combinationType, final MeasurementType measurementType,
-                                   final double value, final double combinedFrequency) {
+                                   final double combinedValue, final double combinedFrequency,
+                                   final List<ObservationData> usedData) {
         this.combinationType   = combinationType;
         this.measurementType   = measurementType;
-        this.value             = value;
+        this.value             = combinedValue;
         this.combinedFrequency = combinedFrequency;
+        this.usedData          = usedData;
     }
 
     /** Get the combined observed value.
@@ -80,6 +88,14 @@ public class CombinedObservationData {
      */
     public MeasurementType getMeasurementType() {
         return measurementType;
+    }
+
+    /**
+     * Get the list of observation data used to perform the combination of measurements.
+     * @return a list of observation data
+     */
+    public List<ObservationData> getUsedObservationData() {
+        return usedData;
     }
 
 }
