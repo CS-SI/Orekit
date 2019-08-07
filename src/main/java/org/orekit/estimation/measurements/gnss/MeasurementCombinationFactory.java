@@ -71,4 +71,13 @@ public class MeasurementCombinationFactory {
         return new GeometryFreeCombination(system);
     }
 
+    /**
+     * Get the Melbourne-Wübbena combination of measurements.
+     * @param system satellite system
+     * @return Melbourne-Wübbena combination
+     */
+    public static MelbourneWubbenaCombination getMelbourneWubbenaCombination(final SatelliteSystem system) {
+        return new MelbourneWubbenaCombination(system);
+    }
+
 }

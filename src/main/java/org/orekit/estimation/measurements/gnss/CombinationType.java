@@ -34,7 +34,10 @@ public enum CombinationType {
     NARROW_LANE("Narrow Lane"),
 
     /** Wide-lane combination. */
-    WIDE_LANE("Wide Lane");
+    WIDE_LANE("Wide Lane"),
+
+    /** Melbourne-Wübbena combination. */
+    MELBOURNE_WUBBENA("Melbourne Wubbena");
 
     /** Name of the combination of measurements. */
     private final String name;

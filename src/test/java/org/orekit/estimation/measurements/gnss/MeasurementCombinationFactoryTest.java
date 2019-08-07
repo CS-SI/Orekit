@@ -93,6 +93,11 @@ public class MeasurementCombinationFactoryTest {
         doTestEmptyDataSet(MeasurementCombinationFactory.getNarrowLaneCombination(system));
     }
 
+    @Test
+    public void testEmptyDataSetMelbourneWubbena() {
+        doTestEmptyDataSet(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system));
+    }
+
     /**
      * Test code stability if an empty observation data set is used. 
      */
@@ -152,67 +157,81 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex2GeometryFree() {
         doTestRinex(MeasurementCombinationFactory.getGeometryFreeCombination(system),
-                     CombinationType.GEOMETRY_FREE, 6.953, 27534453.519, Double.NaN, 2);
+                     CombinationType.GEOMETRY_FREE, 6.953, 27534453.519,0.0,  Double.NaN, 2, 2);
     }
 
     @Test
     public void testRinex2IonoFree() {
         doTestRinex(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
-                     CombinationType.IONO_FREE, 23732467.5026, 167275826.4529, 9316 * Frequency.F0, 2);
+                     CombinationType.IONO_FREE, 23732467.5026, 167275826.4529, 0.0, 9316 * Frequency.F0, 2, 2);
     }
 
     @Test
     public void testRinex2WideLane() {
         doTestRinex(MeasurementCombinationFactory.getWideLaneCombination(system),
-                     CombinationType.WIDE_LANE, 23732453.7100, 221895480.9217, 34 * Frequency.F0, 2);
+                     CombinationType.WIDE_LANE, 23732453.7100, 221895480.9217, 0.0, 34 * Frequency.F0, 2, 2);
     }
 
     @Test
     public void testRinex2NarrowLane() {
         doTestRinex(MeasurementCombinationFactory.getNarrowLaneCombination(system),
-                     CombinationType.NARROW_LANE, 23732481.2951, 112656171.9842, 274 * Frequency.F0, 2);
+                     CombinationType.NARROW_LANE, 23732481.2951, 112656171.9842, 0.0, 274 * Frequency.F0, 2, 2);
+    }
+
+    @Test
+    public void testRinex2MelbourneWubbena() {
+        doTestRinex(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 198162999.6266, 34 * Frequency.F0, 1, 2);
     }
 
     @Test
     public void testRinex3GeometryFree() {
         doTestRinex(MeasurementCombinationFactory.getGeometryFreeCombination(system),
-                     CombinationType.GEOMETRY_FREE, 2.187, 3821708.096, Double.NaN, 3);
+                     CombinationType.GEOMETRY_FREE, 2.187, 3821708.096, 0.0, Double.NaN, 2, 3);
     }
 
     @Test
     public void testRinex3IonoFree() {
         doTestRinex(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
-                     CombinationType.IONO_FREE, 22399214.1934, 134735627.3126, 1175 * Frequency.F0, 3);
+                     CombinationType.IONO_FREE, 22399214.1934, 134735627.3126, 0.0, 1175 * Frequency.F0, 2, 3);
     }
 
     @Test
     public void testRinex3WideLane() {
         doTestRinex(MeasurementCombinationFactory.getWideLaneCombination(system),
-                     CombinationType.WIDE_LANE, 22399239.8790, 179620369.2060, 5 * Frequency.F0, 3);
+                     CombinationType.WIDE_LANE, 22399239.8790, 179620369.2060, 0.0, 5 * Frequency.F0, 2, 3);
     }
 
     @Test
     public void testRinex3NarrowLane() {
         doTestRinex(MeasurementCombinationFactory.getNarrowLaneCombination(system),
-                    CombinationType.NARROW_LANE, 22399188.5078, 89850885.4191, 235 * Frequency.F0, 3);
+                    CombinationType.NARROW_LANE, 22399188.5078, 89850885.4191, 0.0, 235 * Frequency.F0, 2, 3);
+    }
+
+    @Test
+    public void testRinex3MelbourneWubbena() {
+        doTestRinex(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 157221180.6982, 5 * Frequency.F0, 1, 3);
     }
 
     /**
      * Test if Rinex formats can be used for the combination of measurements
      */
     private void doTestRinex(final MeasurementCombination combination, final CombinationType expectedType,
-                             final double expectedRangeValue, final double expectedPhaseValue,
-                             final double expectedFrequency, final int rinexVersion) {
+                             final double expectedRangeValue, final double expectedPhaseValue, final double expectedRangePhase,
+                             final double expectedFrequency, final int expectedSize, final int rinexVersion) {
 
         // Perform combination on the observation data set depending the Rinex version
         final CombinedObservationDataSet combinedDataSet;
         if (rinexVersion == 2) {
             combinedDataSet = combination.combine(dataSetRinex2);
-            checkCombinedDataSet(combinedDataSet);
+            checkCombinedDataSet(combinedDataSet, expectedSize);
         } else {
             combinedDataSet = combination.combine(dataSetRinex3);
-            Assert.assertEquals(2, combinedDataSet.getObservationData().size());
+            Assert.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
         }
+
+        Assert.assertEquals(expectedType.getName(), combination.getName());
 
         // Verify the combined observation data
         for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
@@ -229,14 +248,21 @@ public class MeasurementCombinationFactoryTest {
                 Assert.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
                 Assert.assertEquals(expectedType,       cod.getCombinationType());
 
+            } else if (cod.getMeasurementType() == MeasurementType.COMBINED_RANGE_PHASE) {
+
+                Assert.assertEquals(expectedRangePhase, cod.getValue(),                eps);
+                Assert.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assert.assertEquals(expectedType,       cod.getCombinationType());
+
             }
 
         }
     }
 
-    private void checkCombinedDataSet(final CombinedObservationDataSet combinedDataSet) {
+    private void checkCombinedDataSet(final CombinedObservationDataSet combinedDataSet,
+                                      final int expectedSize) {
         // Verify the number of combined data set
-        Assert.assertEquals(2, combinedDataSet.getObservationData().size());
+        Assert.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
         // Verify RINEX Header
         final RinexHeader header = combinedDataSet.getHeader();
         Assert.assertEquals(2.11, header.getRinexVersion(), eps);

@@ -28,9 +28,6 @@ public interface MeasurementCombination {
 
     /**
      * Combines observation data using a combination of measurements.
-     * <p>
-     * Current implementation only support <b>observations</b> from RINEX 2 files.
-     * </p>
      * @param observations observation data set
      * @return a combined observation data set
      */

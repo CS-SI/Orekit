@@ -34,6 +34,9 @@ public enum MeasurementType {
     DOPPLER,
 
     /** Signal-strength measurement. */
-    SIGNAL_STRENGTH;
+    SIGNAL_STRENGTH,
+
+    /** Combined pseudo-range carrier-phase measurement. */
+    COMBINED_RANGE_PHASE;
 
 }
