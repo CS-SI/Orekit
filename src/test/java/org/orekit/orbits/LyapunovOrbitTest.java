@@ -101,7 +101,7 @@ public class LyapunovOrbitTest {
         final Frame Frame = syst.getRotatingFrame();
 
         LyapunovOrbit h = new LyapunovOrbit(syst, LagrangianPoints.L1, 8E6);
-        h.ApplyDifferentialCorrection();
+        h.applyDifferentialCorrection();
         final double orbitalPeriod = h.getOrbitalPeriod();
         double integrationTime = orbitalPeriod * 0.1;
         final PVCoordinates initialConditions = h.getExactInitialPV();
@@ -164,34 +164,10 @@ public class LyapunovOrbitTest {
         final double orbitalPeriod = 1;
 
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
-        
-        // Integration parameters
-        // These parameters are used for the Dormand-Prince integrator, a
-        // variable step integrator,
-        // these limits prevent the integrator to spend too much time when the
-        // equations are too stiff,
-        // as well as the reverse situation.
-        final double minStep = 1E-10;
-        final double maxstep = 1E-2;
-
-        // tolerances for integrators
-        // Used by the integrator to estimate its variable integration step
-        final double positionTolerance = 0.0001;
-        final double velocityTolerance = 0.0001;
-        final double massTolerance = 1.0e-6;
-        final double[] vecAbsoluteTolerances = { positionTolerance, positionTolerance, positionTolerance,
-                velocityTolerance, velocityTolerance, velocityTolerance, massTolerance };
-        final double[] vecRelativeTolerances = new double[vecAbsoluteTolerances.length];
-
-        // Defining the numerical integrator that will be used by the propagator
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances,
-                vecRelativeTolerances);
-        
-        NumericalPropagator propagator = new NumericalPropagator(integrator);
 
         final PVCoordinates initialConditions =
-            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod, propagator)
-                .LyapunovCompute();
+            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)
+                .computeLyapunov();
         initialConditions.toString();
     }
     

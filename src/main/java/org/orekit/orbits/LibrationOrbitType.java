@@ -17,7 +17,7 @@
 package org.orekit.orbits;
 
 
-/** Enumerate for {@link HaloOrbit Halo Orbit} types.
+/** Enumerate for {@link LibrationOrbit Libration Orbit} types.
  * @author Vincent Mouraux
  */
 public enum LibrationOrbitType {

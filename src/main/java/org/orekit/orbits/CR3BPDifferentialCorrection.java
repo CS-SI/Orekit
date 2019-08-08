@@ -104,23 +104,7 @@ public class CR3BPDifferentialCorrection {
 
     }
 
-    /** Simple Constructor.
-     * <p> Constructor to use if you need to specify the Numerical Propagator settings to be used in the differential correction </p>
-     * @param firstguess first guess PVCoordinates of the point to start differential correction
-     * @param syst CR3BP System considered
-     * @param orbitalPeriod Orbital Period of the required orbit
-     * @param propagator Numerical Propagator with integrator, step and tolerances
-     */
-    public CR3BPDifferentialCorrection(final PVCoordinates firstguess,
-                                       final CR3BPSystem syst, final double orbitalPeriod, final NumericalPropagator propagator) {
-        this.firstGuess = firstguess;
-        this.syst = syst;
-        this.orbitalPeriodApprox = orbitalPeriod;
-        this.propagator = propagator;
-
-    }
-
-    /** Return the real starting point PVCoordinates on the Halo orbit after differential correction from a first guess.
+    /** Return the real starting PVCoordinates on the Halo orbit after differential correction from a first guess.
      * @return pv Position-Velocity of the starting point on the Halo Orbit
      */
     public PVCoordinates compute() {
@@ -265,10 +249,10 @@ public class CR3BPDifferentialCorrection {
         return pv;
     }
 
-    /** Return the real starting point PVCoordinates on the Halo orbit after differential correction from a first guess.
-     * @return pv Position-Velocity of the starting point on the Halo Orbit
+    /** Return the real starting PVCoordinates on the Lyapunov orbit after differential correction from a first guess.
+     * @return pv Position-Velocity of the starting point on the Lyapunov Orbit
      */
-    public PVCoordinates LyapunovCompute() {
+    public PVCoordinates computeLyapunov() {
 
         // number of iteration
         double iter = 0;
