@@ -80,4 +80,22 @@ public class MeasurementCombinationFactory {
         return new MelbourneWubbenaCombination(system);
     }
 
+    /**
+     * Get the phase minus code combination of measurements.
+     * @param system satellite system
+     * @return phase minus code combination
+     */
+    public static PhaseMinusCodeCombination getPhaseMinusCodeCombination(final SatelliteSystem system) {
+        return new PhaseMinusCodeCombination(system);
+    }
+
+    /**
+     * Get the GRAPHIC combination of measurements.
+     * @param system satellite system
+     * @return phase minus code combination
+     */
+    public static GRAPHICCombination getGRAPHICCombination(final SatelliteSystem system) {
+        return new GRAPHICCombination(system);
+    }
+
 }

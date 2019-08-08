@@ -70,6 +70,10 @@ public class CombinedObservationData {
     }
 
     /** Get the value of the combined frequency in MHz.
+     * <p>
+     * For the single frequency combinations, this method returns
+     * the common frequency of both measurements.
+     * </p>
      * @return value of the combined frequency in MHz
      */
     public double getCombinedMHzFrequency() {

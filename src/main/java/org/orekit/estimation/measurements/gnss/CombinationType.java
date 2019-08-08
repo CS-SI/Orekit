@@ -24,6 +24,12 @@ package org.orekit.estimation.measurements.gnss;
  */
 public enum CombinationType {
 
+    /** Phase minus code combination. */
+    PHASE_MINUS_CODE("Phase minus code"),
+
+    /** GRoup And Phase Ionospheric Calibration (GRAPHIC) combination. */
+    GRAPHIC("GRAPHIC"),
+
     /** Geometry-free combination. */
     GEOMETRY_FREE("Geometry Free"),
 

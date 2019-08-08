@@ -157,6 +157,7 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getName() {
         return CombinationType.MELBOURNE_WUBBENA.getName();

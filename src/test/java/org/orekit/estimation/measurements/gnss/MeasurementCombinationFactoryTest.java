@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.gnss;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -98,6 +99,16 @@ public class MeasurementCombinationFactoryTest {
         doTestEmptyDataSet(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system));
     }
 
+    @Test
+    public void testEmptyDataSetPhaseMinusCode() {
+        doTestEmptyDataSet(MeasurementCombinationFactory.getPhaseMinusCodeCombination(system));
+    }
+
+    @Test
+    public void testEmptyDataSetGRAPHIC() {
+        doTestEmptyDataSet(MeasurementCombinationFactory.getGRAPHICCombination(system));
+    }
+
     /**
      * Test code stability if an empty observation data set is used. 
      */
@@ -113,28 +124,58 @@ public class MeasurementCombinationFactoryTest {
 
     @Test
     public void testExceptionsGeometryFree() {
-        doTestExceptions(MeasurementCombinationFactory.getGeometryFreeCombination(system));
+        doTestExceptionsDualFrequency(MeasurementCombinationFactory.getGeometryFreeCombination(system));
     }
 
     @Test
     public void testExceptionsIonoFree() {
-        doTestExceptions(MeasurementCombinationFactory.getIonosphereFreeCombination(system));
+        doTestExceptionsDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system));
     }
 
     @Test
     public void testExceptionsWideLane() {
-        doTestExceptions(MeasurementCombinationFactory.getWideLaneCombination(system));
+        doTestExceptionsDualFrequency(MeasurementCombinationFactory.getWideLaneCombination(system));
     }
 
     @Test
     public void testExceptionsNarrowLane() {
-        doTestExceptions(MeasurementCombinationFactory.getNarrowLaneCombination(system));
+        doTestExceptionsDualFrequency(MeasurementCombinationFactory.getNarrowLaneCombination(system));
+    }
+
+    @Test
+    public void testExceptionsPhaseMinusCode() {
+        doTestExceptionsSingleFrequency(MeasurementCombinationFactory.getPhaseMinusCodeCombination(system));
+    }
+
+    @Test
+    public void testExceptionsGRAPHIC() {
+        doTestExceptionsSingleFrequency(MeasurementCombinationFactory.getGRAPHICCombination(system));
+    }
+
+    private void doTestExceptionsSingleFrequency(final AbstractSingleFrequencyCombination combination) {
+        // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
+        try {
+            final ObservationData observation = new ObservationData(ObservationType.L5, 12345678.0, 0, 0);
+            combination.combine(obs1, observation);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
+        }
+
+        // Test INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS exception
+        try {
+            final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
+            combination.combine(obs1, observation);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
+        }
     }
 
     /**
      * Test exceptions. 
      */
-    private void doTestExceptions(final AbstractDualFrequencyCombination combination) {
+    private void doTestExceptionsDualFrequency(final AbstractDualFrequencyCombination combination) {
         // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
             final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
@@ -156,68 +197,135 @@ public class MeasurementCombinationFactoryTest {
 
     @Test
     public void testRinex2GeometryFree() {
-        doTestRinex(MeasurementCombinationFactory.getGeometryFreeCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getGeometryFreeCombination(system),
                      CombinationType.GEOMETRY_FREE, 6.953, 27534453.519,0.0,  Double.NaN, 2, 2);
     }
 
     @Test
     public void testRinex2IonoFree() {
-        doTestRinex(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
                      CombinationType.IONO_FREE, 23732467.5026, 167275826.4529, 0.0, 9316 * Frequency.F0, 2, 2);
     }
 
     @Test
     public void testRinex2WideLane() {
-        doTestRinex(MeasurementCombinationFactory.getWideLaneCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getWideLaneCombination(system),
                      CombinationType.WIDE_LANE, 23732453.7100, 221895480.9217, 0.0, 34 * Frequency.F0, 2, 2);
     }
 
     @Test
     public void testRinex2NarrowLane() {
-        doTestRinex(MeasurementCombinationFactory.getNarrowLaneCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getNarrowLaneCombination(system),
                      CombinationType.NARROW_LANE, 23732481.2951, 112656171.9842, 0.0, 274 * Frequency.F0, 2, 2);
     }
 
     @Test
     public void testRinex2MelbourneWubbena() {
-        doTestRinex(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
                      CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 198162999.6266, 34 * Frequency.F0, 1, 2);
     }
 
     @Test
+    public void testRinex2PhaseMinusCode() {
+        doTestRinex2SingleFrequency(MeasurementCombinationFactory.getPhaseMinusCodeCombination(system),
+                                    CombinationType.PHASE_MINUS_CODE, 100982578.487, 73448118.015, 73448118.300);
+    }
+
+    @Test
+    public void testRinex2GRAPHIC() {
+        doTestRinex2SingleFrequency(MeasurementCombinationFactory.getGRAPHICCombination(system),
+                                    CombinationType.GRAPHIC, 74223767.4935, 60456544.2105, 60456544.068);
+    }
+
+    private void doTestRinex2SingleFrequency(final MeasurementCombination combination, final CombinationType type,
+                                             final double expectedL1C1, final double expectedL2C2, final double expectedL2P2) {
+        // Perform combination on the observation data set depending the Rinex version
+        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex2);
+        checkCombinedDataSet(combinedDataSet, 3);
+        Assert.assertEquals(type.getName(), combination.getName());
+        // Verify the combined observation data
+        final List<CombinedObservationData> data = combinedDataSet.getObservationData();
+        // L1/C1
+        Assert.assertEquals(expectedL1C1,       data.get(0).getValue(),                eps);
+        Assert.assertEquals(154 * Frequency.F0, data.get(0).getCombinedMHzFrequency(), eps);
+        // L2/C2
+        Assert.assertEquals(expectedL2C2,       data.get(1).getValue(),                eps);
+        Assert.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        // L2/P2
+        Assert.assertEquals(expectedL2P2,       data.get(2).getValue(),                eps);
+        Assert.assertEquals(120 * Frequency.F0, data.get(2).getCombinedMHzFrequency(), eps);
+    }
+
+    @Test
     public void testRinex3GeometryFree() {
-        doTestRinex(MeasurementCombinationFactory.getGeometryFreeCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getGeometryFreeCombination(system),
                      CombinationType.GEOMETRY_FREE, 2.187, 3821708.096, 0.0, Double.NaN, 2, 3);
     }
 
     @Test
     public void testRinex3IonoFree() {
-        doTestRinex(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
                      CombinationType.IONO_FREE, 22399214.1934, 134735627.3126, 0.0, 1175 * Frequency.F0, 2, 3);
     }
 
     @Test
     public void testRinex3WideLane() {
-        doTestRinex(MeasurementCombinationFactory.getWideLaneCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getWideLaneCombination(system),
                      CombinationType.WIDE_LANE, 22399239.8790, 179620369.2060, 0.0, 5 * Frequency.F0, 2, 3);
     }
 
     @Test
     public void testRinex3NarrowLane() {
-        doTestRinex(MeasurementCombinationFactory.getNarrowLaneCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getNarrowLaneCombination(system),
                     CombinationType.NARROW_LANE, 22399188.5078, 89850885.4191, 0.0, 235 * Frequency.F0, 2, 3);
     }
 
     @Test
     public void testRinex3MelbourneWubbena() {
-        doTestRinex(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
+        doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
                      CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 157221180.6982, 5 * Frequency.F0, 1, 3);
+    }
+
+    @Test
+    public void testRinex3PhaseMinusCode() {
+        doTestRinex3SingleFrequency(MeasurementCombinationFactory.getPhaseMinusCodeCombination(system),
+                                    CombinationType.PHASE_MINUS_CODE, 95309391.697, 69321899.401,
+                                    69321893.420, 65500187.511);
+    }
+
+    @Test
+    public void testRinex3GRAPHIC() {
+        doTestRinex3SingleFrequency(MeasurementCombinationFactory.getGRAPHICCombination(system),
+                                    CombinationType.GRAPHIC, 70053877.7315, 57060139.2905,
+                                    57060136.2880, 55149281.1465);
+    }
+
+    private void doTestRinex3SingleFrequency(final MeasurementCombination combination, final CombinationType type,
+                                             final double expected1C, final double expected2W,
+                                             final double expected2X, final double expected5X) {
+        // Perform combination on the observation data set depending the Rinex version
+        final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
+        Assert.assertEquals(type.getName(), combination.getName());
+        // Verify the combined observation data
+        final List<CombinedObservationData> data = combinedDataSet.getObservationData();
+        // L1C/C1C
+        Assert.assertEquals(expected1C,         data.get(0).getValue(),                eps);
+        Assert.assertEquals(154 * Frequency.F0, data.get(0).getCombinedMHzFrequency(), eps);
+        // L2W/C2W
+        Assert.assertEquals(expected2W,         data.get(1).getValue(),                eps);
+        Assert.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        // L2X/C2X
+        Assert.assertEquals(expected2X,         data.get(2).getValue(),                eps);
+        Assert.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        // L5X/C5X
+        Assert.assertEquals(expected5X,         data.get(3).getValue(),                eps);
+        Assert.assertEquals(115 * Frequency.F0, data.get(3).getCombinedMHzFrequency(), eps);
     }
 
     /**
      * Test if Rinex formats can be used for the combination of measurements
      */
-    private void doTestRinex(final MeasurementCombination combination, final CombinationType expectedType,
+    private void doTestRinexDualFrequency(final MeasurementCombination combination, final CombinationType expectedType,
                              final double expectedRangeValue, final double expectedPhaseValue, final double expectedRangePhase,
                              final double expectedFrequency, final int expectedSize, final int rinexVersion) {
 
