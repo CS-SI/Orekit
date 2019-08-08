@@ -204,7 +204,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex2IonoFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
-                     CombinationType.IONO_FREE, 23732467.5026, 167275826.4529, 0.0, 9316 * Frequency.F0, 2, 2);
+                     CombinationType.IONO_FREE, 23732467.5026, 167275826.4529, 0.0, 4658 * Frequency.F0, 2, 2);
     }
 
     @Test
@@ -265,7 +265,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex3IonoFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
-                     CombinationType.IONO_FREE, 22399214.1934, 134735627.3126, 0.0, 1175 * Frequency.F0, 2, 3);
+                     CombinationType.IONO_FREE, 22399214.1934, 134735627.3126, 0.0, 235 * Frequency.F0, 2, 3);
     }
 
     @Test

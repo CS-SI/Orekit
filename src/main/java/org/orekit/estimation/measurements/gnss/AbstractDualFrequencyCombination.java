@@ -93,10 +93,10 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         }
 
         // Combined value
-        final double combinedValue = getCombinedValue(od1.getValue(), freq1.getMHzFrequency(), od2.getValue(), freq2.getMHzFrequency());
+        final double combinedValue = getCombinedValue(od1.getValue(), freq1, od2.getValue(), freq2);
 
         // Combined frequency
-        final double combinedFrequency = getCombinedFrequency(freq1.getMHzFrequency(), freq2.getMHzFrequency());
+        final double combinedFrequency = getCombinedFrequency(freq1, freq2);
 
         // Combined observation data
         return new CombinedObservationData(type, measType1, combinedValue, combinedFrequency, Arrays.asList(od1, od2));
@@ -156,20 +156,20 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
     /**
      * Get the combined observed value of two measurements.
      * @param obs1 observed value of the first measurement
-     * @param f1 frequency of the first measurement in MHz
+     * @param f1 frequency of the first measurement
      * @param obs2 observed value of the second measurement
      * @param f2 frequency of the second measurement
      * @return combined observed value
      */
-    protected abstract double getCombinedValue(double obs1, double f1, double obs2, double f2);
+    protected abstract double getCombinedValue(double obs1, Frequency f1, double obs2, Frequency f2);
 
     /**
      * Get the combined frequency of two measurements.
-     * @param f1 frequency of the first measurement in MHz
-     * @param f2 frequency of the second measurement in MHz
+     * @param f1 frequency of the first measurement
+     * @param f2 frequency of the second measurement
      * @return combined frequency in MHz
      */
-    protected abstract double getCombinedFrequency(double f1, double f2);
+    protected abstract double getCombinedFrequency(Frequency f1, Frequency f2);
 
     /**
      * Verifies if two observation data can be combine.

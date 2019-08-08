@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.hipparchus.util.FastMath;
+import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
@@ -60,19 +60,37 @@ public class IonosphereFreeCombination extends AbstractDualFrequencyCombination 
 
     /** {@inheritDoc} */
     @Override
-    protected double getCombinedValue(final double obs1, final double f1,
-                                      final double obs2, final double f2) {
-        final double f1Sq = f1 * f1;
-        final double f2Sq = f2 * f2;
-        return MathArrays.linearCombination(f1Sq, obs1, -f2Sq, obs2) / (f1Sq - f2Sq);
+    protected double getCombinedValue(final double obs1, final Frequency f1,
+                                      final double obs2, final Frequency f2) {
+        // Get the ration f/f0
+        final double ratioF1   = f1.getRatio();
+        final double ratioF2   = f2.getRatio();
+        final double ratioF1Sq = ratioF1 * ratioF1;
+        final double ratioF2Sq = ratioF2 * ratioF2;
+        // Perform combination
+        return MathArrays.linearCombination(ratioF1Sq, obs1, -ratioF2Sq, obs2) / (ratioF1Sq - ratioF2Sq);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected double getCombinedFrequency(final double f1, final double f2) {
-        final double f1Sq = f1 * f1;
-        final double f2Sq = f2 * f2;
-        return FastMath.abs(f1Sq - f2Sq) / Frequency.F0;
+    protected double getCombinedFrequency(final Frequency f1, final Frequency f2) {
+        // Get the ratios f/f0
+        final double ratioF1   = f1.getRatio();
+        final double ratioF2   = f2.getRatio();
+        // Multiplication factor used to compute the combined frequency
+        int k = 1;
+        // Get the integer part of the ratios
+        final int ratioF1Int = (int) ratioF1;
+        final int ratioF2Int = (int) ratioF2;
+        // Check if the ratios are composed of a decimal part
+        if (ratioF1 - ratioF1Int > 0.0 || ratioF2 - ratioF2Int > 0.0) {
+            // Do nothing, k remains equal to 1
+        } else {
+            // k is the GCD of the interger ratio
+            k = ArithmeticUtils.gcd(ratioF1Int, ratioF2Int);
+        }
+        // Combined frequency
+        return MathArrays.linearCombination(ratioF1, ratioF1, -ratioF2, ratioF2) * (Frequency.F0 / k);
     }
 
 }
