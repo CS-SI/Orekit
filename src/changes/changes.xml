@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="583">
+        Fix AbsoluteDate.compareTo() for future/past infinity.
+      </action>
       <action dev="bryan" type="add">
         Add Nequick ionospheric model.
       </action>
