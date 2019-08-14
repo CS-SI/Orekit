@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="585">
+        Improved contributing guide.
+      </action>
       <action dev="petrus" type="fix" issue="570">
         Make FieldOfView.getFootprint public.
       </action>
