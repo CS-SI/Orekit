@@ -20,6 +20,7 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.CR3BPRotatingFrame;
@@ -35,6 +36,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * with respect to the Circular Restricted Three Body problem hypotheses.
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
+ * @author William Desprats
  */
 public class CR3BPSystem {
 
@@ -168,26 +170,26 @@ public class CR3BPSystem {
 
         // L1
         final BracketingNthOrderBrentSolver solver =
-            new BracketingNthOrderBrentSolver(RELATIVE_ACCURACY,
-                                              ABSOLUTE_ACCURACY,
-                                              FUNCTION_ACCURACY, MAX_ORDER);
+                        new BracketingNthOrderBrentSolver(RELATIVE_ACCURACY,
+                                                          ABSOLUTE_ACCURACY,
+                                                          FUNCTION_ACCURACY, MAX_ORDER);
 
         final double baseR1 = 1 - FastMath.cbrt(mu / 3);
         final UnivariateFunction l1Equation = x -> {
             final double leq1 =
-                x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
+                            x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
             final double leq2 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
             final double leq3 = mu * (x + mu) * (x + mu);
             return leq1 - leq2 + leq3;
         };
         final double[] searchInterval1 =
-            UnivariateSolverUtils.bracket(l1Equation, baseR1, -mu,
-                                          1 - mu, 1E-6, 1,
-                                          MAX_EVALUATIONS);
+                        UnivariateSolverUtils.bracket(l1Equation, baseR1, -mu,
+                                                      1 - mu, 1E-6, 1,
+                                                      MAX_EVALUATIONS);
 
         final double r1 =
                         solver.solve(MAX_EVALUATIONS, l1Equation, searchInterval1[0],
-                         searchInterval1[1], AllowedSolution.ANY_SIDE);
+                                     searchInterval1[1], AllowedSolution.ANY_SIDE);
 
         this.l1Position = new Vector3D(r1, 0.0, 0.0);
 
@@ -195,18 +197,18 @@ public class CR3BPSystem {
         final double baseR2 = 1 + FastMath.cbrt(mu / 3);
         final UnivariateFunction l2Equation = x -> {
             final double leq21 =
-                x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
+                            x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
             final double leq22 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
             final double leq23 = mu * (x + mu) * (x + mu);
             return leq21 - leq22 - leq23;
         };
         final double[] searchInterval2 =
-            UnivariateSolverUtils.bracket(l2Equation, baseR2, 1 - mu, 2, 1E-6,
-                                          1, MAX_EVALUATIONS);
+                        UnivariateSolverUtils.bracket(l2Equation, baseR2, 1 - mu, 2, 1E-6,
+                                                      1, MAX_EVALUATIONS);
 
         final double r2 =
-            solver.solve(MAX_EVALUATIONS, l2Equation, searchInterval2[0],
-                         searchInterval2[1], AllowedSolution.ANY_SIDE);
+                        solver.solve(MAX_EVALUATIONS, l2Equation, searchInterval2[0],
+                                     searchInterval2[1], AllowedSolution.ANY_SIDE);
 
         this.l2Position = new Vector3D(r2, 0.0, 0.0);
 
@@ -214,18 +216,18 @@ public class CR3BPSystem {
         final double baseR3 = -(1 + 5 * mu / 12);
         final UnivariateFunction l3Equation = x -> {
             final double leq31 =
-                x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
+                            x * (x + mu) * (x + mu) * (x + mu - 1) * (x + mu - 1);
             final double leq32 = (1 - mu) * (x + mu - 1) * (x + mu - 1);
             final double leq33 = mu * (x + mu) * (x + mu);
             return leq31 + leq32 + leq33;
         };
         final double[] searchInterval3 =
-            UnivariateSolverUtils.bracket(l3Equation, baseR3, -2, -mu, 1E-6, 1,
-                                          MAX_EVALUATIONS);
+                        UnivariateSolverUtils.bracket(l3Equation, baseR3, -2, -mu, 1E-6, 1,
+                                                      MAX_EVALUATIONS);
 
         final double r3 =
-            solver.solve(MAX_EVALUATIONS, l3Equation, searchInterval3[0],
-                         searchInterval3[1], AllowedSolution.ANY_SIDE);
+                        solver.solve(MAX_EVALUATIONS, l3Equation, searchInterval3[0],
+                                     searchInterval3[1], AllowedSolution.ANY_SIDE);
 
         this.l3Position = new Vector3D(r3, 0.0, 0.0);
 
@@ -361,24 +363,90 @@ public class CR3BPSystem {
      * @return PVCoordinates in the output frame [m,m/s]
      */
     public PVCoordinates getRealPV(final PVCoordinates pv0, final AbsoluteDate date, final Frame outputFrame) {
+        // 1.   Dimensionalize  the  primary-centered  rotating  state  using  the  instantaneously
+        //      defined characteristic quantities
+        // 2.   Apply the transformation to primary inertial frame
+        // 3.   Apply the transformation to output frame
 
         final Frame primaryInertialFrame = primaryBody.getInertiallyOrientedFrame();
         final TimeStampedPVCoordinates pv21 = secondaryBody.getPVCoordinates(date, primaryInertialFrame);
-        final double dist12 = pv21.getPosition().getNorm();
 
+        // Distance and Velocity to dimensionalize the state vector
+        final double dist12 = pv21.getPosition().getNorm();
         final double vCircular  = FastMath.sqrt(primaryBody.getGM() / dist12);
+
+        // Dimensionalized state vector centered on primary body
         final PVCoordinates pvDim = new PVCoordinates(pv0.getPosition().scalarMultiply(dist12),
                                                       pv0.getVelocity().scalarMultiply(vCircular));
 
+        // Transformation between rotating frame and the primary inertial
         final Transform rotatingToPrimaryInertial = rotatingFrame.getTransformTo(primaryInertialFrame, date);
 
-        final PVCoordinates pv  = rotatingToPrimaryInertial.transformPVCoordinates(pvDim);
+        // State vector in the primary inertial frame
+        final PVCoordinates pv2 = rotatingToPrimaryInertial.transformPVCoordinates(pvDim);
 
-        final double h = pv.getPosition().getNorm() / dist12;
 
-        final Vector3D newVel = pv.getVelocity().add(pv21.getVelocity().scalarMultiply(h));
-        final PVCoordinates pv2 = new PVCoordinates(pv.getPosition(), newVel);
+        // Transformation between primary inertial frame and the output frame
+        final Transform primaryInertialToOutputFrame = primaryInertialFrame.getTransformTo(outputFrame, date);
 
+        return primaryInertialToOutputFrame.transformPVCoordinates(pv2);
+    }
+
+    /** Get the PVCoordinates from normalized units to standard units in an output frame.
+     * @param pv0 Normalized PVCoordinates in the rotating frame
+     * @param date Date of the transform
+     * @param outputFrame Frame in which the output PVCoordinates will be
+     * @return PVCoordinates in the output frame [m,m/s]
+     */
+    public PVCoordinates getRealPVTest(final PVCoordinates pv0, final AbsoluteDate date, final Frame outputFrame) {
+        // 1.   Translate the rotating state from the RTBP to a primary-centered rotating state
+        // 2.   Dimensionalize  the  primary-centered  rotating  state  using  the  instantaneously
+        //      defined characteristic quantities
+        // 3.   Apply the transformation matrix
+        // 4.   Apply the transformation to output frame
+
+        final Frame primaryInertialFrame = primaryBody.getInertiallyOrientedFrame();
+        final TimeStampedPVCoordinates pv21 = secondaryBody.getPVCoordinates(date, primaryInertialFrame);
+
+        // Distance and Velocity to dimensionalize the state vector
+        final double dist12 = pv21.getPosition().getNorm();
+        final double vCircular  = FastMath.sqrt(primaryBody.getGM() / dist12);
+
+        // Dimensionalized state vector centered on primary body
+        final PVCoordinates pvDim = new PVCoordinates((pv0.getPosition().add(new Vector3D(mu, 0, 0))).scalarMultiply(dist12),
+                                                      pv0.getVelocity().scalarMultiply(vCircular));
+
+        // Instantaneous rotation matrix between rotating frame and primary inertial frame
+        final double[][] c = (new Rotation(Vector3D.PLUS_I, Vector3D.PLUS_K,
+                                           pv21.getPosition(), pv21.getMomentum())).getMatrix();
+
+        // Instantaneous angular velocity of the rotating frame
+        final double theta = pv21.getMomentum().getNorm()/(dist12*dist12);
+
+        final double x = pvDim.getPosition().getX();
+        final double y = pvDim.getPosition().getY();
+        final double z = pvDim.getPosition().getZ();
+        final double vx = pvDim.getVelocity().getX();
+        final double vy = pvDim.getVelocity().getY();
+        final double vz = pvDim.getVelocity().getZ();
+
+        // Position vector in the primary inertial frame
+        final Vector3D newPos = new Vector3D(c[0][0]*x + c[0][1]*y + c[0][2]*z,
+                                             c[1][0]*x + c[1][1]*y + c[1][2]*z,
+                                             c[2][0]*x + c[2][1]*y + c[2][2]*z);
+
+        final Vector3D vel0 = new Vector3D(c[0][0]*vx + c[0][1]*vy + c[0][2]*vz,
+                                           c[1][0]*vx + c[1][1]*vy + c[1][2]*vz,
+                                           c[2][0]*vx + c[2][1]*vy + c[2][2]*vz);
+        final Vector3D addVel = new Vector3D(c[0][1]*x - c[0][0]*y,
+                                             c[1][1]*x - c[1][0]*y,
+                                             c[2][1]*x - c[2][0]*y);
+        final Vector3D newVel = vel0.add(addVel.scalarMultiply(theta));
+
+        // State vector in the primary inertial frame
+        final PVCoordinates pv2 = new PVCoordinates(newPos, newVel);
+
+        // Transformation between primary inertial frame and the output frame
         final Transform primaryInertialToOutputFrame = primaryInertialFrame.getTransformTo(outputFrame, date);
 
         return primaryInertialToOutputFrame.transformPVCoordinates(pv2);
