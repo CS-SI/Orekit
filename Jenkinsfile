@@ -24,6 +24,9 @@ pipeline {
                     if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
                         sh 'mvn verify assembly:single'
                     }
+                    else if ( env.BRANCH_NAME ==~ /^develop$/ ) {
+                        sh 'mvn verify install site'
+                    }
                     else {
                         sh 'mvn verify site'
                     }
