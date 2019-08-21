@@ -246,8 +246,7 @@ public class InterSatellitesRangeTest {
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
-                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-                    {
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

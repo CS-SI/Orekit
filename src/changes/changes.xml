@@ -24,6 +24,16 @@
       <action dev="evan" type="fix" issue="583">
         Fix AbsoluteDate.compareTo() for future/past infinity.
       </action>
+      <action dev="luc" type="fix" issue="588">
+        Fixed wrong handling of spacecraft states in multi-satellites orbit determination
+        and multi-satellite measurements generation.
+      </action>
+      <action dev="bryan" type="fix" issue="585">
+        Improved contributing guide.
+      </action>
+      <action dev="petrus" type="fix" issue="570">
+        Make FieldOfView.getFootprint public.
+      </action>
       <action dev="bryan" type="add">
         Add Nequick ionospheric model.
       </action>
