@@ -918,13 +918,13 @@ public class DSSTTesseral implements DSSTForceModel {
             }
         }
 
-        return new double[][] {{dUdaCos,  dUdaSin},
-                               {dUdhCos,  dUdhSin},
-                               {dUdkCos,  dUdkSin},
-                               {dUdlCos,  dUdlSin},
-                               {dUdAlCos, dUdAlSin},
-                               {dUdBeCos, dUdBeSin},
-                               {dUdGaCos, dUdGaSin}};
+        return new double[][] { { dUdaCos,  dUdaSin  },
+                                { dUdhCos,  dUdhSin  },
+                                { dUdkCos,  dUdkSin  },
+                                { dUdlCos,  dUdlSin  },
+                                { dUdAlCos, dUdAlSin },
+                                { dUdBeCos, dUdBeSin },
+                                { dUdGaCos, dUdGaSin } };
     }
 
     /** Compute the n-SUM for potential derivatives components.
