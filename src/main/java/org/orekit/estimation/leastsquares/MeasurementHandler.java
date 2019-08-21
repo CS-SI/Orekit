@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
@@ -90,7 +91,8 @@ class MeasurementHandler implements MultiSatStepHandler {
             // estimate the theoretical measurement
             final SpacecraftState[] states = new SpacecraftState[observed.getSatellites().size()];
             for (int i = 0; i < states.length; ++i) {
-                states[i] = interpolators.get(i).getInterpolatedState(next.getDate());
+                final ObservableSatellite satellite = observed.getSatellites().get(i);
+                states[i] = interpolators.get(satellite.getPropagatorIndex()).getInterpolatedState(next.getDate());
             }
             final EstimatedMeasurement<?> estimated = observed.estimate(model.getIterationsCount(),
                                                                         model.getEvaluationsCount(),
