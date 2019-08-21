@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="588">
+        Fixed wrong handling of spacecraft states in multi-satellites orbit determination
+        and multi-satellite measurements generation.
+      </action>
       <action dev="bryan" type="fix" issue="585">
         Improved contributing guide.
       </action>
