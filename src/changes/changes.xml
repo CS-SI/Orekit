@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="583">
+        Fix AbsoluteDate.compareTo() for future/past infinity.
+      </action>
       <action dev="luc" type="fix" issue="588">
         Fixed wrong handling of spacecraft states in multi-satellites orbit determination
         and multi-satellite measurements generation.

@@ -963,7 +963,12 @@ public class AbsoluteDate
      * is before, simultaneous, or after the specified date.
      */
     public int compareTo(final AbsoluteDate date) {
-        return Double.compare(durationFrom(date),  0);
+        final double duration = durationFrom(date);
+        if (!Double.isNaN(duration)) {
+            return Double.compare(duration, 0.0);
+        }
+        // both dates are infinity or one is NaN or both are NaN
+        return Double.compare(offset, date.offset);
     }
 
     /** {@inheritDoc} */
