@@ -122,8 +122,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        final ObservableSatellite satellite = getSatellites().get(0);
-        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
+        final SpacecraftState state = states[0];
 
         // Turn around range derivatives are computed with respect to:
         // - Spacecraft state in inertial frame
