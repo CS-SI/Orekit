@@ -91,7 +91,10 @@ public class TurnAroundRangeBuilderTest {
         final Map.Entry<GroundStation, GroundStation> entry = context.TARstations.entrySet().iterator().next();
         final GroundStation master = entry.getKey();
         final GroundStation slave  = entry.getValue();
-        final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+        generator.addPropagator(buildPropagator()); // dummy first propagator
+        generator.addPropagator(buildPropagator()); // dummy second propagator
+        ObservableSatellite satellite = generator.addPropagator(buildPropagator()); // useful third propagator
+        generator.addPropagator(buildPropagator()); // dummy fourth propagator
         generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), master, slave, satellite),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(satellite),

@@ -53,7 +53,10 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
     protected void doTest(long seed, double startPeriod, double endPeriod, int expectedMeasurements, double tolerance) {
        Generator generator = new Generator();
        final double step = 60.0;
-       final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+       generator.addPropagator(buildPropagator()); // dummy propagator 1
+       generator.addPropagator(buildPropagator()); // dummy propagator 2
+       final ObservableSatellite satellite = generator.addPropagator(buildPropagator()); // relevant propagator 3
+       generator.addPropagator(buildPropagator()); // dummy propagator 4
        generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), context.stations.get(0), satellite),
                                                         new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                         generator.getPropagator(satellite),
