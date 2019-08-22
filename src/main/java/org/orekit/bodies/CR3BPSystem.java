@@ -421,7 +421,7 @@ public class CR3BPSystem {
                                            pv21.getPosition(), pv21.getMomentum())).getMatrix();
 
         // Instantaneous angular velocity of the rotating frame
-        final double theta = pv21.getMomentum().getNorm()/(dist12*dist12);
+        final double theta = pv21.getMomentum().getNorm() / (dist12 * dist12);
 
         final double x = pvDim.getPosition().getX();
         final double y = pvDim.getPosition().getY();
@@ -431,16 +431,16 @@ public class CR3BPSystem {
         final double vz = pvDim.getVelocity().getZ();
 
         // Position vector in the primary inertial frame
-        final Vector3D newPos = new Vector3D(c[0][0]*x + c[0][1]*y + c[0][2]*z,
-                                             c[1][0]*x + c[1][1]*y + c[1][2]*z,
-                                             c[2][0]*x + c[2][1]*y + c[2][2]*z);
+        final Vector3D newPos = new Vector3D(c[0][0] * x + c[0][1] * y + c[0][2] * z,
+                                             c[1][0] * x + c[1][1] * y + c[1][2] * z,
+                                             c[2][0] * x + c[2][1] * y + c[2][2] * z);
 
-        final Vector3D vel0 = new Vector3D(c[0][0]*vx + c[0][1]*vy + c[0][2]*vz,
-                                           c[1][0]*vx + c[1][1]*vy + c[1][2]*vz,
-                                           c[2][0]*vx + c[2][1]*vy + c[2][2]*vz);
-        final Vector3D addVel = new Vector3D(c[0][1]*x - c[0][0]*y,
-                                             c[1][1]*x - c[1][0]*y,
-                                             c[2][1]*x - c[2][0]*y);
+        final Vector3D vel0 = new Vector3D(c[0][0] * vx + c[0][1] * vy + c[0][2] * vz,
+                                           c[1][0] * vx + c[1][1] * vy + c[1][2] * vz,
+                                           c[2][0] * vx + c[2][1] * vy + c[2][2] * vz);
+        final Vector3D addVel = new Vector3D(c[0][1] * x - c[0][0] * y,
+                                             c[1][1] * x - c[1][0] * y,
+                                             c[2][1] * x - c[2][0] * y);
         final Vector3D newVel = vel0.add(addVel.scalarMultiply(theta));
 
         // State vector in the primary inertial frame
