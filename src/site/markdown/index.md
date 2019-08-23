@@ -261,12 +261,14 @@
     
   * Customizable data loading
 
-    * loading from local disk
+    * loading by exploring folders hierarchy on local disk
+    * loading from explicit lists of files on local disk
     * loading from classpath
     * loading from network (even through internet proxies)
     * support for zip archives
     * automatic decompression of gzip compressed (.gz) files upon loading
     * automatic decompression of Unix compressed (.Z) files upon loading
+    * automatic decompression of Hatanaka compressed files upon loading
     * plugin mechanism to add filtering like custom decompression algorithms, deciphering or monitoring
     * plugin mechanism to delegate loading to user defined database or data access library
 

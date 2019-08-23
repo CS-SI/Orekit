@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="592">
+        Added FilesListCrawler to load files from an explicit list.
+      </action>
       <action dev="evan" type="fix" issue="583">
         Fix AbsoluteDate.compareTo() for future/past infinity.
       </action>

@@ -68,7 +68,7 @@ import org.orekit.errors.OrekitException;
  * @see DataProvidersManager
  * @author Luc Maisonobe
  */
-public class NetworkCrawler extends ListCrawler<URL> {
+public class NetworkCrawler extends AbstractListCrawler<URL> {
 
     /** Connection timeout (milliseconds). */
     private int timeout;

@@ -43,7 +43,7 @@ import org.orekit.errors.OrekitException;
  * @see FilesListCrawler
  * @author Luc Maisonobe
  */
-public abstract class ListCrawler<T> implements DataProvider {
+public abstract class AbstractListCrawler<T> implements DataProvider {
 
     /** Inputs list. */
     private final List<T> inputs;
@@ -52,7 +52,7 @@ public abstract class ListCrawler<T> implements DataProvider {
      * @param inputs list of inputs (may be empty if {@link #addInput(Object) addInput} is called later)
      */
     @SafeVarargs
-    protected ListCrawler(final T... inputs) {
+    protected AbstractListCrawler(final T... inputs) {
         this.inputs = Arrays.stream(inputs).collect(Collectors.toList());
     }
 
