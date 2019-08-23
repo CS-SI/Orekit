@@ -55,7 +55,8 @@ import org.orekit.errors.OrekitException;
  * </pre>
  *
  * <p>
- * Gzip-compressed files are supported.
+ * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * {@link DataFilter filters} are applied.
  * </p>
  * <p>
  * Zip archives entries are supported recursively.
