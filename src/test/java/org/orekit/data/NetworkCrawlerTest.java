@@ -51,7 +51,7 @@ public class NetworkCrawlerTest {
     // settings according to your local network or remove the proxy authentication
     // settings if you have a transparent connection to internet
 //    @Test
-//    public void remote() throws java.net.MalformedURLException, OrekitException, URISyntaxException {
+//    public void remote() throws java.net.MalformedURLException {
 //
 //        System.setProperty("http.proxyHost",     "proxy.your.domain.com");
 //        System.setProperty("http.proxyPort",     "8080");
@@ -70,11 +70,13 @@ public class NetworkCrawlerTest {
     public void local() {
         CountingLoader crawler = new CountingLoader();
         NetworkCrawler nc = new NetworkCrawler(url("regular-data/UTC-TAI.history"),
-                           url("regular-data/de405-ephemerides/unxp0000.405"),
-                           url("regular-data/de405-ephemerides/unxp0001.405"),
-                           url("regular-data/de406-ephemerides/unxp0000.406"),
-                           url("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"),
-                           url("no-data"));
+                                               url("regular-data/de405-ephemerides/unxp0000.405"),
+                                               url("regular-data/de405-ephemerides/unxp0001.405"),
+                                               url("regular-data/de406-ephemerides/unxp0000.406"));
+        Assert.assertEquals(4, nc.getInputs().size());
+        nc.addInput(url("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"));
+        nc.addInput(url("no-data"));
+        Assert.assertEquals(6, nc.getInputs().size());
         nc.setTimeout(20);
         nc.feed(Pattern.compile(".*"), crawler);
         Assert.assertEquals(6, crawler.getCount());
@@ -83,9 +85,11 @@ public class NetworkCrawlerTest {
     @Test
     public void compressed() {
         CountingLoader crawler = new CountingLoader();
-        new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
-                           url("compressed-data/eopc04_08_IAU2000.00.gz"),
-                           url("compressed-data/eopc04_08_IAU2000.02.gz")).feed(Pattern.compile("^eopc04.*"), crawler);
+        NetworkCrawler nc = new NetworkCrawler();
+        nc.addInput(url("compressed-data/UTC-TAI.history.gz"));
+        nc.addInput(url("compressed-data/eopc04_08_IAU2000.00.gz"));
+        nc.addInput(url("compressed-data/eopc04_08_IAU2000.02.gz"));
+        nc.feed(Pattern.compile("^eopc04.*"), crawler);
         Assert.assertEquals(2, crawler.getCount());
     }
 
