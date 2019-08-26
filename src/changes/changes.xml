@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="594">
+        Added CircularFieldOfView that can be used in FieldOfViewDetector,
+        GroundFieldOfViewDetector and FootprintOverlapDetector.
+      </action>
       <action dev="luc" type="add">
         Set up a general hierarchy for Field Of View with various shapes. At
         start, it includes DoubleDihedraFieldOfView and PolygonalFieldOfView.
