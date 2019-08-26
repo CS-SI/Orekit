@@ -44,6 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * axis is the rotation or polar axis.</p>
 
  * @author Luc Maisonobe
+ * @author Guylaine Prat
  */
 public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
@@ -88,6 +89,15 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * <tr><td style="background-color:#c9d5c9;">WGS84</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_EQUATORIAL_RADIUS Constants.WGS84_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_FLATTENING Constants.WGS84_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9;">IERS96</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS96_EARTH_EQUATORIAL_RADIUS Constants.IERS96_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS96_EARTH_FLATTENING Constants.IERS96_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9;">IERS2003</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2003_EARTH_EQUATORIAL_RADIUS Constants.IERS2003_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2003_EARTH_FLATTENING Constants.IERS2003_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9;">IERS2010</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2010_EARTH_EQUATORIAL_RADIUS Constants.IERS2010_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2010_EARTH_FLATTENING Constants.IERS2010_EARTH_FLATTENING}</td></tr>
      * </table>
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
