@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.events;
+package org.orekit.geometry.fov;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -26,29 +26,12 @@ import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.geometry.fov.PolygonalFieldOfView;
 
-/** Class representing a spacecraft sensor Field Of View.
- * <p>Fields Of View are zones defined on the unit sphere centered on the
- * spacecraft. They can have any shape, they can be split in several
- * non-connected patches and can have holes.</p>
- * @see org.orekit.propagation.events.FootprintOverlapDetector
+/** Class representing a spacecraft sensor Field Of View with dihedral shape (i.e. rectangular shape).
  * @author Luc Maisonobe
- * @since 7.1
- * @deprecated as of 10.1, replaced by {@link PolygonalFieldOfView}
+ * @since 10.1
  */
-@Deprecated
-public class FieldOfView extends PolygonalFieldOfView {
-
-    /** Build a new instance.
-     * @param zone interior of the Field Of View, in spacecraft frame
-     * @param margin angular margin to apply to the zone (if positive,
-     * the Field Of View will consider points slightly outside of the
-     * zone are still visible)
-     */
-    public FieldOfView(final SphericalPolygonsSet zone, final double margin) {
-        super(zone, margin);
-    }
+public class DoubleDihedraFieldOfView extends PolygonalFieldOfView {
 
     /** Build a Field Of View with dihedral shape (i.e. rectangular shape).
      * @param center Direction of the FOV center, in spacecraft frame
@@ -61,29 +44,15 @@ public class FieldOfView extends PolygonalFieldOfView {
      * must be less than π/2, i.e. full dihedra must be smaller then
      * an hemisphere
      * @param margin angular margin to apply to the zone (if positive,
-     * the Field Of View will consider points slightly outside of the
-     * zone are still visible)
+     * points outside of the raw FoV but close enough to the boundary are
+     * considered visible; if negative, points inside of the raw FoV
+     * but close enough to the boundary are considered not visible)
      */
-    public FieldOfView(final Vector3D center,
-                       final Vector3D axis1, final double halfAperture1,
-                       final Vector3D axis2, final double halfAperture2,
-                       final double margin) {
+    public DoubleDihedraFieldOfView(final Vector3D center,
+                                    final Vector3D axis1, final double halfAperture1,
+                                    final Vector3D axis2, final double halfAperture2,
+                                    final double margin) {
         super(createPolygon(center, axis1, halfAperture1, axis2, halfAperture2), margin);
-    }
-
-    /** Build Field Of View with a regular polygon shape.
-     * @param center center of the polygon (the center is in the inside part)
-     * @param meridian point defining the reference meridian for middle of first edge
-     * @param insideRadius distance of the edges middle points to the center
-     * (the polygon vertices will therefore be farther away from the center)
-     * @param n number of sides of the polygon
-     * @param margin angular margin to apply to the zone (if positive,
-     * the Field Of View will consider points slightly outside of the
-     * zone are still visible)
-     */
-    public FieldOfView(final Vector3D center, final Vector3D meridian,
-                       final double insideRadius, final int n, final double margin) {
-        super(center, meridian, insideRadius, n, margin);
     }
 
     /** Create polygon.

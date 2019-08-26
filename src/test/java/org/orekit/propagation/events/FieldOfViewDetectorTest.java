@@ -38,6 +38,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.geometry.fov.DoubleDihedraFieldOfView;
+import org.orekit.geometry.fov.FieldOfView;
+import org.orekit.geometry.fov.PolygonalFieldOfView;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -99,17 +102,17 @@ public class FieldOfViewDetectorTest {
         final double aperture2 = halfAperture;
 
         final EventDetector sunVisi =
-                new FieldOfViewDetector(sunPV, new FieldOfView(center, axis1, aperture1, axis2, aperture2, 0.0)).
+                new FieldOfViewDetector(sunPV, new DoubleDihedraFieldOfView(center, axis1, aperture1, axis2, aperture2, 0.0)).
                 withMaxCheck(maxCheck).
                 withThreshold(threshold).
                 withHandler(new DihedralSunVisiHandler());
 
         Assert.assertSame(sunPV, ((FieldOfViewDetector) sunVisi).getPVTarget());
-        Assert.assertEquals(0, ((FieldOfViewDetector) sunVisi).getFieldOfView().getMargin(), 1.0e-15);
+        Assert.assertEquals(0, ((FieldOfViewDetector) sunVisi).getFOV().getMargin(), 1.0e-15);
         double eta = FastMath.acos(FastMath.sin(aperture1) * FastMath.sin(aperture2));
         double theoreticalArea = MathUtils.TWO_PI - 4 * eta;
         Assert.assertEquals(theoreticalArea,
-                            ((FieldOfViewDetector) sunVisi).getFieldOfView().getZone().getSize(),
+                            ((PolygonalFieldOfView) ((FieldOfViewDetector) sunVisi).getFOV()).getZone().getSize(),
                             1.0e-15);
 
         // Add event to be detected
@@ -212,7 +215,7 @@ public class FieldOfViewDetectorTest {
 
         //action
         FieldOfView fov =
-                new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I, pi / 3, 16, 0);
+                new PolygonalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I, pi / 3, 16, 0);
         FieldOfViewDetector fovDetector =
                 new FieldOfViewDetector(topo, fov)
                         .withMaxCheck(5.0);
@@ -247,7 +250,7 @@ public class FieldOfViewDetectorTest {
         final Vector3D axis2  = Vector3D.PLUS_J;
         final double aperture1 = halfAperture;
         final double aperture2 = halfAperture;
-        final FieldOfView fov  = new FieldOfView(center, axis1, aperture1, axis2, aperture2, 0.0);
+        final FieldOfView fov  = new DoubleDihedraFieldOfView(center, axis1, aperture1, axis2, aperture2, 0.0);
 
         final EventDetector sunCenter =
                         new FieldOfViewDetector(sun, fov).
@@ -272,11 +275,11 @@ public class FieldOfViewDetectorTest {
                         withHandler(new ContinueOnEvent<>());
 
         Assert.assertSame(sun, ((FieldOfViewDetector) sunCenter).getPVTarget());
-        Assert.assertEquals(0, ((FieldOfViewDetector) sunCenter).getFieldOfView().getMargin(), 1.0e-15);
+        Assert.assertEquals(0, ((FieldOfViewDetector) sunCenter).getFOV().getMargin(), 1.0e-15);
         double eta = FastMath.acos(FastMath.sin(aperture1) * FastMath.sin(aperture2));
         double theoreticalArea = MathUtils.TWO_PI - 4 * eta;
         Assert.assertEquals(theoreticalArea,
-                            ((FieldOfViewDetector) sunCenter).getFieldOfView().getZone().getSize(),
+                            ((PolygonalFieldOfView) ((FieldOfViewDetector) sunCenter).getFOV()).getZone().getSize(),
                             1.0e-15);
 
         // Add event to be detected

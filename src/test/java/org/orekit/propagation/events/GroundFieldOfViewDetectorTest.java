@@ -30,6 +30,8 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.geometry.fov.FieldOfView;
+import org.orekit.geometry.fov.PolygonalFieldOfView;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -90,14 +92,14 @@ public class GroundFieldOfViewDetectorTest {
         //half width of 60 deg pointed along +Z in antenna frame
         //not a perfect small circle b/c FoV makes a polygon with great circles
         FieldOfView fov =
-                new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I, pi / 3, 16, 0);
+                new PolygonalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I, pi / 3, 16, 0);
         //simple case for fixed pointing to be similar to elevation detector.
         //could define new frame with varying rotation for slewing antenna.
         GroundFieldOfViewDetector fovDetector =
                 new GroundFieldOfViewDetector(topo, fov)
                         .withMaxCheck(5.0);
         Assert.assertSame(topo, fovDetector.getFrame());
-        Assert.assertSame(fov, fovDetector.getFieldOfView());
+        Assert.assertSame(fov, fovDetector.getFOV());
         logger = new EventsLogger();
 
         prop = new KeplerianPropagator(orbit);

@@ -47,6 +47,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class FieldOfViewTest {
 
     @Test
