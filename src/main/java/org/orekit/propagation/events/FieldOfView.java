@@ -193,7 +193,7 @@ public class FieldOfView {
      * <p>
      * As Field Of View can have complex shapes that may require long computation,
      * when the target point can be proven to be outside of the Field Of View, a
-     * faster but approximate computation is done, that underestimate the offset.
+     * faster but approximate computation is done, that underestimates the offset.
      * This approximation is only performed about 0.01 radians outside of the zone
      * and is designed to still return a positive value if the full accurate computation
      * would return a positive value. When target point is close to the zone (and
@@ -239,7 +239,7 @@ public class FieldOfView {
      * large it contains entirely the body, all points will correspond to
      * points at limb. If the Field Of View looks away from body, the
      * boundary loops will be an empty list. The points within footprint
-     * the loops are sorted in trigonometric order as seen from the carrier.
+     * loops are sorted in trigonometric order as seen from the carrier.
      * This implies that someone traveling on ground from one point to the
      * next one will have the points visible from the carrier on his left
      * hand side, and the points not visible from the carrier on his right
