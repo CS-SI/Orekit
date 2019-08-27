@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.frames.Frame;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -111,13 +112,25 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
         return this.frame;
     }
 
-    /**
-     * Get the Field Of View.
-     *
+    /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
+    }
+
+    /** Get the Field Of View.
+     * @return Field Of View, if detector has been built from a
+     * {@link org.orekit.propagation.events.FieldOfView}, or null of the
+     * detector was built from another implementation of {@link FieldOfView}
+     * @deprecated as of 10.1, replaced by {@link #getFOV()}
+     */
+    @Deprecated
+    public org.orekit.propagation.events.FieldOfView getFieldOfView() {
+        return fov instanceof org.orekit.propagation.events.FieldOfView ?
+               (org.orekit.propagation.events.FieldOfView) fov :
+               null;
     }
 
     /**
