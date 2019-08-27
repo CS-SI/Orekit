@@ -102,7 +102,7 @@ public class FootprintOverlapDetectorTest {
 
         // square field of view along Z axis (which is pointing sideways), aperture 5°, 0° margin
         final FieldOfView fov = new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                                         DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                                         DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                                          Vector3D.PLUS_I,
                                                          FastMath.toRadians(2.5), 4, 0.0);
         final FootprintOverlapDetector detector =

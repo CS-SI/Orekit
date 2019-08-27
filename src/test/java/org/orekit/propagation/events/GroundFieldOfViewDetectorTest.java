@@ -94,7 +94,7 @@ public class GroundFieldOfViewDetectorTest {
         //not a perfect small circle b/c FoV makes a polygon with great circles
         FieldOfView fov =
                 new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                         DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                         DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                          Vector3D.PLUS_I, pi / 3, 16, 0);
         //simple case for fixed pointing to be similar to elevation detector.
         //could define new frame with varying rotation for slewing antenna.

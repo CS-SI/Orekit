@@ -85,7 +85,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
     public PolygonalFieldOfView(final Vector3D center, final Vector3D meridian,
                                 final double insideRadius, final int n,
                                 final double margin) {
-        this(center, DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+        this(center, DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
              meridian, insideRadius, n, margin);
     }
 
@@ -252,7 +252,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
     public enum DefiningConeType {
 
         /** Constant for cones inside polygons and touching it at polygon edges middle points. */
-        CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE() {
+        INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE() {
 
             /** {@inheritDoc}*/
             @Override
@@ -277,7 +277,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
         },
 
         /** Constant for cones outside polygons and touching it at polygon vertices. */
-        CONE_OUTSIDE_TOUCHING_POLYGON_AT_VERTICES() {
+        OUTSIDE_CONE_TOUCHING_POLYGON_AT_VERTICES() {
 
             /** {@inheritDoc}*/
             @Override

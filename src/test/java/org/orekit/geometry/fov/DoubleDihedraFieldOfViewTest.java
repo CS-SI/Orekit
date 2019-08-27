@@ -71,7 +71,7 @@ public class DoubleDihedraFieldOfViewTest {
                                                                         Vector3D.PLUS_I, 0.25,
                                                                         Vector3D.MINUS_J, 0.25,
                                                                         0.0);
-        PolygonalFieldOfView square2 = new PolygonalFieldOfView(Vector3D.PLUS_K, DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+        PolygonalFieldOfView square2 = new PolygonalFieldOfView(Vector3D.PLUS_K, DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                                                 Vector3D.PLUS_I, 0.25, 4, 0.0);
         Assert.assertEquals(square1.getZone().getSize(),         square2.getZone().getSize(),         1.0e-15);
         Assert.assertEquals(square1.getZone().getBoundarySize(), square2.getZone().getBoundarySize(), 1.0e-15);

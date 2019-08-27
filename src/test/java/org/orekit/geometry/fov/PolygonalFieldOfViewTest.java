@@ -58,7 +58,7 @@ public class PolygonalFieldOfViewTest {
         double maxOffsetError = 0;
         for (int n = 3; n < 32; ++n) {
             PolygonalFieldOfView base = new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                                                 DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                                                 DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                                                  Vector3D.PLUS_I, delta, n, margin);
             PolygonalFieldOfView fov  = new PolygonalFieldOfView(base.getZone(), margin);
             double eta = FastMath.acos(FastMath.sin(FastMath.PI / n) * FastMath.cos(delta));
@@ -90,7 +90,7 @@ public class PolygonalFieldOfViewTest {
     public void testNoFootprintInside() {
         Utils.setDataRoot("regular-data");
         PolygonalFieldOfView fov = new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                                            DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                                            DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                                             Vector3D.PLUS_I,
                                                             FastMath.toRadians(3.0), 6, 0.0);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -108,7 +108,7 @@ public class PolygonalFieldOfViewTest {
     @Test
     public void testNadirHexagonalFootprint() {
         doTest(new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                        DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                        DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
                                         FastMath.toRadians(3.0), 6, 0.0),
                new NadirPointing(orbit.getFrame(), earth),
@@ -118,7 +118,7 @@ public class PolygonalFieldOfViewTest {
     @Test
     public void testRollPitchYawHexagonalFootprint() {
         doTest(new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                        DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                        DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
                                         FastMath.toRadians(3.0), 6, 0.0),
                new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
@@ -131,7 +131,7 @@ public class PolygonalFieldOfViewTest {
     @Test
     public void testFOVPartiallyTruncatedAtLimb() {
         doTest(new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                        DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                        DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
                                         FastMath.toRadians(40.0), 6, 0.0),
                new NadirPointing(orbit.getFrame(), earth),
@@ -141,7 +141,7 @@ public class PolygonalFieldOfViewTest {
     @Test
     public void testFOVLargerThanEarth() {
         doTest(new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                        DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                        DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
                                         FastMath.toRadians(45.0), 6, 0.0),
                new NadirPointing(orbit.getFrame(), earth),
@@ -152,7 +152,7 @@ public class PolygonalFieldOfViewTest {
     public void testFOVLargerThanEarthOld() {
         Utils.setDataRoot("regular-data");
         PolygonalFieldOfView fov = new PolygonalFieldOfView(Vector3D.PLUS_K,
-                                                            DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                                            DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                                             Vector3D.PLUS_I,
                                                             FastMath.toRadians(45.0), 6, 0.0);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -199,7 +199,7 @@ public class PolygonalFieldOfViewTest {
     @Test
     public void testFOVAwayFromEarth() {
         PolygonalFieldOfView fov = new PolygonalFieldOfView(Vector3D.MINUS_K,
-                                                            DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                                            DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                                             Vector3D.PLUS_I,
                                                             FastMath.toRadians(3.0), 6, 0.0);
         Propagator propagator = new KeplerianPropagator(orbit);
