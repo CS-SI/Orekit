@@ -120,9 +120,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
         for (int i = 1; i < n; ++i) {
             support[i] = new S2Point(r.applyTo(support[i - 1].getVector()));
         }
-        this.cap = new EnclosingBall<Sphere2D, S2Point>(new S2Point(center),
-                                                        Vector3D.angle(center, vertex),
-                                                        support);
+        this.cap = new EnclosingBall<>(new S2Point(center), Vector3D.angle(center, vertex), support);
 
     }
 
@@ -168,12 +166,12 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
             throw new OrekitException(OrekitMessages.POINT_INSIDE_ELLIPSOID);
         }
 
-        final List<List<GeodeticPoint>> footprint = new ArrayList<List<GeodeticPoint>>();
+        final List<List<GeodeticPoint>> footprint = new ArrayList<>();
 
         final List<Vertex> boundary = zone.getBoundaryLoops();
         for (final Vertex loopStart : boundary) {
             int count = 0;
-            final List<GeodeticPoint> loop  = new ArrayList<GeodeticPoint>();
+            final List<GeodeticPoint> loop  = new ArrayList<>();
             boolean intersectionsFound      = false;
             for (Edge edge = loopStart.getOutgoing();
                  count == 0 || edge.getStart() != loopStart;
@@ -234,7 +232,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
                 final double   cosAlpha = (FastMath.cos(angularStep) + sinEta2 - 1) / sinEta2;
                 final int      n        = (int) FastMath.ceil(MathUtils.TWO_PI / FastMath.acos(cosAlpha));
                 final double   delta    = MathUtils.TWO_PI / n;
-                final List<GeodeticPoint> loop = new ArrayList<GeodeticPoint>(n);
+                final List<GeodeticPoint> loop = new ArrayList<>(n);
                 for (int i = 0; i < n; ++i) {
                     final Vector3D outside = new Vector3D(r * FastMath.cos(i * delta), x,
                                                           r * FastMath.sin(i * delta), y);
