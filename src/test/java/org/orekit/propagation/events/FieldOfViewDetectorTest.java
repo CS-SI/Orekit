@@ -16,10 +16,12 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.spherical.twod.Edge;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -38,6 +40,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.geometry.fov.CircularFieldOfView;
 import org.orekit.geometry.fov.DoubleDihedraFieldOfView;
 import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.geometry.fov.PolygonalFieldOfView;
@@ -308,6 +311,74 @@ public class FieldOfViewDetectorTest {
         Assert.assertEquals(1798.478948, events.get(4).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assert.assertSame(sunPartial, events.get(5).getEventDetector());
         Assert.assertEquals(1845.966183, events.get(5).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+
+    }
+
+    @Test
+    public void testMatryoshka() {
+
+        // Definition of initial conditions with position and velocity
+        //------------------------------------------------------------
+
+        // Extrapolator definition
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, earthCenterAttitudeLaw);
+
+        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final double maxCheck  = 60.;
+        final double threshold = 1.0e-10;
+        EventsLogger logger = new EventsLogger();
+
+        // largest fov: circular, along X axis, aperture 68°, no margin
+        CircularFieldOfView circFov = new CircularFieldOfView(Vector3D.PLUS_I, FastMath.toRadians(0.5 * 68.0), 0.0);
+        List<EventDetector> detectors = new ArrayList<>();
+        for (int i = 0; i < 4; ++i) {
+
+            // outer circular detector
+            final EventDetector circDetector =
+                            new FieldOfViewDetector(sun, circFov).
+                            withMaxCheck(maxCheck).
+                            withThreshold(threshold).
+                            withHandler(new ContinueOnEvent<>());
+            detectors.add(circDetector);
+            propagator.addEventDetector(logger.monitorDetector(circDetector));
+
+            // inner polygonal detector
+            PolygonalFieldOfView polyFov = new PolygonalFieldOfView(circFov.getCenter(),
+                                                                    DefiningConeType.OUTSIDE_CONE_TOUCHING_POLYGON_AT_VERTICES,
+                                                                    circFov.getCenter().orthogonal(),
+                                                                    circFov.getHalfAperture(), 16, 0.0);
+            final EventDetector polyDetector =
+                            new FieldOfViewDetector(sun, polyFov).
+                            withMaxCheck(maxCheck).
+                            withThreshold(threshold).
+                            withHandler(new ContinueOnEvent<>());
+            detectors.add(polyDetector);
+            propagator.addEventDetector(logger.monitorDetector(polyDetector));
+
+            // find another inner circular fov
+            final Edge     edge   = polyFov.getZone().getBoundaryLoops().get(0).getOutgoing();
+            final Vector3D middle = edge.getPointAt(0.5 * edge.getLength());
+            final double   innerRadius = Vector3D.angle(circFov.getCenter(), middle);
+            circFov = new CircularFieldOfView(circFov.getCenter(), innerRadius, 0.0);
+            
+        }
+
+        // Extrapolate from the initial to the final date
+        propagator.propagate(initDate.shiftedBy(6000.));
+
+        int n = detectors.size();
+        List<LoggedEvent>  events = logger.getLoggedEvents();
+        Assert.assertEquals(2 * n, events.size());
+
+        // series of Sun visibility start events, from outer to inner FoV
+        for (int i = 0; i < n; ++i) {
+            Assert.assertSame(detectors.get(i), events.get(i).getEventDetector());
+        }
+
+        // series of Sun visibility end events, from inner to outer FoV
+        for (int i = 0; i < n; ++i) {
+            Assert.assertSame(detectors.get(n - 1 - i), events.get(n + i).getEventDetector());
+        }
 
     }
 
