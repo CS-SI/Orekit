@@ -32,6 +32,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.geometry.fov.PolygonalFieldOfView;
+import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -92,7 +93,9 @@ public class GroundFieldOfViewDetectorTest {
         //half width of 60 deg pointed along +Z in antenna frame
         //not a perfect small circle b/c FoV makes a polygon with great circles
         FieldOfView fov =
-                new PolygonalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I, pi / 3, 16, 0);
+                new PolygonalFieldOfView(Vector3D.PLUS_K,
+                                         DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                         Vector3D.PLUS_I, pi / 3, 16, 0);
         //simple case for fixed pointing to be similar to elevation detector.
         //could define new frame with varying rotation for slewing antenna.
         GroundFieldOfViewDetector fovDetector =

@@ -99,7 +99,7 @@ public class FieldOfViewTest {
                         new UnitSphereRandomVectorGenerator(3, new Well1024a(0x17df21c7598b114bl));
         for (int i = 0; i < 1000; ++i) {
             Vector3D v = new Vector3D(random.nextVector()).scalarMultiply(1.0e6);
-            Assert.assertEquals(square1.offsetFromBoundary(v), square2.offsetFromBoundary(v), 1.0e-15);
+            Assert.assertEquals(square1.offsetFromBoundary(v), square2.offsetFromBoundary(v), 1.2e-15);
         }
     }
 

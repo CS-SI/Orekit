@@ -32,6 +32,7 @@ import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.geometry.spherical.twod.Vertex;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -77,31 +78,51 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
      * points outside of the raw FoV but close enough to the boundary are
      * considered visible; if negative, points inside of the raw FoV
      * but close enough to the boundary are considered not visible)
+     * @deprecated as of 10.1, replaced by {@link #PolygonalFieldOfView(Vector3D,
+     * DefiningConeType, Vector3D, double, int, double)}
      */
+    @Deprecated
     public PolygonalFieldOfView(final Vector3D center, final Vector3D meridian,
                                 final double insideRadius, final int n,
                                 final double margin) {
+        this(center, DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+             meridian, insideRadius, n, margin);
+    }
+
+    /** Build Field Of View with a regular polygon shape.
+     * @param center center of the polygon (the center is in the inside part)
+     * @param coneType type of defining cone
+     * @param meridian point defining the reference meridian for one contact
+     * point between defining cone and polygon (i.e. either a polygon edge
+     * middle point or a polygon vertex)
+     * @param radius defining cone angular radius
+     * @param n number of sides of the polygon
+     * @param margin angular margin to apply to the zone (if positive,
+     * points outside of the raw FoV but close enough to the boundary are
+     * considered visible; if negative, points inside of the raw FoV
+     * but close enough to the boundary are considered not visible)
+     * @since 10.1
+     */
+    public PolygonalFieldOfView(final Vector3D center, final DefiningConeType coneType,
+                                final Vector3D meridian, final double radius,
+                                final int n, final double margin) {
 
         super(margin);
 
-        // convert the representation based on middle edge points
-        // to Hipparchus convention based on vertices
-        final Rotation r                = new Rotation(center, MathUtils.TWO_PI / n,
-                                                       RotationConvention.VECTOR_OPERATOR);
-        final Vector3D orthogonal       = Vector3D.crossProduct(Vector3D.crossProduct(center, meridian), center);
-        final Vector3D firstEdgeNormal  = new Vector3D( FastMath.sin(insideRadius), center.normalize(),
-                                                       -FastMath.cos(insideRadius), orthogonal.normalize());
-        final Vector3D secondEdgeNormal = r.applyTo(firstEdgeNormal);
-        final Vector3D vertex           = Vector3D.crossProduct(firstEdgeNormal, secondEdgeNormal);
-        final double outsideRadius      = Vector3D.angle(center, vertex);
-        this.zone = new SphericalPolygonsSet(center, vertex, outsideRadius, n, 1.0e-12 * insideRadius);
+        final double   verticesRadius = coneType.verticesRadius(radius, n);
+        final Vector3D vertex         = coneType.createVertex(center, meridian, verticesRadius, n);
+        this.zone                     = new SphericalPolygonsSet(center, vertex, verticesRadius,
+                                                                 n, 1.0e-12 * verticesRadius);
 
+        final Rotation r = new Rotation(center, MathUtils.TWO_PI / n, RotationConvention.VECTOR_OPERATOR);
         final S2Point[] support = new S2Point[n];
         support[0] = new S2Point(vertex);
         for (int i = 1; i < n; ++i) {
             support[i] = new S2Point(r.applyTo(support[i - 1].getVector()));
         }
-        this.cap = new EnclosingBall<Sphere2D, S2Point>(new S2Point(center), outsideRadius, support);
+        this.cap = new EnclosingBall<Sphere2D, S2Point>(new S2Point(center),
+                                                        Vector3D.angle(center, vertex),
+                                                        support);
 
     }
 
@@ -224,6 +245,80 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
         }
 
         return footprint;
+
+    }
+
+    /** Enumerate for cone/polygon relative position.
+     * @since 10.1
+     */
+    public enum DefiningConeType {
+
+        /** Constant for cones inside polygons and touching it at polygon edges middle points. */
+        CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE() {
+
+            /** {@inheritDoc}*/
+            @Override
+            protected double verticesRadius(final double radius, final int n) {
+                // convert the inside (edges middle points) radius to outside (vertices) radius
+                return FastMath.atan(FastMath.tan(radius) / FastMath.cos(FastMath.PI / n));
+            }
+
+            /** {@inheritDoc}*/
+            @Override
+            protected Vector3D createVertex(final Vector3D center, final Vector3D meridian,
+                                            final double verticesRadius, final int n) {
+                // convert the edge middle meridian to a vertex
+                final SinCos scA = FastMath.sinCos(FastMath.PI / n);
+                final SinCos scR = FastMath.sinCos(verticesRadius);
+                final Vector3D z = center.normalize();
+                final Vector3D y = Vector3D.crossProduct(center, meridian).normalize();
+                final Vector3D x = Vector3D.crossProduct(y, z);
+                return new Vector3D(scR.sin() * scA.cos(), x, scR.sin() * scA.sin(), y, scR.cos(), z);
+            }
+
+        },
+
+        /** Constant for cones outside polygons and touching it at polygon vertices. */
+        CONE_OUTSIDE_TOUCHING_POLYGON_AT_VERTICES() {
+
+            /** {@inheritDoc}*/
+            @Override
+            protected double verticesRadius(final double radius, final int n) {
+                return radius;
+            }
+
+            /** {@inheritDoc}*/
+            @Override
+            protected Vector3D createVertex(final Vector3D center, final Vector3D meridian,
+                                            final double verticesRadius, final int n) {
+                // convert the vertex meridian to a vertex
+                final SinCos scR = FastMath.sinCos(verticesRadius);
+                final Vector3D z = center.normalize();
+                final Vector3D y = Vector3D.crossProduct(center, meridian).normalize();
+                final Vector3D x = Vector3D.crossProduct(y, z);
+                return new Vector3D(scR.sin(), x, scR.cos(), z);
+            }
+
+        };
+
+        /** Compute radius of cone going through vertices.
+         * @param radius defining cone angular radius
+         * @param n number of sides of the polygon
+         * @return radius of cone going through vertices
+         */
+        protected abstract double verticesRadius(double radius, int n);
+
+        /** Create a vertex.
+         * @param center center of the polygon (the center is in the inside part)
+         * @param meridian point defining the reference meridian for one contact
+         * point between defining cone and polygon (i.e. either a polygon edge
+         * middle point or a polygon vertex)
+         * @param verticesRadius defining radius of cone passing through vertices
+         * @param n number of sides of the polygon
+         * @return created vertex
+         */
+        protected abstract Vector3D createVertex(Vector3D center, Vector3D meridian,
+                                                 double verticesRadius, int n);
 
     }
 

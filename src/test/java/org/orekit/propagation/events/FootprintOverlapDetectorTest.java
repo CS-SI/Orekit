@@ -43,6 +43,7 @@ import org.orekit.frames.Transform;
 import org.orekit.geometry.fov.DoubleDihedraFieldOfView;
 import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.geometry.fov.PolygonalFieldOfView;
+import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -100,8 +101,10 @@ public class FootprintOverlapDetectorTest {
         final SphericalPolygonsSet france = buildFrance();
 
         // square field of view along Z axis (which is pointing sideways), aperture 5°, 0° margin
-        final FieldOfView fov = new PolygonalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
-                                                                FastMath.toRadians(2.5), 4, 0.0);
+        final FieldOfView fov = new PolygonalFieldOfView(Vector3D.PLUS_K,
+                                                         DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                                         Vector3D.PLUS_I,
+                                                         FastMath.toRadians(2.5), 4, 0.0);
         final FootprintOverlapDetector detector =
                 new FootprintOverlapDetector(fov, earth, france, 50000.0).
                 withMaxCheck(1.0).

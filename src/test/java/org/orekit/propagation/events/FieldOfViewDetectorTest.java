@@ -41,6 +41,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.geometry.fov.DoubleDihedraFieldOfView;
 import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.geometry.fov.PolygonalFieldOfView;
+import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -215,7 +216,9 @@ public class FieldOfViewDetectorTest {
 
         //action
         FieldOfView fov =
-                new PolygonalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I, pi / 3, 16, 0);
+                new PolygonalFieldOfView(Vector3D.PLUS_K,
+                                         DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                         Vector3D.PLUS_I, pi / 3, 16, 0);
         FieldOfViewDetector fovDetector =
                 new FieldOfViewDetector(topo, fov)
                         .withMaxCheck(5.0);

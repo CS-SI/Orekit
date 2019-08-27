@@ -25,6 +25,7 @@ import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
 
 public class DoubleDihedraFieldOfViewTest {
 
@@ -66,6 +67,25 @@ public class DoubleDihedraFieldOfViewTest {
 
     @Test
     public void testSquare() {
+        DoubleDihedraFieldOfView square1 = new DoubleDihedraFieldOfView(Vector3D.PLUS_K,
+                                                                        Vector3D.PLUS_I, 0.25,
+                                                                        Vector3D.MINUS_J, 0.25,
+                                                                        0.0);
+        PolygonalFieldOfView square2 = new PolygonalFieldOfView(Vector3D.PLUS_K, DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                                                Vector3D.PLUS_I, 0.25, 4, 0.0);
+        Assert.assertEquals(square1.getZone().getSize(),         square2.getZone().getSize(),         1.0e-15);
+        Assert.assertEquals(square1.getZone().getBoundarySize(), square2.getZone().getBoundarySize(), 1.0e-15);
+        UnitSphereRandomVectorGenerator random =
+                        new UnitSphereRandomVectorGenerator(3, new Well1024a(0x17df21c7598b114bl));
+        for (int i = 0; i < 1000; ++i) {
+            Vector3D v = new Vector3D(random.nextVector()).scalarMultiply(1.0e6);
+            Assert.assertEquals(square1.offsetFromBoundary(v), square2.offsetFromBoundary(v), 1.0e-15);
+        }
+    }
+
+    @Deprecated
+    @Test
+    public void testSquareDeprecated() {
         DoubleDihedraFieldOfView square1 = new DoubleDihedraFieldOfView(Vector3D.PLUS_K,
                                                                         Vector3D.PLUS_I, 0.25,
                                                                         Vector3D.MINUS_J, 0.25,

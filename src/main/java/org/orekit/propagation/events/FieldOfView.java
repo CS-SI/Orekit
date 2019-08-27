@@ -83,7 +83,9 @@ public class FieldOfView extends PolygonalFieldOfView {
      */
     public FieldOfView(final Vector3D center, final Vector3D meridian,
                        final double insideRadius, final int n, final double margin) {
-        super(center, meridian, insideRadius, n, margin);
+        super(center,
+              PolygonalFieldOfView.DefiningConeType.CONE_INSIDE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+              meridian, insideRadius, n, margin);
     }
 
     /** Create polygon.
