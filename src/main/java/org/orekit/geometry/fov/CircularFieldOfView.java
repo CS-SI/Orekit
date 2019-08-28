@@ -70,7 +70,7 @@ public class CircularFieldOfView extends AbstractFieldOfView {
         this.center       = center;
         this.halfAperture = halfAperture;
 
-        // precompute utility vectors for walking arounf the FoV
+        // precompute utility vectors for walking around the FoV
         final Vector3D zAxis = center.normalize();
         final Vector3D xAxis = center.orthogonal();
         final Vector3D yAxis = Vector3D.crossProduct(zAxis, xAxis);
