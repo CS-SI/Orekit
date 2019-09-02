@@ -42,6 +42,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.geometry.fov.CircularFieldOfView;
 import org.orekit.geometry.fov.DoubleDihedraFieldOfView;
+import org.orekit.geometry.fov.EllipticalFieldOfView;
 import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.geometry.fov.PolygonalFieldOfView;
 import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
@@ -379,6 +380,71 @@ public class FieldOfViewDetectorTest {
         for (int i = 0; i < n; ++i) {
             Assert.assertSame(detectors.get(n - 1 - i), events.get(n + i).getEventDetector());
         }
+
+    }
+
+    @Test
+    public void testElliptical() {
+
+        // Definition of initial conditions with position and velocity
+        //------------------------------------------------------------
+
+        // Extrapolator definition
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, earthCenterAttitudeLaw);
+
+        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final double maxCheck  = 60.;
+        final double threshold = 1.0e-10;
+        EventsLogger logger = new EventsLogger();
+
+        EllipticalFieldOfView ang = new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
+                                                              FastMath.toRadians(40), FastMath.toRadians(10),
+                                                              0.0,
+                                                              EllipticalFieldOfView.EllipticalConstraint.ANGULAR);
+        EllipticalFieldOfView cart = new EllipticalFieldOfView(ang.getCenter(), ang.getX(),
+                                                               ang.getHalfApertureAlongX(),
+                                                               ang.getHalfApertureAlongY(),
+                                                               ang.getMargin(),
+                                                               EllipticalFieldOfView.EllipticalConstraint.CARTESIAN);
+        final EventDetector angularDetector =
+                        new FieldOfViewDetector(sun, ang).
+                        withMaxCheck(maxCheck).
+                        withThreshold(threshold).
+                        withHandler(new ContinueOnEvent<>());
+        propagator.addEventDetector(logger.monitorDetector(angularDetector));
+        final EventDetector cartesianDetector =
+                        new FieldOfViewDetector(sun, cart).
+                        withMaxCheck(maxCheck).
+                        withThreshold(threshold).
+                        withHandler(new ContinueOnEvent<>());
+        propagator.addEventDetector(logger.monitorDetector(cartesianDetector));
+
+       // Extrapolate from the initial to the final date
+        propagator.propagate(initDate.shiftedBy(6000.));
+
+        List<LoggedEvent>  events = logger.getLoggedEvents();
+        Assert.assertEquals(4, events.size());
+
+        // as the Cartesian detector is slightly larger than the angular one
+        // it starts seeing the Sun before the angular one, and stop seing it later
+        Assert.assertSame(cartesianDetector, events.get(0).getEventDetector());
+        Assert.assertFalse(events.get(0).isIncreasing());
+        Assert.assertSame(angularDetector, events.get(1).getEventDetector());
+        Assert.assertFalse(events.get(1).isIncreasing());
+        Assert.assertSame(angularDetector, events.get(2).getEventDetector());
+        Assert.assertTrue(events.get(2).isIncreasing());
+        Assert.assertSame(cartesianDetector, events.get(3).getEventDetector());
+        Assert.assertTrue(events.get(3).isIncreasing());
+
+        Assert.assertEquals(17.249,
+                            events.get(1).getState().getDate().durationFrom(events.get(0).getState().getDate()),
+                            1.0e-3);
+        Assert.assertEquals(323.061,
+                            events.get(2).getState().getDate().durationFrom(events.get(1).getState().getDate()),
+                            1.0e-3);
+        Assert.assertEquals(19.939,
+                            events.get(3).getState().getDate().durationFrom(events.get(2).getState().getDate()),
+                            1.0e-3);
 
     }
 
