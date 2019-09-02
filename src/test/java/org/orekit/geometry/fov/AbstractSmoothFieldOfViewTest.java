@@ -16,10 +16,7 @@
  */
 package org.orekit.geometry.fov;
 
-import java.io.IOException;
-import java.io.PrintStream;
 import java.util.List;
-import java.util.Locale;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -93,13 +90,8 @@ public abstract class AbstractSmoothFieldOfViewTest {
         double maxEl     = 0;
         double minDist   = Double.POSITIVE_INFINITY;
         double maxDist   = 0;
-        try (PrintStream out = new PrintStream("/home/luc/x.dat")) {
         for (int i = 0; i < loop.size(); ++i) {
 
-            out.format(Locale.US, "%8.3f %8.3f%n",
-                       FastMath.toDegrees(loop.get(i).getLongitude()),
-                       FastMath.toDegrees(loop.get(i).getLatitude()));
-                                          
             Assert.assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
 
             Vector3D los = fovToBody.getInverse().transformPosition(earth.transform(loop.get(i)));
@@ -119,9 +111,6 @@ public abstract class AbstractSmoothFieldOfViewTest {
             minDist = FastMath.min(minDist, dist);
             maxDist = FastMath.max(maxDist, dist);
 
-        }
-        } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
         }
 
         Assert.assertEquals(expectedMinOffset,     FastMath.toDegrees(minOffset), 0.001);
