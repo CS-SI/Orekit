@@ -133,7 +133,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromBoundary(final Vector3D lineOfSight) {
+    public double rawOffsetFromBoundary(final Vector3D lineOfSight) {
 
         final S2Point los    = new S2Point(lineOfSight);
         final double  margin = getMargin();
@@ -144,12 +144,12 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
         if (crudeDistance - margin > FastMath.max(FastMath.abs(margin), 0.01)) {
             // we know we are strictly outside of the zone,
             // use the crude distance to compute the (positive) return value
-            return crudeDistance - margin;
+            return crudeDistance;
         }
 
         // we are close, we need to compute carefully the exact offset;
         // we project the point to the closest zone boundary
-        return zone.projectToBoundary(los).getOffset() - margin;
+        return zone.projectToBoundary(los).getOffset();
 
     }
 

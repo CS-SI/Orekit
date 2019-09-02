@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="595">
+        Added EllipticalFieldOfView (with two different ways to define the
+        ellipticity constraint) that can be used in FieldOfViewDetector,
+        GroundFieldOfViewDetector and FootprintOverlapDetector.
+      </action>
       <action dev="luc" type="add">
         Fields of view with regular polygonal shape can now be built either
         based on a defining cone inside the Fov and touching it at edges

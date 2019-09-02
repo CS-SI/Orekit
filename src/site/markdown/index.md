@@ -46,7 +46,8 @@
     * composite transforms reduction and caching for efficiency
     * extensible central body shapes models (with predefined spherical and ellipsoidic shapes)
     * Cartesian and geodesic coordinates, kinematics
-    * Computation of Dilution Of Precision (DOP) with respect to GNSS constellations
+    * computation of Dilution Of Precision (DOP) with respect to GNSS constellations
+    * projection of sensor Field Of View footprint on ground for any FoV shape
 
   * Spacecraft state
 
