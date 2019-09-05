@@ -87,6 +87,9 @@ public class NumericalConverterTest {
         builder.buildPropagator(builder.getSelectedNormalizedParameters());
         // Verify the addition of the Newtonian attraction force model
         assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Add a new force model to ensure the Newtonian attraction stay at the last position
+        builder.addForceModel(drag);
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
     }
 
     @Test

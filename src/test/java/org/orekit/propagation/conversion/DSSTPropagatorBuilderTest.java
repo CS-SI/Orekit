@@ -58,6 +58,7 @@ public class DSSTPropagatorBuilderTest {
     private EquinoctialOrbit orbit;
     private DSSTPropagator propagator;
     private DSSTForceModel moon;
+    private DSSTForceModel sun;
 
     @Test
     public void testIntegrators01() {
@@ -195,6 +196,9 @@ public class DSSTPropagatorBuilderTest {
         builder.buildPropagator(builder.getSelectedNormalizedParameters());
         // Verify the addition of the Newtonian attraction force model
         assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Add a new force model to ensure the Newtonian attraction stay at the last position
+        builder.addForceModel(sun);
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
     }
 
     @Before
@@ -226,9 +230,10 @@ public class DSSTPropagatorBuilderTest {
                                      earthFrame,
                                      initDate,
                                      mu);
-        
+
         moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
-        
+        sun = new DSSTThirdBody(CelestialBodyFactory.getSun(), mu);
+
         tolerance  = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
         propagator = new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]));
         propagator.setInitialState(new SpacecraftState(orbit, 1000.), PropagationType.MEAN);
