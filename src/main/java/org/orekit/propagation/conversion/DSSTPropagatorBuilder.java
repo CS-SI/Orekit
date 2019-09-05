@@ -27,6 +27,7 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.estimation.sequential.DSSTKalmanModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -36,6 +37,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -182,6 +184,14 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         for (DSSTForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
+
+        if (!hasNewtonianAttraction()) {
+            // There are no central attraction model yet, add it at the end of the list
+            final DSSTNewtonianAttraction na = new DSSTNewtonianAttraction(orbit.getMu());
+            forceModels.add(na);
+            propagator.addForceModel(na);
+        }
+
         propagator.setInitialState(state, stateType);
 
         return propagator;
@@ -207,6 +217,17 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                    covarianceMatricesProviders,
                                    estimatedMeasurementsParameters,
                                    propagationType, stateType);
+    }
+
+    /** Check if Newtonian attraction force model is available.
+     * <p>
+     * Newtonian attraction is always the last force model in the list.
+     * </p>
+     * @return true if Newtonian attraction force model is available
+     */
+    private boolean hasNewtonianAttraction() {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof NewtonianAttraction;
     }
 
 }

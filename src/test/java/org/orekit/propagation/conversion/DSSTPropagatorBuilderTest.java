@@ -16,8 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
@@ -36,6 +40,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -173,6 +178,25 @@ public class DSSTPropagatorBuilderTest {
         
     }
 
+    @Test
+    public void testIssue598() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
+                                                                  dp54Builder,
+                                                                  1.0,
+                                                                  PropagationType.MEAN,
+                                                                  PropagationType.MEAN);
+        builder.addForceModel(moon);
+        // Verify that there is no Newtonian attration force model
+        assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Build the DSST propagator (not used here)
+        builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        // Verify the addition of the Newtonian attraction force model
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+    }
+
     @Before
     public void setUp() throws IOException, ParseException {
         
@@ -211,4 +235,10 @@ public class DSSTPropagatorBuilderTest {
         propagator.addForceModel(moon);
 
     }
+
+    private boolean hasNewtonianAttraction(final List<DSSTForceModel> forceModels) {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof DSSTNewtonianAttraction;
+    }
+
 }
