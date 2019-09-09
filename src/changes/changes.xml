@@ -24,6 +24,10 @@
       <action dev="luc" type="fix" issue="599">
         Fixed an issue in projection to flat ellipse.
       </action>
+      <action dev="bryan" type="fix" issue="598">
+        Added lazily addition of Newtonian attraction to the DSST and
+        numerical propagator builders.
+      </action>
       <action dev="luc" type="add" issue="595">
         Added EllipticalFieldOfView (with two different ways to define the
         ellipticity constraint) that can be used in FieldOfViewDetector,
