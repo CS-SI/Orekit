@@ -27,11 +27,36 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.attitudes.NadirPointing;
+import org.orekit.bodies.Ellipse;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 
 public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
+
+    @Test
+    public void testPlanarProjection() {
+
+        EllipticalFieldOfView fov = new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
+                                                              FastMath.toRadians(40.0), FastMath.toRadians(10.0),
+                                                              0.0, EllipticalFieldOfView.EllipticalConstraint.CARTESIAN);
+
+
+        // test direction
+        final Vector3D d         = new Vector3D(0.4, 0.8, 0.2).normalize();
+
+        // plane ellipse
+        final Ellipse  ellipse   = new Ellipse(fov.getZ(), fov.getX(), fov.getY(),
+                                               FastMath.tan(fov.getHalfApertureAlongX()),
+                                               FastMath.tan(fov.getHalfApertureAlongY()),
+                                               FramesFactory.getGCRF());
+        final Vector3D projected = new Vector3D(1.0 / d.getZ(), d);
+        final Vector3D closest   = ellipse.toSpace(ellipse.projectToEllipse(ellipse.toPlane(projected)));
+
+        Assert.assertEquals(0.0, fov.offsetFromBoundary(closest), 2.0e-15);
+
+    }
 
     @Test
     public void testNadirNoMarginAngular() {
