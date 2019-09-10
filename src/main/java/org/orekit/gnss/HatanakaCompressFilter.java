@@ -954,8 +954,12 @@ public class HatanakaCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         public String parseHeaderLine(final String line) {
             if (isHeaderLine(SYS_NB_OBS_TYPES, line)) {
-                updateMaxObs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
-                             parseInt(line, 1, 5));
+                if (line.charAt(0) != ' ') {
+                    // it is the first line of an observation types description
+                    // (continuation lines are ignored here)
+                    updateMaxObs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
+                                 parseInt(line, 1, 5));
+                }
                 return line;
             } else {
                 return super.parseHeaderLine(line);
