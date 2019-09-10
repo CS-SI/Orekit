@@ -24,6 +24,9 @@
       <action dev="luc" type="fix" issue="600">
         Fixed parsing of compact RINEX files with many observation types.
       </action>
+      <action dev="bryan" type="fix">
+        Fixed poor design of GLONASS numerical propagator.
+      </action>
       <action dev="luc" type="fix" issue="599">
         Fixed an issue in projection to flat ellipse.
       </action>

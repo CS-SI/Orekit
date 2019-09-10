@@ -85,9 +85,9 @@ public class GLONASSNumericalPropagatorTest {
         
         // Propagation
         final SpacecraftState finalState = propagator.propagate(target);
-        final PVCoordinates pvFinal = propagator.getPVInPZ90(finalState);
+        final PVCoordinates pvFinal = finalState.getPVCoordinates(FramesFactory.getPZ9011(IERSConventions.IERS_2010, true));
 
-        // Expected outputs
+        // Expected outputs in PZ90.11 frame
         final Vector3D expectedPosition = new Vector3D(7523174.819, -10506961.965, 21999239.413);
         final Vector3D expectedVelocity = new Vector3D(950.126007, 2855.687825, 1040.679862);
 
@@ -153,6 +153,9 @@ public class GLONASSNumericalPropagatorTest {
 
     @Test
     public void testPosition() {
+        // Frames
+        final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         // Initial GLONASS orbital elements (Ref: IGS)
         final GLONASSEphemeris ge = new GLONASSEphemeris(6, 1342, 45900, -1.0705924E7, 2052.252685546875, 0.0,
                                                          -1.5225037E7, 1229.055419921875, -2.7939677238464355E-6,
@@ -165,10 +168,10 @@ public class GLONASSNumericalPropagatorTest {
         final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagator.Builder(integrator, ge, true).build();
         // Compute the PV coordinates at the date of the GLONASS orbital elements
         final SpacecraftState finalState = propagator.propagate(target);
-        final PVCoordinates pvInPZ90 = propagator.getPVInPZ90(finalState);
-        final PVCoordinates pv = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true).getTransformTo(FramesFactory.getITRF(IERSConventions.IERS_2010, true), target).transformPVCoordinates(pvInPZ90);
+        final PVCoordinates pvInPZ90 = finalState.getPVCoordinates(pz90);
+        final PVCoordinates pvInITRF = pz90.getTransformTo(itrf, target).transformPVCoordinates(pvInPZ90);
         // Computed position
-        final Vector3D computedPos = pv.getPosition();
+        final Vector3D computedPos = pvInITRF.getPosition();
         // Expected position (reference from IGS file igv20692_06.sp3)
         final Vector3D expectedPos = new Vector3D(-10742801.600, -15247162.619, -17347541.633);
         // Verify

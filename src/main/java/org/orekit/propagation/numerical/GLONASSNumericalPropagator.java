@@ -42,8 +42,11 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * This class propagates GLONASS orbits using numerical integration.
@@ -273,6 +276,24 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
      */
     public GLONASSOrbitalElements getGLONASSOrbitalElements() {
         return glonassOrbit;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SpacecraftState propagate(final AbsoluteDate date) {
+        // Spacecraft state in inertial frame
+        final SpacecraftState stateInInertial = super.propagate(date);
+
+        // Build the spacecraft state in inertial frame
+        final PVCoordinates pvInPZ90 = getPVInPZ90(stateInInertial);
+        final AbsolutePVCoordinates absPV = new AbsolutePVCoordinates(FramesFactory.getPZ9011(IERSConventions.IERS_2010, true),
+                                                                      stateInInertial.getDate(), pvInPZ90);
+        final TimeStampedPVCoordinates pvInInertial = absPV.getPVCoordinates(eci);
+        final SpacecraftState transformedState = new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GLONASSOrbitalElements.GLONASS_MU),
+                                                                stateInInertial.getAttitude(),
+                                                                stateInInertial.getMass(), stateInInertial.getAdditionalStates());
+
+        return transformedState;
     }
 
     /**
