@@ -29,7 +29,6 @@ import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.RinexHeader;
 import org.orekit.gnss.SatelliteSystem;
 
 /** Base class for dual frequency combination of measurements.
@@ -107,11 +106,6 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
     @Override
     public CombinedObservationDataSet combine(final ObservationDataSet observations) {
 
-        // Rinex file header
-        final RinexHeader header = observations.getHeader();
-        // Rinex version to integer
-        final int version = (int) header.getRinexVersion();
-
         // Initialize list of measurements
         final List<ObservationData> pseudoRanges = new ArrayList<>();
         final List<ObservationData> phases       = new ArrayList<>();
@@ -132,7 +126,7 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         // Combine pseudo-ranges
         for (int i = 0; i < pseudoRanges.size() - 1; i++) {
             for (int j = 1; j < pseudoRanges.size(); j++) {
-                final boolean combine = isCombinationPossible(version, pseudoRanges.get(i), pseudoRanges.get(j));
+                final boolean combine = isCombinationPossible(pseudoRanges.get(i), pseudoRanges.get(j));
                 if (combine) {
                     combined.add(combine(pseudoRanges.get(i), pseudoRanges.get(j)));
                 }
@@ -141,7 +135,7 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         // Combine carrier-phases
         for (int i = 0; i < phases.size() - 1; i++) {
             for (int j = 1; j < phases.size(); j++) {
-                final boolean combine = isCombinationPossible(version, phases.get(i), phases.get(j));
+                final boolean combine = isCombinationPossible(phases.get(i), phases.get(j));
                 if (combine) {
                     combined.add(combine(phases.get(i), phases.get(j)));
                 }
@@ -173,12 +167,11 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
 
     /**
      * Verifies if two observation data can be combine.
-     * @param version Rinex file version (integer part)
      * @param data1 first observation data
      * @param data2 second observation data
      * @return true if observation data can be combined
      */
-    private boolean isCombinationPossible(final int version, final ObservationData data1, final ObservationData data2) {
+    private boolean isCombinationPossible(final ObservationData data1, final ObservationData data2) {
 
         // Observation types
         final ObservationType obsType1 = data1.getObservationType();
@@ -187,29 +180,12 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         // Geometry-Free combination is possible only if data frequencies are diffrents
         if (obsType1.getFrequency(system) != obsType2.getFrequency(system)) {
 
-            // Switch on Rinex version
-            switch (version) {
-                case 2:
-                    // Rinex 2 version
-                    if (obsType1.name().charAt(0) == obsType2.name().charAt(0)) {
-                        // Observation code is the same. Combination of measurements can be performed
-                        return true;
-                    } else {
-                        // Observation code is not the same. Combination of measurements can not be performed
-                        return false;
-                    }
-                case 3:
-                    // Rinex 3 version
-                    if (obsType1.name().charAt(2) == obsType2.name().charAt(2)) {
-                        // Observation code is the same. Combination of measurements can be performed
-                        return true;
-                    } else {
-                        // Observation code is the same. Combination of measurements can not be performed
-                        return false;
-                    }
-                default:
-                    // Not supported Rinex version. Combination is not possible
-                    return false;
+            if (obsType1.getSignalCode() == obsType2.getSignalCode()) {
+                // Observation code is the same. Combination of measurements can be performed
+                return true;
+            } else {
+                // Observation code is not the same. Combination of measurements can not be performed
+                return false;
             }
 
         } else {

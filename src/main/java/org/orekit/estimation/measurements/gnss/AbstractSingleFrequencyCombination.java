@@ -175,12 +175,11 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
                     // Rinex 2 version
                     return true;
                 case 3:
-                    // Rinex 3 version
-                    if (obsType1.name().charAt(2) == obsType2.name().charAt(2)) {
+                    if (obsType1.getSignalCode() == obsType2.getSignalCode()) {
                         // Observation code is the same. Combination of measurements can be performed
                         return true;
                     } else {
-                        // Observation code is the same. Combination of measurements can not be performed
+                        // Observation code is not the same. Combination of measurements can not be performed
                         return false;
                     }
                 default:
