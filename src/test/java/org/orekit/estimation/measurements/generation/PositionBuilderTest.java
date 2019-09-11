@@ -86,7 +86,10 @@ public class PositionBuilderTest {
         final double highRateStep = 5.0;
         final double burstPeriod  = 300.0;
 
-        final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+        generator.addPropagator(buildPropagator()); // dummy first propagator
+        generator.addPropagator(buildPropagator()); // dummy second propagator
+        ObservableSatellite satellite = generator.addPropagator(buildPropagator()); // useful third propagator
+        generator.addPropagator(buildPropagator()); // dummy fourth propagator
         generator.addScheduler(new ContinuousScheduler<>(getBuilder(new Well19937a(seed), satellite),
                                                          new BurstSelector(maxBurstSize, highRateStep, burstPeriod,
                                                                            TimeScalesFactory.getUTC())));

@@ -131,7 +131,7 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * </p>
      * @param iteration iteration number
      * @param evaluation evaluations number
-     * @param states orbital states at measurement date
+     * @param states orbital states corresponding to {@link #getSatellites()} at measurement date
      * @return estimated measurement
      */
     EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState[] states);

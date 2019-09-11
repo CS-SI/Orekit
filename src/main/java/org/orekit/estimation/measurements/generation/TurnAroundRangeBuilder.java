@@ -62,10 +62,10 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
         final ObservableSatellite satellite = getSatellites()[0];
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
 
         // create a dummy measurement
-        final TurnAroundRange dummy = new TurnAroundRange(masterStation, slaveStation, state.getDate(),
+        final TurnAroundRange dummy = new TurnAroundRange(masterStation, slaveStation, relevant[0].getDate(),
                                                           Double.NaN, sigma, baseWeight, satellite);
         for (final EstimationModifier<TurnAroundRange> modifier : getModifiers()) {
             dummy.addModifier(modifier);
@@ -81,7 +81,7 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
         }
 
         // estimate the perfect value of the measurement
-        double range = dummy.estimate(0, 0, states).getEstimatedValue()[0];
+        double range = dummy.estimate(0, 0, relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();
@@ -90,7 +90,7 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
         }
 
         // generate measurement
-        final TurnAroundRange measurement = new TurnAroundRange(masterStation, slaveStation, state.getDate(),
+        final TurnAroundRange measurement = new TurnAroundRange(masterStation, slaveStation, relevant[0].getDate(),
                                                                 range, sigma, baseWeight, satellite);
         for (final EstimationModifier<TurnAroundRange> modifier : getModifiers()) {
             measurement.addModifier(modifier);

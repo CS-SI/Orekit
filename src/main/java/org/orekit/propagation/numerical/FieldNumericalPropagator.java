@@ -632,9 +632,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         Arrays.fill(relTol, dP.divide(r2.sqrt()).getReal());
 
-        return new double[][]{
-            absTol, relTol
-        };
+        return new double[][] { absTol, relTol };
 
     }
 

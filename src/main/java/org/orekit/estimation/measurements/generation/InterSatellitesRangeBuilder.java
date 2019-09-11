@@ -57,6 +57,10 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
         final ObservableSatellite[] satellites = getSatellites();
         final double sigma                     = getTheoreticalStandardDeviation()[0];
         final double baseWeight                = getBaseWeight()[0];
+        final SpacecraftState[] relevant       = new SpacecraftState[] {
+            states[satellites[0].getPropagatorIndex()],
+            states[satellites[1].getPropagatorIndex()]
+        };
         final SpacecraftState state            = states[satellites[0].getPropagatorIndex()];
 
         // create a dummy measurement
@@ -76,7 +80,7 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
         }
 
         // estimate the perfect value of the measurement
-        double range = dummy.estimate(0, 0, states).getEstimatedValue()[0];
+        double range = dummy.estimate(0, 0, relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();

@@ -46,7 +46,8 @@ import org.orekit.errors.OrekitMessages;
  * data and another one for system-wide or general data.
  * </p>
  * <p>
- * Gzip-compressed files are supported.
+ * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * {@link DataFilter filters} are applied.
  * </p>
  * <p>
  * Zip archives entries are supported recursively.

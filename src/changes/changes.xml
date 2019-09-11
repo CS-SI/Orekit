@@ -21,6 +21,54 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="600">
+        Fixed parsing of compact RINEX files with many observation types.
+      </action>
+      <action dev="bryan" type="fix">
+        Fixed poor design of GLONASS numerical propagator.
+      </action>
+      <action dev="luc" type="fix" issue="599">
+        Fixed an issue in projection to flat ellipse.
+      </action>
+      <action dev="bryan" type="fix" issue="598">
+        Added lazily addition of Newtonian attraction to the DSST and
+        numerical propagator builders.
+      </action>
+      <action dev="luc" type="add" issue="595">
+        Added EllipticalFieldOfView (with two different ways to define the
+        ellipticity constraint) that can be used in FieldOfViewDetector,
+        GroundFieldOfViewDetector and FootprintOverlapDetector.
+      </action>
+      <action dev="luc" type="add">
+        Fields of view with regular polygonal shape can now be built either
+        based on a defining cone inside the Fov and touching it at edges
+        middle points, or based on a defining cone outside the Fov and touching
+        it at vertices.
+      </action>
+      <action dev="luc" type="add" issue="594">
+        Added CircularFieldOfView that can be used in FieldOfViewDetector,
+        GroundFieldOfViewDetector and FootprintOverlapDetector.
+      </action>
+      <action dev="luc" type="add">
+        Set up a general hierarchy for Field Of View with various shapes. At
+        start, it includes DoubleDihedraFieldOfView and PolygonalFieldOfView.
+      </action>
+      <action dev="luc" type="add" issue="592">
+        Added FilesListCrawler to load files from an explicit list.
+      </action>
+      <action dev="evan" type="fix" issue="583">
+        Fix AbsoluteDate.compareTo() for future/past infinity.
+      </action>
+      <action dev="luc" type="fix" issue="588">
+        Fixed wrong handling of spacecraft states in multi-satellites orbit determination
+        and multi-satellite measurements generation.
+      </action>
+      <action dev="bryan" type="fix" issue="585">
+        Improved contributing guide.
+      </action>
+      <action dev="petrus" type="fix" issue="570">
+        Make FieldOfView.getFootprint public.
+      </action>
       <action dev="bryan" type="add">
         Added combination of measurements.
       </action>

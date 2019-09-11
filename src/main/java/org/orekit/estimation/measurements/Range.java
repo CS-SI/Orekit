@@ -135,8 +135,7 @@ public class Range extends AbstractMeasurement<Range> {
                                                                 final int evaluation,
                                                                 final SpacecraftState[] states) {
 
-        final ObservableSatellite satellite = getSatellites().get(0);
-        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
+        final SpacecraftState state = states[0];
 
         // Range derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters
@@ -225,8 +224,9 @@ public class Range extends AbstractMeasurement<Range> {
                             });
 
             // Clock offsets
-            final DerivativeStructure dtg = station.getClockOffsetDriver().getValue(factory, indices);
-            final DerivativeStructure dts = satellite.getClockOffsetDriver().getValue(factory, indices);
+            final ObservableSatellite satellite = getSatellites().get(0);
+            final DerivativeStructure dts       = satellite.getClockOffsetDriver().getValue(factory, indices);
+            final DerivativeStructure dtg       = station.getClockOffsetDriver().getValue(factory, indices);
 
             // Range value
             range = tauD.add(dtg).subtract(dts).multiply(Constants.SPEED_OF_LIGHT);

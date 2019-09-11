@@ -36,6 +36,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -163,7 +164,27 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * @param model perturbing {@link DSSTForceModel} to add
      */
     public void addForceModel(final DSSTForceModel model) {
-        forceModels.add(model);
+        if (model instanceof DSSTNewtonianAttraction) {
+            // we want to add the central attraction force model
+            if (hasNewtonianAttraction()) {
+                // there is already a central attraction model, replace it
+                forceModels.set(forceModels.size() - 1, model);
+            } else {
+                // there are no central attraction model yet, add it at the end of the list
+                forceModels.add(model);
+            }
+        } else {
+            // we want to add a perturbing force model
+            if (hasNewtonianAttraction()) {
+                // insert the new force model before Newtonian attraction,
+                // which should always be the last one in the list
+                forceModels.add(forceModels.size() - 1, model);
+            } else {
+                // we only have perturbing force models up to now, just append at the end of the list
+                forceModels.add(model);
+            }
+        }
+
         for (final ParameterDriver driver : model.getParametersDrivers()) {
             addSupportedParameter(driver);
         }
@@ -182,6 +203,14 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         for (DSSTForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
+
+        if (!hasNewtonianAttraction()) {
+            // There are no central attraction model yet, add it at the end of the list
+            final DSSTNewtonianAttraction force = new DSSTNewtonianAttraction(orbit.getMu());
+            forceModels.add(force);
+            propagator.addForceModel(force);
+        }
+
         propagator.setInitialState(state, stateType);
 
         return propagator;
@@ -207,6 +236,17 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                    covarianceMatricesProviders,
                                    estimatedMeasurementsParameters,
                                    propagationType, stateType);
+    }
+
+    /** Check if Newtonian attraction force model is available.
+     * <p>
+     * Newtonian attraction is always the last force model in the list.
+     * </p>
+     * @return true if Newtonian attraction force model is available
+     */
+    private boolean hasNewtonianAttraction() {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof DSSTNewtonianAttraction;
     }
 
 }

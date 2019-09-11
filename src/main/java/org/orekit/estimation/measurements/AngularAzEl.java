@@ -84,8 +84,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     protected EstimatedMeasurement<AngularAzEl> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                       final SpacecraftState[] states) {
 
-        final ObservableSatellite satellite = getSatellites().get(0);
-        final SpacecraftState     state     = states[satellite.getPropagatorIndex()];
+        final SpacecraftState state = states[0];
 
         // Azimuth/elevation derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters

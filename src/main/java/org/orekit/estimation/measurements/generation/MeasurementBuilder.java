@@ -54,7 +54,7 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
     List<EstimationModifier<T>> getModifiers();
 
     /** Generate a single measurement.
-     * @param states spacecraft states
+     * @param states all spacecraft states (i.e. including ones that may not be relevant for the current builder)
      * @return generated measurement
      */
     T build(SpacecraftState[] states);
