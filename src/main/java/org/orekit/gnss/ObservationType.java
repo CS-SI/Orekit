@@ -162,7 +162,7 @@ public enum ObservationType {
     C2C(MeasurementType.PSEUDO_RANGE, SignalCode.C, Frequency.G02, Frequency.R02),
 
     /** Pseudorange GPS L1(C/A)+(P2-P1) (semi-codeless) for Rinex3. */
-    C2D(MeasurementType.PSEUDO_RANGE, SignalCode.D, Frequency.G01),
+    C2D(MeasurementType.PSEUDO_RANGE, SignalCode.D, Frequency.G02),
 
     /** Pseudorange Beidou B1 I for Rinex3.03. */
     C2I(MeasurementType.PSEUDO_RANGE, SignalCode.I, Frequency.B01),
@@ -330,7 +330,7 @@ public enum ObservationType {
     D2C(MeasurementType.DOPPLER, SignalCode.C,  Frequency.G02, Frequency.R02),
 
     /** Doppler GPS L1(C/A)+(P2-P1) (semi-codeless) for Rinex3. */
-    D2D(MeasurementType.DOPPLER, SignalCode.D, Frequency.G01),
+    D2D(MeasurementType.DOPPLER, SignalCode.D, Frequency.G02),
 
     /** Doppler Beidou B1 I for Rinex3.03. */
     D2I(MeasurementType.DOPPLER, SignalCode.I, Frequency.B01),
@@ -501,7 +501,7 @@ public enum ObservationType {
     L2C(MeasurementType.CARRIER_PHASE, SignalCode.C, Frequency.G02, Frequency.R02),
 
     /** Carrier-phase GPS L1(C/A)+(P2-P1) (semi-codeless) for Rinex3. */
-    L2D(MeasurementType.CARRIER_PHASE, SignalCode.D, Frequency.G01),
+    L2D(MeasurementType.CARRIER_PHASE, SignalCode.D, Frequency.G02),
 
     /** Carrier-phase Beidou B1 I for Rinex3.03. */
     L2I(MeasurementType.CARRIER_PHASE, SignalCode.I, Frequency.B01),
@@ -660,7 +660,7 @@ public enum ObservationType {
     S2C(MeasurementType.SIGNAL_STRENGTH, SignalCode.C, Frequency.G02, Frequency.R02),
 
     /** Signal-strength GPS L1(C/A)+(P2-P1) (semi-codeless) for Rinex3. */
-    S2D(MeasurementType.SIGNAL_STRENGTH, SignalCode.D, Frequency.G01),
+    S2D(MeasurementType.SIGNAL_STRENGTH, SignalCode.D, Frequency.G02),
 
     /** Signal-strength Beidou B1 I for Rinex3.03. */
     S2I(MeasurementType.SIGNAL_STRENGTH, SignalCode.I,  Frequency.B01),
