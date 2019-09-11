@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="add">
+        Added combination of measurements.
+      </action>
       <action dev="bryan" type="fix">
         Fix values of GPS C2D, L2D, D2D and S2D frequencies.
       </action>
