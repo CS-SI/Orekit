@@ -16,8 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -66,6 +70,27 @@ public class NumericalConverterTest {
     private ForceModel drag;
     private Atmosphere atmosphere;
     private double crossSection;
+
+    @Test
+    public void testIssue598() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
+                                                       dp54Builder,
+                                                       PositionAngle.TRUE, 1.0);
+        builder.addForceModel(gravity);
+        // Verify that there is no Newtonian attration force model
+        assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Build the Numerical propagator (not used here)
+        builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        // Verify the addition of the Newtonian attraction force model
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Add a new force model to ensure the Newtonian attraction stay at the last position
+        builder.addForceModel(drag);
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+    }
 
     @Test
     public void testOnlyCartesianAllowed() {
@@ -339,6 +364,11 @@ public class NumericalConverterTest {
 
         propagator.addForceModel(gravity);
         propagator.addForceModel(drag);
+    }
+
+    private boolean hasNewtonianAttraction(final List<ForceModel> forceModels) {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof NewtonianAttraction;
     }
 
 }

@@ -120,8 +120,8 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
      * <p>
      * Without loss of generality, one can assume that with a suitable rotation
      * the ellipse center is along the Z<sub>ell</sub> axis and the ellipse principal axes
-     * are along the X and Y axes. We can define angular coordinates \((\alpha,
-     * \beta)\) as dihedra angles around the +Y<sub>ell</sub> and -X<sub>ell</sub>
+     * are along the X<sub>ell</sub> and Y<sub>ell</sub> axes. We can define angular coordinates
+     * \((\alpha, \beta)\) as dihedra angles around the +Y<sub>ell</sub> and -X<sub>ell</sub>
      * axes respectively to specify points on the unit sphere. The corresponding
      * Cartesian coordinates will be
      * \[P_{\alpha,\beta}\left(\begin{gather*}

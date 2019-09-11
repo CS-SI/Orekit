@@ -223,7 +223,6 @@ public class RinexLoader {
                 double                           rcvrClkOffset          = 0;
                 boolean                          inRunBy                = false;
                 boolean                          inMarkerName           = false;
-                boolean                          inMarkerType           = false;
                 boolean                          inObserver             = false;
                 boolean                          inRecType              = false;
                 boolean                          inAntType              = false;
@@ -661,7 +660,6 @@ public class RinexLoader {
                                         break;
                                     case MARKER_TYPE :
                                         markerType = parseString(0, 20);
-                                        inMarkerType = true;
                                         //Could be done with an Enumeration
                                         break;
                                     case OBSERVER_AGENCY :
@@ -916,7 +914,7 @@ public class RinexLoader {
                                     case END_OF_HEADER :
                                         //We make sure that we have read all the mandatory fields inside the header of the Rinex
                                         if (!inRinexVersion || !inRunBy || !inMarkerName ||
-                                            !inMarkerType || !inObserver || !inRecType || !inAntType ||
+                                            !inObserver || !inRecType || !inAntType ||
                                             !inAproxPos || !inAntDelta || !inTypesObs || !inFirstObs ||
                                             (formatVersion >= 3.01 && !inPhaseShift) ||
                                             (formatVersion >= 3.03 && (!inGlonassSlot || !inGlonassCOD))) {
