@@ -42,7 +42,7 @@ public class HaloOrbit extends LibrationOrbit {
      */
     public HaloOrbit(final CR3BPSystem syst,
                      final PVCoordinates pv, final double orbitalPeriod) {
-    	super(syst, pv, pv, orbitalPeriod);
+        super(syst, pv, pv, orbitalPeriod);
     }
 
     /**
@@ -56,16 +56,21 @@ public class HaloOrbit extends LibrationOrbit {
      * @param az z-axis Amplitude of the required Halo Orbit, meters
      * @param type type of the Halo Orbit (Northern or Southern)
      */
-    public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double az, final LibrationOrbitType type) {
-    	super(syst, new RichardsonExpansion(syst, point).computeHaloFirstGuess(az, type, 0.0, 0.0),
-    		  null, new RichardsonExpansion(syst, point).getHaloOrbitalPeriod(az));
+    public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point,
+                     final double az, final LibrationOrbitType type) {
+        super(syst,
+              new RichardsonExpansion(syst, point)
+                  .computeHaloFirstGuess(az, type, 0.0, 0.0),
+              null,
+              new RichardsonExpansion(syst, point).getHaloOrbitalPeriod(az));
     }
 
     /** {@inheritDoc} */
-	@Override
-	protected PVCoordinates applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
-		return diff.compute();
-	}
+    @Override
+    protected PVCoordinates
+        applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
+        return diff.compute();
+    }
 
 }
 

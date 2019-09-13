@@ -121,7 +121,7 @@ public class CR3BPDifferentialCorrection {
         // Higher order STM Matrix creation
         final RealMatrix A = MatrixUtils.createRealMatrix(2, 2);
 
-        // Time settings
+        // Time settings (this date has no effect on the result, this is only for code structure purpose)
         final AbsoluteDate initialDate =
             new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
                              TimeScalesFactory.getUTC());
@@ -162,7 +162,8 @@ public class CR3BPDifferentialCorrection {
         propagator.addEventDetector(XZPlaneCrossing);
 
         // Start a new differentially corrected propagation until it converges to a Halo Orbit
-        do {
+        do
+        {
 
             // SpacecraftState initialization
             final AbsolutePVCoordinates initialAbsPV =
@@ -197,54 +198,62 @@ public class CR3BPDifferentialCorrection {
             dvxf = -finalState.getPVCoordinates().getVelocity().getX();
             dvzf = -finalState.getPVCoordinates().getVelocity().getZ();
 
-            // Y axis velocity
-            final double vy = finalState.getPVCoordinates().getVelocity().getY();
-
-            // Spacecraft acceleration
-            final Vector3D acc = finalState.getPVCoordinates().getAcceleration();
-            final double accx = acc.getX();
-            final double accz = acc.getZ();
-
-            // Compute A coefficients
-            final double a11 =
-                phi.getEntry(3, 0) - accx * phi.getEntry(1, 0) / vy;
-            final double a12 =
-                phi.getEntry(3, 4) - accx * phi.getEntry(1, 4) / vy;
-            final double a21 =
-                phi.getEntry(5, 0) - accz * phi.getEntry(1, 0) / vy;
-            final double a22 =
-                phi.getEntry(5, 4) - accz * phi.getEntry(1, 4) / vy;
-
-            A.setEntry(0, 0, a11);
-            A.setEntry(0, 1, a12);
-            A.setEntry(1, 0, a21);
-            A.setEntry(1, 1, a22);
-
-            // A determinant used for matrix inversion
-            final double aDet =
-                A.getEntry(0, 0) * A.getEntry(1, 1) -
-                                A.getEntry(1, 0) * A.getEntry(0, 1);
-
-            // Correction to apply to initial conditions
-            final double deltax0 =
-                (A.getEntry(1, 1) * dvxf - A.getEntry(0, 1) * dvzf) / aDet; // dx0
-            final double deltavy0 =
-                (-A.getEntry(1, 0) * dvxf + A.getEntry(0, 0) * dvzf) / aDet; // dvy0
-
-            // Computation of the corrected initial PVCoordinates
-            final double newx = pv.getPosition().getX() + deltax0;
-            final double newvy = pv.getVelocity().getY() + deltavy0;
-
-            pv =
-                new PVCoordinates(new Vector3D(newx, pv.getPosition().getY(),
-                                               pv.getPosition().getZ()),
-                                  new Vector3D(pv.getVelocity().getX(), newvy,
-                                               pv.getVelocity().getZ()));
-
-            ++iter;
             orbitalPeriod = 2 * finalState.getDate().durationFrom(initialDate);
-        } while ((FastMath.abs(dvxf) > 1E-14 || FastMath.abs(dvzf) > 1E-14) &
-                 iter < 30); // Converge within 1E-8 tolerance and under 5 iterations
+
+            if (FastMath.abs(dvxf) > 1E-8 || FastMath.abs(dvzf) > 1E-8) {
+                // Y axis velocity
+                final double vy =
+                    finalState.getPVCoordinates().getVelocity().getY();
+
+                // Spacecraft acceleration
+                final Vector3D acc =
+                    finalState.getPVCoordinates().getAcceleration();
+                final double accx = acc.getX();
+                final double accz = acc.getZ();
+
+                // Compute A coefficients
+                final double a11 =
+                    phi.getEntry(3, 0) - accx * phi.getEntry(1, 0) / vy;
+                final double a12 =
+                    phi.getEntry(3, 4) - accx * phi.getEntry(1, 4) / vy;
+                final double a21 =
+                    phi.getEntry(5, 0) - accz * phi.getEntry(1, 0) / vy;
+                final double a22 =
+                    phi.getEntry(5, 4) - accz * phi.getEntry(1, 4) / vy;
+
+                A.setEntry(0, 0, a11);
+                A.setEntry(0, 1, a12);
+                A.setEntry(1, 0, a21);
+                A.setEntry(1, 1, a22);
+
+                // A determinant used for matrix inversion
+                final double aDet =
+                    A.getEntry(0, 0) * A.getEntry(1, 1) -
+                                    A.getEntry(1, 0) * A.getEntry(0, 1);
+
+                // Correction to apply to initial conditions
+                final double deltax0 =
+                    (A.getEntry(1, 1) * dvxf - A.getEntry(0, 1) * dvzf) / aDet; // dx0
+                final double deltavy0 =
+                    (-A.getEntry(1, 0) * dvxf + A.getEntry(0, 0) * dvzf) / aDet; // dvy0
+
+                // Computation of the corrected initial PVCoordinates
+                final double newx = pv.getPosition().getX() + deltax0;
+                final double newvy = pv.getVelocity().getY() + deltavy0;
+
+                pv =
+                    new PVCoordinates(new Vector3D(newx,
+                                                   pv.getPosition().getY(),
+                                                   pv.getPosition().getZ()),
+                                      new Vector3D(pv.getVelocity().getX(),
+                                                   newvy,
+                                                   pv.getVelocity().getZ()));
+                ++iter;
+            }
+            else {
+                break;
+            }
+        }        while (iter < 30);  // Converge within 1E-8 tolerance and under 5 iterations
 
         return pv;
     }
@@ -260,7 +269,7 @@ public class CR3BPDifferentialCorrection {
         // Final velocity difference in X direction
         double dvxf;
 
-        // Time settings
+        // Time settings (this date has no effect on the result, this is only for code structure purpose)
         final AbsoluteDate initialDate =
             new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
                              TimeScalesFactory.getUTC());
@@ -335,30 +344,39 @@ public class CR3BPDifferentialCorrection {
             // Gap from desired y position and x velocity value ()
             dvxf = -finalState.getPVCoordinates().getVelocity().getX();
 
-            // Y axis velocity
-            final double vy =
-                finalState.getPVCoordinates().getVelocity().getY();
-
-            // Spacecraft acceleration
-            final double accy = finalState.getPVCoordinates().getAcceleration().getY();
-
-            // Compute A coefficients
-            final double deltavy0 =
-                dvxf / (phi.getEntry(3, 4) - accy * phi.getEntry(1, 4) / vy);
-
-            // Computation of the corrected initial PVCoordinates
-            final double newvy = pv.getVelocity().getY() + deltavy0;
-
-            pv =
-                new PVCoordinates(new Vector3D(pv.getPosition().getX(), pv.getPosition().getY(),
-                                               0),
-                                  new Vector3D(pv.getVelocity().getX(), newvy,
-                                               0));
-
-            ++iter;
             orbitalPeriod = 2 * finalState.getDate().durationFrom(initialDate);
-        } while ((FastMath.abs(dvxf) > 1E-14) &
-                 iter < 30); // Converge within 1E-8 tolerance and under 5 iterations
+
+            if (FastMath.abs(dvxf) > 1E-14) {
+
+                // Y axis velocity
+                final double vy =
+                    finalState.getPVCoordinates().getVelocity().getY();
+
+                // Spacecraft acceleration
+                final double accy =
+                    finalState.getPVCoordinates().getAcceleration().getY();
+
+                // Compute A coefficients
+                final double deltavy0 =
+                    dvxf /
+                                        (phi.getEntry(3, 4) -
+                                         accy * phi.getEntry(1, 4) / vy);
+
+                // Computation of the corrected initial PVCoordinates
+                final double newvy = pv.getVelocity().getY() + deltavy0;
+
+                pv =
+                    new PVCoordinates(new Vector3D(pv.getPosition().getX(),
+                                                   pv.getPosition().getY(), 0),
+                                      new Vector3D(pv.getVelocity().getX(),
+                                                   newvy, 0));
+
+                ++iter;
+            }
+            else {
+                break;
+            }
+        } while (iter < 30); // Converge within 1E-8 tolerance and under 5 iterations
 
         return pv;
     }

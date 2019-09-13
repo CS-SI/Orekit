@@ -62,7 +62,7 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
     @Override
     public Transform getTransform(final AbsoluteDate date) {
         final FieldPVCoordinates<DerivativeStructure> pv21        = secondaryBody.getPVCoordinates(date, frame).toDerivativeStructurePV(2);
-        Field<DerivativeStructure> field = pv21.getPosition().getX().getField();
+        final Field<DerivativeStructure> field = pv21.getPosition().getX().getField();
         final FieldVector3D<DerivativeStructure>     translation = FieldVector3D.getPlusI(field).scalarMultiply(pv21.getPosition().getNorm().multiply(mu)).negate();
 
         final FieldRotation<DerivativeStructure> rotation = new FieldRotation<>(pv21.getPosition(), pv21.getMomentum(),

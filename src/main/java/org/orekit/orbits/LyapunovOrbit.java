@@ -42,7 +42,7 @@ public class LyapunovOrbit extends LibrationOrbit {
      */
     public LyapunovOrbit(final CR3BPSystem syst,
                          final PVCoordinates pv, final double orbitalPeriod) {
-    	super(syst, pv, pv, orbitalPeriod);
+        super(syst, pv, pv, orbitalPeriod);
     }
 
     /**
@@ -55,16 +55,21 @@ public class LyapunovOrbit extends LibrationOrbit {
      * @param point Lagrangian Point considered
      * @param ay y-axis amplitude of the required Lyapunov Orbit, meters
      */
-    public LyapunovOrbit(final CR3BPSystem syst, final LagrangianPoints point, final double ay) {
-    	super(syst, new RichardsonExpansion(syst, point).computeLyapunovFirstGuess(ay, 0.0, 0.0),
-    		  null, new RichardsonExpansion(syst, point).getLyapunovOrbitalPeriod(ay));
+    public LyapunovOrbit(final CR3BPSystem syst, final LagrangianPoints point,
+                         final double ay) {
+        super(syst,
+              new RichardsonExpansion(syst, point)
+                  .computeLyapunovFirstGuess(ay, 0.0, 0.0),
+              null, new RichardsonExpansion(syst, point)
+                  .getLyapunovOrbitalPeriod(ay));
     }
 
     /** {@inheritDoc} */
-	@Override
-	protected PVCoordinates applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
-		return diff.computeLyapunov();
-	}
+    @Override
+    protected PVCoordinates
+        applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
+        return diff.computeLyapunov();
+    }
 
 }
 

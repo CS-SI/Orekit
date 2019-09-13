@@ -97,6 +97,8 @@ public class HaloOrbitTest {
             new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
                              TimeScalesFactory.getUTC());
         CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+        
+        syst.getPrimary().getPVCoordinates(initialDate, syst.getSecondary().getInertiallyOrientedFrame());
 
         final Frame Frame = syst.getRotatingFrame();
 
@@ -203,6 +205,7 @@ public class HaloOrbitTest {
         // Creating the initial spacecraftstate that will be given to the
         // propagator
         final SpacecraftState s = new SpacecraftState(initialAbsPV);
+        
 
         final PVCoordinates manifold = h.getManifolds(s, true);
         manifold.getMomentum();

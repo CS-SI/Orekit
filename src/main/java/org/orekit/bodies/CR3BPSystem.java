@@ -20,7 +20,6 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.CR3BPRotatingFrame;
@@ -385,66 +384,6 @@ public class CR3BPSystem {
         // State vector in the primary inertial frame
         final PVCoordinates pv2 = rotatingToPrimaryInertial.transformPVCoordinates(pvDim);
 
-
-        // Transformation between primary inertial frame and the output frame
-        final Transform primaryInertialToOutputFrame = primaryInertialFrame.getTransformTo(outputFrame, date);
-
-        return primaryInertialToOutputFrame.transformPVCoordinates(pv2);
-    }
-
-    /** Get the PVCoordinates from normalized units to standard units in an output frame.
-     * @param pv0 Normalized PVCoordinates in the rotating frame
-     * @param date Date of the transform
-     * @param outputFrame Frame in which the output PVCoordinates will be
-     * @return PVCoordinates in the output frame [m,m/s]
-     */
-    public PVCoordinates getRealPVTest(final PVCoordinates pv0, final AbsoluteDate date, final Frame outputFrame) {
-        // 1.   Translate the rotating state from the RTBP to a primary-centered rotating state
-        // 2.   Dimensionalize  the  primary-centered  rotating  state  using  the  instantaneously
-        //      defined characteristic quantities
-        // 3.   Apply the transformation matrix
-        // 4.   Apply the transformation to output frame
-
-        final Frame primaryInertialFrame = primaryBody.getInertiallyOrientedFrame();
-        final TimeStampedPVCoordinates pv21 = secondaryBody.getPVCoordinates(date, primaryInertialFrame);
-
-        // Distance and Velocity to dimensionalize the state vector
-        final double dist12 = pv21.getPosition().getNorm();
-        final double vCircular  = FastMath.sqrt(primaryBody.getGM() / dist12);
-
-        // Dimensionalized state vector centered on primary body
-        final PVCoordinates pvDim = new PVCoordinates((pv0.getPosition().add(new Vector3D(mu, 0, 0))).scalarMultiply(dist12),
-                                                      pv0.getVelocity().scalarMultiply(vCircular));
-
-        // Instantaneous rotation matrix between rotating frame and primary inertial frame
-        final double[][] c = (new Rotation(Vector3D.PLUS_I, Vector3D.PLUS_K,
-                                           pv21.getPosition(), pv21.getMomentum())).getMatrix();
-
-        // Instantaneous angular velocity of the rotating frame
-        final double theta = pv21.getMomentum().getNorm() / (dist12 * dist12);
-
-        final double x = pvDim.getPosition().getX();
-        final double y = pvDim.getPosition().getY();
-        final double z = pvDim.getPosition().getZ();
-        final double vx = pvDim.getVelocity().getX();
-        final double vy = pvDim.getVelocity().getY();
-        final double vz = pvDim.getVelocity().getZ();
-
-        // Position vector in the primary inertial frame
-        final Vector3D newPos = new Vector3D(c[0][0] * x + c[0][1] * y + c[0][2] * z,
-                                             c[1][0] * x + c[1][1] * y + c[1][2] * z,
-                                             c[2][0] * x + c[2][1] * y + c[2][2] * z);
-
-        final Vector3D vel0 = new Vector3D(c[0][0] * vx + c[0][1] * vy + c[0][2] * vz,
-                                           c[1][0] * vx + c[1][1] * vy + c[1][2] * vz,
-                                           c[2][0] * vx + c[2][1] * vy + c[2][2] * vz);
-        final Vector3D addVel = new Vector3D(c[0][1] * x - c[0][0] * y,
-                                             c[1][1] * x - c[1][0] * y,
-                                             c[2][1] * x - c[2][0] * y);
-        final Vector3D newVel = vel0.add(addVel.scalarMultiply(theta));
-
-        // State vector in the primary inertial frame
-        final PVCoordinates pv2 = new PVCoordinates(newPos, newVel);
 
         // Transformation between primary inertial frame and the output frame
         final Transform primaryInertialToOutputFrame = primaryInertialFrame.getTransformTo(outputFrame, date);

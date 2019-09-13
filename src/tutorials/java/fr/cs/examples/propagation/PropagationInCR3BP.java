@@ -104,6 +104,10 @@ public class PropagationInCR3BP {
 
         System.out
             .print("Distance in meters between primary bodies: " + dDim + "\n");
+        System.out
+        .print("Orbital velocity of the primary bodies: " + syst.getVdim() + "\n");
+        System.out
+        .print("Orbital period of the primary bodies: " + tDim + "\n");
         System.out.print("Mass ratio of the system: " + mu + "\n\n");
 
         // Get the position of each Lagrangian points in this CR3BP System

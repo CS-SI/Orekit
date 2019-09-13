@@ -56,12 +56,14 @@ public abstract class LibrationOrbit {
      * @param initialPV initial position on a libration Orbit
      * @param orbitalPeriod initial orbital period of the libration Orbit
      */
-    protected LibrationOrbit(final CR3BPSystem system, final PVCoordinates firstGuess,
-    						 final PVCoordinates initialPV, final double orbitalPeriod) {
-    	this.syst          = system;
-    	this.firstGuess    = firstGuess;
-    	this.initialPV     = initialPV;
-    	this.orbitalPeriod = orbitalPeriod;
+    protected LibrationOrbit(final CR3BPSystem system,
+                             final PVCoordinates firstGuess,
+                             final PVCoordinates initialPV,
+                             final double orbitalPeriod) {
+        this.syst = system;
+        this.firstGuess = firstGuess;
+        this.initialPV = initialPV;
+        this.orbitalPeriod = orbitalPeriod;
     }
 
     /** Return a manifold direction from one position on a libration Orbit.
@@ -179,18 +181,18 @@ public abstract class LibrationOrbit {
      * <p>
      */
     public void applyDifferentialCorrection() {
-        final CR3BPDifferentialCorrection diff = new CR3BPDifferentialCorrection(firstGuess, syst,
-                                          										 orbitalPeriod);
+        final CR3BPDifferentialCorrection diff =
+            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod);
         initialPV = applyCorrectionOnPV(diff);
         orbitalPeriod = diff.getOrbitalPeriod();
     }
 
-    /**
+    /**.
      * Apply the differential correction to compute more accurate initial PV
      * @param diff cr3bp differential correction
      * @return corrected PV coordinates
      */
-    protected abstract PVCoordinates applyCorrectionOnPV(final CR3BPDifferentialCorrection diff);
+    protected abstract PVCoordinates applyCorrectionOnPV(CR3BPDifferentialCorrection diff);
 
     /** Return the orbital period of the libration orbit.
      * @return orbitalPeriod  orbital period of the libration orbit

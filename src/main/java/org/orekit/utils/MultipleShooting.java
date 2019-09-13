@@ -18,7 +18,6 @@
 package org.orekit.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -93,19 +92,19 @@ public class MultipleShooting {
         double fxNorm = 0;
 
         do {
-            System.out.println("Itération " + (iter + 1));
-            System.out.println(Arrays.toString(propagationTime));
+//            System.out.println("Itération " + (iter + 1));
+//            System.out.println(Arrays.toString(propagationTime));
 
             final List<SpacecraftState> propagatedSP = propagatePatchedSpacecraftState(); // multi threading see PropagatorsParallelizer
             final RealMatrix M = computeJacobianMatrix(propagatedSP);
             final RealVector fx = computeConstraint(propagatedSP);
 
-            System.out.println("DF(X)");
-            for (int i = 0; i < M.getRowDimension(); i++) {
-                System.out.println(Arrays.toString(M.getRow(i)));
-            }
-            System.out.println("F(X)");
-            System.out.println(Arrays.toString(fx.toArray()));
+//            System.out.println("DF(X)");
+//            for (int i = 0; i < M.getRowDimension(); i++) {
+//                System.out.println(Arrays.toString(M.getRow(i)));
+//            }
+//            System.out.println("F(X)");
+//            System.out.println(Arrays.toString(fx.toArray()));
 
             // Solve linear system
             final RealVector B = M.transpose().operate(fx);
@@ -117,14 +116,13 @@ public class MultipleShooting {
             final RealVector dx = MatrixUtils.inverse(MtM).operate(B);
 
             fxNorm = fx.getNorm() / fx.getDimension();
-
-            System.out.println("DF(X)^T*DF(X)");
-            System.out.println(Arrays.deepToString(MtM.getData()));
-
-            System.out.println("DeltaX");
-            System.out.println(Arrays.toString(dx.toArray()));
-
-            System.out.println("||F(X)|| = " + fxNorm);
+//            System.out.println("DF(X)^T*DF(X)");
+//            System.out.println(Arrays.deepToString(MtM.getData()));
+//
+//            System.out.println("DeltaX");
+//            System.out.println(Arrays.toString(dx.toArray()));
+//
+//            System.out.println("||F(X)|| = " + fxNorm);
 
             // Apply correction from the free variable vector to all the variables (propagation time, pacthSpaceraftState)
             updateTrajectory(dx);
@@ -232,7 +230,7 @@ public class MultipleShooting {
             // SpacecraftState initialization
             final SpacecraftState initialState = patchedSpacecraftStates.get(i);
 
-            SpacecraftState augmentedInitialState;
+            final SpacecraftState augmentedInitialState;
 
             if (cr3bp) {
                 // Additional equations initialization
@@ -311,7 +309,7 @@ public class MultipleShooting {
      *  @return phiM phiM
      */
     private RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
-        String derivativesName;
+        final String derivativesName;
         if (cr3bp) {
             derivativesName = "stmEquations";
         } else {
