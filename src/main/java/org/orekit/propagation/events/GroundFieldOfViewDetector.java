@@ -137,10 +137,10 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      * {@inheritDoc}
      *
      * <p> The g function value is the angular offset between the satellite and
-     * the {@link FieldOfView#offsetFromBoundary(Vector3D) Field Of View
-     * boundary}. It is negative if the satellite is visible within the Field Of
-     * View and positive if it is outside of the Field Of View, including the
-     * margin. </p>
+     * the {@link FieldOfView#offsetFromBoundary(Vector3D, double, VisibilityTrigger)
+     * Field Of View boundary}. It is negative if the satellite is visible within
+     * the Field Of View and positive if it is outside of the Field Of View,
+     * including the margin. </p>
      *
      * <p> As per the previous definition, when the satellite enters the Field
      * Of View, a decreasing event is generated, and when the satellite leaves
@@ -150,7 +150,7 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
 
         // get line of sight in sensor frame
         final Vector3D los = s.getPVCoordinates(this.frame).getPosition();
-        return this.fov.offsetFromBoundary(los);
+        return this.fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
 
     }
 

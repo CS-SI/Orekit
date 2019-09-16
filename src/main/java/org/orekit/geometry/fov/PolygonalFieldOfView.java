@@ -39,6 +39,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.events.VisibilityTrigger;
 
 /** Class representing a spacecraft sensor Field Of View with polygonal shape.
  * <p>Fields Of View are zones defined on the unit sphere centered on the
@@ -133,23 +134,26 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
 
     /** {@inheritDoc} */
     @Override
-    public double rawOffsetFromBoundary(final Vector3D lineOfSight) {
+    public double offsetFromBoundary(final Vector3D lineOfSight, final double angularRadius,
+                                     final VisibilityTrigger trigger) {
 
-        final S2Point los    = new S2Point(lineOfSight);
-        final double  margin = getMargin();
+        final S2Point los             = new S2Point(lineOfSight);
+        final double  margin          = getMargin();
+        final double  correctedRadius = trigger.radiusCorrection(angularRadius);
+        final double  deadBand        = margin + angularRadius;
 
         // for faster computation, we start using only the surrounding cap, to filter out
         // far away points (which correspond to most of the points if the Field Of View is small)
         final double crudeDistance = cap.getCenter().distance(los) - cap.getRadius();
-        if (crudeDistance - margin > FastMath.max(FastMath.abs(margin), 0.01)) {
+        if (crudeDistance > deadBand + 0.01) {
             // we know we are strictly outside of the zone,
             // use the crude distance to compute the (positive) return value
-            return crudeDistance;
+            return crudeDistance + correctedRadius - margin;
         }
 
         // we are close, we need to compute carefully the exact offset;
         // we project the point to the closest zone boundary
-        return zone.projectToBoundary(los).getOffset();
+        return zone.projectToBoundary(los).getOffset() + correctedRadius - margin;
 
     }
 

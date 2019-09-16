@@ -19,6 +19,7 @@ package org.orekit.geometry.fov;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
+import org.orekit.propagation.events.VisibilityTrigger;
 
 /** Class representing a spacecraft sensor Field Of View with circular shape.
  * <p>The field of view is defined by an axis and an half-aperture angle.</p>
@@ -69,8 +70,10 @@ public class CircularFieldOfView extends SmoothFieldOfView {
 
     /** {@inheritDoc} */
     @Override
-    public double rawOffsetFromBoundary(final Vector3D lineOfSight) {
-        return Vector3D.angle(getCenter(), lineOfSight) - halfAperture;
+    public double offsetFromBoundary(final Vector3D lineOfSight, final double angularRadius,
+                                     final VisibilityTrigger trigger) {
+        return Vector3D.angle(getCenter(), lineOfSight) - halfAperture +
+               trigger.radiusCorrection(angularRadius) - getMargin();
     }
 
     /** {@inheritDoc} */

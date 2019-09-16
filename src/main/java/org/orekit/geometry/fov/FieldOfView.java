@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.events.VisibilityTrigger;
 
 /** Interface representing a spacecraft sensor Field Of View.
  * <p>Fields Of View are zones defined on the unit sphere centered on the
@@ -38,55 +39,40 @@ public interface FieldOfView {
      * points inside of the raw FoV but close enough to the boundary are considered
      * not visible
      * @return angular margin
-     * @see #offsetFromBoundary(Vector3D)
+     * @see #offsetFromBoundary(Vector3D, double, VisibilityTrigger)
      */
     double getMargin();
 
-    /** Get the offset of target point with respect to the Field Of View Boundary, including margin.
+    /** Get the offset of target body with respect to the Field Of View Boundary.
      * <p>
-     * The offset is {@link #rawOffsetFromBoundary(Vector3D) raw offset} minus the {@link #getMargin() margin}.
-     * </p>
-     * @param lineOfSight line of sight from the center of the Field Of View support
-     * unit sphere to the target in spacecraft frame
-     * @return an offset negative if the target is visible within the Field Of
-     * View and positive if it is outside of the Field Of View, including the margin
-     * (note that this cannot take into account interposing bodies)
-     */
-    default double offsetFromBoundary(Vector3D lineOfSight) {
-        return rawOffsetFromBoundary(lineOfSight) - getMargin();
-    }
-
-    /** Get the raw offset of target point with respect to the Field Of View Boundary.
-     * <p>
-     * The offset is basically a signed distance with respect to the closest boundary point.
-     * It is <em>not</em> required to be a perfect geometric angle. The only mandatory
-     * property is that this offset must be positive if the target is outside of the Field
-     * Of view, negative inside, and zero if the point is exactly on the boundary.
-     * </p>
-     * <p>
-     * The raw offset does not take {@link #getMargin() margin} into account.
+     * The offset is the signed angular distance between target body and closest boundary
+     * point, taking into account {@link VisibilityTrigger} and {@link #getMargin() margin}.
      * </p>
      * <p>
      * As Field Of View can have complex shapes that may require long computation,
      * when the target point can be proven to be outside of the Field Of View, a
-     * faster but approximate computation can be done, that underestimates the offset.
-     * This approximation should only be performed about 0.01 radians outside of the zone
-     * and should be designed to still return a positive value if the full accurate computation
+     * faster but approximate computation can be used. This approximation is only
+     * performed about 0.01 radians outside of the Field Of View augmented by the
+     * deadband defined by target body radius and Field Of View margin and should be
+     * designed to still return a positive value if the full accurate computation
      * would return a positive value. When target point is close to the zone (and
      * furthermore when it is inside the zone), the full accurate computation is
      * performed. This design allows this offset to be used as a reliable way to
-     * detect Field Of View boundary crossings, which correspond to sign changes of
-     * the offset.
+     * detect Field Of View boundary crossings (taking {@link VisibilityTrigger}
+     * and {@link #getMargin() margin} into account), which correspond to sign
+     * changes of the offset.
      * </p>
      * @param lineOfSight line of sight from the center of the Field Of View support
      * unit sphere to the target in spacecraft frame
+     * @param angularRadius target body angular radius
+     * @param trigger visibility trigger for spherical bodies
      * @return an offset negative if the target is visible within the Field Of
      * View and positive if it is outside of the Field Of View
      * (note that this cannot take into account interposing bodies)
-     * @see #offsetFromBoundary(Vector3D)
+     * @see #offsetFromBoundary(Vector3D, double, VisibilityTrigger)
      * @since 10.1
      */
-    double rawOffsetFromBoundary(Vector3D lineOfSight);
+    double offsetFromBoundary(Vector3D lineOfSight, double angularRadius, VisibilityTrigger trigger);
 
     /** Get the footprint of the Field Of View on ground.
      * <p>

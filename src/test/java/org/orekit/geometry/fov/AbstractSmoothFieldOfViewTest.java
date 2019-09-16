@@ -37,6 +37,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.VisibilityTrigger;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -103,7 +104,15 @@ public abstract class AbstractSmoothFieldOfViewTest {
             final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
                                                        state.getFrame(), state.getDate());
             if (elevation > 0.001) {
-                Assert.assertEquals(-fov.getMargin(), fov.offsetFromBoundary(los), 1.0e-13);
+                Assert.assertEquals(-fov.getMargin(),
+                                    fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                    1.0e-13);
+                Assert.assertEquals(0.1 - fov.getMargin(),
+                                    fov.offsetFromBoundary(los, 0.1, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                    1.0e-13);
+                Assert.assertEquals(-0.1 - fov.getMargin(),
+                                    fov.offsetFromBoundary(los, 0.1, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV),
+                                    1.0e-13);
             }
             minEl = FastMath.min(minEl, elevation);
             maxEl = FastMath.max(maxEl, elevation);
