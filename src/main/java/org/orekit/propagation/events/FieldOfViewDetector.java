@@ -69,7 +69,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * otherwise some short passes could be missed.</p>
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodie
+     * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
      * @since 10.0
      */
@@ -92,7 +92,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * @param handler event handler to call at event occurrences
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodie
+     * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
      */
     private FieldOfViewDetector(final double maxCheck, final double threshold, final int maxIter,
@@ -146,12 +146,12 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
     /** {@inheritDoc}
      * <p>
      * The g function value is the angular offset between the
-     * target center and the {@link FieldOfView#offsetFromBoundary(Vector3D)
-     * Field Of View boundary}, plus or minus the target angular radius
-     * depending on the {@link VisibilityTrigger}, minus the {@link
-     * FieldOfView#getMargin() Field Of View margin}. It is therefore negative
-     * if the target is visible within the Field Of View and positive if it is
-     * outside of the Field Of View.
+     * target center and the {@link FieldOfView#offsetFromBoundary(Vector3D,
+     * double, VisibilityTrigger) Field Of View boundary}, plus or minus the
+     * target angular radius depending on the {@link VisibilityTrigger}, minus
+     * the {@link FieldOfView#getMargin() Field Of View margin}. It is therefore
+     * negative if the target is visible within the Field Of View and positive
+     * if it is outside of the Field Of View.
      * </p>
      * <p>
      * As per the previous definition, when the target enters the Field Of
@@ -167,7 +167,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
         final Vector3D lineOfSightSC = s.toTransform().transformPosition(targetPosInert);
 
         final double angularRadius = FastMath.asin(radiusTarget / lineOfSightSC.getNorm());
-        return fov.offsetFromBoundary(lineOfSightSC) + FastMath.copySign(angularRadius, trigger.getSign());
+        return fov.offsetFromBoundary(lineOfSightSC, angularRadius, trigger);
 
     }
 
