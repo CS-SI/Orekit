@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="589">
+        Improve performance of AggregateBoundedPropagator by factor of 2.
+      </action>
       <action dev="luc" type="fix" issue="600">
         Fixed parsing of compact RINEX files with many observation types.
       </action>
