@@ -877,7 +877,9 @@ public class RinexLoader {
 
                                         satSystemPhaseShift = SatelliteSystem.parseSatelliteSystem(parseString(0, 1));
                                         final String to = parseString(2, 3);
-                                        phaseShiftTypeObs = to.isEmpty() ? null : ObservationType.valueOf(to);
+                                        phaseShiftTypeObs = to.isEmpty() ?
+                                                            null :
+                                                            ObservationType.valueOf(to.length() < 3 ? "L" + to : to);
                                         nbSatPhaseShift = parseInt(16, 2);
                                         corrPhaseShift = parseDouble(6, 8);
 
