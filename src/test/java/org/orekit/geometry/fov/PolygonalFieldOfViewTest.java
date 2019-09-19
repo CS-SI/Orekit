@@ -81,6 +81,9 @@ public class PolygonalFieldOfViewTest {
                     double offsetError = theoreticalOffset - offset;
                     maxOffsetError = FastMath.max(FastMath.abs(offsetError), maxOffsetError);
                 }
+                Assert.assertEquals(-margin,
+                                    fov.offsetFromBoundary(fov.projectToBoundary(v), 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                    1.0e-12);
             }
         }
         Assert.assertEquals(0.0, maxAreaError,   5.0e-14);

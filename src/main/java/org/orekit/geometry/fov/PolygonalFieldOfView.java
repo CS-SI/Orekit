@@ -159,6 +159,12 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
 
     /** {@inheritDoc} */
     @Override
+    public Vector3D projectToBoundary(final Vector3D lineOfSight) {
+        return ((S2Point) zone.projectToBoundary(new S2Point(lineOfSight)).getProjected()).getVector();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public List<List<GeodeticPoint>> getFootprint(final Transform fovToBody,
                                                   final OneAxisEllipsoid body,
                                                   final double angularStep) {

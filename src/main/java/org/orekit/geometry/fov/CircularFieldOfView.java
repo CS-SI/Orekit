@@ -78,6 +78,13 @@ public class CircularFieldOfView extends SmoothFieldOfView {
 
     /** {@inheritDoc} */
     @Override
+    public Vector3D projectToBoundary(final Vector3D lineOfSight) {
+        return directionAt(FastMath.atan2(Vector3D.dotProduct(lineOfSight, getY()),
+                                          Vector3D.dotProduct(lineOfSight, getX())));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected Vector3D directionAt(final double angle) {
         final SinCos sc = FastMath.sinCos(angle);
         return new Vector3D(sc.cos(), scaledX, sc.sin(), scaledY, 1.0, scaledZ);

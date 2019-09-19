@@ -70,9 +70,16 @@ public interface FieldOfView {
      * View and positive if it is outside of the Field Of View
      * (note that this cannot take into account interposing bodies)
      * @see #offsetFromBoundary(Vector3D, double, VisibilityTrigger)
-     * @since 10.1
      */
     double offsetFromBoundary(Vector3D lineOfSight, double angularRadius, VisibilityTrigger trigger);
+
+    /** find the direction on Field Of View Boundary closest to a line of sight.
+     * @param lineOfSight line of sight from the center of the Field Of View support
+     * unit sphere to the target in spacecraft frame
+     * @return direction on Field Of View Boundary closest to a line of sight
+     * @since 10.1
+     */
+    Vector3D projectToBoundary(Vector3D lineOfSight);
 
     /** Get the footprint of the Field Of View on ground.
      * <p>

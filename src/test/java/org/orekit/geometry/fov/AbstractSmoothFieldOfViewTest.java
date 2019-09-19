@@ -19,6 +19,8 @@ package org.orekit.geometry.fov;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.UnitSphereRandomVectorGenerator;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -106,13 +108,13 @@ public abstract class AbstractSmoothFieldOfViewTest {
             if (elevation > 0.001) {
                 Assert.assertEquals(-fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
-                                    1.0e-13);
+                                    8.0e-11);
                 Assert.assertEquals(0.1 - fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.1, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
-                                    1.0e-13);
+                                    8.0e-11);
                 Assert.assertEquals(-0.1 - fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.1, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV),
-                                    1.0e-13);
+                                    8.0e-11);
             }
             minEl = FastMath.min(minEl, elevation);
             maxEl = FastMath.max(maxEl, elevation);
@@ -129,6 +131,18 @@ public abstract class AbstractSmoothFieldOfViewTest {
         Assert.assertEquals(expectedMinDist,       minDist,                       1.0);
         Assert.assertEquals(expectedMaxDist,       maxDist,                       1.0);
 
+    }
+
+    protected void doTestBoundary(final SmoothFieldOfView fov, final RandomGenerator random,
+                                  final double tol) {
+        UnitSphereRandomVectorGenerator spGenerator = new UnitSphereRandomVectorGenerator(3, random);
+        for (int i = 0; i < 1000; ++i) {
+            Vector3D queryLOS = new Vector3D(spGenerator.nextVector());
+            Vector3D closest = fov.projectToBoundary(queryLOS);
+            Assert.assertEquals(-fov.getMargin(),
+                                fov.offsetFromBoundary(closest, 0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                tol);
+        }
     }
 
     @Before
