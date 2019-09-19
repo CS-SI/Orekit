@@ -23,6 +23,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.random.UnitSphereRandomVectorGenerator;
+import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -337,6 +339,71 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
                                                               0.0,
                                                               FastMath.sin(FastMath.toRadians(41))),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) > 0.0);
+    }
+
+    @Test
+    public void testOffsetAngularAccuracy() {
+
+        final EllipticalFieldOfView fov  = new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
+                                                                     FastMath.toRadians(10.0), FastMath.toRadians(40.0),
+                                                                     0.0);
+        final Vector3D f1 = fov.getFocus1();
+        final Vector3D f2 = fov.getFocus2();
+        final double   a  = FastMath.max(fov.getHalfApertureAlongX(), fov.getHalfApertureAlongY());
+
+        UnitSphereRandomVectorGenerator random =
+                        new UnitSphereRandomVectorGenerator(3,
+                                                            new Well19937a(0xc9383d990d45a111l));
+        for (int i = 0; i < 1000; ++i) {
+            Vector3D los = new Vector3D(random.nextVector());
+            double etaMin;
+            double etaMax;
+            if (Vector3D.dotProduct(los, fov.getY()) > 0) {
+                if (Vector3D.dotProduct(los, fov.getX()) > 0) {
+                    etaMin = 0;
+                    etaMax = 0.5 * FastMath.PI;
+                } else {
+                    etaMin = 0.5 * FastMath.PI;
+                    etaMax = FastMath.PI;
+                }
+            } else {
+                if (Vector3D.dotProduct(los, fov.getX()) < 0) {
+                    etaMin = FastMath.PI;
+                    etaMax = 1.5 * FastMath.PI;
+                } else {
+                    etaMin = 1.5 * FastMath.PI;
+                    etaMax = 2.0 * FastMath.PI;
+                }
+            }
+            double minDist = Double.POSITIVE_INFINITY;
+            for (double eta = etaMin; eta < etaMax; eta += 0.00001) {
+                minDist = FastMath.min(minDist, Vector3D.angle(los, fov.directionAt(eta)));
+            }
+            minDist = FastMath.copySign(minDist,
+                                        Vector3D.angle(los, f1) + Vector3D.angle(los, f2) - 2 * a);
+            double offset = fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
+            if (offset - minDist < -0.38) {
+                fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
+            }
+            System.out.println(FastMath.toDegrees(FastMath.atan2(Vector3D.dotProduct(los, fov.getY()),
+                                                                 Vector3D.dotProduct(los, fov.getX()))) +
+                               " " + FastMath.toDegrees(minDist) +
+                               " " + FastMath.toDegrees(offset) +
+                               " " + FastMath.toDegrees(offset - minDist));
+//            Assert.assertEquals(minDist,
+//                                fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+//                                0.03);
+        }
+
+    }
+
+    @Test
+    public void testBoundary() {
+        doTestBoundary(new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
+                                                 FastMath.toRadians(10.0), FastMath.toRadians(40.0),
+                                                 0.01),
+                       new Well19937a(0x5148b24d1bdf90cel),
+                       2.0e-9);
     }
 
     private void doTestPointsOnBoundary(final EllipticalFieldOfView fov, double tol) {

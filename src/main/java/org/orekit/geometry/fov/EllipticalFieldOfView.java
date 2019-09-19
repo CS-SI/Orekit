@@ -135,14 +135,14 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
     /** Dot product of focii. */
     private final double dotF1F2;
 
+    /** Half angle between focii. */
+    private final double gamma;
+
     /** Scaling factor for normalizing ellipse points. */
     private final double d;
 
     /** Angular semi major axis. */
     private double a;
-
-    /** Unit vector along major axis. */
-    private final Vector3D u;
 
     /** Build a new instance.
      * <p>
@@ -185,9 +185,9 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
             focus2    = new Vector3D(-sin, getX(), cos, getZ());
             crossF1F2 = new Vector3D(-2 * sin * cos, getY());
             dotF1F2   = 2 * cos * cos - 1;
+            gamma     = FastMath.acos(cos);
             d         = 1.0 / (1 - dotF1F2 * dotF1F2);
             a         = halfApertureAlongX;
-            u         = getX();
         } else {
             final double cos = FastMath.cos(halfApertureAlongY) / FastMath.cos(halfApertureAlongX);
             final double sin = FastMath.sqrt(1 - cos * cos);
@@ -195,9 +195,9 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
             focus2    = new Vector3D(-sin, getY(), cos, getZ());
             crossF1F2 = new Vector3D(2 * sin * cos, getX());
             dotF1F2   = 2 * cos * cos - 1;
+            gamma     = FastMath.acos(cos);
             d         = 1.0 / (1 - dotF1F2 * dotF1F2);
             a         = halfApertureAlongY;
-            u         = getY();
         }
 
     }
@@ -235,28 +235,62 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
     public double offsetFromBoundary(final Vector3D lineOfSight, final double angularRadius,
                                      final VisibilityTrigger trigger) {
 
-        final Vector3D los = lineOfSight.normalize();
+        // find closest point on ellipse
+        final Vector3D closest = projectToBoundary(lineOfSight);
+
+        // compute raw offset as an accurate signed angle
+        final double d1 = Vector3D.angle(lineOfSight, focus1);
+        final double d2 = Vector3D.angle(lineOfSight, focus2);
+        final double rawOffset = FastMath.copySign(Vector3D.angle(lineOfSight, closest),
+                                                   d1 + d2 - 2 * a);
+
+        return rawOffset + trigger.radiusCorrection(angularRadius) - getMargin();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D projectToBoundary(final Vector3D lineOfSight) {
+
+        // use a query point in the same half hemisphere as the ellipse,
+        // to avoid topological nightmare
+        final Vector3D los;
+        if (Vector3D.dotProduct(lineOfSight, getZ()) > 0) {
+            los = lineOfSight.normalize();
+        } else {
+            // perform a symmetry wrt (X,Y) plane
+            final Vector3D normalized = lineOfSight.normalize();
+            los = new Vector3D(1.0, normalized,
+                               -2 * Vector3D.dotProduct(normalized, getZ()), getZ());
+        }
+
         final double side = Vector3D.dotProduct(los, crossF1F2);
         if (FastMath.abs(side) < 1.0e-12) {
             // the line of sight is almost along the major axis
-            // offset is signed angle with respect to ellipse extreme point
-            final double xy = Vector3D.dotProduct(los, u);
-            final double z  = Vector3D.dotProduct(los, getZ());
-            return FastMath.abs(FastMath.atan2(xy, z)) - a +
-                   trigger.radiusCorrection(angularRadius) - getMargin();
+            return directionAt(Vector3D.dotProduct(los, getX()) > 0 ? 0.0 : FastMath.PI);
         }
 
         // find an initial point on ellipse, that approximates closest point
-        final double d10     = Vector3D.angle(los, focus1);
-        final double d20     = Vector3D.angle(los, focus2);
-        final double offset0 = 0.5 * (d10 - d20);
+        final double d10 = Vector3D.angle(los, focus1);
+        final double d20 = Vector3D.angle(los, focus2);
+        final double offset0   = 0.5 * (d10 - d20);
+        final double minOffset;
+        final double maxOffset;
+        if (offset0 < 0) {
+            minOffset = -gamma;
+            maxOffset = 0;
+        } else {
+            minOffset = 0;
+            maxOffset = +gamma;
+        }
 
         // find closest ellipse point
         DerivativeStructure offset = FACTORY.variable(0, offset0);
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100; i++) { // this loop usually converges in 1-4 iterations
 
-            // function that evaluates to zero when distances difference corresponds to closest ellipse point P
-            // which occurs when the plane defined by line of sight and P is orthogonal to ellipse tangent
+            // function that evaluates to zero when offset corresponds the plane
+            // defined by line of sight and P is orthogonal to ellipse tangent
+            // which corresponds to closest ellipse point P
             final FieldVector3D<DerivativeStructure> p = directionAt(offset.add(a), offset.subtract(a).negate(), side);
             final DerivativeStructure yn = FieldVector3D.dotProduct(p.subtract(los), tangent(p));
 
@@ -266,6 +300,11 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
             final double f2 = yn.getPartialDerivative(2);
             final double dx = 2 * f0 * f1 / (2 * f1 * f1 - f0 * f2);
             offset = offset.subtract(dx);
+            if (offset.getValue() <= minOffset) {
+                offset = FACTORY.variable(0, minOffset + 1.0e-12);
+            } else if (offset.getValue() >= maxOffset) {
+                offset = FACTORY.variable(0, maxOffset - 1.0e-12);
+            }
 
             // check convergence
             if (FastMath.abs(dx) < 1.0e-12) {
@@ -274,12 +313,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
 
         }
 
-        final Vector3D closest = directionAt(a + offset.getReal(), a - offset.getReal(), side);
-
-        // compute raw offset as an accurate signed angle
-        final double rawOffset = FastMath.copySign(Vector3D.angle(los, closest), d10 + d20 - 2 * a);
-
-        return rawOffset + trigger.radiusCorrection(angularRadius) - getMargin();
+        return directionAt(a + offset.getReal(), a - offset.getReal(), side);
 
     }
 
@@ -326,7 +360,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
         final T cos2 = FastMath.cos(d2);
         final T a1   = cos1.subtract(cos2.multiply(dotF1F2)).multiply(d);
         final T a2   = cos2.subtract(cos1.multiply(dotF1F2)).multiply(d);
-        final T ac   = FastMath.sqrt(a1.multiply(a1.add(a2.multiply(2 * dotF1F2))).add(a2.multiply(a2)).multiply(d));
+        final T ac   = FastMath.sqrt(a1.multiply(a1.add(a2.multiply(2 * dotF1F2))).add(a2.multiply(a2)).negate().add(1).multiply(d));
         return new FieldVector3D<>(a1, focus1, a2, focus2, FastMath.copySign(ac, sign), crossF1F2);
     }
 
