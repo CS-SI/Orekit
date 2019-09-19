@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="604">
+        Fixed parsing of compact RINEX files with wrong key in header
+        produced by some Septentrio receivers.
+      </action>
       <action dev="luc" type="fix" issue="603">
         Fixed parsing of compact RINEX files with missing types in header
         produced by some Septentrio receivers.
