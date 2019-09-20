@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.events.VisibilityTrigger;
 
 /** Class representing a spacecraft sensor Field Of View with shape defined by a smooth single loop.
  * @author Luc Maisonobe
@@ -154,7 +155,7 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
             // either the body is outside of Field Of View, or it is fully contained
             // we check the center
             final Vector3D bodyCenter = fovToBody.getInverse().transformPosition(Vector3D.ZERO);
-            if (rawOffsetFromBoundary(bodyCenter) < 0.0) {
+            if (offsetFromBoundary(bodyCenter, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) < 0.0) {
                 // the body is fully contained in the Field Of View
                 // the previous loop did compute the full limb as the footprint
                 footprint.add(loop);

@@ -397,54 +397,24 @@ public class FieldOfViewDetectorTest {
         final double threshold = 1.0e-10;
         EventsLogger logger = new EventsLogger();
 
-        EllipticalFieldOfView ang = new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
+        EllipticalFieldOfView fov = new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                               FastMath.toRadians(40), FastMath.toRadians(10),
-                                                              0.0,
-                                                              EllipticalFieldOfView.EllipticalConstraint.ANGULAR);
-        EllipticalFieldOfView cart = new EllipticalFieldOfView(ang.getCenter(), ang.getX(),
-                                                               ang.getHalfApertureAlongX(),
-                                                               ang.getHalfApertureAlongY(),
-                                                               ang.getMargin(),
-                                                               EllipticalFieldOfView.EllipticalConstraint.CARTESIAN);
-        final EventDetector angularDetector =
-                        new FieldOfViewDetector(sun, ang).
-                        withMaxCheck(maxCheck).
-                        withThreshold(threshold).
-                        withHandler(new ContinueOnEvent<>());
-        propagator.addEventDetector(logger.monitorDetector(angularDetector));
-        final EventDetector cartesianDetector =
-                        new FieldOfViewDetector(sun, cart).
-                        withMaxCheck(maxCheck).
-                        withThreshold(threshold).
-                        withHandler(new ContinueOnEvent<>());
-        propagator.addEventDetector(logger.monitorDetector(cartesianDetector));
+                                                              0.0);
+        propagator.addEventDetector(logger.monitorDetector(new FieldOfViewDetector(sun, fov).
+                                                           withMaxCheck(maxCheck).
+                                                           withThreshold(threshold).
+                                                           withHandler(new ContinueOnEvent<>())));
 
        // Extrapolate from the initial to the final date
         propagator.propagate(initDate.shiftedBy(6000.));
 
         List<LoggedEvent>  events = logger.getLoggedEvents();
-        Assert.assertEquals(4, events.size());
+        Assert.assertEquals(2, events.size());
 
-        // as the Cartesian detector is slightly larger than the angular one
-        // it starts seeing the Sun before the angular one, and stop seing it later
-        Assert.assertSame(cartesianDetector, events.get(0).getEventDetector());
         Assert.assertFalse(events.get(0).isIncreasing());
-        Assert.assertSame(angularDetector, events.get(1).getEventDetector());
-        Assert.assertFalse(events.get(1).isIncreasing());
-        Assert.assertSame(angularDetector, events.get(2).getEventDetector());
-        Assert.assertTrue(events.get(2).isIncreasing());
-        Assert.assertSame(cartesianDetector, events.get(3).getEventDetector());
-        Assert.assertTrue(events.get(3).isIncreasing());
-
-        Assert.assertEquals(17.249,
-                            events.get(1).getState().getDate().durationFrom(events.get(0).getState().getDate()),
-                            1.0e-3);
-        Assert.assertEquals(323.061,
-                            events.get(2).getState().getDate().durationFrom(events.get(1).getState().getDate()),
-                            1.0e-3);
-        Assert.assertEquals(19.939,
-                            events.get(3).getState().getDate().durationFrom(events.get(2).getState().getDate()),
-                            1.0e-3);
+        Assert.assertEquals(881.897, events.get(0).getState().getDate().durationFrom(initDate), 1.0e-3);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(1242.146, events.get(1).getState().getDate().durationFrom(initDate), 1.0e-3);
 
     }
 

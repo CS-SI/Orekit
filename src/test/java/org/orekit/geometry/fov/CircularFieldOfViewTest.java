@@ -18,6 +18,7 @@ package org.orekit.geometry.fov;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.junit.Test;
 import org.orekit.attitudes.LofOffset;
@@ -77,6 +78,13 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
                                              FastMath.toRadians(-39),
                                              FastMath.toRadians(-5)),
                                Vector3D.MINUS_K);
+    }
+
+    @Test
+    public void testBoundary() {
+        doTestBoundary(new CircularFieldOfView(Vector3D.MINUS_K, FastMath.toRadians(3.0), 0.01),
+                       new Well19937a(0x2fdf54d1c6f679afl),
+                       2.0e-15);
     }
 
     @Test

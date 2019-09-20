@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
+import org.orekit.propagation.events.VisibilityTrigger;
 
 public class DoubleDihedraFieldOfViewTest {
 
@@ -79,7 +80,9 @@ public class DoubleDihedraFieldOfViewTest {
                         new UnitSphereRandomVectorGenerator(3, new Well1024a(0x17df21c7598b114bl));
         for (int i = 0; i < 1000; ++i) {
             Vector3D v = new Vector3D(random.nextVector()).scalarMultiply(1.0e6);
-            Assert.assertEquals(square1.offsetFromBoundary(v), square2.offsetFromBoundary(v), 1.2e-15);
+            Assert.assertEquals(square1.offsetFromBoundary(v, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                square2.offsetFromBoundary(v, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                2.6e-15);
         }
     }
 
@@ -97,7 +100,9 @@ public class DoubleDihedraFieldOfViewTest {
                         new UnitSphereRandomVectorGenerator(3, new Well1024a(0x17df21c7598b114bl));
         for (int i = 0; i < 1000; ++i) {
             Vector3D v = new Vector3D(random.nextVector()).scalarMultiply(1.0e6);
-            Assert.assertEquals(square1.offsetFromBoundary(v), square2.offsetFromBoundary(v), 1.2e-15);
+            Assert.assertEquals(square1.offsetFromBoundary(v, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                square2.offsetFromBoundary(v, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                2.6e-15);
         }
     }
 

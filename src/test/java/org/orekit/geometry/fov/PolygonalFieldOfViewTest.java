@@ -43,6 +43,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.VisibilityTrigger;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -68,7 +69,7 @@ public class PolygonalFieldOfViewTest {
             for (double lambda = -0.5 * FastMath.PI; lambda < 0.5 * FastMath.PI; lambda += 0.1) {
                 Vector3D v = new Vector3D(0.0, lambda).scalarMultiply(1.0e6);
                 double theoreticalOffset = 0.5 * FastMath.PI - lambda - delta - margin;
-                double offset = fov.offsetFromBoundary(v);
+                double offset = fov.offsetFromBoundary(v, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
                 if (theoreticalOffset > 0.01) {
                     // the offsetFromBoundary method may use the fast approximate
                     // method, so we cannot check the error accurately
@@ -80,6 +81,9 @@ public class PolygonalFieldOfViewTest {
                     double offsetError = theoreticalOffset - offset;
                     maxOffsetError = FastMath.max(FastMath.abs(offsetError), maxOffsetError);
                 }
+                Assert.assertEquals(-margin,
+                                    fov.offsetFromBoundary(fov.projectToBoundary(v), 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                    1.0e-12);
             }
         }
         Assert.assertEquals(0.0, maxAreaError,   5.0e-14);
@@ -243,7 +247,15 @@ public class PolygonalFieldOfViewTest {
                                                        state.getFrame(), state.getDate());
             if (elevation > 0.001) {
                 Vector3D los = fovToBody.getInverse().transformPosition(earth.transform(loop.get(i)));
-                Assert.assertEquals(-fov.getMargin(), fov.offsetFromBoundary(los), 4.0e-15);
+                Assert.assertEquals(-fov.getMargin(),
+                                    fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                    4.0e-15);
+                Assert.assertEquals(0.125 - fov.getMargin(),
+                                    fov.offsetFromBoundary(los, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                    4.0e-15);
+                Assert.assertEquals(-0.125 - fov.getMargin(),
+                                    fov.offsetFromBoundary(los, 0.125, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV),
+                                    4.0e-15);
             }
             minEl = FastMath.min(minEl, elevation);
             maxEl = FastMath.max(maxEl, elevation);
