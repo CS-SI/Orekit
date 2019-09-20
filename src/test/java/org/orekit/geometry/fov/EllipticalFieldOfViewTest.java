@@ -261,7 +261,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
         doTestPointsNearBoundary(new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                            FastMath.toRadians(10.0), FastMath.toRadians(40.0),
                                                            0.0),
-                                 0.1, 0.0794625, 0.1, 1.0e-7);
+                                 0.1, 0.0101573, 0.1, 1.0e-7);
     }
 
     @Test
@@ -356,8 +356,18 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
                 minDist = FastMath.min(minDist, Vector3D.angle(los, fov.directionAt(eta)));
             }
             minDist = FastMath.copySign(minDist, d1 + d2 - 2 * a);
-            double offset = fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
-            Assert.assertEquals(minDist, offset, 3.0e-7);
+
+            // here, we intentionally use an impossibly large radius to ensure we don't use the speed-up
+            // and compute offset as an exact angle
+            double hugeRadius = FastMath.PI;
+            double realOffset = fov.offsetFromBoundary(los, hugeRadius, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
+            Assert.assertEquals(minDist + hugeRadius, realOffset, 3.0e-7);
+
+            // here, we intentionally use a zero radius, so we may use the speed-up
+            // and may underestimate the offset
+            double approximateOffset = fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
+            Assert.assertTrue(approximateOffset < minDist + 3.0e-7);
+
         }
 
     }

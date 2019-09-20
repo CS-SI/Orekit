@@ -243,7 +243,21 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
     public double offsetFromBoundary(final Vector3D lineOfSight, final double angularRadius,
                                      final VisibilityTrigger trigger) {
 
-        // find closest point on ellipse
+        final double  margin          = getMargin();
+        final double  correctedRadius = trigger.radiusCorrection(angularRadius);
+        final double  deadBand        = margin + angularRadius;
+
+        // for faster computation, we start using only the surrounding cap, to filter out
+        // far away points (which correspond to most of the points if the Field Of View is small)
+        final double crudeDistance = Vector3D.angle(getZ(), lineOfSight) - a;
+        if (crudeDistance > deadBand + 0.01) {
+            // we know we are strictly outside of the zone,
+            // use the crude distance to compute the (positive) return value
+            return crudeDistance + correctedRadius - margin;
+        }
+
+        // we are close, we need to compute carefully the exact offset;
+        // we project the point to the closest zone boundary
         final double   d1      = Vector3D.angle(lineOfSight, focus1);
         final double   d2      = Vector3D.angle(lineOfSight, focus2);
         final Vector3D closest = projectToBoundary(lineOfSight, d1, d2);
@@ -252,7 +266,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
         final double rawOffset = FastMath.copySign(Vector3D.angle(lineOfSight, closest),
                                                    d1 + d2 - 2 * a);
 
-        return rawOffset + trigger.radiusCorrection(angularRadius) - getMargin();
+        return rawOffset + correctedRadius - getMargin();
 
     }
 
