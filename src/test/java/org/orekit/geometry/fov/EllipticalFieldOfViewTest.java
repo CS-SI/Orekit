@@ -19,14 +19,11 @@ package org.orekit.geometry.fov;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.random.UnitSphereRandomVectorGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -156,28 +153,6 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
                                 fov.offsetFromBoundary(dPlus, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                 1.0e-13);
 
-        }
-
-    }
-
-    @Test
-    public void testTangent()
-        throws NoSuchMethodException, SecurityException, IllegalAccessException,
-               IllegalArgumentException, InvocationTargetException {
-
-        final EllipticalFieldOfView fov = new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
-                                                                    FastMath.toRadians(40.0), FastMath.toRadians(10.0),
-                                                                    0.0);
-
-        Method tangent = EllipticalFieldOfView.class.getDeclaredMethod("tangent", FieldVector3D.class);
-        tangent.setAccessible(true);
-        for (double angle = 0.01; angle < MathUtils.TWO_PI; angle += 0.001) {
-            final FieldVector3D<Decimal64> p = new FieldVector3D<>(Decimal64Field.getInstance(),
-                                                                   fov.directionAt(angle));
-            @SuppressWarnings("unchecked")
-            final FieldVector3D<Decimal64> t = (FieldVector3D<Decimal64>) tangent.invoke(fov, p);
-            final Vector3D tFinite = fov.directionAt(angle + 1.0e-6).subtract(fov.directionAt(angle - 1.0e-6));
-            Assert.assertEquals(0.0, FieldVector3D.angle(t, tFinite).getReal(), 1.4e-9);
         }
 
     }
@@ -352,10 +327,11 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
         final double   a  = FastMath.max(fov.getHalfApertureAlongX(), fov.getHalfApertureAlongY());
 
         UnitSphereRandomVectorGenerator random =
-                        new UnitSphereRandomVectorGenerator(3,
-                                                            new Well19937a(0xc9383d990d45a111l));
-        for (int i = 0; i < 1000; ++i) {
-            Vector3D los = new Vector3D(random.nextVector());
+                        new UnitSphereRandomVectorGenerator(3, new Well19937a(0xc9383d990d45a111l));
+        for (int i = 0; i < 300; ++i) {
+            final Vector3D los = new Vector3D(random.nextVector());
+            final double   d1  = Vector3D.angle(los, f1);
+            final double   d2  = Vector3D.angle(los, f2);
             double etaMin;
             double etaMax;
             if (Vector3D.dotProduct(los, fov.getY()) > 0) {
@@ -376,23 +352,12 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
                 }
             }
             double minDist = Double.POSITIVE_INFINITY;
-            for (double eta = etaMin; eta < etaMax; eta += 0.00001) {
+            for (double eta = etaMin; eta < etaMax; eta += 0.0001) {
                 minDist = FastMath.min(minDist, Vector3D.angle(los, fov.directionAt(eta)));
             }
-            minDist = FastMath.copySign(minDist,
-                                        Vector3D.angle(los, f1) + Vector3D.angle(los, f2) - 2 * a);
+            minDist = FastMath.copySign(minDist, d1 + d2 - 2 * a);
             double offset = fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
-            if (offset - minDist < -0.38) {
-                fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
-            }
-            System.out.println(FastMath.toDegrees(FastMath.atan2(Vector3D.dotProduct(los, fov.getY()),
-                                                                 Vector3D.dotProduct(los, fov.getX()))) +
-                               " " + FastMath.toDegrees(minDist) +
-                               " " + FastMath.toDegrees(offset) +
-                               " " + FastMath.toDegrees(offset - minDist));
-//            Assert.assertEquals(minDist,
-//                                fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
-//                                0.03);
+            Assert.assertEquals(minDist, offset, 3.0e-7);
         }
 
     }

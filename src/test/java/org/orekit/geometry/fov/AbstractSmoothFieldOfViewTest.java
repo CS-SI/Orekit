@@ -108,13 +108,13 @@ public abstract class AbstractSmoothFieldOfViewTest {
             if (elevation > 0.001) {
                 Assert.assertEquals(-fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
-                                    8.0e-11);
+                                    2.0e-10);
                 Assert.assertEquals(0.1 - fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.1, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
-                                    8.0e-11);
+                                    2.0e-10);
                 Assert.assertEquals(-0.1 - fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.1, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV),
-                                    8.0e-11);
+                                    2.0e-10);
             }
             minEl = FastMath.min(minEl, elevation);
             maxEl = FastMath.max(maxEl, elevation);

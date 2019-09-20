@@ -73,11 +73,10 @@ public interface FieldOfView {
      */
     double offsetFromBoundary(Vector3D lineOfSight, double angularRadius, VisibilityTrigger trigger);
 
-    /** find the direction on Field Of View Boundary closest to a line of sight.
+    /** Find the direction on Field Of View Boundary closest to a line of sight.
      * @param lineOfSight line of sight from the center of the Field Of View support
      * unit sphere to the target in spacecraft frame
      * @return direction on Field Of View Boundary closest to a line of sight
-     * @since 10.1
      */
     Vector3D projectToBoundary(Vector3D lineOfSight);
 
