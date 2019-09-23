@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="gabb" type="fix" issue="533">
+        Fixed bugs in the derivatives computation in IodGooding.
+        Fixed bugs in IodLambert when there's more than an half revolution
+        between start and final position.
+      </action>
       <action dev="bryan" type="fix" issue="604">
         Fixed parsing of compact RINEX files with wrong key in header
         produced by some Septentrio receivers.
