@@ -116,6 +116,74 @@ public class IodLambertTest {
         Assert.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-9 * context.initialOrbit.getI());
     }
 
+    /** Testing IOD Lambert estimation for several orbital periods.
+     *  @author Maxime Journot
+     */ 
+    @Test
+    public void testLambert2() {
+        
+        // Initialize context - "eccentric orbit" built-in test bench context
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final double mu = context.initialOrbit.getMu();
+        final Frame frame = context.initialOrbit.getFrame();
+
+        // Use a simple Keplerian propagator (no perturbation)
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create propagator
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        // Save initial state and orbit (ie. reference orbit)
+        final SpacecraftState initialState = propagator.getInitialState();
+        final KeplerianOrbit refOrbit = new KeplerianOrbit(initialState.getOrbit());
+        double[] refOrbitArray = new double[6];
+        OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngle.TRUE, refOrbitArray, null);
+        final Vector3D position1 = refOrbit.getPVCoordinates().getPosition();
+        final AbsoluteDate date1 = refOrbit.getDate();
+        
+        // Orbit period
+        final double T = context.initialOrbit.getKeplerianPeriod();
+        
+        // Always check the orbit at t0 wrt refOrbit
+        // Create a list of samples to treat several cases
+        // 0: dt = T/4       - nRev = 0 - posigrade = true
+        // 1: dt = T/2       - nRev = 0 - posigrade = true
+        // 2: dt = 3T/4      - nRev = 0 - posigrade = false
+        // 3: dt = 2T + T/4  - nRev = 2 - posigrade = true
+        // 4: dt = 3T + 3T/4 - nRev = 3 - posigrade = false
+        final double[] dts = new double[] {
+            T/4, T/2, 3*T/4, 2*T + T/4, 3*T + 3*T/4};
+        final int[]   nRevs = new int[] {0, 0, 0, 2, 3};
+        final boolean[] posigrades = new boolean[] {true, true, false, true, false}; 
+        
+        for (int i = 0; i < dts.length; i++) {
+            // Reset to ref state
+            propagator.resetInitialState(initialState);
+            
+            // Propagate to test date
+            final AbsoluteDate date2 = date1.shiftedBy(dts[i]);
+            final Vector3D position2 = propagator.propagate(date2).getPVCoordinates().getPosition();
+            
+            // Instantiate the IOD method
+            final IodLambert iod = new IodLambert(mu);
+
+            // Estimate the orbit
+            final KeplerianOrbit orbit = iod.estimate(frame, posigrades[i], nRevs[i], position1, date1, position2, date2);
+           
+            // Test relative values
+            final double relTol = 1e-12;
+            Assert.assertEquals(refOrbit.getA(),                             orbit.getA(),                             relTol * refOrbit.getA());
+            Assert.assertEquals(refOrbit.getE(),                             orbit.getE(),                             relTol * refOrbit.getE());
+            Assert.assertEquals(refOrbit.getI(),                             orbit.getI(),                             relTol * refOrbit.getI());
+            Assert.assertEquals(refOrbit.getPerigeeArgument(),               orbit.getPerigeeArgument(),               relTol * refOrbit.getPerigeeArgument());
+            Assert.assertEquals(refOrbit.getRightAscensionOfAscendingNode(), orbit.getRightAscensionOfAscendingNode(), relTol * refOrbit.getRightAscensionOfAscendingNode());
+            Assert.assertEquals(refOrbit.getTrueAnomaly(),                   orbit.getTrueAnomaly(),                   relTol * refOrbit.getTrueAnomaly());
+        }
+    }
+
+
     @Test
     public void testMultiRevolutions() {
 
