@@ -136,9 +136,6 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
     /** Unit vector along major axis. */
     private final Vector3D u;
 
-    /** Unit vector along minor axis. */
-    private final Vector3D v;
-
     /** First focus. */
     private final Vector3D focus1;
 
@@ -191,6 +188,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
 
         super(center, primaryMeridian, margin);
 
+        final Vector3D v;
         final double b;
         if (halfApertureAlongX >= halfApertureAlongY) {
             u = getX();
