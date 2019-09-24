@@ -148,8 +148,8 @@ public class IodGooding {
                                    final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
                                    final Vector3D lineOfSight2, final AbsoluteDate dateObs2,
                                    final Vector3D lineOfSight3, final AbsoluteDate dateObs3,
-                                   final double rho1init, final double rho3init, int nRev, 
-                                   boolean direction) {
+                                   final double rho1init, final double rho3init, final int nRev,
+                                   final boolean direction) {
 
         this.date1 = dateObs1;
 
@@ -182,11 +182,10 @@ public class IodGooding {
         final Vector3D p3 = vObserverPosition3.add(lineOfSight3.scalarMultiply(rho3)).scalarMultiply(R);
         return gibbs.estimate(frame, p1, dateObs1, p2, dateObs2, p3, dateObs3);
     }
-    
-    
+
     /** Orbit got from Observed Three Lines of Sight (angles only).
      * assuming there was less than an half revolution between start and final date
-     * 
+     *
      * @param O1 Observer position 1
      * @param O2 Observer position 2
      * @param O3 Observer position 3
@@ -206,11 +205,9 @@ public class IodGooding {
                                    final Vector3D lineOfSight3, final AbsoluteDate dateObs3,
                                    final double rho1init, final double rho3init) {
 
-        return this.estimate(O1, O2, O3, lineOfSight1, dateObs1, lineOfSight2, dateObs2, 
+        return this.estimate(O1, O2, O3, lineOfSight1, dateObs1, lineOfSight2, dateObs2,
                 lineOfSight3, dateObs3, rho1init, rho3init, 0, true);
     }
-
-        
 
     /** Solve the range problem when three line of sight are given.
      *
@@ -280,14 +277,14 @@ public class IodGooding {
                 // They should be zero when line of sight 2 and current direction for 2 from O2 are aligned.
                 final Vector3D u = lineOfSight2.crossProduct(C);
                 final Vector3D P = (u.crossProduct(lineOfSight2)).normalize();
-                Vector3D ENt = (lineOfSight2.crossProduct(P));
+                final Vector3D ENt = lineOfSight2.crossProduct(P);
 
                 // if ENt is zero we have a solution!
                 final double ENR = ENt.getNorm();
                 if (ENR == 0.) {
                     return true;
                 }
-                
+
                 //Normalize EN
                 final Vector3D EN = ENt.normalize();
 
@@ -441,12 +438,12 @@ public class IodGooding {
         final double Fy = (Fp3 - Fm3) / (2. * dy);
         final double Gy = (Gp3 - Gm3) / (2. * dy);
         final double detJac = Fx * Gy - Fy * Gx;
-        
+
         // Coefficients for the classical Newton-Raphson iterative method
-        FD[0] = Fx ;
-        FD[1] = Fy ;
-        GD[0] = Gx ;
-        GD[1] = Gy ;
+        FD[0] = Fx;
+        FD[1] = Fy;
+        GD[0] = Gx;
+        GD[1] = Gy;
 
         // Modified Newton-Raphson process, with Halley's method to have cubic convergence.
         // This requires computing second order derivatives.
@@ -541,7 +538,7 @@ public class IodGooding {
         if (!posigrade) {
             TH = 2 * FastMath.PI - TH;
         }
-        
+
         // Solve the Lambert's problem to get the velocities at endpoints
         final double[] V1 = new double[2];
         // work with non-dimensional units (MU=1)
@@ -560,14 +557,14 @@ public class IodGooding {
 
             // velocity vector at P1
             final Vector3D Vel1 = new  Vector3D(V1[0] / R1, P1, V1[1] / RT, Pt);
-            
+
             // estimate the position at the second observation time
             // propagate (P1, V1) during TAU + T12 to get (P2, V2)
             final Vector3D P2 = propagatePV(P1, Vel1, T12);
 
             return P2;
         }
-        
+
         return null;
     }
 

@@ -118,23 +118,21 @@ public class IodGibbs {
         final AbsoluteDate date = date2;
 
         // compute the equivalent Keplerian orbit
-        KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, date, mu);
-        
-        
+        final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, date, mu);
+
         //define the reverse orbit
         final PVCoordinates pv2 = new PVCoordinates(r2, vlEci.scalarMultiply(-1));
-        KeplerianOrbit orbit2 =new KeplerianOrbit(pv2, frame, date, mu);
-        
+        final KeplerianOrbit orbit2 = new KeplerianOrbit(pv2, frame, date, mu);
+
         //check which orbit is correct
-        Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
+        final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
                 getPVCoordinates().getPosition();
-        double dist = estP3.subtract(r3).getNorm();
-        Vector3D estP3_2 = orbit2.shiftedBy(date3.durationFrom(date2)).
+        final double dist = estP3.subtract(r3).getNorm();
+        final Vector3D estP3_2 = orbit2.shiftedBy(date3.durationFrom(date2)).
                 getPVCoordinates().getPosition();
-        double dist2 = estP3_2.subtract(r3).getNorm();
-        
-        
-        if(dist <= dist2){
+        final double dist2 = estP3_2.subtract(r3).getNorm();
+
+        if (dist <= dist2) {
             return orbit;
         } else {
             return orbit2;

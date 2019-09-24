@@ -99,7 +99,7 @@ public class IodLambert {
         if (!posigrade) {
             dth = 2 * FastMath.PI - dth;
         }
-       
+
         // velocity vectors in the orbital plane, in the R-T frame
         final double[] Vdep = new double[2];
 
@@ -122,7 +122,7 @@ public class IodLambert {
             // velocity vector at P1
             final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1,
                                                V * Vdep[1] / RT, Pt);
-            
+
             // compute the equivalent Keplerian orbit
             return new KeplerianOrbit(new PVCoordinates(p1, Vel1), frame, t1, mu);
         }
@@ -153,8 +153,8 @@ public class IodLambert {
 
         final int m = FastMath.abs(mRev);
         final double rtof = FastMath.abs(tau);
-        double theta = dth;
-        
+        final double theta = dth;
+
         // non-dimensional chord ||r2-r1||
         final double chord = FastMath.sqrt(r1 * r1 + r2 * r2 - 2 * r1 * r2 * FastMath.cos(theta));
 
@@ -165,8 +165,8 @@ public class IodLambert {
         final double minSma = speri / 2.;
 
         // lambda parameter (Eq 7.6)
-        final double lambda = longway*FastMath.sqrt(1 - chord / speri);
-        
+        final double lambda = longway * FastMath.sqrt(1 - chord / speri);
+
         // reference tof value for the Newton solver
         final double logt = FastMath.log(rtof);
 
