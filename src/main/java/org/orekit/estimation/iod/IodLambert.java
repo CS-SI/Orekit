@@ -18,6 +18,8 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -87,6 +89,11 @@ public class IodLambert {
         final double r1 = p1.getNorm();
         final double r2 = p2.getNorm();
         final double tau = t2.durationFrom(t1); // in seconds
+
+        // Exception if t2 < t1
+        if (tau < 0.0) {
+            throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, t1, t2);
+        }
 
         // normalizing constants
         final double R = FastMath.max(r1, r2); // in m

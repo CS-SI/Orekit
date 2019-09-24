@@ -24,6 +24,8 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -34,6 +36,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -137,9 +140,61 @@ public class IodLambertTest {
         KeplerianOrbit k1 = lambert.estimate(teme, true, 1, p1, t1, p3, t3);
         Assert.assertEquals(5.97e-4, k1.getE(), 1.0e-6);
         Assert.assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
-        Assert.assertEquals(0.0, Vector3D.distance(p1, k1.getPVCoordinates(t1, teme).getPosition()), 7.0e-9);
+        Assert.assertEquals(0.0, Vector3D.distance(p1, k1.getPVCoordinates(t1, teme).getPosition()), 1.4e-8);
         Assert.assertEquals(0.0, Vector3D.distance(p3, k1.getPVCoordinates(t3, teme).getPosition()), 3.0e-7);
 
+    }
+
+    @Test
+    public void testNonChronologicalObservations() {
+        
+        // Initialize context - "eccentric orbit" built-in test bench context
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final double mu = context.initialOrbit.getMu();
+        final Frame frame = context.initialOrbit.getFrame();
+
+        // Use a simple Keplerian propagator (no perturbation)
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create propagator
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        // Save initial state and orbit (ie. reference orbit)
+        final SpacecraftState initialState = propagator.getInitialState();
+        final KeplerianOrbit refOrbit = new KeplerianOrbit(initialState.getOrbit());
+        double[] refOrbitArray = new double[6];
+        OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngle.TRUE, refOrbitArray, null);
+
+        final Vector3D position1 = refOrbit.getPVCoordinates().getPosition();
+        final AbsoluteDate date1 = refOrbit.getDate();
+        
+        // Orbit period
+        final double T = context.initialOrbit.getKeplerianPeriod();
+
+        final double  dts = -T/4;
+        final int     nRevs = 0;
+        final boolean posigrades = true;
+        
+        // Reset to ref state
+        propagator.resetInitialState(initialState);
+        
+        // Propagate to test date
+        final AbsoluteDate date2 = date1.shiftedBy(dts);
+        final Vector3D position2 = propagator.propagate(date2).getPVCoordinates().getPosition();
+        
+        // Instantiate the IOD method
+        final IodLambert iod = new IodLambert(mu);
+
+        // Estimate the orbit
+        try {
+            iod.estimate(frame, posigrades, nRevs, position1, date1, position2, date2);
+            Assert.fail("An exception should have been thrown");
+            
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
+        }
     }
 
 }
