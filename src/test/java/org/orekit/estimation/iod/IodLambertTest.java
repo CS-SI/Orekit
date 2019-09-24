@@ -22,6 +22,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -43,6 +44,7 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 /**
  *
@@ -195,6 +197,117 @@ public class IodLambertTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
         }
+    }
+
+    /** Testing out <a href="https://gitlab.orekit.org/orekit/orekit/issues/533"> issue #533</a> on Orekit forge.
+     *  <p>Issue raised after unexpected results were found with the IodLambert class.
+     *  <br> Solution for Δν = 270° gives a retrograde orbit (i = 180° instead of 0°) with Δν = 90°</br>
+     *  <br> Not respecting at all the Δt constraint placed in input. </br>
+     *  </p>
+     *  @author Nicola Sullo
+     */ 
+    @Test
+    public void testIssue533() {
+        
+        //Utils.setDataRoot("regular-data");
+        
+        double mu = Constants.EGM96_EARTH_MU;
+        Frame j2000 = FramesFactory.getEME2000();
+
+        // According to the Orekit documentation for IodLambert.estimate:
+        /*
+         * "As an example, if t2 is less than half a period after t1, then posigrade should be true and nRev
+         * should be 0. If t2 is more than half a period after t1 but less than one period after t1,
+         * posigrade should be false and nRev should be 1."
+         */
+        // Implementing 2 test cases to validate this
+        // 1 - Δν = 90° , posigrade = true , nRev = 0
+        // 2 - Δν = 270°, posigrade = false, nRev = 1
+        for (int testCase = 1; testCase < 3; testCase++) {
+    
+            double trueAnomalyDifference;
+            boolean posigrade;
+            int nRev;
+            if (testCase == 1) {
+                posigrade = true;
+                nRev = 0;
+                trueAnomalyDifference = 0.5*FastMath.PI; // 90 degrees;
+            } else {
+                posigrade = false;
+                nRev = 0;
+                trueAnomalyDifference = 1.5*FastMath.PI; // 270 degrees;
+            }
+            
+            // Tested orbit
+            double a = 24000*1e3;
+            double e = 0.72;
+            double i = FastMath.toRadians(0.);
+            double aop = 0.;
+            double raan = 0.;
+            double nu0 = 0.;
+    
+            // Assign position and velocity @t1 (defined as the position and velocity vectors and the periapse)
+            AbsoluteDate t1 = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
+            KeplerianOrbit kep1 = new KeplerianOrbit(a, e, i, aop, raan, nu0, PositionAngle.TRUE, j2000, t1, mu);
+            Vector3D p1 = kep1.getPVCoordinates().getPosition();
+            Vector3D v1 = kep1.getPVCoordinates().getVelocity();
+    
+            // Assign t2 date (defined as the date after a swept angle of "trueAnomalyDifference" after periapsis)
+            KeplerianOrbit kep2 = new KeplerianOrbit(a, e, i, aop, raan, trueAnomalyDifference, PositionAngle.TRUE, j2000, t1, mu);
+            double n = kep2.getKeplerianMeanMotion();
+            double M2 = kep2.getMeanAnomaly();
+            double delta_t = M2 / n; // seconds
+            AbsoluteDate t2 = t1.shiftedBy(delta_t);
+    
+            // Assign position and velocity @t2
+            PVCoordinates pv2 = kep1.getPVCoordinates(t2, j2000);
+            Vector3D p2 = pv2.getPosition();
+            Vector3D v2 = pv2.getVelocity();
+    
+            // Solve Lambert problem
+            IodLambert iodLambert = new IodLambert(mu);
+            KeplerianOrbit resultOrbit1 = iodLambert.estimate(j2000, posigrade, nRev, p1, t1, p2, t2);
+    
+            // Get position and velocity coordinates @t1 and @t2 from the output Keplerian orbit of iodLambert.estimate
+            PVCoordinates resultPv1 = resultOrbit1.getPVCoordinates(t1, j2000);
+            PVCoordinates resultPv2 = resultOrbit1.getPVCoordinates(t2, j2000);
+    
+            Vector3D resultP1 = resultPv1.getPosition();
+            Vector3D resultV1 = resultPv1.getVelocity();
+            Vector3D resultP2 = resultPv2.getPosition();
+            Vector3D resultV2 = resultPv2.getVelocity();
+            
+            // Compare PVs
+            double dP1 = Vector3D.distance(p1, resultP1);
+            double dV1 = Vector3D.distance(v1, resultV1);
+            double dP2 = Vector3D.distance(p2, resultP2);
+            double dV2 = Vector3D.distance(v2, resultV2);
+            
+            // Tolerances
+            double dP1Tol, dP2Tol, dV1Tol, dV2Tol;
+            if (testCase == 1) {
+                dP1Tol = 4.28e-25;
+                dV1Tol = 5.97e-12;
+                dP2Tol = 7.57e-9;
+                dV2Tol = 7.50e-12;
+            } else {
+                dP1Tol = 2.81e-25;
+                dV1Tol = 3.03e-12;
+                dP2Tol = 9.86e-7;
+                dV2Tol = 4.01e-10;
+            }
+            
+            // Check results
+            Assert.assertEquals(0., dP1, dP1Tol);
+            Assert.assertEquals(0., dV1, dV1Tol);
+            Assert.assertEquals(0., dP2, dP2Tol);
+            Assert.assertEquals(0., dV2, dV2Tol);
+        }
+    }
+
+    @Before
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }
