@@ -79,6 +79,16 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
+    public void testTruncatedCompactHeader() throws IOException {
+        doTestWrong("rinex/truncateC_U_20190320000_15M_30S_MO.crx", OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE);
+    }
+
+    @Test
+    public void testEmpty() throws IOException {
+        doTestWrong("rinex/emptyFile_U_20190320000_15M_30S_MO.crx", OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE);
+    }
+
+    @Test
     public void testBadClockReset() throws IOException {
         doTestWrong("rinex/badclkrst_U_20190320000_10M_10M_MO.crx", OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE);
     }
