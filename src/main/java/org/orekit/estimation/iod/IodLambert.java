@@ -152,9 +152,9 @@ public class IodLambert {
                            final int mRev, final double[] V1) {
         // decide whether to use the left or right branch (for multi-revolution
         // problems), and the long- or short way.
-        final boolean leftbranch = dth < Math.PI;
+        final boolean leftbranch = dth < FastMath.PI;
         int longway = 1;
-        if (dth > Math.PI) {
+        if (dth > FastMath.PI) {
             longway = -1;
         }
 
