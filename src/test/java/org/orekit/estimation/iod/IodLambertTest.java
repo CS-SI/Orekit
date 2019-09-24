@@ -134,7 +134,7 @@ public class IodLambertTest {
         Assert.assertEquals(0.0, Vector3D.distance(p1, k0.getPVCoordinates(t1, teme).getPosition()), 2.0e-8);
         Assert.assertEquals(0.0, Vector3D.distance(p2, k0.getPVCoordinates(t2, teme).getPosition()), 2.0e-7);
 
-        KeplerianOrbit k1 = lambert.estimate(teme, false, 1, p1, t1, p3, t3);
+        KeplerianOrbit k1 = lambert.estimate(teme, true, 1, p1, t1, p3, t3);
         Assert.assertEquals(5.97e-4, k1.getE(), 1.0e-6);
         Assert.assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
         Assert.assertEquals(0.0, Vector3D.distance(p1, k1.getPVCoordinates(t1, teme).getPosition()), 7.0e-9);

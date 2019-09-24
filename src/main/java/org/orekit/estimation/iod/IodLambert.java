@@ -51,7 +51,7 @@ public class IodLambert {
      * <p>
      * The logic for setting {@code posigrade} and {@code nRev} is that the
      * sweep angle Δυ travelled by the object between {@code t1} and {@code t2} is
-     * 2π {@code nRev} - α if {@code posigrade} is false and 2π {@code nRev} + α
+     * 2π {@code nRev +1} - α if {@code posigrade} is false and 2π {@code nRev} + α
      * if {@code posigrade} is true, where α is the separation angle between
      * {@code p1} and {@code p2}, which is always computed between 0 and π
      * (because in 3D without a normal reference, vector angles cannot go past π).
@@ -68,7 +68,7 @@ public class IodLambert {
      * then {@code posigrade} should be {@code true} and {@code nRev} should be 0.
      * If {@code t2} is more than half a period after {@code t1} but less than
      * one period after {@code t1}, {@code posigrade} should be {@code false} and
-     * {@code nRev} should be 1.
+     * {@code nRev} should be 0.
      * </p>
      * @param frame     frame
      * @param posigrade flag indicating the direction of motion
@@ -99,8 +99,7 @@ public class IodLambert {
         if (!posigrade) {
             dth = 2 * FastMath.PI - dth;
         }
-        dth = dth + nRev * 2 * FastMath.PI;
-
+       
         // velocity vectors in the orbital plane, in the R-T frame
         final double[] Vdep = new double[2];
 
@@ -123,7 +122,7 @@ public class IodLambert {
             // velocity vector at P1
             final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1,
                                                V * Vdep[1] / RT, Pt);
-
+            
             // compute the equivalent Keplerian orbit
             return new KeplerianOrbit(new PVCoordinates(p1, Vel1), frame, t1, mu);
         }
@@ -146,19 +145,16 @@ public class IodLambert {
                            final int mRev, final double[] V1) {
         // decide whether to use the left or right branch (for multi-revolution
         // problems), and the long- or short way.
-        final boolean leftbranch = FastMath.signum(mRev) > 0;
-        int longway = 0;
-        if (tau > 0) {
-            longway = 1;
+        final boolean leftbranch = dth < Math.PI;
+        int longway = 1;
+        if (dth > Math.PI) {
+            longway = -1;
         }
 
         final int m = FastMath.abs(mRev);
         final double rtof = FastMath.abs(tau);
         double theta = dth;
-        if (longway < 0) {
-            theta = 2 * FastMath.PI - dth;
-        }
-
+        
         // non-dimensional chord ||r2-r1||
         final double chord = FastMath.sqrt(r1 * r1 + r2 * r2 - 2 * r1 * r2 * FastMath.cos(theta));
 
@@ -169,8 +165,8 @@ public class IodLambert {
         final double minSma = speri / 2.;
 
         // lambda parameter (Eq 7.6)
-        final double lambda = FastMath.sqrt(1 - chord / speri);
-
+        final double lambda = longway*FastMath.sqrt(1 - chord / speri);
+        
         // reference tof value for the Newton solver
         final double logt = FastMath.log(rtof);
 
