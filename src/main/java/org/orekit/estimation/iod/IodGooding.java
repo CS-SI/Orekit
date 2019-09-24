@@ -235,7 +235,7 @@ public class IodGooding {
                                       final Vector3D lineOfSight3,
                                       final int maxIterations) {
         final double ARBF = 1e-6;   // finite differences step
-        boolean withHalley = false;  // use Halley's method
+        boolean withHalley = true;  // use Halley's method
         final double cvtol = 1e-14; // convergence tolerance
 
         rho1 = rho1init;
