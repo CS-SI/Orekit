@@ -561,3 +561,9 @@ NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
 
 # file {0} is not a supported Hatanaka-compressed file
 NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
+
+# invalid measurement types {0} and {1} for the combination of measurements {2}
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+
+# frequencies {0} and {1} are incompatibles for the {2} combination
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>

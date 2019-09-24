@@ -21,6 +21,17 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="604">
+        Fixed parsing of compact RINEX files with wrong key in header
+        produced by some Septentrio receivers.
+      </action>
+      <action dev="luc" type="fix" issue="603">
+        Fixed parsing of compact RINEX files with missing types in header
+        produced by some Septentrio receivers.
+      </action>
+      <action dev="evan" type="fix" issue="589">
+        Improve performance of AggregateBoundedPropagator by factor of 2.
+      </action>
       <action dev="luc" type="fix" issue="600">
         Fixed parsing of compact RINEX files with many observation types.
       </action>
@@ -68,6 +79,12 @@
       </action>
       <action dev="petrus" type="fix" issue="570">
         Make FieldOfView.getFootprint public.
+      </action>
+      <action dev="bryan" type="add">
+        Added combination of measurements.
+      </action>
+      <action dev="bryan" type="fix">
+        Fix values of GPS C2D, L2D, D2D and S2D frequencies.
       </action>
       <action dev="bryan" type="add">
         Add Nequick ionospheric model.

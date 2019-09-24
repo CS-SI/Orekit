@@ -34,7 +34,7 @@ import org.orekit.propagation.events.VisibilityTrigger;
  * the ellipse center is along the Z<sub>ell</sub> axis and the ellipse principal axes
  * are along the X<sub>ell</sub> and Y<sub>ell</sub> axes. The first defining
  * elements for an ellipse are these canonical axes. This class allows specifying
- * them by giving directly the Z<sub>ell</sub> axis as the {@link center} of
+ * them by giving directly the Z<sub>ell</sub> axis as the {@code center} of
  * the ellipse, and giving a {@code primaryMeridian} vector in the (+X<sub>ell</sub>,
  * Z<sub>ell</sub>) half-plane. It is allowed to have {@code primaryMeridian} not
  * orthogonal to {@code center} as orthogonality will be fixed internally.

@@ -14,29 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.estimation.measurements.gnss;
+
+import org.orekit.gnss.CombinedObservationDataSet;
+import org.orekit.gnss.ObservationDataSet;
 
 /**
- * Enumerate for measurement type.
- *
- * @author Luc Maisonobe
- * @since 9.2
+ * Interface for combination of measurements.
+ * @author Bryan Cazabonne
+ * @since 10.1
  */
-public enum MeasurementType {
+public interface MeasurementCombination {
 
-    /** Pseudo-range measurement. */
-    PSEUDO_RANGE,
+    /**
+     * Combines observation data using a combination of measurements.
+     * @param observations observation data set
+     * @return a combined observation data set
+     */
+    CombinedObservationDataSet combine(ObservationDataSet observations);
 
-    /** Carrier-phase measurement. */
-    CARRIER_PHASE,
-
-    /** Doppler measurement. */
-    DOPPLER,
-
-    /** Signal-strength measurement. */
-    SIGNAL_STRENGTH,
-
-    /** Combined pseudo-range carrier-phase measurement. */
-    COMBINED_RANGE_PHASE;
+    /**
+     * Get the name of the combination of measurements.
+     * @return name of the combination of measurements
+     */
+    String getName();
 
 }

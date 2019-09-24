@@ -79,6 +79,16 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
+    public void testTruncatedCompactHeader() throws IOException {
+        doTestWrong("rinex/truncateC_U_20190320000_15M_30S_MO.crx", OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE);
+    }
+
+    @Test
+    public void testEmpty() throws IOException {
+        doTestWrong("rinex/emptyFile_U_20190320000_15M_30S_MO.crx", OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE);
+    }
+
+    @Test
     public void testBadClockReset() throws IOException {
         doTestWrong("rinex/badclkrst_U_20190320000_10M_10M_MO.crx", OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE);
     }
@@ -510,7 +520,7 @@ public class HatanakaCompressFilterTest {
     @Test
     public void testManyObservations() throws IOException, NoSuchAlgorithmException {
 
-        final String name = "rinex/THTG00PYF_R_20160440000_01D_30S_MO.crx.gz";
+        final String name = "rinex/THTG00PYF_R_20160440000_60S_30S_MO.crx.gz";
         final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
@@ -531,6 +541,60 @@ public class HatanakaCompressFilterTest {
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
         checkDigest("f07c83dcd4dfa02e517ebb8bed6ac7caa0a8ba6f5809cb9d367d7e757741afab", md);
+
+    }
+
+    @Test
+    public void testSeptentrioMissingType() throws IOException, NoSuchAlgorithmException {
+
+        final String name = "rinex/TLSG00FRA_R_20160440000_30S_30S_MO.crx.gz";
+        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+                                             filtered.getName());
+
+        AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(69, ods.size());
+
+        Assert.assertEquals("TLSG",                 ods.get(37).getHeader().getMarkerName());
+        Assert.assertEquals(SatelliteSystem.SBAS,   ods.get(37).getSatelliteSystem());
+        Assert.assertEquals(123,                    ods.get(37).getPrnNumber());
+        Assert.assertEquals(30.0,                   ods.get(37).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(ObservationType.D1C,    ods.get(37).getObservationData().get(2).getObservationType());
+        Assert.assertEquals(2.648,                  ods.get(37).getObservationData().get(2).getValue(), 1.0e-15);
+
+        // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
+        checkDigest("79b524e36869055b41238ee5919b13f0ca2923b95f8516fe0e09a7ac968a62d6", md);
+
+    }
+
+    @Test
+    public void testSeptentrioPhaseShiftWithS() throws IOException, NoSuchAlgorithmException {
+
+        final String name = "rinex/VILL00ESP_R_20160440000_01D_30S_MO.crx.gz";
+        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+                                             filtered.getName());
+
+        AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(56, ods.size());
+
+        Assert.assertEquals("VILL",                  ods.get(35).getHeader().getMarkerName());
+        Assert.assertEquals(SatelliteSystem.GLONASS, ods.get(35).getSatelliteSystem());
+        Assert.assertEquals(17,                      ods.get(35).getPrnNumber());
+        Assert.assertEquals(30.0,                    ods.get(35).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(ObservationType.L1C,     ods.get(35).getObservationData().get(1).getObservationType());
+        Assert.assertEquals(111836179.674,           ods.get(35).getObservationData().get(1).getValue(), 1.0e-15);
+
+        // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
+        checkDigest("a7f7136b71923d1fbd44638843300298872bb35a732325782ebe13cc299c0d46", md);
 
     }
 

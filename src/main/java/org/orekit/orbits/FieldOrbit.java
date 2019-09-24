@@ -363,6 +363,9 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      */
     public abstract boolean hasDerivatives();
 
+    /** Get the central attraction coefficient used for position and velocity conversions (m³/s²).
+     * @return central attraction coefficient used for position and velocity conversions (m³/s²)
+     */
     public T getMu() {
         return mu;
     }

@@ -96,6 +96,7 @@ public class RinexLoader {
     private static final String SYS_PCVS_APPLIED     = "SYS / PCVS APPLIED";
     private static final String SYS_SCALE_FACTOR     = "SYS / SCALE FACTOR";
     private static final String SYS_PHASE_SHIFT      = "SYS / PHASE SHIFT";
+    private static final String SYS_PHASE_SHIFTS     = "SYS / PHASE SHIFTS";
     private static final String GLONASS_SLOT_FRQ_NB  = "GLONASS SLOT / FRQ #";
     private static final String GLONASS_COD_PHS_BIS  = "GLONASS COD/PHS/BIS";
     private static final String OBS_SCALE_FACTOR     = "OBS SCALE FACTOR";
@@ -867,7 +868,8 @@ public class RinexLoader {
                                         scaleFactorCorrections.add(new ScaleFactorCorrection(satSystemScaleFactor,
                                                                                              scaleFactor, typesObsScaleFactor));
                                         break;
-                                    case SYS_PHASE_SHIFT : {
+                                    case SYS_PHASE_SHIFT  :
+                                    case SYS_PHASE_SHIFTS : {
 
                                         nbSatPhaseShift     = 0;
                                         satsPhaseShift      = null;
@@ -877,7 +879,9 @@ public class RinexLoader {
 
                                         satSystemPhaseShift = SatelliteSystem.parseSatelliteSystem(parseString(0, 1));
                                         final String to = parseString(2, 3);
-                                        phaseShiftTypeObs = to.isEmpty() ? null : ObservationType.valueOf(to);
+                                        phaseShiftTypeObs = to.isEmpty() ?
+                                                            null :
+                                                            ObservationType.valueOf(to.length() < 3 ? "L" + to : to);
                                         nbSatPhaseShift = parseInt(16, 2);
                                         corrPhaseShift = parseDouble(6, 8);
 
