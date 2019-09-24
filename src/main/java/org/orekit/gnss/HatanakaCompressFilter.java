@@ -671,6 +671,9 @@ public class HatanakaCompressFilter implements DataFilter {
             // read the first two lines of the file
             final String line1 = reader.readLine();
             final String line2 = reader.readLine();
+            if (line1 == null || line2 == null) {
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
+            }
 
             // extract format version
             final int cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
