@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,14 +44,14 @@ public class TimeScalesFactory implements Serializable {
     /** International Atomic Time scale. */
     private static TAIScale tai = null;
 
-    /** Universal Time Coordinate depscale. */
+    /** Universal Time Coordinate scale. */
     private static UTCScale utc = null;
 
     /** Universal Time 1 scale (tidal effects ignored). */
-    private static Map<IERSConventions, UT1Scale> ut1MapSimpleEOP = new HashMap<IERSConventions, UT1Scale>();
+    private static Map<IERSConventions, UT1Scale> ut1MapSimpleEOP = new HashMap<>();
 
     /** Universal Time 1 scale (tidal effects considered). */
-    private static Map<IERSConventions, UT1Scale> ut1MapCompleteEOP = new HashMap<IERSConventions, UT1Scale>();
+    private static Map<IERSConventions, UT1Scale> ut1MapCompleteEOP = new HashMap<>();
 
     /** Terrestrial Time scale. */
     private static TTScale tt = null;
@@ -80,7 +81,7 @@ public class TimeScalesFactory implements Serializable {
     private static GMSTScale gmst = null;
 
     /** UTCTAI offsets loaders. */
-    private static List<UTCTAIOffsetsLoader> loaders = new ArrayList<UTCTAIOffsetsLoader>();
+    private static List<UTCTAIOffsetsLoader> loaders = new ArrayList<>();
 
     /** IRNSS System Time scale. */
     private static IRNSSScale irnss = null;
@@ -174,7 +175,7 @@ public class TimeScalesFactory implements Serializable {
         synchronized (TimeScalesFactory.class) {
 
             if (utc == null) {
-                List<OffsetModel> entries = null;
+                List<OffsetModel> entries = Collections.emptyList();
                 if (loaders.isEmpty()) {
                     addDefaultUTCTAIOffsetsLoaders();
                 }
