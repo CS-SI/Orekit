@@ -557,6 +557,32 @@ public class RinexLoaderTest {
         }
     }
 
+    @Test
+    public void testIssue608() {
+        //Tests Rinex 3.04 with GPS, GLONASS, Galileo and SBAS Constellations
+        RinexLoader  loader = load("rinex/brca083.06o");
+        AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(5, ods.size());
+
+        Assert.assertEquals("A 9080",                     ods.get(2).getHeader().getMarkerName());
+
+        // Test GPS
+        Assert.assertEquals(SatelliteSystem.GPS,    ods.get(1).getSatelliteSystem());
+        Assert.assertEquals(9,                      ods.get(1).getPrnNumber());
+        Assert.assertEquals(0.0,                    ods.get(1).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(ObservationType.C1C,    ods.get(1).getObservationData().get(0).getObservationType());
+        Assert.assertEquals(20891534.648,           ods.get(1).getObservationData().get(0).getValue(), 1.0e-15);
+
+        // Test SBAS
+        Assert.assertEquals(SatelliteSystem.SBAS,   ods.get(4).getSatelliteSystem());
+        Assert.assertEquals(120,                    ods.get(4).getPrnNumber());
+        Assert.assertEquals(0.0,                    ods.get(4).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(ObservationType.L1C,    ods.get(4).getObservationData().get(1).getObservationType());
+        Assert.assertEquals(335849.135,           ods.get(4).getObservationData().get(1).getValue(), 1.0e-15);
+        
+    }
+
     private void checkObservation(final ObservationDataSet obser,
                                   final int year, final int month, final int day,
                                   final int hour, final int minute, final double second,
