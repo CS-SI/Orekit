@@ -27,7 +27,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
@@ -43,7 +45,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GNSSDate;
-import org.orekit.time.LazyLoadedTimeScales;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -67,10 +68,10 @@ public class Utils {
     public static final double mu =  3.986004415e+14;
 
     public static void clearFactories() {
+        DataContext.setDefault(new LazyLoadedDataContext());
         clearFactoryMaps(CelestialBodyFactory.class);
         CelestialBodyFactory.clearCelestialBodyLoaders();
         clearFactoryMaps(FramesFactory.class);
-        TimeScalesFactory.setTimeScales(new LazyLoadedTimeScales());
         clearFactoryMaps(TimeScalesFactory.class);
         clearFactory(TimeScalesFactory.class, TimeScale.class);
         clearFactoryMaps(FieldCartesianOrbit.class);

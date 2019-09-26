@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.orekit.data.DataContext;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
@@ -54,17 +55,7 @@ public class TimeScalesFactory implements Serializable {
      * @return the time scales used by this factory.
      */
     public static LazyLoadedTimeScales getTimeScales() {
-        // TODO replace with DataContext.getDefault().getTimeScales()
-        return INSTANCE;
-    }
-
-    /**
-     * For testing. TODO remove.
-     *
-     * @param scales to set.
-     */
-    public static void setTimeScales(final LazyLoadedTimeScales scales) {
-        INSTANCE = scales;
+        return DataContext.getDefault().getTimeScales();
     }
 
     /** Add a loader for UTC-TAI offsets history files.
