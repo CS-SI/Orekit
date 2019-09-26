@@ -134,6 +134,10 @@ public class AbsoluteDate
     public static final AbsoluteDate QZSS_EPOCH =
         new AbsoluteDate(DateComponents.QZSS_EPOCH, TimeComponents.H00, TimeScalesFactory.getQZSS());
 
+    /** Reference epoch for IRNSS weeks: 1999-08-22T00:00:00 IRNSS time. */
+    public static final AbsoluteDate IRNSS_EPOCH =
+        new AbsoluteDate(DateComponents.IRNSS_EPOCH, TimeComponents.H00, TimeScalesFactory.getIRNSS());
+
     /** Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC. */
     public static final AbsoluteDate BEIDOU_EPOCH =
         new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, TimeScalesFactory.getBDT());
