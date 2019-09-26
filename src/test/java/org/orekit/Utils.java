@@ -43,6 +43,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GNSSDate;
+import org.orekit.time.LazyLoadedTimeScales;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -69,6 +70,7 @@ public class Utils {
         clearFactoryMaps(CelestialBodyFactory.class);
         CelestialBodyFactory.clearCelestialBodyLoaders();
         clearFactoryMaps(FramesFactory.class);
+        TimeScalesFactory.setTimeScales(new LazyLoadedTimeScales());
         clearFactoryMaps(TimeScalesFactory.class);
         clearFactory(TimeScalesFactory.class, TimeScale.class);
         clearFactoryMaps(FieldCartesianOrbit.class);

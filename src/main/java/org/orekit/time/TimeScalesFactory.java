@@ -17,14 +17,7 @@
 package org.orekit.time;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
@@ -35,60 +28,16 @@ import org.orekit.utils.IERSConventions;
  * This is a utility class, so its constructor is private.
  * </p>
  * @author Luc Maisonobe
+ * @see TimeScales
+ * @see LazyLoadedTimeScales
  */
 public class TimeScalesFactory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130807L;
+    private static final long serialVersionUID = 20190925L;
 
-    /** International Atomic Time scale. */
-    private static TAIScale tai = null;
-
-    /** Universal Time Coordinate scale. */
-    private static UTCScale utc = null;
-
-    /** Universal Time 1 scale (tidal effects ignored). */
-    private static Map<IERSConventions, UT1Scale> ut1MapSimpleEOP = new HashMap<>();
-
-    /** Universal Time 1 scale (tidal effects considered). */
-    private static Map<IERSConventions, UT1Scale> ut1MapCompleteEOP = new HashMap<>();
-
-    /** Terrestrial Time scale. */
-    private static TTScale tt = null;
-
-    /** Galileo System Time scale. */
-    private static GalileoScale gst = null;
-
-    /** GLObal NAvigation Satellite System scale. */
-    private static GLONASSScale glonass = null;
-
-    /** Quasi-Zenith Satellite System scale. */
-    private static QZSSScale qzss = null;
-
-    /** Global Positioning System scale. */
-    private static GPSScale gps = null;
-
-    /** Geocentric Coordinate Time scale. */
-    private static TCGScale tcg = null;
-
-    /** Barycentric Dynamic Time scale. */
-    private static TDBScale tdb = null;
-
-    /** Barycentric Coordinate Time scale. */
-    private static TCBScale tcb = null;
-
-    /** Greenwich Mean Sidereal Time scale. */
-    private static GMSTScale gmst = null;
-
-    /** UTCTAI offsets loaders. */
-    private static List<UTCTAIOffsetsLoader> loaders = new ArrayList<>();
-
-    /** IRNSS System Time scale. */
-    private static IRNSSScale irnss = null;
-
-    /** BDS System Time scale. */
-    private static BDTScale bds = null;
-
+    /** Singleton instance that implements the logic of all methods in this factory. */
+    private static LazyLoadedTimeScales INSTANCE = new LazyLoadedTimeScales();
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -96,6 +45,26 @@ public class TimeScalesFactory implements Serializable {
      * the compiler from generating one automatically.</p>
      */
     private TimeScalesFactory() {
+    }
+
+    /**
+     * Get the instance of {@link TimeScales} that is called by all of the static methods
+     * in this class.
+     *
+     * @return the time scales used by this factory.
+     */
+    public static LazyLoadedTimeScales getTimeScales() {
+        // TODO replace with DataContext.getDefault().getTimeScales()
+        return INSTANCE;
+    }
+
+    /**
+     * For testing. TODO remove.
+     *
+     * @param scales to set.
+     */
+    public static void setTimeScales(final LazyLoadedTimeScales scales) {
+        INSTANCE = scales;
     }
 
     /** Add a loader for UTC-TAI offsets history files.
@@ -108,7 +77,7 @@ public class TimeScalesFactory implements Serializable {
      * @since 7.1
      */
     public static void addUTCTAIOffsetsLoader(final UTCTAIOffsetsLoader loader) {
-        loaders.add(loader);
+        getTimeScales().addUTCTAIOffsetsLoader(loader);
     }
 
     /** Add the default loaders for UTC-TAI offsets history files (both IERS and USNO).
@@ -131,8 +100,7 @@ public class TimeScalesFactory implements Serializable {
      * @since 7.1
      */
     public static void addDefaultUTCTAIOffsetsLoaders() {
-        addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES));
-        addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader());
+        getTimeScales().addDefaultUTCTAIOffsetsLoaders();
     }
 
     /** Clear loaders for UTC-TAI offsets history files.
@@ -142,22 +110,14 @@ public class TimeScalesFactory implements Serializable {
      * @since 7.1
      */
     public static void clearUTCTAIOffsetsLoaders() {
-        loaders.clear();
+        getTimeScales().clearUTCTAIOffsetsLoaders();
     }
 
     /** Get the International Atomic Time scale.
      * @return International Atomic Time scale
      */
     public static TAIScale getTAI() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (tai == null) {
-                tai = new TAIScale();
-            }
-
-            return tai;
-
-        }
+        return getTimeScales().getTAI();
     }
 
     /** Get the Universal Time Coordinate scale.
@@ -172,27 +132,7 @@ public class TimeScalesFactory implements Serializable {
      * @see #addDefaultUTCTAIOffsetsLoaders()
      */
     public static UTCScale getUTC() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (utc == null) {
-                List<OffsetModel> entries = Collections.emptyList();
-                if (loaders.isEmpty()) {
-                    addDefaultUTCTAIOffsetsLoaders();
-                }
-                for (UTCTAIOffsetsLoader loader : loaders) {
-                    entries = loader.loadOffsets();
-                    if (!entries.isEmpty()) {
-                        break;
-                    }
-                }
-                if (entries.isEmpty()) {
-                    throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
-                }
-                utc = new UTCScale(entries);
-            }
-
-            return utc;
-        }
+        return getTimeScales().getUTC();
     }
 
     /** Get the Universal Time 1 scale.
@@ -210,17 +150,7 @@ public class TimeScalesFactory implements Serializable {
      * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
      */
     public static UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
-        synchronized (TimeScalesFactory.class) {
-
-            final Map<IERSConventions, UT1Scale> map =
-                    simpleEOP ? ut1MapSimpleEOP : ut1MapCompleteEOP;
-            UT1Scale ut1 = map.get(conventions);
-            if (ut1 == null) {
-                ut1 = getUT1(FramesFactory.getEOPHistory(conventions, simpleEOP));
-                map.put(conventions, ut1);
-            }
-            return ut1;
-        }
+        return getTimeScales().getUT1(conventions, simpleEOP);
     }
 
     /** Get the Universal Time 1 scale.
@@ -239,127 +169,63 @@ public class TimeScalesFactory implements Serializable {
      * @see #getUT1(IERSConventions, boolean)
      */
     public static UT1Scale getUT1(final EOPHistory history) {
-        return new UT1Scale(history, getUTC());
+        return getTimeScales().getUT1(history);
     }
 
     /** Get the Terrestrial Time scale.
      * @return Terrestrial Time scale
      */
     public static TTScale getTT() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (tt == null) {
-                tt = new TTScale();
-            }
-
-            return tt;
-
-        }
+        return getTimeScales().getTT();
     }
 
     /** Get the Galileo System Time scale.
      * @return Galileo System Time scale
      */
     public static GalileoScale getGST() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (gst == null) {
-                gst = new GalileoScale();
-            }
-
-            return gst;
-
-        }
+        return getTimeScales().getGST();
     }
 
     /** Get the GLObal NAvigation Satellite System time scale.
      * @return  GLObal NAvigation Satellite System time scale
      */
     public static GLONASSScale getGLONASS() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (glonass == null) {
-                glonass = new GLONASSScale(getUTC());
-            }
-
-            return glonass;
-
-        }
+        return getTimeScales().getGLONASS();
     }
 
     /** Get the Quasi-Zenith Satellite System time scale.
      * @return  Quasi-Zenith Satellite System time scale
      */
     public static QZSSScale getQZSS() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (qzss == null) {
-                qzss = new QZSSScale();
-            }
-
-            return qzss;
-
-        }
+        return getTimeScales().getQZSS();
     }
 
     /** Get the Global Positioning System scale.
      * @return Global Positioning System scale
      */
     public static GPSScale getGPS() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (gps == null) {
-                gps = new GPSScale();
-            }
-
-            return gps;
-
-        }
+        return getTimeScales().getGPS();
     }
 
     /** Get the Geocentric Coordinate Time scale.
      * @return Geocentric Coordinate Time scale
      */
     public static TCGScale getTCG() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (tcg == null) {
-                tcg = new TCGScale();
-            }
-
-            return tcg;
-
-        }
+        return getTimeScales().getTCG();
     }
 
     /** Get the Barycentric Dynamic Time scale.
      * @return Barycentric Dynamic Time scale
      */
     public static TDBScale getTDB() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (tdb == null) {
-                tdb = new TDBScale();
-            }
-
-            return tdb;
-
-        }
+        return getTimeScales().getTDB();
     }
 
     /** Get the Barycentric Coordinate Time scale.
      * @return Barycentric Coordinate Time scale
      */
     public static TCBScale getTCB() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (tcb == null) {
-                tcb = new TCBScale(getTDB());
-            }
-
-            return tcb;
-
-        }
+        return getTimeScales().getTCB();
     }
 
     /** Get the Greenwich Mean Sidereal Time scale.
@@ -369,44 +235,22 @@ public class TimeScalesFactory implements Serializable {
      * @since 7.0
      */
     public static GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
-        synchronized (TimeScalesFactory.class) {
-
-            if (gmst == null) {
-                gmst = new GMSTScale(getUT1(conventions, simpleEOP));
-            }
-
-            return gmst;
-
-        }
+        return getTimeScales().getGMST(conventions, simpleEOP);
     }
+
     /** Get the Indian Regional Navigation Satellite System time scale.
      * @return  Indian Regional Navigation Satellite System time scale
      */
     public static IRNSSScale getIRNSS() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (irnss == null) {
-                irnss = new IRNSSScale();
-            }
-
-            return irnss;
-
-        }
+        return getTimeScales().getIRNSS();
     }
 
     /** Get the BeiDou Navigation Satellite System time scale.
      * @return  BeiDou Navigation Satellite System time scale
      */
     public static BDTScale getBDT() {
-        synchronized (TimeScalesFactory.class) {
-
-            if (bds == null) {
-                bds = new BDTScale();
-            }
-
-            return bds;
-
-        }
+        return getTimeScales().getBDT();
     }
+
 
 }
