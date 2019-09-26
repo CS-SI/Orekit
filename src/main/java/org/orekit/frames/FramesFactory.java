@@ -194,15 +194,15 @@ public class FramesFactory {
 
     /** Predefined frames. */
     private static transient Map<Predefined, FactoryManagedFrame> FRAMES =
-        new HashMap<Predefined, FactoryManagedFrame>();
+            new HashMap<>();
 
     /** Predefined versioned ITRF frames. */
     private static transient Map<ITRFKey, VersionedITRF> VERSIONED_ITRF_FRAMES =
-        new HashMap<ITRFKey, VersionedITRF>();
+            new HashMap<>();
 
     /** Loaders for Earth Orientation parameters. */
     private static final Map<IERSConventions, List<EOPHistoryLoader>> EOP_HISTORY_LOADERS =
-        new HashMap<IERSConventions, List<EOPHistoryLoader>>();
+            new HashMap<>();
 
     /** Threshold for EOP continuity. */
     private static double EOP_CONTINUITY_THRESHOLD = 5 * Constants.JULIAN_DAY;
@@ -337,7 +337,7 @@ public class FramesFactory {
     public static void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
         synchronized (EOP_HISTORY_LOADERS) {
             if (!EOP_HISTORY_LOADERS.containsKey(conventions)) {
-                EOP_HISTORY_LOADERS.put(conventions, new ArrayList<EOPHistoryLoader>());
+                EOP_HISTORY_LOADERS.put(conventions, new ArrayList<>());
             }
             EOP_HISTORY_LOADERS.get(conventions).add(loader);
         }
@@ -400,7 +400,7 @@ public class FramesFactory {
 
             // TimeStamped based set needed to remove duplicates
             OrekitException pendingException = null;
-            final SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+            final SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
 
             // try to load canonical data if available
             if (EOP_HISTORY_LOADERS.containsKey(conventions)) {
