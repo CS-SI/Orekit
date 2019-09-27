@@ -7,7 +7,7 @@ import java.util.Map;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -22,12 +22,15 @@ import org.orekit.utils.OrekitConfiguration;
  * @author Luc Maisonobe
  * @author Pascal Parraud
  * @author Evan Ward
+ * @see LazyLoadedEop
  * @since 10.1
  */
 public class LazyLoadedFrames implements Frames {
 
     /** Delegate for all EOP loading. */
     private final LazyLoadedEop lazyLoadedEop;
+    /** Provider of common time scales. */
+    private final TimeScales timeScales;
     /** Predefined frames. */
     private transient Map<Predefined, FactoryManagedFrame> frames;
     /** Predefined versioned ITRF frames. */
@@ -37,9 +40,14 @@ public class LazyLoadedFrames implements Frames {
      * Create a collection of frames from the given auxiliary data.
      *
      * @param lazyLoadedEop loads Earth Orientation Parameters.
+     * @param timeScales    defines the time scales used when computing frame
+     *                      transformations. For example, the TT time scale needed for
+     *                      {@link #getPZ9011(IERSConventions, boolean)}.
      */
-    public LazyLoadedFrames(final LazyLoadedEop lazyLoadedEop) {
+    public LazyLoadedFrames(final LazyLoadedEop lazyLoadedEop,
+                            final TimeScales timeScales) {
         this.lazyLoadedEop = lazyLoadedEop;
+        this.timeScales = timeScales;
         this.frames = new HashMap<>();
         this.versionedItrfFrames = new HashMap<>();
     }
@@ -847,7 +855,7 @@ public class LazyLoadedFrames implements Frames {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final Frame itrf = getITRF(ITRFVersion.ITRF_2008, convention, simpleEOP);
-                final HelmertTransformation pz90Raw = new HelmertTransformation(new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
+                final HelmertTransformation pz90Raw = new HelmertTransformation(new AbsoluteDate(2010, 1, 1, 12, 0, 0, timeScales.getTT()),
                         +3.0, +1.0, -0.0, +0.019, -0.042, +0.002, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
                 frame = new FactoryManagedFrame(itrf, pz90Raw, false, factoryKey);
                 frames.put(factoryKey, frame);

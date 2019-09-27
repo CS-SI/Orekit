@@ -26,7 +26,7 @@ public class LazyLoadedDataContext implements DataContext {
     public LazyLoadedDataContext() {
         final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop();
         this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
-        this.frames = new LazyLoadedFrames(lazyLoadedEop);
+        this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales);
     }
 
     @Override
