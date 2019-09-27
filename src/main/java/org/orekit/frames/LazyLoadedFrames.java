@@ -1,18 +1,12 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -32,20 +26,23 @@ import org.orekit.utils.OrekitConfiguration;
  */
 public class LazyLoadedFrames implements Frames {
 
+    /** Delegate for all EOP loading. */
+    private final LazyLoadedEop lazyLoadedEop;
     /** Predefined frames. */
-    private transient Map<Predefined, FactoryManagedFrame> frames =
-            new HashMap<>();
-
+    private transient Map<Predefined, FactoryManagedFrame> frames;
     /** Predefined versioned ITRF frames. */
-    private transient Map<ITRFKey, VersionedITRF> versionedItrfFrames =
-            new HashMap<>();
+    private transient Map<ITRFKey, VersionedITRF> versionedItrfFrames;
 
-    /** Loaders for Earth Orientation parameters. */
-    private final Map<IERSConventions, List<EOPHistoryLoader>> eopHistoryLoaders =
-            new HashMap<>();
-
-    /** Threshold for EOP continuity. */
-    private double eopContinuityThreshold = 5 * Constants.JULIAN_DAY;
+    /**
+     * Create a collection of frames from the given auxiliary data.
+     *
+     * @param lazyLoadedEop loads Earth Orientation Parameters.
+     */
+    public LazyLoadedFrames(final LazyLoadedEop lazyLoadedEop) {
+        this.lazyLoadedEop = lazyLoadedEop;
+        this.frames = new HashMap<>();
+        this.versionedItrfFrames = new HashMap<>();
+    }
 
     /** Add the default loaders EOP history (IAU 1980 precession/nutation).
      * <p>
@@ -74,33 +71,12 @@ public class LazyLoadedFrames implements Frames {
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames,
                                                        final String bulletinASupportedNames) {
-        final String rapidColNames =
-                (rapidDataColumnsSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME :
-                        rapidDataColumnsSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new RapidDataAndPredictionColumnsLoader(false, rapidColNames));
-        final String rapidXmlNames =
-                (rapidDataXMLSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICTION_XML_1980_FILENAME :
-                        rapidDataXMLSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames));
-        final String eopcNames =
-                (eopC04SupportedNames == null) ?
-                        FramesFactory.EOPC04_1980_FILENAME : eopC04SupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new EOPC04FilesLoader(eopcNames));
-        final String bulBNames =
-                (bulletinBSupportedNames == null) ?
-                        FramesFactory.BULLETINB_1980_FILENAME : bulletinBSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new BulletinBFilesLoader(bulBNames));
-        final String bulANames =
-                (bulletinASupportedNames == null) ?
-                        FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new BulletinAFilesLoader(bulANames));
+        lazyLoadedEop.addDefaultEOP1980HistoryLoaders(
+                rapidDataColumnsSupportedNames,
+                rapidDataXMLSupportedNames,
+                eopC04SupportedNames,
+                bulletinBSupportedNames,
+                bulletinASupportedNames);
     }
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
@@ -131,43 +107,12 @@ public class LazyLoadedFrames implements Frames {
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames,
                                                        final String bulletinASupportedNames) {
-        final String rapidColNames =
-                (rapidDataColumnsSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME :
-                        rapidDataColumnsSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new RapidDataAndPredictionColumnsLoader(true, rapidColNames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new RapidDataAndPredictionColumnsLoader(true, rapidColNames));
-        final String rapidXmlNames =
-                (rapidDataXMLSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICITON_XML_2000_FILENAME :
-                        rapidDataXMLSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames));
-        final String eopcNames =
-                (eopC04SupportedNames == null) ?
-                        FramesFactory.EOPC04_2000_FILENAME : eopC04SupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new EOPC04FilesLoader(eopcNames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new EOPC04FilesLoader(eopcNames));
-        final String bulBNames =
-                (bulletinBSupportedNames == null) ?
-                        FramesFactory.BULLETINB_2000_FILENAME : bulletinBSupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new BulletinBFilesLoader(bulBNames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new BulletinBFilesLoader(bulBNames));
-        final String bulANames =
-                (bulletinASupportedNames == null) ?
-                        FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
-        addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new BulletinAFilesLoader(bulANames));
-        addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new BulletinAFilesLoader(bulANames));
+        lazyLoadedEop.addDefaultEOP2000HistoryLoaders(
+                rapidDataColumnsSupportedNames,
+                rapidDataXMLSupportedNames,
+                eopC04SupportedNames,
+                bulletinBSupportedNames,
+                bulletinASupportedNames);
     }
 
     /** Add a loader for Earth Orientation Parameters history.
@@ -177,12 +122,7 @@ public class LazyLoadedFrames implements Frames {
      * @see #clearEOPHistoryLoaders()
      */
     public void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
-        synchronized (eopHistoryLoaders) {
-            if (!eopHistoryLoaders.containsKey(conventions)) {
-                eopHistoryLoaders.put(conventions, new ArrayList<>());
-            }
-            eopHistoryLoaders.get(conventions).add(loader);
-        }
+        lazyLoadedEop.addEOPHistoryLoader(conventions, loader);
     }
 
     /** Clear loaders for Earth Orientation Parameters history.
@@ -190,9 +130,7 @@ public class LazyLoadedFrames implements Frames {
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
      */
     public void clearEOPHistoryLoaders() {
-        synchronized (eopHistoryLoaders) {
-            eopHistoryLoaders.clear();
-        }
+        lazyLoadedEop.clearEOPHistoryLoaders();
     }
 
     /** Set the threshold to check EOP continuity.
@@ -212,7 +150,7 @@ public class LazyLoadedFrames implements Frames {
      * @param threshold threshold to use for checking EOP continuity (in seconds)
      */
     public void setEOPContinuityThreshold(final double threshold) {
-        eopContinuityThreshold = threshold;
+        lazyLoadedEop.setEOPContinuityThreshold(threshold);
     }
 
     /** {@inheritDoc}
@@ -230,39 +168,7 @@ public class LazyLoadedFrames implements Frames {
     @Override
     public EOPHistory getEOPHistory(final IERSConventions conventions, final boolean simpleEOP) {
 
-        synchronized (eopHistoryLoaders) {
-
-            if (eopHistoryLoaders.isEmpty()) {
-                // set up using default loaders
-                addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
-                addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
-            }
-
-            // TimeStamped based set needed to remove duplicates
-            OrekitException pendingException = null;
-            final SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
-
-            // try to load canonical data if available
-            if (eopHistoryLoaders.containsKey(conventions)) {
-                for (final EOPHistoryLoader loader : eopHistoryLoaders.get(conventions)) {
-                    try {
-                        loader.fillHistory(conventions.getNutationCorrectionConverter(), data);
-                    } catch (OrekitException oe) {
-                        pendingException = oe;
-                    }
-                }
-            }
-
-            if (data.isEmpty() && pendingException != null) {
-                throw pendingException;
-            }
-
-            final EOPHistory history = new EOPHistory(conventions, data, simpleEOP);
-            history.checkEOPContinuity(eopContinuityThreshold);
-            return history;
-
-        }
-
+        return lazyLoadedEop.getEOPHistory(conventions, simpleEOP);
     }
 
     @Override
@@ -590,7 +496,7 @@ public class LazyLoadedFrames implements Frames {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final EOPHistory eopHistory = getEOPHistory(conventions, simpleEOP);
+                final EOPHistory eopHistory = lazyLoadedEop.getEOPHistory(conventions, simpleEOP);
                 final TransformProvider shifting =
                         new ShiftingTransformProvider(new CIRFProvider(eopHistory),
                                 CartesianDerivativesFilter.USE_PVA,
@@ -816,7 +722,7 @@ public class LazyLoadedFrames implements Frames {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final EOPHistory eopHistory = applyEOPCorr ? getEOPHistory(conventions, simpleEOP) : null;
+                final EOPHistory eopHistory = applyEOPCorr ? lazyLoadedEop.getEOPHistory(conventions, simpleEOP) : null;
                 final TransformProvider shifting =
                         new ShiftingTransformProvider(new TODProvider(conventions, eopHistory),
                                 CartesianDerivativesFilter.USE_PVA,

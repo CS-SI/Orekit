@@ -9,7 +9,7 @@ import java.util.Map;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LazyLoadedEop;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -23,6 +23,9 @@ import org.orekit.utils.IERSConventions;
  * @since 10.1
  */
 public class LazyLoadedTimeScales implements TimeScales {
+
+    /** Source of EOP data. */
+    private final LazyLoadedEop lazyLoadedEop;
 
     /** International Atomic Time scale. */
     private TAIScale tai = null;
@@ -71,6 +74,16 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     /** BDS System Time scale. */
     private BDTScale bds = null;
+
+    /**
+     * Create a new set of time scales with the given sources of auxiliary data.
+     *
+     * @param lazyLoadedEop loads Earth Orientation Parameters for {@link
+     *                      #getUT1(IERSConventions, boolean)}.
+     */
+    public LazyLoadedTimeScales(final LazyLoadedEop lazyLoadedEop) {
+        this.lazyLoadedEop = lazyLoadedEop;
+    }
 
     /**
      * Add a loader for UTC-TAI offsets history files.
@@ -172,7 +185,7 @@ public class LazyLoadedTimeScales implements TimeScales {
                     simpleEOP ? ut1MapSimpleEOP : ut1MapCompleteEOP;
             UT1Scale ut1 = map.get(conventions);
             if (ut1 == null) {
-                ut1 = getUT1(FramesFactory.getEOPHistory(conventions, simpleEOP));
+                ut1 = getUT1(lazyLoadedEop.getEOPHistory(conventions, simpleEOP));
                 map.put(conventions, ut1);
             }
             return ut1;

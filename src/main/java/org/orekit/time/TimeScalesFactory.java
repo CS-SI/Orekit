@@ -35,10 +35,7 @@ import org.orekit.utils.IERSConventions;
 public class TimeScalesFactory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20190925L;
-
-    /** Singleton instance that implements the logic of all methods in this factory. */
-    private static LazyLoadedTimeScales INSTANCE = new LazyLoadedTimeScales();
+    private static final long serialVersionUID = 20190927L;
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public

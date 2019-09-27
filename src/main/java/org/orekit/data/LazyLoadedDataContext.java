@@ -1,6 +1,6 @@
 package org.orekit.data;
 
-import org.orekit.frames.Frames;
+import org.orekit.frames.LazyLoadedEop;
 import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.time.LazyLoadedTimeScales;
 
@@ -15,9 +15,19 @@ import org.orekit.time.LazyLoadedTimeScales;
 public class LazyLoadedDataContext implements DataContext {
 
     /** The time scales. */
-    private final LazyLoadedTimeScales timeScales = new LazyLoadedTimeScales();
+    private final LazyLoadedTimeScales timeScales;
     /** The reference frames. */
-    private final LazyLoadedFrames frames = new LazyLoadedFrames();
+    private final LazyLoadedFrames frames;
+
+    /**
+     * Create a new data context that only loads auxiliary data when it is first accessed
+     * and allows configuration of the auxiliary data sources until then.
+     */
+    public LazyLoadedDataContext() {
+        final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop();
+        this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
+        this.frames = new LazyLoadedFrames(lazyLoadedEop);
+    }
 
     @Override
     public LazyLoadedTimeScales getTimeScales() {
