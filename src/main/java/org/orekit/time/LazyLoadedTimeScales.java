@@ -128,7 +128,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public TAIScale getTAI() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (tai == null) {
                 tai = new TAIScale();
@@ -141,7 +141,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public UTCScale getUTC() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (utc == null) {
                 List<OffsetModel> entries = Collections.emptyList();
@@ -166,7 +166,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             final Map<IERSConventions, UT1Scale> map =
                     simpleEOP ? ut1MapSimpleEOP : ut1MapCompleteEOP;
@@ -186,7 +186,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public TTScale getTT() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (tt == null) {
                 tt = new TTScale();
@@ -199,7 +199,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public GalileoScale getGST() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (gst == null) {
                 gst = new GalileoScale();
@@ -212,7 +212,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public GLONASSScale getGLONASS() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (glonass == null) {
                 glonass = new GLONASSScale(getUTC());
@@ -225,7 +225,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public QZSSScale getQZSS() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (qzss == null) {
                 qzss = new QZSSScale();
@@ -238,7 +238,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public GPSScale getGPS() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (gps == null) {
                 gps = new GPSScale();
@@ -251,7 +251,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public TCGScale getTCG() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (tcg == null) {
                 tcg = new TCGScale();
@@ -264,7 +264,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public TDBScale getTDB() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (tdb == null) {
                 tdb = new TDBScale();
@@ -277,7 +277,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public TCBScale getTCB() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (tcb == null) {
                 tcb = new TCBScale(getTDB());
@@ -290,7 +290,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (gmst == null) {
                 gmst = new GMSTScale(getUT1(conventions, simpleEOP));
@@ -303,7 +303,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public IRNSSScale getIRNSS() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (irnss == null) {
                 irnss = new IRNSSScale();
@@ -316,7 +316,7 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     @Override
     public BDTScale getBDT() {
-        synchronized (TimeScalesFactory.class) {
+        synchronized (this) {
 
             if (bds == null) {
                 bds = new BDTScale();
