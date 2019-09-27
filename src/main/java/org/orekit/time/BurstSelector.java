@@ -26,7 +26,7 @@ import org.hipparchus.util.FastMath;
  * <p>
  * The dates can be aligned to whole steps in some time scale. So for example
  * if a rest period of 3600s is used and the alignment time scale is set to
- * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, the earliest date of
+ * {@link org.orekit.time.TimeScales#getUTC() UTC}, the earliest date of
  * each burst will occur at whole hours in UTC time.
  * </p>
  * <p>

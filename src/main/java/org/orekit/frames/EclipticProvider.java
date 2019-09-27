@@ -37,7 +37,7 @@ import org.orekit.utils.IERSConventions;
  * The IAU defines the ecliptic as "the plane perpendicular to the mean heliocentric
  * orbital angular momentum vector of the Earth-Moon barycentre in the BCRS (IAU 2006
  * Resolution B1)." The +z axis is aligned with the angular momentum vector, and the +x
- * axis is aligned with +x axis of {@link FramesFactory#getMOD(IERSConventions) MOD}.
+ * axis is aligned with +x axis of {@link Frames#getMOD(IERSConventions) MOD}.
  * </p>
  *
  * <p>

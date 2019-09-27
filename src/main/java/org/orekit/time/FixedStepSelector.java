@@ -25,7 +25,7 @@ import org.hipparchus.util.FastMath;
  * <p>
  * The dates can be aligned to whole steps in some time scale. So for example
  * if a step of 60s is used and the alignment time scale is set to
- * {@link org.orekit.time.TimeScalesFactory#getUTC() UTC}, dates will be selected
+ * {@link org.orekit.time.TimeScales#getUTC() UTC}, dates will be selected
  * at whole minutes in UTC time.
  * </p>
  * <p>

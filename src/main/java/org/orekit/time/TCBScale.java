@@ -21,7 +21,7 @@ import org.hipparchus.RealFieldElement;
 /** Barycentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Solar System.
  * This time scale depends linearly from {@link TDBScale Barycentric Dynamical Time}.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate

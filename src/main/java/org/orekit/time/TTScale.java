@@ -22,7 +22,7 @@ import org.hipparchus.RealFieldElement;
  * <p>Coordinate time at the surface of the Earth. IT is the
  * successor of Ephemeris Time TE.</p>
  * <p>By convention, TT = TAI + 32.184 s.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate

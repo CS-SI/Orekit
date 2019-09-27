@@ -23,7 +23,7 @@ import org.orekit.utils.Constants;
 /** Greenwich Mean Sidereal Time.
  * <p>The Greenwich Mean Sidereal Time is the hour angle between the meridian of Greenwich
  * and mean equinox of date at 0h UT1.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate

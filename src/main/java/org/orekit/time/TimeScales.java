@@ -1,7 +1,7 @@
 package org.orekit.time;
 
 import org.orekit.frames.EOPHistory;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Frames;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -37,7 +37,7 @@ public interface TimeScales {
      * @param simpleEOP   if true, tidal effects are ignored when interpolating EOP
      * @return Universal Time 1 scale
      * @see #getUTC()
-     * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
+     * @see Frames#getEOPHistory(IERSConventions, boolean)
      */
     UT1Scale getUT1(IERSConventions conventions, boolean simpleEOP);
 

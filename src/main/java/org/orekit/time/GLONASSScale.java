@@ -25,7 +25,7 @@ import org.hipparchus.RealFieldElement;
  * Global Navigation Sattelite System GLONASS - Interface Control document</a>, version 5.1 2008
  * (the typo in the title is in the original document title).
  * </p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate

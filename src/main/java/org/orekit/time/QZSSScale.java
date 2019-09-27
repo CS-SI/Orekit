@@ -24,7 +24,7 @@ import org.hipparchus.RealFieldElement;
  * href="http://qzss.go.jp/en/technical/download/pdf/ps-is-qzss/is-qzss-pnt-003.pdf?t=1549268771755">
  * Quasi-Zenith Satellite System Navigation Service - Interface Specification for QZSS</a> version 1.6, 2014.
  * </p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate

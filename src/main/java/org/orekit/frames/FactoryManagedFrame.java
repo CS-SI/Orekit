@@ -22,7 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 
 
-/** Base class for the predefined frames that are managed by {@link FramesFactory}.
+/** Base class for the predefined frames that are managed by {@link Frames}.
  * @author Luc Maisonobe
  */
 public class FactoryManagedFrame extends Frame {

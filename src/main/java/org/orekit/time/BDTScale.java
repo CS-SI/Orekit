@@ -21,7 +21,7 @@ import org.hipparchus.RealFieldElement;
 
 /** Beidou system time scale.
  * <p>By convention, BDT = UTC on January 1st 2006.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @see AbsoluteDate
  */

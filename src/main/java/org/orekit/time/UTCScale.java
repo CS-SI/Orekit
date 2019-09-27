@@ -36,7 +36,7 @@ import org.orekit.utils.Constants;
  * one second leap was introduced at the end of 2005, the UTC time sequence was
  * 2005-12-31T23:59:59 UTC, followed by 2005-12-31T23:59:60 UTC, followed by
  * 2006-01-01T00:00:00 UTC.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
