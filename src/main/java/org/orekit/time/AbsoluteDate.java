@@ -976,7 +976,7 @@ public class AbsoluteDate
         return this;
     }
 
-    /** Check if the instance represent the same time as another instance.
+    /** Check if the instance represents the same time as another instance.
      * @param date other date
      * @return true if the instance and the other date refer to the same instant
      */
@@ -993,6 +993,105 @@ public class AbsoluteDate
 
         return false;
 
+    }
+
+    /** Check if the instance represents the same time as another.
+     * @param other the instant to compare this date to
+     * @return true if the instance and the argument refer to the same instant
+     * @see #isCloseTo(TimeStamped, double)
+     * @since 10.1
+     */
+    public boolean isEqualTo(final TimeStamped other) {
+        return this.equals(other.getDate());
+    }
+
+    /** Check if the instance time is close to another.
+     * @param other the instant to compare this date to
+     * @param tolerance the separation, in seconds, under which the two instants will be considered close to each other
+     * @return true if the duration between the instance and the argument is strictly below the tolerance
+     * @see #isEqualTo(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isCloseTo(final TimeStamped other, final double tolerance) {
+        return FastMath.abs(this.durationFrom(other.getDate())) < tolerance;
+    }
+
+    /** Check if the instance represents a time that is strictly before another.
+     * @param other the instant to compare this date to
+     * @return true if the instance is strictly before the argument when ordering chronologically
+     * @see #isBeforeOrEqualTo(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isBefore(final TimeStamped other) {
+        return this.compareTo(other.getDate()) < 0;
+    }
+
+    /** Check if the instance represents a time that is strictly after another.
+     * @param other the instant to compare this date to
+     * @return true if the instance is strictly after the argument when ordering chronologically
+     * @see #isAfterOrEqualTo(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isAfter(final TimeStamped other) {
+        return this.compareTo(other.getDate()) > 0;
+    }
+
+    /** Check if the instance represents a time that is before or equal to another.
+     * @param other the instant to compare this date to
+     * @return true if the instance is before (or equal to) the argument when ordering chronologically
+     * @see #isBefore(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isBeforeOrEqualTo(final TimeStamped other) {
+        return this.isBefore(other) || this.isEqualTo(other);
+    }
+
+    /** Check if the instance represents a time that is after or equal to another.
+     * @param other the instant to compare this date to
+     * @return true if the instance is after (or equal to) the argument when ordering chronologically
+     * @see #isAfterOrEqualTo(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isAfterOrEqualTo(final TimeStamped other) {
+        return this.isAfter(other) || this.isEqualTo(other);
+    }
+
+    /** Check if the instance represents a time that is strictly between two others representing
+     * the boundaries of a time span. The two boundaries can be provided in any order: in other words,
+     * whether <code>boundary</code> represents a time that is before or after <code>otherBoundary</code> will
+     * not change the result of this method.
+     * @param boundary one end of the time span
+     * @param otherBoundary the other end of the time span
+     * @return true if the instance is strictly between the two arguments when ordering chronologically
+     * @see #isBetweenOrEqualTo(TimeStamped, TimeStamped)
+     * @since 10.1
+     */
+    public boolean isBetween(final TimeStamped boundary, final TimeStamped otherBoundary) {
+        final TimeStamped beginning;
+        final TimeStamped end;
+        if (boundary.getDate().isBefore(otherBoundary)) {
+            beginning = boundary;
+            end = otherBoundary;
+        } else {
+            beginning = otherBoundary;
+            end = boundary;
+        }
+        return this.isAfter(beginning) && this.isBefore(end);
+    }
+
+    /** Check if the instance represents a time that is between two others representing
+     * the boundaries of a time span, or equal to one of them. The two boundaries can be provided in any order:
+     * in other words, whether <code>boundary</code> represents a time that is before or after
+     * <code>otherBoundary</code> will not change the result of this method.
+     * @param boundary one end of the time span
+     * @param otherBoundary the other end of the time span
+     * @return true if the instance is between the two arguments (or equal to at least one of them)
+     * when ordering chronologically
+     * @see #isBetween(TimeStamped, TimeStamped)
+     * @since 10.1
+     */
+    public boolean isBetweenOrEqualTo(final TimeStamped boundary, final TimeStamped otherBoundary) {
+        return this.isBetween(boundary, otherBoundary) || this.isEqualTo(boundary) || this.isEqualTo(otherBoundary);
     }
 
     /** Get a hashcode for this date.

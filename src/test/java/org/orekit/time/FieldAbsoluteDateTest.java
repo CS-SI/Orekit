@@ -18,7 +18,9 @@ package org.orekit.time;
 
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.hipparchus.Field;
@@ -169,6 +171,30 @@ public class FieldAbsoluteDateTest {
     public void testEquals() {
         doTestEquals(Decimal64Field.getInstance());
     }
+
+    @Test
+    public void testIsEqualTo() { doTestIsEqualTo(Decimal64Field.getInstance()); }
+
+    @Test
+    public void testIsCloseTo() { doTestIsCloseTo(Decimal64Field.getInstance()); }
+
+    @Test
+    public void testIsBefore() { doTestIsBefore(Decimal64Field.getInstance()); }
+
+    @Test
+    public void testIsAfter() { doTestIsAfter(Decimal64Field.getInstance()); }
+
+    @Test
+    public void testIsBeforeOrEqualTo() { doTestIsBeforeOrEqualTo(Decimal64Field.getInstance()); }
+
+    @Test
+    public void testIsAfterOrEqualTo() { doTestIsAfterOrEqualTo(Decimal64Field.getInstance()); }
+
+    @Test
+    public void testIsBetween() { doTestIsBetween(Decimal64Field.getInstance()); }
+
+    @Test
+    public void testIsBetweenOrEqualTo() { doTestIsBetweenOrEqualTo(Decimal64Field.getInstance()); }
 
     @Test
     public void testComponents() {
@@ -610,6 +636,95 @@ public class FieldAbsoluteDateTest {
         Assert.assertFalse(d1.equals(this));
     }
 
+    private <T extends RealFieldElement<T>> void doTestIsEqualTo(final Field<T> field) {
+        TestDates dates = new TestDates().setField(field);
+        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        Assert.assertTrue(present.isEqualTo(dates.present));
+        Assert.assertTrue(present.isEqualTo(dates.presentToo));
+        Assert.assertFalse(present.isEqualTo(dates.past));
+        Assert.assertFalse(present.isEqualTo(dates.future));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIsCloseTo(final Field<T> field) {
+        double tolerance = 10;
+        TestDates dates = new TestDates().setField(field);
+        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        FieldTimeStamped closeToPresent = new AnyFieldTimeStamped(dates.presentDate.shiftedBy(5)).setField(field);
+        Assert.assertTrue(present.isCloseTo(present, tolerance));
+        Assert.assertTrue(present.isCloseTo(dates.presentToo, tolerance));
+        Assert.assertTrue(present.isCloseTo(closeToPresent, tolerance));
+        Assert.assertFalse(present.isCloseTo(dates.past, tolerance));
+        Assert.assertFalse(present.isCloseTo(dates.future, tolerance));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIsBefore(final Field<T> field) {
+        TestDates dates = new TestDates().setField(field);
+        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        Assert.assertFalse(present.isBefore(dates.past));
+        Assert.assertFalse(present.isBefore(present));
+        Assert.assertFalse(present.isBefore(dates.presentToo));
+        Assert.assertTrue(present.isBefore(dates.future));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIsAfter(final Field<T> field) {
+        TestDates dates = new TestDates().setField(field);
+        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        Assert.assertTrue(present.isAfter(dates.past));
+        Assert.assertFalse(present.isAfter(present));
+        Assert.assertFalse(present.isAfter(dates.presentToo));
+        Assert.assertFalse(present.isAfter(dates.future));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIsBeforeOrEqualTo(final Field<T> field) {
+        TestDates dates = new TestDates().setField(field);
+        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        Assert.assertFalse(present.isBeforeOrEqualTo(dates.past));
+        Assert.assertTrue(present.isBeforeOrEqualTo(present));
+        Assert.assertTrue(present.isBeforeOrEqualTo(dates.presentToo));
+        Assert.assertTrue(present.isBeforeOrEqualTo(dates.future));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIsAfterOrEqualTo(final Field<T> field) {
+        TestDates dates = new TestDates().setField(field);
+        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        Assert.assertTrue(present.isAfterOrEqualTo(dates.past));
+        Assert.assertTrue(present.isAfterOrEqualTo(present));
+        Assert.assertTrue(present.isAfterOrEqualTo(dates.presentToo));
+        Assert.assertFalse(present.isAfterOrEqualTo(dates.future));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIsBetween(final Field<T> field) {
+        TestDates dates = new TestDates().setField(field);
+        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        Assert.assertTrue(present.isBetween(dates.past, dates.future));
+        Assert.assertTrue(present.isBetween(dates.future, dates.past));
+        Assert.assertFalse(dates.past.getDate().isBetween(present, dates.future));
+        Assert.assertFalse(dates.past.getDate().isBetween(dates.future, present));
+        Assert.assertFalse(dates.future.getDate().isBetween(dates.past, present));
+        Assert.assertFalse(dates.future.getDate().isBetween(present, dates.past));
+        Assert.assertFalse(present.isBetween(present, dates.future));
+        Assert.assertFalse(present.isBetween(dates.past, present));
+        Assert.assertFalse(present.isBetween(dates.past, dates.past));
+        Assert.assertFalse(present.isBetween(present, present));
+        Assert.assertFalse(present.isBetween(present, dates.presentToo));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIsBetweenOrEqualTo(final Field<T> field) {
+        TestDates dates = new TestDates().setField(field);
+        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        Assert.assertTrue(present.isBetweenOrEqualTo(dates.past, dates.future));
+        Assert.assertTrue(present.isBetweenOrEqualTo(dates.future, dates.past));
+        Assert.assertFalse(dates.past.getDate().isBetweenOrEqualTo(present, dates.future));
+        Assert.assertFalse(dates.past.getDate().isBetweenOrEqualTo(dates.future, present));
+        Assert.assertFalse(dates.future.getDate().isBetweenOrEqualTo(dates.past, present));
+        Assert.assertFalse(dates.future.getDate().isBetweenOrEqualTo(present, dates.past));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, dates.future));
+        Assert.assertTrue(present.isBetweenOrEqualTo(dates.past, present));
+        Assert.assertFalse(present.isBetweenOrEqualTo(dates.past, dates.past));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, present));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, dates.presentToo));
+    }
+
     private <T extends RealFieldElement<T>> void doTestComponents(final Field<T> field) {
         // this is NOT J2000.0,
         // it is either a few seconds before or after depending on time scale
@@ -976,6 +1091,54 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> tA = new FieldAbsoluteDate<>(field, date);
         FieldAbsoluteDate<T> tB = new FieldAbsoluteDate<>(date, field.getZero());
         Assert.assertEquals(0.0, tA.durationFrom(tB).getReal(), Precision.SAFE_MIN);
+    }
+
+    static class AnyFieldTimeStamped implements FieldTimeStamped {
+        AbsoluteDate date;
+        Field field;
+
+        public AnyFieldTimeStamped(AbsoluteDate date) {
+            this.date = date;
+        }
+
+        public AnyFieldTimeStamped setField(Field field) {
+            this.field = field;
+            return this;
+        }
+
+        @Override
+        public FieldAbsoluteDate getDate() {
+            return new FieldAbsoluteDate(field, date);
+        }
+    }
+
+    static class TestDates {
+        private final AbsoluteDate presentDate;
+        private final AnyFieldTimeStamped present;
+        private final AnyFieldTimeStamped past;
+        private final AnyFieldTimeStamped presentToo;
+        private final AnyFieldTimeStamped future;
+        private final List<AnyFieldTimeStamped> datesList;
+
+        public TestDates() {
+            presentDate = new AbsoluteDate(new DateComponents(2000, 1, 1),
+                                                new TimeComponents(12, 00, 00),
+                                                TimeScalesFactory.getUTC());
+            present = new AnyFieldTimeStamped(presentDate);
+            presentToo = new AnyFieldTimeStamped(presentDate.shiftedBy(0));
+            past = new AnyFieldTimeStamped(presentDate.shiftedBy(-1000));
+            future = new AnyFieldTimeStamped(presentDate.shiftedBy(1000));
+            datesList = Arrays.asList(present, past, presentToo, future);
+        }
+
+        public TestDates setField(Field field) {
+            datesList.forEach(date -> date.setField(field));
+            return this;
+        }
+
+        public FieldAbsoluteDate getPresentFieldAbsoluteDate() {
+            return present.getDate();
+        }
     }
 
 }
