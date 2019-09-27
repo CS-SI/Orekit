@@ -202,8 +202,7 @@ public class Utils {
 
     public static void setLoaders(final IERSConventions conventions, final List<EOPEntry> eop) {
 
-        clearFactoryMaps(FramesFactory.class);
-        clearFactoryMaps(TimeScalesFactory.class);
+        clearFactories();
 
         FramesFactory.addEOPHistoryLoader(conventions, new EOPHistoryLoader() {
             public void fillHistory(IERSConventions.NutationCorrectionConverter converter,

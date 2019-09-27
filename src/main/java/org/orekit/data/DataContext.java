@@ -1,5 +1,6 @@
 package org.orekit.data;
 
+import org.orekit.frames.Frames;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeScalesFactory;
@@ -43,5 +44,13 @@ public interface DataContext {
      * @return the set of common time scales using this data context.
      */
     TimeScales getTimeScales();
+
+    /**
+     * Get a factory constructing {@link Frame}s based on the auxiliary data in this
+     * context.
+     *
+     * @return the set of common reference frames using this data context.
+     */
+    Frames getFrames();
 
 }

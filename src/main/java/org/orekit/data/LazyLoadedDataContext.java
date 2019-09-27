@@ -1,5 +1,7 @@
 package org.orekit.data;
 
+import org.orekit.frames.Frames;
+import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.time.LazyLoadedTimeScales;
 
 /**
@@ -14,10 +16,17 @@ public class LazyLoadedDataContext implements DataContext {
 
     /** The time scales. */
     private final LazyLoadedTimeScales timeScales = new LazyLoadedTimeScales();
+    /** The reference frames. */
+    private final LazyLoadedFrames frames = new LazyLoadedFrames();
 
     @Override
     public LazyLoadedTimeScales getTimeScales() {
         return timeScales;
+    }
+
+    @Override
+    public LazyLoadedFrames getFrames() {
+        return frames;
     }
 
 }
