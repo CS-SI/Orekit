@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="610">
+        Added IRNSS orbit propagator.
+      </action>
       <action dev="gabb" type="fix" issue="533">
         Fixed bugs in the derivatives computation in IodGooding.
         Fixed bugs in IodLambert when there's more than an half revolution
