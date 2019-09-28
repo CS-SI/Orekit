@@ -135,9 +135,9 @@ public class IodGooding {
      * @param lineOfSight1 line of sight 1
      * @param dateObs1 date of observation 1
      * @param lineOfSight2 line of sight 2
-     * @param dateObs2 date of observation 1
+     * @param dateObs2 date of observation 2
      * @param lineOfSight3 line of sight 3
-     * @param dateObs3 date of observation 1
+     * @param dateObs3 date of observation 3
      * @param rho1init initial guess of the range problem. range 1, in meters
      * @param rho3init initial guess of the range problem. range 3, in meters
      * @return an estimate of the Keplerian orbit
