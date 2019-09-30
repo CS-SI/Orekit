@@ -135,7 +135,7 @@ public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
             lastPattern    = Pattern.compile(start + yearField + monthField + dayField +
                                              separator + offsetField + finalBlanks);
 
-            offsets = new ArrayList<OffsetModel>();
+            offsets = new ArrayList<>();
 
         }
 
@@ -208,7 +208,7 @@ public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
                                                                           Month.parseMonth(matcher.group(2)),
                                                                           Integer.parseInt(matcher.group(3).trim()));
 
-                        final Integer offset = Integer.valueOf(matcher.group(matcher.groupCount()));
+                        final int offset = Integer.parseInt(matcher.group(matcher.groupCount()));
                         if ((lastDate != null) && leapDay.compareTo(lastDate) <= 0) {
                             throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_IN_FILE,
                                                       name, lineNumber);

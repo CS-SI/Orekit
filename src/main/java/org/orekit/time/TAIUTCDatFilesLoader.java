@@ -148,7 +148,7 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
                                           "\\p{Blank}*\\)\\p{Blank}+X" + STORED_REAL_FIELD +
                                           "\\p{Blank}*S" + LINE_END_REGEXP);
 
-            offsets = new ArrayList<OffsetModel>();
+            offsets = new ArrayList<>();
 
         }
 

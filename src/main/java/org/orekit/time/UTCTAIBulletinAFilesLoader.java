@@ -96,7 +96,7 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
         final SortedMap<Integer, Double>  ut1Utc = parser.getUt1Utc();
 
         // identify UT1-UTC discontinuities
-        final List<Integer> leapDays = new ArrayList<Integer>();
+        final List<Integer> leapDays = new ArrayList<>();
         Map.Entry<Integer, Double> previous = null;
         for (final Map.Entry<Integer, Double> entry : ut1Utc.entrySet()) {
             if (previous != null) {
@@ -109,7 +109,7 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
             previous = entry;
         }
 
-        final List<OffsetModel> offsets = new ArrayList<OffsetModel>();
+        final List<OffsetModel> offsets = new ArrayList<>();
 
         if (!taiUtc.isEmpty()) {
 
@@ -374,8 +374,8 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
         /** Simple constructor.
          */
         Parser() {
-            this.taiUtc     = new TreeMap<Integer, Integer>();
-            this.ut1Utc     = new TreeMap<Integer, Double>();
+            this.taiUtc     = new TreeMap<>();
+            this.ut1Utc     = new TreeMap<>();
             this.lineNumber = 0;
         }
 
@@ -409,11 +409,10 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
             lineNumber =  0;
 
             // loop over sections
-            final List<Section> remaining = new ArrayList<Section>();
-            remaining.addAll(Arrays.asList(Section.values()));
-            for (Section section = nextSection(remaining, reader, name);
-                    section != null;
-                    section = nextSection(remaining, reader, name)) {
+            final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
+            for (Section section = nextSection(remaining, reader);
+                 section != null;
+                 section = nextSection(remaining, reader)) {
 
                 if (section == Section.TAI_UTC) {
                     loadTaiUtc(section, reader, name);
@@ -437,11 +436,10 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
         /** Skip to next section header.
          * @param sections sections to check for
          * @param reader reader from where file content is obtained
-         * @param name name of the file (or zip entry)
          * @return the next section or null if no section is found until end of file
          * @exception IOException if data can't be read
          */
-        private Section nextSection(final List<Section> sections, final BufferedReader reader, final String name)
+        private Section nextSection(final List<Section> sections, final BufferedReader reader)
             throws IOException {
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
