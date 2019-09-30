@@ -33,7 +33,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.HatanakaCompressFilter;
 
 /** Singleton class managing all supported {@link DataProvider data providers}.
-
  * <p>
  * This class is the single point of access for all data loading features. It
  * is used for example to load Earth Orientation Parameters used by IERS frames,
@@ -96,9 +95,9 @@ public class DataProvidersManager {
      * </p>
      */
     private DataProvidersManager() {
-        providers = new ArrayList<DataProvider>();
+        providers = new ArrayList<>();
         filters   = new ArrayList<>();
-        loaded    = new LinkedHashSet<String>();
+        loaded    = new LinkedHashSet<>();
 
         // set up predefined filters
         addFilter(new GzipFilter());
@@ -229,9 +228,7 @@ public class DataProvidersManager {
      * @since 9.2
      */
     public void clearFilters() {
-        for (int i = filters.size() - 1; i >= predefinedFilters; --i) {
-            filters.remove(i);
-        }
+        filters.subList(predefinedFilters, filters.size()).clear();
     }
 
     /** Apply all the relevant data filters, taking care of layers.
