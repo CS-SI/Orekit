@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
@@ -31,6 +32,8 @@ public class LazyLoadedFrames implements Frames {
     private final LazyLoadedEop lazyLoadedEop;
     /** Provider of common time scales. */
     private final TimeScales timeScales;
+    /** Provider of the common celestial bodies. */
+    private final CelestialBodies celestialBodies;
     /** Predefined frames. */
     private transient Map<Predefined, FactoryManagedFrame> frames;
     /** Predefined versioned ITRF frames. */
@@ -39,15 +42,19 @@ public class LazyLoadedFrames implements Frames {
     /**
      * Create a collection of frames from the given auxiliary data.
      *
-     * @param lazyLoadedEop loads Earth Orientation Parameters.
-     * @param timeScales    defines the time scales used when computing frame
-     *                      transformations. For example, the TT time scale needed for
-     *                      {@link #getPZ9011(IERSConventions, boolean)}.
+     * @param lazyLoadedEop   loads Earth Orientation Parameters.
+     * @param timeScales      defines the time scales used when computing frame
+     *                        transformations. For example, the TT time scale needed for
+     *                        {@link #getPZ9011(IERSConventions, boolean)}.
+     * @param celestialBodies defines the celestial bodies which, for example, are used in
+     *                        {@link #getICRF()}.
      */
     public LazyLoadedFrames(final LazyLoadedEop lazyLoadedEop,
-                            final TimeScales timeScales) {
+                            final TimeScales timeScales,
+                            final CelestialBodies celestialBodies) {
         this.lazyLoadedEop = lazyLoadedEop;
         this.timeScales = timeScales;
+        this.celestialBodies = celestialBodies;
         this.frames = new HashMap<>();
         this.versionedItrfFrames = new HashMap<>();
     }

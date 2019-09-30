@@ -43,7 +43,7 @@
  *
  * <p>
  * Some other frames are predefined outside of this package, in the {@link
- * org.orekit.bodies.CelestialBodyFactory} class. They correspond to the Sun, Moon, planets, solar
+ * org.orekit.bodies.CelestialBodies} class. They correspond to the Sun, Moon, planets, solar
  * system barycenter and Earth-Moon barycenter. For convenience, the very important solar system
  * barycenter frame, which is the ICRF, can also be retrieved from the factory in this package
  * even if it is really implemented in the bodies package.

@@ -1,6 +1,5 @@
 package org.orekit.data;
 
-import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.LazyLoadedCelestialBodies;
 import org.orekit.frames.LazyLoadedEop;
 import org.orekit.frames.LazyLoadedFrames;
@@ -30,8 +29,8 @@ public class LazyLoadedDataContext implements DataContext {
     public LazyLoadedDataContext() {
         final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop();
         this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
-        this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales);
         this.bodies = new LazyLoadedCelestialBodies();
+        this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales, bodies);
     }
 
     @Override
