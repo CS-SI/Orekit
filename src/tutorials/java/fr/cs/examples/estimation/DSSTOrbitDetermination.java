@@ -2353,7 +2353,7 @@ public class DSSTOrbitDetermination {
                 final IonosphericModel model = new KlobucharIonoModel(alpha, beta);
 
                 // frequency
-                final double f = frequency.getMHzFrequency();
+                final double f = frequency.getMHzFrequency() * 1.0e6;
 
                 // create modifiers
                 rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(model, f));

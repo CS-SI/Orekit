@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="612">
+        Fixed DSST orbit determination tutorial.
+      </action>
       <action dev="bryan" type="add" issue="610">
         Added IRNSS orbit propagator.
       </action>
