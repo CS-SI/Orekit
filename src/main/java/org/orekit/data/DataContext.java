@@ -1,5 +1,7 @@
 package org.orekit.data;
 
+import org.orekit.bodies.CelestialBodies;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.frames.Frames;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
@@ -52,5 +54,13 @@ public interface DataContext {
      * @return the set of common reference frames using this data context.
      */
     Frames getFrames();
+
+    /**
+     * Get a factory constructing {@link CelestialBody}s based on the auxiliary data in
+     * this context.
+     *
+     * @return the set of common celestial bodies using this data context.
+     */
+    CelestialBodies getCelestialBodies();
 
 }

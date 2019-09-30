@@ -1,5 +1,7 @@
 package org.orekit.data;
 
+import org.orekit.bodies.CelestialBodies;
+import org.orekit.bodies.LazyLoadedCelestialBodies;
 import org.orekit.frames.LazyLoadedEop;
 import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.time.LazyLoadedTimeScales;
@@ -18,6 +20,8 @@ public class LazyLoadedDataContext implements DataContext {
     private final LazyLoadedTimeScales timeScales;
     /** The reference frames. */
     private final LazyLoadedFrames frames;
+    /** The celestial bodies. */
+    private final LazyLoadedCelestialBodies bodies;
 
     /**
      * Create a new data context that only loads auxiliary data when it is first accessed
@@ -27,6 +31,7 @@ public class LazyLoadedDataContext implements DataContext {
         final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop();
         this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
         this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales);
+        this.bodies = new LazyLoadedCelestialBodies();
     }
 
     @Override
@@ -37,6 +42,11 @@ public class LazyLoadedDataContext implements DataContext {
     @Override
     public LazyLoadedFrames getFrames() {
         return frames;
+    }
+
+    @Override
+    public LazyLoadedCelestialBodies getCelestialBodies() {
+        return bodies;
     }
 
 }
