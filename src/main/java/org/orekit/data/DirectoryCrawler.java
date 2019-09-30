@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -31,7 +30,6 @@ import org.orekit.errors.OrekitMessages;
 
 
 /**  Provider for data files stored in a directories tree on filesystem.
-
  * <p>
  * This class handles data files recursively starting from a root directories
  * tree. The organization of files in the directories is free. There may be
@@ -71,10 +69,8 @@ public class DirectoryCrawler implements DataProvider {
     public boolean feed(final Pattern supported, final DataLoader visitor) {
         try {
             return feed(supported, visitor, root);
-        } catch (IOException ioe) {
+        } catch (IOException | ParseException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } catch (ParseException pe) {
-            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
         }
     }
 
@@ -91,19 +87,17 @@ public class DirectoryCrawler implements DataProvider {
 
         // search in current directory
         final File[] list = directory.listFiles();
-        Arrays.sort(list, new Comparator<File>() {
-            @Override
-            public int compare(final File o1, final File o2) {
-                return o1.compareTo(o2);
-            }
-        });
+        if (list == null) {
+            // notify about race condition if directory is removed by another program
+            throw new OrekitException(OrekitMessages.NOT_A_DIRECTORY, directory.getAbsolutePath());
+        }
+        Arrays.sort(list, File::compareTo);
 
         OrekitException delayedException = null;
         boolean loaded = false;
-        for (int i = 0; i < list.length; ++i) {
+        for (final File file : list) {
             try {
                 if (visitor.stillAcceptsData()) {
-                    final File file = list[i];
                     if (file.isDirectory()) {
 
                         // recurse in the sub-directory

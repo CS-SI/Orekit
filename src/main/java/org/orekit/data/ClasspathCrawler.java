@@ -32,7 +32,6 @@ import org.orekit.errors.OrekitMessages;
 
 
 /** Provider for data files stored as resources in the classpath.
-
  * <p>
  * This class handles a list of data files or zip/jar archives located in the
  * classpath. Since the classpath is not a tree structure the list elements
@@ -86,7 +85,7 @@ public class ClasspathCrawler implements DataProvider {
      */
     public ClasspathCrawler(final ClassLoader classLoader, final String... list) {
 
-        listElements = new ArrayList<String>();
+        listElements = new ArrayList<>();
         this.classLoader = classLoader;
 
         // check the resources
@@ -161,10 +160,8 @@ public class ClasspathCrawler implements DataProvider {
 
             return loaded;
 
-        } catch (IOException ioe) {
+        } catch (IOException | ParseException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } catch (ParseException pe) {
-            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
         }
 
     }

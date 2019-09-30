@@ -42,6 +42,7 @@ import org.orekit.errors.OrekitException;
  * @see NetworkCrawler
  * @see FilesListCrawler
  * @author Luc Maisonobe
+ * @param <T> The type of resource, e.g. File or URL.
  */
 public abstract class AbstractListCrawler<T> implements DataProvider {
 

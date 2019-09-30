@@ -36,7 +36,6 @@ import org.orekit.errors.OrekitException;
 
 
 /** Helper class for loading data files from a zip/jar archive.
-
  * <p>
  * This class browses all entries in a zip/jar archive in filesystem or in classpath.
  * </p>
