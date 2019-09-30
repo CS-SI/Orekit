@@ -18,10 +18,9 @@ package org.orekit.bodies;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +42,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
@@ -262,7 +262,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                                 final DataProvidersManager dataProvidersManager) {
         super(supportedNames, dataProvidersManager);
 
-        constants = new AtomicReference<Map<String, Double>>();
+        constants = new AtomicReference<>();
 
         this.generateType  = generateType;
         if (generateType == EphemerisType.SOLAR_SYSTEM_BARYCENTER) {
@@ -273,9 +273,10 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             loadType = generateType;
         }
 
-        ephemerides = new GenericTimeStampedCache<PosVelChebyshev>(2, OrekitConfiguration.getCacheSlotsNumber(),
-                                                                   Double.POSITIVE_INFINITY, FIFTY_DAYS,
-                                                                   new EphemerisParser());
+        ephemerides = new GenericTimeStampedCache<>(
+                2, OrekitConfiguration.getCacheSlotsNumber(),
+                Double.POSITIVE_INFINITY, FIFTY_DAYS,
+                new EphemerisParser());
         maxChunksDuration = Double.NaN;
         chunksDuration    = Double.NaN;
 
@@ -451,7 +452,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
         for (final String name : names) {
             if (map.containsKey(name)) {
-                return map.get(name).doubleValue();
+                return map.get(name);
             }
         }
 
@@ -570,7 +571,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         final int deNum = extractInt(firstPart, HEADER_EPHEMERIS_TYPE_OFFSET);
 
         // the record size for this file
-        int recordSize = 0;
+        final int recordSize;
 
         if (deNum == INPOP_DE_NUMBER) {
             // INPOP files have an extended DE format, which includes also the record size
@@ -599,12 +600,11 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     /** Parse constants from first two header records.
      * @param first first header record
      * @param second second header record
-     * @param name name of the file (or zip entry)
      * @return map of parsed constants
      */
-    private Map<String, Double> parseConstants(final byte[] first, final byte[] second, final String name) {
+    private Map<String, Double> parseConstants(final byte[] first, final byte[] second) {
 
-        final Map<String, Double> map = new HashMap<String, Double>();
+        final Map<String, Double> map = new HashMap<>();
 
         for (int i = 0; i < CONSTANTS_MAX_NUMBER; ++i) {
             // Note: for extracting the strings from the binary file, it makes no difference
@@ -790,11 +790,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
      * @return extracted string, with whitespace characters stripped
      */
     private String extractString(final byte[] record, final int offset, final int length) {
-        try {
-            return new String(record, offset, length, "US-ASCII").trim();
-        } catch (UnsupportedEncodingException uee) {
-            throw new OrekitInternalError(uee);
-        }
+        return new String(record, offset, length, StandardCharsets.US_ASCII).trim();
     }
 
     /** Local parser for header constants. */
@@ -828,7 +824,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
             }
 
-            localConstants = parseConstants(first, second, name);
+            localConstants = parseConstants(first, second);
 
         }
 
@@ -849,11 +845,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         /** Simple constructor.
          */
         EphemerisParser() {
-            entries = new TreeSet<PosVelChebyshev>(new Comparator<PosVelChebyshev>() {
-                public int compare(final PosVelChebyshev o1, final PosVelChebyshev o2) {
-                    return o1.getDate().compareTo(o2.getDate());
-                }
-            });
+            entries = new TreeSet<>(new ChronologicalComparator());
         }
 
         /** {@inheritDoc} */
@@ -881,7 +873,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                     throw new OrekitException(OrekitMessages.NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND);
                 }
 
-                return new ArrayList<PosVelChebyshev>(entries);
+                return new ArrayList<>(entries);
 
             } catch (OrekitException oe) {
                 throw new TimeStampedCacheException(oe);
@@ -922,7 +914,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             }
 
             if (constants.get() == null) {
-                constants.compareAndSet(null, parseConstants(first, second, name));
+                constants.compareAndSet(null, parseConstants(first, second));
             }
 
             // check astronomical unit consistency
