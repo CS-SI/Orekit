@@ -28,6 +28,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -40,26 +42,39 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
+public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
+        implements UTCTAIOffsetsLoader {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "^tai-utc\\.dat$";
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Build a loader for tai-utc.dat file from USNO.
+    /**
+     * Build a loader for tai-utc.dat file from USNO. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
+     * @see #TAIUTCDatFilesLoader(String, DataProvidersManager)
      */
     public TAIUTCDatFilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Build a loader for tai-utc.dat file from USNO.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param manager        provides access to the {@code tai-utc.dat} file.
+     */
+    public TAIUTCDatFilesLoader(final String supportedNames,
+                                final DataProvidersManager manager) {
+        super(supportedNames, manager);
     }
 
     /** {@inheritDoc} */
     @Override
     public List<OffsetModel> loadOffsets() {
         final Parser parser = new Parser();
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         return parser.getOffsets();
     }
 

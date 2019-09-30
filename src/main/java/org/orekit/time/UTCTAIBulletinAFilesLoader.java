@@ -31,6 +31,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -60,16 +62,28 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
+public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
+        implements UTCTAIOffsetsLoader {
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Build a loader for IERS bulletins A files.
-    * @param supportedNames regular expression for supported files names
-    */
+    /**
+     * Build a loader for IERS bulletins A files. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @param supportedNames regular expression for supported files names
+     */
     public UTCTAIBulletinAFilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Build a loader for IERS bulletins A files.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param manager        provides access to the bulletin A files.
+     */
+    public UTCTAIBulletinAFilesLoader(final String supportedNames,
+                                      final DataProvidersManager manager) {
+        super(supportedNames, manager);
     }
 
     /** {@inheritDoc} */
@@ -77,7 +91,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
     public List<OffsetModel> loadOffsets() {
 
         final Parser parser = new Parser();
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         final SortedMap<Integer, Integer> taiUtc = parser.getTaiUtc();
         final SortedMap<Integer, Double>  ut1Utc = parser.getUt1Utc();
 

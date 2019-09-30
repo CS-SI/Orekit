@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
@@ -24,6 +25,8 @@ import org.orekit.utils.IERSConventions;
  */
 public class LazyLoadedTimeScales implements TimeScales {
 
+    /** Source of auxiliary data files when new ones are needed. */
+    private final DataProvidersManager dataProvidersManager;
     /** Source of EOP data. */
     private final LazyLoadedEop lazyLoadedEop;
 
@@ -78,10 +81,14 @@ public class LazyLoadedTimeScales implements TimeScales {
     /**
      * Create a new set of time scales with the given sources of auxiliary data.
      *
-     * @param lazyLoadedEop loads Earth Orientation Parameters for {@link
-     *                      #getUT1(IERSConventions, boolean)}.
+     * @param dataProvidersManager source of auxiliary data files, e.g. for leap second
+     *                             files.
+     * @param lazyLoadedEop        loads Earth Orientation Parameters for {@link
+     *                             #getUT1(IERSConventions, boolean)}.
      */
-    public LazyLoadedTimeScales(final LazyLoadedEop lazyLoadedEop) {
+    public LazyLoadedTimeScales(final DataProvidersManager dataProvidersManager,
+                                final LazyLoadedEop lazyLoadedEop) {
+        this.dataProvidersManager = dataProvidersManager;
         this.lazyLoadedEop = lazyLoadedEop;
     }
 
@@ -123,8 +130,8 @@ public class LazyLoadedTimeScales implements TimeScales {
      * @since 7.1
      */
     public void addDefaultUTCTAIOffsetsLoaders() {
-        addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES));
-        addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader());
+        addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES, dataProvidersManager));
+        addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader(dataProvidersManager));
     }
 
     /**

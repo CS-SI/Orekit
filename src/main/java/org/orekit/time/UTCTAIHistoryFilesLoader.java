@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -43,20 +45,36 @@ import org.orekit.errors.OrekitMessages;
  * hierarchy.</p>
  * @author Luc Maisonobe
  */
-public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
+public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
+        implements UTCTAIOffsetsLoader {
 
     /** Supported files name pattern. */
     private static final String SUPPORTED_NAMES = "^UTC-TAI\\.history$";
 
-    /** Build a loader for UTC-TAI history file. */
+    /**
+     * Build a loader for UTC-TAI history file. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @see #UTCTAIHistoryFilesLoader(DataProvidersManager)
+     */
     public UTCTAIHistoryFilesLoader() {
+        this(DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Build a loader for UTC-TAI history file.
+     *
+     * @param manager provides access to the {@code UTC-TAI.history} file.
+     */
+    public UTCTAIHistoryFilesLoader(final DataProvidersManager manager) {
+        super(SUPPORTED_NAMES, manager);
     }
 
     /** {@inheritDoc} */
     @Override
     public List<OffsetModel> loadOffsets() {
         final Parser parser = new Parser();
-        DataProvidersManager.getInstance().feed(SUPPORTED_NAMES, parser);
+        this.feed(parser);
         return parser.getOffsets();
     }
 
