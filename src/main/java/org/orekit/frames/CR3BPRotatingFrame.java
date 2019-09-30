@@ -38,14 +38,13 @@ public class CR3BPRotatingFrame
      */
     public CR3BPRotatingFrame(final double mu, final CelestialBody primaryBody,
                               final CelestialBody secondaryBody) {
-        super(primaryBody.getInertiallyOrientedFrame(),
-              new CR3BPRotatingTransformProvider(mu, primaryBody,
-                                             secondaryBody),
+        super(primaryBody.getInertiallyOrientedFrame(), new CR3BPRotatingTransformProvider(mu, primaryBody,
+                                                 secondaryBody),
               primaryBody.getName() +
-                                                             "-" +
-                                                             secondaryBody
-                                                                                  .getName() +
-                                                                              "-CR3BPBarycenter",
+                                                                 "-" +
+                                                                 secondaryBody
+                                                                     .getName() +
+                                                                 "-CR3BPBarycenter",
               true);
     }
 

@@ -19,6 +19,7 @@ package org.orekit.frames;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -88,22 +89,43 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
         final FieldRotation<T>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getMomentum(),
                         FieldVector3D.getPlusI(field),
                         FieldVector3D.getPlusK(field));
-        //        final FieldPVCoordinates<FieldDerivativeStructure<T>> pv21f = pv21.toDerivativeStructurePV(1);
-        //        final Field<FieldDerivativeStructure<T>> fieldf =
-        //            pv21f.getPosition().getX().getField();
+        final FieldPVCoordinates<FieldDerivativeStructure<T>> pv21f =
+            pv21.toDerivativeStructurePV(1);
+        final Field<FieldDerivativeStructure<T>> fieldf =
+            pv21f.getPosition().getX().getField();
 
-        //        final FieldRotation<FieldDerivativeStructure<T>> FieldRotation =
-        //            new FieldRotation<>(pv21f.getPosition(), pv21f.getMomentum(),
-        //                                FieldVector3D.getPlusI(fieldf),
-        //                                FieldVector3D.getPlusK(fieldf));
+        final FieldRotation<FieldDerivativeStructure<T>> FieldRotation =
+            new FieldRotation<>(pv21f.getPosition(), pv21f.getMomentum(),
+                                FieldVector3D.getPlusI(fieldf),
+                                FieldVector3D.getPlusK(fieldf));
 
-        //        final FieldDerivativeStructure<T>[] rotationRates = FieldRotation.getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
-        //        final FieldVector3D<T> rotationRate = new FieldVector3D<>(rotationRates[0].getPartialDerivative(1), rotationRates[1].getPartialDerivative(1), rotationRates[2].getPartialDerivative(1));
-        //        final FieldVector3D<T> rotationAcc = new FieldVector3D<>(rotationRates[0].getPartialDerivative(2), rotationRates[1].getPartialDerivative(2), rotationRates[2].getPartialDerivative(2));
-        //        final FieldVector3D<T> velocity = new FieldVector3D<>(pv21f.getPosition().getX().getPartialDerivative(1), pv21f.getPosition().getY().getPartialDerivative(1), pv21f.getPosition().getZ().getPartialDerivative(1));
-        //        final FieldVector3D<T> acceleration =  new FieldVector3D<>(pv21f.getPosition().getX().getPartialDerivative(2), pv21f.getPosition().getY().getPartialDerivative(2), pv21f.getPosition().getZ().getPartialDerivative(2));
+        final FieldDerivativeStructure<T>[] rotationRates =
+            FieldRotation.getAngles(RotationOrder.XYZ,
+                                    RotationConvention.FRAME_TRANSFORM);
+        final FieldVector3D<T> rotationRate =
+            new FieldVector3D<>(rotationRates[0].getPartialDerivative(1),
+                                rotationRates[1].getPartialDerivative(1),
+                                rotationRates[2].getPartialDerivative(1));
+        final FieldVector3D<T> rotationAcc =
+            new FieldVector3D<>(rotationRates[0].getPartialDerivative(2),
+                                rotationRates[1].getPartialDerivative(2),
+                                rotationRates[2].getPartialDerivative(2));
+        final FieldVector3D<T> velocity =
+            new FieldVector3D<>(pv21f.getPosition().getX()
+                .getPartialDerivative(1),
+                                pv21f.getPosition().getY()
+                                    .getPartialDerivative(1),
+                                pv21f.getPosition().getZ()
+                                    .getPartialDerivative(1));
+        final FieldVector3D<T> acceleration =
+            new FieldVector3D<>(pv21f.getPosition().getX()
+                .getPartialDerivative(2),
+                                pv21f.getPosition().getY()
+                                    .getPartialDerivative(2),
+                                pv21f.getPosition().getZ()
+                                    .getPartialDerivative(2));
         return new FieldTransform<T>(date,
-                        new FieldTransform<>(date, translation),
-                        new FieldTransform<>(date, rotation));
+                        new FieldTransform<>(date, translation, velocity, acceleration),
+                        new FieldTransform<>(date, rotation, rotationRate, rotationAcc));
     }
 }
