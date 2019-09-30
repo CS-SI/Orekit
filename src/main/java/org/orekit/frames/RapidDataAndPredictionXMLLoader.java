@@ -28,6 +28,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -59,7 +60,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * </p>
  * @author Luc Maisonobe
  */
-class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
+class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
+        implements EOPHistoryLoader {
 
     /** Conversion factor for milli-arc seconds entries. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
@@ -67,21 +69,22 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
     /** Conversion factor for milli seconds entries. */
     private static final double MILLI_SECONDS_TO_SECONDS = 1.0 / 1000.0;
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Build a loader for IERS XML EOP files.
+    /**
+     * Build a loader for IERS XML EOP files.
+     *
      * @param supportedNames regular expression for supported files names
+     * @param manager        provides access to the XML EOP files.
      */
-    RapidDataAndPredictionXMLLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+    RapidDataAndPredictionXMLLoader(final String supportedNames,
+                                    final DataProvidersManager manager) {
+        super(supportedNames, manager);
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter);
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         history.addAll(parser.history);
     }
 

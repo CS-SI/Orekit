@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.MathUtils;
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -61,7 +62,8 @@ import org.orekit.utils.IERSConventions;
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals2000A">finals2000A file format description at USNO</a>
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals">finals file format description at USNO</a>
  */
-class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
+class RapidDataAndPredictionColumnsLoader extends AbstractSelfFeedingLoader
+        implements EOPHistoryLoader {
 
     /** Conversion factor. */
     private static final double  ARC_SECONDS_TO_RADIANS       = MathUtils.TWO_PI / 1296000;
@@ -132,27 +134,26 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
     /** Type of nutation corrections. */
     private final boolean isNonRotatingOrigin;
 
-    /** File supported name. */
-    private final String  supportedNames;
-
     /** Build a loader for IERS bulletins B files.
      * @param isNonRotatingOrigin if true the supported files <em>must</em>
      * contain δX/δY nutation corrections, otherwise they
      * <em>must</em> contain δΔψ/δΔε nutation
      * corrections
      * @param supportedNames regular expression for supported files names
+     * @param manager provides access to EOP data files.
      */
     RapidDataAndPredictionColumnsLoader(final boolean isNonRotatingOrigin,
-                                               final String supportedNames) {
+                                        final String supportedNames,
+                                        final DataProvidersManager manager) {
+        super(supportedNames, manager);
         this.isNonRotatingOrigin = isNonRotatingOrigin;
-        this.supportedNames      = supportedNames;
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter, isNonRotatingOrigin);
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         history.addAll(parser.history);
     }
 

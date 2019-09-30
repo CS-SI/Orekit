@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
@@ -27,6 +28,8 @@ import org.orekit.utils.IERSConventions;
  */
 public class LazyLoadedEop {
 
+    /** Provides access to the EOP data files. */
+    private final DataProvidersManager dataProvidersManager;
     /** Loaders for Earth Orientation parameters. */
     private final Map<IERSConventions, List<EOPHistoryLoader>> eopHistoryLoaders;
     /** Threshold for EOP continuity. */
@@ -35,10 +38,22 @@ public class LazyLoadedEop {
     /**
      * Create a new instance for loading EOP data from multiple {@link
      * EOPHistoryLoader}s.
+     *
+     * @param dataProvidersManager provides access to the needed EOP data files.
      */
-    public LazyLoadedEop() {
+    public LazyLoadedEop(final DataProvidersManager dataProvidersManager) {
+        this.dataProvidersManager = dataProvidersManager;
         this.eopHistoryLoaders = new HashMap<>();
         this.eopContinuityThreshold = 5 * Constants.JULIAN_DAY;
+    }
+
+    /**
+     * Get the data providers manager for this instance.
+     *
+     * @return the provider of EOP data files.
+     */
+    public DataProvidersManager getDataProvidersManager() {
+        return dataProvidersManager;
     }
 
     /**
@@ -78,28 +93,28 @@ public class LazyLoadedEop {
                         FramesFactory.RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME :
                         rapidDataColumnsSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new RapidDataAndPredictionColumnsLoader(false, rapidColNames));
+                new RapidDataAndPredictionColumnsLoader(false, rapidColNames, dataProvidersManager));
         final String rapidXmlNames =
                 (rapidDataXMLSupportedNames == null) ?
                         FramesFactory.RAPID_DATA_PREDICTION_XML_1980_FILENAME :
                         rapidDataXMLSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames));
+                new RapidDataAndPredictionXMLLoader(rapidXmlNames, dataProvidersManager));
         final String eopcNames =
                 (eopC04SupportedNames == null) ?
                         FramesFactory.EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new EOPC04FilesLoader(eopcNames));
+                new EOPC04FilesLoader(eopcNames, dataProvidersManager));
         final String bulBNames =
                 (bulletinBSupportedNames == null) ?
                         FramesFactory.BULLETINB_1980_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new BulletinBFilesLoader(bulBNames));
+                new BulletinBFilesLoader(bulBNames, dataProvidersManager));
         final String bulANames =
                 (bulletinASupportedNames == null) ?
                         FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new BulletinAFilesLoader(bulANames));
+                new BulletinAFilesLoader(bulANames, dataProvidersManager));
     }
 
     /**
@@ -140,38 +155,38 @@ public class LazyLoadedEop {
                         FramesFactory.RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME :
                         rapidDataColumnsSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new RapidDataAndPredictionColumnsLoader(true, rapidColNames));
+                new RapidDataAndPredictionColumnsLoader(true, rapidColNames, dataProvidersManager));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new RapidDataAndPredictionColumnsLoader(true, rapidColNames));
+                new RapidDataAndPredictionColumnsLoader(true, rapidColNames, dataProvidersManager));
         final String rapidXmlNames =
                 (rapidDataXMLSupportedNames == null) ?
                         FramesFactory.RAPID_DATA_PREDICITON_XML_2000_FILENAME :
                         rapidDataXMLSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames));
+                new RapidDataAndPredictionXMLLoader(rapidXmlNames, dataProvidersManager));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames));
+                new RapidDataAndPredictionXMLLoader(rapidXmlNames, dataProvidersManager));
         final String eopcNames =
                 (eopC04SupportedNames == null) ?
                         FramesFactory.EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new EOPC04FilesLoader(eopcNames));
+                new EOPC04FilesLoader(eopcNames, dataProvidersManager));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new EOPC04FilesLoader(eopcNames));
+                new EOPC04FilesLoader(eopcNames, dataProvidersManager));
         final String bulBNames =
                 (bulletinBSupportedNames == null) ?
                         FramesFactory.BULLETINB_2000_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new BulletinBFilesLoader(bulBNames));
+                new BulletinBFilesLoader(bulBNames, dataProvidersManager));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new BulletinBFilesLoader(bulBNames));
+                new BulletinBFilesLoader(bulBNames, dataProvidersManager));
         final String bulANames =
                 (bulletinASupportedNames == null) ?
                         FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new BulletinAFilesLoader(bulANames));
+                new BulletinAFilesLoader(bulANames, dataProvidersManager));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new BulletinAFilesLoader(bulANames));
+                new BulletinAFilesLoader(bulANames, dataProvidersManager));
     }
 
     /**

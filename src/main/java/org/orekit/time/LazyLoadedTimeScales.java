@@ -79,6 +79,19 @@ public class LazyLoadedTimeScales implements TimeScales {
     private BDTScale bds = null;
 
     /**
+     * Create a new set of time scales with the given sources of auxiliary data. This
+     * constructor uses the same {@link DataProvidersManager} for the default EOP loaders
+     * and the default leap second loaders.
+     *
+     * @param lazyLoadedEop loads Earth Orientation Parameters for {@link
+     *                      #getUT1(IERSConventions, boolean)}.
+     */
+    public LazyLoadedTimeScales(final LazyLoadedEop lazyLoadedEop) {
+        this(lazyLoadedEop.getDataProvidersManager(), lazyLoadedEop);
+    }
+
+
+    /**
      * Create a new set of time scales with the given sources of auxiliary data.
      *
      * @param dataProvidersManager source of auxiliary data files, e.g. for leap second

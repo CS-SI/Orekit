@@ -27,6 +27,7 @@ import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -69,7 +70,7 @@ import org.orekit.utils.IERSConventions;
  * </p>
  * @author Luc Maisonobe
  */
-class EOPC04FilesLoader implements EOPHistoryLoader {
+class EOPC04FilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryLoader {
 
     /** Pattern to match the columns header. */
     private static final Pattern COLUMNS_HEADER_PATTERN;
@@ -141,21 +142,20 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
 
     }
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Build a loader for IERS EOP C04 files.
      * @param supportedNames regular expression for supported files names
+     * @param manager provides access to the EOP C04 files.
      */
-    EOPC04FilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+    EOPC04FilesLoader(final String supportedNames,
+                      final DataProvidersManager manager) {
+        super(supportedNames, manager);
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter);
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         history.addAll(parser.history);
     }
 

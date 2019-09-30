@@ -30,8 +30,8 @@ public class LazyLoadedDataContext implements DataContext {
      */
     public LazyLoadedDataContext() {
         this.dataProvidersManager = new DataProvidersManager();
-        final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop();
-        this.timeScales = new LazyLoadedTimeScales(dataProvidersManager, lazyLoadedEop);
+        final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop(dataProvidersManager);
+        this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
         this.bodies = new LazyLoadedCelestialBodies();
         this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales, bodies);
     }

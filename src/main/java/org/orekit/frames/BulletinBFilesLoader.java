@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -78,7 +79,7 @@ import org.orekit.utils.IERSConventions;
  * </p>
  * @author Luc Maisonobe
  */
-class BulletinBFilesLoader implements EOPHistoryLoader {
+class BulletinBFilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryLoader {
 
     /** Conversion factor. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
@@ -221,21 +222,20 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
 
     }
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Build a loader for IERS bulletins B files.
-    * @param supportedNames regular expression for supported files names
-    */
-    BulletinBFilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+     * @param supportedNames regular expression for supported files names
+     * @param manager provides access to the bulletin B files.
+     */
+    BulletinBFilesLoader(final String supportedNames,
+                         final DataProvidersManager manager) {
+        super(supportedNames, manager);
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter);
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         history.addAll(parser.history);
     }
 

@@ -98,7 +98,7 @@ public class Utils {
         
     }
 
-    public static void setDataRoot(String root) {
+    public static DataContext setDataRoot(String root) {
         try {
             clearFactories();
             StringBuffer buffer = new StringBuffer();
@@ -111,6 +111,7 @@ public class Utils {
                 buffer.append(componentPath);
             }
             System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, buffer.toString());
+            return DataContext.getDefault();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
