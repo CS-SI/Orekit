@@ -115,11 +115,11 @@ public class CelestialBodyFactory {
 
     /** Celestial body loaders map. */
     private static final Map<String, List<CelestialBodyLoader>> LOADERS_MAP =
-        new HashMap<String, List<CelestialBodyLoader>>();
+            new HashMap<>();
 
     /** Celestial body map. */
     private static final Map<String, CelestialBody> CELESTIAL_BODIES_MAP =
-        new HashMap<String, CelestialBody>();
+            new HashMap<>();
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -136,14 +136,10 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
-    public static void addCelestialBodyLoader(final String name, final CelestialBodyLoader loader) {
+    public static void addCelestialBodyLoader(final String name,
+                                              final CelestialBodyLoader loader) {
         synchronized (LOADERS_MAP) {
-            List<CelestialBodyLoader> loaders = LOADERS_MAP.get(name);
-            if (loaders == null) {
-                loaders = new ArrayList<CelestialBodyLoader>();
-                LOADERS_MAP.put(name, loaders);
-            }
-            loaders.add(loader);
+            LOADERS_MAP.computeIfAbsent(name, k -> new ArrayList<>()).add(loader);
         }
     }
 
@@ -190,7 +186,8 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
-    public static void addDefaultCelestialBodyLoader(final String name, final String supportedNames) {
+    public static void addDefaultCelestialBodyLoader(final String name,
+                                                     final String supportedNames) {
 
         CelestialBodyLoader loader = null;
         if (name.equalsIgnoreCase(SOLAR_SYSTEM_BARYCENTER)) {
