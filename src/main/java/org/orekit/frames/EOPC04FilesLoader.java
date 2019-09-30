@@ -160,7 +160,7 @@ class EOPC04FilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryL
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    private class Parser implements DataLoader {
 
         /** Converter for nutation corrections. */
         private final IERSConventions.NutationCorrectionConverter converter;
@@ -176,7 +176,9 @@ class EOPC04FilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryL
          */
         Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter           = converter;
-            this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            this.itrfVersionLoader   = new ITRFVersionLoader(
+                    ITRFVersionLoader.SUPPORTED_NAMES,
+                    getDataProvidersManager());
             this.history             = new ArrayList<>();
         }
 

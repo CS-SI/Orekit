@@ -366,7 +366,7 @@ class BulletinAFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    private class Parser implements DataLoader {
 
         /** Map for xp, yp, dut1 fields read in different sections. */
         private final Map<Integer, double[]> eopFieldsMap;
@@ -403,7 +403,9 @@ class BulletinAFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
         Parser() {
             this.eopFieldsMap         = new HashMap<>();
             this.poleOffsetsFieldsMap = new HashMap<>();
-            this.itrfVersionLoader    = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            this.itrfVersionLoader    = new ITRFVersionLoader(
+                    ITRFVersionLoader.SUPPORTED_NAMES,
+                    getDataProvidersManager());
             this.lineNumber           = 0;
             this.mjdMin               = Integer.MAX_VALUE;
             this.mjdMax               = Integer.MIN_VALUE;

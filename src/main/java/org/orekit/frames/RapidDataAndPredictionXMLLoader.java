@@ -89,7 +89,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    private class Parser implements DataLoader {
 
         /** Converter for nutation corrections. */
         private final IERSConventions.NutationCorrectionConverter converter;
@@ -105,7 +105,9 @@ class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
          */
         Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter         = converter;
-            this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            this.itrfVersionLoader = new ITRFVersionLoader(
+                    ITRFVersionLoader.SUPPORTED_NAMES,
+                    getDataProvidersManager());
             this.history           = new ArrayList<>();
         }
 
@@ -457,19 +459,19 @@ class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
 
         }
 
-        /** Enumerate for data file content. */
-        private enum DataFileContent {
+    }
 
-            /** Unknown content. */
-            UNKNOWN,
+    /** Enumerate for data file content. */
+    private enum DataFileContent {
 
-            /** Daily data. */
-            DAILY,
+        /** Unknown content. */
+        UNKNOWN,
 
-            /** Final data. */
-            FINAL
+        /** Daily data. */
+        DAILY,
 
-        }
+        /** Final data. */
+        FINAL
 
     }
 

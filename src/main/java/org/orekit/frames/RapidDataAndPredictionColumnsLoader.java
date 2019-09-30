@@ -158,7 +158,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractSelfFeedingLoader
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    private class Parser implements DataLoader {
 
         /** Converter for nutation corrections. */
         private final IERSConventions.NutationCorrectionConverter converter;
@@ -179,7 +179,9 @@ class RapidDataAndPredictionColumnsLoader extends AbstractSelfFeedingLoader
         Parser(final IERSConventions.NutationCorrectionConverter converter,
                final boolean isNonRotatingOrigin) {
             this.converter           = converter;
-            this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            this.itrfVersionLoader   = new ITRFVersionLoader(
+                    ITRFVersionLoader.SUPPORTED_NAMES,
+                    getDataProvidersManager());
             this.isNonRotatingOrigin = isNonRotatingOrigin;
             this.history             = new ArrayList<>();
         }

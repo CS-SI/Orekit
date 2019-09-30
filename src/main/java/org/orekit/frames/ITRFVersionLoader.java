@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -73,18 +74,36 @@ public class ITRFVersionLoader {
     /** Configuration. */
     private final List<ITRFVersionConfiguration> configurations;
 
-    /** Build a loader for ITRF version configuration file.
+    /**
+     * Build a loader for ITRF version configuration file. This constructor uses the
+     * {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
+     * @see #ITRFVersionLoader(String, DataProvidersManager)
      */
     public ITRFVersionLoader(final String supportedNames) {
-        this.configurations = new ArrayList<>();
-        DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
     }
 
     /**
-     * Build a loader for ITRF version configuration file using the default name.
+     * Build a loader for ITRF version configuration file.
+     *
+     * @param supportedNames       regular expression for supported files names
+     * @param dataProvidersManager provides access to the {@code itrf-versions.conf}
+     *                             file.
+     */
+    public ITRFVersionLoader(final String supportedNames,
+                             final DataProvidersManager dataProvidersManager) {
+        this.configurations = new ArrayList<>();
+        dataProvidersManager.feed(supportedNames, new Parser());
+    }
+
+    /**
+     * Build a loader for ITRF version configuration file using the default name. This
+     * constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @see #ITRFVersionLoader(String)
+     * @see #ITRFVersionLoader(String, DataProvidersManager)
      * @see #SUPPORTED_NAMES
      */
     public ITRFVersionLoader() {
