@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -71,7 +73,8 @@ import org.orekit.utils.TimeStampedGenerator;
  * <p>The loader supports files in TDB or TCB time scales.</p>
  * @author Luc Maisonobe
  */
-public class JPLEphemeridesLoader implements CelestialBodyLoader {
+public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
+        implements CelestialBodyLoader {
 
     /** Default supported files name pattern for JPL DE files. */
     public static final String DEFAULT_DE_SUPPORTED_NAMES = "^[lu]nx([mp](\\d\\d\\d\\d))+\\.(?:4\\d\\d)$";
@@ -195,9 +198,6 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     }
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Ephemeris for selected body. */
     private final GenericTimeStampedCache<PosVelChebyshev> ephemerides;
 
@@ -243,13 +243,25 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Indicator for binary file endianness. */
     private boolean bigEndian;
 
-    /** Create a loader for JPL ephemerides binary files.
+    /** Create a loader for JPL ephemerides binary files. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
      */
     public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
+        this(supportedNames, generateType, DataContext.getDefault().getDataProvidersManager());
+    }
 
-        this.supportedNames = supportedNames;
+    /** Create a loader for JPL ephemerides binary files.
+     * @param supportedNames regular expression for supported files names
+     * @param generateType ephemeris type to generate
+     * @param dataProvidersManager provides access to the ephemeris files.
+     */
+    public JPLEphemeridesLoader(final String supportedNames,
+                                final EphemerisType generateType,
+                                final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
+
         constants = new AtomicReference<Map<String, Double>>();
 
         this.generateType  = generateType;
@@ -285,8 +297,10 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         switch (generateType) {
             case SOLAR_SYSTEM_BARYCENTER : {
                 scale = -1.0;
-                final JPLEphemeridesLoader parentLoader =
-                        new JPLEphemeridesLoader(supportedNames, EphemerisType.EARTH_MOON);
+                final JPLEphemeridesLoader parentLoader = new JPLEphemeridesLoader(
+                        getSupportedNames(),
+                        EphemerisType.EARTH_MOON,
+                        getDataProvidersManager());
                 final CelestialBody parentBody =
                         parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
@@ -312,8 +326,10 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 break;
             default : {
                 scale = 1.0;
-                final JPLEphemeridesLoader parentLoader =
-                        new JPLEphemeridesLoader(supportedNames, EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+                final JPLEphemeridesLoader parentLoader = new JPLEphemeridesLoader(
+                        getSupportedNames(),
+                        EphemerisType.SOLAR_SYSTEM_BARYCENTER,
+                        getDataProvidersManager());
                 final CelestialBody parentBody =
                         parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
@@ -322,7 +338,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         // build the celestial body
-        return new JPLCelestialBody(name, supportedNames, generateType, rawPVProvider,
+        return new JPLCelestialBody(name, getSupportedNames(), generateType, rawPVProvider,
                                     gm, scale, iauPole, definingFrameAlignedWithICRF,
                                     inertialFrameName, bodyOrientedFrameName);
 
@@ -426,7 +442,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         Map<String, Double> map = constants.get();
         if (map == null) {
             final ConstantsParser parser = new ConstantsParser();
-            if (!DataProvidersManager.getInstance().feed(supportedNames, parser)) {
+            if (!feed(parser)) {
                 throw new OrekitException(OrekitMessages.NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND);
             }
             map = parser.getConstants();
@@ -861,7 +877,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 }
 
                 // get new entries in the specified data range
-                if (!DataProvidersManager.getInstance().feed(supportedNames, this)) {
+                if (!feed(this)) {
                     throw new OrekitException(OrekitMessages.NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND);
                 }
 

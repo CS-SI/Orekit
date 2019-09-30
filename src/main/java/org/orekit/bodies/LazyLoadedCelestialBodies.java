@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -19,11 +20,22 @@ import org.orekit.errors.OrekitMessages;
  */
 public class LazyLoadedCelestialBodies implements CelestialBodies {
 
+    /** Supplies the auxiliary data files. */
+    private final DataProvidersManager dataProvidersManager;
     /** Celestial body loaders map. */
     private final Map<String, List<CelestialBodyLoader>> loadersMap = new HashMap<>();
 
     /** Celestial body map. */
     private final Map<String, CelestialBody> celestialBodyMap = new HashMap<>();
+
+    /**
+     * Create a celestial body factory with the given auxiliary data sources.
+     *
+     * @param dataProvidersManager supplies JPL ephemerides auxiliary data files.
+     */
+    public LazyLoadedCelestialBodies(final DataProvidersManager dataProvidersManager) {
+        this.dataProvidersManager = dataProvidersManager;
+    }
 
     /** Add a loader for celestial bodies.
      * @param name name of the body (may be one of the predefined names or a user-defined name)
@@ -88,43 +100,43 @@ public class LazyLoadedCelestialBodies implements CelestialBodies {
         CelestialBodyLoader loader = null;
         if (name.equalsIgnoreCase(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.SUN)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SUN);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SUN, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.MERCURY)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.VENUS)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.VENUS);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.VENUS, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.EARTH_MOON)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH_MOON);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH_MOON, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.EARTH)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.MOON)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MOON);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MOON, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.MARS)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MARS);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MARS, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.JUPITER)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.JUPITER);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.JUPITER, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.SATURN)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SATURN);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SATURN, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.URANUS)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.URANUS);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.URANUS, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.NEPTUNE)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.NEPTUNE);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.NEPTUNE, dataProvidersManager);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.PLUTO)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.PLUTO);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.PLUTO, dataProvidersManager);
         }
 
         if (loader != null) {
