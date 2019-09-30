@@ -397,10 +397,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     protected void extendListOfLists(final List<List<Double>> list, final int degree, final int order,
                                      final double value) {
         for (int i = list.size(); i <= degree; ++i) {
-            list.add(new ArrayList<Double>());
+            list.add(new ArrayList<>());
         }
         final List<Double> listN = list.get(degree);
-        final Double v = Double.valueOf(value);
+        final Double v = value;
         for (int j = listN.size(); j <= order; ++j) {
             listN.add(v);
         }

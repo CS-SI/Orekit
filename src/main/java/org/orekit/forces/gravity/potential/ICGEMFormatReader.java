@@ -142,9 +142,6 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Gravity field coefficient cosine amplitude. */
     private static final String ACOS                    = "acos";
 
-    /** Tide system. */
-    private TideSystem tideSystem;
-
     /** Indicator for normalized coefficients. */
     private boolean normalized;
 
@@ -176,12 +173,12 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     public ICGEMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         super(supportedNames, missingCoefficientsAllowed);
         referenceDate = null;
-        cTrend = new ArrayList<List<Double>>();
-        sTrend = new ArrayList<List<Double>>();
-        cCos   = new HashMap<Double, List<List<Double>>>();
-        cSin   = new HashMap<Double, List<List<Double>>>();
-        sCos   = new HashMap<Double, List<List<Double>>>();
-        sSin   = new HashMap<Double, List<List<Double>>>();
+        cTrend = new ArrayList<>();
+        sTrend = new ArrayList<>();
+        cCos   = new HashMap<>();
+        cSin   = new HashMap<>();
+        sCos   = new HashMap<>();
+        sSin   = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -201,7 +198,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         // by default, the field is normalized with unknown tide system
         // (will be overridden later if non-default)
         normalized = true;
-        tideSystem = TideSystem.UNKNOWN;
+        TideSystem tideSystem = TideSystem.UNKNOWN;
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         boolean inHeader = true;
@@ -305,10 +302,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                             // extract arrays corresponding to period
                             final Double period = Double.valueOf(tab[7]);
                             if (!cCos.containsKey(period)) {
-                                cCos.put(period, new ArrayList<List<Double>>());
-                                cSin.put(period, new ArrayList<List<Double>>());
-                                sCos.put(period, new ArrayList<List<Double>>());
-                                sSin.put(period, new ArrayList<List<Double>>());
+                                cCos.put(period, new ArrayList<>());
+                                cSin.put(period, new ArrayList<>());
+                                sCos.put(period, new ArrayList<>());
+                                sSin.put(period, new ArrayList<>());
                             }
                             final List<List<Double>> cCosPeriod = cCos.get(period);
                             final List<List<Double>> cSinPeriod = cSin.get(period);

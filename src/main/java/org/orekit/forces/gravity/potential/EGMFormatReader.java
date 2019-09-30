@@ -96,8 +96,8 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         }
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        final List<List<Double>> c = new ArrayList<List<Double>>();
-        final List<List<Double>> s = new ArrayList<List<Double>>();
+        final List<List<Double>> c = new ArrayList<>();
+        final List<List<Double>> s = new ArrayList<>();
         boolean okFields = true;
         for (String line = r.readLine(); okFields && line != null; line = r.readLine()) {
             if (line.length() >= 15) {

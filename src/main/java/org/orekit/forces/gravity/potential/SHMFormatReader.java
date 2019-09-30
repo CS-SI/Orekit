@@ -74,8 +74,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     public SHMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         super(supportedNames, missingCoefficientsAllowed);
         referenceDate = null;
-        cDot = new ArrayList<List<Double>>();
-        sDot = new ArrayList<List<Double>>();
+        cDot = new ArrayList<>();
+        sDot = new ArrayList<>();
     }
 
     /** {@inheritDoc} */

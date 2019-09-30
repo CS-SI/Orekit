@@ -56,11 +56,11 @@ public class GravityFieldFactory {
 
     /** Potential readers. */
     private static final List<PotentialCoefficientsReader> READERS =
-        new ArrayList<PotentialCoefficientsReader>();
+            new ArrayList<>();
 
     /** Ocean tides readers. */
     private static final List<OceanTidesReader> OCEAN_TIDES_READERS =
-        new ArrayList<OceanTidesReader>();
+            new ArrayList<>();
 
     /** Ocean load deformation coefficients. */
     private static OceanLoadDeformationCoefficients OCEAN_LOAD_DEFORMATION_COEFFICIENTS =

@@ -96,8 +96,8 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
     public GRGSFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         super(supportedNames, missingCoefficientsAllowed);
         referenceDate = null;
-        cDot = new ArrayList<List<Double>>();
-        sDot = new ArrayList<List<Double>>();
+        cDot = new ArrayList<>();
+        sDot = new ArrayList<>();
     }
 
     /** {@inheritDoc} */

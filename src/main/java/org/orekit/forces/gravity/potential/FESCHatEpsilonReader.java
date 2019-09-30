@@ -150,7 +150,7 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
                     final double eMinus    = scaleEpsilon * Double.parseDouble(regularMatcher.group(12));
 
                     // compute bias from table 6.6
-                    final double hf = astronomicalAmplitudes.containsKey(doodson) ? astronomicalAmplitudes.get(doodson) : 0.0;
+                    final double hf = astronomicalAmplitudes.getOrDefault(doodson, 0.0);
                     final int cGamma = doodson / 100000;
                     final double chiF;
                     if (cGamma == 0) {
