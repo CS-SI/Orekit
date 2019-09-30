@@ -109,8 +109,15 @@ public class ClasspathCrawler implements DataProvider {
 
     }
 
-    /** {@inheritDoc} */
+    @Override
     public boolean feed(final Pattern supported, final DataLoader visitor) {
+        return feed(supported, visitor, DataProvidersManager.getInstance());
+    }
+
+    /** {@inheritDoc} */
+    public boolean feed(final Pattern supported,
+                        final DataLoader visitor,
+                        final DataProvidersManager manager) {
 
         try {
             OrekitException delayedException = null;
@@ -123,13 +130,13 @@ public class ClasspathCrawler implements DataProvider {
 
                             // browse inside the zip/jar file
                             final DataProvider zipProvider = new ZipJarCrawler(name);
-                            loaded = zipProvider.feed(supported, visitor) || loaded;
+                            loaded = zipProvider.feed(supported, visitor, manager) || loaded;
 
                         } else {
 
                             // apply all registered filters
                             NamedData data = new NamedData(name, () -> classLoader.getResourceAsStream(name));
-                            data = DataProvidersManager.getInstance().applyAllFilters(data);
+                            data = manager.applyAllFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file

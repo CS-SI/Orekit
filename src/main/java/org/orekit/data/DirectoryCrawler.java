@@ -65,10 +65,17 @@ public class DirectoryCrawler implements DataProvider {
         this.root = root;
     }
 
-    /** {@inheritDoc} */
+    @Override
     public boolean feed(final Pattern supported, final DataLoader visitor) {
+        return feed(supported, visitor, DataProvidersManager.getInstance());
+    }
+
+    /** {@inheritDoc} */
+    public boolean feed(final Pattern supported,
+                        final DataLoader visitor,
+                        final DataProvidersManager manager) {
         try {
-            return feed(supported, visitor, root);
+            return feed(supported, visitor, manager, root);
         } catch (IOException | ParseException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
@@ -77,12 +84,16 @@ public class DirectoryCrawler implements DataProvider {
     /** Feed a data file loader by browsing a directory hierarchy.
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to feed
+     * @param manager with the filters to apply.
      * @param directory current directory
      * @return true if something has been loaded
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
-    private boolean feed(final Pattern supported, final DataLoader visitor, final File directory)
+    private boolean feed(final Pattern supported,
+                         final DataLoader visitor,
+                         final DataProvidersManager manager,
+                         final File directory)
         throws IOException, ParseException {
 
         // search in current directory
@@ -101,19 +112,19 @@ public class DirectoryCrawler implements DataProvider {
                     if (file.isDirectory()) {
 
                         // recurse in the sub-directory
-                        loaded = feed(supported, visitor, file) || loaded;
+                        loaded = feed(supported, visitor, manager, file) || loaded;
 
                     } else if (ZIP_ARCHIVE_PATTERN.matcher(file.getName()).matches()) {
 
                         // browse inside the zip/jar file
                         final DataProvider zipProvider = new ZipJarCrawler(file);
-                        loaded = zipProvider.feed(supported, visitor) || loaded;
+                        loaded = zipProvider.feed(supported, visitor, manager) || loaded;
 
                     } else {
 
                         // apply all registered filters
                         NamedData data = new NamedData(file.getName(), () -> new FileInputStream(file));
-                        data = DataProvidersManager.getInstance().applyAllFilters(data);
+                        data = manager.applyAllFilters(data);
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file

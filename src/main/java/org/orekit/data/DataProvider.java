@@ -64,7 +64,45 @@ public interface DataProvider {
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @return true if some data has been loaded
+     * @deprecated Use {@link #feed(Pattern, DataLoader, DataProvidersManager)} instead
+     * which allows specifying the {@link DataProvidersManager} to use for filtering
+     * resources. This method uses the default instance:
+     * {@link DataProvidersManager#getInstance()}.
      */
+    @Deprecated
     boolean feed(Pattern supported, DataLoader visitor);
+
+    /** Feed a data file loader by browsing the data collection.
+     * <p>
+     * The method crawls all files referenced in the instance (for example
+     * all files in a directories tree) and for each file supported by the
+     * file loader it asks the file loader to load it.
+     * </p>
+     * <p>
+     * If the method completes without exception, then the data loader
+     * is considered to have been fed successfully and the top level
+     * {@link DataProvidersManager data providers manager} will return
+     * immediately without attempting to use the next configured providers.
+     * </p>
+     * <p>
+     * If the method completes abruptly with an exception, then the top level
+     * {@link DataProvidersManager data providers manager} will try to use
+     * the next configured providers, in case another one can feed the
+     * {@link DataLoader data loader}.
+     * </p>
+     *
+     * <p> The default implementation will be removed in 11.0. It calls {@link
+     * #feed(Pattern, DataLoader)}.
+     *
+     * @param supported pattern for file names supported by the visitor
+     * @param visitor data file visitor to use
+     * @param manager with the filters to apply to the resources.
+     * @return true if some data has been loaded
+     */
+    default boolean feed(final Pattern supported,
+                         final DataLoader visitor,
+                         final DataProvidersManager manager) {
+        return feed(supported, visitor);
+    }
 
 }

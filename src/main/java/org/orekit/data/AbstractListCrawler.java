@@ -96,8 +96,16 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
      */
     protected abstract InputStream getStream(T input) throws IOException;
 
-    /** {@inheritDoc} */
+    @Override
     public boolean feed(final Pattern supported, final DataLoader visitor) {
+        return feed(supported, visitor, DataProvidersManager.getInstance());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean feed(final Pattern supported,
+                        final DataLoader visitor,
+                        final DataProvidersManager manager) {
 
         try {
             OrekitException delayedException = null;
@@ -111,14 +119,14 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
                         if (ZIP_ARCHIVE_PATTERN.matcher(fileName).matches()) {
 
                             // browse inside the zip/jar file
-                            getZipJarCrawler(input).feed(supported, visitor);
+                            getZipJarCrawler(input).feed(supported, visitor, manager);
                             loaded = true;
 
                         } else {
 
                             // apply all registered filters
                             NamedData data = new NamedData(fileName, () -> getStream(input));
-                            data = DataProvidersManager.getInstance().applyAllFilters(data);
+                            data = manager.applyAllFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file

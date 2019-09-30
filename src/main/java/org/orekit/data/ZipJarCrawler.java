@@ -130,15 +130,22 @@ public class ZipJarCrawler implements DataProvider {
         }
     }
 
-    /** {@inheritDoc} */
+    @Override
     public boolean feed(final Pattern supported, final DataLoader visitor) {
+        return feed(supported, visitor, DataProvidersManager.getInstance());
+    }
+
+    /** {@inheritDoc} */
+    public boolean feed(final Pattern supported,
+                        final DataLoader visitor,
+                        final DataProvidersManager manager) {
 
         try {
 
             // open the raw data stream
             try (InputStream in = openStream();
                  Archive archive = new Archive(in)) {
-                return feed(name, supported, visitor, archive);
+                return feed(name, supported, visitor, manager, archive);
             }
 
         } catch (IOException | ParseException e) {
@@ -167,13 +174,17 @@ public class ZipJarCrawler implements DataProvider {
      * @param prefix prefix to use for name
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
+     * @param manager used for filtering data.
      * @param archive archive to read
      * @return true if something has been loaded
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
-    private boolean feed(final String prefix, final Pattern supported,
-                         final DataLoader visitor, final Archive archive)
+    private boolean feed(final String prefix,
+                         final Pattern supported,
+                         final DataLoader visitor,
+                         final DataProvidersManager manager,
+                         final Archive archive)
         throws IOException, ParseException {
 
         OrekitException delayedException = null;
@@ -191,7 +202,7 @@ public class ZipJarCrawler implements DataProvider {
                     if (ZIP_ARCHIVE_PATTERN.matcher(entry.getName()).matches()) {
 
                         // recurse inside the archive entry
-                        loaded = feed(fullName, supported, visitor, new Archive(entry)) || loaded;
+                        loaded = feed(fullName, supported, visitor, manager, new Archive(entry)) || loaded;
 
                     } else {
 
@@ -204,7 +215,7 @@ public class ZipJarCrawler implements DataProvider {
 
                         // apply all registered filters
                         NamedData data = new NamedData(entryName, () -> entry);
-                        data = DataProvidersManager.getInstance().applyAllFilters(data);
+                        data = manager.applyAllFilters(data);
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file

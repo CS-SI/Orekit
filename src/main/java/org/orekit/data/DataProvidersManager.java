@@ -349,7 +349,7 @@ public class DataProvidersManager {
             try {
 
                 // try to feed the visitor using the current provider
-                if (provider.feed(supported, monitoredLoader)) {
+                if (provider.feed(supported, monitoredLoader, this)) {
                     return true;
                 }
 
