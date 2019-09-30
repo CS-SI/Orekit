@@ -171,28 +171,13 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
         /** History entries. */
         private final List<EOPEntry> history;
 
-        /** Current line number. */
-        private int lineNumber;
-
-        /** Current line. */
-        private String line;
-
-        /** Indicator for header parsing. */
-        private boolean inHeader;
-
-        /** Indicator for Non-Rotating Origin. */
-        private boolean isNonRotatingOrigin;
-
         /** Simple constructor.
          * @param converter converter to use
          */
         Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter           = converter;
             this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
-            this.history             = new ArrayList<EOPEntry>();
-            this.lineNumber          = 0;
-            this.inHeader            = true;
-            this.isNonRotatingOrigin = false;
+            this.history             = new ArrayList<>();
         }
 
         /** {@inheritDoc} */
@@ -210,12 +195,12 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // reset parse info to start new file (do not clear history!)
-            lineNumber          = 0;
-            inHeader            = true;
-            isNonRotatingOrigin = false;
+            int lineNumber              = 0;
+            boolean inHeader            = true;
+            boolean isNonRotatingOrigin = false;
 
             // read all file
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++lineNumber;
                 boolean parsed = false;
 
@@ -273,7 +258,7 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
                 }
                 if (!(inHeader || parsed)) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, name, line);
+                            lineNumber, name, line);
                 }
             }
 

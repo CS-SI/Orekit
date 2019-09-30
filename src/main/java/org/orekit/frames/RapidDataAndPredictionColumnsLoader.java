@@ -171,12 +171,6 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
         /** History entries. */
         private final List<EOPEntry> history;
 
-        /** Current line number. */
-        private int lineNumber;
-
-        /** Current line. */
-        private String line;
-
         /** Simple constructor.
          * @param converter converter to use
          * @param isNonRotatingOrigin type of nutation correction
@@ -186,8 +180,7 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
             this.converter           = converter;
             this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.isNonRotatingOrigin = isNonRotatingOrigin;
-            this.history             = new ArrayList<EOPEntry>();
-            this.lineNumber          = 0;
+            this.history             = new ArrayList<>();
         }
 
         /** {@inheritDoc} */
@@ -205,9 +198,9 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // reset parse info to start new file (do not clear history!)
-            lineNumber = 0;
+            int lineNumber = 0;
 
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
                 lineNumber++;
 

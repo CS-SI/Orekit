@@ -103,7 +103,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
         Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter         = converter;
             this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
-            this.history           = new ArrayList<EOPEntry>();
+            this.history           = new ArrayList<>();
         }
 
         /** {@inheritDoc} */
@@ -241,7 +241,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 if (content == DataFileContent.DAILY) {
                     startDailyElement(qName, atts);
                 } else if (content == DataFileContent.FINAL) {
-                    startFinalElement(qName, atts);
+                    startFinalElement(qName);
                 }
 
             }
@@ -264,9 +264,8 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
             /** Handle end of an element in a final data file.
              * @param qName name of the element
-             * @param atts element attributes
              */
-            private void startFinalElement(final String qName, final Attributes atts) {
+            private void startFinalElement(final String qName) {
                 if (qName.equals(EOP_SET_ELT)) {
                     // reset EOP data
                     resetEOPData();
@@ -465,7 +464,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
             DAILY,
 
             /** Final data. */
-            FINAL;
+            FINAL
 
         }
 

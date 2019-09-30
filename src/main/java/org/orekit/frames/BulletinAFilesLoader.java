@@ -401,8 +401,8 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         /** Simple constructor.
          */
         Parser() {
-            this.eopFieldsMap         = new HashMap<Integer, double[]>();
-            this.poleOffsetsFieldsMap = new HashMap<Integer, double[]>();
+            this.eopFieldsMap         = new HashMap<>();
+            this.poleOffsetsFieldsMap = new HashMap<>();
             this.itrfVersionLoader    = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.lineNumber           = 0;
             this.mjdMin               = Integer.MAX_VALUE;
@@ -428,11 +428,10 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
             firstMJD   = -1;
 
             // loop over sections
-            final List<Section> remaining = new ArrayList<Section>();
-            remaining.addAll(Arrays.asList(Section.values()));
-            for (Section section = nextSection(remaining, reader, name);
+            final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
+            for (Section section = nextSection(remaining, reader);
                  section != null;
-                 section = nextSection(remaining, reader, name)) {
+                 section = nextSection(remaining, reader)) {
 
                 switch (section) {
                     case EOP_RAPID_SERVICE :
@@ -555,12 +554,11 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         /** Skip to next section header.
          * @param sections sections to check for
          * @param reader reader from where file content is obtained
-         * @param name name of the file (or zip entry)
          * @return the next section or null if no section is found until end of file
          * @exception IOException if data can't be read
          */
         private Section nextSection(final List<Section> sections,
-                                    final BufferedReader reader, final String name)
+                                    final BufferedReader reader)
             throws IOException {
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {

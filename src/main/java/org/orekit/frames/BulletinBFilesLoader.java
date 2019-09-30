@@ -275,8 +275,8 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
         Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter         = converter;
             this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
-            this.history           = new ArrayList<EOPEntry>();
-            this.fieldsMap         = new HashMap<Integer, double[]>();
+            this.history           = new ArrayList<>();
+            this.fieldsMap         = new HashMap<>();
             this.lineNumber        = 0;
             this.mjdMin            = Integer.MAX_VALUE;
             this.mjdMax            = Integer.MIN_VALUE;
