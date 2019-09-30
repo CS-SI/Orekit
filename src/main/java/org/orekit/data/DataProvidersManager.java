@@ -32,9 +32,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.HatanakaCompressFilter;
 
-/** Singleton class managing all supported {@link DataProvider data providers}.
+/** This class manages supported {@link DataProvider data providers}.
  * <p>
- * This class is the single point of access for all data loading features. It
+ * This class is the primary point of access for all data loading features. It
  * is used for example to load Earth Orientation Parameters used by IERS frames,
  * to load UTC leap seconds used by time scales, to load planetary ephemerides ...
  *
@@ -89,12 +89,8 @@ public class DataProvidersManager {
     /** Loaded data. */
     private final Set<String> loaded;
 
-    /** Build an instance with default configuration.
-     * <p>
-     * This is a singleton, so the constructor is private.
-     * </p>
-     */
-    private DataProvidersManager() {
+    /** Build an instance with default configuration. */
+    public DataProvidersManager() {
         providers = new ArrayList<>();
         filters   = new ArrayList<>();
         loaded    = new LinkedHashSet<>();
@@ -108,11 +104,11 @@ public class DataProvidersManager {
 
     }
 
-    /** Get the unique instance.
-     * @return unique instance of the manager.
+    /** Get the default instance.
+     * @return default instance of the manager.
      */
     public static DataProvidersManager getInstance() {
-        return LazyHolder.INSTANCE;
+        return DataContext.getDefault().getDataProvidersManager();
     }
 
     /** Add the default providers configuration.
@@ -400,28 +396,6 @@ public class DataProvidersManager {
             // monitor the fact new data has been loaded
             loaded.add(name);
 
-        }
-
-    }
-
-    /** Holder for the manager singleton.
-     * <p>
-     * We use the Initialization on demand holder idiom to store
-     * the singletons, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.
-     * </p>
-     */
-    private static class LazyHolder {
-
-        /** Unique instance. */
-        private static final DataProvidersManager INSTANCE = new DataProvidersManager();
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyHolder() {
         }
 
     }

@@ -15,6 +15,8 @@ import org.orekit.time.LazyLoadedTimeScales;
  */
 public class LazyLoadedDataContext implements DataContext {
 
+    /** The data provider manager. */
+    private final DataProvidersManager dataProvidersManager;
     /** The time scales. */
     private final LazyLoadedTimeScales timeScales;
     /** The reference frames. */
@@ -27,10 +29,21 @@ public class LazyLoadedDataContext implements DataContext {
      * and allows configuration of the auxiliary data sources until then.
      */
     public LazyLoadedDataContext() {
+        this.dataProvidersManager = new DataProvidersManager();
         final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop();
         this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
         this.bodies = new LazyLoadedCelestialBodies();
         this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales, bodies);
+    }
+
+    /**
+     * Get the provider of auxiliary data for this data context.
+     *
+     * @return the provider that supplies auxiliary data to all of the other methods of
+     * this data context.
+     */
+    public DataProvidersManager getDataProvidersManager() {
+        return dataProvidersManager;
     }
 
     @Override
@@ -47,5 +60,4 @@ public class LazyLoadedDataContext implements DataContext {
     public LazyLoadedCelestialBodies getCelestialBodies() {
         return bodies;
     }
-
 }
