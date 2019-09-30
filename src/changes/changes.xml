@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="610">
+        Added IRNSS orbit propagator.
+      </action>
       <action dev="bryan" type="add" issue="608">
         Added support for RINEX 3.04 files.
       </action>
