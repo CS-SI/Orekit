@@ -18,8 +18,8 @@ Orekit is free software, which means you can use the source code as you wish,
 without charges, in your applications, and that you can improve it and have
 your improvements included in the next mainstream release.
 
-If you are interested in participating in the development effort, here are the steps
-you will need to follow:
+If you are interested in participating in the development effort, **thank you very much**!
+Here are the steps you will need to follow:
 
 1. If not already done, create an account on the Orekit forge [https://gitlab.orekit.org/orekit/orekit](https://gitlab.orekit.org/orekit/orekit).
 2. Fork the Orekit project using the link on the main page of the forge (red rectangle on the following image). ![fork](./images/orekit-fork.png)
@@ -35,5 +35,6 @@ you will need to follow:
 10. Submit a merge request on the forge (click on the green item). Be sure to submit it on the **develop** branch. By default, GitLab will propose you to submit it on the **master** branch. ![merge requests](./images/merge-requests.png)
 11. Wait for one of the developers to merge your code on the repository.
 
-If you have any question during your contribution you can subscribe to the forum (as described in the [Contact page](./contact.html)) and step up to discuss it. The larger the community is, the better Orekit will be. The main rule is that everything intended to be included in Orekit
-core must be distributed under the Apache License Version 2.0.
+If your contribution consists of adding or changing a lot of code lines or class architectures, we invite you to discuss the contribution before on the Orekit [forum](https://forum.orekit.org/). Indeed, a developer can be currently working on the code your want to modify. Moreover, the forum is a good place to discuss future additions to Orekit.
+
+If you have any question during your contribution you can also visit the forum and ask them. The larger the community is, the better Orekit will be. The main rule is that everything intended to be included in Orekit core must be distributed under the Apache License Version 2.0.
