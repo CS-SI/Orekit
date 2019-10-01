@@ -35,6 +35,6 @@ Here are the steps you will need to follow:
 10. Submit a merge request on the forge (click on the green item). Be sure to submit it on the **develop** branch. By default, GitLab will propose you to submit it on the **master** branch. ![merge requests](./images/merge-requests.png)
 11. Wait for one of the developers to merge your code on the repository.
 
-If your contribution consists of adding or changing a lot of code lines or class architectures, we invite you to discuss the contribution before on the Orekit [forum](https://forum.orekit.org/). Indeed, a developer can be currently working on the code your want to modify. Moreover, the forum is a good place to discuss future additions to Orekit.
+If your contribution consists of adding or changing a lot of code lines or class architectures, we invite you to discuss the contribution before on the Orekit [forum](https://forum.orekit.org/). Indeed, a developer can be currently working on the code you want to modify. Moreover, the forum is a good place to discuss future additions to Orekit.
 
 If you have any question during your contribution you can also visit the forum and ask them. The larger the community is, the better Orekit will be. The main rule is that everything intended to be included in Orekit core must be distributed under the Apache License Version 2.0.
