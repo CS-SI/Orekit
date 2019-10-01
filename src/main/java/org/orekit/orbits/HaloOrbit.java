@@ -69,7 +69,7 @@ public class HaloOrbit extends LibrationOrbit {
     @Override
     protected PVCoordinates
         applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
-        return diff.compute();
+        return diff.computeHalo();
     }
 
 }

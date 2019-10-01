@@ -260,7 +260,6 @@ public class AbsolutePartialDerivativesEquations implements AdditionalEquations 
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
-
             final DSConverter converter = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
             final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
             final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);

@@ -107,7 +107,7 @@ public class CR3BPDifferentialCorrection {
     /** Return the real starting PVCoordinates on the Halo orbit after differential correction from a first guess.
      * @return pv Position-Velocity of the starting point on the Halo Orbit
      */
-    public PVCoordinates compute() {
+    public PVCoordinates computeHalo() {
 
         // number of iteration
         double iter = 0;

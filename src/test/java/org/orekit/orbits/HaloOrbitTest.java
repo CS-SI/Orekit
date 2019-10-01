@@ -114,7 +114,7 @@ public class HaloOrbitTest {
 
         final PVCoordinates initialConditions =
             new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)
-                .compute();
+                .computeHalo();
 
         final AbsolutePVCoordinates initialAbsPV =
             new AbsolutePVCoordinates(Frame, initialDate, initialConditions);
@@ -179,7 +179,7 @@ public class HaloOrbitTest {
 
         final PVCoordinates initialConditions =
             new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)
-                .compute();
+                .computeHalo();
         initialConditions.toString();
     }
     

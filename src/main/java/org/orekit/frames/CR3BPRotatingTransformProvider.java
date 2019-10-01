@@ -90,7 +90,7 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
                         FieldVector3D.getPlusI(field),
                         FieldVector3D.getPlusK(field));
         final FieldPVCoordinates<FieldDerivativeStructure<T>> pv21f =
-            pv21.toDerivativeStructurePV(1);
+            pv21.toDerivativeStructurePV(2);
         final Field<FieldDerivativeStructure<T>> fieldf =
             pv21f.getPosition().getX().getField();
 
