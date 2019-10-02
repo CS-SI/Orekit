@@ -54,9 +54,9 @@ public class HaloOrbitTest {
     final double orbitalPeriod2 = h2.getOrbitalPeriod();
     final double orbitalPeriod3 = h3.getOrbitalPeriod();
     
-    final PVCoordinates firstGuess1 = h1.getFirstGuess();
-    final PVCoordinates firstGuess2 = h2.getFirstGuess();
-    final PVCoordinates firstGuess3 = h3.getFirstGuess();
+    final PVCoordinates firstGuess1 = h1.getInitialPV();
+    final PVCoordinates firstGuess2 = h2.getInitialPV();
+    final PVCoordinates firstGuess3 = h3.getInitialPV();
     
     Assert.assertNotEquals(0.0, orbitalPeriod1, 0.5);
     Assert.assertNotEquals(0.0, orbitalPeriod3, 0.5);
@@ -110,7 +110,7 @@ public class HaloOrbitTest {
 
         double integrationTime = orbitalPeriod * 0.9;
 
-        final PVCoordinates firstGuess = h.getFirstGuess();
+        final PVCoordinates firstGuess = h.getInitialPV();
 
         final PVCoordinates initialConditions =
             new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)

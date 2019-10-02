@@ -54,9 +54,9 @@ public class LyapunovOrbitTest {
     final double orbitalPeriod2 = h2.getOrbitalPeriod();
     final double orbitalPeriod3 = h3.getOrbitalPeriod();
     
-    final PVCoordinates firstGuess1 = h1.getFirstGuess();
-    final PVCoordinates firstGuess2 = h2.getFirstGuess();
-    final PVCoordinates firstGuess3 = h3.getFirstGuess();
+    final PVCoordinates firstGuess1 = h1.getInitialPV();
+    final PVCoordinates firstGuess2 = h2.getInitialPV();
+    final PVCoordinates firstGuess3 = h3.getInitialPV();
     
     Assert.assertNotEquals(0.0, orbitalPeriod1, 0.5);
     Assert.assertNotEquals(0.0, orbitalPeriod3, 0.5);
@@ -104,7 +104,7 @@ public class LyapunovOrbitTest {
         h.applyDifferentialCorrection();
         final double orbitalPeriod = h.getOrbitalPeriod();
         double integrationTime = orbitalPeriod * 0.1;
-        final PVCoordinates initialConditions = h.getExactInitialPV();
+        final PVCoordinates initialConditions = h.getInitialPV();
 
         final AbsolutePVCoordinates initialAbsPV =
             new AbsolutePVCoordinates(Frame, initialDate, initialConditions);
