@@ -391,7 +391,7 @@ public class CR3BPSystem {
 
         return primaryInertialToOutputFrame.transformPVCoordinates(pv2);
     }
-    
+
     /** Get the AbsolutePVCoordinates from normalized units to standard units in an output frame.
      * This method ensure the constituency of the date of returned AbsolutePVCoordinate, especially
      * when apv0 is the result of a propagation in CR3BP normalized model.
@@ -404,9 +404,9 @@ public class CR3BPSystem {
 
         final double duration = apv0.getDate().durationFrom(initialDate) * tDim / (2 * FastMath.PI);
         final AbsoluteDate date = initialDate.shiftedBy(duration);
-       
+
         // PVCoordinate in the output frame
-        final PVCoordinates pv3 = getRealPV(apv0.getPVCoordinates(), date, outputFrame);        
+        final PVCoordinates pv3 = getRealPV(apv0.getPVCoordinates(), date, outputFrame);
 
         return new AbsolutePVCoordinates(outputFrame, date, pv3);
     }
