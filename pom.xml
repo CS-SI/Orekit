@@ -160,6 +160,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Yannick Jeandroz</name>
+      <id>yannick</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>    
   </developers>
 
   <contributors>
@@ -207,9 +214,6 @@
     </contributor>
     <contributor>
       <name>James Housden</name>
-    </contributor>
-    <contributor>
-      <name>Yannick Jeandroz</name>
     </contributor>
     <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
