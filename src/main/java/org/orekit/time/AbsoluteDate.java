@@ -134,6 +134,10 @@ public class AbsoluteDate
     public static final AbsoluteDate QZSS_EPOCH =
         new AbsoluteDate(DateComponents.QZSS_EPOCH, TimeComponents.H00, TimeScalesFactory.getQZSS());
 
+    /** Reference epoch for IRNSS weeks: 1999-08-22T00:00:00 IRNSS time. */
+    public static final AbsoluteDate IRNSS_EPOCH =
+        new AbsoluteDate(DateComponents.IRNSS_EPOCH, TimeComponents.H00, TimeScalesFactory.getIRNSS());
+
     /** Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC. */
     public static final AbsoluteDate BEIDOU_EPOCH =
         new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, TimeScalesFactory.getBDT());
@@ -963,7 +967,12 @@ public class AbsoluteDate
      * is before, simultaneous, or after the specified date.
      */
     public int compareTo(final AbsoluteDate date) {
-        return Double.compare(durationFrom(date),  0);
+        final double duration = durationFrom(date);
+        if (!Double.isNaN(duration)) {
+            return Double.compare(duration, 0.0);
+        }
+        // both dates are infinity or one is NaN or both are NaN
+        return Double.compare(offset, date.offset);
     }
 
     /** {@inheritDoc} */

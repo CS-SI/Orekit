@@ -47,6 +47,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class FieldOfViewTest {
 
     @Test
@@ -98,7 +99,9 @@ public class FieldOfViewTest {
                         new UnitSphereRandomVectorGenerator(3, new Well1024a(0x17df21c7598b114bl));
         for (int i = 0; i < 1000; ++i) {
             Vector3D v = new Vector3D(random.nextVector()).scalarMultiply(1.0e6);
-            Assert.assertEquals(square1.offsetFromBoundary(v), square2.offsetFromBoundary(v), 1.0e-15);
+            Assert.assertEquals(square1.offsetFromBoundary(v, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                square2.offsetFromBoundary(v, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
+                                2.6e-15);
         }
     }
 
@@ -117,7 +120,7 @@ public class FieldOfViewTest {
             for (double lambda = -0.5 * FastMath.PI; lambda < 0.5 * FastMath.PI; lambda += 0.1) {
                 Vector3D v = new Vector3D(0.0, lambda).scalarMultiply(1.0e6);
                 double theoreticalOffset = 0.5 * FastMath.PI - lambda - delta - margin;
-                double offset = fov.offsetFromBoundary(v);
+                double offset = fov.offsetFromBoundary(v, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
                 if (theoreticalOffset > 0.01) {
                     // the offsetFromBoundary method may use the fast approximate
                     // method, so we cannot check the error accurately

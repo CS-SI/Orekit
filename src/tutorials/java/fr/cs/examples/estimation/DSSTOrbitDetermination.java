@@ -20,12 +20,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -56,8 +59,12 @@ import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataFilter;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
+import org.orekit.data.GzipFilter;
+import org.orekit.data.NamedData;
+import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
@@ -90,6 +97,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
@@ -112,6 +120,7 @@ import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.MappingFunction;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -216,7 +225,7 @@ public class DSSTOrbitDetermination {
         if (parser.containsKey(ParameterKey.OUTPUT_BASE_NAME) &&
             parser.getString(ParameterKey.OUTPUT_BASE_NAME).length() > 0) {
             baseName  = parser.getString(ParameterKey.OUTPUT_BASE_NAME);
-            logStream = new PrintStream(new File(home, baseName + "-log.out"), "UTF-8");
+            logStream = new PrintStream(new File(home, baseName + "-log.out"), StandardCharsets.UTF_8.name());
         } else {
             baseName  = null;
             logStream = null;
@@ -268,16 +277,26 @@ public class DSSTOrbitDetermination {
             // measurements
             final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
             for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
-                if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, fileName) ||
-                    Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, fileName)) {
+
+                // set up filtering for measurements files
+                NamedData nd = new NamedData(fileName,
+                                             () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+                for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                             new UnixCompressFilter(),
+                                                             new HatanakaCompressFilter())) {
+                    nd = filter.filter(nd);
+                }
+
+                if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
+                    Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
                     // the measurements come from a Rinex file
-                    measurements.addAll(readRinex(new File(input.getParentFile(), fileName),
+                    measurements.addAll(readRinex(nd,
                                                   parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
                                                   stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
                                                   rangeOutliersManager, rangeRateOutliersManager));
                 } else {
                     // the measurements come from an Orekit custom file
-                    measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
+                    measurements.addAll(readMeasurements(nd,
                                                          stations, pvData, satellite,
                                                          satRangeBias, satAntennaRangeModifier, weights,
                                                          rangeOutliersManager,
@@ -922,6 +941,7 @@ public class DSSTOrbitDetermination {
         final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
         final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
         final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
+        final boolean[] stationWeatherEstimated           = parser.getBooleanArray(ParameterKey.GROUND_STATION_WEATHER_ESTIMATED);
         final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
@@ -1101,7 +1121,21 @@ public class DSSTOrbitDetermination {
 
                 DiscreteTroposphericModel troposphericModel;
                 if (stationTroposphericModelEstimated[i] && mappingModel != null) {
-                    troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);
+
+                    if(stationWeatherEstimated[i]) {
+                        final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
+                                                                                                          stationLongitudes[i],
+                                                                                                          body.getBodyFrame());
+                        weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
+                                                                                      TimeScalesFactory.getUTC()));
+                        final double temperature = weather.getTemperature();
+                        final double pressure    = weather.getPressure();
+                        troposphericModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                           stationTroposphericZenithDelay[i]);
+                    } else {
+                        troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);   
+                    }
+
                     ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
                     totalDelay.setSelected(stationZenithDelayEstimated[i]);
                     totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
@@ -1308,7 +1342,7 @@ public class DSSTOrbitDetermination {
     }
 
     /** Read a RINEX measurements file.
-     * @param file measurements file
+     * @param nd named data containing measurements
      * @param satId satellite we are interested in
      * @param stations name to stations data map
      * @param satellite satellite reference
@@ -1319,7 +1353,7 @@ public class DSSTOrbitDetermination {
      * @param rangeRateOutliersManager manager for range-rate measurements outliers (null if none configured)
      * @return measurements list
      */
-    private List<ObservedMeasurement<?>> readRinex(final File file, final String satId,
+    private List<ObservedMeasurement<?>> readRinex(final NamedData nd, final String satId,
                                                    final Map<String, StationData> stations,
                                                    final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
@@ -1344,7 +1378,7 @@ public class DSSTOrbitDetermination {
                 prnNumber = -1;
         }
         final Iono iono = new Iono(false);
-        final RinexLoader loader = new RinexLoader(new FileInputStream(file), file.getAbsolutePath());
+        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
@@ -1405,7 +1439,7 @@ public class DSSTOrbitDetermination {
     }
 
     /** Read a measurements file.
-     * @param file measurements file
+     * @param nd named data containing measurements
      * @param stations name to stations data map
      * @param pvData PV measurements data
      * @param satellite satellite reference
@@ -1418,7 +1452,7 @@ public class DSSTOrbitDetermination {
      * @param pvOutliersManager manager for PV measurements outliers (null if none configured)
      * @return measurements list
      */
-    private List<ObservedMeasurement<?>> readMeasurements(final File file,
+    private List<ObservedMeasurement<?>> readMeasurements(final NamedData nd,
                                                           final Map<String, StationData> stations,
                                                           final PVData pvData,
                                                           final ObservableSatellite satellite,
@@ -1432,9 +1466,9 @@ public class DSSTOrbitDetermination {
         throws UnsupportedEncodingException, IOException, OrekitException {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+        try (InputStream is = nd.getStreamOpener().openStream();
+             InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader br = new BufferedReader(isr)) {
             int lineNumber = 0;
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
@@ -1443,13 +1477,13 @@ public class DSSTOrbitDetermination {
                     String[] fields = line.split("\\s+");
                     if (fields.length < 2) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, file.getName(), line);
+                                                  lineNumber, nd.getName(), line);
                     }
                     switch (fields[1]) {
                         case "RANGE" :
                             final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
                                                                               satRangeBias, weights,
-                                                                              line, lineNumber, file.getName());
+                                                                              line, lineNumber, nd.getName());
                             if (satAntennaRangeModifier != null) {
                                 range.addModifier(satAntennaRangeModifier);
                             }
@@ -1461,7 +1495,7 @@ public class DSSTOrbitDetermination {
                         case "RANGE_RATE" :
                             final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
                                                                                           satRangeBias, weights,
-                                                                                          line, lineNumber, file.getName());
+                                                                                          line, lineNumber, nd.getName());
                             if (rangeRateOutliersManager != null) {
                                 rangeRate.addModifier(rangeRateOutliersManager);
                             }
@@ -1470,7 +1504,7 @@ public class DSSTOrbitDetermination {
                         case "AZ_EL" :
                             final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData, satellite,
                                                                                      satRangeBias, weights,
-                                                                                     line, lineNumber, file.getName());
+                                                                                     line, lineNumber, nd.getName());
                             if (azElOutliersManager != null) {
                                 angular.addModifier(azElOutliersManager);
                             }
@@ -1479,7 +1513,7 @@ public class DSSTOrbitDetermination {
                         case "PV" :
                             final PV pv = new PVParser().parseFields(fields, stations, pvData, satellite,
                                                                      satRangeBias, weights,
-                                                                     line, lineNumber, file.getName());
+                                                                     line, lineNumber, nd.getName());
                             if (pvOutliersManager != null) {
                                 pv.addModifier(pvOutliersManager);
                             }
@@ -1489,19 +1523,15 @@ public class DSSTOrbitDetermination {
                             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                       "unknown measurement type " + fields[1] +
                                                       " at line " + lineNumber +
-                                                      " in file " + file.getName());
+                                                      " in file " + nd.getName());
                     }
                 }
-            }
-        } finally {
-            if (br != null) {
-                br.close();
             }
         }
 
         if (measurements.isEmpty()) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                      "not measurements read from file " + file.getAbsolutePath());
+                                      "not measurements read from file " + nd.getName());
         }
 
         return measurements;
@@ -1877,7 +1907,7 @@ public class DSSTOrbitDetermination {
                 this.stream  = null;
             } else {
                 this.file    = new File(home, baseName + "-" + name + "-residuals.out");
-                this.stream  = new PrintStream(file, "UTF-8");
+                this.stream  = new PrintStream(file, StandardCharsets.UTF_8.name());
             }
         }
 
@@ -2323,7 +2353,7 @@ public class DSSTOrbitDetermination {
                 final IonosphericModel model = new KlobucharIonoModel(alpha, beta);
 
                 // frequency
-                final double f = frequency.getMHzFrequency();
+                final double f = frequency.getMHzFrequency() * 1.0e6;
 
                 // create modifiers
                 rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(model, f));
@@ -2476,6 +2506,7 @@ public class DSSTOrbitDetermination {
         GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED,
         GROUND_STATION_GLOBAL_MAPPING_FUNCTION,
         GROUND_STATION_NIELL_MAPPING_FUNCTION,
+        GROUND_STATION_WEATHER_ESTIMATED,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
         GROUND_STATION_RANGE_BIAS_MIN,

@@ -20,6 +20,7 @@ package fr.cs.examples.conversion;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -159,7 +160,7 @@ public class PropagatorConversion {
 
             // Print the results on the output file
             File output = new File(new File(System.getProperty("user.home")), "elements.dat");
-            try (final PrintStream stream = new PrintStream(output, "UTF-8")) {
+            try (final PrintStream stream = new PrintStream(output, StandardCharsets.UTF_8.name())) {
                 stream.println("# date Anum Akep Enum Ekep Inum Ikep LMnum LMkep");
                 for (SpacecraftState numState : numStates) {
                     for (SpacecraftState kepState : kepStates) {
@@ -181,7 +182,7 @@ public class PropagatorConversion {
             System.out.println("Results saved as file " + output);
 
             File output1 = new File(new File(System.getProperty("user.home")), "elts_pv.dat");
-            try (final PrintStream stream = new PrintStream(output1, "UTF-8")) {
+            try (final PrintStream stream = new PrintStream(output1, StandardCharsets.UTF_8.name())) {
                 stream.println("# date pxn pyn pzn vxn vyn vzn pxk pyk pzk vxk vyk vzk");
                 for (SpacecraftState numState : numStates) {
                     for (SpacecraftState kepState : kepStates) {

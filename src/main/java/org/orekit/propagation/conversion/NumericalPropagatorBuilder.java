@@ -28,6 +28,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -122,7 +123,27 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * @param model perturbing {@link ForceModel} to add
      */
     public void addForceModel(final ForceModel model) {
-        forceModels.add(model);
+        if (model instanceof NewtonianAttraction) {
+            // we want to add the central attraction force model
+            if (hasNewtonianAttraction()) {
+                // there is already a central attraction model, replace it
+                forceModels.set(forceModels.size() - 1, model);
+            } else {
+                // there are no central attraction model yet, add it at the end of the list
+                forceModels.add(model);
+            }
+        } else {
+            // we want to add a perturbing force model
+            if (hasNewtonianAttraction()) {
+                // insert the new force model before Newtonian attraction,
+                // which should always be the last one in the list
+                forceModels.add(forceModels.size() - 1, model);
+            } else {
+                // we only have perturbing force models up to now, just append at the end of the list
+                forceModels.add(model);
+            }
+        }
+
         for (final ParameterDriver driver : model.getParametersDrivers()) {
             addSupportedParameter(driver);
         }
@@ -175,6 +196,14 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
         for (ForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
+
+        if (!hasNewtonianAttraction()) {
+            // There are no central attraction model yet, add it at the end of the list
+            final NewtonianAttraction force = new NewtonianAttraction(orbit.getMu());
+            forceModels.add(force);
+            propagator.addForceModel(force);
+        }
+
         propagator.resetInitialState(state);
 
         return propagator;
@@ -193,6 +222,17 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementsParameters) {
         return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
+    }
+
+    /** Check if Newtonian attraction force model is available.
+     * <p>
+     * Newtonian attraction is always the last force model in the list.
+     * </p>
+     * @return true if Newtonian attraction force model is available
+     */
+    private boolean hasNewtonianAttraction() {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof NewtonianAttraction;
     }
 
 }

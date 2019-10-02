@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.util.FastMath;
+
 /** Enumerate for triggering visibility of spherical bodies.
  * @see CircularFieldOfViewDetector
  * @see FieldOfViewDetector
@@ -40,11 +42,13 @@ public enum VisibilityTrigger {
         this.sign = sign;
     }
 
-    /** Get sign of the radius correction.
-     * @return sign of the radius correction
+    /** Apply radius correction.
+     * @param angularRadius target body angular radius
+     * @return corrected radius
+     * @since 10.1
      */
-    double getSign() {
-        return sign;
+    public double radiusCorrection(final double angularRadius) {
+        return FastMath.copySign(angularRadius, sign);
     }
 
 }

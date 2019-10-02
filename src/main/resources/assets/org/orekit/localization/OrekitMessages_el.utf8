@@ -548,3 +548,24 @@ ITRF_VERSIONS_PREFIX_ONLY = <MISSING TRANSLATION>
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
 CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = <MISSING TRANSLATION>
+
+# STEC integration did not converge
+STEC_INTEGRATION_DID_NOT_CONVERGE = <MISSING TRANSLATION>
+
+# MODIP grid not be loaded from {0}
+MODIP_GRID_NOT_LOADED = <MISSING TRANSLATION>
+
+# NeQuick coefficient f2 or fm3 not be loaded from {0}
+NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
+
+# file {0} is not a supported Hatanaka-compressed file
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
+
+# invalid measurement types {0} and {1} for the combination of measurements {2}
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+
+# frequencies {0} and {1} are incompatibles for the {2} combination
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+
+# observations {0} and {1} are not in chronological dates
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>

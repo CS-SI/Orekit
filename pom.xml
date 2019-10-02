@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>10.0</version>
+  <version>10.1-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -46,7 +46,9 @@
     <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
-    <orekit.hipparchus.version>1.5</orekit.hipparchus.version>
+    <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
+    <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
+    <orekit.hipparchus.version>1.6-SNAPSHOT</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -430,6 +432,7 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <additionalOptions>--allow-script-in-comments -header &apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</additionalOptions>
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
@@ -664,6 +667,7 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
+          <additionalOptions>--allow-script-in-comments -header &apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</additionalOptions>
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>

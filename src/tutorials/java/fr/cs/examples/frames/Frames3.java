@@ -20,6 +20,7 @@ package fr.cs.examples.frames;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -131,7 +132,7 @@ public class Frames3 {
                     try {
                         File file = new File(System.getProperty("user.home"), "XYZ.dat");
                         System.out.println("Results written to file: " + file.getAbsolutePath());
-                        out = new PrintStream(file, "UTF-8");
+                        out = new PrintStream(file, StandardCharsets.UTF_8.name());
                         out.println("#time X Y Z Wx Wy Wz");
                     } catch (IOException ioe) {
                         throw new OrekitException(ioe,

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -264,7 +265,7 @@ public class Phasing {
         System.out.println("final orbit (osculating): " + orbit);
 
         // generate the ground track grid file
-        try (PrintStream output = new PrintStream(new File(input.getParent(), gridOutput), "UTF-8")) {
+        try (PrintStream output = new PrintStream(new File(input.getParent(), gridOutput), StandardCharsets.UTF_8.name())) {
             for (int i = 0; i < gridLatitudes.length; ++i) {
                 printGridPoints(output, gridLatitudes[i], gridAscending[i], orbit, propagator, nbOrbits);
             }

@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * providers manager singleton}, or to let this manager use its default
  * configuration. Once registered, they will be used automatically whenever
  * some data needs to be loaded. This allow high level applications developers
- * to customize Orekit data loading mechanism and get a tighter intergation of
+ * to customize Orekit data loading mechanism and get a tighter integration of
  * the library within their application.
  * </p>
  * @see DataLoader

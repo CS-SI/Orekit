@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -71,7 +72,7 @@ public class FundamentalNutationArgumentsTest {
 
         String directory = "/assets/org/orekit/IERS-conventions/";
         InputStream is = getClass().getResourceAsStream(directory + "2010/nutation-arguments.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         StringBuilder builder = new StringBuilder();
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             builder.append(line);

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
@@ -80,7 +81,7 @@ public class PredefinedIAUPolesTest {
     public void testNaif() throws UnsupportedEncodingException, IOException {
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/IAU-pole-NAIF.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, "UTF-8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8));
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             line = line.trim();
             if (!line.isEmpty() && !line.startsWith("#")) {

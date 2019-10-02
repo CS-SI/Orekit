@@ -126,6 +126,18 @@ public class EllipseTest {
                            1.0e-15);
     }
 
+    @Test
+    public void testFlatEllipse() {
+        final double a = 0.839;
+        final double b = 0.176;
+        final Ellipse  ellipse   = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
+                                               a, b, FramesFactory.getGCRF());
+        final Vector2D close = ellipse.projectToEllipse(new Vector2D(2.0, 4.0));
+        Assert.assertEquals(1.0,
+                            close.getX() * close.getX() / (a * a) + close.getY() * close.getY() / (b * b),
+                            1.0e-15);
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

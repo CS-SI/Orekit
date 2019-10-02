@@ -347,7 +347,9 @@ public class DSSTZonal implements DSSTForceModel {
                     final double cnm = harmonics.getUnnormalizedCnm(maxDeg, m);
                     final double snm = harmonics.getUnnormalizedSnm(maxDeg, m);
                     final double csnm = FastMath.hypot(cnm, snm);
-                    if (csnm == 0.) break;
+                    if (csnm == 0.) {
+                        break;
+                    }
                     // Set magnitude of last spherical harmonic term.
                     double lastTerm = 0.;
                     // Set current power of e and related indices.
@@ -451,7 +453,9 @@ public class DSSTZonal implements DSSTForceModel {
                     final T cnm = zero.add(harmonics.getUnnormalizedCnm(maxDeg, m));
                     final T snm = zero.add(harmonics.getUnnormalizedSnm(maxDeg, m));
                     final T csnm = FastMath.hypot(cnm, snm);
-                    if (csnm.getReal() == 0.) break;
+                    if (csnm.getReal() == 0.) {
+                        break;
+                    }
                     // Set magnitude of last spherical harmonic term.
                     T lastTerm = zero;
                     // Set current power of e and related indices.

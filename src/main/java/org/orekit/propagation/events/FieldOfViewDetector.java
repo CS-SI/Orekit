@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -68,7 +69,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * otherwise some short passes could be missed.</p>
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodie
+     * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
      * @since 10.0
      */
@@ -91,7 +92,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * @param handler event handler to call at event occurrences
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodie
+     * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
      */
     private FieldOfViewDetector(final double maxCheck, final double threshold, final int maxIter,
@@ -123,20 +124,34 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
     /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
+    }
+
+    /** Get the Field Of View.
+     * @return Field Of View, if detector has been built from a
+     * {@link org.orekit.propagation.events.FieldOfView}, or null of the
+     * detector was built from another implementation of {@link FieldOfView}
+     * @deprecated as of 10.1, replaced by {@link #getFOV()}
+     */
+    @Deprecated
+    public org.orekit.propagation.events.FieldOfView getFieldOfView() {
+        return fov instanceof org.orekit.propagation.events.FieldOfView ?
+               (org.orekit.propagation.events.FieldOfView) fov :
+               null;
     }
 
     /** {@inheritDoc}
      * <p>
      * The g function value is the angular offset between the
-     * target center and the {@link FieldOfView#offsetFromBoundary(Vector3D)
-     * Field Of View boundary}, plus or minus the target angular radius
-     * depending on the {@link VisibilityTrigger}, minus the {@link
-     * FieldOfView#getMargin() Field Of View margin}. It is therefore negative
-     * if the target is visible within the Field Of View and positive if it is
-     * outside of the Field Of View.
+     * target center and the {@link FieldOfView#offsetFromBoundary(Vector3D,
+     * double, VisibilityTrigger) Field Of View boundary}, plus or minus the
+     * target angular radius depending on the {@link VisibilityTrigger}, minus
+     * the {@link FieldOfView#getMargin() Field Of View margin}. It is therefore
+     * negative if the target is visible within the Field Of View and positive
+     * if it is outside of the Field Of View.
      * </p>
      * <p>
      * As per the previous definition, when the target enters the Field Of
@@ -152,7 +167,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
         final Vector3D lineOfSightSC = s.toTransform().transformPosition(targetPosInert);
 
         final double angularRadius = FastMath.asin(radiusTarget / lineOfSightSC.getNorm());
-        return fov.offsetFromBoundary(lineOfSightSC) + FastMath.copySign(angularRadius, trigger.getSign());
+        return fov.offsetFromBoundary(lineOfSightSC, angularRadius, trigger);
 
     }
 

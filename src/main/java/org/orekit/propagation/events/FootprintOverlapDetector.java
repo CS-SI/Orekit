@@ -32,6 +32,7 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Transform;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.models.earth.tessellation.DivertedSingularityAiming;
 import org.orekit.models.earth.tessellation.EllipsoidTessellator;
 import org.orekit.propagation.SpacecraftState;
@@ -207,9 +208,23 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
 
     /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
+    }
+
+    /** Get the Field Of View.
+     * @return Field Of View, if detector has been built from a
+     * {@link org.orekit.propagation.events.FieldOfView}, or null of the
+     * detector was built from another implementation of {@link FieldOfView}
+     * @deprecated as of 10.1, replaced by {@link #getFOV()}
+     */
+    @Deprecated
+    public org.orekit.propagation.events.FieldOfView getFieldOfView() {
+        return fov instanceof org.orekit.propagation.events.FieldOfView ?
+               (org.orekit.propagation.events.FieldOfView) fov :
+               null;
     }
 
     /** Get the body on which the geographic zone is defined.
@@ -275,7 +290,8 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
             if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {
                 // spacecraft is above this sample point local horizon
                 // get line of sight in spacecraft frame
-                final double offset = fov.offsetFromBoundary(bodyToSc.transformVector(lineOfSightBody));
+                final double offset = fov.offsetFromBoundary(bodyToSc.transformVector(lineOfSightBody),
+                                                             0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
                 value = FastMath.min(value, offset);
             }
         }

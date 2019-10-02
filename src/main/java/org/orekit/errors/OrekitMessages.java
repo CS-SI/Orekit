@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
@@ -236,7 +237,14 @@ public enum OrekitMessages implements Localizable {
             "prefix that is matched against the name of each loaded file. It should " +
             "not contain any regular expression syntax or directory components, i.e. " +
             "\"/\" or \"\\\". Actual value: \"{0}\"."),
-    CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT("cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}");
+    CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT("cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}"),
+    STEC_INTEGRATION_DID_NOT_CONVERGE("STEC integration did not converge"),
+    MODIP_GRID_NOT_LOADED("MODIP grid not be loaded from {0}"),
+    NEQUICK_F2_FM3_NOT_LOADED("NeQuick coefficient f2 or fm3 not be loaded from {0}"),
+    NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE("file {0} is not a supported Hatanaka-compressed file"),
+    INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS("invalid measurement types {0} and {1} for the combination of measurements {2}"),
+    INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS("frequencies {0} and {1} are incompatibles for the {2} combination"),
+    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates");
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -319,7 +327,7 @@ public enum OrekitMessages implements Localizable {
             if (stream != null) {
                 try {
                     // Only this line is changed to make it to read properties files as UTF-8.
-                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, "UTF-8"));
+                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, StandardCharsets.UTF_8));
                 } finally {
                     stream.close();
                 }

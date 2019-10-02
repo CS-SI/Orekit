@@ -20,6 +20,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.hipparchus.Field;
@@ -94,7 +95,7 @@ public class FieldPropagation {
         File workingDir = new File(System.getProperty("user.home"));
         File errorFile = new File(workingDir, "error.txt");
         System.out.println("Output file is in : " + errorFile.getAbsolutePath());
-        PrintWriter PW = new PrintWriter(errorFile, "UTF-8");
+        PrintWriter PW = new PrintWriter(errorFile, StandardCharsets.UTF_8.name());
 
         PW.printf("time \t\tCrossTrackErr \tLongTrackErr  \tRadialErr \tTotalErr%n");
 

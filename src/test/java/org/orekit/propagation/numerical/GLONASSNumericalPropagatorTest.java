@@ -85,9 +85,9 @@ public class GLONASSNumericalPropagatorTest {
         
         // Propagation
         final SpacecraftState finalState = propagator.propagate(target);
-        final PVCoordinates pvFinal = propagator.getPVInPZ90(finalState);
+        final PVCoordinates pvFinal = finalState.getPVCoordinates(FramesFactory.getPZ9011(IERSConventions.IERS_2010, true));
 
-        // Expected outputs
+        // Expected outputs in PZ90.11 frame
         final Vector3D expectedPosition = new Vector3D(7523174.819, -10506961.965, 21999239.413);
         final Vector3D expectedVelocity = new Vector3D(950.126007, 2855.687825, 1040.679862);
 
@@ -149,6 +149,33 @@ public class GLONASSNumericalPropagatorTest {
         Assert.assertEquals(refPZ90.getX().getReal(), comPZ90.getX().getReal(), 1.0e-4);
         Assert.assertEquals(refPZ90.getY().getReal(), comPZ90.getY().getReal(), 1.0e-4);
         Assert.assertEquals(refPZ90.getZ().getReal(), comPZ90.getZ().getReal(), 1.0e-4);
+    }
+
+    @Test
+    public void testPosition() {
+        // Frames
+        final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        // Initial GLONASS orbital elements (Ref: IGS)
+        final GLONASSEphemeris ge = new GLONASSEphemeris(6, 1342, 45900, -1.0705924E7, 2052.252685546875, 0.0,
+                                                         -1.5225037E7, 1229.055419921875, -2.7939677238464355E-6,
+                                                         -1.7389698E7, -2338.376953125, 1.862645149230957E-6);
+        // Date of the GLONASS orbital elements, 3 Septembre 2019 at 09:45:00 UTC
+        final AbsoluteDate target = ge.getDate().shiftedBy(-18.0);
+        // 4th order Runge-Kutta
+        final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(1.);
+        // Initialize the propagator
+        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagator.Builder(integrator, ge, true).build();
+        // Compute the PV coordinates at the date of the GLONASS orbital elements
+        final SpacecraftState finalState = propagator.propagate(target);
+        final PVCoordinates pvInPZ90 = finalState.getPVCoordinates(pz90);
+        final PVCoordinates pvInITRF = pz90.getTransformTo(itrf, target).transformPVCoordinates(pvInPZ90);
+        // Computed position
+        final Vector3D computedPos = pvInITRF.getPosition();
+        // Expected position (reference from IGS file igv20692_06.sp3)
+        final Vector3D expectedPos = new Vector3D(-10742801.600, -15247162.619, -17347541.633);
+        // Verify
+        Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 2.8);
     }
 
     @Test

@@ -313,6 +313,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         } else {
             models.addValidBefore(newModel, state.getDate());
         }
+        stateChanged(state);
     }
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.

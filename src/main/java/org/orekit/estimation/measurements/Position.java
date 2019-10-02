@@ -159,9 +159,7 @@ public class Position extends AbstractMeasurement<Position> {
                                                                    final SpacecraftState[] states) {
 
         // PV value
-        final ObservableSatellite      satellite = getSatellites().get(0);
-        final SpacecraftState          state     = states[satellite.getPropagatorIndex()];
-        final TimeStampedPVCoordinates pv        = state.getPVCoordinates();
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
 
         // prepare the evaluation
         final EstimatedMeasurement<Position> estimated =

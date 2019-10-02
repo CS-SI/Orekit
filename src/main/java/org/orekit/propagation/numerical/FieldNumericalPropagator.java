@@ -180,6 +180,10 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         setPositionAngleType(PositionAngle.TRUE);
     }
 
+    /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
+     * @param ignoreCentralAttraction if true, {@link NewtonianAttraction} is <em>not</em>
+     * added automatically if missing
+     */
     public void setIgnoreCentralAttraction(final boolean ignoreCentralAttraction) {
         this.ignoreCentralAttraction = ignoreCentralAttraction;
     }
@@ -632,9 +636,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         Arrays.fill(relTol, dP.divide(r2.sqrt()).getReal());
 
-        return new double[][]{
-            absTol, relTol
-        };
+        return new double[][] { absTol, relTol };
 
     }
 

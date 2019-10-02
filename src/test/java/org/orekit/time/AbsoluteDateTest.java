@@ -52,6 +52,7 @@ public class AbsoluteDateTest {
         Assert.assertEquals(315964819000l,     AbsoluteDate.QZSS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(1136073633000l,    AbsoluteDate.BEIDOU_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(820443629000l,     AbsoluteDate.GLONASS_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(935280019000l,     AbsoluteDate.IRNSS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
 
@@ -75,6 +76,8 @@ public class AbsoluteDateTest {
                             AbsoluteDate.BEIDOU_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("1995-12-31T21:00:00.000",
                             AbsoluteDate.GLONASS_EPOCH.toString(TimeScalesFactory.getUTC()));
+        Assert.assertEquals("1999-08-21T23:59:47.000",
+                AbsoluteDate.IRNSS_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1970-01-01T00:00:00.000",
@@ -628,17 +631,58 @@ public class AbsoluteDateTest {
         Assert.assertTrue(AbsoluteDate.JULIAN_EPOCH.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
         Assert.assertTrue(AbsoluteDate.J2000_EPOCH.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
         Assert.assertTrue(AbsoluteDate.J2000_EPOCH.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
+        Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY) == 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) < 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) < 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) > 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
+        Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) == 0);
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
+        Assert.assertTrue(Double.isNaN(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.FUTURE_INFINITY)));
+        Assert.assertTrue(Double.isNaN(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assert.assertEquals("5881610-07-11T23:59:59.999",  AbsoluteDate.FUTURE_INFINITY.toString());
         Assert.assertEquals("-5877490-03-03T00:00:00.000", AbsoluteDate.PAST_INFINITY.toString());
+        Assert.assertEquals(true, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
+        Assert.assertEquals(true, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+        Assert.assertEquals(false, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
+        Assert.assertEquals(false, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+    }
+
+    @Test
+    public void testCompareTo() {
+        // check long time spans
+        AbsoluteDate epoch =
+                new AbsoluteDate(2000, 1, 1, 12, 0, 0, TimeScalesFactory.getTAI());
+        Assert.assertTrue(AbsoluteDate.JULIAN_EPOCH.compareTo(epoch) < 0);
+        Assert.assertTrue(epoch.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
+        // check short time spans
+        AbsoluteDate d = epoch;
+        double epsilon = 1.0 - FastMath.nextDown(1.0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(epsilon)) < 0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(0)) == 0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(-epsilon)) > 0);
+        // check date with negative offset
+        d = epoch.shiftedBy(496891466)
+                .shiftedBy(0.7320114066633323)
+                .shiftedBy(-19730.732011406664);
+        // offset is 0 in d1
+        AbsoluteDate d1 = epoch.shiftedBy(496891466 - 19730);
+        Assert.assertTrue(d.compareTo(d1) < 0);
+        // decrement epoch, now offset is 0.999... in d1
+        d1 = d1.shiftedBy(-1e-16);
+        Assert.assertTrue("" + d.durationFrom(d1), d.compareTo(d1) < 0);
+        // check large dates
+        // these tests fail due to long overflow in durationFrom() Bug #584
+        // d = new AbsoluteDate(epoch, Long.MAX_VALUE);
+        // Assert.assertEquals(-1, epoch.compareTo(d));
+        // Assert.assertTrue(d.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
+        // d = new AbsoluteDate(epoch, Long.MIN_VALUE);
+        // Assert.assertTrue(epoch.compareTo(d) > 0);
+        // Assert.assertTrue(d.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
     }
 
     @Test

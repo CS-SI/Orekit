@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -103,7 +104,7 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
         throws IOException, OrekitException {
 
         final Pattern        arrayPattern = Pattern.compile("([\\w\\.]+)\\s*\\[([0-9]+)\\]");
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             int lineNumber = 0;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++lineNumber;
