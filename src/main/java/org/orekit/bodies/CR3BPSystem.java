@@ -26,6 +26,7 @@ import org.orekit.frames.CR3BPRotatingFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -361,7 +362,7 @@ public class CR3BPSystem {
      * @param outputFrame Frame in which the output PVCoordinates will be
      * @return PVCoordinates in the output frame [m,m/s]
      */
-    public PVCoordinates getRealPV(final PVCoordinates pv0, final AbsoluteDate date, final Frame outputFrame) {
+    private PVCoordinates getRealPV(final PVCoordinates pv0, final AbsoluteDate date, final Frame outputFrame) {
         // 1.   Dimensionalize  the  primary-centered  rotating  state  using  the  instantaneously
         //      defined characteristic quantities
         // 2.   Apply the transformation to primary inertial frame
@@ -389,5 +390,24 @@ public class CR3BPSystem {
         final Transform primaryInertialToOutputFrame = primaryInertialFrame.getTransformTo(outputFrame, date);
 
         return primaryInertialToOutputFrame.transformPVCoordinates(pv2);
+    }
+    
+    /** Get the AbsolutePVCoordinates from normalized units to standard units in an output frame.
+     * This method ensure the constituency of the date of returned AbsolutePVCoordinate, especially
+     * when apv0 is the result of a propagation in CR3BP normalized model.
+     * @param apv0 Normalized AbsolutePVCoordinates in the rotating frame
+     * @param initialDate Date of the at the beginning of the propagation
+     * @param outputFrame Frame in which the output AbsolutePVCoordinates will be
+     * @return AbsolutePVCoordinates in the output frame [m,m/s]
+     */
+    public AbsolutePVCoordinates getRealAPV(final AbsolutePVCoordinates apv0, final AbsoluteDate initialDate, final Frame outputFrame) {
+
+        final double duration = apv0.getDate().durationFrom(initialDate) * tDim / (2 * FastMath.PI);
+        final AbsoluteDate date = initialDate.shiftedBy(duration);
+       
+        // PVCoordinate in the output frame
+        final PVCoordinates pv3 = getRealPV(apv0.getPVCoordinates(), date, outputFrame);        
+
+        return new AbsolutePVCoordinates(outputFrame, date, pv3);
     }
 }

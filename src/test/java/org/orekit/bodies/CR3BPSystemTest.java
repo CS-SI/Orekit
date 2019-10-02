@@ -10,6 +10,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
@@ -122,7 +123,7 @@ public class CR3BPSystemTest {
     }
     
     @Test
-    public void testgetRealPV() {
+    public void testgetRealAPV() {
         Utils.setDataRoot("cr3bp:regular-data");  
         
         // Time settings
@@ -190,14 +191,19 @@ public class CR3BPSystemTest {
         final Transform primaryInertialToOutputFrame = primaryInertialFrame.getTransformTo(outputFrame, initialDate);
         
         final PVCoordinates pvMat = primaryInertialToOutputFrame.transformPVCoordinates(pv2);
-        final PVCoordinates pvTrans = syst.getRealPV(pv0,initialDate,outputFrame);
+        final AbsolutePVCoordinates apv0 = new AbsolutePVCoordinates(outputFrame,initialDate,pv0);
+        final AbsolutePVCoordinates apvTrans = syst.getRealAPV(apv0,initialDate,outputFrame);
 
-        Assert.assertEquals(pvMat.getPosition().getX(),pvTrans.getPosition().getX(),1E-5);
-        Assert.assertEquals(pvMat.getPosition().getY(),pvTrans.getPosition().getY(),1E-15);
-        Assert.assertEquals(pvMat.getPosition().getZ(),pvTrans.getPosition().getZ(),1E-4);
+        Assert.assertEquals(pvMat.getPosition().getX(),apvTrans.getPosition().getX(),1E-5);
+        Assert.assertEquals(pvMat.getPosition().getY(),apvTrans.getPosition().getY(),1E-15);
+        Assert.assertEquals(pvMat.getPosition().getZ(),apvTrans.getPosition().getZ(),1E-4);
         
-        Assert.assertEquals(pvMat.getVelocity().getX(),pvTrans.getVelocity().getX(),1E-2);
-        Assert.assertEquals(pvMat.getVelocity().getY(),pvTrans.getVelocity().getY(),4E-2);
-        Assert.assertEquals(pvMat.getVelocity().getZ(),pvTrans.getVelocity().getZ(),2E-2);
+        Assert.assertEquals(pvMat.getVelocity().getX(),apvTrans.getVelocity().getX(),1E-2);
+        Assert.assertEquals(pvMat.getVelocity().getY(),apvTrans.getVelocity().getY(),4E-2);
+        Assert.assertEquals(pvMat.getVelocity().getZ(),apvTrans.getVelocity().getZ(),2E-2);
+        
+        Assert.assertEquals(initialDate.durationFrom(AbsoluteDate.J2000_EPOCH),
+                            apvTrans.getDate().durationFrom(AbsoluteDate.J2000_EPOCH),
+                            1E-10);
     }
 }
