@@ -164,7 +164,7 @@ public class OrbitDeterminationTest {
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
-        // input in tutorial resources directory/output
+        // input in resources directory
         final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
@@ -228,7 +228,7 @@ public class OrbitDeterminationTest {
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
-        // input in tutorial resources directory/output
+        // input in resources directory
         final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 
@@ -277,7 +277,7 @@ public class OrbitDeterminationTest {
         throws URISyntaxException, IllegalArgumentException, IOException,
               OrekitException, ParseException {
 
-        // input in tutorial resources directory/output
+        // input in resources directory
         final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
         final File input  = new File(inputPath);
 
