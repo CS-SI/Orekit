@@ -42,7 +42,7 @@ public class LyapunovOrbit extends LibrationOrbit {
      */
     public LyapunovOrbit(final CR3BPSystem syst,
                          final PVCoordinates pv, final double orbitalPeriod) {
-        super(syst, pv, pv, orbitalPeriod);
+        super(syst, pv, orbitalPeriod);
     }
 
     /**
@@ -60,7 +60,7 @@ public class LyapunovOrbit extends LibrationOrbit {
         super(syst,
               new RichardsonExpansion(syst, point)
                   .computeLyapunovFirstGuess(ay, 0.0, 0.0),
-              null, new RichardsonExpansion(syst, point)
+              new RichardsonExpansion(syst, point)
                   .getLyapunovOrbitalPeriod(ay));
     }
 

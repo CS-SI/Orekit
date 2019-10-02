@@ -42,7 +42,7 @@ public class HaloOrbit extends LibrationOrbit {
      */
     public HaloOrbit(final CR3BPSystem syst,
                      final PVCoordinates pv, final double orbitalPeriod) {
-        super(syst, pv, pv, orbitalPeriod);
+        super(syst, pv, orbitalPeriod);
     }
 
     /**
@@ -61,7 +61,6 @@ public class HaloOrbit extends LibrationOrbit {
         super(syst,
               new RichardsonExpansion(syst, point)
                   .computeHaloFirstGuess(az, type, 0.0, 0.0),
-              null,
               new RichardsonExpansion(syst, point).getHaloOrbitalPeriod(az));
     }
 
