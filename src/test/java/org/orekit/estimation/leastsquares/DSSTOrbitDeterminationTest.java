@@ -160,7 +160,7 @@ public class DSSTOrbitDeterminationTest {
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
-        // input in tutorial resources directory/output
+        // input in resources directory
         final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/dsst_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
@@ -213,7 +213,7 @@ public class DSSTOrbitDeterminationTest {
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
-        // input in tutorial resources directory/output
+        // input in resources directory
         final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/dsst_od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 

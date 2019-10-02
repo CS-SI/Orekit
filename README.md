@@ -33,7 +33,7 @@ __Note:__ Our official repository is
 ## Documentation
 
 Project overview, architecture and development, detailed features list,
-tutorials, Javadoc and a lot of other information is available on the
+Javadoc and a lot of other information is available on the
 [Maven site](https://www.orekit.org/site-orekit-development/).
 
 ## Getting help
