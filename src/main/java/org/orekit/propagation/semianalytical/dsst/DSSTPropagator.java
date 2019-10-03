@@ -136,6 +136,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private static final int I = 1;
 
+    /** Default value for epsilon. */
+    private static final double EPSILON_DEFAULT = 1.0e-13;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 200;
+
     /** Number of grid points per integration step to be used in interpolation of short periodics coefficients.*/
     private static final int INTERPOLATION_POINTS_PER_STEP = 3;
 
@@ -477,7 +483,36 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     public static SpacecraftState computeMeanState(final SpacecraftState osculating,
                                                    final AttitudeProvider attitudeProvider,
                                                    final Collection<DSSTForceModel> forceModels) {
-        final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels);
+        return computeMeanState(osculating, attitudeProvider, forceModels, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean state <b>in a DSST sense</b>, corresponding to the
+     * osculating SpacecraftState in input, and according to the Force models
+     * taken into account.
+     * </p><p>
+     * Since the osculating state is obtained with the computation of
+     * short-periodic variation of each force model, the resulting output will
+     * depend on the force models parameterized in input.
+     * </p><p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating Osculating state to convert
+     * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
+     * like atmospheric drag, radiation pressure or specific user-defined models)
+     * @param forceModels Forces to take into account
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @return mean state in a DSST sense
+     * @since 10.1
+     */
+    public static SpacecraftState computeMeanState(final SpacecraftState osculating,
+                                                   final AttitudeProvider attitudeProvider,
+                                                   final Collection<DSSTForceModel> forceModels,
+                                                   final double epsilon,
+                                                   final int maxIterations) {
+        final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels, epsilon, maxIterations);
         return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
     }
 
@@ -587,17 +622,18 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModels force models
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
      * @return mean state
      */
     private static Orbit computeMeanOrbit(final SpacecraftState osculating,
                                           final AttitudeProvider attitudeProvider,
-                                          final Collection<DSSTForceModel> forceModels) {
+                                          final Collection<DSSTForceModel> forceModels, final double epsilon, final int maxIterations) {
 
         // rough initialization of the mean parameters
         EquinoctialOrbit meanOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(osculating.getOrbit());
 
         // threshold for each parameter
-        final double epsilon    = 1.0e-13;
         final double thresholdA = epsilon * (1 + FastMath.abs(meanOrbit.getA()));
         final double thresholdE = epsilon * (1 + meanOrbit.getE());
         final double thresholdI = epsilon * (1 + meanOrbit.getI());
@@ -609,7 +645,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
 
         int i = 0;
-        while (i++ < 200) {
+        while (i++ < maxIterations) {
 
             final SpacecraftState meanState = new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass());
 
