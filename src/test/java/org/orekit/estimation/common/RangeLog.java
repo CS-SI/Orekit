@@ -15,38 +15,20 @@
  * limitations under the License.
  */
 
-package org.orekit.estimation.leastsquares.common;
+package org.orekit.estimation.common;
 
-/** Container for Position-velocity data. */
-class PVData {
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.Range;
 
-    /** Position sigma. */
-    private final double positionSigma;
+/** Logger for range measurements.
+ * @author Luc Maisonobe
+ */
+class RangeLog extends MeasurementLog<Range> {
 
-    /** Velocity sigma. */
-    private final double velocitySigma;
-
-    /** Simple constructor.
-     * @param positionSigma position sigma
-     * @param velocitySigma velocity sigma
-     */
-    PVData(final double positionSigma, final double velocitySigma) {
-        this.positionSigma = positionSigma;
-        this.velocitySigma = velocitySigma;
-    }
-
-    /** Get position sigma.
-     * @return position sigma
-     */
-    public double getPositionSigma() {
-        return positionSigma;
-    }
-
-    /** Get velocity sigma.
-     * @return velocity sigma
-     */
-    public double getVelocitySigma() {
-        return velocitySigma;
+    /** {@inheritDoc} */
+    @Override
+    double residual(final EstimatedMeasurement<Range> evaluation) {
+        return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
     }
 
 }

@@ -15,24 +15,38 @@
  * limitations under the License.
  */
 
-package org.orekit.estimation.leastsquares.common;
+package org.orekit.estimation.common;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.PV;
+/** Container for Position-velocity data. */
+class PVData {
 
-/** Logger for velocity measurements.
- * @author Luc Maisonobe
- */
-class VelocityLog extends MeasurementLog<PV> {
+    /** Position sigma. */
+    private final double positionSigma;
 
-    /** {@inheritDoc} */
-    @Override
-    double residual(final EstimatedMeasurement<PV> evaluation) {
-        final double[] theoretical = evaluation.getEstimatedValue();
-        final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
-        return Vector3D.distance(new Vector3D(theoretical[3], theoretical[4], theoretical[5]),
-                                 new Vector3D(observed[3],    observed[4],    observed[5]));
+    /** Velocity sigma. */
+    private final double velocitySigma;
+
+    /** Simple constructor.
+     * @param positionSigma position sigma
+     * @param velocitySigma velocity sigma
+     */
+    PVData(final double positionSigma, final double velocitySigma) {
+        this.positionSigma = positionSigma;
+        this.velocitySigma = velocitySigma;
+    }
+
+    /** Get position sigma.
+     * @return position sigma
+     */
+    public double getPositionSigma() {
+        return positionSigma;
+    }
+
+    /** Get velocity sigma.
+     * @return velocity sigma
+     */
+    public double getVelocitySigma() {
+        return velocitySigma;
     }
 
 }
