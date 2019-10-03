@@ -15,21 +15,20 @@
  * limitations under the License.
  */
 
-package org.orekit.estimation.leastsquares.common;
+package org.orekit.estimation.common;
 
-import org.hipparchus.util.FastMath;
-import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.RangeRate;
 
-/** Logger for elevation measurements.
+/** Logger for range rate measurements.
  * @author Luc Maisonobe
  */
-class ElevationLog extends MeasurementLog<AngularAzEl> {
+class RangeRateLog extends MeasurementLog<RangeRate> {
 
     /** {@inheritDoc} */
     @Override
-    double residual(final EstimatedMeasurement<AngularAzEl> evaluation) {
-        return FastMath.toDegrees(evaluation.getEstimatedValue()[1] - evaluation.getObservedMeasurement().getObservedValue()[1]);
+    double residual(final EstimatedMeasurement<RangeRate> evaluation) {
+        return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
     }
 
 }

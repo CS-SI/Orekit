@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
-package org.orekit.estimation.leastsquares.common;
+package org.orekit.estimation.common;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.PV;
 
-/** Logger for range rate measurements.
+/** Logger for position measurements.
  * @author Luc Maisonobe
  */
-class RangeRateLog extends MeasurementLog<RangeRate> {
+class PositionLog extends MeasurementLog<PV> {
 
     /** {@inheritDoc} */
     @Override
-    double residual(final EstimatedMeasurement<RangeRate> evaluation) {
-        return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
+    double residual(final EstimatedMeasurement<PV> evaluation) {
+        final double[] theoretical = evaluation.getEstimatedValue();
+        final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
+        return Vector3D.distance(new Vector3D(theoretical[0], theoretical[1], theoretical[2]),
+                                 new Vector3D(observed[0],    observed[1],    observed[2]));
     }
 
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.orekit.estimation.leastsquares.common;
+package org.orekit.estimation.common;
 
 /** Container for base weights.
  * @author Luc Maisonobe
