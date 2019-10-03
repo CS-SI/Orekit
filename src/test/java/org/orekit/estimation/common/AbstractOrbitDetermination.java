@@ -65,6 +65,7 @@ import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
@@ -126,6 +127,7 @@ import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -317,7 +319,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, false);
 
         // measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<ObservedMeasurement<?>>();
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
@@ -329,25 +331,26 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             }
 
             if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                            Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+                Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
-                measurements.addAll(readRinex(nd,
-                                              parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
-                                              stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
-                                              rangeOutliersManager, rangeRateOutliersManager));
+                independentMeasurements.addAll(readRinex(nd,
+                                                         parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
+                                                         stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
+                                                         rangeOutliersManager, rangeRateOutliersManager));
             } else {
                 // the measurements come from an Orekit custom file
-                measurements.addAll(readMeasurements(nd,
-                                                     stations, pvData, satellite,
-                                                     satRangeBias, satAntennaRangeModifier, weights,
-                                                     rangeOutliersManager,
-                                                     rangeRateOutliersManager,
-                                                     azElOutliersManager,
-                                                     pvOutliersManager));
+                independentMeasurements.addAll(readMeasurements(nd,
+                                                                stations, pvData, satellite,
+                                                                satRangeBias, satAntennaRangeModifier, weights,
+                                                                rangeOutliersManager,
+                                                                rangeRateOutliersManager,
+                                                                azElOutliersManager,
+                                                                pvOutliersManager));
             }
 
         }
-        for (ObservedMeasurement<?> measurement : measurements) {
+        final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
+        for (ObservedMeasurement<?> measurement : multiplexed) {
             estimator.addMeasurement(measurement);
         }
 
@@ -374,28 +377,13 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                     final PVCoordinates currentPV = orbits[0].getPVCoordinates();
                     final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s%n";
                     final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
-                    final EvaluationCounter<Range>     rangeCounter     = new EvaluationCounter<Range>();
-                    final EvaluationCounter<RangeRate> rangeRateCounter = new EvaluationCounter<RangeRate>();
-                    final EvaluationCounter<AngularAzEl>   angularCounter   = new EvaluationCounter<AngularAzEl>();
-                    final EvaluationCounter<PV>        pvCounter        = new EvaluationCounter<PV>();
+                    final EvaluationCounter<Range>       rangeCounter     = new EvaluationCounter<Range>();
+                    final EvaluationCounter<RangeRate>   rangeRateCounter = new EvaluationCounter<RangeRate>();
+                    final EvaluationCounter<AngularAzEl> angularCounter   = new EvaluationCounter<AngularAzEl>();
+                    final EvaluationCounter<PV>          pvCounter        = new EvaluationCounter<PV>();
                     for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
-                        if (entry.getKey() instanceof Range) {
-                            @SuppressWarnings("unchecked")
-                            final EstimatedMeasurement<Range> evaluation = (EstimatedMeasurement<Range>) entry.getValue();
-                            rangeCounter.add(evaluation);
-                        } else if (entry.getKey() instanceof RangeRate) {
-                            @SuppressWarnings("unchecked")
-                            final EstimatedMeasurement<RangeRate> evaluation = (EstimatedMeasurement<RangeRate>) entry.getValue();
-                            rangeRateCounter.add(evaluation);
-                        } else if (entry.getKey() instanceof AngularAzEl) {
-                            @SuppressWarnings("unchecked")
-                            final EstimatedMeasurement<AngularAzEl> evaluation = (EstimatedMeasurement<AngularAzEl>) entry.getValue();
-                            angularCounter.add(evaluation);
-                        } else if (entry.getKey() instanceof PV) {
-                            @SuppressWarnings("unchecked")
-                            final EstimatedMeasurement<PV> evaluation = (EstimatedMeasurement<PV>) entry.getValue();
-                            pvCounter.add(evaluation);
-                        }
+                        logEvaluation(entry.getValue(),
+                                      rangeCounter, rangeRateCounter, angularCounter, null, pvCounter, null);
                     }
                     if (evaluationsCount == 1) {
                         System.out.format(Locale.US, format0,
@@ -420,25 +408,8 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
         // compute some statistics
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
-            if (entry.getKey() instanceof Range) {
-                @SuppressWarnings("unchecked")
-                final EstimatedMeasurement<Range> evaluation = (EstimatedMeasurement<Range>) entry.getValue();
-                rangeLog.add(evaluation);
-            } else if (entry.getKey() instanceof RangeRate) {
-                @SuppressWarnings("unchecked")
-                final EstimatedMeasurement<RangeRate> evaluation = (EstimatedMeasurement<RangeRate>) entry.getValue();
-                rangeRateLog.add(evaluation);
-            } else if (entry.getKey() instanceof AngularAzEl) {
-                @SuppressWarnings("unchecked")
-                final EstimatedMeasurement<AngularAzEl> evaluation = (EstimatedMeasurement<AngularAzEl>) entry.getValue();
-                azimuthLog.add(evaluation);
-                elevationLog.add(evaluation);
-            } else if (entry.getKey() instanceof PV) {
-                @SuppressWarnings("unchecked")
-                final EstimatedMeasurement<PV> evaluation = (EstimatedMeasurement<PV>) entry.getValue();
-                positionLog.add(evaluation);
-                velocityLog.add(evaluation);
-            }
+            logEvaluation(entry.getValue(),
+                          rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
         }
 
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
@@ -518,7 +489,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, true);
 
         // measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<ObservedMeasurement<?>>();
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
@@ -533,22 +504,24 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
                 Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
-                measurements.addAll(readRinex(nd,
-                                              parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
-                                              stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
-                                              rangeOutliersManager, rangeRateOutliersManager));
+                independentMeasurements.addAll(readRinex(nd,
+                                                         parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
+                                                         stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
+                                                         rangeOutliersManager, rangeRateOutliersManager));
             } else {
                 // the measurements come from an Orekit custom file
-                measurements.addAll(readMeasurements(nd,
-                                                     stations, pvData, satellite,
-                                                     satRangeBias, satAntennaRangeModifier, weights,
-                                                     rangeOutliersManager,
-                                                     rangeRateOutliersManager,
-                                                     azElOutliersManager,
-                                                     pvOutliersManager));
+                independentMeasurements.addAll(readMeasurements(nd,
+                                                                stations, pvData, satellite,
+                                                                satRangeBias, satAntennaRangeModifier, weights,
+                                                                rangeOutliersManager,
+                                                                rangeRateOutliersManager,
+                                                                azElOutliersManager,
+                                                                pvOutliersManager));
             }
 
         }
+
+        final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
 
         // Building the Kalman filter:
         // - Gather the estimated measurement parameters in a list
@@ -558,7 +531,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
         // Build the list of estimated measurements
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
-        for (ObservedMeasurement<?> measurement : measurements) {
+        for (ObservedMeasurement<?> measurement : multiplexed) {
             final List<ParameterDriver> drivers = measurement.getParametersDrivers();
             for (ParameterDriver driver : drivers) {
                 if (driver.isSelected()) {
@@ -635,29 +608,21 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                 String stationName = "";
 
                 // Register the measurement in the proper measurement logger
+                logEvaluation(estimatedMeasurement,
+                              rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
                 if (observedMeasurement instanceof Range) {
-
-                    // Add the tuple (estimation, prediction) to the log
-                    rangeLog.add((EstimatedMeasurement<Range>) estimatedMeasurement);
-
-                    // Measurement type & Station name
                     measType    = "RANGE";
                     stationName =  ((EstimatedMeasurement<Range>) estimatedMeasurement).getObservedMeasurement().
                                     getStation().getBaseFrame().getName();
                 } else if (observedMeasurement instanceof RangeRate) {
-                    rangeRateLog.add((EstimatedMeasurement<RangeRate>) estimatedMeasurement);
                     measType    = "RANGE_RATE";
                     stationName =  ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).getObservedMeasurement().
                                     getStation().getBaseFrame().getName();
                 } else if (observedMeasurement instanceof AngularAzEl) {
-                    azimuthLog.add((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement);
-                    elevationLog.add((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement);
                     measType    = "AZ_EL";
                     stationName =  ((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement).getObservedMeasurement().
                                     getStation().getBaseFrame().getName();
                 } else if (observedMeasurement instanceof PV) {
-                    positionLog.add((EstimatedMeasurement<PV>) estimatedMeasurement);
-                    velocityLog.add((EstimatedMeasurement<PV>) estimatedMeasurement);
                     measType    = "PV";
                 }
 
@@ -745,7 +710,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         });
 
         // Process the list measurements 
-        final Orbit estimated = kalman.processMeasurements(measurements)[0].getInitialState().getOrbit();
+        final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
 
         // Get the last estimated physical covariances
         final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
@@ -1852,6 +1817,42 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
     }
 
+    /** Multiplex measurements.
+     * @param independentMeasurements independent measurements
+     * @param tol tolerance on time difference for multiplexed measurements
+     * @return multiplexed measurements
+     */
+    private List<ObservedMeasurement<?>> multiplexMeasurements(final List<ObservedMeasurement<?>> independentMeasurements,
+                                                               final double tol) {
+        final List<ObservedMeasurement<?>> multiplexed = new ArrayList<>();
+        independentMeasurements.sort(new ChronologicalComparator());
+        List<ObservedMeasurement<?>> clump = new ArrayList<>();
+        for (final ObservedMeasurement<?> measurement : independentMeasurements) {
+            if (!clump.isEmpty() && measurement.getDate().durationFrom(clump.get(0).getDate()) > tol) {
+
+                // previous clump is finished
+                if (clump.size() == 1) {
+                    multiplexed.add(clump.get(0));
+                } else {
+                    multiplexed.add(new MultiplexedMeasurement(clump));
+                }
+
+                // start new clump
+                clump = new ArrayList<>();
+
+            }
+            // TODO: remove the first argument...
+            clump.add(0, measurement);
+        }
+        // final clump is finished
+        if (clump.size() == 1) {
+            multiplexed.add(clump.get(0));
+        } else {
+            multiplexed.add(new MultiplexedMeasurement(clump));
+        }
+        return multiplexed;
+    }
+
     /** Sort parameters changes.
      * @param parameters parameters list
      */
@@ -2038,6 +2039,52 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             logStream.format(Locale.US, strFormat + numFormat + "\n", paramNames[i], sigmas[i]);
         }
         logStream.println("");
+    }
+
+    /** Log evaluations.
+     */
+    private void logEvaluation(EstimatedMeasurement<?> evaluation,
+                               EvaluationLogger<Range> rangeLog,
+                               EvaluationLogger<RangeRate> rangeRateLog,
+                               EvaluationLogger<AngularAzEl> azimuthLog,
+                               EvaluationLogger<AngularAzEl> elevationLog,
+                               EvaluationLogger<PV> positionLog,
+                               EvaluationLogger<PV> velocityLog) {
+        if (evaluation.getObservedMeasurement() instanceof Range) {
+            @SuppressWarnings("unchecked")
+            final EstimatedMeasurement<Range> ev = (EstimatedMeasurement<Range>) evaluation;
+            if (rangeLog != null) {
+                rangeLog.log(ev);
+            }
+        } else if (evaluation.getObservedMeasurement() instanceof RangeRate) {
+            @SuppressWarnings("unchecked")
+            final EstimatedMeasurement<RangeRate> ev = (EstimatedMeasurement<RangeRate>) evaluation;
+            if (rangeRateLog != null) {
+                rangeRateLog.log(ev);
+            }
+        } else if (evaluation.getObservedMeasurement() instanceof AngularAzEl) {
+            @SuppressWarnings("unchecked")
+            final EstimatedMeasurement<AngularAzEl> ev = (EstimatedMeasurement<AngularAzEl>) evaluation;
+            if (azimuthLog != null) {
+                azimuthLog.log(ev);
+            }
+            if (elevationLog != null) {
+                elevationLog.log(ev);
+            }
+        } else if (evaluation.getObservedMeasurement() instanceof PV) {
+            @SuppressWarnings("unchecked")
+            final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
+            if (positionLog != null) {
+                positionLog.log(ev);
+            }
+            if (velocityLog != null) {
+                velocityLog.log(ev);
+            }
+        } else if (evaluation.getObservedMeasurement() instanceof MultiplexedMeasurement) {
+            for (final EstimatedMeasurement<?> em : ((MultiplexedMeasurement) evaluation.getObservedMeasurement()).getEstimatedMeasurements()) {
+                logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
+            }
+        }
     }
 
 }

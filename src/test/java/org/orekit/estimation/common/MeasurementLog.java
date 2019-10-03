@@ -30,7 +30,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
  * @param T type of mesurement
  * @author Luc Maisonobe
  */
-abstract class MeasurementLog<T extends ObservedMeasurement<T>> {
+abstract class MeasurementLog<T extends ObservedMeasurement<T>> implements EvaluationLogger<T> {
 
     /** Residuals. */
     private final SortedSet<EstimatedMeasurement<T>> evaluations;
@@ -47,14 +47,13 @@ abstract class MeasurementLog<T extends ObservedMeasurement<T>> {
      */
     abstract double residual(EstimatedMeasurement<T> evaluation);
 
-    /** Add an evaluation.
-     * @param evaluation evaluation to add
-     */
-    void add(final EstimatedMeasurement<T> evaluation) {
+    /** {@inheritDoc} */
+    @Override
+    public void log(final EstimatedMeasurement<T> evaluation) {
         evaluations.add(evaluation);
     }
 
-    /**Create a  statistics summary
+    /** Create a  statistics summary
      */
     StreamingStatistics createStatisticsSummary() {
 

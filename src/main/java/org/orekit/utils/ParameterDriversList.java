@@ -196,7 +196,7 @@ public class ParameterDriversList {
 
         /** Set the changes forwarder.
          * @param forwarder new changes forwarder
-                  * @since 9.1
+         * @since 9.1
          */
         void setForwarder(final ChangesForwarder forwarder) {
 
@@ -293,9 +293,7 @@ public class ParameterDriversList {
         /** {@inheritDoc} */
         @Override
         public void valueChanged(final double previousValue, final ParameterDriver driver) {
-            updateAll(driver, d -> {
-                d.setValue(driver.getValue());
-            });
+            updateAll(driver, d -> d.setValue(driver.getValue()));
         }
 
         /** {@inheritDoc} */
