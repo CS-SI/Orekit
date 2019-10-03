@@ -19,50 +19,41 @@ package org.orekit.estimation.common;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ResultOD {
-
-    private int numberOfIteration;
-    private int numberOfEvaluation;
+public class ResultKalman {
+    private int numberOfMeasurements;
     private TimeStampedPVCoordinates estimatedPV;
     private StreamingStatistics rangeStat;
     private StreamingStatistics azimStat;
     private StreamingStatistics elevStat;
-    ParameterDriversList propagatorParameters  ;
-    ParameterDriversList measurementsParameters;
+    private ParameterDriversList propagatorParameters  ;
+    private ParameterDriversList measurementsParameters;
     private RealMatrix covariances;
-
-    ResultOD(ParameterDriversList  propagatorParameters,
-             ParameterDriversList  measurementsParameters,
-             int numberOfIteration, int numberOfEvaluation, TimeStampedPVCoordinates estimatedPV,
-             StreamingStatistics rangeStat, StreamingStatistics rangeRateStat,
-             StreamingStatistics azimStat, StreamingStatistics elevStat,
-             StreamingStatistics posStat, StreamingStatistics velStat,
-             RealMatrix covariances) {
+    ResultKalman(ParameterDriversList  propagatorParameters,
+                 ParameterDriversList  measurementsParameters,
+                 int numberOfMeasurements, TimeStampedPVCoordinates estimatedPV,
+                 StreamingStatistics rangeStat, StreamingStatistics rangeRateStat,
+                 StreamingStatistics azimStat, StreamingStatistics elevStat,
+                 StreamingStatistics posStat, StreamingStatistics velStat,
+                 RealMatrix covariances) {
 
         this.propagatorParameters   = propagatorParameters;
         this.measurementsParameters = measurementsParameters;
-        this.numberOfIteration      = numberOfIteration;
-        this.numberOfEvaluation     = numberOfEvaluation;
+        this.numberOfMeasurements   = numberOfMeasurements;
         this.estimatedPV            = estimatedPV;
-        this.rangeStat              =  rangeStat;
+        this.rangeStat              = rangeStat;
         this.azimStat               = azimStat;
         this.elevStat               = elevStat;
         this.covariances            = covariances;
     }
 
-    public int getNumberOfIteration() {
-        return numberOfIteration;
+    public int getNumberOfMeasurements() {
+        return numberOfMeasurements;
     }
 
-    public int getNumberOfEvaluation() {
-        return numberOfEvaluation;
-    }
-
-    public PVCoordinates getEstimatedPV() {
+    public TimeStampedPVCoordinates getEstimatedPV() {
         return estimatedPV;
     }
 

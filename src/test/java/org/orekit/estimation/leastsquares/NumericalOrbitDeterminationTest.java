@@ -37,7 +37,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
-import org.orekit.estimation.common.ResultOD;
+import org.orekit.estimation.common.ResultBatchLeastSquares;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
@@ -205,7 +205,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odLageos2 = run(input, false);
+        ResultBatchLeastSquares odLageos2 = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
@@ -269,7 +269,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odGNSS = run(input, false);
+        ResultBatchLeastSquares odGNSS = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
@@ -318,7 +318,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odsatW3 = run(input, false);
+        ResultBatchLeastSquares odsatW3 = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test

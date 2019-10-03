@@ -17,6 +17,7 @@
 
 package org.orekit.estimation.common;
 
+import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -68,6 +69,28 @@ abstract class MeasurementLog<T extends ObservedMeasurement<T>> {
         }
         return stats;
 
+    }
+
+    /** Display summary statistics in the general log file.
+     * @param logStream log stream
+     */
+    public void displaySummary(final PrintStream logStream) {
+        if (!evaluations.isEmpty()) {
+
+            // Compute statistics
+            final StreamingStatistics stats = createStatisticsSummary();
+
+            // Display statistics
+            final String name = evaluations.first().getObservedMeasurement().getClass().getSimpleName();
+            logStream.println("Measurements type: " + name);
+            logStream.println("   number of measurements: " + stats.getN() + "/" + evaluations.size());
+            logStream.println("   residuals min  value  : " + stats.getMin());
+            logStream.println("   residuals max  value  : " + stats.getMax());
+            logStream.println("   residuals mean value  : " + stats.getMean());
+            logStream.println("   residuals σ           : " + stats.getStandardDeviation());
+            logStream.println("   residuals median      : " + stats.getMedian());
+
+        }
     }
 
 }
