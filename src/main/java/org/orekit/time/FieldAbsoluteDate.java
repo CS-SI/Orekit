@@ -1133,7 +1133,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @since 10.1
      */
     public boolean isBeforeOrEqualTo(final FieldTimeStamped<T> other) {
-        return this.isBefore(other) || this.isEqualTo(other);
+        return this.isEqualTo(other) || this.isBefore(other);
     }
 
     /** Check if the instance represents a time that is after or equal to another.
@@ -1143,7 +1143,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @since 10.1
      */
     public boolean isAfterOrEqualTo(final FieldTimeStamped<T> other) {
-        return this.isAfter(other) || this.isEqualTo(other);
+        return this.isEqualTo(other) || this.isAfter(other);
     }
 
     /** Check if the instance represents a time that is strictly between two others representing
@@ -1181,7 +1181,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @since 10.1
      */
     public boolean isBetweenOrEqualTo(final FieldTimeStamped<T> boundary, final FieldTimeStamped otherBoundary) {
-        return this.isBetween(boundary, otherBoundary) || this.isEqualTo(boundary) || this.isEqualTo(otherBoundary);
+        return this.isEqualTo(boundary) || this.isEqualTo(otherBoundary) || this.isBetween(boundary, otherBoundary);
     }
 
     /** Get a hashcode for this date.

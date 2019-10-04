@@ -1043,7 +1043,7 @@ public class AbsoluteDate
      * @since 10.1
      */
     public boolean isBeforeOrEqualTo(final TimeStamped other) {
-        return this.isBefore(other) || this.isEqualTo(other);
+        return this.isEqualTo(other) || this.isBefore(other);
     }
 
     /** Check if the instance represents a time that is after or equal to another.
@@ -1053,7 +1053,7 @@ public class AbsoluteDate
      * @since 10.1
      */
     public boolean isAfterOrEqualTo(final TimeStamped other) {
-        return this.isAfter(other) || this.isEqualTo(other);
+        return this.isEqualTo(other) || this.isAfter(other);
     }
 
     /** Check if the instance represents a time that is strictly between two others representing
@@ -1091,7 +1091,7 @@ public class AbsoluteDate
      * @since 10.1
      */
     public boolean isBetweenOrEqualTo(final TimeStamped boundary, final TimeStamped otherBoundary) {
-        return this.isBetween(boundary, otherBoundary) || this.isEqualTo(boundary) || this.isEqualTo(otherBoundary);
+        return this.isEqualTo(boundary) || this.isEqualTo(otherBoundary) || this.isBetween(boundary, otherBoundary);
     }
 
     /** Get a hashcode for this date.
