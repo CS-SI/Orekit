@@ -296,7 +296,7 @@ public class CR3BPSystem {
 
     /** Get the position of the Lagrangian point in the CR3BP Rotating frame.
      * @param lagrangianPoint Lagrangian Point to consider
-     * @return position of the Lagrangian point in the CR3BP Rotating frame (m)
+     * @return position of the Lagrangian point in the CR3BP Rotating frame (-)
      */
     public Vector3D getLPosition(final LagrangianPoints lagrangianPoint) {
 
@@ -409,5 +409,36 @@ public class CR3BPSystem {
         final PVCoordinates pv3 = getRealPV(apv0.getPVCoordinates(), date, outputFrame);
 
         return new AbsolutePVCoordinates(outputFrame, date, pv3);
+    }
+
+    /** Get the normalized AbsolutePVCoordinates in the rotating frame from standard units.
+     * @param absPv1 AbsolutePVCoordinates in standard units
+     * @return AbsolutePVCoordinates in the rotating frame [-,-]
+     */
+    public AbsolutePVCoordinates
+        getNormalizedAPV(final AbsolutePVCoordinates absPv1) {
+        // 1.   Apply the transformation from input to rotating frame
+        // 2.   Dimensionalize  the state vector using the instantaneously
+        //      defined characteristic quantities
+
+        final Frame primaryInertialFrame = primaryBody.getInertiallyOrientedFrame();
+        final TimeStampedPVCoordinates pv21 = secondaryBody.getPVCoordinates(absPv1.getDate(), primaryInertialFrame);
+        final Frame inputFrame = absPv1.getFrame();
+        final AbsoluteDate date = absPv1.getDate();
+
+        // Distance and Velocity to dimensionalize the state vector
+        final double dist12 = pv21.getPosition().getNorm();
+        final double vCircular  = FastMath.sqrt(primaryBody.getGM() / dist12);
+
+        // Transformation between primary inertial frame and the output frame
+        final Transform inputFrameToRotatingFrame = inputFrame.getTransformTo(rotatingFrame, date);
+
+        final PVCoordinates pv = inputFrameToRotatingFrame.transformPVCoordinates(absPv1);
+
+        // Dimensionalized state vector centered on primary body
+        final PVCoordinates pvNorm = new PVCoordinates(pv.getPosition().scalarMultiply(1 / dist12),
+                                                      pv.getVelocity().scalarMultiply(1 / vCircular));
+
+        return new AbsolutePVCoordinates(rotatingFrame, date, pvNorm);
     }
 }
