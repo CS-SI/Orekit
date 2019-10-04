@@ -244,7 +244,8 @@ public enum OrekitMessages implements Localizable {
     NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE("file {0} is not a supported Hatanaka-compressed file"),
     CANNOT_COMPUTE_LAGRANGIAN("Cannot compute around {0}"),
     TRAJECTORY_NOT_CROSSING_XZPLANE("The trajectory does not cross XZ Plane, it will not result in a Halo Orbit"),
-    NO_STM_EQUATIONS("SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed");
+    NO_STM_EQUATIONS("SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed"),
+    MULTIPLE_SHOOTING_UNDERCONSTRAINED("The multiple shooting problem is underconstrained : {0} free variables, {1} constraints");
 
     // CHECKSTYLE: resume JavadocVariable check
 

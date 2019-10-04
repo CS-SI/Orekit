@@ -569,3 +569,6 @@ TRAJECTORY_NOT_CROSSING_XZPLANE = The trajectory does not cross XZ Plane, it wil
 
 # SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed
 NO_STM_EQUATIONS = SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed
+
+# The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
+MULTIPLE_SHOOTING_UNDERCONSTRAINED = The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
