@@ -17,7 +17,9 @@
 package org.orekit.utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -47,24 +49,24 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Duration of propagation along each arcs. */
     private double[] propagationTime;
 
-    /** Components which are constrained. */
-    private int[] mapConstraints;
+    /** Free components of patch points. */
+    private boolean[] freePatchPointMap;
 
-    /** Values of the constraints of each component of the map. */
-    private double[] constraints;
+    /** Components which are constrained. */
+    private Map<Integer, Double> mapConstraints;
+
+    /** Tolerance on the constraint vector. */
+    private double tolerance;
 
     /** Simple Constructor.
-     * <p> Standard constructor using DormandPrince853 integrator for the differential correction </p>
-     * @param initialGuessList first guess PVCoordinates of the point to start differential correction
-     * @param propagatorList .
-     * @param additionalEquations .
-     * @param pointsWithConstraints Patch point with constraints
-     * @param constraintsComponents Component of the patch points which are constrained.
-     * @param constraints constraints values
+     * <p> Standard constructor for multiple shooting </p>
+     * @param initialGuessList initial patch points to be corrected.
+     * @param propagatorList list of propagators associated to each patch point.
+     * @param additionalEquations list of additional equations linked to propagatorList.
+     * @param tolerance convergence tolerance on the constraint vector.
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                    final List<AdditionalEquations> additionalEquations, final int[] pointsWithConstraints,
-                                    final int[] constraintsComponents, final double[] constraints) {
+                                    final List<AdditionalEquations> additionalEquations, final double tolerance) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
         this.additionalEquations = additionalEquations;
@@ -74,13 +76,33 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             this.propagationTime[i] = patchedSpacecraftStates.get(i + 1).getDate().durationFrom(initialGuessList.get(i).getDate());
         }
 
-        // Attention aux exceptions
-        final int constraintsNumber = pointsWithConstraints.length;
-        this.mapConstraints = new int[constraintsNumber];
-        for (int i = 0; i < constraintsNumber; i++ ) {
-            this.mapConstraints[i] = (pointsWithConstraints[i] - 1) * 6 + constraintsComponents[i];
+        // All the patch points are set initially as free variables
+        this.freePatchPointMap = new boolean[6 * initialGuessList.size()];
+        for (int i = 0; i < freePatchPointMap.length; i++) {
+            freePatchPointMap[i] = true;
         }
-        this.constraints = constraints;
+
+        // All the constraints must be set afterward
+        this.mapConstraints = new HashMap<>();
+        this.tolerance = tolerance;
+    }
+
+    /** Set a component of a patch point to free or not.
+     * @param patchNumber Patch point with constraint
+     * @param componentIndex Component of the patch points which are constrained.
+     * @param isFree constraint value
+     */
+    public void setPatchPointComponentFreedom(final int patchNumber, final int componentIndex, final boolean isFree) {
+        freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] = isFree;
+    }
+
+    /** Add a constraint on one component of one patch point.
+     * @param patchNumber Patch point with constraint
+     * @param componentIndex Component of the patch points which are constrained.
+     * @param constraintValue constraint value
+     */
+    public void addConstraint(final int patchNumber, final int componentIndex, final double constraintValue) {
+        mapConstraints.put((patchNumber - 1) * 6 + componentIndex, constraintValue);
     }
 
     /** Return the list of corrected patch points.
@@ -123,7 +145,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
 //            System.out.println("DF(X)^T*DF(X)");
 //            System.out.println(Arrays.deepToString(MtM.getData()));
-
+//
 //            System.out.println("DeltaX");
 //            System.out.println(Arrays.toString(dx.toArray()));
 //
@@ -131,7 +153,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             iter++;
 
-        } while (fxNorm > 1E-8 & iter < 30); // Converge within 1E-8 tolerance and under 5 iterations
+        } while (fxNorm > tolerance & iter < 10); // Converge within 1E-8 tolerance and under 5 iterations
 
         return patchedSpacecraftStates;
     }
@@ -156,10 +178,12 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             propagatorList.get(i).setInitialState(augmentedInitialState);
 
             final double integrationTime = propagationTime[i];
+//            final long startTime = System.currentTimeMillis(); // Useful to plot computation duration
 
-            // Propagate until trajectory crosses XZ Plane
+            // Propagate trajectory
             final SpacecraftState finalState =
                             propagatorList.get(i).propagate(initialState.getDate().shiftedBy(integrationTime));
+//            System.out.println(System.currentTimeMillis()-startTime);
 
             propagatedSP.add(finalState);
         }
@@ -181,11 +205,11 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         return augmentedSP;
     }
 
-    protected double[] getConstraints() {
-        return constraints;
+    protected boolean[] getFreePatchPointMap() {
+        return freePatchPointMap;
     }
 
-    protected int[] getConstraintsMap() {
+    protected Map<Integer, Double> getConstraintsMap() {
         return mapConstraints;
     }
 
