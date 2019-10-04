@@ -26,9 +26,8 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.CR3BPDifferentialCorrection;
 import org.orekit.orbits.HaloOrbit;
-import org.orekit.orbits.HaloOrbitType;
+import org.orekit.orbits.LibrationOrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.CR3BPSphereCrossingDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -83,11 +82,7 @@ public class EarthMoonHaloOrbit {
         // of 8 000 km
         HaloOrbit h =
             new HaloOrbit(syst, LagrangianPoints.L1, 8E6,
-                          HaloOrbitType.NORTHERN);
-
-        // Return a first guess PVCoordinates on this Halo Orbit using
-        // Third-Order Richardson Expansion
-        PVCoordinates firstguess = h.getFirstGuess();
+                          LibrationOrbitType.NORTHERN);
 
         // Get the CR3BP Rotating Frame centered on Earth-Moon Barycenter
         final Frame Frame = syst.getRotatingFrame();
@@ -141,16 +136,12 @@ public class EarthMoonHaloOrbit {
                                            vecAbsoluteTolerances,
                                            vecRelativeTolerances);
 
-        // This propagator will be used only for the differential correction
-        // You can also choose to ignore this part and not give any propagator
-        // to the differential correction. In that case, the differential
-        // correction will use a predefined numerical propagator.
-        NumericalPropagator propagatorDif = new NumericalPropagator(integrator);
 
         // Differential correction on the first guess necessary to find a point that will lead to an Halo Orbit.
-        final PVCoordinates initialConditions =
-            new CR3BPDifferentialCorrection(firstguess, syst, orbitalPeriod,
-                                            propagatorDif).compute();
+        h.applyDifferentialCorrection();
+        
+        // Return a PVCoordinates leading to the Halo Orbit
+        final PVCoordinates initialConditions = h.getInitialPV();
 
         // Define a clean propagator for the final propagation
         NumericalPropagator propagator = new NumericalPropagator(integrator);
