@@ -686,6 +686,87 @@ public class AbsoluteDateTest {
     }
 
     @Test
+    public void testIsEqualTo() {
+        Assert.assertTrue(present.isEqualTo(present));
+        Assert.assertTrue(present.isEqualTo(presentToo));
+        Assert.assertFalse(present.isEqualTo(past));
+        Assert.assertFalse(present.isEqualTo(future));
+    }
+
+    @Test
+    public void testIsCloseTo() {
+        double tolerance = 10;
+        TimeStamped closeToPresent = new AnyTimeStamped(present.shiftedBy(5));
+        Assert.assertTrue(present.isCloseTo(present, tolerance));
+        Assert.assertTrue(present.isCloseTo(presentToo, tolerance));
+        Assert.assertTrue(present.isCloseTo(closeToPresent, tolerance));
+        Assert.assertFalse(present.isCloseTo(past, tolerance));
+        Assert.assertFalse(present.isCloseTo(future, tolerance));
+    }
+
+    @Test
+    public void testIsBefore() {
+        Assert.assertFalse(present.isBefore(past));
+        Assert.assertFalse(present.isBefore(present));
+        Assert.assertFalse(present.isBefore(presentToo));
+        Assert.assertTrue(present.isBefore(future));
+    }
+
+    @Test
+    public void testIsAfter() {
+        Assert.assertTrue(present.isAfter(past));
+        Assert.assertFalse(present.isAfter(present));
+        Assert.assertFalse(present.isAfter(presentToo));
+        Assert.assertFalse(present.isAfter(future));
+    }
+
+    @Test
+    public void testIsBeforeOrEqualTo() {
+        Assert.assertFalse(present.isBeforeOrEqualTo(past));
+        Assert.assertTrue(present.isBeforeOrEqualTo(present));
+        Assert.assertTrue(present.isBeforeOrEqualTo(presentToo));
+        Assert.assertTrue(present.isBeforeOrEqualTo(future));
+    }
+
+    @Test
+    public void testIsAfterOrEqualTo() {
+        Assert.assertTrue(present.isAfterOrEqualTo(past));
+        Assert.assertTrue(present.isAfterOrEqualTo(present));
+        Assert.assertTrue(present.isAfterOrEqualTo(presentToo));
+        Assert.assertFalse(present.isAfterOrEqualTo(future));
+    }
+
+    @Test
+    public void testIsBetween() {
+        Assert.assertTrue(present.isBetween(past, future));
+        Assert.assertTrue(present.isBetween(future, past));
+        Assert.assertFalse(past.getDate().isBetween(present, future));
+        Assert.assertFalse(past.getDate().isBetween(future, present));
+        Assert.assertFalse(future.getDate().isBetween(past, present));
+        Assert.assertFalse(future.getDate().isBetween(present, past));
+        Assert.assertFalse(present.isBetween(present, future));
+        Assert.assertFalse(present.isBetween(past, present));
+        Assert.assertFalse(present.isBetween(past, past));
+        Assert.assertFalse(present.isBetween(present, present));
+        Assert.assertFalse(present.isBetween(present, presentToo));
+    }
+
+    @Test
+    public void testIsBetweenOrEqualTo() {
+        Assert.assertTrue(present.isBetweenOrEqualTo(past, future));
+        Assert.assertTrue(present.isBetweenOrEqualTo(future, past));
+        Assert.assertFalse(past.getDate().isBetweenOrEqualTo(present, future));
+        Assert.assertFalse(past.getDate().isBetweenOrEqualTo(future, present));
+        Assert.assertFalse(future.getDate().isBetweenOrEqualTo(past, present));
+        Assert.assertFalse(future.getDate().isBetweenOrEqualTo(present, past));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, future));
+        Assert.assertTrue(present.isBetweenOrEqualTo(past, present));
+        Assert.assertFalse(present.isBetweenOrEqualTo(past, past));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, present));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, presentToo));
+    }
+
+    @Test
     public void testAccuracy() {
         TimeScale tai = TimeScalesFactory.getTAI();
         double sec = 0.281;
@@ -866,8 +947,29 @@ public class AbsoluteDateTest {
     public void setUp() {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
+        present = new AbsoluteDate(new DateComponents(2000, 1, 1),
+                                    new TimeComponents(12, 00, 00), utc);
+        presentToo = new AnyTimeStamped(present.shiftedBy(0));
+        past = new AnyTimeStamped(present.shiftedBy(-1000));
+        future = new AnyTimeStamped(present.shiftedBy(1000));
     }
 
     private TimeScale utc;
+    private AbsoluteDate present;
+    private AnyTimeStamped past;
+    private AnyTimeStamped presentToo;
+    private AnyTimeStamped future;
+
+    static class AnyTimeStamped implements TimeStamped {
+        AbsoluteDate date;
+        public AnyTimeStamped(AbsoluteDate date) {
+            this.date = date;
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+    }
 
 }
