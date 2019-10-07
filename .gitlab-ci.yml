@@ -41,5 +41,8 @@ release:
   stage: release
   script:
     - mvn $MAVEN_CLI_OPTS -DskipTests=true assembly:single
+  artifacts:
+    paths:
+      - target/*.zip
   only:
     - /^release-[.0-9]+$/
