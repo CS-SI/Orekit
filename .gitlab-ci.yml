@@ -1,6 +1,5 @@
 stages:
 - verify
-- site
 - release
 
 default:
@@ -24,18 +23,14 @@ variables:
 verify:
   stage: verify
   script:
-    - mvn $MAVEN_CLI_OPTS verify
+    - mvn $MAVEN_CLI_OPTS verify site
   artifacts:
     paths:
       - target/*.jar
+      - target/site
     reports:
       junit:
         - target/surefire-reports/*.xml
-
-site:
-  stage: site
-  script:
-    - mvn $MAVEN_CLI_OPTS site
 
 release:
   stage: release
