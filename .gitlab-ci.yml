@@ -3,8 +3,14 @@ stages:
 - site
 - release
 
-# Default image
-image: maven:3.3.9-jdk-8
+default:
+  # Default image
+  image: maven:3.3.9-jdk-8
+  # Cache downloaded dependencies and plugins between builds.
+  # To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
+  cache:
+    paths:
+      - .m2/repository
 
 variables:
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
@@ -14,12 +20,6 @@ variables:
   # when running from the command line.
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
-
-# Cache downloaded dependencies and plugins between builds.
-# To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
-cache:
-  paths:
-    - .m2/repository
 
 verify:
   stage: verify
