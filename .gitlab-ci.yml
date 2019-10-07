@@ -40,6 +40,6 @@ site:
 release:
   stage: release
   script:
-    - mvn $MAVEN_CLI_OPTS assembly:single
+    - mvn $MAVEN_CLI_OPTS -DskipTests=true assembly:single
   only:
     - /^release-[.0-9]+$/
