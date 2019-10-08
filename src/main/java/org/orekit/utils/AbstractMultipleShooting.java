@@ -99,7 +99,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
         this.tolerance = tolerance;
 
-        // All the constraints must be set afterward
+        // All the additional constraints must be set afterward
         this.mapConstraints = new HashMap<>();
         this.isClosedOrbit = false;
     }
@@ -156,19 +156,19 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         double fxNorm = 0;
 
         do {
-            //            System.out.println("Itération " + (iter + 1));
-            //            System.out.println(Arrays.toString(propagationTime));
+            // System.out.println("Itération " + (iter + 1));
+            // System.out.println(Arrays.toString(propagationTime));
 
             final List<SpacecraftState> propagatedSP = propagatePatchedSpacecraftState(); // multi threading see PropagatorsParallelizer
             final RealMatrix M = computeJacobianMatrix(propagatedSP);
             final RealVector fx = MatrixUtils.createRealVector(computeConstraint(propagatedSP));
 
-            //            System.out.println("DF(X)");
-            //            for (int i = 0; i < M.getRowDimension(); i++) {
-            //                System.out.println(Arrays.toString(M.getRow(i)));
-            //            }
-            //            System.out.println("F(X)");
-            //            System.out.println(Arrays.toString(fx.toArray()));
+            // System.out.println("DF(X)");
+            //for (int i = 0; i < M.getRowDimension(); i++) {
+            //    System.out.println(Arrays.toString(M.getRow(i)));
+            // }
+            // System.out.println("F(X)");
+            // System.out.println(Arrays.toString(fx.toArray()));
 
             // Solve linear system
             final RealVector B = M.transpose().operate(fx);
@@ -184,13 +184,13 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             fxNorm = fx.getNorm() / fx.getDimension();
 
-            //            System.out.println("DF(X)^T*DF(X)");
-            //            System.out.println(Arrays.deepToString(MtM.getData()));
+            // System.out.println("DF(X)^T*DF(X)");
+            // System.out.println(Arrays.deepToString(MtM.getData()));
             //
-            //            System.out.println("DeltaX");
-            //            System.out.println(Arrays.toString(dx.toArray()));
-            //
-            //            System.out.println("||F(X)|| = " + fxNorm);
+            // System.out.println("DeltaX");
+            // System.out.println(Arrays.toString(dx.toArray()));
+
+            // System.out.println("||F(X)|| = " + fxNorm);
 
             iter++;
 
@@ -224,7 +224,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             // Propagate trajectory
             final SpacecraftState finalState =
                             propagatorList.get(i).propagate(initialState.getDate().shiftedBy(integrationTime));
-            //            System.out.println(System.currentTimeMillis()-startTime);
+            // System.out.println(System.currentTimeMillis()-startTime);
 
             propagatedSP.add(finalState);
         }
@@ -266,8 +266,12 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         return mapConstraints;
     }
 
-    protected List<SpacecraftState> getPacthedSpacecraftState() {
+    protected List<SpacecraftState> getPatchedSpacecraftState() {
         return patchedSpacecraftStates;
+    }
+
+    protected List<NumericalPropagator> getPropagatorList() {
+        return propagatorList;
     }
 
     protected double[] getPropagationTime() {
