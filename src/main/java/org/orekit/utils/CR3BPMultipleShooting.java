@@ -50,9 +50,6 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
     /** Number of patch points. */
     private int npoints;
 
-    /** True if orbit is closed. */
-    private boolean isClosedOrbit;
-
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
      * @param initialGuessList initial patch points to be corrected.
@@ -66,7 +63,6 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         super(initialGuessList, propagatorList, additionalEquations, tolerance);
         this.cr3bp = cr3bp;
         this.npoints = initialGuessList.size();
-        this.isClosedOrbit = false;
     }
 
     /** Compute the additional state from the additionalEquations.
@@ -94,21 +90,12 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
      */
     public RealMatrix computeJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
-        final int n = npoints;
-
-        final double[][] subM = computeAdditionalJacobianMatrix(propagatedSP);
-
         final boolean[] freePatchPointMap = getFreePatchPointMap();
 
-        final int nrows = 6 * (npoints - 1) + subM.length;
-        int ncolumns = 1; // T is a free variable
+        final int nrows = getNumberOfConstraints();
+        final int ncolumns = getNumberOfFreeVariables();
 
-        for (int i = 0; i < freePatchPointMap.length; i++) {
-            if (freePatchPointMap[i]) {
-                ncolumns++;
-            }
-        }
-
+        // Should be covered in higher abstract method
         if (ncolumns > nrows) {
             throw new OrekitException(OrekitMessages.MULTIPLE_SHOOTING_UNDERCONSTRAINED, ncolumns, nrows);
         }
@@ -171,7 +158,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             //      [               ..   ..     ]
             //      [                    -1   1 ]
 
-            final PVCoordinates pv = finalState.getPVCoordinates();
+            final PVCoordinates pvf = finalState.getPVCoordinates();
 
             // Get State Transition Matrix phi
             final RealMatrix phi = getStateTransitionMatrix(finalState);
@@ -188,15 +175,15 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
                 }
             }
 
-            final double[][] pvArray = new double[][] {
-                {pv.getVelocity().getX()},
-                {pv.getVelocity().getY()},
-                {pv.getVelocity().getZ()},
-                {pv.getAcceleration().getX()},
-                {pv.getAcceleration().getY()},
-                {pv.getAcceleration().getZ()}};
+            final double[][] pvfArray = new double[][] {
+                {pvf.getVelocity().getX()},
+                {pvf.getVelocity().getY()},
+                {pvf.getVelocity().getZ()},
+                {pvf.getAcceleration().getX()},
+                {pvf.getAcceleration().getY()},
+                {pvf.getAcceleration().getZ()}};
 
-            M.setSubMatrix(pvArray, 6 * i, ncolumns - 1);
+            M.setSubMatrix(pvfArray, 6 * i, ncolumns - 1);
         }
 
         final int i = npoints - 1;
@@ -207,8 +194,9 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             }
         }
 
+        final double[][] subM = computeAdditionalJacobianMatrix(propagatedSP);
         if (subM.length > 0) {
-            M.setSubMatrix(subM, 6 * n - 6, 0);
+            M.setSubMatrix(subM, 6 * (npoints - 1), 0);
         }
 
         return M;
@@ -221,13 +209,15 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
     public double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
-        final int nconstraints = mapConstraints.size();
-        int n = nconstraints;;
-        if (isClosedOrbit) {
+        // Number of additional constraints
+        int n = mapConstraints.size();
+        if (isClosedOrbit()) {
             n = n + 6;
         }
 
-        final double[][] M = new double[n][6 * npoints + 1];
+        final int ncolumns = getNumberOfFreeVariables();
+
+        final double[][] M = new double[n][ncolumns];
 
         // The Jacobian matrix has the following form:
         //
@@ -241,10 +231,10 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         //
 
         int j = 0;
-        if (isClosedOrbit) {
+        if (isClosedOrbit()) {
             for (int i = 0; i < 6; i++) {
                 M[i][i] = -1;
-                M[i][6 * npoints - 6 + i] = 1;
+                M[i][ncolumns - 6 + i] = 1;
             }
             j = 6;
         }
@@ -275,16 +265,14 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         //         [    ...    ] additionnal
         //         [    ...    ] constraints
 
-        final int n = npoints;
-
         final double[] additionalConstraints = computeAdditionalConstraints(propagatedSP);
 
-        final int nrows = 6 * (npoints - 1) + additionalConstraints.length;
+        final int nrows = getNumberOfConstraints();
 
         final List<SpacecraftState> patchedSpacecraftStates = getPacthedSpacecraftState();
 
         final double[] fx = new double[nrows];
-        for (int i = 0; i < n - 1; i++) {
+        for (int i = 0; i < npoints - 1; i++) {
             final AbsolutePVCoordinates absPvi = patchedSpacecraftStates.get(i + 1).getAbsPVA();
             final AbsolutePVCoordinates absPvf = propagatedSP.get(i).getAbsPVA();
             final double[] ecartPos = absPvf.getPosition().subtract(absPvi.getPosition()).toArray();
@@ -296,7 +284,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         }
 
         for (int i = 0; i < additionalConstraints.length; i++) {
-            fx[6 * n - 6 + i] = additionalConstraints[i];
+            fx[6 * npoints - 6 + i] = additionalConstraints[i];
         }
 
         return fx;
@@ -318,9 +306,9 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         //           [ y1i - y1d ]----
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
-        final int nconstraints = mapConstraints.size();
-        int n = nconstraints;;
-        if (isClosedOrbit) {
+        // Number of additional constraints
+        int n = mapConstraints.size();
+        if (isClosedOrbit()) {
             n = n + 6;
         }
 
@@ -329,7 +317,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         final double[] fxAdditionnal = new double[n];
         int i = 0;
 
-        if (isClosedOrbit) {
+        if (isClosedOrbit()) {
 
             final int size = patchedSpacecraftStates.size();
 
@@ -405,7 +393,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             final Vector3D position = currentAPV.getPosition().subtract(deltaP);
             final Vector3D velocity = currentAPV.getVelocity().subtract(deltaV);
             final PVCoordinates pv = new PVCoordinates(position, velocity);
-            final AbsoluteDate epoch = currentAPV.getDate();
+            final AbsoluteDate epoch = currentAPV.getDate(); // A change here is inconsistent with attitude law.shiftedBy(dx.getEntry(dx.getDimension()-1));
             final AbsolutePVCoordinates updatedAPV = new AbsolutePVCoordinates(currentAPV.getFrame(), epoch, pv);
             patchedSpacecraftStates.set(i, new SpacecraftState(updatedAPV, patchedSpacecraftStates.get(i).getAttitude()));
         }
@@ -415,13 +403,6 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         for (int i = 0; i < propagationTime.length; i++) {
             propagationTime[i] = deltaT;
         }
-    }
-
-    /** Set the constraint of a closed orbit or not.
-     *  @param isClosed true if orbit should be closed
-     */
-    public void setClosedOrbitConstraint(final boolean isClosed) {
-        this.isClosedOrbit = isClosed;
     }
 
     /** Compute the STM (State Transition Matrix) of a SpacecraftState.

@@ -24,6 +24,8 @@ import java.util.Map;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -52,8 +54,17 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Free components of patch points. */
     private boolean[] freePatchPointMap;
 
-    /** Components which are constrained. */
+    /** Number of free variables. */
+    private int nFree;
+
+    /** Number of constraints. */
+    private int nConstraints;
+
+    /** Pacth points components which are constrained. */
     private Map<Integer, Double> mapConstraints;
+
+    /** True if orbit is closed. */
+    private boolean isClosedOrbit;
 
     /** Tolerance on the constraint vector. */
     private double tolerance;
@@ -66,10 +77,11 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param tolerance convergence tolerance on the constraint vector.
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                    final List<AdditionalEquations> additionalEquations, final double tolerance) {
+                                       final List<AdditionalEquations> additionalEquations, final double tolerance) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
         this.additionalEquations = additionalEquations;
+        // Should check if propagatorList.size() = initialGuessList.size() - 1
         final int propagationNumber = initialGuessList.size() - 1;
         this.propagationTime = new double[propagationNumber];
         for (int i = 0; i < propagationNumber; i++ ) {
@@ -82,9 +94,14 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             freePatchPointMap[i] = true;
         }
 
+        this.nConstraints = 6 * propagationNumber;
+        this.nFree = 6 * initialGuessList.size() + 1; // T (common propagation time) is a free variable
+
+        this.tolerance = tolerance;
+
         // All the constraints must be set afterward
         this.mapConstraints = new HashMap<>();
-        this.tolerance = tolerance;
+        this.isClosedOrbit = false;
     }
 
     /** Set a component of a patch point to free or not.
@@ -93,7 +110,11 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param isFree constraint value
      */
     public void setPatchPointComponentFreedom(final int patchNumber, final int componentIndex, final boolean isFree) {
-        freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] = isFree;
+        if (freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] != isFree ) {
+            final int eps = isFree ? 1 : -1;
+            nFree = nFree + eps;
+            freePatchPointMap[6 * (patchNumber - 1) +  componentIndex] = isFree;
+        }
     }
 
     /** Add a constraint on one component of one patch point.
@@ -102,7 +123,22 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param constraintValue constraint value
      */
     public void addConstraint(final int patchNumber, final int componentIndex, final double constraintValue) {
-        mapConstraints.put((patchNumber - 1) * 6 + componentIndex, constraintValue);
+        final int contraintIndex = (patchNumber - 1) * 6 + componentIndex;
+        if (!mapConstraints.containsKey(contraintIndex)) {
+            nConstraints++;
+        }
+        mapConstraints.put(contraintIndex, constraintValue);
+    }
+
+    /** Set the constraint of a closed orbit or not.
+     *  @param isClosed true if orbit should be closed
+     */
+    public void setClosedOrbitConstraint(final boolean isClosed) {
+        if (this.isClosedOrbit != isClosed) {
+            final int eps = isClosed ? 1 : -1;
+            nConstraints = nConstraints + eps * 6;
+            this.isClosedOrbit = isClosed;
+        }
     }
 
     /** Return the list of corrected patch points.
@@ -110,24 +146,29 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @return patchedSpacecraftStates corrected trajectory
      */
     public List<SpacecraftState> compute() {
+
+        if (nFree > nConstraints) {
+            throw new OrekitException(OrekitMessages.MULTIPLE_SHOOTING_UNDERCONSTRAINED, nFree, nConstraints);
+        }
+
         int iter = 0; // number of iteration
 
         double fxNorm = 0;
 
         do {
-//            System.out.println("Itération " + (iter + 1));
-//            System.out.println(Arrays.toString(propagationTime));
+            //            System.out.println("Itération " + (iter + 1));
+            //            System.out.println(Arrays.toString(propagationTime));
 
             final List<SpacecraftState> propagatedSP = propagatePatchedSpacecraftState(); // multi threading see PropagatorsParallelizer
             final RealMatrix M = computeJacobianMatrix(propagatedSP);
             final RealVector fx = MatrixUtils.createRealVector(computeConstraint(propagatedSP));
 
-//            System.out.println("DF(X)");
-//            for (int i = 0; i < M.getRowDimension(); i++) {
-//                System.out.println(Arrays.toString(M.getRow(i)));
-//            }
-//            System.out.println("F(X)");
-//            System.out.println(Arrays.toString(fx.toArray()));
+            //            System.out.println("DF(X)");
+            //            for (int i = 0; i < M.getRowDimension(); i++) {
+            //                System.out.println(Arrays.toString(M.getRow(i)));
+            //            }
+            //            System.out.println("F(X)");
+            //            System.out.println(Arrays.toString(fx.toArray()));
 
             // Solve linear system
             final RealVector B = M.transpose().operate(fx);
@@ -143,17 +184,17 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             fxNorm = fx.getNorm() / fx.getDimension();
 
-//            System.out.println("DF(X)^T*DF(X)");
-//            System.out.println(Arrays.deepToString(MtM.getData()));
-//
-//            System.out.println("DeltaX");
-//            System.out.println(Arrays.toString(dx.toArray()));
-//
-//            System.out.println("||F(X)|| = " + fxNorm);
+            //            System.out.println("DF(X)^T*DF(X)");
+            //            System.out.println(Arrays.deepToString(MtM.getData()));
+            //
+            //            System.out.println("DeltaX");
+            //            System.out.println(Arrays.toString(dx.toArray()));
+            //
+            //            System.out.println("||F(X)|| = " + fxNorm);
 
             iter++;
 
-        } while (fxNorm > tolerance & iter < 10); // Converge within 1E-8 tolerance and under 5 iterations
+        } while (fxNorm > tolerance & iter < 10); // Converge within 1E-8 tolerance and under 10 iterations
 
         return patchedSpacecraftStates;
     }
@@ -163,11 +204,11 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      */
     public List<SpacecraftState> propagatePatchedSpacecraftState() {
 
-        final int n = patchedSpacecraftStates.size();
+        final int n = patchedSpacecraftStates.size() - 1;
 
         final ArrayList<SpacecraftState> propagatedSP = new ArrayList<SpacecraftState>(n);
 
-        for (int i = 0; i < n - 1; i++) {
+        for (int i = 0; i < n; i++) {
 
             // SpacecraftState initialization
             final SpacecraftState initialState = patchedSpacecraftStates.get(i);
@@ -178,12 +219,12 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             propagatorList.get(i).setInitialState(augmentedInitialState);
 
             final double integrationTime = propagationTime[i];
-//            final long startTime = System.currentTimeMillis(); // Useful to plot computation duration
+            //            final long startTime = System.currentTimeMillis(); // Useful to plot computation duration
 
             // Propagate trajectory
             final SpacecraftState finalState =
                             propagatorList.get(i).propagate(initialState.getDate().shiftedBy(integrationTime));
-//            System.out.println(System.currentTimeMillis()-startTime);
+            //            System.out.println(System.currentTimeMillis()-startTime);
 
             propagatedSP.add(finalState);
         }
@@ -203,6 +244,18 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
                         ((PartialDerivativesEquations) additionalEquation).setInitialJacobians(sp);
 
         return augmentedSP;
+    }
+
+    protected boolean isClosedOrbit() {
+        return isClosedOrbit;
+    }
+
+    protected int getNumberOfFreeVariables() {
+        return nFree;
+    }
+
+    protected int getNumberOfConstraints() {
+        return nConstraints;
     }
 
     protected boolean[] getFreePatchPointMap() {
