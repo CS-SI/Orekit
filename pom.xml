@@ -426,10 +426,10 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${orekit.maven-surefire-plugin.version}</version>
         <configuration>
-          <parallel>all</parallel>
-          <threadCount>1</threadCount>
-          <perCoreThreadCount>true</perCoreThreadCount>
-        </configuration>
+          <!-- Orekit is mostly a computational library. -->
+          <!-- As there is not a lot of I/O it is better to not overide the number of CPU. -->
+          <forkCount>1C</forkCount>
+         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
