@@ -20,44 +20,15 @@ package org.orekit.estimation.common;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 
-/** Evaluation counting.
+/** Evaluation logging.
  * @param T type of mesurement
  * @author Luc Maisonobe
  */
-class EvaluationCounter<T extends ObservedMeasurement<T>> implements EvaluationLogger<T> {
+interface EvaluationLogger<T extends ObservedMeasurement<T>> {
 
-    /** Total number of measurements. */
-    private int total;
-
-    /** Number of active (i.e. positive weight) measurements. */
-    private int active;
-
-    /** {@inheritDoc} */
-    @Override
-    public void log(final EstimatedMeasurement<T> evaluation) {
-        ++total;
-        if (evaluation.getStatus() == EstimatedMeasurement.Status.PROCESSED) {
-            ++active;
-        }
-    }
-
-    /** Format an active/total count.
-     * @param size field minimum size
-     * @return formatted count
+    /** Log a measurement evaluation.
+     * @param evaluation measurement evaluation to log
      */
-    public String format(final int size) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(active);
-        builder.append('/');
-        builder.append(total);
-        while (builder.length() < size) {
-            if (builder.length() % 2 == 0) {
-                builder.insert(0, ' ');
-            } else {
-                builder.append(' ');
-            }
-        }
-        return builder.toString();
-    }
+    void log(final EstimatedMeasurement<T> evaluation);
 
 }
