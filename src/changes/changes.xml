@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="616">
+        Fixed missed changes updates in ParameterDriversList embedding
+        other ParameterDriversList instances.
+      </action>
       <action dev="luc" type="update">
         Moved tutorials to a separate sister project.
       </action>
