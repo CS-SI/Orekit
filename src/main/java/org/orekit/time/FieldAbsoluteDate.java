@@ -1156,7 +1156,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see #isBetweenOrEqualTo(FieldTimeStamped, FieldTimeStamped)
      * @since 10.1
      */
-    public boolean isBetween(final FieldTimeStamped<T> boundary, final FieldTimeStamped otherBoundary) {
+    public boolean isBetween(final FieldTimeStamped<T> boundary, final FieldTimeStamped<T> otherBoundary) {
         final FieldTimeStamped<T> beginning;
         final FieldTimeStamped<T> end;
         if (boundary.getDate().isBefore(otherBoundary)) {
@@ -1180,7 +1180,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see #isBetween(FieldTimeStamped, FieldTimeStamped)
      * @since 10.1
      */
-    public boolean isBetweenOrEqualTo(final FieldTimeStamped<T> boundary, final FieldTimeStamped otherBoundary) {
+    public boolean isBetweenOrEqualTo(final FieldTimeStamped<T> boundary, final FieldTimeStamped<T> otherBoundary) {
         return this.isEqualTo(boundary) || this.isEqualTo(otherBoundary) || this.isBetween(boundary, otherBoundary);
     }
 

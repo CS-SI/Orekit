@@ -24,6 +24,10 @@
       <action dev="luc" type="add" issue="614">
         Added multiplexed measurements.
       </action>
+      <action dev="luc" type="fix" issue="616">
+        Fixed missed changes updates in ParameterDriversList embedding
+        other ParameterDriversList instances.
+      </action>
       <action dev="luc" type="update">
         Moved tutorials to a separate sister project.
       </action>

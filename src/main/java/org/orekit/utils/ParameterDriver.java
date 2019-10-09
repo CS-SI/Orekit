@@ -154,6 +154,19 @@ public class ParameterDriver {
         }
     }
 
+    /** Replace an observer.
+     * @param oldObserver observer to replace
+     * @param newObserver new observer to use
+     * @since 10.1
+     */
+    public void replaceObserver(final ParameterObserver oldObserver, final ParameterObserver newObserver) {
+        for (int i = 0; i < observers.size(); ++i) {
+            if (observers.get(i) == oldObserver) {
+                observers.set(i, newObserver);
+            }
+        }
+    }
+
     /** Get the observers for this driver.
      * @return an unmodifiable view of the observers for this driver
      * @since 9.1

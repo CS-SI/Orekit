@@ -1841,8 +1841,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                 clump = new ArrayList<>();
 
             }
-            // TODO: remove the first argument...
-            clump.add(0, measurement);
+            clump.add(measurement);
         }
         // final clump is finished
         if (clump.size() == 1) {
