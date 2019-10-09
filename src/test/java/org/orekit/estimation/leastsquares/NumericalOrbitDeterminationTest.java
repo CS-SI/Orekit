@@ -269,7 +269,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, true);
+        ResultBatchLeastSquares odGNSS = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
