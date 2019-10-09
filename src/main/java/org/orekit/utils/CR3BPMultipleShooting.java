@@ -409,14 +409,14 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
 
             //Update epoch in the AbsolutePVCoordinates
             AbsoluteDate epoch = currentAPV.getDate();
-            if (i > 0) {
+            if (i < 0) {
                 epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
             }
             final AbsolutePVCoordinates updatedAPV = new AbsolutePVCoordinates(currentAPV.getFrame(), epoch, pv);
 
             //Update attitude epoch
             Attitude attitude = patchedSpacecraftStates.get(i).getAttitude();
-            if (i > 0) {
+            if (i < 0) {
                 final AttitudeProvider attitudeProvider = getPropagatorList().get(i - 1).getAttitudeProvider();
                 attitude = attitudeProvider.getAttitude(updatedAPV, epoch, currentAPV.getFrame());
             }
@@ -431,21 +431,21 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
      *  @return phiM phiM
      */
     private RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
-        final String derivativesName;
-        if (cr3bp) {
-            derivativesName = "stmEquations";
-        } else {
-            derivativesName = "derivatives";
-        }
-        final int dim = 6;
-        final double[][] phi2dA = new double[dim][dim];
-        final double[] stm = s.getAdditionalState(derivativesName);
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < 6; j++) {
-                phi2dA[i][j] = stm[dim * i + j];
+        final Map<String, double[]> map = s.getAdditionalStates();
+        RealMatrix phiM = null;
+        for (String name : map.keySet()) {
+            if ("stmEquations".equals(name) || "derivatives".equals(name)) {
+                final int dim = 6;
+                final double[][] phi2dA = new double[dim][dim];
+                final double[] stm = map.get(name);
+                for (int i = 0; i < dim; i++) {
+                    for (int j = 0; j < 6; j++) {
+                        phi2dA[i][j] = stm[dim * i + j];
+                    }
+                }
+                phiM = new Array2DRowRealMatrix(phi2dA, false);
             }
         }
-        final RealMatrix phiM = new Array2DRowRealMatrix(phi2dA, false);
         return phiM;
     }
 }
