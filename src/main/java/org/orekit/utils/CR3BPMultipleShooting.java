@@ -339,11 +339,13 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
                 fxAdditionnal[5] = apvni.getVelocity().getZ() - apv1i.getVelocity().getZ();
             } else {
                 final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
-//                final AbsoluteDate initialDate = patchedSpacecraftStates.get(0).getDate();
-                final AbsolutePVCoordinates apv0 = syst.getNormalizedAPV(apv1i);
-                final AbsolutePVCoordinates apvn = syst.getNormalizedAPV(apvni);
-//                final AbsolutePVCoordinates absPv1n = syst.getRealAPV(apv0, initialDate, syst.getRotatingFrame());
-//                apvni = syst.getRealAPV(apv0, initialDate, syst.getRotatingFrame());
+
+//                final AbsolutePVCoordinates apv0 = syst.getNormalizedAPV(apv1i);
+//                final AbsolutePVCoordinates apvn = syst.getNormalizedAPV(apvni);
+
+                final TimeStampedPVCoordinates apv0 = apv1i.getPVCoordinates(syst.getRotatingFrame());
+                final TimeStampedPVCoordinates apvn = apvni.getPVCoordinates(syst.getRotatingFrame());
+
                 fxAdditionnal[0] = apvn.getPosition().getX() - apv0.getPosition().getX();
                 fxAdditionnal[1] = apvn.getPosition().getY() - apv0.getPosition().getY();
                 fxAdditionnal[2] = apvn.getPosition().getZ() - apv0.getPosition().getZ();
@@ -409,14 +411,14 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
 
             //Update epoch in the AbsolutePVCoordinates
             AbsoluteDate epoch = currentAPV.getDate();
-            if (i < 0) {
+            if (i > 0) {
                 epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
             }
             final AbsolutePVCoordinates updatedAPV = new AbsolutePVCoordinates(currentAPV.getFrame(), epoch, pv);
 
             //Update attitude epoch
             Attitude attitude = patchedSpacecraftStates.get(i).getAttitude();
-            if (i < 0) {
+            if (i > 0) {
                 final AttitudeProvider attitudeProvider = getPropagatorList().get(i - 1).getAttitudeProvider();
                 attitude = attitudeProvider.getAttitude(updatedAPV, epoch, currentAPV.getFrame());
             }
