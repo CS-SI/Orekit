@@ -597,7 +597,7 @@ public class BatchLSEstimatorTest {
         for (final ObservedMeasurement<?> range : r1) {
             estimator.addMeasurement(range);
         }
-        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
@@ -658,10 +658,10 @@ public class BatchLSEstimatorTest {
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                     0.0, 6.0e-06,
-                                     0.0, 1.7e-05,
-                                     0.0, 4.4e-07,
-                                     0.0, 1.7e-10);
+                                     0.0, 3.0e-06,
+                                     0.0, 7.0e-06,
+                                     0.0, 2.1e-07,
+                                     0.0, 3.7e-11);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
