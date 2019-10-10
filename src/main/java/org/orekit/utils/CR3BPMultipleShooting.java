@@ -34,6 +34,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.AbsolutePartialDerivativesEquations;
+//import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
@@ -82,6 +83,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         } else {
             augmentedInitialState =
                             ((AbsolutePartialDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
+//                            ((EpochDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
         }
         return augmentedInitialState;
     }
@@ -93,9 +95,12 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
     public RealMatrix computeJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final boolean[] freePatchPointMap = getFreePatchPointMap();
+        final boolean[] freeEpochMap = getFreeEpochMap();
+        final int nFreeEpoch = getNumberOfFreeEpoch();
 
-        final int nrows = getNumberOfConstraints();
-        final int ncolumns = getNumberOfFreeVariables();
+        final int nrows = getNumberOfConstraints() + nFreeEpoch;
+        final int ncolumns = getNumberOfFreeVariables() + nFreeEpoch;
+        final int nFree = getNumberOfFreeVariables();
 
         // Exception should be covered in higher abstract method
         if (ncolumns > nrows) {
@@ -104,10 +109,19 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         final RealMatrix M = MatrixUtils.createRealMatrix(nrows, ncolumns);
 
         int index = 0;
+        int indexEpoch = nFree;
         for (int i = 0; i < npoints - 1; i++) {
 
             final SpacecraftState finalState = propagatedSP.get(i);
             // The Jacobian matrix has the following form:
+
+            //          [     |     |     ]
+            //          [  A  |  B  |  C  ]
+            // DF(X) =  [     |     |     ]
+            //          [-----------------]
+            //          [  0  |  D  |  E  ]
+            //          [-----------------]
+            //          [  F  |  0  |  0  ]
 
             //          [     |     ]
             //          [  A  |  B  ]
@@ -115,39 +129,33 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             //          [-----------]
             //          [  C  |  0  ]
             //
+            // For a problem with all the components of each patch points is free, A is detailed below :
             //      [ phi1     -I                                   ]
             //      [         phi2     -I                           ]
             // A =  [                 ....    ....                  ]   6(n-1)x6n
             //      [                         ....     ....         ]
             //      [                                 phin-1    -I  ]
-            //
-            //      [ xdot1f ]
-            //      [ xdot2f ]
-            // B =  [  ....  ]   6(n-1)x1
-            //      [  ....  ]
-            //      [xdotn-1f]
-            //
-            // C is computing according to additional constraints.
+
+            // D is computing according to additional constraints
+            // (for now, closed orbit, or a component of a patch point equals to a specified value)
             //
 
-            //          [     |     |     ]
-            //          [  A  |  B  |  C  ]
-            // DF(X) =  [     |     |     ]
-            //          [-----------------]
-            //          [  0  | -I  |  D  ]
-            //
-            //      [ phi1     -I                                   ]
-            //      [         phi2     -I                           ]
-            // A =  [                 ....    ....                  ]   6(n-1)x6n
-            //      [                         ....     ....         ]
-            //      [                                 phin-1    -I  ]
-            //
+            // If the duration of the propagation of each arc is the same :
+            //      [ xdot1f ]
+            //      [ xdot2f ]                      [  -1 ]
+            // B =  [  ....  ]   6(n-1)x1   and D = [ ... ]
+            //      [  ....  ]                      [  -1 ]
+            //      [xdotn-1f]
+
+            // Otherwise :
             //      [ xdot1f                                ]
             //      [        xdot2f                         ]
-            // B =  [                 ....                  ]   6(n-1)x(n-1)
+            // B =  [                 ....                  ]   6(n-1)x(n-1) and D = -I
             //      [                        ....           ]
             //      [                             xdotn-1f  ]
             //
+            // If the problem is not dependant of the epoch (e.g. CR3BP), the C and E matrices are not computed.
+            // Otherwise :
             //      [ -dx1f/dtau1                                           0 ]
             //      [          -dx2f/dtau2                                  0 ]
             // C =  [                       ....                            0 ]   6(n-1)xn
@@ -156,7 +164,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             //
             //      [ -1   1  0                 ]
             //      [     -1   1  0             ]
-            // D =  [          ..   ..          ] n-1xn
+            // E =  [          ..   ..          ] n-1xn
             //      [               ..   ..     ]
             //      [                    -1   1 ]
 
@@ -165,6 +173,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             // Get State Transition Matrix phi
             final RealMatrix phi = getStateTransitionMatrix(finalState);
 
+            // Matrix A
             for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
                 if (freePatchPointMap[6 * i + j]) { // If this component is free
                     for (int k = 0; k < 6; k++) { // Loop on the 6 component of the patch point constraint
@@ -177,6 +186,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
                 }
             }
 
+            // Matrix B
             final double[][] pvfArray = new double[][] {
                 {pvf.getVelocity().getX()},
                 {pvf.getVelocity().getY()},
@@ -185,7 +195,18 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
                 {pvf.getAcceleration().getY()},
                 {pvf.getAcceleration().getZ()}};
 
-            M.setSubMatrix(pvfArray, 6 * i, ncolumns - 1);
+            M.setSubMatrix(pvfArray, 6 * i, nFree - 1);
+
+            // Matrix C
+            if (freeEpochMap[i]) { // If this component is free
+                final double[] derivatives = finalState.getAdditionalState("derivatives");
+                final double[][] dfdtau = new double[6][1];
+                for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
+                    dfdtau[j][0] = derivatives[derivatives.length - 6 + j];
+                }
+                M.setSubMatrix(dfdtau, 6 * i, indexEpoch);
+                indexEpoch++;
+            }
         }
 
         final int i = npoints - 1;
@@ -196,9 +217,20 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             }
         }
 
-        final double[][] subM = computeAdditionalJacobianMatrix(propagatedSP);
-        if (subM.length > 0) {
-            M.setSubMatrix(subM, 6 * (npoints - 1), 0);
+
+        // Matrices D and E.
+        if (nFreeEpoch > 0) {
+            final double[][] subDE = computeEpochJacobianMatrix(propagatedSP);
+            M.setSubMatrix(subDE, 6 * (npoints - 1), nFree - 1);
+        }
+        final int nEpoch = nFreeEpoch > 0 ? npoints - 1 : 0;
+
+        // Matrices D, E and F.
+
+        // Matrices F.
+        final double[][] subF = computeAdditionalJacobianMatrix(propagatedSP);
+        if (subF.length > 0) {
+            M.setSubMatrix(subF, 6 * (npoints - 1) + nEpoch, 0);
         }
 
         return M;
@@ -211,17 +243,27 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
     public double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
+
         // Number of additional constraints
         int n = mapConstraints.size();
         if (isClosedOrbit()) {
             n = n + 6;
         }
 
-        final int ncolumns = getNumberOfFreeVariables();
+        final int ncolumns = getNumberOfFreeVariables() - 1;
 
         final double[][] M = new double[n][ncolumns];
 
         // The Jacobian matrix has the following form:
+        //
+        //      [-1  0              0  ...  1  0             ]
+        //      [ 0 -1  0           0  ...     1  0          ]
+        // C =  [    0 -1  0        0  ...        1  0       ]   7x6n
+        //      [       0 -1  0     0  ...           1  0    ]
+        //      [          0  -1 0  0  ...              1  0 ]
+        //      [          0  0 -1  0  ...              0  1 ]
+        //      [ 0  1  0  0  0  0  0  ...  0  0           0 ]
+
         //
         //      [-1  0              0  ...  1  0             ]
         //      [ 0 -1  0           0  ...     1  0          ]
@@ -250,6 +292,41 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         return M;
     }
 
+    /** Compute a part of the Jacobian matrix with derivatives from epoch.
+     *  @param propagatedSP propagatedSP
+     *  @return jacobianMatrix Jacobian sub-matrix
+     */
+    public double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+
+        final boolean[] freeEpochMap = getFreeEpochMap();
+
+        final int nFreeEpoch = getNumberOfFreeEpoch();
+        final int ncolumns = 1 + nFreeEpoch;
+        final int nrows = npoints - 1;
+
+        final double[][] M = new double[nrows][ncolumns];
+
+        // The Jacobian matrix has the following form:
+
+        //      [-1 -1   1  0                 ]
+        //      [-1     -1   1  0             ]
+        // F =  [..          ..   ..          ]
+        //      [..               ..   ..   0 ]
+        //      [-1                    -1   1 ]
+
+        int index = 0;
+        for (int i = 0; i < nrows; i++) {
+            M[i][0] = -1;
+            if (freeEpochMap[i]) {
+                M[i][index    ] = -1;
+                M[i][index + 1] =  1;
+                index++;
+            }
+        }
+
+        return M;
+    }
+
 
     /** Compute the constraint vector of the problem.
      *  @param propagatedSP propagated SpacecraftState
@@ -268,8 +345,9 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         //         [    ...    ] constraints
 
         final double[] additionalConstraints = computeAdditionalConstraints(propagatedSP);
+        final boolean epoch = getNumberOfFreeEpoch() > 0;
 
-        final int nrows = getNumberOfConstraints();
+        final int nrows = epoch ? getNumberOfConstraints() + npoints - 1 : getNumberOfConstraints();
 
         final List<SpacecraftState> patchedSpacecraftStates = getPatchedSpacecraftState();
 
@@ -285,8 +363,21 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             }
         }
 
+        int index = getNumberOfConstraints();
+
+        if (epoch) {
+            final double[] propagationTime = getPropagationTime();
+            for (int i = 0; i < npoints - 1; i++) {
+                final double deltaEpoch = patchedSpacecraftStates.get(i + 1).getDate().durationFrom(patchedSpacecraftStates.get(i).getDate());
+                fx[index] = deltaEpoch - propagationTime[i];
+                index++;
+            }
+        }
+
         for (int i = 0; i < additionalConstraints.length; i++) {
-            fx[6 * npoints - 6 + i] = additionalConstraints[i];
+//            fx[6 * npoints - 6 + i] = additionalConstraints[i];
+            fx[index] = additionalConstraints[i];
+            index++;
         }
 
         return fx;
@@ -375,11 +466,15 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
      */
     public void updateTrajectory(final RealVector dx) {
 
+        final int n = getNumberOfFreeVariables();
+
+        final boolean epochFree = getNumberOfFreeEpoch() > 0;
+
         // Update propagation time
         //------------------------------------------------------
         final double[] propagationTime = getPropagationTime();
 
-        final double deltaT = dx.getEntry(dx.getDimension() - 1);
+        final double deltaT = dx.getEntry(n - 1);
         for (int i = 0; i < propagationTime.length; i++) {
             propagationTime[i] = propagationTime[i] - deltaT;
         }
@@ -403,6 +498,9 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             final Vector3D deltaP = new Vector3D(deltaPV[0], deltaPV[1], deltaPV[2]);
             final Vector3D deltaV = new Vector3D(deltaPV[3], deltaPV[4], deltaPV[5]);
 
+//            System.out.println(deltaP);
+//            System.out.println(deltaV);
+
             // Update the PVCoordinates of the patch point
             final AbsolutePVCoordinates currentAPV = patchedSpacecraftStates.get(i).getAbsPVA();
             final Vector3D position = currentAPV.getPosition().subtract(deltaP);
@@ -412,7 +510,13 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             //Update epoch in the AbsolutePVCoordinates
             AbsoluteDate epoch = currentAPV.getDate();
             if (i > 0) {
-                epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
+                if (epochFree) {
+                    final double deltaEpoch = dx.getEntry(n + i - 1);
+                    epoch = patchedSpacecraftStates.get(i).getDate().shiftedBy(-deltaEpoch);
+                } else {
+                    epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
+                }
+
             }
             final AbsolutePVCoordinates updatedAPV = new AbsolutePVCoordinates(currentAPV.getFrame(), epoch, pv);
 
@@ -426,6 +530,10 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             //Update the SpacecraftState using previously updated attitude and AbsolutePVCoordinates
             patchedSpacecraftStates.set(i, new SpacecraftState(updatedAPV, attitude));
         }
+//        System.out.println(dx.getEntry(n - 1));
+//        if (epochFree) {
+//            System.out.println(dx.getSubVector(n, npoints - 1));
+//        }
     }
 
     /** Compute the STM (State Transition Matrix) of a SpacecraftState.

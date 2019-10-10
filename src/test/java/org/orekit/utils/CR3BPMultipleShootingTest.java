@@ -109,6 +109,8 @@ public class CR3BPMultipleShootingTest {
         multipleShooting.setPatchPointComponentFreedom(2, 1, false);
         multipleShooting.setPatchPointComponentFreedom(2, 3, false);
         multipleShooting.setPatchPointComponentFreedom(2, 5, false);
+        multipleShooting.setEpochFreedom(1, false);
+        multipleShooting.setEpochFreedom(2, false);
         
         // Differential correction
         h1.applyDifferentialCorrection();
@@ -118,7 +120,7 @@ public class CR3BPMultipleShootingTest {
         // Multiple shooting computation
         List<SpacecraftState> result = multipleShooting.compute();
         final AbsolutePVCoordinates initialPVMS = result.get(0).getAbsPVA();
-        final double periodMS = 2 * result.get(1).getDate().durationFrom(result.get(0).getDate()); // To be corrected : 
+        final double periodMS = 2 * result.get(1).getDate().durationFrom(result.get(0).getDate()); 
 
 //        System.out.println(periodDC);
 //        System.out.println(periodMS);

@@ -54,8 +54,14 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Free components of patch points. */
     private boolean[] freePatchPointMap;
 
+    /** Free epoch of patch points. */
+    private boolean[] freeEpochMap;
+
     /** Number of free variables. */
     private int nFree;
+
+    /** Number of free epoch. */
+    private int nEpoch;
 
     /** Number of constraints. */
     private int nConstraints;
@@ -89,10 +95,18 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         }
 
         // All the patch points are set initially as free variables
-        this.freePatchPointMap = new boolean[6 * initialGuessList.size()];
+        this.freePatchPointMap = new boolean[6 * (initialGuessList.size() + 1)]; // epoch
         for (int i = 0; i < freePatchPointMap.length; i++) {
             freePatchPointMap[i] = true;
         }
+
+        //Except the first one, the epochs of the patch points are set free.
+        this.freeEpochMap = new boolean[initialGuessList.size()];
+        freeEpochMap[0] = false;
+        for (int i = 1; i < freeEpochMap.length; i++) {
+            freeEpochMap[i] = true;
+        }
+        this.nEpoch = initialGuessList.size() - 1;
 
         this.nConstraints = 6 * propagationNumber;
         this.nFree = 6 * initialGuessList.size() + 1; // T (common propagation time) is a free variable
@@ -130,6 +144,18 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         mapConstraints.put(contraintIndex, constraintValue);
     }
 
+    /** Set the epoch a patch point to free or not.
+     * @param patchNumber Patch point
+     * @param isFree constraint value
+     */
+    public void setEpochFreedom(final int patchNumber, final boolean isFree) {
+        if (freeEpochMap[patchNumber - 1] != isFree) {
+            freeEpochMap[patchNumber - 1] = isFree;
+            final int eps = isFree ? 1 : -1;
+            nEpoch = nEpoch + eps;
+        }
+    }
+
     /** Set the constraint of a closed orbit or not.
      *  @param isClosed true if orbit should be closed
      */
@@ -156,41 +182,39 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         double fxNorm = 0;
 
         do {
-            // System.out.println("Itération " + (iter + 1));
-            // System.out.println(Arrays.toString(propagationTime));
+//            System.out.println("Itération " + (iter + 1));
+//            System.out.println(Arrays.toString(propagationTime));
 
             final List<SpacecraftState> propagatedSP = propagatePatchedSpacecraftState(); // multi threading see PropagatorsParallelizer
             final RealMatrix M = computeJacobianMatrix(propagatedSP);
             final RealVector fx = MatrixUtils.createRealVector(computeConstraint(propagatedSP));
 
-            // System.out.println("DF(X)");
-            //for (int i = 0; i < M.getRowDimension(); i++) {
-            //    System.out.println(Arrays.toString(M.getRow(i)));
-            // }
-            // System.out.println("F(X)");
-            // System.out.println(Arrays.toString(fx.toArray()));
+//            System.out.println("DF(X)");
+//            for (int i = 0; i < M.getRowDimension(); i++) {
+//                System.out.println(Arrays.toString(M.getRow(i)));
+//            }
+//            System.out.println("F(X)");
+//            System.out.println(Arrays.toString(fx.toArray()));
 
             // Solve linear system
-            final RealVector B = M.transpose().operate(fx);
-            final RealMatrix MtM = M.transpose().multiply(M);
+            final RealMatrix MMt = M.multiply(M.transpose());
 
             // Numerical trouble with Cholesky for matrix decomposition
-            //final MatrixDecomposer decomposer = new CholeskyDecomposer(1.0e-15, 1.0e-15);
-            // final RealVector dx = decomposer.decompose(MtM).solve(B);
-            final RealVector dx = MatrixUtils.inverse(MtM).operate(B);
+            //            final MatrixDecomposer decomposer = new CholeskyDecomposer(1.0e-12, 1.0e-12);
+            //            final RealVector sol = decomposer.decompose(MMt).solve(fx);
+            //            final RealVector dx = M.transpose().operate(sol);
+
+            final RealVector dx = M.transpose().multiply(MatrixUtils.inverse(MMt)).operate(fx);
 
             // Apply correction from the free variable vector to all the variables (propagation time, pacthSpaceraftState)
             updateTrajectory(dx);
 
             fxNorm = fx.getNorm() / fx.getDimension();
 
-            // System.out.println("DF(X)^T*DF(X)");
-            // System.out.println(Arrays.deepToString(MtM.getData()));
-            //
-            // System.out.println("DeltaX");
-            // System.out.println(Arrays.toString(dx.toArray()));
-
-            // System.out.println("||F(X)|| = " + fxNorm);
+//            System.out.println("DeltaX");
+//            System.out.println(Arrays.toString(dx.toArray()));
+//
+//            System.out.println("||F(X)|| = " + fxNorm);
 
             iter++;
 
@@ -254,12 +278,20 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         return nFree;
     }
 
+    protected int getNumberOfFreeEpoch() {
+        return nEpoch;
+    }
+
     protected int getNumberOfConstraints() {
         return nConstraints;
     }
 
     protected boolean[] getFreePatchPointMap() {
         return freePatchPointMap;
+    }
+
+    protected boolean[] getFreeEpochMap() {
+        return freeEpochMap;
     }
 
     protected Map<Integer, Double> getConstraintsMap() {
