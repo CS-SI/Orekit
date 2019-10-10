@@ -28,6 +28,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -55,7 +57,7 @@ public class OrekitStepHandlerTest {
 
     @Test
     public void testForwardBackwardStep()
-        throws InterruptedException, ExecutionException {
+        throws InterruptedException, ExecutionException, TimeoutException {
         final AbsoluteDate initialDate = new AbsoluteDate(2014, 01, 01, 00, 00,
                                                           00.000,
                                                           TimeScalesFactory
@@ -93,7 +95,6 @@ public class OrekitStepHandlerTest {
         kepler.propagate(initialDate.shiftedBy(propagationTime));
 
         final double stepSizeInSeconds = 120;
-        final long longestWaitTimeMS = 20;
         ExecutorService service = Executors.newSingleThreadExecutor();
         for (double elapsedTime = 0; elapsedTime <= propagationTime; elapsedTime += stepSizeInSeconds) {
             final double dt = elapsedTime;
@@ -106,9 +107,7 @@ public class OrekitStepHandlerTest {
                     }
                 });
 
-            Thread.sleep(longestWaitTimeMS);
-            assertTrue(stateFuture.isDone());
-            SpacecraftState finalState = stateFuture.get();
+            SpacecraftState finalState = stateFuture.get(5, TimeUnit.SECONDS);
             assertNotNull(finalState);
         }
     }
