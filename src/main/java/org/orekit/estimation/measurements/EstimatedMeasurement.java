@@ -179,6 +179,18 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
         this.status = status;
     }
 
+    /** Get state size.
+     * <p>
+     * Warning, the {@link #setStateDerivatives(int, double[]...)}
+     * method must have been called before this method is called.
+     * </p>
+     * @return state size
+     * @since 10.1
+     */
+    public int getStateSize() {
+        return stateDerivatives[0][0].length;
+    }
+
     /** Get the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to state Cartesian coordinates.
      * @param index index of the state, according to the {@code states}

@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,7 +166,13 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         multiplexed.setEstimatedValue(value);
 
         // combine derivatives
+        final int                            stateSize             = estimatedMeasurements.get(0).getStateSize();
+        final double[]                       zeroDerivative        = new double[stateSize];
         final double[][][]                   stateDerivatives      = new double[nbSat][dimension][];
+        for (final double[][] m : stateDerivatives) {
+            Arrays.fill(m, zeroDerivative);
+        }
+
         final Map<ParameterDriver, double[]> parametersDerivatives = new IdentityHashMap<>();
         index = 0;
         for (int i = 0; i < observedMeasurements.size(); ++i) {
