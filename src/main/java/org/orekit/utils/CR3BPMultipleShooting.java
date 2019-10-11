@@ -33,8 +33,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
-//import org.orekit.propagation.numerical.AbsolutePartialDerivativesEquations;
-import org.orekit.propagation.numerical.EpochDerivativesEquations;
+import org.orekit.propagation.numerical.AbsolutePartialDerivativesEquations;
+//import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
@@ -82,8 +82,8 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
                             ((STMEquations) additionalEquation).setInitialPhi(initialState);
         } else {
             augmentedInitialState =
-//                            ((AbsolutePartialDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
-                            ((EpochDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
+                            ((AbsolutePartialDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
+//                            ((EpochDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
         }
         return augmentedInitialState;
     }
