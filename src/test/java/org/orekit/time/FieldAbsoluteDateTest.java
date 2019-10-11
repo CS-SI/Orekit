@@ -18,9 +18,7 @@ package org.orekit.time;
 
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 import org.hipparchus.Field;
@@ -637,8 +635,8 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIsEqualTo(final Field<T> field) {
-        TestDates dates = new TestDates().setField(field);
-        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        TestDates<T> dates = new TestDates<>(field);
+        FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
         Assert.assertTrue(present.isEqualTo(dates.present));
         Assert.assertTrue(present.isEqualTo(dates.presentToo));
         Assert.assertFalse(present.isEqualTo(dates.past));
@@ -647,9 +645,9 @@ public class FieldAbsoluteDateTest {
 
     private <T extends RealFieldElement<T>> void doTestIsCloseTo(final Field<T> field) {
         double tolerance = 10;
-        TestDates dates = new TestDates().setField(field);
-        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
-        FieldTimeStamped closeToPresent = new AnyFieldTimeStamped(dates.presentDate.shiftedBy(5)).setField(field);
+        TestDates<T> dates = new TestDates<>(field);
+        FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
+        FieldTimeStamped<T> closeToPresent = new AnyFieldTimeStamped<>(field, dates.presentDate.shiftedBy(5));
         Assert.assertTrue(present.isCloseTo(present, tolerance));
         Assert.assertTrue(present.isCloseTo(dates.presentToo, tolerance));
         Assert.assertTrue(present.isCloseTo(closeToPresent, tolerance));
@@ -658,8 +656,8 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIsBefore(final Field<T> field) {
-        TestDates dates = new TestDates().setField(field);
-        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        TestDates<T> dates = new TestDates<>(field);
+        FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
         Assert.assertFalse(present.isBefore(dates.past));
         Assert.assertFalse(present.isBefore(present));
         Assert.assertFalse(present.isBefore(dates.presentToo));
@@ -667,8 +665,8 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIsAfter(final Field<T> field) {
-        TestDates dates = new TestDates().setField(field);
-        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        TestDates<T> dates = new TestDates<>(field);
+        FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
         Assert.assertTrue(present.isAfter(dates.past));
         Assert.assertFalse(present.isAfter(present));
         Assert.assertFalse(present.isAfter(dates.presentToo));
@@ -676,8 +674,8 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIsBeforeOrEqualTo(final Field<T> field) {
-        TestDates dates = new TestDates().setField(field);
-        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        TestDates<T> dates = new TestDates<>(field);
+        FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
         Assert.assertFalse(present.isBeforeOrEqualTo(dates.past));
         Assert.assertTrue(present.isBeforeOrEqualTo(present));
         Assert.assertTrue(present.isBeforeOrEqualTo(dates.presentToo));
@@ -685,8 +683,8 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIsAfterOrEqualTo(final Field<T> field) {
-        TestDates dates = new TestDates().setField(field);
-        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        TestDates<T> dates = new TestDates<>(field);
+        FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
         Assert.assertTrue(present.isAfterOrEqualTo(dates.past));
         Assert.assertTrue(present.isAfterOrEqualTo(present));
         Assert.assertTrue(present.isAfterOrEqualTo(dates.presentToo));
@@ -694,8 +692,8 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIsBetween(final Field<T> field) {
-        TestDates dates = new TestDates().setField(field);
-        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        TestDates<T> dates = new TestDates<>(field);
+        FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
         Assert.assertTrue(present.isBetween(dates.past, dates.future));
         Assert.assertTrue(present.isBetween(dates.future, dates.past));
         Assert.assertFalse(dates.past.getDate().isBetween(present, dates.future));
@@ -710,8 +708,8 @@ public class FieldAbsoluteDateTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIsBetweenOrEqualTo(final Field<T> field) {
-        TestDates dates = new TestDates().setField(field);
-        FieldAbsoluteDate present = dates.getPresentFieldAbsoluteDate();
+        TestDates<T> dates = new TestDates<>(field);
+        FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
         Assert.assertTrue(present.isBetweenOrEqualTo(dates.past, dates.future));
         Assert.assertTrue(present.isBetweenOrEqualTo(dates.future, dates.past));
         Assert.assertFalse(dates.past.getDate().isBetweenOrEqualTo(present, dates.future));
@@ -1093,50 +1091,39 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(0.0, tA.durationFrom(tB).getReal(), Precision.SAFE_MIN);
     }
 
-    static class AnyFieldTimeStamped implements FieldTimeStamped {
+    static class AnyFieldTimeStamped<T extends RealFieldElement<T>> implements FieldTimeStamped<T> {
         AbsoluteDate date;
-        Field field;
+        Field<T> field;
 
-        public AnyFieldTimeStamped(AbsoluteDate date) {
+        public AnyFieldTimeStamped(Field<T> field, AbsoluteDate date) {
             this.date = date;
-        }
-
-        public AnyFieldTimeStamped setField(Field field) {
             this.field = field;
-            return this;
         }
 
         @Override
-        public FieldAbsoluteDate getDate() {
-            return new FieldAbsoluteDate(field, date);
+        public FieldAbsoluteDate<T> getDate() {
+            return new FieldAbsoluteDate<>(field, date);
         }
     }
 
-    static class TestDates {
+    static class TestDates<T extends RealFieldElement<T>> {
         private final AbsoluteDate presentDate;
-        private final AnyFieldTimeStamped present;
-        private final AnyFieldTimeStamped past;
-        private final AnyFieldTimeStamped presentToo;
-        private final AnyFieldTimeStamped future;
-        private final List<AnyFieldTimeStamped> datesList;
+        private final AnyFieldTimeStamped<T> present;
+        private final AnyFieldTimeStamped<T> past;
+        private final AnyFieldTimeStamped<T> presentToo;
+        private final AnyFieldTimeStamped<T> future;
 
-        public TestDates() {
+        public TestDates(Field<T> field) {
             presentDate = new AbsoluteDate(new DateComponents(2000, 1, 1),
                                                 new TimeComponents(12, 00, 00),
                                                 TimeScalesFactory.getUTC());
-            present = new AnyFieldTimeStamped(presentDate);
-            presentToo = new AnyFieldTimeStamped(presentDate.shiftedBy(0));
-            past = new AnyFieldTimeStamped(presentDate.shiftedBy(-1000));
-            future = new AnyFieldTimeStamped(presentDate.shiftedBy(1000));
-            datesList = Arrays.asList(present, past, presentToo, future);
+            present    = new AnyFieldTimeStamped<>(field, presentDate);
+            presentToo = new AnyFieldTimeStamped<>(field, presentDate.shiftedBy(0));
+            past       = new AnyFieldTimeStamped<>(field, presentDate.shiftedBy(-1000));
+            future     = new AnyFieldTimeStamped<>(field, presentDate.shiftedBy(1000));
         }
 
-        public TestDates setField(Field field) {
-            datesList.forEach(date -> date.setField(field));
-            return this;
-        }
-
-        public FieldAbsoluteDate getPresentFieldAbsoluteDate() {
+        public FieldAbsoluteDate<T> getPresentFieldAbsoluteDate() {
             return present.getDate();
         }
     }
