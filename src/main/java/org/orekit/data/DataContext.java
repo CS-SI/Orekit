@@ -2,6 +2,7 @@ package org.orekit.data;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
+import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.frames.Frames;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
@@ -62,5 +63,13 @@ public interface DataContext {
      * @return the set of common celestial bodies using this data context.
      */
     CelestialBodies getCelestialBodies();
+
+    /**
+     * Get a factory constructing gravity fields based on the auxiliary data in this
+     * context.
+     *
+     * @return the gravity fields using this data context.
+     */
+    GravityFields getGravityFields();
 
 }
