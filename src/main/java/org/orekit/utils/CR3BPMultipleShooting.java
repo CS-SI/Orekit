@@ -33,8 +33,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
-import org.orekit.propagation.numerical.AbsolutePartialDerivativesEquations;
-//import org.orekit.propagation.numerical.EpochDerivativesEquations;
+//import org.orekit.propagation.numerical.AbsolutePartialDerivativesEquations;
+import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
@@ -82,8 +82,8 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
                             ((STMEquations) additionalEquation).setInitialPhi(initialState);
         } else {
             augmentedInitialState =
-                            ((AbsolutePartialDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
-//                            ((EpochDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
+//                            ((AbsolutePartialDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
+                            ((EpochDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
         }
         return augmentedInitialState;
     }
@@ -200,19 +200,18 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             // Matrix C
             if (freeEpochMap[i]) { // If this component is free
                 final double[] derivatives = finalState.getAdditionalState("derivatives");
-                final double[][] dfdtau = new double[6][1];
+                final double[][] subC = new double[6][1];
                 for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
-                    dfdtau[j][0] = derivatives[derivatives.length - 6 + j];
+                    subC[j][0] = -derivatives[derivatives.length - 6 + j];
                 }
-                M.setSubMatrix(dfdtau, 6 * i, indexEpoch);
+                M.setSubMatrix(subC, 6 * i, indexEpoch);
                 indexEpoch++;
             }
         }
 
-        final int i = npoints - 1;
         for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
-            if (freePatchPointMap[6 * i + j]) { // If this component is free
-                M.setEntry(6 * (i - 1) + j, index, -1);
+            if (freePatchPointMap[6 * (npoints - 1) + j]) { // If this component is free
+                M.setEntry(6 * (npoints - 2) + j, index, -1);
                 index++;
             }
         }
@@ -225,7 +224,6 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         }
         final int nEpoch = nFreeEpoch > 0 ? npoints - 1 : 0;
 
-        // Matrices D, E and F.
 
         // Matrices F.
         final double[][] subF = computeAdditionalJacobianMatrix(propagatedSP);
@@ -314,13 +312,15 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         //      [..               ..   ..   0 ]
         //      [-1                    -1   1 ]
 
-        int index = 0;
+        int index = 1;
         for (int i = 0; i < nrows; i++) {
             M[i][0] = -1;
             if (freeEpochMap[i]) {
-                M[i][index    ] = -1;
-                M[i][index + 1] =  1;
+                M[i][index] = -1;
                 index++;
+            }
+            if (freeEpochMap[i + 1]) {
+                M[i][index] =  1;
             }
         }
 
@@ -341,6 +341,9 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         // F(X) =  [    ...    ] vectors' equality for a continuous trajectory
         //         [    ...    ]   |
         //         [xn-1f - xni]---
+        //         [ d2-(d1+T) ]   continuity between epoch
+        //         [    ...    ]   and integration time
+        //         [dn-(dn-1+T)]---
         //         [    ...    ] additional
         //         [    ...    ] constraints
 
@@ -363,7 +366,8 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
             }
         }
 
-        int index = getNumberOfConstraints();
+//        int index = getNumberOfConstraints();
+        int index = 6 * npoints - 6;
 
         if (epoch) {
             final double[] propagationTime = getPropagationTime();
@@ -399,7 +403,7 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
         //           [vzni - vz1i]----
         //           [ y1i - y1d ]---- other constraints (component of
         //           [    ...    ]    | a patch point eaquals to a
-        //           [vz2i - vz2d]----  desired value
+        //           [vz2i - vz2d]----  desired value)
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
         // Number of additional constraints
@@ -465,6 +469,8 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
      *  @param dx correction on the initial vector
      */
     public void updateTrajectory(final RealVector dx) {
+        // X = [x1, ..., xn, T1, ..., Tn, d1, ..., dn]
+        // X = [x1, ..., xn, T, d2, ..., dn]
 
         final int n = getNumberOfFreeVariables();
 
@@ -513,10 +519,10 @@ public class CR3BPMultipleShooting extends AbstractMultipleShooting {
                 if (epochFree) {
                     final double deltaEpoch = dx.getEntry(n + i - 1);
                     epoch = patchedSpacecraftStates.get(i).getDate().shiftedBy(-deltaEpoch);
+                    epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
                 } else {
                     epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
                 }
-
             }
             final AbsolutePVCoordinates updatedAPV = new AbsolutePVCoordinates(currentAPV.getFrame(), epoch, pv);
 
