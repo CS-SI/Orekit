@@ -181,7 +181,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
 
     /** Get state size.
      * <p>
-     * Warning, the {@link #setStateDerivatives(int, double[])}
+     * Warning, the {@link #setStateDerivatives(int, double[][])}
      * method must have been called before this method is called.
      * </p>
      * @return state size
