@@ -1,6 +1,7 @@
 stages:
 - verify
 - release
+- qa
 
 default:
   # Default image
@@ -41,3 +42,8 @@ release:
       - target/*.zip
   only:
     - /^release-[.0-9]+$/
+
+qa:
+  stage: qa
+  script:
+    - mvn $MAVEN_CLI_OPTS sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
