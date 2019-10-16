@@ -40,11 +40,11 @@ import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.CR3BPMultipleShooting;
+import org.orekit.utils.CR3BPMultipleShooter;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
-public class CR3BPMultipleShootingTest {
+public class CR3BPMultipleShooterTest {
 
     @Test
     public void testHaloOrbit() {
@@ -90,6 +90,7 @@ public class CR3BPMultipleShootingTest {
 
         final PVCoordinates firstGuess1 = h1.getInitialPV();
         final PVCoordinates firstGuess2 = new PVCoordinates(firstGuess1.getPosition().add(new Vector3D(0.1,0,0)), firstGuess1.getVelocity().negate());
+        final double arcDuration = h1.getOrbitalPeriod()/2;
 
 
         List<SpacecraftState> firstGuessList = new ArrayList<SpacecraftState>(narcs + 1) ;;
@@ -97,11 +98,11 @@ public class CR3BPMultipleShootingTest {
                                                                          date,
                                                                          firstGuess1)));
         firstGuessList.add(new SpacecraftState(new AbsolutePVCoordinates(syst.getRotatingFrame(),
-                                                                         date.shiftedBy(h1.getOrbitalPeriod()/2),
+                                                                         date.shiftedBy(arcDuration),
                                                                          firstGuess2)));
 
         // Multiple Shooting definition
-        final CR3BPMultipleShooting multipleShooting = new CR3BPMultipleShooting(firstGuessList, propagatorList, cr3bpAdditionalEquations, true, 1E-8);
+        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, cr3bpAdditionalEquations, arcDuration, 1E-8);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
         multipleShooting.setPatchPointComponentFreedom(1, 2, false);
         multipleShooting.setPatchPointComponentFreedom(1, 3, false);

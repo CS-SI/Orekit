@@ -21,15 +21,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * Multiple shooting method using only constraints on state vectors of patch points (and possibly on epoch and integration time).
@@ -69,8 +72,8 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Pacth points components which are constrained. */
     private Map<Integer, Double> mapConstraints;
 
-    /** True if orbit is closed. */
-    private boolean isClosedOrbit;
+    //    /** True if orbit is closed. */
+    //    private boolean isClosedOrbit;
 
     /** Tolerance on the constraint vector. */
     private double tolerance;
@@ -80,10 +83,11 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param initialGuessList initial patch points to be corrected.
      * @param propagatorList list of propagators associated to each patch point.
      * @param additionalEquations list of additional equations linked to propagatorList.
+     * @param arcDuration initial guess of the duration of each arc.
      * @param tolerance convergence tolerance on the constraint vector.
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                       final List<AdditionalEquations> additionalEquations, final double tolerance) {
+                                       final List<AdditionalEquations> additionalEquations, final double arcDuration, final double tolerance) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
         this.additionalEquations = additionalEquations;
@@ -91,7 +95,8 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         final int propagationNumber = initialGuessList.size() - 1;
         this.propagationTime = new double[propagationNumber];
         for (int i = 0; i < propagationNumber; i++ ) {
-            this.propagationTime[i] = patchedSpacecraftStates.get(i + 1).getDate().durationFrom(initialGuessList.get(i).getDate());
+//            this.propagationTime[i] = patchedSpacecraftStates.get(i + 1).getDate().durationFrom(initialGuessList.get(i).getDate());
+            this.propagationTime[i] = arcDuration;
         }
 
         // All the patch points are set initially as free variables
@@ -115,7 +120,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
         // All the additional constraints must be set afterward
         this.mapConstraints = new HashMap<>();
-        this.isClosedOrbit = false;
+        //        this.isClosedOrbit = false;
     }
 
     /** Set a component of a patch point to free or not.
@@ -153,17 +158,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             freeEpochMap[patchNumber - 1] = isFree;
             final int eps = isFree ? 1 : -1;
             nEpoch = nEpoch + eps;
-        }
-    }
-
-    /** Set the constraint of a closed orbit or not.
-     *  @param isClosed true if orbit should be closed
-     */
-    public void setClosedOrbitConstraint(final boolean isClosed) {
-        if (this.isClosedOrbit != isClosed) {
-            final int eps = isClosed ? 1 : -1;
-            nConstraints = nConstraints + eps * 6;
-            this.isClosedOrbit = isClosed;
         }
     }
 
@@ -218,9 +212,293 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             iter++;
 
-        } while (fxNorm > tolerance & iter < 10); // Converge within 1E-8 tolerance and under 10 iterations
+        } while (fxNorm > tolerance & iter < 10); // Converge within tolerance and under 10 iterations
 
         return patchedSpacecraftStates;
+    }
+
+    /** Compute the Jacobian matrix of the problem.
+     *  @param propagatedSP List of propagated SpacecraftStates (patch points)
+     *  @return jacobianMatrix Jacobian matrix
+     */
+    public RealMatrix computeJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+
+        final int nFreeEpoch = nEpoch;
+        final int npoints = patchedSpacecraftStates.size();
+
+//        final int epochConstraint = nFreeEpoch == 0 ? 0 : npoints - 1;
+        final int epochConstraint = nFreeEpoch;
+
+        final int nrows = getNumberOfConstraints() + epochConstraint;
+        final int ncolumns = getNumberOfFreeVariables() + nFreeEpoch;
+
+
+        // Exception should be covered in higher abstract method
+        //        if (ncolumns > nrows) {
+        //            throw new OrekitException(OrekitMessages.MULTIPLE_SHOOTING_UNDERCONSTRAINED, ncolumns, nrows);
+        //        }
+        final RealMatrix M = MatrixUtils.createRealMatrix(nrows, ncolumns);
+
+        int index = 0;
+        int indexEpoch = nFree;
+        for (int i = 0; i < npoints - 1; i++) {
+
+            final SpacecraftState finalState = propagatedSP.get(i);
+            // The Jacobian matrix has the following form:
+
+            //          [     |     |     ]
+            //          [  A  |  B  |  C  ]
+            // DF(X) =  [     |     |     ]
+            //          [-----------------]
+            //          [  0  |  D  |  E  ]
+            //          [-----------------]
+            //          [  F  |  0  |  0  ]
+
+            //          [     |     ]
+            //          [  A  |  B  ]
+            // DF(X) =  [     |     ]
+            //          [-----------]
+            //          [  C  |  0  ]
+            //
+            // For a problem with all the components of each patch points is free, A is detailed below :
+            //      [ phi1     -I                                   ]
+            //      [         phi2     -I                           ]
+            // A =  [                 ....    ....                  ]   6(n-1)x6n
+            //      [                         ....     ....         ]
+            //      [                                 phin-1    -I  ]
+
+            // D is computing according to additional constraints
+            // (for now, closed orbit, or a component of a patch point equals to a specified value)
+            //
+
+            // If the duration of the propagation of each arc is the same :
+            //      [ xdot1f ]
+            //      [ xdot2f ]                      [  -1 ]
+            // B =  [  ....  ]   6(n-1)x1   and D = [ ... ]
+            //      [  ....  ]                      [  -1 ]
+            //      [xdotn-1f]
+
+            // Otherwise :
+            //      [ xdot1f                                ]
+            //      [        xdot2f                         ]
+            // B =  [                 ....                  ]   6(n-1)x(n-1) and D = -I
+            //      [                        ....           ]
+            //      [                             xdotn-1f  ]
+            //
+            // If the problem is not dependant of the epoch (e.g. CR3BP), the C and E matrices are not computed.
+            // Otherwise :
+            //      [ -dx1f/dtau1                                           0 ]
+            //      [          -dx2f/dtau2                                  0 ]
+            // C =  [                       ....                            0 ]   6(n-1)xn
+            //      [                               ....                    0 ]
+            //      [                                     -dxn-1f/dtaun-1   0 ]
+            //
+            //      [ -1   1  0                 ]
+            //      [     -1   1  0             ]
+            // E =  [          ..   ..          ] n-1xn
+            //      [               ..   ..     ]
+            //      [                    -1   1 ]
+
+            final PVCoordinates pvf = finalState.getPVCoordinates();
+
+            // Get State Transition Matrix phi
+            final RealMatrix phi = getStateTransitionMatrix(finalState);
+
+            // Matrix A
+            for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
+                if (freePatchPointMap[6 * i + j]) { // If this component is free
+                    for (int k = 0; k < 6; k++) { // Loop on the 6 component of the patch point constraint
+                        M.setEntry(6 * i + k, index, phi.getEntry(k, j));
+                    }
+                    if (i > 0) {
+                        M.setEntry(6 * (i - 1) + j, index, -1);
+                    }
+                    index++;
+                }
+            }
+
+            // Matrix B
+            final double[][] pvfArray = new double[][] {
+                {pvf.getVelocity().getX()},
+                {pvf.getVelocity().getY()},
+                {pvf.getVelocity().getZ()},
+                {pvf.getAcceleration().getX()},
+                {pvf.getAcceleration().getY()},
+                {pvf.getAcceleration().getZ()}};
+
+            M.setSubMatrix(pvfArray, 6 * i, nFree - 1);
+
+            // Matrix C
+            if (freeEpochMap[i]) { // If this component is free
+                final double[] derivatives = finalState.getAdditionalState("derivatives");
+                final double[][] subC = new double[6][1];
+                for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
+                    subC[j][0] = -derivatives[derivatives.length - 6 + j];
+                }
+                M.setSubMatrix(subC, 6 * i, indexEpoch);
+                indexEpoch++;
+            }
+        }
+
+        for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
+            if (freePatchPointMap[6 * (npoints - 1) + j]) { // If this component is free
+                M.setEntry(6 * (npoints - 2) + j, index, -1);
+                index++;
+            }
+        }
+
+
+        // Matrices D and E.
+        if (nFreeEpoch > 0) {
+            final double[][] subDE = computeEpochJacobianMatrix(propagatedSP);
+            M.setSubMatrix(subDE, 6 * (npoints - 1), nFree - 1);
+        }
+//        final int nEpoch = nFreeEpoch > 0 ? npoints - 1 : 0;
+
+
+        // Matrices F.
+        final double[][] subF = computeAdditionalJacobianMatrix(propagatedSP);
+        if (subF.length > 0) {
+            M.setSubMatrix(subF, 6 * (npoints - 1) + nEpoch, 0);
+        }
+
+        return M;
+    }
+
+    /** Compute the constraint vector of the problem.
+     *  @param propagatedSP propagated SpacecraftState
+     *  @return fx constraint
+     */
+    public double[] computeConstraint(final List<SpacecraftState> propagatedSP) {
+
+        // The Constraint vector has the following form :
+
+        //         [ x1f - x2i ]---
+        //         [ x2f - x3i ]   |
+        // F(X) =  [    ...    ] vectors' equality for a continuous trajectory
+        //         [    ...    ]   |
+        //         [xn-1f - xni]---
+        //         [ d2-(d1+T) ]   continuity between epoch
+        //         [    ...    ]   and integration time
+        //         [dn-(dn-1+T)]---
+        //         [    ...    ] additional
+        //         [    ...    ] constraints
+
+        final int npoints = patchedSpacecraftStates.size();
+
+        final double[] additionalConstraints = computeAdditionalConstraints(propagatedSP);
+        final boolean epoch = getNumberOfFreeEpoch() > 0;
+
+        final int nrows = epoch ? getNumberOfConstraints() + npoints - 1 : getNumberOfConstraints();
+
+        final double[] fx = new double[nrows];
+        for (int i = 0; i < npoints - 1; i++) {
+            final AbsolutePVCoordinates absPvi = patchedSpacecraftStates.get(i + 1).getAbsPVA();
+            final AbsolutePVCoordinates absPvf = propagatedSP.get(i).getAbsPVA();
+            final double[] ecartPos = absPvf.getPosition().subtract(absPvi.getPosition()).toArray();
+            final double[] ecartVel = absPvf.getVelocity().subtract(absPvi.getVelocity()).toArray();
+            for (int j = 0; j < 3; j++) {
+                fx[6 * i + j] = ecartPos[j];
+                fx[6 * i + 3 + j] = ecartVel[j];
+            }
+        }
+
+        //        int index = getNumberOfConstraints();
+        int index = 6 * (npoints - 1);
+
+        if (epoch) {
+            for (int i = 0; i < npoints - 1; i++) {
+                final double deltaEpoch = patchedSpacecraftStates.get(i + 1).getDate().durationFrom(patchedSpacecraftStates.get(i).getDate());
+                fx[index] = deltaEpoch - propagationTime[i];
+                index++;
+            }
+        }
+
+        for (int i = 0; i < additionalConstraints.length; i++) {
+            //            fx[6 * npoints - 6 + i] = additionalConstraints[i];
+            fx[index] = additionalConstraints[i];
+            index++;
+        }
+
+        return fx;
+    }
+
+
+    /** Update the trajectory, and the propagation time.
+     *  @param dx correction on the initial vector
+     */
+    public void updateTrajectory(final RealVector dx) {
+        // X = [x1, ..., xn, T1, ..., Tn, d1, ..., dn]
+        // X = [x1, ..., xn, T, d2, ..., dn]
+
+        final int n = getNumberOfFreeVariables();
+
+        final boolean epochFree = getNumberOfFreeEpoch() > 0;
+
+        // Update propagation time
+        //------------------------------------------------------
+        final double deltaT = dx.getEntry(n - 1);
+        for (int i = 0; i < propagationTime.length; i++) {
+            propagationTime[i] = propagationTime[i] - deltaT;
+        }
+
+        // Update patch points through SpacecrafStates
+        //--------------------------------------------------------------------------------
+
+        int index = 0;
+        int indexEpoch = 0;
+
+        for (int i = 0; i < patchedSpacecraftStates.size(); i++) {
+            // Get delta in position and velocity
+            final double[] deltaPV = new double[6];
+            for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
+                if (freePatchPointMap[6 * i + j]) { // If this component is free (is to be updated)
+                    deltaPV[j] = dx.getEntry(index);
+                    index++;
+                }
+            }
+            final Vector3D deltaP = new Vector3D(deltaPV[0], deltaPV[1], deltaPV[2]);
+            final Vector3D deltaV = new Vector3D(deltaPV[3], deltaPV[4], deltaPV[5]);
+
+//            System.out.println(deltaP);
+//            System.out.println(deltaV);
+
+            // Update the PVCoordinates of the patch point
+            final AbsolutePVCoordinates currentAPV = patchedSpacecraftStates.get(i).getAbsPVA();
+            final Vector3D position = currentAPV.getPosition().subtract(deltaP);
+            final Vector3D velocity = currentAPV.getVelocity().subtract(deltaV);
+            final PVCoordinates pv = new PVCoordinates(position, velocity);
+
+            //Update epoch in the AbsolutePVCoordinates
+            AbsoluteDate epoch = currentAPV.getDate();
+            if (epochFree) {
+                if (freeEpochMap[i]) {
+                    final double deltaEpoch = dx.getEntry(n + indexEpoch);
+                    epoch = patchedSpacecraftStates.get(i).getDate().shiftedBy(-deltaEpoch);
+//                     epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
+                    indexEpoch++;
+                }
+            } else {
+                if (i > 0) {
+                    epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
+                }
+            }
+            final AbsolutePVCoordinates updatedAPV = new AbsolutePVCoordinates(currentAPV.getFrame(), epoch, pv);
+
+            //Update attitude epoch
+            Attitude attitude = patchedSpacecraftStates.get(i).getAttitude();
+            if (i > 0) {
+                final AttitudeProvider attitudeProvider = getPropagatorList().get(i - 1).getAttitudeProvider();
+                attitude = attitudeProvider.getAttitude(updatedAPV, epoch, currentAPV.getFrame());
+            }
+
+            //Update the SpacecraftState using previously updated attitude and AbsolutePVCoordinates
+            patchedSpacecraftStates.set(i, new SpacecraftState(updatedAPV, attitude));
+        }
+//        System.out.println(dx.getEntry(n - 1));
+//        if (epochFree) {
+//            System.out.println(dx.getSubVector(n, indexEpoch));
+//        }
     }
 
     /** Compute the Jacobian matrix of the problem.
@@ -255,24 +533,39 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
         return propagatedSP;
     }
+    /** Compute the additional constraints.
+     *  @param propagatedSP propagated SpacecraftState
+     *  @return fxAdditionnal additional constraints
+     */
+    protected abstract double[] computeAdditionalConstraints(List<SpacecraftState> propagatedSP);
+
+    /** Compute the STM (State Transition Matrix) of a SpacecraftState.
+     *  @param finalState SpacecraftState
+     *  @return phiM phiM
+     */
+    protected abstract RealMatrix getStateTransitionMatrix(SpacecraftState finalState);
+
+    /** Compute a part of the Jacobian matrix with derivatives from epoch.
+     * The CR3BP is a time invariant problem. The derivatives w.r.t. epoch are zero.
+     *  @param propagatedSP propagatedSP
+     *  @return jacobianMatrix Jacobian sub-matrix
+     */
+    protected abstract double[][] computeEpochJacobianMatrix(List<SpacecraftState> propagatedSP);
+
+    /** Compute a part of the Jacobian matrix from additional constraints.
+     *  @param propagatedSP propagatedSP
+     *  @return jacobianMatrix Jacobian sub-matrix
+     */
+    protected abstract double[][] computeAdditionalJacobianMatrix(List<SpacecraftState> propagatedSP);
+
 
     /** Compute the additional state from the additionalEquations.
-     *  @param sp SpacecraftState without the additional state
-     *  @param additionalEquation Additional Equations.
+     *  @param initialState SpacecraftState without the additional state
+     *  @param additionalEquations2 Additional Equations.
      *  @return augmentedSP SpacecraftState with the additional state within.
      */
-    protected SpacecraftState getAugmentedInitialState(final SpacecraftState sp,
-                                                       final AdditionalEquations additionalEquation) {
-
-        final SpacecraftState augmentedSP =
-                        ((PartialDerivativesEquations) additionalEquation).setInitialJacobians(sp);
-
-        return augmentedSP;
-    }
-
-    protected boolean isClosedOrbit() {
-        return isClosedOrbit;
-    }
+    protected abstract SpacecraftState getAugmentedInitialState(SpacecraftState initialState,
+                                                                AdditionalEquations additionalEquations2);
 
     protected int getNumberOfFreeVariables() {
         return nFree;
