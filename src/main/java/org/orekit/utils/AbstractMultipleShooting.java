@@ -100,7 +100,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         }
 
         // All the patch points are set initially as free variables
-        this.freePatchPointMap = new boolean[6 * (initialGuessList.size() + 1)]; // epoch
+        this.freePatchPointMap = new boolean[6 * initialGuessList.size()]; // epoch
         for (int i = 0; i < freePatchPointMap.length; i++) {
             freePatchPointMap[i] = true;
         }
@@ -212,7 +212,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             iter++;
 
-        } while (fxNorm > tolerance & iter < 10); // Converge within tolerance and under 10 iterations
+        } while (fxNorm > tolerance & iter < 1); // Converge within tolerance and under 10 iterations
 
         return patchedSpacecraftStates;
     }
@@ -474,7 +474,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             if (epochFree) {
                 if (freeEpochMap[i]) {
                     final double deltaEpoch = dx.getEntry(n + indexEpoch);
-                    epoch = patchedSpacecraftStates.get(i).getDate().shiftedBy(-deltaEpoch);
+                    epoch = epoch.shiftedBy(-deltaEpoch);
 //                     epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
                     indexEpoch++;
                 }
