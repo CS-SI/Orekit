@@ -67,8 +67,6 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
         this.lPoint = lPoint;
         this.npoints = initialGuessList.size();
         setClosedOrbitConstraint(true);
-        int nConstraints = getNumberOfConstraints();
-        nConstraints = nConstraints + 6; // Constraint for a closed orbit
     }
 
     /** {@inheritDoc} */
