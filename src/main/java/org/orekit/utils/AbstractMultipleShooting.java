@@ -223,14 +223,14 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      */
     public RealMatrix computeJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
-        final int nFreeEpoch = nEpoch;
+//        final int nFreeEpoch = nEpoch;
         final int npoints = patchedSpacecraftStates.size();
 
-//        final int epochConstraint = nFreeEpoch == 0 ? 0 : npoints - 1;
-        final int epochConstraint = nFreeEpoch;
+        final int epochConstraint = nEpoch == 0 ? 0 : npoints - 1;
+//        final int epochConstraint = nFreeEpoch;
 
         final int nrows = getNumberOfConstraints() + epochConstraint;
-        final int ncolumns = getNumberOfFreeVariables() + nFreeEpoch;
+        final int ncolumns = getNumberOfFreeVariables() + nEpoch;
 
 
         // Exception should be covered in higher abstract method
@@ -349,7 +349,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
 
         // Matrices D and E.
-        if (nFreeEpoch > 0) {
+        if (nEpoch > 0) {
             final double[][] subDE = computeEpochJacobianMatrix(propagatedSP);
             M.setSubMatrix(subDE, 6 * (npoints - 1), nFree - 1);
         }
@@ -359,7 +359,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         // Matrices F.
         final double[][] subF = computeAdditionalJacobianMatrix(propagatedSP);
         if (subF.length > 0) {
-            M.setSubMatrix(subF, 6 * (npoints - 1) + nEpoch, 0);
+            M.setSubMatrix(subF, 6 * (npoints - 1) + epochConstraint, 0);
         }
 
         return M;
