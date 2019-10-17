@@ -37,8 +37,8 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
     /** Number of patch points. */
     private int npoints;
 
-    /** True if orbit is closed. */
-    private boolean isClosedOrbit;
+//    /** True if orbit is closed. */
+//    private boolean isClosedOrbit;
 
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
@@ -54,17 +54,6 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
         this.npoints = initialGuessList.size();
     }
 
-    /** Set the constraint of a closed orbit or not.
-     *  @param isClosed true if orbit should be closed
-     */
-    public void setClosedOrbitConstraint(final boolean isClosed) {
-        int nConstraints = getNumberOfConstraints(); // Check if modifcation is applied in abstract method
-        if (this.isClosedOrbit != isClosed) {
-            nConstraints = nConstraints + (isClosed ? 6 : -6);
-            this.isClosedOrbit = isClosed;
-        }
-    }
-
     /** {@inheritDoc} */
     protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
                                                        final AdditionalEquations additionalEquation) {
@@ -78,6 +67,8 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
     public double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
+
+        final boolean isClosedOrbit = isClosedOrbit();
 
         // Number of additional constraints
         final int n = mapConstraints.size() + (isClosedOrbit ? 6 : 0);
@@ -132,6 +123,7 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
         //           [vz2i - vz2d]----  desired value)
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
+        final boolean isClosedOrbit = isClosedOrbit();
         // Number of additional constraints
         final int n = mapConstraints.size() + (isClosedOrbit ? 6 : 0);
 

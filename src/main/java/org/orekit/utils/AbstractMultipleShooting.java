@@ -72,8 +72,8 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Pacth points components which are constrained. */
     private Map<Integer, Double> mapConstraints;
 
-    //    /** True if orbit is closed. */
-    //    private boolean isClosedOrbit;
+    /** True if orbit is closed. */
+    private boolean isClosedOrbit;
 
     /** Tolerance on the constraint vector. */
     private double tolerance;
@@ -501,6 +501,18 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 //        }
     }
 
+
+    /** Set the constraint of a closed orbit or not.
+     *  @param isClosed true if orbit should be closed
+     */
+    public void setClosedOrbitConstraint(final boolean isClosed) {
+//        int nConstraints = getNumberOfConstraints(); // Check if modifcation is applied in abstract method
+        if (this.isClosedOrbit != isClosed) {
+            nConstraints = nConstraints + (isClosed ? 6 : -6);
+            this.isClosedOrbit = isClosed;
+        }
+    }
+
     /** Compute the Jacobian matrix of the problem.
      *  @return propagatedSP propagated SpacecraftStates
      */
@@ -601,5 +613,9 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
     protected double[] getPropagationTime() {
         return propagationTime;
+    }
+
+    public boolean isClosedOrbit() {
+        return isClosedOrbit;
     }
 }

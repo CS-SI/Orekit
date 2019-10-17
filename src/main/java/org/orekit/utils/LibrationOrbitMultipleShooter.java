@@ -66,6 +66,9 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
         this.cr3bp = cr3bp;
         this.lPoint = lPoint;
         this.npoints = initialGuessList.size();
+        setClosedOrbitConstraint(true);
+        int nConstraints = getNumberOfConstraints();
+        nConstraints = nConstraints + 6; // Constraint for a closed orbit
     }
 
     /** {@inheritDoc} */
@@ -83,7 +86,7 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
 
         // Number of additional constraints
-        final int n = mapConstraints.size();
+        final int n = 6 + mapConstraints.size();
 
         final int ncolumns = getNumberOfFreeVariables() - 1;
 
@@ -217,7 +220,7 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
         // Number of additional constraints
-        final int n = mapConstraints.size();
+        final int n = 6 + mapConstraints.size();
 
         final List<SpacecraftState> patchedSpacecraftStates = getPatchedSpacecraftState();
 
