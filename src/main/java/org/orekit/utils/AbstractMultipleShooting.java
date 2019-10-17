@@ -212,7 +212,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             iter++;
 
-        } while (fxNorm > tolerance & iter < 10); // Converge within tolerance and under 10 iterations
+        } while (fxNorm > tolerance & iter < 2); // Converge within tolerance and under 10 iterations
 
         return patchedSpacecraftStates;
     }
@@ -486,11 +486,10 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             final AbsolutePVCoordinates updatedAPV = new AbsolutePVCoordinates(currentAPV.getFrame(), epoch, pv);
 
             //Update attitude epoch
-            Attitude attitude = patchedSpacecraftStates.get(i).getAttitude();
-            if (i > 0) {
-                final AttitudeProvider attitudeProvider = getPropagatorList().get(i - 1).getAttitudeProvider();
-                attitude = attitudeProvider.getAttitude(updatedAPV, epoch, currentAPV.getFrame());
-            }
+            // Last point does not have an associated propagator. The previous one is then selected.
+            final int iAttitude = i < getPropagatorList().size() ? i : getPropagatorList().size() - 1;
+            final AttitudeProvider attitudeProvider = getPropagatorList().get(iAttitude).getAttitudeProvider();
+            final Attitude attitude = attitudeProvider.getAttitude(updatedAPV, epoch, currentAPV.getFrame());
 
             //Update the SpacecraftState using previously updated attitude and AbsolutePVCoordinates
             patchedSpacecraftStates.set(i, new SpacecraftState(updatedAPV, attitude));
