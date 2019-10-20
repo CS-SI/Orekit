@@ -50,7 +50,6 @@ class DSConverter extends AbstractDSConverter {
     private final List<FieldSpacecraftState<DerivativeStructure>> dsStates;
 
     /** Simple constructor.
-     * @param state
      * @param state regular state
      * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed
