@@ -223,7 +223,7 @@ public class NumericalConverterTest {
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
 
-	// Add additional equations
+        // Add additional equations
         builder.addAdditionalEquations(new AdditionalEquations() {
 
             public String getName() {
@@ -236,17 +236,17 @@ public class NumericalConverterTest {
             }
         });
 
-	builder.addAdditionalEquations(new AdditionalEquations() {
+        builder.addAdditionalEquations(new AdditionalEquations() {
 
-	    public String getName() {
-		return "linear";
-	    }
+    	    public String getName() {
+    	        return "linear";
+    	    }
 
-	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
-		pDot[0] = 1.0;
-		return new double[7];
-	    }
-	});
+    	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+    	        pDot[0] = 1.0;
+    		    return new double[7];
+    	    }
+        });
 
         try {
 	    // Build the numerical propagator

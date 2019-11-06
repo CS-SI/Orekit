@@ -214,10 +214,10 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
         propagator.setInitialState(state, stateType);
 
-	// Add additional equations to the propagator
-	for (AdditionalEquations equation: additionalEquations) {
-	    propagator.addAdditionalEquations(equation);
-	}
+        // Add additional equations to the propagator
+        for (AdditionalEquations equation: getAdditionalEquations()) {
+            propagator.addAdditionalEquations(equation);
+        }
 
         return propagator;
     }

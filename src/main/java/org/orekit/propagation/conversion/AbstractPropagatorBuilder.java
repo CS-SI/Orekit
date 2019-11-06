@@ -21,8 +21,6 @@ import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
@@ -75,7 +73,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     private final double positionScale;
 
     /** Additional equations. */
-    protected List<AdditionalEquations> additionalEquations;
+    private List<AdditionalEquations> additionalEquations;
 
     /** Build a new instance.
      * <p>
@@ -313,4 +311,13 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         additionalEquations.add(additional);
 
     }
+
+    /** Get the list of additional equations.
+     * @return the list of additional equations
+     * @since 10.1
+     */
+    protected List<AdditionalEquations> getAdditionalEquations() {
+        return additionalEquations;
+    }
+
 }

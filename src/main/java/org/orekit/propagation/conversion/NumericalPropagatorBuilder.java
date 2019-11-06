@@ -207,10 +207,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
 
         propagator.resetInitialState(state);
 
-	// Add additional equations to the propagator
-	for (AdditionalEquations equation: additionalEquations) {
-	    propagator.addAdditionalEquations(equation);
-	}
+        // Add additional equations to the propagator
+        for (AdditionalEquations equation: getAdditionalEquations()) {
+            propagator.addAdditionalEquations(equation);
+        }
 
         return propagator;
     }
