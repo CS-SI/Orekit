@@ -19,15 +19,22 @@ package org.orekit.files.ccsds;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.OEMFile.CovarianceMatrix;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Predefined;
@@ -414,8 +421,8 @@ public class StreamingOemWriter {
         /** Reference frame of the output states. */
         private final Frame frame;
         /** Metadata for this OEM Segment. */
-        private final Map<Keyword, String> metadata;
-
+        private final Map<Keyword, String> metadata;        
+        
         /**
          * Create a new segment writer.
          *
@@ -493,6 +500,54 @@ public class StreamingOemWriter {
             writer.append(Double.toString(pv.getVelocity().getY() * M_TO_KM)).append(" ");
             writer.append(Double.toString(pv.getVelocity().getZ() * M_TO_KM));
             writer.append(NEW_LINE);
+        }
+        
+        /**
+         * Write covariance matrices of the segment according to section 5.2.5.
+         *
+         * @param covarianceMatrices the list of covariance matrices related to the segment.
+         * @throws IOException if the output stream throws one while writing.
+         */
+        public void writeCovarianceMatrices(final List<CovarianceMatrix> covarianceMatrices)
+                throws IOException {
+        	writer.append("COVARIANCE_START").append(NEW_LINE);
+        	      
+        	// Use map and sort to ensure having the matrices in chronological order when 
+        	// they are in the same data section (see section 5.2.5.7)
+        	Map<AbsoluteDate, CovarianceMatrix> map = new HashMap<>();
+        	for (final CovarianceMatrix covarianceMatrix : covarianceMatrices) {
+        		map.put(covarianceMatrix.getEpoch(),covarianceMatrix);
+        	}
+        	final List<AbsoluteDate> list_epoch = new ArrayList<>(map.keySet());
+        	Collections.sort(list_epoch);
+        	CovarianceMatrix covarianceMatrix;
+        	for (int n=0;n<list_epoch.size();n++) {
+        		covarianceMatrix = map.get(list_epoch.get(n));
+        		final String epoch = dateToString(covarianceMatrix.getEpoch().getComponents(timeScale));
+        		writeKeyValue(Keyword.EPOCH, epoch);
+        		
+        		if (covarianceMatrix.getFrame() != null ) {
+        			writeKeyValue(Keyword.COV_REF_FRAME,guessFrame(covarianceMatrix.getFrame()));
+        		} else if (covarianceMatrix.getLofType() != null) {
+        			if (covarianceMatrix.getLofType().name().equalsIgnoreCase("QSW")) {
+        				writeKeyValue(Keyword.COV_REF_FRAME,"RTN");
+        			} else if (covarianceMatrix.getLofType().name().equalsIgnoreCase("TNW")){
+        				writeKeyValue(Keyword.COV_REF_FRAME,"TNW");
+        			} else {
+        				throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, toString());
+        			}
+        		}
+        		
+        		final RealMatrix covRealMatrix = covarianceMatrix.getMatrix();
+        		for (int i=0;i<6;i++) {
+        			writer.append(Double.toString(covRealMatrix.getEntry(i, 0)));
+        			for (int j=1;j<i+1;j++) {
+        				writer.append(" ").append(Double.toString(covRealMatrix.getEntry(i, j)));
+        			}
+        			writer.append(NEW_LINE);
+        		}
+        	}
+            writer.append("COVARIANCE_STOP").append(NEW_LINE).append(NEW_LINE);
         }
 
         /**
