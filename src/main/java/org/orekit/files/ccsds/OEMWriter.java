@@ -165,7 +165,7 @@ public class OEMWriter implements EphemerisFileWriter {
             metadata.put(Keyword.STOP_TIME, segment.getStop().toString(timeScale));
             metadata.put(Keyword.INTERPOLATION_DEGREE,
                     String.valueOf(segment.getInterpolationSamples() - 1));
-            
+
             final Segment segmentWriter = oemWriter.newSegment(null, metadata);
             segmentWriter.writeMetadata();
             for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
@@ -173,11 +173,11 @@ public class OEMWriter implements EphemerisFileWriter {
             }
 
             if (segment instanceof EphemeridesBlock) {
-            	EphemeridesBlock curr_ephem_block = (EphemeridesBlock) segment;
-            	List<CovarianceMatrix> covarianceMatrices = curr_ephem_block.getCovarianceMatrices();
-            	if (!covarianceMatrices.isEmpty()) {
-            		segmentWriter.writeCovarianceMatrices(covarianceMatrices);
-            	}
+                final EphemeridesBlock curr_ephem_block = (EphemeridesBlock) segment;
+                final List<CovarianceMatrix> covarianceMatrices = curr_ephem_block.getCovarianceMatrices();
+                if (!covarianceMatrices.isEmpty()) {
+                    segmentWriter.writeCovarianceMatrices(covarianceMatrices);
+                }
             }
         }
     }
