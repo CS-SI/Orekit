@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="611">
+        Added SBAS orbit propagator.
+      </action>
       <action dev="bryan" type="fix" issue="617">
         Fixed null pointer exception in MultiplexedMeasurement.
       </action>
