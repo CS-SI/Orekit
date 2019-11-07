@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface GravityFields {
 
-    /** Get the constant gravity field coefficients provider from the first supported file.
+    /** Get a constant gravity field normalized coefficients provider.
      *
      * @param degree maximal degree
      * @param order maximal order
@@ -25,7 +25,7 @@ public interface GravityFields {
     NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(int degree,
                                                                        int order);
 
-    /** Get the gravity field coefficients provider from the first supported file.
+    /** Get a gravity field normalized coefficients provider.
      *
      * @param degree maximal degree
      * @param order maximal order
@@ -36,7 +36,7 @@ public interface GravityFields {
     NormalizedSphericalHarmonicsProvider getNormalizedProvider(int degree,
                                                                int order);
 
-    /** Get the constant gravity field coefficients provider from the first supported file.
+    /** Get a constant gravity field unnormalized coefficients provider.
      *
      * @param degree maximal degree
      * @param order maximal order
@@ -47,7 +47,7 @@ public interface GravityFields {
     UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(int degree,
                                                                            int order);
 
-    /** Get the gravity field coefficients provider from the first supported file.
+    /** Get a gravity field unnormalized coefficients provider.
      *
      * @param degree maximal degree
      * @param order maximal order
@@ -58,7 +58,7 @@ public interface GravityFields {
     UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(int degree,
                                                                    int order);
 
-    /** Get the ocean tides waves from the first supported file.
+    /** Get the ocean tides waves.
      *
      * <p><span style="color:red">
      * WARNING: as of 2013-11-17, there seem to be an inconsistency when loading
