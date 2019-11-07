@@ -19,11 +19,9 @@ package org.orekit.files.ccsds;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +35,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.OEMFile.CovarianceMatrix;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.VersionedITRF;
 import org.orekit.propagation.Propagator;
@@ -511,26 +510,19 @@ public class StreamingOemWriter {
         public void writeCovarianceMatrices(final List<CovarianceMatrix> covarianceMatrices)
                 throws IOException {
             writer.append("COVARIANCE_START").append(NEW_LINE);
-            // Use map and sort to ensure having the matrices in chronological order when
+            // Sort to ensure having the matrices in chronological order when
             // they are in the same data section (see section 5.2.5.7)
-            final Map<AbsoluteDate, CovarianceMatrix> map = new HashMap<>();
+            Collections.sort(covarianceMatrices, (mat1, mat2)->mat1.getEpoch().compareTo(mat2.getEpoch()));
             for (final CovarianceMatrix covarianceMatrix : covarianceMatrices) {
-                map.put(covarianceMatrix.getEpoch(), covarianceMatrix);
-            }
-            final List<AbsoluteDate> list_epoch = new ArrayList<>(map.keySet());
-            Collections.sort(list_epoch);
-            CovarianceMatrix covarianceMatrix;
-            for (int n = 0; n < list_epoch.size(); n++) {
-                covarianceMatrix = map.get(list_epoch.get(n));
                 final String epoch = dateToString(covarianceMatrix.getEpoch().getComponents(timeScale));
                 writeKeyValue(Keyword.EPOCH, epoch);
 
                 if (covarianceMatrix.getFrame() != null ) {
                     writeKeyValue(Keyword.COV_REF_FRAME, guessFrame(covarianceMatrix.getFrame()));
                 } else if (covarianceMatrix.getLofType() != null) {
-                    if (covarianceMatrix.getLofType().name().equalsIgnoreCase("QSW")) {
+                    if (covarianceMatrix.getLofType() == LOFType.QSW) {
                         writeKeyValue(Keyword.COV_REF_FRAME, "RTN");
-                    } else if (covarianceMatrix.getLofType().name().equalsIgnoreCase("TNW")) {
+                    } else if (covarianceMatrix.getLofType() == LOFType.TNW) {
                         writeKeyValue(Keyword.COV_REF_FRAME, covarianceMatrix.getLofType().name());
                     } else {
                         throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, toString());
@@ -538,7 +530,7 @@ public class StreamingOemWriter {
                 }
 
                 final RealMatrix covRealMatrix = covarianceMatrix.getMatrix();
-                for (int i = 0; i < 6; i++) {
+                for (int i = 0; i < covRealMatrix.getRowDimension(); i++) {
                     writer.append(Double.toString(covRealMatrix.getEntry(i, 0)));
                     for (int j = 1; j < i + 1; j++) {
                         writer.append(" ").append(Double.toString(covRealMatrix.getEntry(i, j)));
