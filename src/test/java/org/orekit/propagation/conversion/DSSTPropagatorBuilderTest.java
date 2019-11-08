@@ -29,6 +29,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -37,6 +39,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -199,6 +202,53 @@ public class DSSTPropagatorBuilderTest {
         // Add a new force model to ensure the Newtonian attraction stay at the last position
         builder.addForceModel(sun);
         assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+    }
+
+    @Test
+    public void testAdditionalEquations() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
+                                                                  dp54Builder,
+                                                                  1.0,
+                                                                  PropagationType.MEAN,
+                                                                  PropagationType.MEAN);
+        builder.addForceModel(moon);
+        builder.addForceModel(sun);
+
+        // Add additional equations
+        builder.addAdditionalEquations(new AdditionalEquations() {
+
+            public String getName() {
+                return "linear";
+            }
+
+            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+                pDot[0] = 1.0;
+                return new double[7];
+            }
+        });
+
+        builder.addAdditionalEquations(new AdditionalEquations() {
+
+    	    public String getName() {
+    	        return "linear";
+    	    }
+
+    	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+    	        pDot[0] = 1.0;
+    	        return new double[7];
+    	    }
+        });
+
+        try {
+    	    // Build the propagator
+    	    builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+        }
     }
 
     @Before

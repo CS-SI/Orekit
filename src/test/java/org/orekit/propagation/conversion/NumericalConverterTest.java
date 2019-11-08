@@ -49,6 +49,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -208,6 +209,52 @@ public class NumericalConverterTest {
 
         ODEIntegratorBuilder teBuilder = new ThreeEighthesIntegratorBuilder(stepSize);
         checkFit(teBuilder);
+    }
+
+    @Test
+    public void testAdditionalEquations() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
+                                                       dp54Builder,
+                                                       PositionAngle.TRUE, 1.0);
+        builder.addForceModel(drag);
+        builder.addForceModel(gravity);
+
+        // Add additional equations
+        builder.addAdditionalEquations(new AdditionalEquations() {
+
+            public String getName() {
+                return "linear";
+            }
+
+            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+                pDot[0] = 1.0;
+                return new double[7];
+            }
+        });
+
+        builder.addAdditionalEquations(new AdditionalEquations() {
+
+    	    public String getName() {
+    	        return "linear";
+    	    }
+
+    	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+    	        pDot[0] = 1.0;
+    		    return new double[7];
+    	    }
+        });
+
+        try {
+	    // Build the numerical propagator
+	    builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+        }
     }
 
     protected void checkFit(final Orbit orbit, final double duration,
