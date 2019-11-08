@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.orekit.time.TimeStamped;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link SBASSPropagator}.
+/** This interface provides the minimal set of orbital elements needed by the {@link SBASPropagator}.
 *
 * @author Bryan Cazabonne
 * @since 10.1

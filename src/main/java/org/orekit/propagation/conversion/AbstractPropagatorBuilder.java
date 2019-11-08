@@ -301,9 +301,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.initialOrbitDate = newOrbit.getDate();
     }
 
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
+    /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
      * @param additional additional equations
-     * @author Shiva Iyer
      * @since 10.1
      */
     public void addAdditionalEquations(final AdditionalEquations additional) {
