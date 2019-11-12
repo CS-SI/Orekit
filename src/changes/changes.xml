@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="dylan" type="add" issue="359">
+      	Added a specific test for issue 359 in BatchLSEstimatorTest.
+      	The test verifies that a Newtonian attraction is known
+      	by both the propagator builder and the propagator when
+      	it is not added explicitly.
+      </action>
       <action dev="dylan" type="add" issue="367">
       	Added write of covariance matrices in OEMWriter.
       </action>
