@@ -1055,9 +1055,11 @@ public class BatchLSEstimatorTest {
         }
         ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
-        assertTrue(propagator.getAllForceModels().get(0) instanceof NewtonianAttraction);
-        assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof NewtonianAttraction);
-        assertNotNull(estimatedParameters.findByName("central attraction coefficient"));
+        Assert.assertTrue(propagator.getAllForceModels().get(0) instanceof NewtonianAttraction);
+        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof NewtonianAttraction);
+        Assert.assertNotNull(estimatedParameters.findByName("central attraction coefficient"));
+        Assert.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver("central attraction coefficient").isSelected());
+        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver("central attraction coefficient").isSelected());
     }
 
     /** Multiplex measurements.

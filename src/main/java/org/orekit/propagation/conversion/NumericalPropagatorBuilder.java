@@ -201,6 +201,11 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
         if (!hasNewtonianAttraction()) {
             // There are no central attraction model yet, add it at the end of the list
             final NewtonianAttraction force = new NewtonianAttraction(orbit.getMu());
+            final String nameParameter = "central attraction coefficient";
+            // Set as selected if mu is an estimated parameter
+            if (super.getPropagationParametersDrivers().findByName(nameParameter).isSelected()) {
+                force.getParameterDriver(nameParameter).setSelected(true);
+            }
             forceModels.add(force);
             propagator.addForceModel(force);
         }
