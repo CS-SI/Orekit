@@ -250,7 +250,7 @@ public class DSSTPropagatorBuilderTest {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
     }
-
+    
     @Before
     public void setUp() throws IOException, ParseException {
         

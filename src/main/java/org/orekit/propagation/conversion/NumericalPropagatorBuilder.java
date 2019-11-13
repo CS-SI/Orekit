@@ -194,15 +194,14 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
         propagator.setOrbitType(getOrbitType());
         propagator.setPositionAngleType(getPositionAngle());
         propagator.setAttitudeProvider(attProvider);
-        for (ForceModel model : forceModels) {
-            propagator.addForceModel(model);
-        }
 
+        // Configure force models
         if (!hasNewtonianAttraction()) {
             // There are no central attraction model yet, add it at the end of the list
-            final NewtonianAttraction force = new NewtonianAttraction(orbit.getMu());
-            forceModels.add(force);
-            propagator.addForceModel(force);
+            addForceModel(new NewtonianAttraction(orbit.getMu()));
+        }
+        for (ForceModel model : forceModels) {
+            propagator.addForceModel(model);
         }
 
         propagator.resetInitialState(state);

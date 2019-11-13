@@ -41,6 +41,7 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -51,6 +52,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
@@ -1016,6 +1018,45 @@ public class BatchLSEstimatorTest {
                                      0.0, 1.4e-6,
                                      0.0, 5.9e-7,
                                      0.0, 2.7e-10);
+    }
+    
+    /**
+     * Test if the parameter µ is taken into account by the builder even if no attraction force has been added yet.
+     */
+    @Test
+    public void testIssue359() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        
+        // Select the central attraction coefficient (here there is only the central attraction coefficient)
+        // as estimated parameter
+        propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        // create perfect PV measurements
+        final NumericalPropagator propagator = (NumericalPropagator) EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               0.0, 1.0, 300.0);
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
+        // Verify that the propagator, the builder and the estimator know mu
+        final String driverName = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
+        Assert.assertTrue(propagator.getAllForceModels().get(0) instanceof NewtonianAttraction);
+        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof NewtonianAttraction);
+        Assert.assertNotNull(estimatedParameters.findByName(driverName));
+        Assert.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
+        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
     }
 
     /** Multiplex measurements.
