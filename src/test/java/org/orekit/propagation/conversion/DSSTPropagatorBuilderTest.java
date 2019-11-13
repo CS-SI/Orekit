@@ -250,6 +250,29 @@ public class DSSTPropagatorBuilderTest {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
     }
+    
+    @Test
+    public void testIssue359() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
+                                                                  dp54Builder,
+                                                                  1.0,
+                                                                  PropagationType.MEAN,
+                                                                  PropagationType.MEAN);
+        // Set mu as selected parameter
+        builder.getPropagationParametersDrivers().findByName("central attraction coefficient").setSelected(true);
+        // Build the DSST propagator
+        final DSSTPropagator propagator = builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        // Verify the addition of the Newtonian attraction force model
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        assertTrue(hasNewtonianAttraction(propagator.getAllForceModels()));
+        // Verify that the Newtonian attraction force model is selected
+        final int last = builder.getAllForceModels().size() - 1;
+        assertTrue(builder.getAllForceModels().get(last).getParametersDrivers()[0].isSelected());
+        assertTrue(propagator.getAllForceModels().get(last).getParametersDrivers()[0].isSelected());
+    }
 
     @Before
     public void setUp() throws IOException, ParseException {
