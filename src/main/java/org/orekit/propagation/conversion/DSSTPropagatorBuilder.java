@@ -201,20 +201,14 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
         final DSSTPropagator propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL), propagationType);
         propagator.setAttitudeProvider(attProvider);
-        for (DSSTForceModel model : forceModels) {
-            propagator.addForceModel(model);
-        }
 
+        // Configure force models
         if (!hasNewtonianAttraction()) {
             // There are no central attraction model yet, add it at the end of the list
-            final DSSTNewtonianAttraction force = new DSSTNewtonianAttraction(orbit.getMu());
-            final String nameParameter = "central attraction coefficient";
-            // Set as selected if mu is an estimated parameter
-            if (super.getPropagationParametersDrivers().findByName(nameParameter).isSelected()) {
-                force.getParametersDrivers()[0].setSelected(true);
-            }
-            forceModels.add(force);
-            propagator.addForceModel(force);
+            addForceModel(new DSSTNewtonianAttraction(orbit.getMu()));
+        }
+        for (DSSTForceModel model : forceModels) {
+            propagator.addForceModel(model);
         }
 
         propagator.setInitialState(state, stateType);

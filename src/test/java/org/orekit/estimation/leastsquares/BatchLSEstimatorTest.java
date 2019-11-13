@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -1055,11 +1051,12 @@ public class BatchLSEstimatorTest {
         }
         ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
+        final String driverName = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
         Assert.assertTrue(propagator.getAllForceModels().get(0) instanceof NewtonianAttraction);
         Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof NewtonianAttraction);
-        Assert.assertNotNull(estimatedParameters.findByName("central attraction coefficient"));
-        Assert.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver("central attraction coefficient").isSelected());
-        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver("central attraction coefficient").isSelected());
+        Assert.assertNotNull(estimatedParameters.findByName(driverName));
+        Assert.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
+        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
     }
 
     /** Multiplex measurements.
