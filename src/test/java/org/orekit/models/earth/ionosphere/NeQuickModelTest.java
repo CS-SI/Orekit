@@ -191,6 +191,38 @@ public class NeQuickModelTest {
     }
 
     @Test
+    public void testEquality() {
+    	// Model
+        final NeQuickModel model = new NeQuickModel(medium);
+        
+        // Geodetic points
+        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(115.89), 12.78);
+        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(124.09), 20100697.90);
+
+        // Date
+        final AbsoluteDate date = new AbsoluteDate(2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
+
+        // Earth
+        final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        // Satellite position
+        final Vector3D satPosInITRF    = ellipsoid.transform(satP);
+        final Vector3D satPosInEME2000 = ellipsoid.getBodyFrame().getTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+
+        // Spacecraft state
+        final PVCoordinates   pv      = new PVCoordinates(satPosInEME2000, new Vector3D(1.0, 1.0, 1.0));
+        final Orbit           orbit   = new CartesianOrbit(pv, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
+        final SpacecraftState state   = new SpacecraftState(orbit);
+        final TopocentricFrame topo   = new TopocentricFrame(ellipsoid, recP, null);
+        final double delay = model.pathDelay(state, topo,
+                                             Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters());
+        final double delay2 = model.pathDelay(date, (d,f)->state.getPVCoordinates(f), topo,
+        		                              ellipsoid, Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters());
+        Assert.assertEquals(delay, delay2, 1e-6);
+    }
+    
+    @Test
     public void testFieldDelay() {
         doTestFieldDelay(Decimal64Field.getInstance());
     }

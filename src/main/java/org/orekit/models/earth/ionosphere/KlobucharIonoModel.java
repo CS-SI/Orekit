@@ -25,8 +25,10 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -35,6 +37,8 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 
 /**
@@ -183,6 +187,47 @@ public class KlobucharIonoModel implements IonosphericModel {
     }
 
     /**
+     * Calculates the ionospheric path delay for the signal path between 2 PV coordinates.
+     *
+     * @param date current date
+     * @param sat a satellite
+     * @param rec a receiver
+     * @param body the shape of the reference body
+     * @param frequency frequency of the signal in Hz
+     * @param parameters ionospheric model parameters
+     * @return the path delay due to the ionosphere in m
+     */
+    public double pathDelay(final AbsoluteDate date, final PVCoordinatesProvider sat,
+            final PVCoordinatesProvider rec, final BodyShape body, final double frequency, final double[] parameters) {
+
+        // Positions
+        final Frame frame = body.getBodyFrame();
+        final Vector3D positionSat   = sat.getPVCoordinates(date, frame).getPosition();
+        final Vector3D positionRec  = rec.getPVCoordinates(date, frame).getPosition();
+        final Vector3D vectRec2Sat = positionSat.subtract(positionRec);
+
+        // Geodetic point
+        final GeodeticPoint recGeoPoint = body.transform(positionRec, frame, date);
+
+        // Elevation
+        final double zenithAngle = Vector3D.angle(recGeoPoint.getZenith(), vectRec2Sat.normalize());
+        final double elevation = 0.5 * FastMath.PI - zenithAngle;
+
+        // Only consider measures above the horizon
+        if (elevation > 0.0) {
+            // Azimuth angle in radians
+            double azimuth = FastMath.atan2(positionSat.getX(), positionSat.getY());
+            if (azimuth < 0.) {
+                azimuth += MathUtils.TWO_PI;
+            }
+            // Delay
+            return pathDelay(date, recGeoPoint, elevation, azimuth, frequency, parameters);
+        }
+
+        return 0.0;
+    }
+
+    /**
      * Calculates the ionospheric path delay for the signal path from a ground
      * station to a satellite.
      * <p>
@@ -280,6 +325,48 @@ public class KlobucharIonoModel implements IonosphericModel {
             }
             // Delay
             return pathDelay(date, geo, elevation, azimuth, frequency, parameters);
+        }
+
+        return elevation.getField().getZero();
+    }
+
+    /**
+    * Calculates the ionospheric path delay for the signal path between 2 PV coordinates.
+    *
+    * @param <T> type of the elements
+    * @param date current date
+    * @param sat a satellite
+    * @param rec a receiver
+    * @param body the shape of the reference body
+    * @param frequency frequency of the signal in Hz
+    * @param parameters ionospheric model parameters
+    * @return the path delay due to the ionosphere in m
+    */
+    public <T extends RealFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final FieldPVCoordinatesProvider<T> sat,
+            final FieldPVCoordinatesProvider<T> rec, final BodyShape body, final double frequency, final T[] parameters) {
+
+        // Positions
+        final Frame frame = body.getBodyFrame();
+        final FieldVector3D<T> positionSat   = sat.getPVCoordinates(date, frame).getPosition();
+        final FieldVector3D<T> positionRec  = rec.getPVCoordinates(date, frame).getPosition();
+        final FieldVector3D<T> vectRec2Sat = positionSat.subtract(positionRec);
+
+        // Geodetic point
+        final FieldGeodeticPoint<T> recGeoPoint = body.transform(positionRec, frame, date);
+
+        // Elevation
+        final T zenithAngle = FieldVector3D.angle(recGeoPoint.getZenith(), vectRec2Sat.normalize());
+        final T elevation = zenithAngle.negate().add(0.5 * FastMath.PI);
+
+        // Only consider measures above the horizon
+        if (elevation.getReal() > 0.0) {
+            // Azimuth angle in radians
+            T azimuth = FastMath.atan2(positionSat.getX(), positionSat.getY());
+            if (azimuth.getReal() < 0.) {
+                azimuth = azimuth.add(MathUtils.TWO_PI);
+            }
+            // Delay
+            return pathDelay(date, recGeoPoint, elevation, azimuth, frequency, parameters);
         }
 
         return elevation.getField().getZero();

@@ -6,6 +6,7 @@ package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -204,6 +205,31 @@ public class GlobalIonosphereMapModelTest {
     @Test
     public void testFieldLaterDate() {
         doTestFieldLaterDate(Decimal64Field.getInstance());
+    }
+    
+    @Test
+    public void testEquality() {
+        final double latitude  = FastMath.toRadians(30.0);
+        final double longitude = FastMath.toRadians(-12.0);
+        final Orbit orbit = new KeplerianOrbit(24464560.0, 0.0, 1.122138, 1.10686, 1.00681,
+                0.048363, PositionAngle.MEAN,
+                FramesFactory.getEME2000(),
+                new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
+                Constants.WGS84_EARTH_MU);
+        final SpacecraftState newstate = new SpacecraftState(orbit);
+        final AbsoluteDate date = newstate.getDate();
+        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        final GeodeticPoint geo = new GeodeticPoint(latitude, longitude, 0.0);
+        final TopocentricFrame topo = new TopocentricFrame(earth, geo, null);
+        final Vector3D position  = newstate.getPVCoordinates(topo).getPosition();
+        final double   elevation = position.getDelta();
+        final double delay = model.pathDelay(date, geo, elevation, frequency);
+        final double delay2 = model.pathDelay(newstate, topo, frequency, null);
+        final double delay3 = model.pathDelay(date, (d,f)->newstate.getPVCoordinates(f), topo, earth, frequency, null);
+        Assert.assertEquals(delay, delay2, 1e-6);
+        Assert.assertEquals(delay2, delay3, 1e-6);
+        Assert.assertEquals(delay, delay3, 1e-6);
+        
     }
 
     private <T extends RealFieldElement<T>> void doTestFieldLaterDate(final Field<T> field) {

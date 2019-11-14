@@ -48,6 +48,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -206,9 +207,14 @@ public class KlobucharModelTest {
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
 
         double delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters());
+        
+        // Delay using PVCoordinates
+        final double delayPV = model.pathDelay(date, (d,f)->state.getPVCoordinates(f), topo, earth, 1575.42e6, model.getParameters());
 
         // Verify
         Assert.assertEquals(delayAzEl, delayState, 1.0e-6);
+        Assert.assertEquals(delayAzEl, delayPV, 1.0e-6);
+        Assert.assertEquals(delayState, delayPV, 1.0e-6);
     }
 
     @Test
@@ -251,8 +257,15 @@ public class KlobucharModelTest {
 
         T delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters(field));
 
+        // Delay using PVCoordinates
+        T delayPV = model.pathDelay(dateF, (d, f)->state.getPVCoordinates(f),
+        		(d, f)->new TimeStampedFieldPVCoordinates<>(d, new FieldPVCoordinates<>(zero.add(1),topo.getPVCoordinates(d.toAbsoluteDate(), f))),
+        		earth, 1575.42e6, model.getParameters(field));
+
         // Verify
         Assert.assertEquals(delayAzEl.getReal(), delayState.getReal(), 1.0e-6);
+        Assert.assertEquals(delayAzEl.getReal(), delayPV.getReal(), 1.0e-6);
+        Assert.assertEquals(delayState.getReal(), delayPV.getReal(), 1.0e-6);
     }
 
 }

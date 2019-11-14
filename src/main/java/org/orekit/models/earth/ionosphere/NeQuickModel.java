@@ -26,6 +26,8 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -35,6 +37,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -43,6 +46,8 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -134,6 +139,37 @@ public class NeQuickModel implements IonosphericModel {
         return factor * tec;
     }
 
+    /**
+     * Calculates the ionospheric path delay for the signal path between 2 PV coordinates.
+     *
+     * @param date current date
+     * @param sat a satellite
+     * @param rec a receiver
+     * @param body the shape of the reference body
+     * @param frequency frequency of the signal in Hz
+     * @param parameters ionospheric model parameters
+     * @return the path delay due to the ionosphere in m
+     */
+    public double pathDelay(final AbsoluteDate date, final PVCoordinatesProvider sat,
+            final PVCoordinatesProvider rec, final BodyShape body, final double frequency, final double[] parameters) {
+
+        // Positions
+        final Frame frame = body.getBodyFrame();
+        final Vector3D positionSat   = sat.getPVCoordinates(date, frame).getPosition();
+        final Vector3D positionRec  = rec.getPVCoordinates(date, frame).getPosition();
+
+        // Points
+        final GeodeticPoint recPoint = body.transform(positionRec, frame, date);
+        final GeodeticPoint satPoint = body.transform(positionSat, frame, date);
+
+        // Total Electron Content
+        final double tec = stec(date, recPoint, satPoint);
+
+        // Ionospheric delay
+        final double factor = DELAY_FACTOR / (frequency * frequency);
+        return factor * tec;
+    }
+
     @Override
     public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
@@ -148,6 +184,38 @@ public class NeQuickModel implements IonosphericModel {
         // Satellite geodetic coordinates
         final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(ellipsoid.getBodyFrame());
         final FieldGeodeticPoint<T> satPoint = ellipsoid.transform(pv.getPosition(), ellipsoid.getBodyFrame(), state.getDate());
+
+        // Total Electron Content
+        final T tec = stec(date, recPoint, satPoint);
+
+        // Ionospheric delay
+        final double factor = DELAY_FACTOR / (frequency * frequency);
+        return tec.multiply(factor);
+    }
+
+    /**
+     * Calculates the ionospheric path delay for the signal path between 2 PV coordinates.
+     *
+     * @param <T> type of the elements
+     * @param date current date
+     * @param sat a satellite
+     * @param rec a receiver
+     * @param body the shape of the reference body
+     * @param frequency frequency of the signal in Hz
+     * @param parameters ionospheric model parameters
+     * @return the path delay due to the ionosphere in m
+     */
+    public <T extends RealFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final FieldPVCoordinatesProvider<T> sat,
+            final FieldPVCoordinatesProvider<T> rec, final BodyShape body, final double frequency, final T[] parameters) {
+
+        // Positions
+        final Frame frame = body.getBodyFrame();
+        final FieldVector3D<T> positionSat   = sat.getPVCoordinates(date, frame).getPosition();
+        final FieldVector3D<T> positionRec  = rec.getPVCoordinates(date, frame).getPosition();
+
+        // Points
+        final FieldGeodeticPoint<T> recPoint = body.transform(positionRec, frame, date);
+        final FieldGeodeticPoint<T> satPoint = body.transform(positionSat, frame, date);
 
         // Total Electron Content
         final T tec = stec(date, recPoint, satPoint);
