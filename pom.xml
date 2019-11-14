@@ -869,6 +869,16 @@
           </plugin>
         </plugins>
       </build>
+      <distributionManagement>
+        <repository>
+          <id>ci-releases</id>
+          <url>https://packages.orekit.org/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ci-snapshots</id>
+            <url>https://packages.orekit.org/repository/maven-snapshots/</url>
+        </snapshotRepository>
+      </distributionManagement>
     </profile>
     <profile>
       <id>eclipse</id>
