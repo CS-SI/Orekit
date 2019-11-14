@@ -160,7 +160,7 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
 
         firstDate           = null;
         lastDate            = null;
-        data                = new TreeSet<TimeStamped>(new ChronologicalComparator());
+        data                = new TreeSet<>(new ChronologicalComparator());
         this.supportedNames = supportedNames;
         this.strengthLevel  = strengthLevel;
 
