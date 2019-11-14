@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -67,22 +68,49 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
     /** Regular expression for supported file name. */
     private String supportedNames;
 
+    /** Access to auxiliary data. */
+    private final DataProvidersManager dataProvidersManager;
+
     /** The alpha coefficients loaded. */
     private double[] alpha;
 
     /** The beta coefficients loaded. */
     private double[] beta;
 
-    /** Constructor with supported names given by user.
-     * @param supportedNames Supported names
+    /**
+     * Constructor with supported names given by user. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @param supportedNames regular expression that matches the names of the RINEX files
+     *                       with Klobuchar coefficients.
+     * @see #KlobucharIonoCoefficientsLoader(String, DataProvidersManager)
      */
     public KlobucharIonoCoefficientsLoader(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Constructor that uses user defined supported names and data context.
+     *
+     * @param supportedNames       regular expression that matches the names of the RINEX
+     *                             files with Klobuchar coefficients.
+     * @param dataProvidersManager provides access to auxiliary data files.
+     */
+    public KlobucharIonoCoefficientsLoader(final String supportedNames,
+                                           final DataProvidersManager dataProvidersManager) {
         this.alpha = null;
         this.beta = null;
         this.supportedNames = supportedNames;
+        this.dataProvidersManager = dataProvidersManager;
     }
 
-    /** Constructor with default supported names. */
+    /**
+     * Constructor with default supported names. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @see #KlobucharIonoCoefficientsLoader(String, DataProvidersManager)
+     * @see #KlobucharIonoCoefficientsLoader(String)
+     */
     public KlobucharIonoCoefficientsLoader() {
         this(DEFAULT_SUPPORTED_NAMES);
     }
@@ -111,7 +139,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
     /** Load the data using supported names .
      */
     public void loadKlobucharIonosphericCoefficients() {
-        DataProvidersManager.getInstance().feed(supportedNames, this);
+        dataProvidersManager.feed(supportedNames, this);
 
         // Throw an exception if alphas or betas were not loaded properly
         if (alpha == null || beta == null) {

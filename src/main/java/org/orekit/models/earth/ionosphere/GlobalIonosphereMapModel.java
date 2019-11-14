@@ -36,6 +36,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -155,18 +156,40 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
+    /** Provides access to auxiliary data. */
+    private final DataProvidersManager dataProvidersManager;
+
     /** Map of interpolated TEC at a specific date. */
     private Map<AbsoluteDate, Double> tecMap;
 
     /**
-     * Constructor with supported names given by user.
-     * @param supportedNames supported name
+     * Constructor with supported names given by user. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @param supportedNames regular expression that matches the names of the IONEX files
+     *                       to be loaded. See {@link DataProvidersManager#feed(String,
+     *                       DataLoader)}.
+     * @see #GlobalIonosphereMapModel(String, DataProvidersManager)
      */
     public GlobalIonosphereMapModel(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Constructor that uses user defined supported names and data context.
+     *
+     * @param supportedNames       regular expression that matches the names of the IONEX
+     *                             files to be loaded. See {@link DataProvidersManager#feed(String,
+     *                             DataLoader)}.
+     * @param dataProvidersManager provides access to auxiliary data files.
+     */
+    public GlobalIonosphereMapModel(final String supportedNames,
+                                    final DataProvidersManager dataProvidersManager) {
         this.supportedNames = supportedNames;
         this.latitude       = Double.NaN;
         this.longitude      = Double.NaN;
         this.tecMap         = new HashMap<>();
+        this.dataProvidersManager = dataProvidersManager;
     }
 
     /**
@@ -408,7 +431,7 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
 
             // Read file
             final Parser parser = new Parser();
-            DataProvidersManager.getInstance().feed(supportedNames, parser);
+            dataProvidersManager.feed(supportedNames, parser);
 
             // File header
             final IONEXHeader top = parser.getIONEXHeader();
