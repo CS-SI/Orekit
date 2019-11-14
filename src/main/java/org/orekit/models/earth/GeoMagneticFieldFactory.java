@@ -17,6 +17,7 @@
 package org.orekit.models.earth;
 
 import java.util.Collection;
+import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -42,10 +43,10 @@ public class GeoMagneticFieldFactory {
     }
 
     /** Loaded IGRF models. */
-    private static TreeMap<Integer, GeoMagneticField> igrfModels = null;
+    private static NavigableMap<Integer, GeoMagneticField> igrfModels = null;
 
     /** Loaded WMM models. */
-    private static TreeMap<Integer, GeoMagneticField> wmmModels = null;
+    private static NavigableMap<Integer, GeoMagneticField> wmmModels = null;
 
     /** Private constructor.
      * <p>
@@ -104,21 +105,21 @@ public class GeoMagneticFieldFactory {
     }
 
     /** Loads the geomagnetic model files from the given filename. The loaded
-     * models are inserted in a {@link TreeMap} with their epoch as key in order
+     * models are inserted in a {@link NavigableMap} with their epoch as key in order
      * to retrieve them in a sorted manner.
      * @param supportedNames a regular expression for valid filenames
-     * @return a {@link TreeMap} of all loaded models
+     * @return a {@link NavigableMap} of all loaded models
      */
-    private static TreeMap<Integer, GeoMagneticField> loadModels(final String supportedNames) {
+    private static NavigableMap<Integer, GeoMagneticField> loadModels(final String supportedNames) {
 
-        TreeMap<Integer, GeoMagneticField> loadedModels = null;
+        NavigableMap<Integer, GeoMagneticField> loadedModels = null;
         final GeoMagneticModelLoader loader = new GeoMagneticModelLoader();
         DataProvidersManager.getInstance().feed(supportedNames, loader);
 
         if (!loader.stillAcceptsData()) {
             final Collection<GeoMagneticField> models = loader.getModels();
             if (models != null) {
-                loadedModels = new TreeMap<Integer, GeoMagneticField>();
+                loadedModels = new TreeMap<>();
                 for (GeoMagneticField model : models) {
                     // round to a precision of two digits after the comma
                     final int epoch = (int) FastMath.round(model.getEpoch() * 100d);
@@ -145,7 +146,7 @@ public class GeoMagneticFieldFactory {
      * @return a {@link GeoMagneticField} model for the given year
      */
     private static GeoMagneticField getModel(final FieldModel type,
-                                             final TreeMap<Integer, GeoMagneticField> models,
+                                             final NavigableMap<Integer, GeoMagneticField> models,
                                              final double year) {
 
         final int epochKey = (int) (year * 100d);
