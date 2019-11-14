@@ -68,10 +68,10 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
     private String supportedNames;
 
     /** The alpha coefficients loaded. */
-    private double alpha[];
+    private double[] alpha;
 
     /** The beta coefficients loaded. */
-    private double beta[];
+    private double[] beta;
 
     /** Constructor with supported names given by user.
      * @param supportedNames Supported names
@@ -167,7 +167,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
                     final String[] alpha_line = line.split(splitter);
                     alpha = new double[4];
                     for (int j = 0; j < 4; j++) {
-                        alpha[j] = Double.valueOf(alpha_line[j].replace("D", "E"));
+                        alpha[j] = Double.parseDouble(alpha_line[j].replace("D", "E"));
                     }
                 }
 
@@ -176,7 +176,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
                     final String[] beta_line = line.split(splitter);
                     beta = new double[4];
                     for (int j = 0; j < 4; j++) {
-                        beta[j] = Double.valueOf(beta_line[j].replace("D", "E"));
+                        beta[j] = Double.parseDouble(beta_line[j].replace("D", "E"));
                     }
                 }
             } catch (NumberFormatException nfe) {

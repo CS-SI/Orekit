@@ -523,11 +523,7 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                 baseRadius = parseDouble(line, 2, 6) * KM_TO_M;
                                 break;
                             case "MAPPING FUNCTION" :
-                                if (parseString(line, 2, 4).equals("NONE")) {
-                                    mappingF = false;
-                                } else {
-                                    mappingF = true;
-                                }
+                                mappingF = !parseString(line, 2, 4).equals("NONE");
                                 break;
                             case "EXPONENT" :
                                 exponent = parseInt(line, 4, 2);
@@ -573,8 +569,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                         !line.endsWith(EPOCH)) {
                                         line = line.trim();
                                         final String[] readLine = line.split(splitter);
-                                        for (int i = 0; i < readLine.length; i++) {
-                                            values.add(Double.valueOf(readLine[i]));
+                                        for (final String s : readLine) {
+                                            values.add(Double.valueOf(s));
                                         }
                                     }
                                 }
@@ -586,8 +582,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                             // The size of this line is lower than 60.
                             line = line.trim();
                             final String[] readLine = line.split(splitter);
-                            for (int i = 0; i < readLine.length; i++) {
-                                values.add(Double.valueOf(readLine[i]));
+                            for (final String s : readLine) {
+                                values.add(Double.valueOf(s));
                             }
                         }
                     }
