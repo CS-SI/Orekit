@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -145,7 +146,11 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** Simple constructor.
+    /** Provides access to auxiliary data. */
+    private final DataProvidersManager dataProvidersManager;
+
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
      * <p>
      * The original file names used by NASA Marshall space center are of the
      * form: may2019f10_prd.txt or Oct1999F10.TXT. So a recommended regular
@@ -157,12 +162,28 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
      */
     public MarshallSolarActivityFutureEstimation(final String supportedNames,
                                                  final StrengthLevel strengthLevel) {
+        this(supportedNames, strengthLevel,
+                DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Constructor that allows specifying the source of the MSAFE auxiliary data files.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param strengthLevel selected strength level of activity
+     * @param dataProvidersManager provides access to auxiliary data files.
+     */
+    public MarshallSolarActivityFutureEstimation(
+            final String supportedNames,
+            final StrengthLevel strengthLevel,
+            final DataProvidersManager dataProvidersManager) {
 
         firstDate           = null;
         lastDate            = null;
         data                = new TreeSet<>(new ChronologicalComparator());
         this.supportedNames = supportedNames;
         this.strengthLevel  = strengthLevel;
+        this.dataProvidersManager = dataProvidersManager;
 
         // the data lines have the following form:
         // 2010.5003   JUL    83.4      81.3      78.7       6.4       5.9       5.2
@@ -246,7 +267,7 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** {@inheritDoc} */
     public AbsoluteDate getMinDate() {
         if (firstDate == null) {
-            DataProvidersManager.getInstance().feed(getSupportedNames(), this);
+            dataProvidersManager.feed(getSupportedNames(), this);
         }
         return firstDate;
     }
@@ -254,7 +275,7 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** {@inheritDoc} */
     public AbsoluteDate getMaxDate() {
         if (lastDate == null) {
-            DataProvidersManager.getInstance().feed(getSupportedNames(), this);
+            dataProvidersManager.feed(getSupportedNames(), this);
         }
         return lastDate;
     }
