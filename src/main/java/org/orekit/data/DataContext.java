@@ -4,7 +4,9 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.frames.Frames;
+import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticFields;
+import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeScalesFactory;
@@ -18,8 +20,10 @@ import org.orekit.time.TimeScalesFactory;
 public interface DataContext {
 
     /**
-     * Get the default data context that is used to implement the static factories: {@link
-     * TimeScalesFactory}.
+     * Get the default data context that is used to implement the static factories ({@link
+     * TimeScalesFactory}, {@link FramesFactory}, etc) and loaders that feed themselves
+     * (e.g. {@link KlobucharIonoCoefficientsLoader}). It is used to maintain
+     * compatibility with auxiliary data loading in Orekit 10.0.
      *
      * @return Orekit's default data context.
      */
