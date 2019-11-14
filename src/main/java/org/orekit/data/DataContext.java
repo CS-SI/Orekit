@@ -4,6 +4,7 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.frames.Frames;
+import org.orekit.models.earth.GeoMagneticFields;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeScalesFactory;
@@ -71,5 +72,13 @@ public interface DataContext {
      * @return the gravity fields using this data context.
      */
     GravityFields getGravityFields();
+
+    /**
+     * Get a factory constructing geomagnetic fields based on the auxiliary data in this
+     * context.
+     *
+     * @return the geomagnetic fields using this data context.
+     */
+    GeoMagneticFields getGeoMagneticFields();
 
 }
