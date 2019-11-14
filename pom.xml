@@ -869,6 +869,10 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <!-- A profile to configure staging deployment (for continuous integration process) -->
+      <id>ci-deploy<id>
       <distributionManagement>
         <repository>
           <id>ci-releases</id>

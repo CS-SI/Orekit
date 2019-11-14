@@ -1,6 +1,11 @@
 pipeline {
 
     agent any
+
+    environment {
+        MAVEN_CLI_OPTS = "-s .CI/maven-settings.xml"
+    }
+
     tools {
         maven 'mvn-default'
         jdk   'openjdk-8'
@@ -30,6 +35,20 @@ pipeline {
                     else {
                         sh 'mvn verify site'
                     }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            // Deploy to staging area only on branch develop or master
+            // Official deployment on oss.sonatype.org will be done manually
+            // NB: we skip tests on this stage
+            when { anyOf { branch 'develop' ; branch 'master' }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jenkins@nexus',
+                                                  usernameVariable: 'NEXUS_USERNAME',
+                                                  passwordVariable: 'NEXUS_PASSWORD')]) {
+                    sh 'mvn $MAVEN_CLI_OPTS deploy -Dmaven.test.skip=true -Pci-deploy'
                 }
             }
         }
