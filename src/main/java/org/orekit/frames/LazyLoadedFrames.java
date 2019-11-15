@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.orekit.bodies.CelestialBodies;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
@@ -304,7 +303,7 @@ public class LazyLoadedFrames implements Frames {
 
     @Override
     public Frame getICRF() {
-        return CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame();
+        return celestialBodies.getSolarSystemBarycenter().getInertiallyOrientedFrame();
     }
 
     @Override
