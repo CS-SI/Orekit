@@ -307,7 +307,7 @@ public class AntexLoader {
                                     grid2D = new double[1 + (int) FastMath.round(2 * FastMath.PI / azimuthStep)][grid1D.length];
                                 }
                             } catch (IllegalArgumentException iae) {
-                                throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
+                                throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                           parseString(line, 3, 3), name, lineNumber);
                             }
                             inFrequency = true;

@@ -103,8 +103,8 @@ public class YUMAParser implements DataLoader {
     */
     public YUMAParser(final String supportedNames) {
         this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
-        this.almanacs =  new ArrayList<GPSAlmanac>();
-        this.prnList = new ArrayList<Integer>();
+        this.almanacs = new ArrayList<>();
+        this.prnList = new ArrayList<>();
     }
 
     /**
@@ -138,7 +138,7 @@ public class YUMAParser implements DataLoader {
         try {
             // Gathers data to create one GPSAlmanac from 13 consecutive lines
             final List<Pair<String, String>> entries =
-                new ArrayList<Pair<String, String>>(KEY.length);
+                    new ArrayList<>(KEY.length);
 
             // Reads the data one line at a time
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -147,7 +147,7 @@ public class YUMAParser implements DataLoader {
                 // If the line is made of 2 tokens
                 if (token.length == 2) {
                     // Adds these tokens as an entry to the entries
-                    entries.add(new Pair<String, String>(token[0].trim(), token[1].trim()));
+                    entries.add(new Pair<>(token[0].trim(), token[1].trim()));
                 }
                 // If the number of entries equals the expected number
                 if (entries.size() == KEY.length) {
@@ -162,7 +162,7 @@ public class YUMAParser implements DataLoader {
                 }
             }
         } catch (IOException ioe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
+            throw new OrekitException(ioe, OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
                                       name);
         }
     }
@@ -295,7 +295,7 @@ public class YUMAParser implements DataLoader {
                                           name);
             }
         } catch (NumberFormatException nfe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
+            throw new OrekitException(nfe, OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
                                       name);
         }
     }

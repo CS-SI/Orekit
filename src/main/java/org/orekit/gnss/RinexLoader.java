@@ -417,7 +417,7 @@ public class RinexLoader {
                                                 try {
                                                     typesObs.add(ObservationType.valueOf(parseString(10 + (6 * i), 2)));
                                                 } catch (IllegalArgumentException iae) {
-                                                    throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
+                                                    throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                               parseString(10 + (6 * i), 2), name, lineNumber);
                                                 }
                                             }
@@ -818,7 +818,7 @@ public class RinexLoader {
                                                 try {
                                                     typeObs.add(ObservationType.valueOf(parseString(7 + (4 * i), 3)));
                                                 } catch (IllegalArgumentException iae) {
-                                                    throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
+                                                    throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                               parseString(7 + (4 * i), 3), name, lineNumber);
                                                 }
                                             }

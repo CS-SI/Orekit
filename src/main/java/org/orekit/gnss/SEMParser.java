@@ -91,8 +91,8 @@ public class SEMParser implements DataLoader {
      */
     public SEMParser(final String supportedNames) {
         this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
-        this.almanacs =  new ArrayList<GPSAlmanac>();
-        this.prnList = new ArrayList<Integer>();
+        this.almanacs = new ArrayList<>();
+        this.prnList = new ArrayList<>();
     }
 
     /**
@@ -138,10 +138,8 @@ public class SEMParser implements DataLoader {
                 // Reads the next lines to get one almanac from
                 readAlmanac(reader, week, toa);
             }
-        } catch (IndexOutOfBoundsException ioobe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
-        } catch (IOException ioe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
+        } catch (IndexOutOfBoundsException | IOException e) {
+            throw new OrekitException(e, OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
         }
     }
 
@@ -234,7 +232,7 @@ public class SEMParser implements DataLoader {
             // Adds the PRN to the list
             prnList.add(prn);
         } catch (IndexOutOfBoundsException aioobe) {
-            throw new IOException();
+            throw new IOException(aioobe);
         }
     }
 
