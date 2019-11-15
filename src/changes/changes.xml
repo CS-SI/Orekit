@@ -24,6 +24,7 @@
       <action dev="dylan" type="add" issue="555">
       	Added a new pathDelay method for ionospheric models taking two
       	PVCoordinatesProvider as arguments.
+      	Also added a FieldTopocentricFrame class and test.
       </action>
       <action dev="dylan" type="add" issue="359">
       	Added a specific test for issue 359 in BatchLSEstimatorTest.

@@ -217,7 +217,7 @@ public class NeQuickModelTest {
         final TopocentricFrame topo   = new TopocentricFrame(ellipsoid, recP, null);
         final double delay = model.pathDelay(state, topo,
                                              Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters());
-        final double delay2 = model.pathDelay(date, (d,f)->state.getPVCoordinates(f), topo,
+        final double delay2 = model.pathDelay(date, orbit, topo,
         		                              ellipsoid, Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters());
         Assert.assertEquals(delay, delay2, 1e-6);
     }
