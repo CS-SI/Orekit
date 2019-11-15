@@ -1,8 +1,6 @@
      1.0            IONOSPHERE MAPS     GPS                 IONEX VERSION / TYPE
 BIMINX V5.3         AIUB                16-JAN-19 07:26     PGM / RUN BY / DATE 
-BROADCAST IONOSPHERE MODEL FOR DAY 015, 2019                COMMENT             
-  2019     1    15     0     0     0                        EPOCH OF FIRST MAP  
-  2019     1    16     0     0     0                        EPOCH OF LAST MAP   
+BROADCAST IONOSPHERE MODEL FOR DAY 015, 2019                COMMENT              
   3600                                                      INTERVAL            
     25                                                      # OF MAPS IN FILE   
   NONE                                                      MAPPING FUNCTION    
