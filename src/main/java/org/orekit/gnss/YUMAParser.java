@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.hipparchus.util.Pair;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -78,6 +79,9 @@ public class YUMAParser implements DataLoader {
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
+    /** Provides access to auxiliary data. */
+    private final DataProvidersManager dataProvidersManager;
+
     /** the list of all the almanacs read from the file. */
     private final List<GPSAlmanac> almanacs;
 
@@ -93,18 +97,45 @@ public class YUMAParser implements DataLoader {
      *
      * <p>The supported files names are used when getting data from the
      * {@link #loadData() loadData()} method that relies on the
-     * {@link DataProvidersManager data providers manager}. They are useless when
+     * {@link DataContext#getDefault() default data context}. They are useless when
      * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
      * method.</p>
      *
      * @param supportedNames regular expression for supported files names
      * (if null, a default pattern matching files with a ".alm" extension will be used)
      * @see #loadData()
+     * @see #YUMAParser(String, DataProvidersManager)
     */
     public YUMAParser(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Create a YUMA loader/parser with the given source for YUMA auxiliary data files.
+     *
+     * <p>This constructor does not load any data by itself. Data must be loaded
+     * later on by calling one of the {@link #loadData() loadData()} method or
+     * the {@link #loadData(InputStream, String) loadData(inputStream, fileName)}
+     * method.</p>
+     *
+     * <p>The supported files names are used when getting data from the
+     * {@link #loadData() loadData()} method that relies on the
+     * {@code dataProvidersManager}. They are useless when
+     * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
+     * method.</p>
+     *
+     * @param supportedNames regular expression for supported files names
+     * (if null, a default pattern matching files with a ".alm" extension will be used)
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @see #loadData()
+     * @since 10.1
+     */
+    public YUMAParser(final String supportedNames,
+                      final DataProvidersManager dataProvidersManager) {
         this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
         this.almanacs = new ArrayList<>();
         this.prnList = new ArrayList<>();
+        this.dataProvidersManager = dataProvidersManager;
     }
 
     /**
@@ -118,7 +149,7 @@ public class YUMAParser implements DataLoader {
      */
     public void loadData() {
         // load the data from the configured data providers
-        DataProvidersManager.getInstance().feed(supportedNames, this);
+        dataProvidersManager.feed(supportedNames, this);
         if (almanacs.isEmpty()) {
             throw new OrekitException(OrekitMessages.NO_YUMA_ALMANAC_AVAILABLE);
         }

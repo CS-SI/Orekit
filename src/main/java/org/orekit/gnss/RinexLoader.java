@@ -30,6 +30,7 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -115,13 +116,30 @@ public class RinexLoader {
     /** Simple constructor.
      * <p>
      * This constructor is used when the rinex files are managed by the
-     * global {@link DataProvidersManager DataProvidersManager}.
+     * global {@link DataContext#getDefault() default data context}.
      * </p>
      * @param supportedNames regular expression for supported files names
+     * @see #RinexLoader(String, DataProvidersManager)
      */
     public RinexLoader(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Create a RINEX loader/parser with the given source of RINEX auxiliary data files.
+     *
+     * <p>
+     * This constructor is used when the rinex files are managed by the given
+     * {@code dataProvidersManager}.
+     * </p>
+     * @param supportedNames regular expression for supported files names
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @since 10.1
+     */
+    public RinexLoader(final String supportedNames,
+                       final DataProvidersManager dataProvidersManager) {
         observationDataSets = new ArrayList<>();
-        DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+        dataProvidersManager.feed(supportedNames, new Parser());
     }
 
     /** Simple constructor.

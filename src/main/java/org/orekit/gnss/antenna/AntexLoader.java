@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -62,13 +63,28 @@ public class AntexLoader {
     /** Receivers antennas. */
     private final List<ReceiverAntenna> receiversAntennas;
 
-    /** Simple constructor.
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
+     *
      * @param supportedNames regular expression for supported files names
+     * @see #AntexLoader(String, DataProvidersManager)
      */
     public AntexLoader(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Construct a loader by specifying the source of ANTEX auxiliary data files.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @since 10.1
+     */
+    public AntexLoader(final String supportedNames,
+                       final DataProvidersManager dataProvidersManager) {
         satellitesAntennas = new ArrayList<>();
         receiversAntennas  = new ArrayList<>();
-        DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+        dataProvidersManager.feed(supportedNames, new Parser());
     }
 
     /** Add a satellite antenna.
