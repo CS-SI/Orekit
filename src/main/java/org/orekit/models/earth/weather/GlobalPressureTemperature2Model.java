@@ -33,6 +33,7 @@ import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -127,14 +128,38 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
     /** Geoid used to compute the undulations. */
     private final Geoid geoid;
 
-    /** Constructor with supported names given by user.
+    /**
+     * Constructor with supported names given by user. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * @param supportedNames supported names
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude longitude geodetic longitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
+     * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
+     * DataProvidersManager)
      */
     public GlobalPressureTemperature2Model(final String supportedNames, final double latitude,
                                            final double longitude, final Geoid geoid) {
+        this(supportedNames, latitude, longitude, geoid,
+                DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Constructor with supported names and source of GPT2 auxiliary data given by user.
+     *
+     * @param supportedNames supported names
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude longitude geodetic longitude of the station, in radians
+     * @param geoid level surface of the gravity potential of a body
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @since 10.1
+     */
+    public GlobalPressureTemperature2Model(final String supportedNames,
+                                           final double latitude,
+                                           final double longitude,
+                                           final Geoid geoid,
+                                           final DataProvidersManager dataProvidersManager) {
         this.coefficientsA = null;
         this.temperature   = Double.NaN;
         this.pressure      = Double.NaN;
@@ -147,7 +172,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
         if (grid == null) {
             // this is the first instance we create, we need to load the grid data
             final Parser parser = new Parser();
-            DataProvidersManager.getInstance().feed(supportedNames, parser);
+            dataProvidersManager.feed(supportedNames, parser);
             SHARED_GRID.compareAndSet(null, parser.grid);
             grid = parser.grid;
         }
@@ -164,10 +189,15 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
 
     }
 
-    /** Constructor with default supported names.
+    /**
+     * Constructor with default supported names. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
+     * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
+     * DataProvidersManager)
      */
     public GlobalPressureTemperature2Model(final double latitude, final double longitude, final Geoid geoid) {
         this(DEFAULT_SUPPORTED_NAMES, latitude, longitude, geoid);
