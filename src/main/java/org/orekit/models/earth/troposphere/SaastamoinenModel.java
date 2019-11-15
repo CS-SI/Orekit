@@ -27,6 +27,7 @@ import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -96,7 +97,9 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     private double r0;
 
     /** Create a new Saastamoinen model for the troposphere using the given
-     * environmental conditions.
+     * environmental conditions. This constructor uses the {@link DataContext#getDefault()
+     * default data context} if {@code deltaRFileName != null}.
+     *
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
      * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
@@ -104,14 +107,40 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
      * @since 7.1
+     * @see #SaastamoinenModel(double, double, double, String, DataProvidersManager)
      */
     public SaastamoinenModel(final double t0, final double p0, final double r0,
                              final String deltaRFileName) {
+        this(t0, p0, r0, deltaRFileName,
+                DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /** Create a new Saastamoinen model for the troposphere using the given
+     * environmental conditions. This constructor allows the user to specify the source of
+     * of the δR file.
+     *
+     * @param t0 the temperature at the station [K]
+     * @param p0 the atmospheric pressure at the station [mbar]
+     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
+     * @param deltaRFileName regular expression for filename containing δR
+     * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
+     * default values from the reference book are used
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @since 10.1
+     */
+    public SaastamoinenModel(final double t0,
+                             final double p0,
+                             final double r0,
+                             final String deltaRFileName,
+                             final DataProvidersManager dataProvidersManager) {
         this(t0, p0, r0,
-             deltaRFileName == null ? defaultDeltaR() : loadDeltaR(deltaRFileName));
+             deltaRFileName == null ?
+                     defaultDeltaR() :
+                     loadDeltaR(deltaRFileName, dataProvidersManager));
     }
 
     /** Create a new Saastamoinen model.
+     *
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
      * @param r0 the humidity at the station [fraction] (50% -> 0.5)
@@ -257,13 +286,16 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** Load δR function.
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table
+     * @param dataProvidersManager provides access to auxiliary data.
      * @return δR function
      */
-    private static BilinearInterpolatingFunction loadDeltaR(final String deltaRFileName) {
+    private static BilinearInterpolatingFunction loadDeltaR(
+            final String deltaRFileName,
+            final DataProvidersManager dataProvidersManager) {
 
         // read the δR interpolation function from the config file
         final InterpolationTableLoader loader = new InterpolationTableLoader();
-        DataProvidersManager.getInstance().feed(deltaRFileName, loader);
+        dataProvidersManager.feed(deltaRFileName, loader);
         if (!loader.stillAcceptsData()) {
             final double[] elevations = loader.getOrdinateGrid();
             for (int i = 0; i < elevations.length; ++i) {

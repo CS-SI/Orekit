@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -86,6 +87,9 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
     /** Regular expression for supported file name. */
     private String supportedNames;
 
+    /** Provides access to auxiliary data files. */
+    private final DataProvidersManager dataProvidersManager;
+
     /** The hydrostatic and wet a coefficients loaded. */
     private double[] coefficientsA;
 
@@ -101,29 +105,54 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
     /** Vienna tropospheric model type.*/
     private ViennaModelType type;
 
-    /** Constructor with supported names given by user.
+    /** Constructor with supported names given by user. This constructor uses the
+     * {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames Supported names
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
      * @param type the type of Vienna tropospheric model (one or three)
+     * @see #ViennaModelCoefficientsLoader(String, double, double, ViennaModelType, DataProvidersManager)
      */
     public ViennaModelCoefficientsLoader(final String supportedNames, final double latitude,
                                          final double longitude, final ViennaModelType type) {
+        this(supportedNames, latitude, longitude, type, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Constructor with supported names and source of mapping function files given by the
+     * user.
+     *
+     * @param supportedNames Supported names
+     * @param latitude       geodetic latitude of the station, in radians
+     * @param longitude      geodetic latitude of the station, in radians
+     * @param type           the type of Vienna tropospheric model (one or three)
+     * @param dataProvidersManager provides access to auxiliary files.
+     * @since 10.1
+     */
+    public ViennaModelCoefficientsLoader(final String supportedNames,
+                                         final double latitude,
+                                         final double longitude,
+                                         final ViennaModelType type,
+                                         final DataProvidersManager dataProvidersManager) {
         this.coefficientsA  = null;
         this.zenithDelay    = null;
         this.supportedNames = supportedNames;
         this.type           = type;
         this.latitude       = latitude;
+        this.dataProvidersManager = dataProvidersManager;
 
         // Normalize longitude between 0 and 2π
         this.longitude = MathUtils.normalizeAngle(longitude, FastMath.PI);
-
     }
 
-    /** Constructor with default supported names.
+    /** Constructor with default supported names. This constructor uses the
+     * {@link DataContext#getDefault() default data context}.
+     *
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
      * @param type the type of Vienna tropospheric model (one or three)
+     * @see #ViennaModelCoefficientsLoader(String, double, double, ViennaModelType, DataProvidersManager)
      */
     public ViennaModelCoefficientsLoader(final double latitude, final double longitude,
                                          final ViennaModelType type) {
@@ -162,7 +191,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
     /** Load the data using supported names .
      */
     public void loadViennaCoefficients() {
-        DataProvidersManager.getInstance().feed(supportedNames, this);
+        dataProvidersManager.feed(supportedNames, this);
 
         // Throw an exception if ah, ah, zh or zw were not loaded properly
         if (coefficientsA == null || zenithDelay == null) {
