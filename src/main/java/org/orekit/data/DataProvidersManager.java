@@ -104,9 +104,17 @@ public class DataProvidersManager {
 
     }
 
-    /** Get the default instance.
+    /**
+     * Get the default instance.
+     *
      * @return default instance of the manager.
+     * @see DataContext
+     * @deprecated This class is no longer a singleton. In order to support loading
+     * multiple data sets code should be updated to accept an instance of this class. If
+     * you need to maintain compatibility with Orekit 10.0's behavior use the default data
+     * context: {@code DataContext.getDefault().getDataProvidersManager()}.
      */
+    @Deprecated
     public static DataProvidersManager getInstance() {
         return DataContext.getDefault().getDataProvidersManager();
     }

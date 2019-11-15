@@ -97,6 +97,7 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
     protected abstract InputStream getStream(T input) throws IOException;
 
     @Override
+    @Deprecated
     public boolean feed(final Pattern supported, final DataLoader visitor) {
         return feed(supported, visitor, DataProvidersManager.getInstance());
     }

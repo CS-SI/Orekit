@@ -66,6 +66,7 @@ public class DirectoryCrawler implements DataProvider {
     }
 
     @Override
+    @Deprecated
     public boolean feed(final Pattern supported, final DataLoader visitor) {
         return feed(supported, visitor, DataProvidersManager.getInstance());
     }
