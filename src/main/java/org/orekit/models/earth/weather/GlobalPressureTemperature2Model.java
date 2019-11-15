@@ -124,14 +124,8 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
     /** water vapour pressure, in hPa. */
     private double e0;
 
-    /** The height of the station in m. */
-    private double height;
-
     /** Geoid used to compute the undulations. */
     private final Geoid geoid;
-
-    /** Current date. */
-    private AbsoluteDate date;
 
     /** Constructor with supported names given by user.
      * @param supportedNames supported names
@@ -214,9 +208,6 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
     @Override
     public void weatherParameters(final double stationHeight, final AbsoluteDate currentDate) {
 
-        this.date      = currentDate;
-        this.height    = stationHeight;
-
         final int dayOfYear = currentDate.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
 
         // ah and aw coefficients
@@ -226,8 +217,8 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
         };
 
         // Corrected height (can be negative)
-        final double undu            = geoid.getUndulation(latitude, longitude, date);
-        final double correctedheight = height - undu - interpolate(e -> e.hS);
+        final double undu            = geoid.getUndulation(latitude, longitude, currentDate);
+        final double correctedheight = stationHeight - undu - interpolate(e -> e.hS);
 
         // Temperature gradient [K/m]
         final double dTdH = interpolate(e -> evaluate(dayOfYear, e.dT)) * 0.001;
@@ -483,7 +474,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
             latKey       = (int) FastMath.rint(latDegree * DEG_TO_MAS);
             lonKey       = (int) FastMath.rint(lonDegree * DEG_TO_MAS);
 
-            hS           = Double.valueOf(fields[23]);
+            hS           = Double.parseDouble(fields[23]);
 
             pressure0    = createModel(fields, 2);
             temperature0 = createModel(fields, 7);
