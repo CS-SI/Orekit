@@ -120,10 +120,11 @@ public class OceanLoadingCoefficientsBLQFactory {
         loadsIfNeeded();
 
         // extract sites names from the map
-        final List<String> sites = coefficients.stream().map(c -> c.getSiteName()).collect(Collectors.toList());
-
-        // sort to ensure we have a reproducible order
-        sites.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
+        final List<String> sites = coefficients.stream()
+                .map(OceanLoadingCoefficients::getSiteName)
+                // sort to ensure we have a reproducible order
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList());
 
         return sites;
 
@@ -143,7 +144,7 @@ public class OceanLoadingCoefficientsBLQFactory {
         if (!optional.isPresent()) {
             throw new OrekitException(OrekitMessages.STATION_NOT_FOUND,
                                       site,
-                                      getSites().stream().collect(Collectors.joining(", ")));
+                                      String.join(", ", getSites()));
         }
 
         return optional.get();
@@ -154,7 +155,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      * <p>
      * when completing the web site form, the email received as the following form:
      * </p>
-     * <pre>
+     * <pre>{@literal
      * $$ Ocean loading displacement
      * $$
      * $$ Calculated on holt using olfg/olmpp of H.-G. Scherneck
@@ -209,7 +210,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      * $$ END TABLE
      * Errors:
      * Warnings:
-     * </pre>
+     * }</pre>
      * <p>
      * We only parse blocks 7 lines blocks starting with the lines with the station names
      * and their coordinates and the 6 data lines that follows. Several such blocks may
