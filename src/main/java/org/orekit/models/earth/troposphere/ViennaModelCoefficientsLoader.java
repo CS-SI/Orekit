@@ -215,7 +215,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         // Correct month format is with 2-digits.
         final String monthString;
         if (month < 10) {
-            monthString = "0" + String.valueOf(month);
+            monthString = "0" + month;
         } else {
             monthString = String.valueOf(month);
         }
@@ -223,7 +223,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         // Correct day format is with 2-digits.
         final String dayString;
         if (day < 10) {
-            dayString = "0" + String.valueOf(day);
+            dayString = "0" + day;
         } else {
             dayString = String.valueOf(day);
         }
@@ -231,7 +231,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         // Correct hour format is with 2-digits.
         final String hourString;
         if (hour < 10) {
-            hourString = "0" + String.valueOf(hour);
+            hourString = "0" + hour;
         } else {
             hourString = String.valueOf(hour);
         }
@@ -290,12 +290,12 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
                     final String[] range_line = line.split(splitter);
 
                     // Latitudes list
-                    for (double lat = Double.valueOf(range_line[2]); lat <= Double.valueOf(range_line[3]); lat = lat + Double.valueOf(range_line[6])) {
+                    for (double lat = Double.parseDouble(range_line[2]); lat <= Double.parseDouble(range_line[3]); lat = lat + Double.parseDouble(range_line[6])) {
                         latitudes.add(FastMath.toRadians(lat));
                     }
 
                     // Longitude list
-                    for (double lon = Double.valueOf(range_line[4]); lon <= Double.valueOf(range_line[5]); lon = lon + Double.valueOf(range_line[7])) {
+                    for (double lon = Double.parseDouble(range_line[4]); lon <= Double.parseDouble(range_line[5]); lon = lon + Double.parseDouble(range_line[7])) {
                         longitudes.add(FastMath.toRadians(lon));
                         // For VFM1 files, header specify that longitudes end at 360°
                         // In reality they end at 357.5°. That is why we stop the loop when the longitude

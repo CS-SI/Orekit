@@ -318,12 +318,12 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         // is assumed to be the same value as for 80.
 
         // the height in m
-        final double xValForR[] = {
+        final double[] xValForR = {
             0, 500, 1000, 1500, 2000, 3000, 4000, 5000
         };
 
         // the zenith angle
-        final double yValForR[] = {
+        final double[] yValForR = {
             FastMath.toRadians( 0.00), FastMath.toRadians(60.00), FastMath.toRadians(66.00), FastMath.toRadians(70.00),
             FastMath.toRadians(73.00), FastMath.toRadians(75.00), FastMath.toRadians(76.00), FastMath.toRadians(77.00),
             FastMath.toRadians(78.00), FastMath.toRadians(78.50), FastMath.toRadians(79.00), FastMath.toRadians(79.50),

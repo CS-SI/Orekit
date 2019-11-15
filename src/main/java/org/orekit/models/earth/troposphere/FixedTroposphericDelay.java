@@ -193,11 +193,4 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
         return Collections.emptyList();
     }
 
-    /** Make sure the unserializable bivariate interpolation function is properly rebuilt.
-     * @return replacement object, with bivariate function properly set up
-     */
-    private Object readResolve() {
-        return new FixedTroposphericDelay(xArr, yArr, fArr);
-    }
-
 }
