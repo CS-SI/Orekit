@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+	  <action dev="bryan" type="add" issue="621">
+      	Added OrekitException in the case where IONEX header is corrupted. 
+      </action>
       <action dev="dylan" type="add" issue="359">
       	Added a specific test for issue 359 in BatchLSEstimatorTest.
       	The test verifies that a Newtonian attraction is known
