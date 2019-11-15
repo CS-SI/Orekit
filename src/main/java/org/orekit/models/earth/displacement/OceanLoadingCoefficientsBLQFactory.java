@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -85,10 +86,14 @@ public class OceanLoadingCoefficientsBLQFactory {
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
+    /** Provides access to auxiliary data files. */
+    private final DataProvidersManager dataProvidersManager;
+
     /** Parsed coefficients. */
     private final List<OceanLoadingCoefficients> coefficients;
 
-    /** Simple constructor.
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
      * <p>
      * Files in BLQ format can be generated using the form at the
      * <a href="http://holt.oso.chalmers.se/loading/">Bos-Scherneck web site</a>,
@@ -96,11 +101,33 @@ public class OceanLoadingCoefficientsBLQFactory {
      * </p>
      * @param supportedNames regular expression for supported files names
      * @see #DEFAULT_BLQ_SUPPORTED_NAMES
+     * @see #OceanLoadingCoefficientsBLQFactory(String, DataProvidersManager)
      */
     public OceanLoadingCoefficientsBLQFactory(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * This constructor allows specification of the source of the BLQ auxiliary data
+     * files.
+     *
+     * <p>
+     * Files in BLQ format can be generated using the form at the
+     * <a href="http://holt.oso.chalmers.se/loading/">Bos-Scherneck web site</a>,
+     * selecting BLQ as the output format.
+     * </p>
+     * @param supportedNames regular expression for supported files names
+     * @param dataProvidersManager provides access to auxiliary data files.
+     * @see #DEFAULT_BLQ_SUPPORTED_NAMES
+     * @since 10.1
+     */
+    public OceanLoadingCoefficientsBLQFactory(
+            final String supportedNames,
+            final DataProvidersManager dataProvidersManager) {
 
         this.supportedNames = supportedNames;
         this.coefficients   = new ArrayList<>();
+        this.dataProvidersManager = dataProvidersManager;
 
     }
 
@@ -108,7 +135,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      */
     private void loadsIfNeeded() {
         if (coefficients.isEmpty()) {
-            DataProvidersManager.getInstance().feed(supportedNames, new BLQParser());
+            dataProvidersManager.feed(supportedNames, new BLQParser());
         }
     }
 
