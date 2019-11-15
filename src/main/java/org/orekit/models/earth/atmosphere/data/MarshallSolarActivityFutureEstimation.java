@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -97,7 +98,8 @@ import org.orekit.utils.Constants;
  * @author Evan Ward
  * @author Pascal Parraud
  */
-public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM2000InputParameters, NRLMSISE00InputParameters {
+public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLoader
+        implements DataLoader, DTM2000InputParameters, NRLMSISE00InputParameters {
 
     /** Default regular expression for the supported name that work with all officially published files.
      * @since 10.0
@@ -143,12 +145,6 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** Current set of solar activity parameters. */
     private LineParameters currentParam;
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Provides access to auxiliary data. */
-    private final DataProvidersManager dataProvidersManager;
-
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      * <p>
@@ -177,13 +173,12 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
             final String supportedNames,
             final StrengthLevel strengthLevel,
             final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
 
         firstDate           = null;
         lastDate            = null;
         data                = new TreeSet<>(new ChronologicalComparator());
-        this.supportedNames = supportedNames;
         this.strengthLevel  = strengthLevel;
-        this.dataProvidersManager = dataProvidersManager;
 
         // the data lines have the following form:
         // 2010.5003   JUL    83.4      81.3      78.7       6.4       5.9       5.2
@@ -257,17 +252,15 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
 
     }
 
-    /** Get the supported names for data files.
-     * @return regular expression for the supported names for data files
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /** {@inheritDoc} */
     public AbsoluteDate getMinDate() {
         if (firstDate == null) {
-            dataProvidersManager.feed(getSupportedNames(), this);
+            feed(this);
         }
         return firstDate;
     }
@@ -275,7 +268,7 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** {@inheritDoc} */
     public AbsoluteDate getMaxDate() {
         if (lastDate == null) {
-            dataProvidersManager.feed(getSupportedNames(), this);
+            feed(this);
         }
         return lastDate;
     }

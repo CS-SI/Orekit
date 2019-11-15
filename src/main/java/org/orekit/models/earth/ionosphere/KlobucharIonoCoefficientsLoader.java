@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -58,18 +59,16 @@ import org.orekit.time.DateComponents;
  *     1.0840D+05 -1.3197D+05 -2.6331D+05  4.0570D+05          ION BETA
  *                                                             END OF HEADER
  * </pre>
+ *
+ * <p>It is not safe for multiple threads to share a single instance of this class.
+ *
  * @author Maxime Journot
  */
-public class KlobucharIonoCoefficientsLoader implements DataLoader {
+public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
+        implements DataLoader {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "CGIM*0\\.*N$";
-
-    /** Regular expression for supported file name. */
-    private String supportedNames;
-
-    /** Access to auxiliary data. */
-    private final DataProvidersManager dataProvidersManager;
 
     /** The alpha coefficients loaded. */
     private double[] alpha;
@@ -98,10 +97,9 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
      */
     public KlobucharIonoCoefficientsLoader(final String supportedNames,
                                            final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
         this.alpha = null;
         this.beta = null;
-        this.supportedNames = supportedNames;
-        this.dataProvidersManager = dataProvidersManager;
     }
 
     /**
@@ -129,21 +127,20 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
         return beta.clone();
     }
 
-    /** Returns the supported names of the loader.
-     * @return the supported names
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /** Load the data using supported names .
      */
     public void loadKlobucharIonosphericCoefficients() {
-        dataProvidersManager.feed(supportedNames, this);
+        feed(this);
 
         // Throw an exception if alphas or betas were not loaded properly
         if (alpha == null || beta == null) {
-            throw new OrekitException(OrekitMessages.KLOBUCHAR_ALPHA_BETA_NOT_LOADED, supportedNames);
+            throw new OrekitException(OrekitMessages.KLOBUCHAR_ALPHA_BETA_NOT_LOADED,
+                    getSupportedNames());
         }
     }
 
@@ -156,7 +153,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
         final int    doy        = dateComponents.getDayOfYear();
         final String yearString = String.valueOf(dateComponents.getYear());
 
-        this.supportedNames = String.format("CGIM%03d0.%2sN", doy, yearString.substring(yearString.length() - 2));
+        this.setSupportedNames(String.format("CGIM%03d0.%2sN", doy, yearString.substring(yearString.length() - 2)));
 
         try {
             this.loadKlobucharIonosphericCoefficients();

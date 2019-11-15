@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -77,18 +78,16 @@ import org.orekit.time.DateTimeComponents;
  *  90.0  25.0 0.00116059  0.00055318  2.3043  0.0096
  *  90.0  27.5 0.00116059  0.00055318  2.3043  0.0096
  * </pre>
+ *
+ * <p>It is not safe for multiple threads to share a single instance of this class.
+ *
  * @author Bryan Cazabonne
  */
-public class ViennaModelCoefficientsLoader implements DataLoader {
+public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
+        implements DataLoader {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "VMF*_\\\\*\\*\\.*H$";
-
-    /** Regular expression for supported file name. */
-    private String supportedNames;
-
-    /** Provides access to auxiliary data files. */
-    private final DataProvidersManager dataProvidersManager;
 
     /** The hydrostatic and wet a coefficients loaded. */
     private double[] coefficientsA;
@@ -135,12 +134,11 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
                                          final double longitude,
                                          final ViennaModelType type,
                                          final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
         this.coefficientsA  = null;
         this.zenithDelay    = null;
-        this.supportedNames = supportedNames;
         this.type           = type;
         this.latitude       = latitude;
-        this.dataProvidersManager = dataProvidersManager;
 
         // Normalize longitude between 0 and 2π
         this.longitude = MathUtils.normalizeAngle(longitude, FastMath.PI);
@@ -181,21 +179,20 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         return zenithDelay.clone();
     }
 
-    /** Returns the supported names of the loader.
-     * @return the supported names
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /** Load the data using supported names .
      */
     public void loadViennaCoefficients() {
-        dataProvidersManager.feed(supportedNames, this);
+        feed(this);
 
         // Throw an exception if ah, ah, zh or zw were not loaded properly
         if (coefficientsA == null || zenithDelay == null) {
-            throw new OrekitException(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED, supportedNames);
+            throw new OrekitException(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED,
+                    getSupportedNames());
         }
     }
 
@@ -240,10 +237,10 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         // For VMF1 it starts with "VMFG" whereas with VMF3 it starts with "VMF3"
         switch (type) {
             case VIENNA_ONE:
-                this.supportedNames = String.format("VMFG_%04d%2s%2s.H%2s", year, monthString, dayString, hourString);
+                setSupportedNames(String.format("VMFG_%04d%2s%2s.H%2s", year, monthString, dayString, hourString));
                 break;
             case VIENNA_THREE:
-                this.supportedNames = String.format("VMF3_%04d%2s%2s.H%2s", year, monthString, dayString, hourString);
+                setSupportedNames(String.format("VMF3_%04d%2s%2s.H%2s", year, monthString, dayString, hourString));
                 break;
             default:
                 break;

@@ -36,6 +36,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -118,7 +119,8 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  *
  */
-public class GlobalIonosphereMapModel implements IonosphericModel {
+public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
+        implements IonosphericModel {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 201928052L;
@@ -153,12 +155,6 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
     /** Epoch of the last TEC map as read in the header of the IONEX file. */
     private AbsoluteDate endDate;
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Provides access to auxiliary data. */
-    private final DataProvidersManager dataProvidersManager;
-
     /** Map of interpolated TEC at a specific date. */
     private Map<AbsoluteDate, Double> tecMap;
 
@@ -185,11 +181,10 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
      */
     public GlobalIonosphereMapModel(final String supportedNames,
                                     final DataProvidersManager dataProvidersManager) {
-        this.supportedNames = supportedNames;
+        super(supportedNames, dataProvidersManager);
         this.latitude       = Double.NaN;
         this.longitude      = Double.NaN;
         this.tecMap         = new HashMap<>();
-        this.dataProvidersManager = dataProvidersManager;
     }
 
     /**
@@ -431,7 +426,7 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
 
             // Read file
             final Parser parser = new Parser();
-            dataProvidersManager.feed(supportedNames, parser);
+            feed(parser);
 
             // File header
             final IONEXHeader top = parser.getIONEXHeader();
@@ -458,7 +453,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
      */
     private void checkDate(final AbsoluteDate date) {
         if (startDate.durationFrom(date) > 0 || date.durationFrom(endDate) > 0) {
-            throw new OrekitException(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, supportedNames, date);
+            throw new OrekitException(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE,
+                    getSupportedNames(), date);
         }
     }
 

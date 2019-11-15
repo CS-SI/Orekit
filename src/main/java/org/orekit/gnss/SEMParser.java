@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -48,7 +49,7 @@ import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
  * @since 8.0
  *
  */
-public class SEMParser implements DataLoader {
+public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
 
     // Constants
     /** The source of the almanacs. */
@@ -64,12 +65,6 @@ public class SEMParser implements DataLoader {
     private static final String SEPARATOR = "\\s+";
 
     // Fields
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Provides access to auxiliary data. */
-    private final DataProvidersManager dataProvidersManager;
-
     /** the list of all the almanacs read from the file. */
     private final List<GPSAlmanac> almanacs;
 
@@ -120,11 +115,10 @@ public class SEMParser implements DataLoader {
      */
     public SEMParser(final String supportedNames,
                      final DataProvidersManager dataProvidersManager) {
-
-        this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
+        super((supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames,
+                dataProvidersManager);
         this.almanacs = new ArrayList<>();
         this.prnList = new ArrayList<>();
-        this.dataProvidersManager = dataProvidersManager;
     }
 
     /**
@@ -138,7 +132,7 @@ public class SEMParser implements DataLoader {
      */
     public void loadData() {
         // load the data from the configured data providers
-        dataProvidersManager.feed(supportedNames, this);
+        feed(this);
         if (almanacs.isEmpty()) {
             throw new OrekitException(OrekitMessages.NO_SEM_ALMANAC_AVAILABLE);
         }
@@ -198,11 +192,9 @@ public class SEMParser implements DataLoader {
         return prnList;
     }
 
-    /** Get the supported names for data files.
-     * @return regular expression for the supported names for data files
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /**

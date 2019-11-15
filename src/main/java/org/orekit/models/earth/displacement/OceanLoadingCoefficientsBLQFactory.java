@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -57,7 +58,7 @@ import org.orekit.errors.OrekitMessages;
  * @since 9.1
  * @author Luc Maisonobe
  */
-public class OceanLoadingCoefficientsBLQFactory {
+public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoader {
 
     /** Default supported files name pattern for Onsala Space Observatory files in BLQ format. */
     public static final String DEFAULT_BLQ_SUPPORTED_NAMES = "^.+\\.blq$";
@@ -82,12 +83,6 @@ public class OceanLoadingCoefficientsBLQFactory {
     private static final int[] J = {
         1, 2, 0, 3, 3, 1, 2, 0, 2, 1, 0
     };
-
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Provides access to auxiliary data files. */
-    private final DataProvidersManager dataProvidersManager;
 
     /** Parsed coefficients. */
     private final List<OceanLoadingCoefficients> coefficients;
@@ -124,10 +119,9 @@ public class OceanLoadingCoefficientsBLQFactory {
     public OceanLoadingCoefficientsBLQFactory(
             final String supportedNames,
             final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
 
-        this.supportedNames = supportedNames;
         this.coefficients   = new ArrayList<>();
-        this.dataProvidersManager = dataProvidersManager;
 
     }
 
@@ -135,7 +129,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      */
     private void loadsIfNeeded() {
         if (coefficients.isEmpty()) {
-            dataProvidersManager.feed(supportedNames, new BLQParser());
+            feed(new BLQParser());
         }
     }
 

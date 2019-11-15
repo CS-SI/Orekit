@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.hipparchus.util.Pair;
+import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -49,7 +50,7 @@ import org.orekit.errors.OrekitMessages;
  * @since 8.0
  *
  */
-public class YUMAParser implements DataLoader {
+public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader {
 
     // Constants
     /** The source of the almanacs. */
@@ -76,12 +77,6 @@ public class YUMAParser implements DataLoader {
     private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.alm$";
 
     // Fields
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Provides access to auxiliary data. */
-    private final DataProvidersManager dataProvidersManager;
-
     /** the list of all the almanacs read from the file. */
     private final List<GPSAlmanac> almanacs;
 
@@ -132,10 +127,10 @@ public class YUMAParser implements DataLoader {
      */
     public YUMAParser(final String supportedNames,
                       final DataProvidersManager dataProvidersManager) {
-        this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
+        super((supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames,
+                dataProvidersManager);
         this.almanacs = new ArrayList<>();
         this.prnList = new ArrayList<>();
-        this.dataProvidersManager = dataProvidersManager;
     }
 
     /**
@@ -149,7 +144,7 @@ public class YUMAParser implements DataLoader {
      */
     public void loadData() {
         // load the data from the configured data providers
-        dataProvidersManager.feed(supportedNames, this);
+        feed(this);
         if (almanacs.isEmpty()) {
             throw new OrekitException(OrekitMessages.NO_YUMA_ALMANAC_AVAILABLE);
         }
@@ -203,11 +198,9 @@ public class YUMAParser implements DataLoader {
         return almanacs.isEmpty();
     }
 
-    /** Get the supported names for data files.
-     * @return regular expression for the supported names for data files
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /**

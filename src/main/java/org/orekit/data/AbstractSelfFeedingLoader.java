@@ -10,7 +10,7 @@ package org.orekit.data;
 public abstract class AbstractSelfFeedingLoader {
 
     /** Regular expression for supported files names. */
-    private final String supportedNames;
+    private String supportedNames;
     /** Source for auxiliary data files. */
     private final DataProvidersManager manager;
 
@@ -36,7 +36,7 @@ public abstract class AbstractSelfFeedingLoader {
      * DataLoader)}.
      */
     protected boolean feed(final DataLoader loader) {
-        return manager.feed(supportedNames, loader);
+        return getDataProvidersManager().feed(getSupportedNames(), loader);
     }
 
     /**
@@ -47,6 +47,17 @@ public abstract class AbstractSelfFeedingLoader {
      */
     protected String getSupportedNames() {
         return supportedNames;
+    }
+
+    /**
+     * Set the supported names regular expression. Using this method may create
+     * concurrency issues if multiple threads can call {@link #feed(DataLoader)} and it is
+     * not properly synchronized.
+     *
+     * @param supportedNames regular expression.
+     */
+    protected void setSupportedNames(final String supportedNames) {
+        this.supportedNames = supportedNames;
     }
 
     /**
