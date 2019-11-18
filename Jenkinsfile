@@ -45,7 +45,7 @@ pipeline {
             // NB: we skip tests on this stage
             when { anyOf { branch 'develop' ; branch 'master' }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'jenkins@nexus',
+                withCredentials([usernamePassword(credentialsId: 'jenkins-at-nexus',
                                                   usernameVariable: 'NEXUS_USERNAME',
                                                   passwordVariable: 'NEXUS_PASSWORD')]) {
                     sh 'mvn $MAVEN_CLI_OPTS deploy -Dmaven.test.skip=true -Pci-deploy'
