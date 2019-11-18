@@ -8,6 +8,7 @@ import java.util.Map;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.time.TimeScales;
 
 /**
@@ -25,6 +26,8 @@ public class LazyLoadedCelestialBodies implements CelestialBodies {
     private final DataProvidersManager dataProvidersManager;
     /** Provides access to time scales when parsing bodies. */
     private final TimeScales timeScales;
+    /** Earth centered frame aligned with ICRF. */
+    private final Frame gcrf;
     /** Celestial body loaders map. */
     private final Map<String, List<CelestialBodyLoader>> loadersMap = new HashMap<>();
 
@@ -36,11 +39,14 @@ public class LazyLoadedCelestialBodies implements CelestialBodies {
      *
      * @param dataProvidersManager supplies JPL ephemerides auxiliary data files.
      * @param timeScales           set of time scales to use when loading bodies.
+     * @param gcrf                 Earth centered frame aligned with ICRF.
      */
     public LazyLoadedCelestialBodies(final DataProvidersManager dataProvidersManager,
-                                     final TimeScales timeScales) {
+                                     final TimeScales timeScales,
+                                     final Frame gcrf) {
         this.dataProvidersManager = dataProvidersManager;
         this.timeScales = timeScales;
+        this.gcrf = gcrf;
     }
 
     /** Add a loader for celestial bodies.
@@ -106,43 +112,43 @@ public class LazyLoadedCelestialBodies implements CelestialBodies {
         CelestialBodyLoader loader = null;
         if (name.equalsIgnoreCase(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.SUN)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SUN, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SUN, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.MERCURY)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.VENUS)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.VENUS, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.VENUS, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.EARTH_MOON)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH_MOON, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH_MOON, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.EARTH)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.MOON)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MOON, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MOON, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.MARS)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MARS, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MARS, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.JUPITER)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.JUPITER, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.JUPITER, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.SATURN)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SATURN, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SATURN, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.URANUS)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.URANUS, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.URANUS, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.NEPTUNE)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.NEPTUNE, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.NEPTUNE, dataProvidersManager, timeScales, gcrf);
         } else if (name.equalsIgnoreCase(CelestialBodyFactory.PLUTO)) {
             loader =
-                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.PLUTO, dataProvidersManager, timeScales);
+                    new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.PLUTO, dataProvidersManager, timeScales, gcrf);
         }
 
         if (loader != null) {

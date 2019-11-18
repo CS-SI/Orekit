@@ -39,7 +39,6 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -213,6 +212,9 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     /** Time scales to use when loading data. */
     private final TimeScales timeScales;
 
+    /** The GCRF implementation. */
+    private final Frame gcrf;
+
     /** Current file start epoch. */
     private AbsoluteDate startEpoch;
 
@@ -251,12 +253,14 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
      *
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
-     * @see #JPLEphemeridesLoader(String, EphemerisType, DataProvidersManager, TimeScales)
+     * @see #JPLEphemeridesLoader(String, EphemerisType, DataProvidersManager, TimeScales,
+     * Frame)
      */
     public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
         this(supportedNames, generateType,
                 DataContext.getDefault().getDataProvidersManager(),
-                DataContext.getDefault().getTimeScales());
+                DataContext.getDefault().getTimeScales(),
+                DataContext.getDefault().getFrames().getGCRF());
     }
 
     /** Create a loader for JPL ephemerides binary files.
@@ -264,15 +268,18 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
      * @param generateType ephemeris type to generate
      * @param dataProvidersManager provides access to the ephemeris files.
      * @param timeScales used to access the TCB and TDB time scales while loading data.
+     * @param gcrf Earth centered frame aligned with ICRF.
      * @since 10.1
      */
     public JPLEphemeridesLoader(final String supportedNames,
                                 final EphemerisType generateType,
                                 final DataProvidersManager dataProvidersManager,
-                                final TimeScales timeScales) {
+                                final TimeScales timeScales,
+                                final Frame gcrf) {
         super(supportedNames, dataProvidersManager);
 
         this.timeScales = timeScales;
+        this.gcrf = gcrf;
         constants = new AtomicReference<>();
 
         this.generateType  = generateType;
@@ -313,7 +320,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                         getSupportedNames(),
                         EphemerisType.EARTH_MOON,
                         getDataProvidersManager(),
-                        timeScales);
+                        timeScales,
+                        gcrf);
                 final CelestialBody parentBody =
                         parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
@@ -324,17 +332,17 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             }
             case EARTH_MOON :
                 scale         = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-                definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
+                definingFrameAlignedWithICRF = gcrf;
                 rawPVProvider = new EphemerisRawPVProvider();
                 break;
             case EARTH :
                 scale         = 1.0;
-                definingFrameAlignedWithICRF = FramesFactory.getGCRF();
+                definingFrameAlignedWithICRF = gcrf;
                 rawPVProvider = new ZeroRawPVProvider();
                 break;
             case MOON :
                 scale         =  1.0;
-                definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
+                definingFrameAlignedWithICRF = gcrf;
                 rawPVProvider = new EphemerisRawPVProvider();
                 break;
             default : {
@@ -343,7 +351,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                         getSupportedNames(),
                         EphemerisType.SOLAR_SYSTEM_BARYCENTER,
                         getDataProvidersManager(),
-                        timeScales);
+                        timeScales,
+                        gcrf);
                 final CelestialBody parentBody =
                         parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();

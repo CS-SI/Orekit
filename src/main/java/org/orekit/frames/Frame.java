@@ -346,7 +346,7 @@ public class Frame implements Serializable {
     /** Get the unique root frame.
      * @return the unique instance of the root frame
      */
-    protected static Frame getRoot() {
+    public static Frame getRoot() {
         return LazyRootHolder.INSTANCE;
     }
 

@@ -2,6 +2,7 @@ package org.orekit.data;
 
 import org.orekit.bodies.LazyLoadedCelestialBodies;
 import org.orekit.forces.gravity.potential.LazyLoadedGravityFields;
+import org.orekit.frames.Frame;
 import org.orekit.frames.LazyLoadedEop;
 import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.models.earth.GeoMagneticFields;
@@ -38,8 +39,10 @@ public class LazyLoadedDataContext implements DataContext {
     public LazyLoadedDataContext() {
         this.dataProvidersManager = new DataProvidersManager();
         final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop(dataProvidersManager);
+        final Frame gcrf = Frame.getRoot();
         this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
-        this.bodies = new LazyLoadedCelestialBodies(dataProvidersManager, timeScales);
+        this.bodies =
+                new LazyLoadedCelestialBodies(dataProvidersManager, timeScales, gcrf);
         this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales, bodies);
         this.gravityFields = new LazyLoadedGravityFields(dataProvidersManager);
         this.geoMagneticFields = new LazyLoadedGeoMagneticFields(dataProvidersManager);
