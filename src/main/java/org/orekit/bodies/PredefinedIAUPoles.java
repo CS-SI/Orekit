@@ -16,13 +16,16 @@
  */
 package org.orekit.bodies;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** Enumerate for predefined IAU poles.
@@ -36,10 +39,22 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  * @since 9.0
  */
-enum PredefinedIAUPoles implements IAUPole {
+abstract class PredefinedIAUPoles implements IAUPole {
+
+    /** TDB time scale. */
+    private final TimeScale tdb;
+
+    /**
+     * Simple constructor.
+     *
+     * @param tdb the TDB time scale to use when computing the pole.
+     */
+    PredefinedIAUPoles(final TimeScale tdb) {
+        this.tdb = tdb;
+    }
 
     /** IAU pole and prime meridian model for Sun. */
-    SUN {
+    private static class Sun extends PredefinedIAUPoles {
 
         /** Constant term of the prime meridian. */
         private static final double W0 = 84.176;
@@ -50,6 +65,15 @@ enum PredefinedIAUPoles implements IAUPole {
         /** Fixed pole. */
         private final Vector3D pole = new Vector3D(FastMath.toRadians(286.13),
                                                    FastMath.toRadians(63.87));
+
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Sun(final TimeScale tdb) {
+            super(tdb);
+        }
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -71,10 +95,10 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(W0));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Mercury. */
-    MERCURY {
+    private static class Mercury extends PredefinedIAUPoles {
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 281.0097;
@@ -139,6 +163,15 @@ enum PredefinedIAUPoles implements IAUPole {
         /** Rate term of the M1 angle. */
         private static final double M5_DOT = 20.461675;
 
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Mercury(final TimeScale tdb) {
+            super(tdb);
+        }
+
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double t = t(date);
@@ -175,10 +208,10 @@ enum PredefinedIAUPoles implements IAUPole {
                              add(toRadians(d.multiply(M5_DOT).add(M5_0)).sin().multiply(M5_COEFF)));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Venus. */
-    VENUS {
+    private static class Venus extends PredefinedIAUPoles {
 
         /** Constant term of the prime meridian. */
         private static final double W_0 = 160.20;
@@ -189,6 +222,15 @@ enum PredefinedIAUPoles implements IAUPole {
         /** Fixed pole. */
         private final Vector3D pole = new Vector3D(FastMath.toRadians(272.76),
                                                    FastMath.toRadians(67.16));
+
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Venus(final TimeScale tdb) {
+            super(tdb);
+        }
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -210,10 +252,10 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Earth. */
-    EARTH {
+    private static class Earth extends PredefinedIAUPoles {
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 =  0.00;
@@ -232,6 +274,15 @@ enum PredefinedIAUPoles implements IAUPole {
 
         /** Rate term of the prime meridian. */
         private static final double W_DOT = 360.9856235;
+
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Earth(final TimeScale tdb) {
+            super(tdb);
+        }
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -273,10 +324,10 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for the Moon. */
-    MOON {
+    private static class Moon extends PredefinedIAUPoles {
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 269.9949;
@@ -461,6 +512,15 @@ enum PredefinedIAUPoles implements IAUPole {
         /** Sine coefficient of the E13 angle, for the prime meridian. */
         private static final double E13_W_SIN = -0.0044;
 
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Moon(final TimeScale tdb) {
+            super(tdb);
+        }
+
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double d = d(date);
@@ -545,10 +605,10 @@ enum PredefinedIAUPoles implements IAUPole {
                              add(toRadians(d.multiply(E13_DOT).add(E13_0)).sin().multiply(E13_W_SIN)));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Mars. */
-    MARS {
+    private static class Mars extends PredefinedIAUPoles {
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 317.68143;
@@ -567,6 +627,15 @@ enum PredefinedIAUPoles implements IAUPole {
 
         /** Rate term of the prime meridian. */
         private static final double W_DOT = 350.89198226;
+
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Mars(final TimeScale tdb) {
+            super(tdb);
+        }
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -592,10 +661,10 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Jupiter. */
-    JUPITER {
+    private static class Jupiter extends PredefinedIAUPoles {
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 268.056595;
@@ -675,6 +744,15 @@ enum PredefinedIAUPoles implements IAUPole {
         /** Rate term of the prime meridian. */
         private static final double W_DOT = 870.5360000;
 
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Jupiter(final TimeScale tdb) {
+            super(tdb);
+        }
+
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
 
@@ -734,10 +812,10 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Saturn. */
-    SATURN {
+    private static class Saturn extends PredefinedIAUPoles {
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 40.589;
@@ -756,6 +834,15 @@ enum PredefinedIAUPoles implements IAUPole {
 
         /** Rate term of the prime meridian. */
         private static final double W_DOT = 810.7939024;
+
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Saturn(final TimeScale tdb) {
+            super(tdb);
+        }
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -781,10 +868,10 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Uranus. */
-    URANUS {
+    private static class Uranus extends PredefinedIAUPoles {
 
         /** Constant term of the prime meridian. */
         private static final double W_0 = 203.81;
@@ -795,6 +882,15 @@ enum PredefinedIAUPoles implements IAUPole {
         /** Fixed pole. */
         private final Vector3D pole = new Vector3D(FastMath.toRadians(257.311),
                                                    FastMath.toRadians(-15.175));
+
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Uranus(final TimeScale tdb) {
+            super(tdb);
+        }
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -816,10 +912,10 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Neptune. */
-    NEPTUNE {
+    private static class Neptune extends PredefinedIAUPoles {
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 299.36;
@@ -848,6 +944,15 @@ enum PredefinedIAUPoles implements IAUPole {
         /** Rate term of the M1 angle. */
         private static final double N_DOT = 52.316;
 
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Neptune(final TimeScale tdb) {
+            super(tdb);
+        }
+
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double n = FastMath.toRadians(t(date) * N_DOT + N_0);
@@ -874,10 +979,10 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(n.sin().multiply(W_SIN)).add(W_0));
         }
 
-    },
+    }
 
     /** IAU pole and prime meridian model for Pluto. */
-    PLUTO {
+    private static class Pluto extends PredefinedIAUPoles {
 
         /** Constant term of the prime meridian. */
         private static final double W_0 = 302.695;
@@ -888,6 +993,15 @@ enum PredefinedIAUPoles implements IAUPole {
         /** Fixed pole. */
         private final Vector3D pole = new Vector3D(FastMath.toRadians(132.993),
                                                    FastMath.toRadians(-6.163));
+
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        Pluto(final TimeScale tdb) {
+            super(tdb);
+        }
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -909,7 +1023,7 @@ enum PredefinedIAUPoles implements IAUPole {
             return toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
-    },
+    }
 
     /** Default IAUPole implementation for barycenters.
      * <p>
@@ -918,7 +1032,16 @@ enum PredefinedIAUPoles implements IAUPole {
      * to define the ICRF.
      * </p>
      */
-    GCRF_ALIGNED {
+    private static class GcrfAligned extends PredefinedIAUPoles {
+
+        /**
+         * Simple constructor.
+         *
+         * @param tdb the TDB time scale to use when computing the pole.
+         */
+        GcrfAligned(final TimeScale tdb) {
+            super(tdb);
+        }
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -952,48 +1075,74 @@ enum PredefinedIAUPoles implements IAUPole {
             return date.getField().getZero();
         }
 
-    };
+    }
 
 
     /** Get a predefined IAU pole.
      * @param body body identifier
+     * @param tdb the TDB time scale.
      * @return predefined IAU pole
      */
-    public static PredefinedIAUPoles getIAUPole(final JPLEphemeridesLoader.EphemerisType body) {
+    public static PredefinedIAUPoles getIAUPole(final JPLEphemeridesLoader.EphemerisType body,
+                                                final TimeScale tdb) {
+
         switch(body) {
             case SUN :
-                return SUN;
+                return new Sun(tdb);
             case MERCURY :
-                return MERCURY;
+                return new Mercury(tdb);
             case VENUS :
-                return VENUS;
+                return new Venus(tdb);
             case EARTH :
-                return EARTH;
+                return new Earth(tdb);
             case MOON :
-                return MOON;
+                return new Moon(tdb);
             case MARS :
-                return MARS;
+                return new Mars(tdb);
             case JUPITER :
-                return JUPITER;
+                return new Jupiter(tdb);
             case SATURN :
-                return SATURN;
+                return new Saturn(tdb);
             case URANUS :
-                return URANUS;
+                return new Uranus(tdb);
             case NEPTUNE :
-                return NEPTUNE;
+                return new Neptune(tdb);
             case PLUTO :
-                return PLUTO;
+                return new Pluto(tdb);
             default :
-                return GCRF_ALIGNED;
+                return new GcrfAligned(tdb);
         }
     }
 
+    /**
+     * List of predefined IAU poles.
+     *
+     * @param tdb the TDB time scale.
+     * @return the poles.
+     */
+    static List<PredefinedIAUPoles> values(final TimeScale tdb) {
+        final List<PredefinedIAUPoles> values = new ArrayList<>(12);
+        values.add(new Sun(tdb));
+        values.add(new Mercury(tdb));
+        values.add(new Venus(tdb));
+        values.add(new Earth(tdb));
+        values.add(new Moon(tdb));
+        values.add(new Mars(tdb));
+        values.add(new Jupiter(tdb));
+        values.add(new Saturn(tdb));
+        values.add(new Uranus(tdb));
+        values.add(new Neptune(tdb));
+        values.add(new Pluto(tdb));
+        values.add(new GcrfAligned(tdb));
+        return values;
+    }
+
     /** Compute the interval in julian centuries from standard epoch.
      * @param date date
      * @return interval between date and standard epoch in julian centuries
      */
-    private static double t(final AbsoluteDate date) {
-        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, TimeScalesFactory.getTDB()) / Constants.JULIAN_CENTURY;
+    protected double t(final AbsoluteDate date) {
+        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, tdb) / Constants.JULIAN_CENTURY;
     }
 
     /** Compute the interval in julian centuries from standard epoch.
@@ -1001,16 +1150,16 @@ enum PredefinedIAUPoles implements IAUPole {
      * @param <T> type of the filed elements
      * @return interval between date and standard epoch in julian centuries
      */
-    private static <T extends RealFieldElement<T>> T t(final FieldAbsoluteDate<T> date) {
-        return date.offsetFrom(FieldAbsoluteDate.getJ2000Epoch(date.getField()), TimeScalesFactory.getTDB()).divide(Constants.JULIAN_CENTURY);
+    protected <T extends RealFieldElement<T>> T t(final FieldAbsoluteDate<T> date) {
+        return date.offsetFrom(FieldAbsoluteDate.getJ2000Epoch(date.getField()), tdb).divide(Constants.JULIAN_CENTURY);
     }
 
     /** Compute the interval in julian days from standard epoch.
      * @param date date
      * @return interval between date and standard epoch in julian days
      */
-    private static double d(final AbsoluteDate date) {
-        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, TimeScalesFactory.getTDB()) / Constants.JULIAN_DAY;
+    protected double d(final AbsoluteDate date) {
+        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, tdb) / Constants.JULIAN_DAY;
     }
 
     /** Compute the interval in julian days from standard epoch.
@@ -1018,8 +1167,8 @@ enum PredefinedIAUPoles implements IAUPole {
      * @param <T> type of the filed elements
      * @return interval between date and standard epoch in julian days
      */
-    private static <T extends RealFieldElement<T>> T d(final FieldAbsoluteDate<T> date) {
-        return date.offsetFrom(FieldAbsoluteDate.getJ2000Epoch(date.getField()), TimeScalesFactory.getTDB()).divide(Constants.JULIAN_DAY);
+    protected <T extends RealFieldElement<T>> T d(final FieldAbsoluteDate<T> date) {
+        return date.offsetFrom(FieldAbsoluteDate.getJ2000Epoch(date.getField()), tdb).divide(Constants.JULIAN_DAY);
     }
 
     /** Convert an angle to radians.

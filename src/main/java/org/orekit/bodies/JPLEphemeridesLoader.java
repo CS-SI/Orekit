@@ -307,7 +307,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     public CelestialBody loadCelestialBody(final String name) {
 
         final double gm       = getLoadedGravitationalCoefficient(generateType);
-        final IAUPole iauPole = PredefinedIAUPoles.getIAUPole(generateType);
+        final IAUPole iauPole = PredefinedIAUPoles
+                .getIAUPole(generateType, timeScales.getTDB());
         final double scale;
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
