@@ -48,7 +48,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'jenkins-at-nexus',
                                                   usernameVariable: 'NEXUS_USERNAME',
                                                   passwordVariable: 'NEXUS_PASSWORD')]) {
-                    sh 'mvn $MAVEN_CLI_OPTS deploy -Dmaven.test.skip=true -Pci-deploy'
+                    sh 'mvn $MAVEN_CLI_OPTS deploy -DskipTests=true -Pci-deploy'
                 }
             }
         }
