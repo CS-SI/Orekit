@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 
 /** This class gathers the meta-data present in the Orbital Data Message (ODM).
  * @author sports
@@ -117,6 +118,20 @@ public class ODMMetaData {
      */
     void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
+    }
+
+    /**
+     * Get the time scale.
+     *
+     * @return the time scale.
+     * @see #getTimeSystem()
+     * @throws OrekitException if there is not corresponding time scale.
+     * @since 10.1
+     */
+    TimeScale getTimeScale() {
+        return getTimeSystem().getTimeScale(
+                odmFile.getConventions(),
+                odmFile.getDataContext().getTimeScales());
     }
 
     /** Get the spacecraft name for which the orbit state is provided.

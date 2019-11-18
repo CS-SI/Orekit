@@ -39,7 +39,7 @@ public class LazyLoadedDataContext implements DataContext {
         this.dataProvidersManager = new DataProvidersManager();
         final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop(dataProvidersManager);
         this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
-        this.bodies = new LazyLoadedCelestialBodies(dataProvidersManager);
+        this.bodies = new LazyLoadedCelestialBodies(dataProvidersManager, timeScales);
         this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales, bodies);
         this.gravityFields = new LazyLoadedGravityFields(dataProvidersManager);
         this.geoMagneticFields = new LazyLoadedGeoMagneticFields(dataProvidersManager);

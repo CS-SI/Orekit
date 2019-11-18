@@ -39,7 +39,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.TimeSpanMap;
 
 /**
@@ -63,14 +63,18 @@ public class AntexLoader {
     /** Receivers antennas. */
     private final List<ReceiverAntenna> receiversAntennas;
 
+    /** GPS time scale. */
+    private final TimeScale gps;
+
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      *
      * @param supportedNames regular expression for supported files names
-     * @see #AntexLoader(String, DataProvidersManager)
+     * @see #AntexLoader(String, DataProvidersManager, TimeScale)
      */
     public AntexLoader(final String supportedNames) {
-        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getGPS());
     }
 
     /**
@@ -78,10 +82,13 @@ public class AntexLoader {
      *
      * @param supportedNames regular expression for supported files names
      * @param dataProvidersManager provides access to auxiliary data.
+     * @param gps the GPS time scale to use when loading the ANTEX files.
      * @since 10.1
      */
     public AntexLoader(final String supportedNames,
-                       final DataProvidersManager dataProvidersManager) {
+                       final DataProvidersManager dataProvidersManager,
+                       final TimeScale gps) {
+        this.gps = gps;
         satellitesAntennas = new ArrayList<>();
         receiversAntennas  = new ArrayList<>();
         dataProvidersManager.feed(supportedNames, new Parser());
@@ -301,7 +308,7 @@ public class AntexLoader {
                                                          parseInt(line,    18,  6),
                                                          parseInt(line,    24,  6),
                                                          parseDouble(line, 30, 13),
-                                                         TimeScalesFactory.getGPS());
+                                                         gps);
                             break;
                         case "VALID UNTIL" :
                             validUntil = new AbsoluteDate(parseInt(line,     0,  6),
@@ -310,7 +317,7 @@ public class AntexLoader {
                                                           parseInt(line,    18,  6),
                                                           parseInt(line,    24,  6),
                                                           parseDouble(line, 30, 13),
-                                                          TimeScalesFactory.getGPS());
+                                                          gps);
                             break;
                         case "SINEX CODE" :
                             sinexCode = parseString(line, 0, 10);

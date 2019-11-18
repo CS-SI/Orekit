@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
@@ -41,7 +42,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -72,14 +73,40 @@ public class SP3Parser implements EphemerisFileParser {
     private final int interpolationSamples;
     /** Mapping from frame identifier in the file to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
+    /** Set of time scales. */
+    private final TimeScales timeScales;
 
     /**
      * Create an SP3 parser using default values.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @see #SP3Parser(double, int, Function)
      */
     public SP3Parser() {
         this(Constants.EIGEN5C_EARTH_MU, 7, SP3Parser::guessFrame);
+    }
+
+    /**
+     * Create an SP3 parser and specify the extra information needed to create a {@link
+     * org.orekit.propagation.Propagator Propagator} from the ephemeris data.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param mu                   is the standard gravitational parameter to use for
+     *                             creating {@link org.orekit.orbits.Orbit Orbits} from
+     *                             the ephemeris data. See {@link Constants}.
+     * @param interpolationSamples is the number of samples to use when interpolating.
+     * @param frameBuilder         is a function that can construct a frame from an SP3
+     *                             coordinate system string. The coordinate system can be
+     *                             any 5 character string e.g. ITR92, IGb08.
+     * @see #SP3Parser(double, int, Function, TimeScales)
+     */
+    public SP3Parser(final double mu,
+                     final int interpolationSamples,
+                     final Function<? super String, ? extends Frame> frameBuilder) {
+        this(mu, interpolationSamples, frameBuilder,
+                DataContext.getDefault().getTimeScales());
     }
 
     /**
@@ -92,14 +119,17 @@ public class SP3Parser implements EphemerisFileParser {
      * @param interpolationSamples is the number of samples to use when interpolating.
      * @param frameBuilder         is a function that can construct a frame from an SP3
      *                             coordinate system string. The coordinate system can be
-     *                             any 5 character string e.g. ITR92, IGb08.
+     * @param timeScales           the set of time scales used for parsing dates.
+     * @since 10.1
      */
     public SP3Parser(final double mu,
                      final int interpolationSamples,
-                     final Function<? super String, ? extends Frame> frameBuilder) {
+                     final Function<? super String, ? extends Frame> frameBuilder,
+                     final TimeScales timeScales) {
         this.mu = mu;
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder = frameBuilder;
+        this.timeScales = timeScales;
     }
 
     /**
@@ -211,6 +241,9 @@ public class SP3Parser implements EphemerisFileParser {
      */
     private class ParseInfo {
 
+        /** Set of time scales for parsing dates. */
+        private final TimeScales timeScales;
+
         /** The corresponding SP3File object. */
         private SP3File file;
 
@@ -249,12 +282,13 @@ public class SP3Parser implements EphemerisFileParser {
 
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
+            this.timeScales = SP3Parser.this.timeScales;
             file               = new SP3File(mu, interpolationSamples, frameBuilder);
             latestEpoch        = null;
             latestPosition     = null;
             latestClock        = 0.0;
             hasVelocityEntries = false;
-            timeScale          = TimeScalesFactory.getGPS();
+            timeScale          = timeScales.getGPS();
             maxSatellites      = 0;
             nbAccuracies       = 0;
             nbEpochs           = 0;
@@ -298,7 +332,7 @@ public class SP3Parser implements EphemerisFileParser {
 
                     final AbsoluteDate epoch = new AbsoluteDate(year, month, day,
                                                                 hour, minute, second,
-                                                                TimeScalesFactory.getGPS());
+                                                                pi.timeScales.getGPS());
 
                     pi.file.setEpoch(epoch);
 
@@ -437,31 +471,31 @@ public class SP3Parser implements EphemerisFileParser {
 
                     switch (ts) {
                         case GPS:
-                            pi.timeScale = TimeScalesFactory.getGPS();
+                            pi.timeScale = pi.timeScales.getGPS();
                             break;
 
                         case GAL:
-                            pi.timeScale = TimeScalesFactory.getGST();
+                            pi.timeScale = pi.timeScales.getGST();
                             break;
 
                         case GLO:
-                            pi.timeScale = TimeScalesFactory.getGLONASS();
+                            pi.timeScale = pi.timeScales.getGLONASS();
                             break;
 
                         case QZS:
-                            pi.timeScale = TimeScalesFactory.getQZSS();
+                            pi.timeScale = pi.timeScales.getQZSS();
                             break;
 
                         case TAI:
-                            pi.timeScale = TimeScalesFactory.getTAI();
+                            pi.timeScale = pi.timeScales.getTAI();
                             break;
 
                         case UTC:
-                            pi.timeScale = TimeScalesFactory.getUTC();
+                            pi.timeScale = pi.timeScales.getUTC();
                             break;
 
                         default:
-                            pi.timeScale = TimeScalesFactory.getGPS();
+                            pi.timeScale = pi.timeScales.getGPS();
                             break;
                     }
                     pi.file.setTimeScale(pi.timeScale);

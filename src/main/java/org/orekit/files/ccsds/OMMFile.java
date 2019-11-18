@@ -270,7 +270,8 @@ public class OMMFile extends OGMFile {
                        metaData.getLaunchYear(), metaData.getLaunchNumber(), metaData.getLaunchPiece(),
                        ephemerisType, Integer.parseInt(elementSetNo), getEpoch(),
                        meanMotion, meanMotionDot, meanMotionDotDot,
-                       getE(), getI(), getPa(), getRaan(), getAnomaly(), revAtEpoch, bStar);
+                       getE(), getI(), getPa(), getRaan(), getAnomaly(), revAtEpoch,
+                       bStar, getDataContext().getTimeScales().getUTC());
     }
 
     public static class OMMMetaData extends ODMMetaData {

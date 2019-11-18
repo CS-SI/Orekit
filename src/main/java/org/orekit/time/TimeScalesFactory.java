@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 import org.orekit.data.DataContext;
 import org.orekit.frames.EOPHistory;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LazyLoadedEop;
 import org.orekit.utils.IERSConventions;
 
 
@@ -128,14 +128,14 @@ public class TimeScalesFactory implements Serializable {
      * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
      * so this method loads these data sets. See the {@link #getUTC()
      * TimeScalesFactory.getUTC()} and {@link
-     * FramesFactory#getEOPHistory(IERSConventions, boolean)} methods
+     * LazyLoadedEop#getEOPHistory(IERSConventions, boolean)} methods
      * for an explanation of how the corresponding data loaders can be configured.
      * </p>
      * @param conventions IERS conventions for which EOP parameters will provide dUT1
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return Universal Time 1 scale
      * @see #getUTC()
-     * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
+     * @see LazyLoadedEop#getEOPHistory(IERSConventions, boolean)
      */
     public static UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
         return getTimeScales().getUT1(conventions, simpleEOP);

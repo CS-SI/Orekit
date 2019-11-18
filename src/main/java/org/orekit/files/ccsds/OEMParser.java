@@ -29,6 +29,7 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
@@ -73,9 +74,13 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * parse some reference frames or UT1 time scale, it must be initialized before
      * parsing by calling {@link #withConventions(IERSConventions)}.
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
+     * {@link #withDataContext(DataContext)}.
      */
     public OEMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "");
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "",
+                DataContext.getDefault());
     }
 
     /** Complete constructor.
@@ -86,35 +91,42 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @param dataContext used to retrieve frames, time scales, etc.
      */
     private OEMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber, final String launchPiece) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece);
+                      final int launchYear, final int launchNumber,
+                      final String launchPiece, final DataContext dataContext) {
+        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
+                launchPiece, dataContext);
     }
 
     /** {@inheritDoc} */
     public OEMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OEMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getDataContext());
     }
 
     /** {@inheritDoc} */
     public OEMParser withMu(final double newMu) {
         return new OEMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getDataContext());
     }
 
     /** {@inheritDoc} */
     public OEMParser withConventions(final IERSConventions newConventions) {
         return new OEMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getDataContext());
     }
 
     /** {@inheritDoc} */
     public OEMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getDataContext());
     }
 
     /** {@inheritDoc} */
@@ -122,7 +134,15 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
         return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece);
+                             newLaunchYear, newLaunchNumber, newLaunchPiece,
+                             getDataContext());
+    }
+
+    @Override
+    public OEMParser withDataContext(final DataContext dataContext) {
+        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
+                getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                dataContext);
     }
 
     /** {@inheritDoc} */
@@ -160,6 +180,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
             pi.file.setMissionReferenceDate(getMissionReferenceDate());
             pi.file.setMuSet(getMu());
             pi.file.setConventions(getConventions());
+            pi.file.setDataContext(getDataContext());
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;

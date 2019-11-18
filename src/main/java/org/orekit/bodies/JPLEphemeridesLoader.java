@@ -47,7 +47,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.OrekitConfiguration;
@@ -210,6 +210,9 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     /** Ephemeris type to load. */
     private final EphemerisType loadType;
 
+    /** Time scales to use when loading data. */
+    private final TimeScales timeScales;
+
     /** Current file start epoch. */
     private AbsoluteDate startEpoch;
 
@@ -245,23 +248,31 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
     /** Create a loader for JPL ephemerides binary files. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
+     * @see #JPLEphemeridesLoader(String, EphemerisType, DataProvidersManager, TimeScales)
      */
     public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
-        this(supportedNames, generateType, DataContext.getDefault().getDataProvidersManager());
+        this(supportedNames, generateType,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales());
     }
 
     /** Create a loader for JPL ephemerides binary files.
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
      * @param dataProvidersManager provides access to the ephemeris files.
+     * @param timeScales used to access the TCB and TDB time scales while loading data.
+     * @since 10.1
      */
     public JPLEphemeridesLoader(final String supportedNames,
                                 final EphemerisType generateType,
-                                final DataProvidersManager dataProvidersManager) {
+                                final DataProvidersManager dataProvidersManager,
+                                final TimeScales timeScales) {
         super(supportedNames, dataProvidersManager);
 
+        this.timeScales = timeScales;
         constants = new AtomicReference<>();
 
         this.generateType  = generateType;
@@ -301,7 +312,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 final JPLEphemeridesLoader parentLoader = new JPLEphemeridesLoader(
                         getSupportedNames(),
                         EphemerisType.EARTH_MOON,
-                        getDataProvidersManager());
+                        getDataProvidersManager(),
+                        timeScales);
                 final CelestialBody parentBody =
                         parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
@@ -330,7 +342,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 final JPLEphemeridesLoader parentLoader = new JPLEphemeridesLoader(
                         getSupportedNames(),
                         EphemerisType.SOLAR_SYSTEM_BARYCENTER,
-                        getDataProvidersManager());
+                        getDataProvidersManager(),
+                        timeScales);
                 final CelestialBody parentBody =
                         parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
                 definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
@@ -481,7 +494,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         // and times are in TDB
         components   = 3;
         positionUnit = 1000.0;
-        timeScale    = TimeScalesFactory.getTDB();
+        timeScale    = timeScales.getTDB();
 
         if (deNum == INPOP_DE_NUMBER) {
             // an INPOP file may contain 6 components (including coefficients for the velocity vector)
@@ -499,7 +512,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             // INPOP files may have their times expressed in TCB
             final double timesc = getLoadedConstant("TIMESC");
             if (!Double.isNaN(timesc) && (int) timesc == 1) {
-                timeScale = TimeScalesFactory.getTCB();
+                timeScale = timeScales.getTCB();
             }
 
         }

@@ -219,7 +219,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
 
         @Override
         public TimeScale getTimeScale() {
-            return this.getMetaData().getTimeSystem().getTimeScale(getConventions());
+            return this.getMetaData().getTimeScale();
         }
 
         /** Get start of total time span covered by ephemerides data and

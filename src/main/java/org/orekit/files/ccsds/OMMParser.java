@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -70,9 +71,13 @@ public class OMMParser extends ODMParser {
      * launch piece) are not set here. If they are needed, they must be initialized before
      * parsing by calling {@link #withInternationalDesignator(int, int, String)}
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
+     * {@link #withDataContext(DataContext)}.
      */
     public OMMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "");
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "",
+                DataContext.getDefault());
     }
 
     /** Complete constructor.
@@ -83,35 +88,38 @@ public class OMMParser extends ODMParser {
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @param dataContext used to retrieve frames, time scales, etc.
      */
     private OMMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber, final String launchPiece) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece);
+                      final int launchYear, final int launchNumber,
+                      final String launchPiece, final DataContext dataContext) {
+        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
+                launchPiece, dataContext);
     }
 
     /** {@inheritDoc} */
     public OMMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OMMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OMMParser withMu(final double newMu) {
         return new OMMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OMMParser withConventions(final IERSConventions newConventions) {
         return new OMMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OMMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
@@ -119,7 +127,13 @@ public class OMMParser extends ODMParser {
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
         return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece);
+                             newLaunchYear, newLaunchNumber, newLaunchPiece, getDataContext());
+    }
+
+    @Override
+    public OMMParser withDataContext(final DataContext newDataContext) {
+        return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
+                getLaunchYear(), getLaunchNumber(), getLaunchPiece(), newDataContext);
     }
 
     /** {@inheritDoc} */
@@ -151,6 +165,7 @@ public class OMMParser extends ODMParser {
             pi.file.setMissionReferenceDate(getMissionReferenceDate());
             pi.file.setMuSet(getMu());
             pi.file.setConventions(getConventions());
+            pi.file.setDataContext(getDataContext());
             pi.file.getMetaData().setLaunchYear(getLaunchYear());
             pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
             pi.file.getMetaData().setLaunchPiece(getLaunchPiece());

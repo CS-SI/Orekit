@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -62,6 +63,9 @@ public abstract class ODMParser {
     /** Indicator for simple or accurate EOP interpolation. */
     private final  boolean simpleEOP;
 
+    /** Data context used for obtain frames and time scales. */
+    private final DataContext dataContext;
+
     /** Launch Year. */
     private int launchYear;
 
@@ -72,6 +76,9 @@ public abstract class ODMParser {
     private String launchPiece;
 
     /** Complete constructor.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
@@ -79,10 +86,34 @@ public abstract class ODMParser {
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @see #ODMParser(AbsoluteDate, double, IERSConventions, boolean, int, int, String, DataContext)
+     * @deprecated use {@link #ODMParser(AbsoluteDate, double, IERSConventions, boolean,
+     * int, int, String, DataContext)} instead.
      */
+    @Deprecated
     protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu,
                         final IERSConventions conventions, final boolean simpleEOP,
                         final int launchYear, final int launchNumber, final String launchPiece) {
+        this(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
+                launchPiece, DataContext.getDefault());
+    }
+
+    /** Complete constructor.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
+     * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param launchYear launch year for TLEs
+     * @param launchNumber launch number for TLEs
+     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @param dataContext used to retrieve frames and time scales.
+     * @since 10.1
+     */
+    protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu,
+                        final IERSConventions conventions, final boolean simpleEOP,
+                        final int launchYear, final int launchNumber,
+                        final String launchPiece,
+                        final DataContext dataContext) {
         this.missionReferenceDate = missionReferenceDate;
         this.mu                   = mu;
         this.conventions          = conventions;
@@ -90,6 +121,7 @@ public abstract class ODMParser {
         this.launchYear           = launchYear;
         this.launchNumber         = launchNumber;
         this.launchPiece          = launchPiece;
+        this.dataContext = dataContext;
     }
 
     /** Set initial date.
@@ -189,6 +221,23 @@ public abstract class ODMParser {
     public String getLaunchPiece() {
         return launchPiece;
     }
+
+    /**
+     * Get the data context used for getting frames, time scales, and celestial bodies.
+     *
+     * @return the data context.
+     */
+    public DataContext getDataContext() {
+        return dataContext;
+    }
+
+    /**
+     * Set the data context.
+     *
+     * @param newDataContext used for frames, time scales, and celestial bodies.
+     * @return a new instance with the data context replaced.
+     */
+    public abstract ODMParser withDataContext(DataContext newDataContext);
 
     /** Parse a CCSDS Orbit Data Message.
      * @param fileName name of the file containing the message
@@ -543,7 +592,8 @@ public abstract class ODMParser {
      * @return parsed date
      */
     protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
-        return timeSystem.parseDate(date, conventions, missionReferenceDate);
+        return timeSystem.parseDate(date, conventions, missionReferenceDate,
+                getDataContext().getTimeScales());
     }
 
 }
