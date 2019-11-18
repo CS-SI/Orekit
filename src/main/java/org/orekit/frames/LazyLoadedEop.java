@@ -1,6 +1,7 @@
 package org.orekit.frames;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,14 +10,22 @@ import java.util.TreeSet;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.OffsetModel;
+import org.orekit.time.TAIUTCDatFilesLoader;
+import org.orekit.time.TimeScales;
+import org.orekit.time.UTCScale;
+import org.orekit.time.UTCTAIBulletinAFilesLoader;
+import org.orekit.time.UTCTAIHistoryFilesLoader;
+import org.orekit.time.UTCTAIOffsetsLoader;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
- * Loads Earth Orientation Parameters (EOP) from a configured set of {@link
- * EOPHistoryLoader}s on demand. Methods are synchronized to it is safe for access from
- * multiple threads.
+ * Loads Earth Orientation Parameters (EOP) and leap seconds from a configured set of
+ * {@link EOPHistoryLoader}s and {@link UTCTAIOffsetsLoader}s on demand. Methods are
+ * synchronized to it is safe for access from multiple threads.
  *
  * @author Guylaine Prat
  * @author Luc Maisonobe
@@ -34,6 +43,11 @@ public class LazyLoadedEop {
     private final Map<IERSConventions, List<EOPHistoryLoader>> eopHistoryLoaders;
     /** Threshold for EOP continuity. */
     private double eopContinuityThreshold;
+
+    /** UTCTAI offsets loaders. */
+    private final List<UTCTAIOffsetsLoader> loaders = new ArrayList<>();
+    /** Universal Time Coordinate scale. */
+    private UTCScale utc = null;
 
     /**
      * Create a new instance for loading EOP data from multiple {@link
@@ -88,33 +102,36 @@ public class LazyLoadedEop {
                                                 final String eopC04SupportedNames,
                                                 final String bulletinBSupportedNames,
                                                 final String bulletinASupportedNames) {
+        final UTCScale utc = getUTC();
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
                         FramesFactory.RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME :
                         rapidDataColumnsSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new RapidDataAndPredictionColumnsLoader(false, rapidColNames, dataProvidersManager));
+                new RapidDataAndPredictionColumnsLoader(false, rapidColNames,
+                        dataProvidersManager, utc));
         final String rapidXmlNames =
                 (rapidDataXMLSupportedNames == null) ?
                         FramesFactory.RAPID_DATA_PREDICTION_XML_1980_FILENAME :
                         rapidDataXMLSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames, dataProvidersManager));
+                new RapidDataAndPredictionXMLLoader(rapidXmlNames, dataProvidersManager,
+                        utc));
         final String eopcNames =
                 (eopC04SupportedNames == null) ?
                         FramesFactory.EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager));
+                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utc));
         final String bulBNames =
                 (bulletinBSupportedNames == null) ?
                         FramesFactory.BULLETINB_1980_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new BulletinBFilesLoader(bulBNames, dataProvidersManager));
+                new BulletinBFilesLoader(bulBNames, dataProvidersManager, utc));
         final String bulANames =
                 (bulletinASupportedNames == null) ?
                         FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new BulletinAFilesLoader(bulANames, dataProvidersManager));
+                new BulletinAFilesLoader(bulANames, dataProvidersManager, utc));
     }
 
     /**
@@ -150,43 +167,48 @@ public class LazyLoadedEop {
                                                 final String eopC04SupportedNames,
                                                 final String bulletinBSupportedNames,
                                                 final String bulletinASupportedNames) {
+        final UTCScale utc = getUTC();
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
                         FramesFactory.RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME :
                         rapidDataColumnsSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new RapidDataAndPredictionColumnsLoader(true, rapidColNames, dataProvidersManager));
+                new RapidDataAndPredictionColumnsLoader(
+                        true, rapidColNames, dataProvidersManager, utc));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new RapidDataAndPredictionColumnsLoader(true, rapidColNames, dataProvidersManager));
+                new RapidDataAndPredictionColumnsLoader(
+                        true, rapidColNames, dataProvidersManager, utc));
         final String rapidXmlNames =
                 (rapidDataXMLSupportedNames == null) ?
                         FramesFactory.RAPID_DATA_PREDICITON_XML_2000_FILENAME :
                         rapidDataXMLSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames, dataProvidersManager));
+                new RapidDataAndPredictionXMLLoader(
+                        rapidXmlNames, dataProvidersManager, utc));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames, dataProvidersManager));
+                new RapidDataAndPredictionXMLLoader(
+                        rapidXmlNames, dataProvidersManager, utc));
         final String eopcNames =
                 (eopC04SupportedNames == null) ?
                         FramesFactory.EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager));
+                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utc));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager));
+                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utc));
         final String bulBNames =
                 (bulletinBSupportedNames == null) ?
                         FramesFactory.BULLETINB_2000_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new BulletinBFilesLoader(bulBNames, dataProvidersManager));
+                new BulletinBFilesLoader(bulBNames, dataProvidersManager, utc));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new BulletinBFilesLoader(bulBNames, dataProvidersManager));
+                new BulletinBFilesLoader(bulBNames, dataProvidersManager, utc));
         final String bulANames =
                 (bulletinASupportedNames == null) ?
                         FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new BulletinAFilesLoader(bulANames, dataProvidersManager));
+                new BulletinAFilesLoader(bulANames, dataProvidersManager, utc));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new BulletinAFilesLoader(bulANames, dataProvidersManager));
+                new BulletinAFilesLoader(bulANames, dataProvidersManager, utc));
     }
 
     /**
@@ -287,4 +309,99 @@ public class LazyLoadedEop {
         }
 
     }
+
+    /* UTC loading */
+
+    /**
+     * Add a loader for UTC-TAI offsets history files.
+     *
+     * @param loader custom loader to add
+     * @see TAIUTCDatFilesLoader
+     * @see UTCTAIHistoryFilesLoader
+     * @see UTCTAIBulletinAFilesLoader
+     * @see #getUTC()
+     * @see #clearUTCTAIOffsetsLoaders()
+     * @since 7.1
+     */
+    public void addUTCTAIOffsetsLoader(final UTCTAIOffsetsLoader loader) {
+        synchronized (loaders) {
+            loaders.add(loader);
+        }
+    }
+
+    /**
+     * Add the default loaders for UTC-TAI offsets history files (both IERS and USNO).
+     * <p>
+     * The default loaders are {@link TAIUTCDatFilesLoader} that looks for a file named
+     * {@code tai-utc.dat} that must be in USNO format and {@link
+     * UTCTAIHistoryFilesLoader} that looks fir a file named {@code UTC-TAI.history} that
+     * must be in the IERS format. The {@link UTCTAIBulletinAFilesLoader} is
+     * <em>not</em> added by default as it is not recommended. USNO warned us that
+     * the TAI-UTC data present in bulletin A was for convenience only and was not
+     * reliable, there have been errors in several bulletins regarding these data.
+     * </p>
+     *
+     * @see <a href="http://maia.usno.navy.mil/ser7/tai-utc.dat">USNO tai-utc.dat
+     * file</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history">IERS
+     * UTC-TAI.history file</a>
+     * @see TAIUTCDatFilesLoader
+     * @see UTCTAIHistoryFilesLoader
+     * @see #getUTC()
+     * @see #clearUTCTAIOffsetsLoaders()
+     * @since 7.1
+     */
+    public void addDefaultUTCTAIOffsetsLoaders() {
+        synchronized (loaders) {
+            addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES, dataProvidersManager));
+            addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader(dataProvidersManager));
+        }
+    }
+
+    /**
+     * Clear loaders for UTC-TAI offsets history files.
+     *
+     * @see #getUTC()
+     * @see #addUTCTAIOffsetsLoader(UTCTAIOffsetsLoader)
+     * @see #addDefaultUTCTAIOffsetsLoaders()
+     * @since 7.1
+     */
+    public void clearUTCTAIOffsetsLoaders() {
+        synchronized (loaders) {
+            loaders.clear();
+        }
+    }
+
+    /**
+     * Get the UTC time scale. In most cases {@link TimeScales#getUTC()} should be used
+     * instead. This method is used to created the default EOP loaders before {@link
+     * TimeScales} is fully set up.
+     *
+     * @return the UTC time scale.
+     * @see TimeScales
+     */
+    public UTCScale getUTC() {
+        synchronized (loaders) {
+
+            if (utc == null) {
+                List<OffsetModel> entries = Collections.emptyList();
+                if (loaders.isEmpty()) {
+                    addDefaultUTCTAIOffsetsLoaders();
+                }
+                for (UTCTAIOffsetsLoader loader : loaders) {
+                    entries = loader.loadOffsets();
+                    if (!entries.isEmpty()) {
+                        break;
+                    }
+                }
+                if (entries.isEmpty()) {
+                    throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
+                }
+                utc = new UTCScale(entries);
+            }
+
+            return utc;
+        }
+    }
+
 }

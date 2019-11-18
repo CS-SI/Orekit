@@ -30,7 +30,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -38,7 +37,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.Month;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -79,7 +78,7 @@ import org.orekit.utils.IERSConventions;
  * </p>
  * @author Luc Maisonobe
  */
-class BulletinBFilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryLoader {
+class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
     /** Conversion factor. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
@@ -225,10 +224,12 @@ class BulletinBFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
     /** Build a loader for IERS bulletins B files.
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to the bulletin B files.
+     * @param utc UTC time scale.
      */
     BulletinBFilesLoader(final String supportedNames,
-                         final DataProvidersManager manager) {
-        super(supportedNames, manager);
+                         final DataProvidersManager manager,
+                         final TimeScale utc) {
+        super(supportedNames, manager, utc);
     }
 
     /** {@inheritDoc} */
@@ -337,7 +338,7 @@ class BulletinBFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
                     }
                     final AbsoluteDate mjdDate =
                             new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                             TimeScalesFactory.getUTC());
+                                             getUtc());
                     final double[] equinox = converter.toEquinox(mjdDate, array[4], array[5]);
                     if (configuration == null || !configuration.isValid(mjd)) {
                         // get a configuration for current name and date range
@@ -345,7 +346,7 @@ class BulletinBFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
                     }
                     history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
                                              equinox[0], equinox[1], array[4], array[5],
-                                             configuration.getVersion()));
+                                             configuration.getVersion(), mjdDate));
                 }
 
             }
@@ -438,7 +439,7 @@ class BulletinBFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
                     if (mjd >= mjdMin) {
                         final AbsoluteDate mjdDate =
                                 new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                                 TimeScalesFactory.getUTC());
+                                                 getUtc());
                         final double[] equinox;
                         final double[] nro;
                         if (isNonRotatingOrigin) {
@@ -459,7 +460,7 @@ class BulletinBFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
                             configuration = itrfVersionLoader.getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(), mjdDate));
                         line = mjd < mjdMax ? reader.readLine() : null;
                     } else {
                         line = reader.readLine();

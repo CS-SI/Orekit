@@ -31,13 +31,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -117,7 +118,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 7.0
  */
-class BulletinAFilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryLoader {
+class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
     /** Conversion factor. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
@@ -351,10 +352,12 @@ class BulletinAFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
     /** Build a loader for IERS bulletins A files.
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to the bulletin A files.
+     * @param utc UTC time scale.
      */
     BulletinAFilesLoader(final String supportedNames,
-                         final DataProvidersManager manager) {
-        super(supportedNames, manager);
+                         final DataProvidersManager manager,
+                         final TimeScale utc) {
+        super(supportedNames, manager, utc);
     }
 
     /** {@inheritDoc} */
@@ -480,6 +483,7 @@ class BulletinAFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
             double[] nextEOP    = eopFieldsMap.get(mjdMin);
             for (int mjd = mjdMin; mjd <= mjdMax; ++mjd) {
 
+                final AbsoluteDate mjdDate = AbsoluteDate.createMJDDate(mjd, 0, getUtc());
                 final double[] currentPole = poleOffsetsFieldsMap.get(mjd);
 
                 final double[] previousEOP = currentEOP;
@@ -499,7 +503,8 @@ class BulletinAFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
                                                  currentPole[2] * MILLI_ARC_SECONDS_TO_RADIANS,
                                                  currentPole[3] * MILLI_ARC_SECONDS_TO_RADIANS,
                                                  currentPole[4] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(),
+                                                 mjdDate));
                     }
                 } else {
 
@@ -534,7 +539,8 @@ class BulletinAFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
                                                  currentEOP[1] * Constants.ARC_SECONDS_TO_RADIANS,
                                                  currentEOP[2] * Constants.ARC_SECONDS_TO_RADIANS,
                                                  0.0, 0.0, 0.0, 0.0,
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(),
+                                                 mjdDate));
                     } else {
                         // we have complete data
                         history.add(new EOPEntry(mjd,
@@ -545,7 +551,8 @@ class BulletinAFilesLoader extends AbstractSelfFeedingLoader implements EOPHisto
                                                  currentPole[2] * MILLI_ARC_SECONDS_TO_RADIANS,
                                                  currentPole[3] * MILLI_ARC_SECONDS_TO_RADIANS,
                                                  currentPole[4] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(),
+                                                 mjdDate));
                     }
                 }
 

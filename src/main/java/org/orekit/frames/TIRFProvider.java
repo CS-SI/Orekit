@@ -25,13 +25,13 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UT1Scale;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** Terrestrial Intermediate Reference Frame.
@@ -50,17 +50,18 @@ class TIRFProvider implements EOPBasedTransformProvider {
     private final EOPHistory eopHistory;
 
     /** UT1 time scale. */
-    private final transient UT1Scale ut1;
+    private final transient TimeScale ut1;
 
     /** ERA function. */
     private final transient TimeScalarFunction era;
 
     /** Simple constructor.
      * @param eopHistory EOP history
+     * @param ut1 the UT1 time scale.
      */
-    protected TIRFProvider(final EOPHistory eopHistory) {
+    protected TIRFProvider(final EOPHistory eopHistory, final TimeScale ut1) {
 
-        this.ut1        = TimeScalesFactory.getUT1(eopHistory);
+        this.ut1        = ut1;
         this.eopHistory = eopHistory;
         this.era        = eopHistory.getConventions().getEarthOrientationAngleFunction(ut1);
 
@@ -75,7 +76,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public TIRFProvider getNonInterpolatingProvider() {
-        return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
+        return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory(), ut1);
     }
 
     /** {@inheritDoc} */
@@ -156,7 +157,8 @@ class TIRFProvider implements EOPBasedTransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new TIRFProvider(eopHistory);
+                return new TIRFProvider(eopHistory,
+                        DataContext.getDefault().getTimeScales().getUT1(eopHistory));
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

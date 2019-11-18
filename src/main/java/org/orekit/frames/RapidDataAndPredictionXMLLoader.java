@@ -28,14 +28,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.xml.sax.Attributes;
@@ -60,7 +59,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * </p>
  * @author Luc Maisonobe
  */
-class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
+class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
         implements EOPHistoryLoader {
 
     /** Conversion factor for milli-arc seconds entries. */
@@ -74,10 +73,12 @@ class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
      *
      * @param supportedNames regular expression for supported files names
      * @param manager        provides access to the XML EOP files.
+     * @param utc UTC time scale.
      */
     RapidDataAndPredictionXMLLoader(final String supportedNames,
-                                    final DataProvidersManager manager) {
-        super(supportedNames, manager);
+                                    final DataProvidersManager manager,
+                                    final TimeScale utc) {
+        super(supportedNames, manager, utc);
     }
 
     /** {@inheritDoc} */
@@ -326,7 +327,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
                 } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                               TimeScalesFactory.getUTC());
+                                               getUtc());
                 } else if (qName.equals(UT1_M_UTC_ELT)) {
                     dtu1 = overwrite(dtu1, 1.0);
                 } else if (qName.equals(LOD_ELT)) {
@@ -366,7 +367,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
                             configuration = itrfVersionLoader.getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(), mjdDate));
                     }
                 }
             }
@@ -385,7 +386,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
                 } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                               TimeScalesFactory.getUTC());
+                                               getUtc());
                 } else if (qName.equals(UT1_U_UTC_ELT)) {
                     dtu1 = overwrite(dtu1, 1.0);
                 } else if (qName.equals(LOD_ELT)) {
@@ -425,7 +426,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractSelfFeedingLoader
                             configuration = itrfVersionLoader.getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion()));
+                                                 configuration.getVersion(), mjdDate));
                     }
                 }
             }

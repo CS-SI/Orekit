@@ -27,14 +27,13 @@ import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -70,7 +69,7 @@ import org.orekit.utils.IERSConventions;
  * </p>
  * @author Luc Maisonobe
  */
-class EOPC04FilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryLoader {
+class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
     /** Pattern to match the columns header. */
     private static final Pattern COLUMNS_HEADER_PATTERN;
@@ -145,10 +144,12 @@ class EOPC04FilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryL
     /** Build a loader for IERS EOP C04 files.
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to the EOP C04 files.
+     * @param utc UTC time scale.
      */
     EOPC04FilesLoader(final String supportedNames,
-                      final DataProvidersManager manager) {
-        super(supportedNames, manager);
+                      final DataProvidersManager manager,
+                      final TimeScale utc) {
+        super(supportedNames, manager, utc);
     }
 
     /** {@inheritDoc} */
@@ -227,7 +228,7 @@ class EOPC04FilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryL
                         throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
                                                   name, dc.getYear(), dc.getMonth(), dc.getDay(), mjd);
                     }
-                    final AbsoluteDate date = new AbsoluteDate(dc, TimeScalesFactory.getUTC());
+                    final AbsoluteDate date = new AbsoluteDate(dc, getUtc());
 
                     // the first six fields are consistent with the expected format
                     final double x     = Double.parseDouble(fields[POLE_X_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
@@ -254,7 +255,7 @@ class EOPC04FilesLoader extends AbstractSelfFeedingLoader implements EOPHistoryL
                         configuration = itrfVersionLoader.getConfiguration(name, mjd);
                     }
                     history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                             configuration.getVersion()));
+                                             configuration.getVersion(), date));
                     parsed = true;
 
                 }

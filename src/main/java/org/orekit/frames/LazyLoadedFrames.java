@@ -470,7 +470,9 @@ public class LazyLoadedFrames implements Frames {
                         (ShiftingTransformProvider) cirf.getTransformProvider();
                 final CIRFProvider cirfRaw = (CIRFProvider) cirfInterpolating.getRawProvider();
                 final EOPHistory eopHistory = cirfRaw.getEOPHistory();
-                frame = new FactoryManagedFrame(cirf, new TIRFProvider(eopHistory), false, factoryKey);
+                final TIRFProvider provider =
+                        new TIRFProvider(eopHistory, timeScales.getUT1(eopHistory));
+                frame = new FactoryManagedFrame(cirf, provider, false, factoryKey);
                 frames.put(factoryKey, frame);
             }
 
@@ -538,7 +540,7 @@ public class LazyLoadedFrames implements Frames {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 frame = new FactoryManagedFrame(getGTOD(IERSConventions.IERS_1996, false, true),
-                        new VEISProvider(), true, factoryKey);
+                        new VEISProvider(timeScales), true, factoryKey);
                 frames.put(factoryKey, frame);
             }
 
@@ -653,7 +655,8 @@ public class LazyLoadedFrames implements Frames {
                         (ShiftingTransformProvider) tod.getTransformProvider();
                 final TODProvider       todRaw     = (TODProvider) todInterpolating.getRawProvider();
                 final EOPHistory        eopHistory = todRaw.getEOPHistory();
-                final GTODProvider      gtodRaw    = new GTODProvider(conventions, eopHistory);
+                final GTODProvider      gtodRaw    =
+                        new GTODProvider(conventions, eopHistory, timeScales);
                 final TransformProvider gtodShifting =
                         new ShiftingTransformProvider(gtodRaw,
                                 CartesianDerivativesFilter.USE_PVA,

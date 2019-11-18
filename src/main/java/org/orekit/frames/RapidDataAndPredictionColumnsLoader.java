@@ -28,14 +28,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.MathUtils;
-import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 
 /** Loader for IERS rapid data and prediction files in columns format (finals file).
@@ -62,7 +61,7 @@ import org.orekit.utils.IERSConventions;
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals2000A">finals2000A file format description at USNO</a>
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals">finals file format description at USNO</a>
  */
-class RapidDataAndPredictionColumnsLoader extends AbstractSelfFeedingLoader
+class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
         implements EOPHistoryLoader {
 
     /** Conversion factor. */
@@ -141,11 +140,13 @@ class RapidDataAndPredictionColumnsLoader extends AbstractSelfFeedingLoader
      * corrections
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to EOP data files.
+     * @param utc UTC time scale.
      */
     RapidDataAndPredictionColumnsLoader(final boolean isNonRotatingOrigin,
                                         final String supportedNames,
-                                        final DataProvidersManager manager) {
-        super(supportedNames, manager);
+                                        final DataProvidersManager manager,
+                                        final TimeScale utc) {
+        super(supportedNames, manager, utc);
         this.isNonRotatingOrigin = isNonRotatingOrigin;
     }
 
@@ -285,15 +286,15 @@ class RapidDataAndPredictionColumnsLoader extends AbstractSelfFeedingLoader
                 // parse the nutation part
                 final double[] nro;
                 final double[] equinox;
+                final AbsoluteDate mjdDate =
+                        new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                getUtc());
                 if (nutationPart.trim().length() == 0) {
                     // nutation part is blank
                     nro     = new double[2];
                     equinox = new double[2];
                 } else {
                     final Matcher nutationMatcher = NUTATION_PATTERN.matcher(nutationPart);
-                    final AbsoluteDate mjdDate =
-                            new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                             TimeScalesFactory.getUTC());
                     if (nutationMatcher.matches()) {
                         if (isNonRotatingOrigin) {
                             nro = new double[] {
@@ -319,7 +320,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractSelfFeedingLoader
                     configuration = itrfVersionLoader.getConfiguration(name, mjd);
                 }
                 history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                         configuration.getVersion()));
+                                         configuration.getVersion(), mjdDate));
 
             }
 

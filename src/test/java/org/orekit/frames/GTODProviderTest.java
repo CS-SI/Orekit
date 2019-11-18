@@ -36,6 +36,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -208,7 +209,8 @@ public class GTODProviderTest {
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
         GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
-                                                 FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+                                                 FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                                                 DataContext.getDefault().getTimeScales());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);

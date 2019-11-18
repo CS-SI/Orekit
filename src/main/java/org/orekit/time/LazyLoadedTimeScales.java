@@ -1,14 +1,9 @@
 package org.orekit.time;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.LazyLoadedEop;
 import org.orekit.utils.IERSConventions;
@@ -25,16 +20,11 @@ import org.orekit.utils.IERSConventions;
  */
 public class LazyLoadedTimeScales implements TimeScales {
 
-    /** Source of auxiliary data files when new ones are needed. */
-    private final DataProvidersManager dataProvidersManager;
     /** Source of EOP data. */
     private final LazyLoadedEop lazyLoadedEop;
 
     /** International Atomic Time scale. */
     private TAIScale tai = null;
-
-    /** Universal Time Coordinate scale. */
-    private UTCScale utc = null;
 
     /** Universal Time 1 scale (tidal effects ignored). */
     private Map<IERSConventions, UT1Scale> ut1MapSimpleEOP = new HashMap<>();
@@ -69,9 +59,6 @@ public class LazyLoadedTimeScales implements TimeScales {
     /** Greenwich Mean Sidereal Time scale. */
     private GMSTScale gmst = null;
 
-    /** UTCTAI offsets loaders. */
-    private List<UTCTAIOffsetsLoader> loaders = new ArrayList<>();
-
     /** IRNSS System Time scale. */
     private IRNSSScale irnss = null;
 
@@ -87,21 +74,6 @@ public class LazyLoadedTimeScales implements TimeScales {
      *                      #getUT1(IERSConventions, boolean)}.
      */
     public LazyLoadedTimeScales(final LazyLoadedEop lazyLoadedEop) {
-        this(lazyLoadedEop.getDataProvidersManager(), lazyLoadedEop);
-    }
-
-
-    /**
-     * Create a new set of time scales with the given sources of auxiliary data.
-     *
-     * @param dataProvidersManager source of auxiliary data files, e.g. for leap second
-     *                             files.
-     * @param lazyLoadedEop        loads Earth Orientation Parameters for {@link
-     *                             #getUT1(IERSConventions, boolean)}.
-     */
-    public LazyLoadedTimeScales(final DataProvidersManager dataProvidersManager,
-                                final LazyLoadedEop lazyLoadedEop) {
-        this.dataProvidersManager = dataProvidersManager;
         this.lazyLoadedEop = lazyLoadedEop;
     }
 
@@ -117,7 +89,7 @@ public class LazyLoadedTimeScales implements TimeScales {
      * @since 7.1
      */
     public void addUTCTAIOffsetsLoader(final UTCTAIOffsetsLoader loader) {
-        loaders.add(loader);
+        lazyLoadedEop.addUTCTAIOffsetsLoader(loader);
     }
 
     /**
@@ -143,8 +115,7 @@ public class LazyLoadedTimeScales implements TimeScales {
      * @since 7.1
      */
     public void addDefaultUTCTAIOffsetsLoaders() {
-        addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES, dataProvidersManager));
-        addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader(dataProvidersManager));
+        lazyLoadedEop.addDefaultUTCTAIOffsetsLoaders();
     }
 
     /**
@@ -156,7 +127,7 @@ public class LazyLoadedTimeScales implements TimeScales {
      * @since 7.1
      */
     public void clearUTCTAIOffsetsLoaders() {
-        loaders.clear();
+        lazyLoadedEop.clearUTCTAIOffsetsLoaders();
     }
 
     @Override
@@ -175,25 +146,7 @@ public class LazyLoadedTimeScales implements TimeScales {
     @Override
     public UTCScale getUTC() {
         synchronized (this) {
-
-            if (utc == null) {
-                List<OffsetModel> entries = Collections.emptyList();
-                if (loaders.isEmpty()) {
-                    addDefaultUTCTAIOffsetsLoaders();
-                }
-                for (UTCTAIOffsetsLoader loader : loaders) {
-                    entries = loader.loadOffsets();
-                    if (!entries.isEmpty()) {
-                        break;
-                    }
-                }
-                if (entries.isEmpty()) {
-                    throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
-                }
-                utc = new UTCScale(entries);
-            }
-
-            return utc;
+            return lazyLoadedEop.getUTC();
         }
     }
 
