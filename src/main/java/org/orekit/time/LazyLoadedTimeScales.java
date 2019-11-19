@@ -349,4 +349,70 @@ public class LazyLoadedTimeScales implements TimeScales {
         }
     }
 
+    @Override
+    public AbsoluteDate getJulianEpoch() {
+        return new AbsoluteDate(DateComponents.JULIAN_EPOCH, TimeComponents.H12, this.getTT());
+    }
+
+    @Override
+    public AbsoluteDate getModifiedJulianEpoch() {
+        return new AbsoluteDate(DateComponents.MODIFIED_JULIAN_EPOCH, TimeComponents.H00, this.getTT());
+    }
+
+    @Override
+    public AbsoluteDate getFiftiesEpoch() {
+        return new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeComponents.H00, this.getTT());
+    }
+
+    @Override
+    public AbsoluteDate getCcsdsEpoch() {
+        return new AbsoluteDate(DateComponents.CCSDS_EPOCH, TimeComponents.H00, this.getTAI());
+    }
+
+    @Override
+    public AbsoluteDate getGalileoEpoch() {
+        return new AbsoluteDate(DateComponents.GALILEO_EPOCH, TimeComponents.H00, this.getGST());
+    }
+
+    @Override
+    public AbsoluteDate getGpsEpoch() {
+        return new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, this.getGPS());
+    }
+
+    @Override
+    public AbsoluteDate getQzssEpoch() {
+        return new AbsoluteDate(DateComponents.QZSS_EPOCH, TimeComponents.H00, this.getQZSS());
+    }
+
+    @Override
+    public AbsoluteDate getBeidouEpoch() {
+        return new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, this.getBDT());
+    }
+
+    @Override
+    public AbsoluteDate getGlonassEpoch() {
+        return new AbsoluteDate(DateComponents.GLONASS_EPOCH,
+                new TimeComponents(29.0), this.getTAI()).shiftedBy(-10800.0);
+    }
+
+    @Override
+    public AbsoluteDate getJ2000Epoch() {
+        return new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, this.getTT());
+    }
+
+    @Override
+    public AbsoluteDate getJavaEpoch() {
+        return new AbsoluteDate(DateComponents.JAVA_EPOCH, this.getTAI()).shiftedBy(8.000082);
+    }
+
+    @Override
+    public AbsoluteDate getPastInfinity() {
+        return getJavaEpoch().shiftedBy(Double.NEGATIVE_INFINITY);
+    }
+
+    @Override
+    public AbsoluteDate getFutureInfinity() {
+        return getJavaEpoch().shiftedBy(Double.POSITIVE_INFINITY);
+    }
+
 }

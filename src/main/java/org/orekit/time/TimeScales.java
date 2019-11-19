@@ -138,4 +138,109 @@ public interface TimeScales {
      * @return BeiDou Navigation Satellite System time scale
      */
     BDTScale getBDT();
+
+    /**
+     * Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
+     * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes
+     * follow the astronomical conventions and consider a year 0 between years -1 and +1,
+     * hence this reference date lies in year -4712 and not in year -4713 as can be seen
+     * in other documents or programs that obey a different convention (for example the
+     * <code>convcal</code> utility).</p>
+     *
+     * @return Julian epoch.
+     */
+    AbsoluteDate getJulianEpoch();
+
+    /**
+     * Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time.
+     *
+     * @return Modified Julian Epoch
+     */
+    AbsoluteDate getModifiedJulianEpoch();
+
+    /**
+     * Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time.
+     *
+     * @return Fifties Epoch
+     */
+    AbsoluteDate getFiftiesEpoch();
+
+    /**
+     * Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4): 1958-01-01T00:00:00
+     * International Atomic Time (<em>not</em> UTC).
+     *
+     * @return CCSDS Epoch
+     */
+    AbsoluteDate getCcsdsEpoch();
+
+    /**
+     * Reference epoch for Galileo System Time: 1999-08-22T00:00:00 GST.
+     *
+     * @return Galileo Epoch
+     */
+    AbsoluteDate getGalileoEpoch();
+
+    /**
+     * Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time.
+     *
+     * @return GPS Epoch
+     */
+    AbsoluteDate getGpsEpoch();
+
+    /**
+     * Reference epoch for QZSS weeks: 1980-01-06T00:00:00 QZSS time.
+     *
+     * @return QZSS Epoch
+     */
+    AbsoluteDate getQzssEpoch();
+
+    /**
+     * Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC.
+     *
+     * @return Beidou Epoch
+     */
+    AbsoluteDate getBeidouEpoch();
+
+    /**
+     * Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00 GLONASS
+     * time.
+     * <p>By convention, TGLONASS = UTC + 3 hours.</p>
+     *
+     * @return GLONASS Epoch
+     */
+    AbsoluteDate getGlonassEpoch();
+
+    /**
+     * J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
+     *
+     * @return J2000 Epoch
+     * @see AbsoluteDate#createJulianEpoch(double)
+     * @see AbsoluteDate#createBesselianEpoch(double)
+     */
+    AbsoluteDate getJ2000Epoch();
+
+    /**
+     * Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate.
+     * <p>
+     * Between 1968-02-01 and 1972-01-01, UTC-TAI = 4.213 170 0s + (MJD - 39 126) x 0.002
+     * 592s. As on 1970-01-01 MJD = 40587, UTC-TAI = 8.000082s
+     * </p>
+     *
+     * @return Java Epoch
+     */
+    AbsoluteDate getJavaEpoch();
+
+    /**
+     * Dummy date at infinity in the past direction.
+     *
+     * @return the earliest date.
+     */
+    AbsoluteDate getPastInfinity();
+
+    /**
+     * Dummy date at infinity in the future direction.
+     *
+     * @return the latest date.
+     */
+    AbsoluteDate getFutureInfinity();
 }
