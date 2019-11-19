@@ -1,9 +1,14 @@
 package org.orekit.time;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.orekit.data.DataProvidersManager;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.LazyLoadedEop;
 import org.orekit.utils.IERSConventions;
@@ -22,6 +27,11 @@ public class LazyLoadedTimeScales implements TimeScales {
 
     /** Source of EOP data. */
     private final LazyLoadedEop lazyLoadedEop;
+
+    /** UTCTAI offsets loaders. */
+    private final List<UTCTAIOffsetsLoader> loaders = new ArrayList<>();
+    /** Universal Time Coordinate scale. */
+    private UTCScale utc = null;
 
     /** International Atomic Time scale. */
     private TAIScale tai = null;
@@ -89,7 +99,9 @@ public class LazyLoadedTimeScales implements TimeScales {
      * @since 7.1
      */
     public void addUTCTAIOffsetsLoader(final UTCTAIOffsetsLoader loader) {
-        lazyLoadedEop.addUTCTAIOffsetsLoader(loader);
+        synchronized (this) {
+            loaders.add(loader);
+        }
     }
 
     /**
@@ -115,7 +127,12 @@ public class LazyLoadedTimeScales implements TimeScales {
      * @since 7.1
      */
     public void addDefaultUTCTAIOffsetsLoaders() {
-        lazyLoadedEop.addDefaultUTCTAIOffsetsLoaders();
+        synchronized (this) {
+            final DataProvidersManager dataProvidersManager =
+                    lazyLoadedEop.getDataProvidersManager();
+            addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES, dataProvidersManager));
+            addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader(dataProvidersManager));
+        }
     }
 
     /**
@@ -127,7 +144,9 @@ public class LazyLoadedTimeScales implements TimeScales {
      * @since 7.1
      */
     public void clearUTCTAIOffsetsLoaders() {
-        lazyLoadedEop.clearUTCTAIOffsetsLoaders();
+        synchronized (this) {
+            loaders.clear();
+        }
     }
 
     @Override
@@ -146,7 +165,24 @@ public class LazyLoadedTimeScales implements TimeScales {
     @Override
     public UTCScale getUTC() {
         synchronized (this) {
-            return lazyLoadedEop.getUTC();
+            if (utc == null) {
+                List<OffsetModel> entries = Collections.emptyList();
+                if (loaders.isEmpty()) {
+                    addDefaultUTCTAIOffsetsLoaders();
+                }
+                for (UTCTAIOffsetsLoader loader : loaders) {
+                    entries = loader.loadOffsets();
+                    if (!entries.isEmpty()) {
+                        break;
+                    }
+                }
+                if (entries.isEmpty()) {
+                    throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
+                }
+                utc = new UTCScale(entries);
+            }
+
+            return utc;
         }
     }
 

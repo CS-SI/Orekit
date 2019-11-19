@@ -90,7 +90,8 @@ public class LazyLoadedFrames implements Frames {
                 rapidDataXMLSupportedNames,
                 eopC04SupportedNames,
                 bulletinBSupportedNames,
-                bulletinASupportedNames);
+                bulletinASupportedNames,
+                timeScales.getUTC());
     }
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
@@ -126,7 +127,8 @@ public class LazyLoadedFrames implements Frames {
                 rapidDataXMLSupportedNames,
                 eopC04SupportedNames,
                 bulletinBSupportedNames,
-                bulletinASupportedNames);
+                bulletinASupportedNames,
+                timeScales.getUTC());
     }
 
     /** Add a loader for Earth Orientation Parameters history.

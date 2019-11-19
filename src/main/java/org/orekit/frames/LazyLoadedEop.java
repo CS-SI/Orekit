@@ -1,7 +1,6 @@
 package org.orekit.frames;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,22 +9,16 @@ import java.util.TreeSet;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.time.ChronologicalComparator;
-import org.orekit.time.OffsetModel;
-import org.orekit.time.TAIUTCDatFilesLoader;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
-import org.orekit.time.UTCScale;
-import org.orekit.time.UTCTAIBulletinAFilesLoader;
-import org.orekit.time.UTCTAIHistoryFilesLoader;
-import org.orekit.time.UTCTAIOffsetsLoader;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
- * Loads Earth Orientation Parameters (EOP) and leap seconds from a configured set of
- * {@link EOPHistoryLoader}s and {@link UTCTAIOffsetsLoader}s on demand. Methods are
- * synchronized to it is safe for access from multiple threads.
+ * Loads Earth Orientation Parameters (EOP)from a configured set of {@link
+ * EOPHistoryLoader}s on demand. Methods are synchronized to it is safe for access from
+ * multiple threads.
  *
  * @author Guylaine Prat
  * @author Luc Maisonobe
@@ -43,11 +36,6 @@ public class LazyLoadedEop {
     private final Map<IERSConventions, List<EOPHistoryLoader>> eopHistoryLoaders;
     /** Threshold for EOP continuity. */
     private double eopContinuityThreshold;
-
-    /** UTCTAI offsets loaders. */
-    private final List<UTCTAIOffsetsLoader> loaders = new ArrayList<>();
-    /** Universal Time Coordinate scale. */
-    private UTCScale utc = null;
 
     /**
      * Create a new instance for loading EOP data from multiple {@link
@@ -92,17 +80,18 @@ public class LazyLoadedEop {
      * @param bulletinASupportedNames        regular expression for supported bulletin A
      *                                       files names (may be null if the default IERS
      *                                       file names are used)
+     * @param utc                            UTC time scale.
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, TimeScale)
      */
     public void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                 final String rapidDataXMLSupportedNames,
                                                 final String eopC04SupportedNames,
                                                 final String bulletinBSupportedNames,
-                                                final String bulletinASupportedNames) {
-        final UTCScale utc = getUTC();
+                                                final String bulletinASupportedNames,
+                                                final TimeScale utc) {
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
                         FramesFactory.RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME :
@@ -157,17 +146,19 @@ public class LazyLoadedEop {
      * @param bulletinASupportedNames        regular expression for supported bulletin A
      *                                       files names (may be null if the default IERS
      *                                       file names are used)
+     * @param utc                            UTC time scale.
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String,
+     * TimeScale)
      */
     public void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                 final String rapidDataXMLSupportedNames,
                                                 final String eopC04SupportedNames,
                                                 final String bulletinBSupportedNames,
-                                                final String bulletinASupportedNames) {
-        final UTCScale utc = getUTC();
+                                                final String bulletinASupportedNames,
+                                                final TimeScale utc) {
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
                         FramesFactory.RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME :
@@ -216,7 +207,7 @@ public class LazyLoadedEop {
      *
      * @param conventions IERS conventions to which EOP history applies
      * @param loader      custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, TimeScale)
      * @see #clearEOPHistoryLoaders()
      */
     public void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
@@ -232,7 +223,7 @@ public class LazyLoadedEop {
      * Clear loaders for Earth Orientation Parameters history.
      *
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, TimeScale)
      */
     public void clearEOPHistoryLoaders() {
         synchronized (eopHistoryLoaders) {
@@ -260,20 +251,22 @@ public class LazyLoadedEop {
         eopContinuityThreshold = threshold;
     }
 
-    /** Get Earth Orientation Parameters history.
+    /**
+     * Get Earth Orientation Parameters history.
      * <p>
      * If no {@link EOPHistoryLoader} has been added by calling {@link
      * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader} or if
      * {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been called
      * afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String, String,
-     * String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String, String,
-     * String, String, String)} methods will be called automatically with supported file
-     * names parameters all set to null, in order to get the default loaders
-     * configuration.
+     * String, String, TimeScale)} and {@link #addDefaultEOP2000HistoryLoaders(String,
+     * String, String, String, String, TimeScale)} methods will be called automatically
+     * with supported file names parameters all set to null, in order to get the default
+     * loaders configuration.
      * </p>
+     *
      * @param conventions conventions for which EOP history is requested
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param timeScales to use when loading EOP and computing corrections.
+     * @param simpleEOP   if true, tidal effects are ignored when interpolating EOP
+     * @param timeScales  to use when loading EOP and computing corrections.
      * @return Earth Orientation Parameters history
      */
     public EOPHistory getEOPHistory(final IERSConventions conventions,
@@ -284,8 +277,9 @@ public class LazyLoadedEop {
 
             if (eopHistoryLoaders.isEmpty()) {
                 // set up using default loaders
-                addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
-                addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
+                final TimeScale utc = timeScales.getUTC();
+                addDefaultEOP2000HistoryLoaders(null, null, null, null, null, utc);
+                addDefaultEOP1980HistoryLoaders(null, null, null, null, null, utc);
             }
 
             // TimeStamped based set needed to remove duplicates
@@ -314,100 +308,6 @@ public class LazyLoadedEop {
 
         }
 
-    }
-
-    /* UTC loading */
-
-    /**
-     * Add a loader for UTC-TAI offsets history files.
-     *
-     * @param loader custom loader to add
-     * @see TAIUTCDatFilesLoader
-     * @see UTCTAIHistoryFilesLoader
-     * @see UTCTAIBulletinAFilesLoader
-     * @see #getUTC()
-     * @see #clearUTCTAIOffsetsLoaders()
-     * @since 7.1
-     */
-    public void addUTCTAIOffsetsLoader(final UTCTAIOffsetsLoader loader) {
-        synchronized (loaders) {
-            loaders.add(loader);
-        }
-    }
-
-    /**
-     * Add the default loaders for UTC-TAI offsets history files (both IERS and USNO).
-     * <p>
-     * The default loaders are {@link TAIUTCDatFilesLoader} that looks for a file named
-     * {@code tai-utc.dat} that must be in USNO format and {@link
-     * UTCTAIHistoryFilesLoader} that looks fir a file named {@code UTC-TAI.history} that
-     * must be in the IERS format. The {@link UTCTAIBulletinAFilesLoader} is
-     * <em>not</em> added by default as it is not recommended. USNO warned us that
-     * the TAI-UTC data present in bulletin A was for convenience only and was not
-     * reliable, there have been errors in several bulletins regarding these data.
-     * </p>
-     *
-     * @see <a href="http://maia.usno.navy.mil/ser7/tai-utc.dat">USNO tai-utc.dat
-     * file</a>
-     * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history">IERS
-     * UTC-TAI.history file</a>
-     * @see TAIUTCDatFilesLoader
-     * @see UTCTAIHistoryFilesLoader
-     * @see #getUTC()
-     * @see #clearUTCTAIOffsetsLoaders()
-     * @since 7.1
-     */
-    public void addDefaultUTCTAIOffsetsLoaders() {
-        synchronized (loaders) {
-            addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES, dataProvidersManager));
-            addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader(dataProvidersManager));
-        }
-    }
-
-    /**
-     * Clear loaders for UTC-TAI offsets history files.
-     *
-     * @see #getUTC()
-     * @see #addUTCTAIOffsetsLoader(UTCTAIOffsetsLoader)
-     * @see #addDefaultUTCTAIOffsetsLoaders()
-     * @since 7.1
-     */
-    public void clearUTCTAIOffsetsLoaders() {
-        synchronized (loaders) {
-            loaders.clear();
-        }
-    }
-
-    /**
-     * Get the UTC time scale. In most cases {@link TimeScales#getUTC()} should be used
-     * instead. This method is used to created the default EOP loaders before {@link
-     * TimeScales} is fully set up.
-     *
-     * @return the UTC time scale.
-     * @see TimeScales
-     */
-    public UTCScale getUTC() {
-        synchronized (loaders) {
-
-            if (utc == null) {
-                List<OffsetModel> entries = Collections.emptyList();
-                if (loaders.isEmpty()) {
-                    addDefaultUTCTAIOffsetsLoaders();
-                }
-                for (UTCTAIOffsetsLoader loader : loaders) {
-                    entries = loader.loadOffsets();
-                    if (!entries.isEmpty()) {
-                        break;
-                    }
-                }
-                if (entries.isEmpty()) {
-                    throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
-                }
-                utc = new UTCScale(entries);
-            }
-
-            return utc;
-        }
     }
 
 }

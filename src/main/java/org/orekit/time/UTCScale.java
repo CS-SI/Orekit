@@ -55,7 +55,7 @@ public class UTCScale implements TimeScale {
      * table that is shared among all instances.
      * @param offsetModels UTC-TAI offsets
      */
-    public UTCScale(final List<OffsetModel> offsetModels) {
+    UTCScale(final List<OffsetModel> offsetModels) {
 
         if (offsetModels.get(0).getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually
