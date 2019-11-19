@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss;
 
+import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -66,8 +67,14 @@ public class GLONASSEphemeris implements GLONASSOrbitalElements {
     /** ECEF-Z component of satellite acceleration. */
     private final double zDotDot;
 
+    /** Date of applicability. */
+    private final AbsoluteDate date;
+
     /**
      * Build a new instance.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param n4 number of the current four year interval
      * @param nt number of the current day in a four year interval
      * @param tb reference time, s
@@ -80,11 +87,42 @@ public class GLONASSEphemeris implements GLONASSOrbitalElements {
      * @param z ECEF-Z component of satellite coordinates, m
      * @param zDot ECEF-Z component of satellite velocity, m/s
      * @param zDotDot ECEF-Z component of satellite acceleration, m/s²
+     * @see #GLONASSEphemeris(int, int, double, double, double, double, double, double,
+     * double, double, double, double, AbsoluteDate)
      */
     public GLONASSEphemeris(final int n4, final int nt, final double tb,
-                             final double x, final double xDot, final double xDotDot,
-                             final double y, final double yDot, final double yDotDot,
-                             final double z, final double zDot, final double zDotDot) {
+                            final double x, final double xDot, final double xDotDot,
+                            final double y, final double yDot, final double yDotDot,
+                            final double z, final double zDot, final double zDotDot) {
+        this(n4, nt, tb, x, xDot, xDotDot, y, yDot, yDotDot, z, zDot, zDotDot,
+            new GLONASSDate(nt, n4, tb,
+                    DataContext.getDefault().getTimeScales().getGLONASS()).getDate());
+    }
+
+    /**
+     * Build a new instance.
+     *
+     * @param n4      number of the current four year interval
+     * @param nt      number of the current day in a four year interval
+     * @param tb      reference time, s
+     * @param x       ECEF-X component of satellite coordinates, m
+     * @param xDot    ECEF-X component of satellite velocity, m/s
+     * @param xDotDot ECEF-X component of satellite acceleration, m/s²
+     * @param y       ECEF-Y component of satellite coordinates, m
+     * @param yDot    ECEF-Y component of satellite velocity, m/s
+     * @param yDotDot ECEF-Y component of satellite acceleration, m/s²
+     * @param z       ECEF-Z component of satellite coordinates, m
+     * @param zDot    ECEF-Z component of satellite velocity, m/s
+     * @param zDotDot ECEF-Z component of satellite acceleration, m/s²
+     * @param date    of applicability corresponding to {@code nt}, {@code n4}, and {@code
+     *                tb}.
+     * @since 10.1
+     */
+    public GLONASSEphemeris(final int n4, final int nt, final double tb,
+                            final double x, final double xDot, final double xDotDot,
+                            final double y, final double yDot, final double yDotDot,
+                            final double z, final double zDot, final double zDotDot,
+                            final AbsoluteDate date) {
         this.n4 = n4;
         this.nt = nt;
         this.tb = tb;
@@ -97,11 +135,12 @@ public class GLONASSEphemeris implements GLONASSOrbitalElements {
         this.z = z;
         this.zDot = zDot;
         this.zDotDot = zDotDot;
+        this.date = date;
     }
 
     @Override
     public AbsoluteDate getDate() {
-        return new GLONASSDate(nt, n4, tb).getDate();
+        return date;
     }
 
     @Override

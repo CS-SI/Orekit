@@ -32,6 +32,9 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScales;
 
 
 /**
@@ -71,6 +74,9 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
     /** the list of all the PRN numbers of all the almanacs read from the file. */
     private final List<Integer> prnList;
 
+    /** Set of time scales to use. */
+    private final TimeScales timeScales;
+
     /** Simple constructor.
      *
      * <p>This constructor does not load any data by itself. Data must be loaded
@@ -87,10 +93,12 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
      * @param supportedNames regular expression for supported files names
      * (if null, a default pattern matching files with a ".al3" extension will be used)
      * @see #loadData()
-     * @see #SEMParser(String, DataProvidersManager)
+     * @see #SEMParser(String, DataProvidersManager, TimeScales)
      */
     public SEMParser(final String supportedNames) {
-        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+        this(supportedNames,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales());
     }
 
     /**
@@ -110,15 +118,18 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
      * @param supportedNames regular expression for supported files names
      * (if null, a default pattern matching files with a ".al3" extension will be used)
      * @param dataProvidersManager provides access to auxiliary data.
+     * @param timeScales to use when parsing the GPS dates.
      * @see #loadData()
      * @since 10.1
      */
     public SEMParser(final String supportedNames,
-                     final DataProvidersManager dataProvidersManager) {
+                     final DataProvidersManager dataProvidersManager,
+                     final TimeScales timeScales) {
         super((supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames,
                 dataProvidersManager);
         this.almanacs = new ArrayList<>();
         this.prnList = new ArrayList<>();
+        this.timeScales = timeScales;
     }
 
     /**
@@ -250,8 +261,12 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
             final int conf = Integer.parseInt(token[0].trim());
 
             // Adds the almanac to the list
+            final AbsoluteDate date =
+                    new GNSSDate(week, toa * 1000, SatelliteSystem.GPS, timeScales)
+                            .getDate();
             almanacs.add(new GPSAlmanac(SOURCE, prn, svn, week, toa, sqa, ecc, inc, om0,
-                                        dom, aop, anom, af0, af1, health, ura, conf));
+                                        dom, aop, anom, af0, af1, health, ura, conf,
+                                        date));
 
             // Adds the PRN to the list
             prnList.add(prn);

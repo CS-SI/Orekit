@@ -19,6 +19,7 @@ package org.orekit.time;
 import java.io.Serializable;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.utils.Constants;
 
@@ -59,11 +60,31 @@ public class GLONASSDate implements Serializable, TimeStamped {
     private final transient AbsoluteDate date;
 
     /** Build an instance corresponding to a GLONASS date.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param na the number of the current day in a four year interval
      * @param n4 the number of the current four year interval
      * @param secInNa the number of seconds since na start
+     * @see #GLONASSDate(int, int, double, TimeScale)
      */
     public GLONASSDate(final int na, final int n4, final double secInNa) {
+        this(na, n4, secInNa, DataContext.getDefault().getTimeScales().getGLONASS());
+    }
+
+    /**
+     * Build an instance corresponding to a GLONASS date.
+     *
+     * @param na      the number of the current day in a four year interval
+     * @param n4      the number of the current four year interval
+     * @param secInNa the number of seconds since na start
+     * @param glonass time scale.
+     * @since 10.1
+     */
+    public GLONASSDate(final int na,
+                       final int n4,
+                       final double secInNa,
+                       final TimeScale glonass) {
         this.na      = na;
         this.n4      = n4;
         this.secInNa = secInNa;
@@ -72,20 +93,35 @@ public class GLONASSDate implements Serializable, TimeStamped {
         this.jd0  = 1461 * (n4 - 1) + na + 2450082.5 - ratio;
         // GMST
         this.gmst = computeGMST();
-        this.date = computeDate();
+        this.date = computeDate(glonass);
     }
 
     /** Build an instance from an absolute date.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param date absolute date to consider
+     * @see #GLONASSDate(AbsoluteDate, TimeScale)
      */
     public GLONASSDate(final AbsoluteDate date) {
-        final DateTimeComponents dateTime = date.getComponents(TimeScalesFactory.getGLONASS());
+        this(date, DataContext.getDefault().getTimeScales().getGLONASS());
+    }
+
+    /**
+     * Build an instance from an absolute date.
+     *
+     * @param date    absolute date to consider
+     * @param glonass time scale.
+     * @since 10.1
+     */
+    public GLONASSDate(final AbsoluteDate date, final TimeScale glonass) {
+        final DateTimeComponents dateTime = date.getComponents(glonass);
         // N4
         final int year = dateTime.getDate().getYear();
-        this.n4   = ((int) (year - 1996) / 4) + 1;
+        this.n4 = ((int) (year - 1996) / 4) + 1;
         // Na
         final int start = 1996 + 4 * (n4 - 1);
-        final double duration = date.durationFrom(new AbsoluteDate(start, 1, 1, TimeScalesFactory.getGLONASS()));
+        final double duration = date.durationFrom(new AbsoluteDate(start, 1, 1, glonass));
         this.na = (int) (duration / 86400) + 1;
         this.secInNa = dateTime.getTime().getSecondsInLocalDay();
         // Compute JD0
@@ -159,8 +195,9 @@ public class GLONASSDate implements Serializable, TimeStamped {
 
     /** Compute the GLONASS date.
      * @return the date
+     * @param glonass time scale.
      */
-    private AbsoluteDate computeDate() {
+    private AbsoluteDate computeDate(final TimeScale glonass) {
         // Compute the number of Julian day for the current date
         final double jdn = jd0 + 0.5;
         // Coefficients
@@ -176,7 +213,7 @@ public class GLONASSDate implements Serializable, TimeStamped {
         final int year  = 100 * b + d - 4800 + m / 10;
         return new AbsoluteDate(new DateComponents(year, month, day),
                                 new TimeComponents(secInNa),
-                                TimeScalesFactory.getGLONASS());
+                                glonass);
     }
 
     /** Replace the instance with a data transfer object for serialization.

@@ -103,7 +103,7 @@ public class SEMParserTest {
         Assert.assertEquals(0, alm.getURA());
         Assert.assertEquals(11, alm.getSatConfiguration());
         Assert.assertEquals("SEM", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(new GNSSDate(862, 319488 * 1000., SatelliteSystem.GPS).getDate()) == 0);
+        Assert.assertEquals(alm.getDate().durationFrom(new GNSSDate(862, 319488 * 1000., SatelliteSystem.GPS).getDate()), 0, 0);
         Assert.assertEquals(0., alm.getCic(), 0.);
         Assert.assertEquals(0., alm.getCis(), 0.);
         Assert.assertEquals(0., alm.getCrc(), 0.);
