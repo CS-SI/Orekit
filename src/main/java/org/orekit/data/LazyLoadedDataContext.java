@@ -5,7 +5,6 @@ import org.orekit.forces.gravity.potential.LazyLoadedGravityFields;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LazyLoadedEop;
 import org.orekit.frames.LazyLoadedFrames;
-import org.orekit.models.earth.GeoMagneticFields;
 import org.orekit.models.earth.LazyLoadedGeoMagneticFields;
 import org.orekit.time.LazyLoadedTimeScales;
 
@@ -21,12 +20,14 @@ public class LazyLoadedDataContext implements DataContext {
 
     /** The data provider manager. */
     private final DataProvidersManager dataProvidersManager;
+    /** EOP loader. */
+    private final LazyLoadedEop eop;
     /** The time scales. */
     private final LazyLoadedTimeScales timeScales;
     /** The reference frames. */
-    private final LazyLoadedFrames frames;
+    private LazyLoadedFrames frames;
     /** The celestial bodies. */
-    private final LazyLoadedCelestialBodies bodies;
+    private LazyLoadedCelestialBodies bodies;
     /** The gravity fields. */
     private final LazyLoadedGravityFields gravityFields;
     /** The magnetic fields. */
@@ -38,14 +39,13 @@ public class LazyLoadedDataContext implements DataContext {
      */
     public LazyLoadedDataContext() {
         this.dataProvidersManager = new DataProvidersManager();
-        final LazyLoadedEop lazyLoadedEop = new LazyLoadedEop(dataProvidersManager);
-        final Frame gcrf = Frame.getRoot();
-        this.timeScales = new LazyLoadedTimeScales(lazyLoadedEop);
-        this.bodies =
-                new LazyLoadedCelestialBodies(dataProvidersManager, timeScales, gcrf);
-        this.frames = new LazyLoadedFrames(lazyLoadedEop, timeScales, bodies);
+        this.eop = new LazyLoadedEop(dataProvidersManager);
+        this.timeScales = new LazyLoadedTimeScales(eop);
         this.gravityFields = new LazyLoadedGravityFields(dataProvidersManager);
         this.geoMagneticFields = new LazyLoadedGeoMagneticFields(dataProvidersManager);
+        // creating Frames and CelestialBodies here creates an initialization problem for
+        // DataContext.getDefault(). Delay creating them until they are used for the first
+        // time.
     }
 
     /**
@@ -65,12 +65,29 @@ public class LazyLoadedDataContext implements DataContext {
 
     @Override
     public LazyLoadedFrames getFrames() {
-        return frames;
+        if (this.frames == null) {
+            synchronized (this) {
+                if (this.frames == null) {
+                    this.frames = new LazyLoadedFrames(
+                            eop, getTimeScales(), getCelestialBodies());
+                }
+            }
+        }
+        return this.frames;
     }
 
     @Override
     public LazyLoadedCelestialBodies getCelestialBodies() {
-        return bodies;
+        if (this.bodies == null) {
+            synchronized (this) {
+                if (this.bodies == null) {
+                    final Frame gcrf = Frame.getRoot();
+                    this.bodies = new LazyLoadedCelestialBodies(
+                            getDataProvidersManager(), getTimeScales(), gcrf);
+                }
+            }
+        }
+        return this.bodies;
     }
 
     @Override

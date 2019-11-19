@@ -746,7 +746,8 @@ public class LazyLoadedFrames implements Frames {
                         lazyLoadedEop.getEOPHistory(conventions, simpleEOP, timeScales) :
                         null;
                 final TransformProvider shifting =
-                        new ShiftingTransformProvider(new TODProvider(conventions, eopHistory),
+                        new ShiftingTransformProvider(
+                                new TODProvider(conventions, eopHistory, timeScales.getTAI()),
                                 CartesianDerivativesFilter.USE_PVA,
                                 AngularDerivativesFilter.USE_R,
                                 interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
@@ -839,7 +840,8 @@ public class LazyLoadedFrames implements Frames {
                 final Frame tod = getTOD(IERSConventions.IERS_1996, false, true);
                 final ShiftingTransformProvider todShifting =
                         (ShiftingTransformProvider) tod.getTransformProvider();
-                final TEMEProvider temeRaw = new TEMEProvider(IERSConventions.IERS_1996, null);
+                final TEMEProvider temeRaw =
+                        new TEMEProvider(IERSConventions.IERS_1996, null, timeScales.getTAI());
                 final TransformProvider temeShifting =
                         new ShiftingTransformProvider(temeRaw,
                                 CartesianDerivativesFilter.USE_PVA,

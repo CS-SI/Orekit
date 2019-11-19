@@ -79,7 +79,8 @@ public class TEMEProviderTest {
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
         TEMEProvider provider = new TEMEProvider(IERSConventions.IERS_2010,
-                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                                               TimeScalesFactory.getTAI());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);

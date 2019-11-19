@@ -49,7 +49,7 @@ public class TODProviderTest {
     @Test
     public void testRotationRate() {
         TransformProvider provider =
-                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null),
+                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null, TimeScalesFactory.getTAI()),
                                                    CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
@@ -209,7 +209,7 @@ public class TODProviderTest {
         // the points.
         // We finally select 6 interpolation points separated by 1 hour each
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996, false);
-        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory, TimeScalesFactory.getTAI());
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating,
                                                    CartesianDerivativesFilter.USE_PVA,
@@ -263,7 +263,7 @@ public class TODProviderTest {
         // sampling. All values between 3e-15 and 6e-15 are really equivalent: it is
         // mostly numerical noise. The best settings are 6 or 8 points every 2 or 3 hours.
         // We finally select 6 interpolation points separated by 3 hours each
-        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null, TimeScalesFactory.getTAI());
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(nonInterpolating,
                                                            CartesianDerivativesFilter.USE_PVA,
@@ -377,7 +377,8 @@ public class TODProviderTest {
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
         TODProvider provider = new TODProvider(IERSConventions.IERS_2010,
-                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                                               TimeScalesFactory.getTAI());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);

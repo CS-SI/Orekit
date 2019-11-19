@@ -27,8 +27,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.TimeScalarFunction;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 
 /** Provider for True of Date (ToD) frame.
@@ -53,16 +55,41 @@ class TODProvider implements EOPBasedTransformProvider {
     /** Function computing the nutation angles. */
     private final transient TimeVectorFunction nutationFunction;
 
-    /** Simple constructor.
+
+    /**
+     * Simple constructor.
+     *
      * @param conventions IERS conventions to apply
-     * @param eopHistory EOP history
+     * @param eopHistory  EOP history, or {@code null} if no correction should be
+     *                    applied.
+     * @param tai         TAI time scale.
      */
-    TODProvider(final IERSConventions conventions, final EOPHistory eopHistory) {
+    TODProvider(final IERSConventions conventions,
+                final EOPHistory eopHistory,
+                final TimeScale tai) {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
         this.nutationFunction  =
-                conventions.getNutationFunction(eopHistory.getTimeScales().getTAI());
+                conventions.getNutationFunction(tai);
+    }
+
+    /**
+     * Private constructor.
+     *
+     * @param conventions       IERS conventions to use.
+     * @param eopHistory        or {@code null} if no correction should be applied.
+     * @param obliquityFunction to use.
+     * @param nutationFunction  to use.
+     */
+    private TODProvider(final IERSConventions conventions,
+                        final EOPHistory eopHistory,
+                        final TimeScalarFunction obliquityFunction,
+                        final TimeVectorFunction nutationFunction) {
+        this.conventions = conventions;
+        this.eopHistory = eopHistory;
+        this.obliquityFunction = obliquityFunction;
+        this.nutationFunction = nutationFunction;
     }
 
     /** {@inheritDoc} */
@@ -74,7 +101,8 @@ class TODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public TODProvider getNonInterpolatingProvider() {
-        return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
+        return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory(),
+                obliquityFunction, nutationFunction);
     }
 
     /** {@inheritDoc} */
@@ -177,7 +205,7 @@ class TODProvider implements EOPBasedTransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new TODProvider(conventions, eopHistory);
+                return new TODProvider(conventions, eopHistory, TimeScalesFactory.getTAI());
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

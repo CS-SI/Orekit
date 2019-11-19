@@ -498,8 +498,9 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
-            final TimeScale tai = eopHistory.getTimeScales().getTAI();
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1,
+                                                  final EOPHistory eopHistory,
+                                                  final TimeScale tai) {
 
             // obliquity
             final TimeScalarFunction epsilonA = getMeanObliquityFunction();
@@ -1116,7 +1117,9 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1,
+                                                  final EOPHistory eopHistory,
+                                                  final TimeScale tai) {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments();
@@ -1168,9 +1171,7 @@ public enum IERSConventions {
                     PoissonSeries.compile(psiLuniSolarSeries, psiPlanetarySeries, gstSeries);
 
             // ERA function
-            final TimeScalarFunction era = getEarthOrientationAngleFunction(
-                    ut1,
-                    eopHistory.getTimeScales().getTAI());
+            final TimeScalarFunction era = getEarthOrientationAngleFunction(ut1, tai);
 
             return new TimeScalarFunction() {
 
@@ -2190,7 +2191,9 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1,
+                                                  final EOPHistory eopHistory,
+                                                  final TimeScale tai) {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments();
@@ -2217,9 +2220,7 @@ public enum IERSConventions {
             }
 
             // ERA function
-            final TimeScalarFunction era = getEarthOrientationAngleFunction(
-                    ut1,
-                    eopHistory.getTimeScales().getTAI());
+            final TimeScalarFunction era = getEarthOrientationAngleFunction(ut1, tai);
 
             return new TimeScalarFunction() {
 
@@ -2551,13 +2552,40 @@ public enum IERSConventions {
      */
     public abstract TimeScalarFunction getGMSTRateFunction(TimeScale ut1, TimeScale tai);
 
-    /** Get the function computing Greenwich apparent sidereal time, in radians.
-     * @param ut1 UT1 time scale
-     * @param eopHistory EOP history
+    /**
+     * Get the function computing Greenwich apparent sidereal time, in radians.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context} if
+     * {@code eopHistory == null}.
+     *
+     * @param ut1        UT1 time scale
+     * @param eopHistory EOP history. If {@code null} then no nutation correction is
+     *                   applied for EOP.
      * @return function computing Greenwich apparent sidereal time
-          * @since 6.1
+     * @since 6.1
+     * @see #getGASTFunction(TimeScale, EOPHistory, TimeScale)
      */
-    public abstract TimeScalarFunction getGASTFunction(TimeScale ut1, EOPHistory eopHistory);
+    public TimeScalarFunction getGASTFunction(final TimeScale ut1,
+                                              final EOPHistory eopHistory) {
+        final TimeScale tai = eopHistory != null ?
+                eopHistory.getTimeScales().getTAI() :
+                DataContext.getDefault().getTimeScales().getTAI();
+        return getGASTFunction(ut1, eopHistory, tai);
+    }
+
+    /**
+     * Get the function computing Greenwich apparent sidereal time, in radians.
+     *
+     * @param ut1        UT1 time scale
+     * @param eopHistory EOP history. If {@code null} then no nutation correction is
+     *                   applied for EOP.
+     * @param tai        TAI time scale.
+     * @return function computing Greenwich apparent sidereal time
+     * @since 10.1
+     */
+    public abstract TimeScalarFunction getGASTFunction(TimeScale ut1,
+                                                       EOPHistory eopHistory,
+                                                       TimeScale tai);
 
     /** Get the function computing tidal corrections for Earth Orientation Parameters.
      *
