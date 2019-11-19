@@ -43,29 +43,32 @@ public class TCBScale implements TimeScale {
      *   <li>1977-01-01T00:00:00.000 TAI</li>
      * </ul>
      */
-    private static final AbsoluteDate REFERENCE_DATE =
-        new AbsoluteDate(1977, 01, 01, TimeScalesFactory.getTAI());
+    private final AbsoluteDate referenceDate;
 
     /** Barycentric dynamic time scale. */
     private final TDBScale tdb;
 
-    /** Package private constructor for the factory.
+    /**
+     * Package private constructor for the factory.
+     *
      * @param tdb Barycentric dynamic time scale
+     * @param tai TAI time scale.
      */
-    TCBScale(final TDBScale tdb) {
+    TCBScale(final TDBScale tdb, final TimeScale tai) {
         this.tdb = tdb;
+        referenceDate = new AbsoluteDate(1977, 01, 01, tai);
     }
 
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        return tdb.offsetFromTAI(date) + LB_RATE * date.durationFrom(REFERENCE_DATE);
+        return tdb.offsetFromTAI(date) + LB_RATE * date.durationFrom(referenceDate);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return tdb.offsetFromTAI(date).add(date.durationFrom(REFERENCE_DATE).multiply(LB_RATE));
+        return tdb.offsetFromTAI(date).add(date.durationFrom(referenceDate).multiply(LB_RATE));
     }
 
     /** {@inheritDoc} */

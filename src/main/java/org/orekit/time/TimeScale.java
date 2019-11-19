@@ -56,7 +56,7 @@ public interface TimeScale extends Serializable {
      * @see #offsetFromTAI(AbsoluteDate)
      */
     default double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
+        final AbsoluteDate reference = new AbsoluteDate(date, time, new TAIScale());
         double offset = 0;
         for (int i = 0; i < 8; i++) {
             offset = -offsetFromTAI(reference.shiftedBy(offset));

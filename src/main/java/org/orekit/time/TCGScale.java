@@ -43,28 +43,32 @@ public class TCGScale implements TimeScale {
      *   <li>1977-01-01T00:00:00.000 TAI</li>
      * </ul>
      */
-    private static final AbsoluteDate REFERENCE_DATE =
-        new AbsoluteDate(1977, 01, 01, TimeScalesFactory.getTAI());
+    private final AbsoluteDate referenceDate;
 
     /** Offset between TT and TAI scales. */
-    private static final double TT_OFFSET =
-        TimeScalesFactory.getTT().offsetFromTAI(REFERENCE_DATE);
+    private final double ttOffset;
 
-    /** Package private constructor for the factory.
+    /**
+     * Package private constructor for the factory.
+     *
+     * @param tt  TT time scale.
+     * @param tai TAI time scale.
      */
-    TCGScale() {
+    TCGScale(final TimeScale tt, final TimeScale tai) {
+        referenceDate = new AbsoluteDate(1977, 01, 01, tai);
+        ttOffset = tt.offsetFromTAI(referenceDate);
     }
 
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        return TT_OFFSET + LG_RATE * date.durationFrom(REFERENCE_DATE);
+        return ttOffset + LG_RATE * date.durationFrom(referenceDate);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.durationFrom(REFERENCE_DATE).multiply(LG_RATE).add(TT_OFFSET);
+        return date.durationFrom(referenceDate).multiply(LG_RATE).add(ttOffset);
     }
 
     /** {@inheritDoc} */

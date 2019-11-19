@@ -179,7 +179,7 @@ public class LazyLoadedTimeScales implements TimeScales {
                 if (entries.isEmpty()) {
                     throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
                 }
-                utc = new UTCScale(entries);
+                utc = new UTCScale(getTAI(), entries);
             }
 
             return utc;
@@ -276,7 +276,7 @@ public class LazyLoadedTimeScales implements TimeScales {
         synchronized (this) {
 
             if (tcg == null) {
-                tcg = new TCGScale();
+                tcg = new TCGScale(getTT(), getTAI());
             }
 
             return tcg;
@@ -289,7 +289,7 @@ public class LazyLoadedTimeScales implements TimeScales {
         synchronized (this) {
 
             if (tdb == null) {
-                tdb = new TDBScale();
+                tdb = new TDBScale(getTT());
             }
 
             return tdb;
@@ -302,7 +302,7 @@ public class LazyLoadedTimeScales implements TimeScales {
         synchronized (this) {
 
             if (tcb == null) {
-                tcb = new TCBScale(getTDB());
+                tcb = new TCBScale(getTDB(), getTAI());
             }
 
             return tcb;

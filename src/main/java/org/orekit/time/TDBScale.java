@@ -49,9 +49,16 @@ public class TDBScale implements TimeScale {
     /** Factor for sin(2g). */
     private static final double SIN_2G_FACTOR = 0.000014;
 
-    /** Package private constructor for the factory.
+    /** TT time scale. */
+    private final TimeScale tt;
+
+    /**
+     * Package private constructor for the factory.
+     *
+     * @param tt TT time scale.
      */
-    TDBScale() {
+    TDBScale(final TimeScale tt) {
+        this.tt = tt;
     }
 
     /** {@inheritDoc} */
@@ -59,7 +66,7 @@ public class TDBScale implements TimeScale {
     public double offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
         final double g = FastMath.toRadians(G0 + G1 * dtDays);
-        return TimeScalesFactory.getTT().offsetFromTAI(date) + (SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g));
+        return tt.offsetFromTAI(date) + (SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g));
     }
 
     /** {@inheritDoc} */
@@ -67,7 +74,7 @@ public class TDBScale implements TimeScale {
     public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
         final T dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH).divide(Constants.JULIAN_DAY);
         final T g = dtDays.multiply(G1).add(G0).multiply(FastMath.PI / 180);
-        return TimeScalesFactory.getTT().offsetFromTAI(date).
+        return tt.offsetFromTAI(date).
                         add(g.sin().multiply(SIN_G_FACTOR).add(g.multiply(2).sin().multiply(SIN_2G_FACTOR)));
     }
 

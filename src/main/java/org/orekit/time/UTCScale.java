@@ -53,9 +53,10 @@ public class UTCScale implements TimeScale {
      * Used to create the prototype instance of this class that is used to
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
+     * @param tai TAI time scale this UTC time scale references.
      * @param offsetModels UTC-TAI offsets
      */
-    UTCScale(final List<OffsetModel> offsetModels) {
+    UTCScale(final TimeScale tai, final List<OffsetModel> offsetModels) {
 
         if (offsetModels.get(0).getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually
@@ -94,7 +95,6 @@ public class UTCScale implements TimeScale {
         UTCTAIOffset previous = null;
 
         // link the offsets together
-        final TimeScale tai = TimeScalesFactory.getTAI();
         for (int i = 0; i < offsetModels.size(); ++i) {
 
             final OffsetModel    o      = offsetModels.get(i);
@@ -115,7 +115,10 @@ public class UTCScale implements TimeScale {
             final double normalizedSlope   = slope / Constants.JULIAN_DAY;
             final double leap              = leapEnd.durationFrom(leapStart) / (1 + normalizedSlope);
 
-            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, normalizedSlope);
+            final AbsoluteDate reference = AbsoluteDate.createMJDDate(mjdRef, 0, tai)
+                    .shiftedBy(offset);
+            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef,
+                    normalizedSlope, reference);
             offsets[i] = previous;
 
         }
