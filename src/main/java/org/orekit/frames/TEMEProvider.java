@@ -66,7 +66,8 @@ class TEMEProvider implements EOPBasedTransformProvider {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
-        this.nutationFunction  = conventions.getNutationFunction();
+        this.nutationFunction  =
+                conventions.getNutationFunction(eopHistory.getTimeScales().getTAI());
     }
 
     /** {@inheritDoc} */

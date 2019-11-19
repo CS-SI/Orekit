@@ -63,7 +63,9 @@ class TIRFProvider implements EOPBasedTransformProvider {
 
         this.ut1        = ut1;
         this.eopHistory = eopHistory;
-        this.era        = eopHistory.getConventions().getEarthOrientationAngleFunction(ut1);
+        this.era        = eopHistory.getConventions().getEarthOrientationAngleFunction(
+                ut1,
+                eopHistory.getTimeScales().getTAI());
 
     }
 

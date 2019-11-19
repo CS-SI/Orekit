@@ -182,7 +182,7 @@ public class LazyLoadedFrames implements Frames {
     @Override
     public EOPHistory getEOPHistory(final IERSConventions conventions, final boolean simpleEOP) {
 
-        return lazyLoadedEop.getEOPHistory(conventions, simpleEOP);
+        return lazyLoadedEop.getEOPHistory(conventions, simpleEOP, timeScales);
     }
 
     @Override
@@ -512,7 +512,8 @@ public class LazyLoadedFrames implements Frames {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final EOPHistory eopHistory = lazyLoadedEop.getEOPHistory(conventions, simpleEOP);
+                final EOPHistory eopHistory =
+                        lazyLoadedEop.getEOPHistory(conventions, simpleEOP, timeScales);
                 final TransformProvider shifting =
                         new ShiftingTransformProvider(new CIRFProvider(eopHistory),
                                 CartesianDerivativesFilter.USE_PVA,
@@ -739,7 +740,9 @@ public class LazyLoadedFrames implements Frames {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final EOPHistory eopHistory = applyEOPCorr ? lazyLoadedEop.getEOPHistory(conventions, simpleEOP) : null;
+                final EOPHistory eopHistory = applyEOPCorr ?
+                        lazyLoadedEop.getEOPHistory(conventions, simpleEOP, timeScales) :
+                        null;
                 final TransformProvider shifting =
                         new ShiftingTransformProvider(new TODProvider(conventions, eopHistory),
                                 CartesianDerivativesFilter.USE_PVA,

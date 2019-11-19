@@ -260,8 +260,7 @@ public class LazyLoadedEop {
         eopContinuityThreshold = threshold;
     }
 
-    /**
-     * {@inheritDoc}
+    /** Get Earth Orientation Parameters history.
      * <p>
      * If no {@link EOPHistoryLoader} has been added by calling {@link
      * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader} or if
@@ -272,8 +271,14 @@ public class LazyLoadedEop {
      * names parameters all set to null, in order to get the default loaders
      * configuration.
      * </p>
+     * @param conventions conventions for which EOP history is requested
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param timeScales to use when loading EOP and computing corrections.
+     * @return Earth Orientation Parameters history
      */
-    public EOPHistory getEOPHistory(final IERSConventions conventions, final boolean simpleEOP) {
+    public EOPHistory getEOPHistory(final IERSConventions conventions,
+                                    final boolean simpleEOP,
+                                    final TimeScales timeScales) {
 
         synchronized (eopHistoryLoaders) {
 
@@ -302,7 +307,8 @@ public class LazyLoadedEop {
                 throw pendingException;
             }
 
-            final EOPHistory history = new EOPHistory(conventions, data, simpleEOP);
+            final EOPHistory history =
+                    new EOPHistory(conventions, data, simpleEOP, timeScales);
             history.checkEOPContinuity(eopContinuityThreshold);
             return history;
 

@@ -158,7 +158,7 @@ public class LazyLoadedTimeScales implements TimeScales {
                     simpleEOP ? ut1MapSimpleEOP : ut1MapCompleteEOP;
             UT1Scale ut1 = map.get(conventions);
             if (ut1 == null) {
-                ut1 = getUT1(lazyLoadedEop.getEOPHistory(conventions, simpleEOP));
+                ut1 = getUT1(lazyLoadedEop.getEOPHistory(conventions, simpleEOP, this));
                 map.put(conventions, ut1);
             }
             return ut1;

@@ -31,6 +31,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.data.BodiesElements;
+import org.orekit.data.DataContext;
 import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FieldBodiesElements;
 import org.orekit.data.FieldDelaunayArguments;
@@ -55,6 +56,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.TimeVectorFunction;
@@ -104,10 +106,11 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale) {
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale,
+                                                                 final TimeScale tai) {
             try (InputStream in = getStream(NUTATION_ARGUMENTS)) {
                 return new FundamentalNutationArguments(this, timeScale,
-                        in, NUTATION_ARGUMENTS);
+                        in, NUTATION_ARGUMENTS, tai);
             } catch (IOException e) {
                 throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
             }
@@ -147,7 +150,7 @@ public enum IERSConventions {
         public TimeVectorFunction getXYSpXY2Function() {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(null);
+            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // X = 2004.3109″t - 0.42665″t² - 0.198656″t³ + 0.0000140″t⁴
             //     + 0.00006″t² cos Ω + sin ε0 { Σ [(Ai + Ai' t) sin(ARGUMENT) + Ai'' t cos(ARGUMENT)]}
@@ -321,10 +324,10 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getNutationFunction() {
+        public TimeVectorFunction getNutationFunction(final TimeScale tai) {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(null);
+            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
             final double deciMilliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4;
@@ -364,7 +367,7 @@ public enum IERSConventions {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     final double[] psiEpsilon = psiEpsilonSeries.value(elements);
                     return new double[] {
-                        psiEpsilon[0], psiEpsilon[1], IAU1994ResolutionC7.value(elements)
+                        psiEpsilon[0], psiEpsilon[1], IAU1994ResolutionC7.value(elements, tai)
                     };
                 }
 
@@ -376,7 +379,7 @@ public enum IERSConventions {
                     final T[] result = MathArrays.buildArray(date.getField(), 3);
                     result[0] = psiEpsilon[0];
                     result[1] = psiEpsilon[1];
-                    result[2] = IAU1994ResolutionC7.value(elements);
+                    result[2] = IAU1994ResolutionC7.value(elements, tai);
                     return result;
                 }
 
@@ -386,7 +389,8 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTFunction(final TimeScale ut1) {
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1,
+                                                  final TimeScale tai) {
 
             // Radians per second of time
             final double radiansPerSecond = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -394,7 +398,7 @@ public enum IERSConventions {
             // constants from IERS 1996 page 21
             // the underlying model is IAU 1982 GMST-UT1
             final AbsoluteDate gmstReference =
-                new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
+                new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, tai);
             final double gmst0 = 24110.54841;
             final double gmst1 = 8640184.812866;
             final double gmst2 = 0.093104;
@@ -444,7 +448,8 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) {
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1,
+                                                      final TimeScale tai) {
 
             // Radians per second of time
             final double radiansPerSecond = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -452,7 +457,7 @@ public enum IERSConventions {
             // constants from IERS 1996 page 21
             // the underlying model is IAU 1982 GMST-UT1
             final AbsoluteDate gmstReference =
-                new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
+                new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, tai);
             final double gmst1 = 8640184.812866;
             final double gmst2 = 0.093104;
             final double gmst3 = -6.2e-6;
@@ -494,15 +499,16 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
+            final TimeScale tai = eopHistory.getTimeScales().getTAI();
 
             // obliquity
             final TimeScalarFunction epsilonA = getMeanObliquityFunction();
 
             // GMST function
-            final TimeScalarFunction gmst = getGMSTFunction(ut1);
+            final TimeScalarFunction gmst = getGMSTFunction(ut1, tai);
 
             // nutation function
-            final TimeVectorFunction nutation = getNutationFunction();
+            final TimeVectorFunction nutation = getNutationFunction(tai);
 
             return new TimeScalarFunction() {
 
@@ -546,14 +552,15 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getEOPTidalCorrection() {
+        public TimeVectorFunction getEOPTidalCorrection(final TimeScales timeScales) {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
             // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
             // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
             // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
-            final FundamentalNutationArguments arguments = getNutationArguments(TimeScalesFactory.getTT());
+            final FundamentalNutationArguments arguments =
+                    getNutationArguments(timeScales.getTT(), timeScales.getTAI());
 
             // set up Poisson series
             final double milliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3;
@@ -601,10 +608,11 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1) {
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1,
+                                                                     final TimeScale tai) {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1, tai);
 
             // set up Poisson series
             final PoissonSeriesParser k20Parser =
@@ -818,10 +826,11 @@ public enum IERSConventions {
         private static final String TIDAL_DISPLACEMENT_CORRECTION_ZONAL = IERS_BASE + "2003/tab7.5b.txt";
 
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale) {
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale,
+                                                                 final TimeScale tai) {
             try (InputStream in = getStream(NUTATION_ARGUMENTS)) {
                 return new FundamentalNutationArguments(this, timeScale,
-                        in, NUTATION_ARGUMENTS);
+                        in, NUTATION_ARGUMENTS, tai);
             } catch (IOException e) {
                 throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
             }
@@ -861,7 +870,7 @@ public enum IERSConventions {
         public TimeVectorFunction getXYSpXY2Function() {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(null);
+            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -932,10 +941,10 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getNutationFunction() {
+        public TimeVectorFunction getNutationFunction(final TimeScale tai) {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(null);
+            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
             final double milliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3;
@@ -998,7 +1007,7 @@ public enum IERSConventions {
                     final double[] planetary = planetarySeries.value(elements);
                     return new double[] {
                         luniSolar[0] + planetary[0], luniSolar[1] + planetary[1],
-                        IAU1994ResolutionC7.value(elements)
+                        IAU1994ResolutionC7.value(elements, tai)
                     };
                 }
 
@@ -1011,7 +1020,7 @@ public enum IERSConventions {
                     final T[] result = MathArrays.buildArray(date.getField(), 3);
                     result[0] = luniSolar[0].add(planetary[0]);
                     result[1] = luniSolar[1].add(planetary[1]);
-                    result[2] = IAU1994ResolutionC7.value(elements);
+                    result[2] = IAU1994ResolutionC7.value(elements, tai);
                     return result;
                 }
 
@@ -1021,10 +1030,11 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTFunction(final TimeScale ut1) {
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1,
+                                                  final TimeScale tai) {
 
             // Earth Rotation Angle
-            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
+            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1, tai);
 
             // Polynomial part of the apparent sidereal time series
             // which is the opposite of Equation of Origins (EO)
@@ -1063,10 +1073,11 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) {
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1,
+                                                      final TimeScale tai) {
 
             // Earth Rotation Angle
-            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
+            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1, tai);
 
             // Polynomial part of the apparent sidereal time series
             // which is the opposite of Equation of Origins (EO)
@@ -1108,7 +1119,7 @@ public enum IERSConventions {
         public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(null);
+            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // mean obliquity function
             final TimeScalarFunction epsilon = getMeanObliquityFunction();
@@ -1157,7 +1168,9 @@ public enum IERSConventions {
                     PoissonSeries.compile(psiLuniSolarSeries, psiPlanetarySeries, gstSeries);
 
             // ERA function
-            final TimeScalarFunction era = getEarthOrientationAngleFunction(ut1);
+            final TimeScalarFunction era = getEarthOrientationAngleFunction(
+                    ut1,
+                    eopHistory.getTimeScales().getTAI());
 
             return new TimeScalarFunction() {
 
@@ -1201,14 +1214,15 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getEOPTidalCorrection() {
+        public TimeVectorFunction getEOPTidalCorrection(final TimeScales timeScales) {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
             // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
             // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
             // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
-            final FundamentalNutationArguments arguments = getNutationArguments(TimeScalesFactory.getTT());
+            final FundamentalNutationArguments arguments =
+                    getNutationArguments(timeScales.getTT(), timeScales.getTAI());
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -1250,10 +1264,11 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1) {
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1,
+                                                                     final TimeScale tai) {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1, tai);
 
             // set up Poisson series
             final PoissonSeriesParser k20Parser =
@@ -1320,7 +1335,7 @@ public enum IERSConventions {
         public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory) {
 
             // annual pole from ftp://tai.bipm.org/iers/conv2003/chapter7/annual.pole
-            final TimeScale utc = TimeScalesFactory.getUTC();
+            final TimeScale utc = eopHistory.getTimeScales().getUTC();
             final SimpleTimeStampedTableParser.RowConverter<MeanPole> converter =
                 new SimpleTimeStampedTableParser.RowConverter<MeanPole>() {
                     /** {@inheritDoc} */
@@ -1628,10 +1643,11 @@ public enum IERSConventions {
         private static final String TIDAL_DISPLACEMENT_CORRECTION_ZONAL = IERS_BASE + "2010/tab7.3b.txt";
 
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale) {
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale,
+                                                                 final TimeScale tai) {
             try (InputStream in = getStream(NUTATION_ARGUMENTS)) {
                 return new FundamentalNutationArguments(this, timeScale,
-                        in, NUTATION_ARGUMENTS);
+                        in, NUTATION_ARGUMENTS, tai);
             } catch (IOException e) {
                 throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
             }
@@ -1673,7 +1689,7 @@ public enum IERSConventions {
         public TimeVectorFunction getXYSpXY2Function() {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(null);
+            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -1720,10 +1736,11 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1) {
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1,
+                                                                     final TimeScale tai) {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1, tai);
 
             // set up Poisson series
             final PoissonSeriesParser k20Parser =
@@ -1797,7 +1814,8 @@ public enum IERSConventions {
             final double f1 = f0 / Constants.JULIAN_YEAR;
             final double f2 = f1 / Constants.JULIAN_YEAR;
             final double f3 = f2 / Constants.JULIAN_YEAR;
-            final AbsoluteDate changeDate = new AbsoluteDate(2010, 1, 1, TimeScalesFactory.getTT());
+            final AbsoluteDate changeDate =
+                    new AbsoluteDate(2010, 1, 1, eopHistory.getTimeScales().getTT());
 
             // evaluate mean pole
             final double[] xPolynomial;
@@ -1851,7 +1869,8 @@ public enum IERSConventions {
             final double f1 = f0 / Constants.JULIAN_YEAR;
             final double f2 = f1 / Constants.JULIAN_YEAR;
             final double f3 = f2 / Constants.JULIAN_YEAR;
-            final AbsoluteDate changeDate = new AbsoluteDate(2010, 1, 1, TimeScalesFactory.getTT());
+            final AbsoluteDate changeDate =
+                    new AbsoluteDate(2010, 1, 1, eopHistory.getTimeScales().getTT());
 
             // evaluate mean pole
             final double[] xPolynomial;
@@ -2031,12 +2050,12 @@ public enum IERSConventions {
 
         }
 
-         /** {@inheritDoc} */
+        /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getNutationFunction() {
+        public TimeVectorFunction getNutationFunction(final TimeScale tai) {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(null);
+            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -2063,7 +2082,7 @@ public enum IERSConventions {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     final double[] psiEpsilon = psiEpsilonSeries.value(elements);
                     return new double[] {
-                        psiEpsilon[0], psiEpsilon[1], IAU1994ResolutionC7.value(elements)
+                        psiEpsilon[0], psiEpsilon[1], IAU1994ResolutionC7.value(elements, tai)
                     };
                 }
 
@@ -2075,7 +2094,7 @@ public enum IERSConventions {
                     final T[] result = MathArrays.buildArray(date.getField(), 3);
                     result[0] = psiEpsilon[0];
                     result[1] = psiEpsilon[1];
-                    result[2] = IAU1994ResolutionC7.value(elements);
+                    result[2] = IAU1994ResolutionC7.value(elements, tai);
                     return result;
                 }
 
@@ -2085,10 +2104,11 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTFunction(final TimeScale ut1) {
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1,
+                                                  final TimeScale tai) {
 
             // Earth Rotation Angle
-            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
+            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1, tai);
 
             // Polynomial part of the apparent sidereal time series
             // which is the opposite of Equation of Origins (EO)
@@ -2127,10 +2147,11 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) {
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1,
+                                                      final TimeScale tai) {
 
             // Earth Rotation Angle
-            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
+            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1, tai);
 
             // Polynomial part of the apparent sidereal time series
             // which is the opposite of Equation of Origins (EO)
@@ -2172,7 +2193,7 @@ public enum IERSConventions {
         public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(null);
+            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // mean obliquity function
             final TimeScalarFunction epsilon = getMeanObliquityFunction();
@@ -2196,7 +2217,9 @@ public enum IERSConventions {
             }
 
             // ERA function
-            final TimeScalarFunction era = getEarthOrientationAngleFunction(ut1);
+            final TimeScalarFunction era = getEarthOrientationAngleFunction(
+                    ut1,
+                    eopHistory.getTimeScales().getTAI());
 
             return new TimeScalarFunction() {
 
@@ -2240,14 +2263,15 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getEOPTidalCorrection() {
+        public TimeVectorFunction getEOPTidalCorrection(final TimeScales timeScales) {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
             // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
             // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
             // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
-            final FundamentalNutationArguments arguments = getNutationArguments(TimeScalesFactory.getTT());
+            final FundamentalNutationArguments arguments =
+                    getNutationArguments(timeScales.getTT(), timeScales.getTAI());
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -2343,13 +2367,45 @@ public enum IERSConventions {
         return date.durationFrom(getNutationReferenceEpoch()).divide(Constants.JULIAN_CENTURY);
     }
 
+    /**
+     * Get the fundamental nutation arguments. Does not compute GMST based values: gamma,
+     * gammaDot.
+     *
+     * @return fundamental nutation arguments
+     * @see #getNutationArguments(TimeScale, TimeScale)
+     * @since 10.1
+     */
+    protected FundamentalNutationArguments getNutationArguments() {
+        return getNutationArguments(null, null);
+    }
+
     /** Get the fundamental nutation arguments.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param timeScale time scale for computing Greenwich Mean Sidereal Time
      * (typically {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
      * @return fundamental nutation arguments
-          * @since 6.1
+     * @since 6.1
+     * @see #getNutationArguments(TimeScale, TimeScale)
+     * @see #getNutationArguments()
      */
-    public abstract FundamentalNutationArguments getNutationArguments(TimeScale timeScale);
+    public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale) {
+        return getNutationArguments(timeScale,
+                DataContext.getDefault().getTimeScales().getTAI());
+    }
+
+    /**
+     * Get the fundamental nutation arguments.
+     *
+     * @param timeScale time scale for computing Greenwich Mean Sidereal Time (typically
+     *                  {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
+     * @param tai TAI time scale
+     * @return fundamental nutation arguments
+     * @since 10.1
+     */
+    public abstract FundamentalNutationArguments getNutationArguments(TimeScale timeScale,
+                                                                      TimeScale tai);
 
     /** Get the function computing mean obliquity of the ecliptic.
      * @return function computing mean obliquity of the ecliptic
@@ -2367,6 +2423,9 @@ public enum IERSConventions {
     public abstract TimeVectorFunction getXYSpXY2Function();
 
     /** Get the function computing the raw Earth Orientation Angle.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * <p>
      * The raw angle does not contain any correction. If for example dTU1 correction
      * due to tidal effect is desired, it must be added afterward by the caller.
@@ -2376,11 +2435,29 @@ public enum IERSConventions {
      * @param ut1 UT1 time scale
      * @return function computing the rawEarth Orientation Angle, in the non-rotating origin paradigm
      * @since 6.1
+     * @see #getEarthOrientationAngleFunction(TimeScale, TimeScale)
      */
     public TimeScalarFunction getEarthOrientationAngleFunction(final TimeScale ut1) {
-        return new StellarAngleCapitaine(ut1);
+        return getEarthOrientationAngleFunction(ut1,
+                DataContext.getDefault().getTimeScales().getTAI());
     }
 
+    /** Get the function computing the raw Earth Orientation Angle.
+     * <p>
+     * The raw angle does not contain any correction. If for example dTU1 correction
+     * due to tidal effect is desired, it must be added afterward by the caller.
+     * The returned value contain the angle as the value and the angular rate as
+     * the first derivative.
+     * </p>
+     * @param ut1 UT1 time scale
+     * @param tai TAI time scale
+     * @return function computing the rawEarth Orientation Angle, in the non-rotating origin paradigm
+     * @since 10.1
+     */
+    public TimeScalarFunction getEarthOrientationAngleFunction(final TimeScale ut1,
+                                                               final TimeScale tai) {
+        return new StellarAngleCapitaine(ut1, tai);
+    }
 
     /** Get the function computing the precession angles.
      * <p>
@@ -2397,6 +2474,9 @@ public enum IERSConventions {
     public abstract TimeVectorFunction getPrecessionFunction();
 
     /** Get the function computing the nutation angles.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * <p>
      * The function returned computes the two classical angles ΔΨ and Δε,
      * and the correction to the equation of equinoxes introduced since 1997-02-27 by IAU 1994
@@ -2404,23 +2484,72 @@ public enum IERSConventions {
      * </p>
      * @return function computing the nutation in longitude ΔΨ and Δε
      * and the correction of equation of equinoxes
-          * @since 6.1
+     * @since 6.1
      */
-    public abstract TimeVectorFunction getNutationFunction();
+    public TimeVectorFunction getNutationFunction() {
+        return getNutationFunction(DataContext.getDefault().getTimeScales().getTAI());
+    }
+
+    /** Get the function computing the nutation angles.
+     * <p>
+     * The function returned computes the two classical angles ΔΨ and Δε,
+     * and the correction to the equation of equinoxes introduced since 1997-02-27 by IAU 1994
+     * resolution C7 (the correction is forced to 0 before this date)
+     * </p>
+     * @return function computing the nutation in longitude ΔΨ and Δε
+     * and the correction of equation of equinoxes
+     * @param tai TAI time scale
+     * @since 10.1
+     */
+    public abstract TimeVectorFunction getNutationFunction(TimeScale tai);
 
     /** Get the function computing Greenwich mean sidereal time, in radians.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param ut1 UT1 time scale
      * @return function computing Greenwich mean sidereal time
-          * @since 6.1
+     * @since 6.1
+     * @see #getGMSTFunction(TimeScale, TimeScale)
      */
-    public abstract TimeScalarFunction getGMSTFunction(TimeScale ut1);
+    public TimeScalarFunction getGMSTFunction(final TimeScale ut1) {
+        return getGMSTFunction(ut1, DataContext.getDefault().getTimeScales().getTAI());
+    }
+
+    /**
+     * Get the function computing Greenwich mean sidereal time, in radians.
+     *
+     * @param ut1 UT1 time scale
+     * @param tai TAI time scale
+     * @return function computing Greenwich mean sidereal time
+     * @since 10.1
+     */
+    public abstract TimeScalarFunction getGMSTFunction(TimeScale ut1, TimeScale tai);
 
     /** Get the function computing Greenwich mean sidereal time rate, in radians per second.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param ut1 UT1 time scale
      * @return function computing Greenwich mean sidereal time rate
-          * @since 9.0
+     * @since 9.0
+     * @see #getGMSTRateFunction(TimeScale, TimeScale)
      */
-    public abstract TimeScalarFunction getGMSTRateFunction(TimeScale ut1);
+    public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) {
+        return getGMSTRateFunction(ut1,
+                DataContext.getDefault().getTimeScales().getTAI());
+    }
+
+    /**
+     * Get the function computing Greenwich mean sidereal time rate, in radians per
+     * second.
+     *
+     * @param ut1 UT1 time scale
+     * @param tai TAI time scale
+     * @return function computing Greenwich mean sidereal time rate
+     * @since 10.1
+     */
+    public abstract TimeScalarFunction getGMSTRateFunction(TimeScale ut1, TimeScale tai);
 
     /** Get the function computing Greenwich apparent sidereal time, in radians.
      * @param ut1 UT1 time scale
@@ -2431,11 +2560,27 @@ public enum IERSConventions {
     public abstract TimeScalarFunction getGASTFunction(TimeScale ut1, EOPHistory eopHistory);
 
     /** Get the function computing tidal corrections for Earth Orientation Parameters.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @return function computing tidal corrections for Earth Orientation Parameters,
      * for xp, yp, ut1 and lod respectively
-          * @since 6.1
+     * @since 6.1
+     * @see #getEOPTidalCorrection(TimeScales)
      */
-    public abstract TimeVectorFunction getEOPTidalCorrection();
+    public TimeVectorFunction getEOPTidalCorrection() {
+        return getEOPTidalCorrection(DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Get the function computing tidal corrections for Earth Orientation Parameters.
+     *
+     * @param timeScales used in the computation. The TT and TAI scales are used.
+     * @return function computing tidal corrections for Earth Orientation Parameters, for
+     * xp, yp, ut1 and lod respectively
+     * @since 10.1
+     */
+    public abstract TimeVectorFunction getEOPTidalCorrection(TimeScales timeScales);
 
     /** Get the Love numbers.
      * @return Love numbers
@@ -2444,11 +2589,31 @@ public enum IERSConventions {
     public abstract LoveNumbers getLoveNumbers();
 
     /** Get the function computing frequency dependent terms (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂).
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param ut1 UT1 time scale
      * @return frequency dependence model for tides computation (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂).
-          * @since 6.1
+     * @since 6.1
+     * @see #getTideFrequencyDependenceFunction(TimeScale, TimeScale)
      */
-    public abstract TimeVectorFunction getTideFrequencyDependenceFunction(TimeScale ut1);
+    public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1) {
+        return getTideFrequencyDependenceFunction(ut1,
+                DataContext.getDefault().getTimeScales().getTAI());
+    }
+
+    /**
+     * Get the function computing frequency dependent terms (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂,
+     * ΔS₂₂).
+     *
+     * @param ut1 UT1 time scale
+     * @param tai TAI time scale.
+     * @return frequency dependence model for tides computation (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂,
+     * ΔS₂₂).
+     * @since 10.1
+     */
+    public abstract TimeVectorFunction getTideFrequencyDependenceFunction(TimeScale ut1,
+                                                                          TimeScale tai);
 
     /** Get the permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used.
      * @return permanent tide to remove
@@ -2818,18 +2983,19 @@ public enum IERSConventions {
         /** Second Moon correction term for the Equation of the Equinoxes. */
         private static final double EQE2 =     0.000063 * Constants.ARC_SECONDS_TO_RADIANS;
 
-        /** Start date for applying Moon corrections to the equation of the equinoxes.
-         * This date corresponds to 1997-02-27T00:00:00 UTC, hence the 30s offset from TAI.
-         */
-        private static final AbsoluteDate MODEL_START =
-            new AbsoluteDate(1997, 2, 27, 0, 0, 30, TimeScalesFactory.getTAI());
 
         /** Evaluate the correction.
          * @param arguments Delaunay for nutation
+         * @param tai TAI time scale.
          * @return correction value (0 before 1997-02-27)
          */
-        public static double value(final DelaunayArguments arguments) {
-            if (arguments.getDate().compareTo(MODEL_START) >= 0) {
+        public static double value(final DelaunayArguments arguments,
+                                   final TimeScale tai) {
+            /* Start date for applying Moon corrections to the equation of the equinoxes.
+             * This date corresponds to 1997-02-27T00:00:00 UTC, hence the 30s offset from TAI.
+             */
+            final AbsoluteDate modelStart = new AbsoluteDate(1997, 2, 27, 0, 0, 30, tai);
+            if (arguments.getDate().compareTo(modelStart) >= 0) {
 
                 // IAU 1994 resolution C7 added two terms to the equation of equinoxes
                 // taking effect since 1997-02-27 for continuity
@@ -2847,11 +3013,18 @@ public enum IERSConventions {
 
         /** Evaluate the correction.
          * @param arguments Delaunay for nutation
+         * @param tai TAI time scale.
          * @param <T> type of the field elements
          * @return correction value (0 before 1997-02-27)
          */
-        public static <T extends RealFieldElement<T>> T value(final FieldDelaunayArguments<T> arguments) {
-            if (arguments.getDate().toAbsoluteDate().compareTo(MODEL_START) >= 0) {
+        public static <T extends RealFieldElement<T>> T value(
+                final FieldDelaunayArguments<T> arguments,
+                final TimeScale tai) {
+            /* Start date for applying Moon corrections to the equation of the equinoxes.
+             * This date corresponds to 1997-02-27T00:00:00 UTC, hence the 30s offset from TAI.
+             */
+            final AbsoluteDate modelStart = new AbsoluteDate(1997, 2, 27, 0, 0, 30, tai);
+            if (arguments.getDate().toAbsoluteDate().compareTo(modelStart) >= 0) {
 
                 // IAU 1994 resolution C7 added two terms to the equation of equinoxes
                 // taking effect since 1997-02-27 for continuity
@@ -2886,11 +3059,6 @@ public enum IERSConventions {
      */
     private static class StellarAngleCapitaine implements TimeScalarFunction {
 
-        /** Reference date of Capitaine's Earth Rotation Angle model. */
-        private static final AbsoluteDate REFERENCE_DATE = new AbsoluteDate(DateComponents.J2000_EPOCH,
-                                                                            TimeComponents.H12,
-                                                                            TimeScalesFactory.getTAI());
-
         /** Constant term of Capitaine's Earth Rotation Angle model. */
         private static final double ERA_0   = MathUtils.TWO_PI * 0.7790572732640;
 
@@ -2905,11 +3073,19 @@ public enum IERSConventions {
         /** UT1 time scale. */
         private final TimeScale ut1;
 
+        /** Reference date of Capitaine's Earth Rotation Angle model. */
+        private final AbsoluteDate referenceDate;
+
         /** Simple constructor.
          * @param ut1 UT1 time scale
+         * @param tai TAI time scale
          */
-        StellarAngleCapitaine(final TimeScale ut1) {
+        StellarAngleCapitaine(final TimeScale ut1, final TimeScale tai) {
             this.ut1 = ut1;
+            referenceDate = new AbsoluteDate(
+                    DateComponents.J2000_EPOCH,
+                    TimeComponents.H12,
+                    tai);
         }
 
         /** Get the rotation rate.
@@ -2925,7 +3101,7 @@ public enum IERSConventions {
 
             // split the date offset as a full number of days plus a smaller part
             final int secondsInDay = 86400;
-            final double dt  = date.durationFrom(REFERENCE_DATE);
+            final double dt  = date.durationFrom(referenceDate);
             final long days  = ((long) dt) / secondsInDay;
             final double dtA = secondsInDay * days;
             final double dtB = (dt - dtA) + ut1.offsetFromTAI(date);
@@ -2940,7 +3116,7 @@ public enum IERSConventions {
 
             // split the date offset as a full number of days plus a smaller part
             final int secondsInDay = 86400;
-            final T dt  = date.durationFrom(REFERENCE_DATE);
+            final T dt  = date.durationFrom(referenceDate);
             final long days  = ((long) dt.getReal()) / secondsInDay;
             final double dtA = secondsInDay * days;
             final T dtB = dt.subtract(dtA).add(ut1.offsetFromTAI(date.toAbsoluteDate()));

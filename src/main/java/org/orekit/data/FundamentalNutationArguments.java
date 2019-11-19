@@ -122,16 +122,61 @@ public class FundamentalNutationArguments implements Serializable {
     private final double[] paCoefficients;
 
     /** Build a model of fundamental arguments from an IERS table file.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param conventions IERS conventions to use
      * @param timeScale time scale for GMST computation
      * (may be null if tide parameter γ = GMST + π is not needed)
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
+     * @see #FundamentalNutationArguments(IERSConventions, TimeScale, List, TimeScale)
+     * @see #FundamentalNutationArguments(IERSConventions, TimeScale, InputStream, String,
+     * TimeScale)
      */
     public FundamentalNutationArguments(final IERSConventions conventions,
                                         final TimeScale timeScale,
                                         final InputStream stream, final String name) {
-        this(conventions, timeScale, parseCoefficients(stream, name));
+        this(conventions, timeScale, stream, name,
+                DataContext.getDefault().getTimeScales().getTAI());
+    }
+
+    /**
+     * Build a model of fundamental arguments from an IERS table file.
+     *
+     * @param conventions IERS conventions to use
+     * @param timeScale   time scale for GMST computation (may be null if tide parameter γ
+     *                    = GMST + π is not needed)
+     * @param stream      stream containing the IERS table
+     * @param name        name of the resource file (for error messages only)
+     * @param tai         TAI time scale
+     * @see #FundamentalNutationArguments(IERSConventions, TimeScale, List, TimeScale)
+     * @since 10.1
+     */
+    public FundamentalNutationArguments(final IERSConventions conventions,
+                                        final TimeScale timeScale,
+                                        final InputStream stream,
+                                        final String name,
+                                        final TimeScale tai) {
+        this(conventions, timeScale, parseCoefficients(stream, name), tai);
+    }
+
+    /** Build a model of fundamental arguments from an IERS table file.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param conventions IERS conventions to use
+     * @param timeScale time scale for GMST computation
+     * (may be null if tide parameter γ = GMST + π is not needed)
+     * @param coefficients list of coefficients arrays (all 14 arrays must be provided,
+     * the 5 Delaunay first and the 9 planetary afterwards)
+     * @since 6.1
+     * @see #FundamentalNutationArguments(IERSConventions, TimeScale, List, TimeScale)
+     */
+    public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
+                                        final List<double[]> coefficients) {
+        this(conventions, timeScale, coefficients,
+                DataContext.getDefault().getTimeScales().getTAI());
     }
 
     /** Build a model of fundamental arguments from an IERS table file.
@@ -140,14 +185,17 @@ public class FundamentalNutationArguments implements Serializable {
      * (may be null if tide parameter γ = GMST + π is not needed)
      * @param coefficients list of coefficients arrays (all 14 arrays must be provided,
      * the 5 Delaunay first and the 9 planetary afterwards)
-     * @since 6.1
+     * @param tai TAI time scale. Only used if {@code timeScale != null}.
+     * @since 10.1
      */
-    public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
-                                        final List<double[]> coefficients) {
+    public FundamentalNutationArguments(final IERSConventions conventions,
+                                        final TimeScale timeScale,
+                                        final List<double[]> coefficients,
+                                        final TimeScale tai) {
         this.conventions        = conventions;
         this.timeScale          = timeScale;
-        this.gmstFunction       = (timeScale == null) ? null : conventions.getGMSTFunction(timeScale);
-        this.gmstRateFunction   = (timeScale == null) ? null : conventions.getGMSTRateFunction(timeScale);
+        this.gmstFunction       = (timeScale == null) ? null : conventions.getGMSTFunction(timeScale, tai);
+        this.gmstRateFunction   = (timeScale == null) ? null : conventions.getGMSTRateFunction(timeScale, tai);
         this.lCoefficients      = coefficients.get( 0);
         this.lPrimeCoefficients = coefficients.get( 1);
         this.fCoefficients      = coefficients.get( 2);

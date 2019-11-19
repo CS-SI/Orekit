@@ -29,12 +29,14 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.MathArrays;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScales;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.Constants;
@@ -47,11 +49,12 @@ import org.orekit.utils.TimeStampedGenerator;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
  * @author Pascal Parraud
+ * @author Evan Ward
  */
 public class EOPHistory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131010L;
+    private static final long serialVersionUID = 20191119L;
 
     /** Number of points to use in interpolation. */
     private static final int INTERPOLATION_POINTS = 4;
@@ -72,27 +75,55 @@ public class EOPHistory implements Serializable {
     /** Correction to apply to EOP (may be null). */
     private final transient TimeVectorFunction tidalCorrection;
 
+    /** Time scales to use when computing corrections. */
+    private final transient TimeScales timeScales;
+
     /** Simple constructor.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @see #EOPHistory(IERSConventions, Collection, boolean, TimeScales)
      */
     protected EOPHistory(final IERSConventions conventions,
                          final Collection<EOPEntry> data,
                          final boolean simpleEOP) {
-        this(conventions, data, simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection()));
+        this(conventions, data, simpleEOP, DataContext.getDefault().getTimeScales());
+    }
+
+    /** Simple constructor.
+     * @param conventions IERS conventions to which EOP refers
+     * @param data the EOP data to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param timeScales to use when computing EOP corrections.
+     * @since 10.1
+     */
+    protected EOPHistory(final IERSConventions conventions,
+                         final Collection<EOPEntry> data,
+                         final boolean simpleEOP,
+                         final TimeScales timeScales) {
+        this(conventions,
+                data,
+                simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection(timeScales)),
+                timeScales);
     }
 
     /** Simple constructor.
      * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
      * @param tidalCorrection correction to apply to EOP
+     * @param timeScales to use when computing EOP corrections.
+     * @since 10.1
      */
     private EOPHistory(final IERSConventions conventions,
-                         final Collection<EOPEntry> data,
-                         final TimeVectorFunction tidalCorrection) {
+                       final Collection<EOPEntry> data,
+                       final TimeVectorFunction tidalCorrection,
+                       final TimeScales timeScales) {
         this.conventions      = conventions;
         this.tidalCorrection  = tidalCorrection;
+        this.timeScales = timeScales;
         if (data.size() >= INTERPOLATION_POINTS) {
             // enough data to interpolate
             cache = new ImmutableTimeStampedCache<EOPEntry>(INTERPOLATION_POINTS, data);
@@ -104,11 +135,22 @@ public class EOPHistory implements Serializable {
         }
     }
 
+    /**
+     * Get the time scales used in computing EOP corrections.
+     *
+     * @return set of time scales.
+     * @since 10.1
+     */
+    public TimeScales getTimeScales() {
+        return timeScales;
+    }
+
     /** Get non-interpolating version of the instance.
      * @return non-interpolatig version of the instance
      */
     public EOPHistory getNonInterpolatingEOPHistory() {
-        return new EOPHistory(conventions, getEntries(), conventions.getEOPTidalCorrection());
+        return new EOPHistory(conventions, getEntries(),
+                conventions.getEOPTidalCorrection(timeScales), timeScales);
     }
 
     /** Check if the instance uses interpolation on tidal corrections.
