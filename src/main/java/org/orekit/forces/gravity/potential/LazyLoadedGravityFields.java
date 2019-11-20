@@ -8,6 +8,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.TimeScale;
 
 /**
  * Loads gravity fields when first requested and can be configured until then. Designed to
@@ -36,14 +37,21 @@ public class LazyLoadedGravityFields implements GravityFields {
     /** Provides access to auxiliary data files for loading gravity field files. */
     private final DataProvidersManager dataProvidersManager;
 
+    /** Time scale for parsing dates. */
+    private final TimeScale timeScale;
+
     /**
      * Create a factory for gravity fields that uses the given data manager to load the
      * gravity field files.
      *
      * @param dataProvidersManager provides access to auxiliary data files.
+     * @param timeScale            use to parse dates for the {@link #addDefaultPotentialCoefficientsReaders()}.
+     *                             In Orekit 10.0 it is TT.
      */
-    public LazyLoadedGravityFields(final DataProvidersManager dataProvidersManager) {
+    public LazyLoadedGravityFields(final DataProvidersManager dataProvidersManager,
+                                   final TimeScale timeScale) {
         this.dataProvidersManager = dataProvidersManager;
+        this.timeScale = timeScale;
     }
 
     /** Add a reader for gravity fields.
@@ -70,10 +78,10 @@ public class LazyLoadedGravityFields implements GravityFields {
      */
     public void addDefaultPotentialCoefficientsReaders() {
         synchronized (readers) {
-            readers.add(new ICGEMFormatReader(GravityFieldFactory.ICGEM_FILENAME, false));
-            readers.add(new SHMFormatReader(GravityFieldFactory.SHM_FILENAME, false));
+            readers.add(new ICGEMFormatReader(GravityFieldFactory.ICGEM_FILENAME, false, timeScale));
+            readers.add(new SHMFormatReader(GravityFieldFactory.SHM_FILENAME, false, timeScale));
             readers.add(new EGMFormatReader(GravityFieldFactory.EGM_FILENAME, false));
-            readers.add(new GRGSFormatReader(GravityFieldFactory.GRGS_FILENAME, false));
+            readers.add(new GRGSFormatReader(GravityFieldFactory.GRGS_FILENAME, false, timeScale));
         }
     }
 

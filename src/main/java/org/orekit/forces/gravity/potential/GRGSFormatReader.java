@@ -29,10 +29,13 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.OrekitParseException;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** Reader for the GRGS gravity field format.
@@ -51,7 +54,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
     private static final Pattern[] LINES;
 
     /** Reference date. */
-    private DateComponents referenceDate;
+    private AbsoluteDate referenceDate;
 
     /** Secular drift of the cosine coefficients. */
     private final List<List<Double>> cDot;
@@ -90,11 +93,31 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
     }
 
     /** Simple constructor.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
+     * @see #GRGSFormatReader(String, boolean, TimeScale)
      */
     public GRGSFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
-        super(supportedNames, missingCoefficientsAllowed);
+        this(supportedNames, missingCoefficientsAllowed,
+                DataContext.getDefault().getTimeScales().getTT());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param supportedNames             regular expression for supported files names
+     * @param missingCoefficientsAllowed if true, allows missing coefficients in the input
+     *                                   data
+     * @param timeScale                  to use when parsing dates.
+     * @since 10.1
+     */
+    public GRGSFormatReader(final String supportedNames,
+                            final boolean missingCoefficientsAllowed,
+                            final TimeScale timeScale) {
+        super(supportedNames, missingCoefficientsAllowed, timeScale);
         referenceDate = null;
         cDot = new ArrayList<>();
         sDot = new ArrayList<>();
@@ -143,7 +166,8 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                 setMu(parseDouble(matcher.group(3)));
             } else if (lineNumber == 4) {
                 // header line containing the reference date
-                referenceDate  = new DateComponents(Integer.parseInt(matcher.group(1)), 1, 1);
+                referenceDate  = toDate(
+                        new DateComponents(Integer.parseInt(matcher.group(1)), 1, 1));
             } else if (lineNumber == 5) {
                 // header line defining max degree
                 final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(matcher.group(1)));

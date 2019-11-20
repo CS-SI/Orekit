@@ -28,9 +28,12 @@ import java.util.Locale;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** Reader for the SHM gravity field format.
@@ -59,7 +62,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     private static final String GRDOTA = "GRDOTA";
 
     /** Reference date. */
-    private DateComponents referenceDate;
+    private AbsoluteDate referenceDate;
 
     /** Secular drift of the cosine coefficients. */
     private final List<List<Double>> cDot;
@@ -68,11 +71,28 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
     private final List<List<Double>> sDot;
 
     /** Simple constructor.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
+     * @see #SHMFormatReader(String, boolean, TimeScale)
      */
     public SHMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
-        super(supportedNames, missingCoefficientsAllowed);
+        this(supportedNames, missingCoefficientsAllowed,
+                DataContext.getDefault().getTimeScales().getTT());
+    }
+
+    /** Simple constructor.
+     * @param supportedNames regular expression for supported files names
+     * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
+     * @param timeScale for parsing dates.
+     * @since 10.1
+     */
+    public SHMFormatReader(final String supportedNames,
+                           final boolean missingCoefficientsAllowed,
+                           final TimeScale timeScale) {
+        super(supportedNames, missingCoefficientsAllowed, timeScale);
         referenceDate = null;
         cDot = new ArrayList<>();
         sDot = new ArrayList<>();
@@ -148,10 +168,10 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                                                                    Integer.parseInt(tab[7].substring(6, 8)));
                                 if (referenceDate == null) {
                                     // first reference found, store it
-                                    referenceDate = localRef;
-                                } else if (!referenceDate.equals(localRef)) {
+                                    referenceDate = toDate(localRef);
+                                } else if (!referenceDate.equals(toDate(localRef))) {
                                     throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
-                                                              referenceDate, localRef, name);
+                                                              referenceDate, toDate(localRef), name);
                                 }
 
                             } else {

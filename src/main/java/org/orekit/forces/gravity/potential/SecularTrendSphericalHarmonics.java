@@ -17,9 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
 
 /** Simple implementation of {@link RawSphericalHarmonicsProvider} for gravity fields with secular trend.
  * @author Luc Maisonobe
@@ -46,10 +43,10 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
      * @param sTrend secular trend of the sine coefficients (s<sup>-1</sup>)
      */
     SecularTrendSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
-                                          final DateComponents referenceDate,
+                                          final AbsoluteDate referenceDate,
                                           final double[][] cTrend, final double[][] sTrend) {
         this.provider      = provider;
-        this.referenceDate = new AbsoluteDate(referenceDate, TimeComponents.H12, TimeScalesFactory.getTT());
+        this.referenceDate = referenceDate;
         this.cTrend        = cTrend;
         this.sTrend        = sTrend;
     }

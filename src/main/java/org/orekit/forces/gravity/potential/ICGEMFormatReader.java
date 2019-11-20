@@ -29,10 +29,13 @@ import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.OrekitParseException;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** Reader for the ICGEM gravity field format.
@@ -146,7 +149,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     private boolean normalized;
 
     /** Reference date. */
-    private DateComponents referenceDate;
+    private AbsoluteDate referenceDate;
 
     /** Secular trend of the cosine coefficients. */
     private final List<List<Double>> cTrend;
@@ -167,11 +170,31 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     private final Map<Double, List<List<Double>>> sSin;
 
     /** Simple constructor.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
+     * @see #ICGEMFormatReader(String, boolean, TimeScale)
      */
     public ICGEMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
-        super(supportedNames, missingCoefficientsAllowed);
+        this(supportedNames, missingCoefficientsAllowed,
+                DataContext.getDefault().getTimeScales().getTT());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param supportedNames             regular expression for supported files names
+     * @param missingCoefficientsAllowed if true, allows missing coefficients in the input
+     *                                   data
+     * @param timeScale                  to use when parsing dates.
+     * @since 10.1
+     */
+    public ICGEMFormatReader(final String supportedNames,
+                             final boolean missingCoefficientsAllowed,
+                             final TimeScale timeScale) {
+        super(supportedNames, missingCoefficientsAllowed, timeScale);
         referenceDate = null;
         cTrend = new ArrayList<>();
         sTrend = new ArrayList<>();
@@ -271,10 +294,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                                                                                    Integer.parseInt(tab[7].substring(6, 8)));
                                 if (referenceDate == null) {
                                     // first reference found, store it
-                                    referenceDate = localRef;
-                                } else if (!referenceDate.equals(localRef)) {
+                                    referenceDate = toDate(localRef);
+                                } else if (!referenceDate.equals(toDate(localRef))) {
                                     throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
-                                                              referenceDate, localRef, name);
+                                                              referenceDate, toDate(localRef), name);
                                 }
                             }
 

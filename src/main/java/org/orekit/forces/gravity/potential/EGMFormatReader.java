@@ -64,7 +64,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      */
     public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed,
                            final boolean useWgs84Coefficients) {
-        super(supportedNames, missingCoefficientsAllowed);
+        super(supportedNames, missingCoefficientsAllowed, null);
         this.useWgs84Coefficients = useWgs84Coefficients;
     }
 

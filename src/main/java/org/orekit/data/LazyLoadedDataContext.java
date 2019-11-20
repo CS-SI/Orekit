@@ -41,7 +41,8 @@ public class LazyLoadedDataContext implements DataContext {
         this.dataProvidersManager = new DataProvidersManager();
         this.eop = new LazyLoadedEop(dataProvidersManager);
         this.timeScales = new LazyLoadedTimeScales(eop);
-        this.gravityFields = new LazyLoadedGravityFields(dataProvidersManager);
+        this.gravityFields =
+                new LazyLoadedGravityFields(dataProvidersManager, timeScales.getTT());
         this.geoMagneticFields = new LazyLoadedGeoMagneticFields(dataProvidersManager);
         // creating Frames and CelestialBodies here creates an initialization problem for
         // DataContext.getDefault(). Delay creating them until they are used for the first
