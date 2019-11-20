@@ -2461,7 +2461,7 @@ public enum IERSConventions {
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param timeScale time scale for computing Greenwich Mean Sidereal Time
-     * (typically {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
+     * (typically {@link TimeScales#getUT1(IERSConventions, boolean) UT1})
      * @return fundamental nutation arguments
      * @since 6.1
      * @see #getNutationArguments(TimeScale, TimeScales)
@@ -2475,7 +2475,7 @@ public enum IERSConventions {
      * Get the fundamental nutation arguments.
      *
      * @param timeScale time scale for computing Greenwich Mean Sidereal Time (typically
-     *                  {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
+     *                  {@link TimeScales#getUT1(IERSConventions, boolean) UT1})
      * @param timeScales other time scales used in the computation including TAI and TT.
      * @return fundamental nutation arguments
      * @since 10.1
