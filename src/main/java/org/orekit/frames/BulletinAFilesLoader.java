@@ -103,7 +103,7 @@ import org.orekit.utils.IERSConventions;
  * of a month, it will have a roughly one month wide hole between the
  * final data and the rapid data. This hole will trigger an error as EOP
  * continuity is checked by default for at most 5 days holes. In this case,
- * users should call something like {@link FramesFactory#setEOPContinuityThreshold(double)
+ * users should call something like {@link Frames#setEOPContinuityThreshold(double)
  * FramesFactory.setEOPContinuityThreshold(Constants.JULIAN_YEAR)} to prevent
  * the error to be triggered.
  * </p>

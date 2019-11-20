@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 
@@ -85,7 +86,8 @@ public class FactoryManagedFrame extends Frame {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return FramesFactory.getFrame(Predefined.valueOf(name));
+                return DataContext.getDefault().getFrames()
+                        .getFrame(Predefined.valueOf(name));
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

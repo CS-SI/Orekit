@@ -146,6 +146,7 @@ import org.orekit.utils.IERSConventions;
  * @author Guylaine Prat
  * @author Luc Maisonobe
  * @author Pascal Parraud
+ * @see Frames
  */
 public class FramesFactory {
 

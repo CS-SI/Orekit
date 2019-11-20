@@ -17,6 +17,8 @@
 
 package org.orekit.frames;
 
+import org.orekit.time.AbsoluteDate;
+
 /** Interface for Transform providers that use {@link EOPHistory Earth Orientation Parameters}.
  * @author Luc Maisonobe
  * @since 7.1
