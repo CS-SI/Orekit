@@ -55,9 +55,6 @@ abstract class SDP4  extends TLEPropagator {
     /** New inclination. */
     protected double xinc;
 
-    /** UTC time scale. */
-    protected TimeScale utc;
-
     // CHECKSTYLE: resume VisibilityModifier check
 
     /** Constructor for a unique initial TLE.
@@ -68,7 +65,6 @@ abstract class SDP4  extends TLEPropagator {
     protected SDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                    final double mass) {
         super(initialTLE, attitudeProvider, mass);
-        this.utc = initialTLE.getUtc();
     }
 
     /** Initialization proper to each propagator (SGP or SDP).

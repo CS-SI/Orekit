@@ -30,6 +30,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -64,6 +65,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** Initial state. */
     protected final TLE tle;
+
+    /** UTC time scale. */
+    protected final TimeScale utc;
 
     /** final RAAN. */
     protected double xnode;
@@ -174,6 +178,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         this.tle  = initialTLE;
         this.teme = FramesFactory.getTEME();
         this.mass = mass;
+        this.utc = initialTLE.getUtc();
         initializeCommons();
         sxpInitialize();
         // set the initial state
