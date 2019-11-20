@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.Constants;
@@ -333,7 +334,7 @@ public class UTCScale implements TimeScale {
          */
         private Object readResolve() {
             try {
-                return TimeScalesFactory.getUTC();
+                return DataContext.getDefault().getTimeScales().getUTC();
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }
