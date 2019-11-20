@@ -327,6 +327,15 @@ public class TLE implements TimeStamped, Serializable {
 
     }
 
+    /**
+     * Get the UTC time scale used to create this TLE.
+     *
+     * @return UTC time scale.
+     */
+    TimeScale getUtc() {
+        return utc;
+    }
+
     /** Get the first line.
      * @return first line
      */

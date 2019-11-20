@@ -21,7 +21,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** This class contains methods to compute propagated coordinates with the SDP4 model.
@@ -55,6 +55,9 @@ abstract class SDP4  extends TLEPropagator {
     /** New inclination. */
     protected double xinc;
 
+    /** UTC time scale. */
+    protected TimeScale utc;
+
     // CHECKSTYLE: resume VisibilityModifier check
 
     /** Constructor for a unique initial TLE.
@@ -65,6 +68,7 @@ abstract class SDP4  extends TLEPropagator {
     protected SDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                    final double mass) {
         super(initialTLE, attitudeProvider, mass);
+        this.utc = initialTLE.getUtc();
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
@@ -114,12 +118,12 @@ abstract class SDP4  extends TLEPropagator {
      * @param date the current date
      * @return the ERA (rad)
      */
-    protected static double thetaG(final AbsoluteDate date) {
+    protected double thetaG(final AbsoluteDate date) {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
         final double omega_E = 1.00273790934;
         final double jd = date
-                .getComponents(TimeScalesFactory.getUTC())
+                .getComponents(utc)
                 .offsetFrom(DateTimeComponents.JULIAN_EPOCH) /
                 Constants.JULIAN_DAY;
 
