@@ -428,7 +428,8 @@ public class LazyLoadedFrames implements Frames {
                         (ITRFProvider) rawITRF.getTransformProvider(),
                         version.toString().replace('_', '-') +
                                 "/" +
-                                rawITRF.getName());
+                                rawITRF.getName(),
+                        timeScales.getTT());
                 versionedItrfFrames.put(key, frame);
             }
 

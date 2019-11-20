@@ -20,8 +20,10 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 
 
 /** Provider for a specific version of International Terrestrial Reference Frame.
@@ -46,14 +48,21 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
     /** Converter between different ITRF versions. */
     private final AtomicReference<ITRFVersion.Converter> converter;
 
+    /** TT time scale. */
+    private final TimeScale tt;
+
     /** Simple constructor.
      * @param version ITRF version this provider should generate
      * @param rawProvider raw ITRF provider
+     * @param tt TT time scale.
      */
-    VersionedITRFProvider(final ITRFVersion version, final ITRFProvider rawProvider) {
+    VersionedITRFProvider(final ITRFVersion version,
+                          final ITRFProvider rawProvider,
+                          final TimeScale tt) {
         this.version     = version;
         this.rawProvider = rawProvider;
         this.converter   = new AtomicReference<ITRFVersion.Converter>();
+        this.tt = tt;
     }
 
     /** Get the ITRF version.
@@ -72,7 +81,7 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public VersionedITRFProvider getNonInterpolatingProvider() {
-        return new VersionedITRFProvider(version, rawProvider.getNonInterpolatingProvider());
+        return new VersionedITRFProvider(version, rawProvider.getNonInterpolatingProvider(), tt);
     }
 
     /** {@inheritDoc} */
@@ -130,7 +139,8 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
         }
 
         // we need to create a new converter from raw version to desired version
-        final ITRFVersion.Converter newConverter = ITRFVersion.getConverter(rawVersion, version);
+        final ITRFVersion.Converter newConverter =
+                ITRFVersion.getConverter(rawVersion, version, tt);
         converter.compareAndSet(null, newConverter);
         return newConverter;
 
@@ -168,7 +178,8 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
          * @return replacement {@link VersionedITRFProvider}
          */
         private Object readResolve() {
-            return new VersionedITRFProvider(version, rawProvider);
+            return new VersionedITRFProvider(version, rawProvider,
+                    DataContext.getDefault().getTimeScales().getTT());
         }
 
     }

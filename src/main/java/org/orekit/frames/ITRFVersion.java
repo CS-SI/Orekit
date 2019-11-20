@@ -17,11 +17,12 @@
 package org.orekit.frames;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.HelmertTransformation;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 
 /** Enumerate for ITRF versions.
  * @see EOPEntry
@@ -135,11 +136,29 @@ public enum ITRFVersion {
     }
 
     /** Find a converter between specified ITRF frames.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param origin origin ITRF
      * @param destination destination ITRF
      * @return transform from {@code origin} to {@code destination}
+     * @see #getConverter(ITRFVersion, ITRFVersion, TimeScale)
      */
     public static Converter getConverter(final ITRFVersion origin, final ITRFVersion destination) {
+        return getConverter(origin, destination,
+                DataContext.getDefault().getTimeScales().getTT());
+    }
+
+    /** Find a converter between specified ITRF frames.
+     * @param origin origin ITRF
+     * @param destination destination ITRF
+     * @param tt TT time scale.
+     * @return transform from {@code origin} to {@code destination}
+     * @since 10.1
+     */
+    public static Converter getConverter(final ITRFVersion origin,
+                                         final ITRFVersion destination,
+                                         final TimeScale tt) {
 
         TransformProvider provider = null;
 
@@ -150,13 +169,13 @@ public enum ITRFVersion {
 
         if (provider == null) {
             // try to find a direct provider
-            provider = getDirectTransformProvider(origin, destination);
+            provider = getDirectTransformProvider(origin, destination, tt);
         }
 
         if (provider == null) {
             // no direct provider found, use ITRF 2014 as a pivot frame
-            provider = TransformProviderUtils.getCombinedProvider(getDirectTransformProvider(origin, ITRF_2014),
-                                                                  getDirectTransformProvider(ITRF_2014, destination));
+            provider = TransformProviderUtils.getCombinedProvider(getDirectTransformProvider(origin, ITRF_2014, tt),
+                                                                  getDirectTransformProvider(ITRF_2014, destination, tt));
         }
 
         // build the converter, to keep the origin and destination information
@@ -167,18 +186,22 @@ public enum ITRFVersion {
     /** Find a direct transform provider between specified ITRF frames.
      * @param origin origin ITRF
      * @param destination destination ITRF
+     * @param tt TT time scale.
      * @return transform from {@code origin} to {@code destination}, or null if no direct transform is found
      */
-    private static TransformProvider getDirectTransformProvider(final ITRFVersion origin, final ITRFVersion destination) {
+    private static TransformProvider getDirectTransformProvider(
+            final ITRFVersion origin,
+            final ITRFVersion destination,
+            final TimeScale tt) {
 
         // loop over all predefined transforms
         for (final HelmertTransformation.Predefined predefined : HelmertTransformation.Predefined.values()) {
             if (predefined.getOrigin() == origin && predefined.getDestination() == destination) {
                 // we have an Helmert transformation in the specified direction
-                return predefined.getTransformation();
+                return predefined.getTransformation(tt);
             } else if (predefined.getOrigin() == destination && predefined.getDestination() == origin) {
                 // we have an Helmert transformation in the opposite direction
-                return TransformProviderUtils.getReversedProvider(predefined.getTransformation());
+                return TransformProviderUtils.getReversedProvider(predefined.getTransformation(tt));
             }
         }
 
