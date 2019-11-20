@@ -24,10 +24,11 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
 /** The Global Mapping Function  model for radio techniques.
@@ -59,13 +60,33 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     /** Geodetic site longitude, radians.*/
     private final double longitude;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** Build a new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude geodetic latitude of the station, in radians
+     * @see #GlobalMappingFunctionModel(double, double, TimeScale)
+     */
+    public GlobalMappingFunctionModel(final double latitude, final double longitude) {
+        this(latitude, longitude, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
     /** Build a new instance.
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
+     * @param utc UTC time scale.
+     * @since 10.1
      */
-    public GlobalMappingFunctionModel(final double latitude, final double longitude) {
+    public GlobalMappingFunctionModel(final double latitude,
+                                      final double longitude,
+                                      final TimeScale utc) {
         this.latitude  = latitude;
         this.longitude = longitude;
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
@@ -73,7 +94,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     public double[] mappingFactors(final double elevation, final double height,
                                    final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // bh and ch constants (Boehm, J et al, 2006) | HYDROSTATIC PART
@@ -158,7 +179,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
                                                               final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         final Field<T> field = date.getField();

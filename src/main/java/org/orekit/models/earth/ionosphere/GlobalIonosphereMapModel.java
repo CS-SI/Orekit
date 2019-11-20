@@ -49,7 +49,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
 /**
@@ -158,6 +158,9 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     /** Map of interpolated TEC at a specific date. */
     private Map<AbsoluteDate, Double> tecMap;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /**
      * Constructor with supported names given by user. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -165,10 +168,12 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      * @param supportedNames regular expression that matches the names of the IONEX files
      *                       to be loaded. See {@link DataProvidersManager#feed(String,
      *                       DataLoader)}.
-     * @see #GlobalIonosphereMapModel(String, DataProvidersManager)
+     * @see #GlobalIonosphereMapModel(String, DataProvidersManager, TimeScale)
      */
     public GlobalIonosphereMapModel(final String supportedNames) {
-        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+        this(supportedNames,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -178,13 +183,17 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      *                             files to be loaded. See {@link DataProvidersManager#feed(String,
      *                             DataLoader)}.
      * @param dataProvidersManager provides access to auxiliary data files.
+     * @param utc                  UTC time scale.
+     * @since 10.1
      */
     public GlobalIonosphereMapModel(final String supportedNames,
-                                    final DataProvidersManager dataProvidersManager) {
+                                    final DataProvidersManager dataProvidersManager,
+                                    final TimeScale utc) {
         super(supportedNames, dataProvidersManager);
         this.latitude       = Double.NaN;
         this.longitude      = Double.NaN;
         this.tecMap         = new HashMap<>();
+        this.utc = utc;
     }
 
     /**
@@ -314,13 +323,13 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         checkDate(date);
 
         // Date and Time components
-        final DateTimeComponents dateTime = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dateTime = date.getComponents(utc);
         // Find the two closest dates of the current date
         final double secInDay   = dateTime.getTime().getSecondsInLocalDay();
         final double ratio      = FastMath.floor(secInDay / dt) * dt;
         final AbsoluteDate tI   = new AbsoluteDate(dateTime.getDate(),
                                                    new TimeComponents(ratio),
-                                                   TimeScalesFactory.getUTC());
+                                                   utc);
         final AbsoluteDate tIp1 = tI.shiftedBy(dt);
 
         // Get the TEC values at the two closest dates
@@ -352,13 +361,13 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         final Field<T> field = date.getField();
 
         // Date and Time components
-        final DateTimeComponents dateTime = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dateTime = date.getComponents(utc);
         // Find the two closest dates of the current date
         final double secInDay           = dateTime.getTime().getSecondsInLocalDay();
         final double ratio              = FastMath.floor(secInDay / dt) * dt;
         final FieldAbsoluteDate<T> tI   = new FieldAbsoluteDate<>(field, dateTime.getDate(),
                                                                   new TimeComponents(ratio),
-                                                                  TimeScalesFactory.getUTC());
+                                                                  utc);
         final FieldAbsoluteDate<T> tIp1 = tI.shiftedBy(dt);
 
         // Get the TEC values at the two closest dates
@@ -676,7 +685,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                     parseInt(line, 18, 6),
                                     parseInt(line, 24, 6),
                                     parseDouble(line, 30, 13),
-                                    TimeScalesFactory.getUTC());
+                                    utc);
         }
 
         /** Build the coordinate array from a parsed line.

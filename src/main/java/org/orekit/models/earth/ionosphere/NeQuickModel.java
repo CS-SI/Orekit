@@ -33,6 +33,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
@@ -42,7 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -95,11 +96,29 @@ public class NeQuickModel implements IonosphericModel {
     /** Fm3 coefficients used by the F2 layer. */
     private double[][][] fm3;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /**
+     * Build a new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param alpha effective ionisation level coefficients
+     * @see #NeQuickModel(double[], TimeScale)
+     */
+    public NeQuickModel(final double[] alpha) {
+        this(alpha, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
     /**
      * Build a new instance.
      * @param alpha effective ionisation level coefficients
+     * @param utc UTC time scale.
+     * @since 10.1
      */
-    public NeQuickModel(final double[] alpha) {
+    public NeQuickModel(final double[] alpha,
+                        final TimeScale utc) {
         // F2 layer values
         this.month = 0;
         this.f2    = null;
@@ -110,6 +129,7 @@ public class NeQuickModel implements IonosphericModel {
         this.stModip = parser.getMODIPGrid();
         // Ionisation level coefficients
         this.alpha = alpha.clone();
+        this.utc = utc;
     }
 
     @Override
@@ -179,7 +199,7 @@ public class NeQuickModel implements IonosphericModel {
         final Ray ray = new Ray(recP, satP);
 
         // Load the correct CCIR file
-        final DateTimeComponents dateTime = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dateTime = date.getComponents(utc);
         loadsIfNeeded(dateTime.getDate());
 
         // Tolerance for the integration accuracy. Defined inside the reference document, section 2.5.8.1.
@@ -240,7 +260,7 @@ public class NeQuickModel implements IonosphericModel {
         final FieldRay<T> ray = new FieldRay<>(field, recP, satP);
 
         // Load the correct CCIR file
-        final DateTimeComponents dateTime = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dateTime = date.getComponents(utc);
         loadsIfNeeded(dateTime.getDate());
 
         // Tolerance for the integration accuracy. Defined inside the reference document, section 2.5.8.1.

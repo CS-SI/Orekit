@@ -41,7 +41,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.troposphere.ViennaOneModel;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** The Global Pressure and Temperature 2 (GPT2) model.
@@ -128,6 +128,9 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
     /** Geoid used to compute the undulations. */
     private final Geoid geoid;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /**
      * Constructor with supported names given by user. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -137,12 +140,13 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
      * @param longitude longitude geodetic longitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
      * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
-     * DataProvidersManager)
+     * DataProvidersManager, TimeScale)
      */
     public GlobalPressureTemperature2Model(final String supportedNames, final double latitude,
                                            final double longitude, final Geoid geoid) {
         this(supportedNames, latitude, longitude, geoid,
-                DataContext.getDefault().getDataProvidersManager());
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -153,19 +157,22 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
      * @param longitude longitude geodetic longitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
      * @param dataProvidersManager provides access to auxiliary data.
+     * @param utc UTC time scale.
      * @since 10.1
      */
     public GlobalPressureTemperature2Model(final String supportedNames,
                                            final double latitude,
                                            final double longitude,
                                            final Geoid geoid,
-                                           final DataProvidersManager dataProvidersManager) {
+                                           final DataProvidersManager dataProvidersManager,
+                                           final TimeScale utc) {
         this.coefficientsA = null;
         this.temperature   = Double.NaN;
         this.pressure      = Double.NaN;
         this.e0            = Double.NaN;
         this.geoid         = geoid;
         this.latitude      = latitude;
+        this.utc = utc;
 
         // get the lazily loaded shared grid
         Grid grid = SHARED_GRID.get();
@@ -197,7 +204,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
      * @param longitude geodetic latitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
      * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
-     * DataProvidersManager)
+     * DataProvidersManager, TimeScale)
      */
     public GlobalPressureTemperature2Model(final double latitude, final double longitude, final Geoid geoid) {
         this(DEFAULT_SUPPORTED_NAMES, latitude, longitude, geoid);
@@ -238,7 +245,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
     @Override
     public void weatherParameters(final double stationHeight, final AbsoluteDate currentDate) {
 
-        final int dayOfYear = currentDate.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
+        final int dayOfYear = currentDate.getComponents(utc).getDate().getDayOfYear();
 
         // ah and aw coefficients
         coefficientsA = new double[] {

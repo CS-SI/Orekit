@@ -28,6 +28,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -36,7 +37,6 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -1012,6 +1012,35 @@ public class NRLMSISE00 implements Atmosphere {
     /** Switches for cross effects. */
     private final int[] swc;
 
+    /** UT1 time scale. */
+    private final TimeScale ut1;
+
+    /** Constructor.
+     * <p>
+     * The model is constructed with all switches set to 1.
+     * </p>
+     * <p>
+     * Parameters are mandatory only for the
+     * {@link #getDensity(AbsoluteDate, Vector3D, Frame) getDensity()} and
+     * {@link #getVelocity(AbsoluteDate, Vector3D, Frame) getVelocity()} methods.
+     * </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param parameters the solar and magnetic activity data
+     * @param sun the Sun position
+     * @param earth the Earth body shape
+     * @see #NRLMSISE00(NRLMSISE00InputParameters, PVCoordinatesProvider, BodyShape,
+     * TimeScale)
+     */
+    public NRLMSISE00(final NRLMSISE00InputParameters parameters,
+                      final PVCoordinatesProvider sun,
+                      final BodyShape earth) {
+        this(parameters, sun, earth,
+                DataContext.getDefault().getTimeScales()
+                        .getUT1(IERSConventions.IERS_2010, true));
+    }
+
     /** Constructor.
      * <p>
      * The model is constructed with all switches set to 1.
@@ -1024,11 +1053,14 @@ public class NRLMSISE00 implements Atmosphere {
      * @param parameters the solar and magnetic activity data
      * @param sun the Sun position
      * @param earth the Earth body shape
+     * @param ut1 UT1 time scale.
+     * @since 10.1
      */
     public NRLMSISE00(final NRLMSISE00InputParameters parameters,
                       final PVCoordinatesProvider sun,
-                      final BodyShape earth) {
-        this(parameters, sun, earth, allOnes(), allOnes());
+                      final BodyShape earth,
+                      final TimeScale ut1) {
+        this(parameters, sun, earth, allOnes(), allOnes(), ut1);
     }
 
     /** Constructor.
@@ -1045,17 +1077,20 @@ public class NRLMSISE00 implements Atmosphere {
      * @param earth the Earth body shape
      * @param sw switches for main effects
      * @param swc switches for cross effects
+     * @param ut1 UT1 time scale.
      */
     private NRLMSISE00(final NRLMSISE00InputParameters parameters,
-                      final PVCoordinatesProvider sun,
-                      final BodyShape earth,
-                      final int[] sw,
-                      final int[] swc) {
+                       final PVCoordinatesProvider sun,
+                       final BodyShape earth,
+                       final int[] sw,
+                       final int[] swc,
+                       final TimeScale ut1) {
         this.inputParams = parameters;
         this.sun         = sun;
         this.earth       = earth;
         this.sw          = sw;
         this.swc         = swc;
+        this.ut1 = ut1;
     }
 
     /** Change a switch.
@@ -1086,7 +1121,7 @@ public class NRLMSISE00 implements Atmosphere {
             newSwc[number] = newSw[number];
         }
 
-        return new NRLMSISE00(inputParams, sun, earth, newSwc, newSwc);
+        return new NRLMSISE00(inputParams, sun, earth, newSwc, newSwc, ut1);
 
     }
 
@@ -1119,7 +1154,7 @@ public class NRLMSISE00 implements Atmosphere {
         }
 
         // compute day number in current year and the seconds within the day
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true));
+        final DateTimeComponents dtc = date.getComponents(ut1);
         final int    doy = dtc.getDate().getDayOfYear();
         final double sec = dtc.getTime().getSecondsInLocalDay();
 
@@ -1156,7 +1191,6 @@ public class NRLMSISE00 implements Atmosphere {
         }
 
         // compute day number in current year and the seconds within the day
-        final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         final DateTimeComponents dtc = dateD.getComponents(ut1);
         final int    doy = dtc.getDate().getDayOfYear();
         final T sec = date.durationFrom(new AbsoluteDate(dtc.getDate(), TimeComponents.H00, ut1));

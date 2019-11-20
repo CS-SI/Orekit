@@ -43,7 +43,6 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.Month;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
@@ -133,6 +132,9 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
     /** Selected strength level of activity. */
     private final StrengthLevel strengthLevel;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /** First available date. */
     private AbsoluteDate firstDate;
 
@@ -155,11 +157,13 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
      * </p>
      * @param supportedNames regular expression for supported files names
      * @param strengthLevel selected strength level of activity
+     * @see #MarshallSolarActivityFutureEstimation(String, StrengthLevel, DataProvidersManager, TimeScale)
      */
     public MarshallSolarActivityFutureEstimation(final String supportedNames,
                                                  final StrengthLevel strengthLevel) {
         this(supportedNames, strengthLevel,
-                DataContext.getDefault().getDataProvidersManager());
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -168,17 +172,21 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
      * @param supportedNames regular expression for supported files names
      * @param strengthLevel selected strength level of activity
      * @param dataProvidersManager provides access to auxiliary data files.
+     * @param utc UTC time scale.
+     * @since 10.1
      */
     public MarshallSolarActivityFutureEstimation(
             final String supportedNames,
             final StrengthLevel strengthLevel,
-            final DataProvidersManager dataProvidersManager) {
+            final DataProvidersManager dataProvidersManager,
+            final TimeScale utc) {
         super(supportedNames, dataProvidersManager);
 
         firstDate           = null;
         lastDate            = null;
         data                = new TreeSet<>(new ChronologicalComparator());
         this.strengthLevel  = strengthLevel;
+        this.utc = utc;
 
         // the data lines have the following form:
         // 2010.5003   JUL    83.4      81.3      78.7       6.4       5.9       5.2
@@ -500,7 +508,6 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
         // read the data
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         boolean inData = false;
-        final TimeScale utc = TimeScalesFactory.getUTC();
         DateComponents fileDate = null;
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             line = line.trim();
@@ -514,7 +521,7 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
                     // extract the data from the line
                     final int year = Integer.parseInt(matcher.group(1));
                     final Month month = Month.parseMonth(matcher.group(2));
-                    final AbsoluteDate date = new AbsoluteDate(year, month, 1, utc);
+                    final AbsoluteDate date = new AbsoluteDate(year, month, 1, this.utc);
                     if (fileDate == null) {
                         // the first entry of each file correspond exactly to 6 months before file publication
                         // so we compute the file date by adding 6 months to its first entry
