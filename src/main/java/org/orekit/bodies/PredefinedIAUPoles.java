@@ -23,9 +23,10 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 
 /** Enumerate for predefined IAU poles.
@@ -41,16 +42,16 @@ import org.orekit.utils.Constants;
  */
 abstract class PredefinedIAUPoles implements IAUPole {
 
-    /** TDB time scale. */
-    private final TimeScale tdb;
+    /** Time scales. */
+    private final TimeScales timeScales;
 
     /**
      * Simple constructor.
      *
-     * @param tdb the TDB time scale to use when computing the pole.
+     * @param timeScales to use when computing the pole, including TDB and J2000.0.
      */
-    PredefinedIAUPoles(final TimeScale tdb) {
-        this.tdb = tdb;
+    PredefinedIAUPoles(final TimeScales timeScales) {
+        this.timeScales = timeScales;
     }
 
     /** IAU pole and prime meridian model for Sun. */
@@ -69,10 +70,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Sun(final TimeScale tdb) {
-            super(tdb);
+        Sun(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -166,10 +167,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Mercury(final TimeScale tdb) {
-            super(tdb);
+        Mercury(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -226,10 +227,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Venus(final TimeScale tdb) {
-            super(tdb);
+        Venus(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -278,10 +279,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Earth(final TimeScale tdb) {
-            super(tdb);
+        Earth(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -515,10 +516,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Moon(final TimeScale tdb) {
-            super(tdb);
+        Moon(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -631,10 +632,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Mars(final TimeScale tdb) {
-            super(tdb);
+        Mars(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -747,10 +748,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Jupiter(final TimeScale tdb) {
-            super(tdb);
+        Jupiter(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -838,10 +839,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Saturn(final TimeScale tdb) {
-            super(tdb);
+        Saturn(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -886,10 +887,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Uranus(final TimeScale tdb) {
-            super(tdb);
+        Uranus(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -947,10 +948,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Neptune(final TimeScale tdb) {
-            super(tdb);
+        Neptune(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -997,10 +998,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        Pluto(final TimeScale tdb) {
-            super(tdb);
+        Pluto(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -1037,10 +1038,10 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /**
          * Simple constructor.
          *
-         * @param tdb the TDB time scale to use when computing the pole.
+         * @param timeScales to use when computing the pole, including TDB and J2000.0.
          */
-        GcrfAligned(final TimeScale tdb) {
-            super(tdb);
+        GcrfAligned(final TimeScales timeScales) {
+            super(timeScales);
         }
 
         /** {@inheritDoc} */
@@ -1080,60 +1081,60 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     /** Get a predefined IAU pole.
      * @param body body identifier
-     * @param tdb the TDB time scale.
+     * @param timeScales to use when computing the pole, including TDB and J2000.0.
      * @return predefined IAU pole
      */
-    public static PredefinedIAUPoles getIAUPole(final JPLEphemeridesLoader.EphemerisType body,
-                                                final TimeScale tdb) {
+    public static PredefinedIAUPoles getIAUPole(final EphemerisType body,
+                                                final TimeScales timeScales) {
 
         switch(body) {
             case SUN :
-                return new Sun(tdb);
+                return new Sun(timeScales);
             case MERCURY :
-                return new Mercury(tdb);
+                return new Mercury(timeScales);
             case VENUS :
-                return new Venus(tdb);
+                return new Venus(timeScales);
             case EARTH :
-                return new Earth(tdb);
+                return new Earth(timeScales);
             case MOON :
-                return new Moon(tdb);
+                return new Moon(timeScales);
             case MARS :
-                return new Mars(tdb);
+                return new Mars(timeScales);
             case JUPITER :
-                return new Jupiter(tdb);
+                return new Jupiter(timeScales);
             case SATURN :
-                return new Saturn(tdb);
+                return new Saturn(timeScales);
             case URANUS :
-                return new Uranus(tdb);
+                return new Uranus(timeScales);
             case NEPTUNE :
-                return new Neptune(tdb);
+                return new Neptune(timeScales);
             case PLUTO :
-                return new Pluto(tdb);
+                return new Pluto(timeScales);
             default :
-                return new GcrfAligned(tdb);
+                return new GcrfAligned(timeScales);
         }
     }
 
     /**
      * List of predefined IAU poles.
      *
-     * @param tdb the TDB time scale.
+     * @param timeScales to use when computing the pole, including TDB and J2000.0.
      * @return the poles.
      */
-    static List<PredefinedIAUPoles> values(final TimeScale tdb) {
+    static List<PredefinedIAUPoles> values(final TimeScales timeScales) {
         final List<PredefinedIAUPoles> values = new ArrayList<>(12);
-        values.add(new Sun(tdb));
-        values.add(new Mercury(tdb));
-        values.add(new Venus(tdb));
-        values.add(new Earth(tdb));
-        values.add(new Moon(tdb));
-        values.add(new Mars(tdb));
-        values.add(new Jupiter(tdb));
-        values.add(new Saturn(tdb));
-        values.add(new Uranus(tdb));
-        values.add(new Neptune(tdb));
-        values.add(new Pluto(tdb));
-        values.add(new GcrfAligned(tdb));
+        values.add(new Sun(timeScales));
+        values.add(new Mercury(timeScales));
+        values.add(new Venus(timeScales));
+        values.add(new Earth(timeScales));
+        values.add(new Moon(timeScales));
+        values.add(new Mars(timeScales));
+        values.add(new Jupiter(timeScales));
+        values.add(new Saturn(timeScales));
+        values.add(new Uranus(timeScales));
+        values.add(new Neptune(timeScales));
+        values.add(new Pluto(timeScales));
+        values.add(new GcrfAligned(timeScales));
         return values;
     }
 
@@ -1142,7 +1143,8 @@ abstract class PredefinedIAUPoles implements IAUPole {
      * @return interval between date and standard epoch in julian centuries
      */
     protected double t(final AbsoluteDate date) {
-        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, tdb) / Constants.JULIAN_CENTURY;
+        return date.offsetFrom(timeScales.getJ2000Epoch(), timeScales.getTDB()) /
+                Constants.JULIAN_CENTURY;
     }
 
     /** Compute the interval in julian centuries from standard epoch.
@@ -1151,7 +1153,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
      * @return interval between date and standard epoch in julian centuries
      */
     protected <T extends RealFieldElement<T>> T t(final FieldAbsoluteDate<T> date) {
-        return date.offsetFrom(FieldAbsoluteDate.getJ2000Epoch(date.getField()), tdb).divide(Constants.JULIAN_CENTURY);
+        final FieldAbsoluteDate<T> j2000Epoch =
+                new FieldAbsoluteDate<>(date.getField(), timeScales.getJ2000Epoch());
+        return date.offsetFrom(j2000Epoch, timeScales.getTDB()).divide(Constants.JULIAN_CENTURY);
     }
 
     /** Compute the interval in julian days from standard epoch.
@@ -1159,7 +1163,8 @@ abstract class PredefinedIAUPoles implements IAUPole {
      * @return interval between date and standard epoch in julian days
      */
     protected double d(final AbsoluteDate date) {
-        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, tdb) / Constants.JULIAN_DAY;
+        return date.offsetFrom(timeScales.getJ2000Epoch(), timeScales.getTDB()) /
+                Constants.JULIAN_DAY;
     }
 
     /** Compute the interval in julian days from standard epoch.
@@ -1168,7 +1173,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
      * @return interval between date and standard epoch in julian days
      */
     protected <T extends RealFieldElement<T>> T d(final FieldAbsoluteDate<T> date) {
-        return date.offsetFrom(FieldAbsoluteDate.getJ2000Epoch(date.getField()), tdb).divide(Constants.JULIAN_DAY);
+        final FieldAbsoluteDate<T> j2000Epoch =
+                new FieldAbsoluteDate<>(date.getField(), timeScales.getJ2000Epoch());
+        return date.offsetFrom(j2000Epoch, timeScales.getTDB()).divide(Constants.JULIAN_DAY);
     }
 
     /** Convert an angle to radians.

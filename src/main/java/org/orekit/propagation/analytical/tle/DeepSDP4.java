@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -186,10 +187,10 @@ public class DeepSDP4 extends SDP4 {
         final double aqnv = 1.0 / a0dp;
 
         // Compute julian days since 1900
-        final double daysSince1900 =
-            (tle.getDate().durationFrom(AbsoluteDate.JULIAN_EPOCH) +
-             tle.getDate().timeScalesOffset(TimeScalesFactory.getUTC(), TimeScalesFactory.getTT())) / Constants.JULIAN_DAY - 2415020;
-
+        final double daysSince1900 = (tle.getDate()
+                .getComponents(TimeScalesFactory.getUTC())
+                .offsetFrom(DateTimeComponents.JULIAN_EPOCH)) /
+                Constants.JULIAN_DAY - 2415020;
 
         double cc = C1SS;
         double ze = ZES;

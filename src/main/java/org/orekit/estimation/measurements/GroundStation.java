@@ -195,7 +195,7 @@ public class GroundStation {
         } else {
             arguments = eopHistory.getConventions().getNutationArguments(
                     estimatedEarthFrameProvider.getEstimatedUT1(),
-                    eopHistory.getTimeScales().getTAI());
+                    eopHistory.getTimeScales());
         }
 
         this.displacements = displacements.clone();

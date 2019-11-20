@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -80,7 +81,7 @@ public class TEMEProviderTest {
     public void testSerialization() throws IOException, ClassNotFoundException {
         TEMEProvider provider = new TEMEProvider(IERSConventions.IERS_2010,
                                                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
-                                               TimeScalesFactory.getTAI());
+                                               DataContext.getDefault().getTimeScales());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);

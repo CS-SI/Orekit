@@ -23,8 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
@@ -59,7 +57,7 @@ public class PredefinedIAUPolesTest {
 
     @Test
     public void testGCRFAligned() throws UnsupportedEncodingException, IOException {
-        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER, tdb);
+        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
         Assert.assertEquals(0,   Vector3D.distance(pole, Vector3D.PLUS_K), 1.0e-15);
@@ -68,7 +66,7 @@ public class PredefinedIAUPolesTest {
 
     @Test
     public void testSun() throws UnsupportedEncodingException, IOException {
-        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN, tdb);
+        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
         final double deltaRef    = FastMath.toRadians(63.87);
@@ -112,7 +110,7 @@ public class PredefinedIAUPolesTest {
                 Rotation rRef = new Rotation(m, 1.0e-10);
 
                 // check pole
-                IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type, tdb);
+                IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type, timeScales);
                 Vector3D pole = iauPole.getPole(date2);
                 double w = iauPole.getPrimeMeridianAngle(date2);
                 Assert.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
@@ -136,7 +134,7 @@ public class PredefinedIAUPolesTest {
     @Test
     public void testVersus80Implementation() {
         for (EphemerisType body : EphemerisType.values()) {
-            IAUPole    newPole = PredefinedIAUPoles.getIAUPole(body, tdb);
+            IAUPole    newPole = PredefinedIAUPoles.getIAUPole(body, timeScales);
             OldIAUPole oldPole = IAUPoleFactory.getIAUPole(body);
             for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
@@ -149,7 +147,7 @@ public class PredefinedIAUPolesTest {
 
     @Test
     public void testFieldConsistency() {
-        for (IAUPole iaupole : PredefinedIAUPoles.values(tdb)) {
+        for (IAUPole iaupole : PredefinedIAUPoles.values(timeScales)) {
             for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
                 final FieldAbsoluteDate<Decimal64> date64 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date);
@@ -166,7 +164,7 @@ public class PredefinedIAUPolesTest {
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
         final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 60.0);
-        for (final IAUPole iaupole : PredefinedIAUPoles.values(tdb)) {
+        for (final IAUPole iaupole : PredefinedIAUPoles.values(timeScales)) {
 
             UnivariateDifferentiableVectorFunction dPole = differentiator.differentiate(new UnivariateVectorFunction() {
                 @Override
@@ -202,12 +200,12 @@ public class PredefinedIAUPolesTest {
 
     }
 
-    private TimeScale tdb;
+    private TimeScales timeScales;
 
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        tdb = DataContext.getDefault().getTimeScales().getTDB();
+        timeScales = DataContext.getDefault().getTimeScales();
     }
 
 }

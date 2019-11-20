@@ -52,19 +52,24 @@ public class TDBScale implements TimeScale {
     /** TT time scale. */
     private final TimeScale tt;
 
+    /** Reference Epoch. */
+    private final AbsoluteDate j2000Epoch;
+
     /**
      * Package private constructor for the factory.
      *
-     * @param tt TT time scale.
+     * @param tt         TT time scale.
+     * @param j2000Epoch reference date for this time scale.
      */
-    TDBScale(final TimeScale tt) {
+    TDBScale(final TimeScale tt, final AbsoluteDate j2000Epoch) {
         this.tt = tt;
+        this.j2000Epoch = j2000Epoch;
     }
 
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
+        final double dtDays = date.durationFrom(j2000Epoch) / Constants.JULIAN_DAY;
         final double g = FastMath.toRadians(G0 + G1 * dtDays);
         return tt.offsetFromTAI(date) + (SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g));
     }
@@ -72,7 +77,7 @@ public class TDBScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        final T dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH).divide(Constants.JULIAN_DAY);
+        final T dtDays = date.durationFrom(j2000Epoch).divide(Constants.JULIAN_DAY);
         final T g = dtDays.multiply(G1).add(G0).multiply(FastMath.PI / 180);
         return tt.offsetFromTAI(date).
                         add(g.sin().multiply(SIN_G_FACTOR).add(g.multiply(2).sin().multiply(SIN_2G_FACTOR)));

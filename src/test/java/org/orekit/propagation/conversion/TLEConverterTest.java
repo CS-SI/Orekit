@@ -19,6 +19,7 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +101,9 @@ public class TLEConverterTest {
         TLEPropagator prop = (TLEPropagator)fitter.getAdaptedPropagator();
         TLE fitted = prop.getTLE();
 
-        Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.001 * expectedRMS);
+        // changes to the RMS less than the threshold are not significant
+        double tolerance = FastMath.max(threshold, 0.001 * expectedRMS);
+        Assert.assertEquals(expectedRMS, fitter.getRMS(), tolerance);
 
         Assert.assertEquals(tle.getSatelliteNumber(),         fitted.getSatelliteNumber());
         Assert.assertEquals(tle.getClassification(),          fitted.getClassification());

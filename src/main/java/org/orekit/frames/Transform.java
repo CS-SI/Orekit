@@ -765,7 +765,7 @@ public class Transform
 
         /** Simple constructor. */
         IdentityTransform() {
-            super(AbsoluteDate.J2000_EPOCH, PVCoordinates.ZERO, AngularCoordinates.IDENTITY);
+            super(AbsoluteDate.ARBITRARY_EPOCH, PVCoordinates.ZERO, AngularCoordinates.IDENTITY);
         }
 
         /** {@inheritDoc} */

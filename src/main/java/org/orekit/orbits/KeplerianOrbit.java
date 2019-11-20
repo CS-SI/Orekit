@@ -28,6 +28,7 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -1618,8 +1619,10 @@ public class KeplerianOrbit extends Orbit {
             final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
 
             // decompose date
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
+            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             if (orbit.hasDerivatives()) {
                 // we have derivatives
@@ -1647,17 +1650,19 @@ public class KeplerianOrbit extends Orbit {
          * @return replacement {@link KeplerianOrbit}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             if (d.length >= 15) {
                 // we have derivatives
                 return new KeplerianOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                           d[ 9], d[10], d[11], d[12], d[13], d[14],
                                           PositionAngle.TRUE,
-                                          frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                          frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                           d[2]);
             } else {
                 // we don't have derivatives
                 return new KeplerianOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
-                                          frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                          frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                           d[2]);
             }
         }

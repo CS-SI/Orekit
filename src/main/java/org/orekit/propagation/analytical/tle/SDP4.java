@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -117,9 +118,10 @@ abstract class SDP4  extends TLEPropagator {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
         final double omega_E = 1.00273790934;
-        final double jd = (date.durationFrom(AbsoluteDate.JULIAN_EPOCH) +
-                           date.timeScalesOffset(TimeScalesFactory.getUTC(), TimeScalesFactory.getTT())
-                          ) / Constants.JULIAN_DAY;
+        final double jd = date
+                .getComponents(TimeScalesFactory.getUTC())
+                .offsetFrom(DateTimeComponents.JULIAN_EPOCH) /
+                Constants.JULIAN_DAY;
 
         // Earth rotations per sidereal day (non-constant)
         final double UT = (jd + 0.5) % 1;

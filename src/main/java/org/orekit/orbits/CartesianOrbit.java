@@ -28,6 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -745,8 +746,10 @@ public class CartesianOrbit extends Orbit {
             final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
 
             // decompose date
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
+            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             if (orbit.hasDerivatives()) {
                 this.d = new double[] {
@@ -771,16 +774,18 @@ public class CartesianOrbit extends Orbit {
          * @return replacement {@link CartesianOrbit}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             if (d.length >= 12) {
                 // we have derivatives
-                return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                return new CartesianOrbit(new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                                                        new Vector3D(d[3], d[ 4], d[ 5]),
                                                                        new Vector3D(d[6], d[ 7], d[ 8]),
                                                                        new Vector3D(d[9], d[10], d[11])),
                                           frame, d[2]);
             } else {
                 // we don't have derivatives
-                return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                return new CartesianOrbit(new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                                                        new Vector3D(d[3], d[ 4], d[ 5]),
                                                                        new Vector3D(d[6], d[ 7], d[ 8])),
                                           frame, d[2]);

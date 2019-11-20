@@ -26,11 +26,14 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -171,16 +174,40 @@ public class JB2008 implements Atmosphere {
     /** Earth body shape. */
     private BodyShape earth;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /** Constructor with space environment information for internal computation.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
+     * @see #JB2008(JB2008InputParameters, PVCoordinatesProvider, BodyShape, TimeScale)
      */
     public JB2008(final JB2008InputParameters parameters,
                   final PVCoordinatesProvider sun, final BodyShape earth) {
+        this(parameters, sun, earth, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Constructor with space environment information for internal computation.
+     *
+     * @param parameters the solar and magnetic activity data
+     * @param sun        the sun position
+     * @param earth      the earth body shape
+     * @param utc        UTC time scale. Used to computed the day fraction.
+     * @since 10.1
+     */
+    public JB2008(final JB2008InputParameters parameters,
+                  final PVCoordinatesProvider sun,
+                  final BodyShape earth,
+                  final TimeScale utc) {
         this.earth = earth;
         this.sun = sun;
         this.inputParams = parameters;
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
@@ -1185,7 +1212,9 @@ public class JB2008 implements Atmosphere {
         }
 
         // compute MJD date
-        final double dateMJD = date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / Constants.JULIAN_DAY;
+        final DateTimeComponents dt = date.getComponents(utc);
+        final double dateMJD = dt.getDate().getMJD() +
+                dt.getTime().getSecondsInLocalDay() / Constants.JULIAN_DAY;
 
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(position, frame, date);
@@ -1221,7 +1250,12 @@ public class JB2008 implements Atmosphere {
         }
 
         // compute MJD date
-        final T dateMJD = date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH).divide(Constants.JULIAN_DAY);
+        final DateTimeComponents components = date.getComponents(utc);
+        final T dateMJD = date
+                .durationFrom(new FieldAbsoluteDate<>(date.getField(), components, utc))
+                .add(components.getTime().getSecondsInLocalDay())
+                .divide(Constants.JULIAN_DAY)
+                .add(components.getDate().getMJD());
 
         // compute geodetic position (km and °)
         final FieldGeodeticPoint<T> inBody = earth.transform(position, frame, date);

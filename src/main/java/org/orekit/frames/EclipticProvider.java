@@ -24,11 +24,13 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -59,11 +61,26 @@ public class EclipticProvider implements TransformProvider {
 
     /**
      * Create a transform provider from MOD to an ecliptically aligned frame.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param conventions IERS conventions
+     * @see #EclipticProvider(IERSConventions, TimeScales)
      */
-    public EclipticProvider(final IERSConventions conventions) {
+    public EclipticProvider(final IERSConventions conventions) { // TODO
+        this(conventions, DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Create a transform provider from MOD to an ecliptically aligned frame.
+     * @param conventions IERS conventions
+     * @param timeScales to use in computing the transformation.
+     * @since 10.1
+     */
+    public EclipticProvider(final IERSConventions conventions,
+                            final TimeScales timeScales) {
         this.conventions = conventions;
-        this.obliquity   = conventions.getMeanObliquityFunction();
+        this.obliquity   = conventions.getMeanObliquityFunction(timeScales);
     }
 
     @Override

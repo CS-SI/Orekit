@@ -31,6 +31,14 @@ import org.orekit.utils.Constants;
  */
 public class DateTimeComponents implements Serializable, Comparable<DateTimeComponents> {
 
+    /**
+     * The Julian Epoch.
+     *
+     * @see TimeScales#getJulianEpoch()
+     */
+    public static final DateTimeComponents JULIAN_EPOCH =
+            new DateTimeComponents(DateComponents.JULIAN_EPOCH, TimeComponents.H12);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 5061129505488924484L;
 

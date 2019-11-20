@@ -23,13 +23,13 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 
@@ -58,20 +58,19 @@ class TODProvider implements EOPBasedTransformProvider {
 
     /**
      * Simple constructor.
-     *
-     * @param conventions IERS conventions to apply
+     *  @param conventions IERS conventions to apply
      * @param eopHistory  EOP history, or {@code null} if no correction should be
      *                    applied.
-     * @param tai         TAI time scale.
+     * @param timeScales         TAI time scale.
      */
     TODProvider(final IERSConventions conventions,
                 final EOPHistory eopHistory,
-                final TimeScale tai) {
+                final TimeScales timeScales) {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
-        this.obliquityFunction = conventions.getMeanObliquityFunction();
+        this.obliquityFunction = conventions.getMeanObliquityFunction(timeScales);
         this.nutationFunction  =
-                conventions.getNutationFunction(tai);
+                conventions.getNutationFunction(timeScales);
     }
 
     /**
@@ -205,7 +204,8 @@ class TODProvider implements EOPBasedTransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new TODProvider(conventions, eopHistory, TimeScalesFactory.getTAI());
+                return new TODProvider(conventions, eopHistory,
+                        DataContext.getDefault().getTimeScales());
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

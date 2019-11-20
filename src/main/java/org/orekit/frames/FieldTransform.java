@@ -914,7 +914,8 @@ public class FieldTransform<T extends RealFieldElement<T>>
          * @param field field for the components
          */
         FieldIdentityTransform(final Field<T> field) {
-            super(FieldAbsoluteDate.getJ2000Epoch(field), AbsoluteDate.J2000_EPOCH,
+            super(FieldAbsoluteDate.getArbitraryEpoch(field),
+                  FieldAbsoluteDate.getArbitraryEpoch(field).toAbsoluteDate(),
                   FieldPVCoordinates.getZero(field),
                   FieldAngularCoordinates.getIdentity(field));
         }

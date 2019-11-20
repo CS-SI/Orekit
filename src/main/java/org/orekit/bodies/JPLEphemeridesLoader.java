@@ -308,7 +308,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
         final double gm       = getLoadedGravitationalCoefficient(generateType);
         final IAUPole iauPole = PredefinedIAUPoles
-                .getIAUPole(generateType, timeScales.getTDB());
+                .getIAUPole(generateType, timeScales);
         final double scale;
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;

@@ -25,13 +25,13 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 
@@ -62,19 +62,18 @@ class TEMEProvider implements EOPBasedTransformProvider {
 
     /**
      * Simple constructor.
-     *
-     * @param conventions IERS conventions to apply
+     *  @param conventions IERS conventions to apply
      * @param eopHistory  EOP history or {@code null} if no corrections should be
      *                    applied.
-     * @param tai         TAI time scale.
+     * @param timeScales  other time scales used in computing the transform.
      */
     TEMEProvider(final IERSConventions conventions,
                  final EOPHistory eopHistory,
-                 final TimeScale tai) {
+                 final TimeScales timeScales) {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
-        this.obliquityFunction = conventions.getMeanObliquityFunction();
-        this.nutationFunction  = conventions.getNutationFunction(tai);
+        this.obliquityFunction = conventions.getMeanObliquityFunction(timeScales);
+        this.nutationFunction  = conventions.getNutationFunction(timeScales);
     }
 
     /**
@@ -220,7 +219,8 @@ class TEMEProvider implements EOPBasedTransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new TEMEProvider(conventions, eopHistory, TimeScalesFactory.getTAI());
+                return new TEMEProvider(conventions, eopHistory,
+                        DataContext.getDefault().getTimeScales());
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

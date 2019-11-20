@@ -289,7 +289,7 @@ public class LazyLoadedTimeScales implements TimeScales {
         synchronized (this) {
 
             if (tdb == null) {
-                tdb = new TDBScale(getTT());
+                tdb = new TDBScale(getTT(), getJ2000Epoch());
             }
 
             return tdb;

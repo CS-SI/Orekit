@@ -24,6 +24,7 @@ import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -391,8 +392,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         private DTO(final AbsolutePVCoordinates absPva) {
 
             // decompose date
-            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(j2000Epoch));
+            final double offset = absPva.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             this.d = new double[] {
                 epoch, offset,
@@ -408,8 +411,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
          * @return replacement {@link AbsolutePVCoordinates}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             return new AbsolutePVCoordinates(frame,
-                                             AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              new Vector3D(d[2], d[3], d[ 4]),
                                              new Vector3D(d[5], d[6], d[ 7]),
                                              new Vector3D(d[8], d[9], d[10]));

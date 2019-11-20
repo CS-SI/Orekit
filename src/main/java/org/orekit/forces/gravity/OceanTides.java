@@ -35,6 +35,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -103,10 +104,10 @@ public class OceanTides extends AbstractForceModel {
         // load the ocean tides model
         final List<OceanTidesWave> waves = GravityFieldFactory.getOceanTidesWaves(degree, order);
 
-        final TimeScale tai = ut1.getEOPHistory().getTimeScales().getTAI();
+        final TimeScales timeScales = ut1.getEOPHistory().getTimeScales();
         final OceanTidesField raw =
                 new OceanTidesField(ae, mu, waves,
-                                    conventions.getNutationArguments(ut1, tai),
+                                    conventions.getNutationArguments(ut1, timeScales),
                                     poleTide ? conventions.getOceanPoleTide(ut1.getEOPHistory()) : null);
 
         final NormalizedSphericalHarmonicsProvider provider;

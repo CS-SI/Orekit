@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -108,98 +107,97 @@ public class AbsoluteDate
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getJulianEpoch()
      */
     public static final AbsoluteDate JULIAN_EPOCH =
-        new AbsoluteDate(DateComponents.JULIAN_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
+            DataContext.getDefault().getTimeScales().getJulianEpoch();
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time.
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getModifiedJulianEpoch()
      */
     public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
-        new AbsoluteDate(DateComponents.MODIFIED_JULIAN_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
+            DataContext.getDefault().getTimeScales().getModifiedJulianEpoch();
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time.
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getFiftiesEpoch()
      */
     public static final AbsoluteDate FIFTIES_EPOCH =
-        new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
+            DataContext.getDefault().getTimeScales().getFiftiesEpoch();
 
     /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4):
      * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC).
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getCcsdsEpoch()
      */
     public static final AbsoluteDate CCSDS_EPOCH =
-        new AbsoluteDate(DateComponents.CCSDS_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
+            DataContext.getDefault().getTimeScales().getCcsdsEpoch();
 
     /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 GST.
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getGalileoEpoch()
      */
     public static final AbsoluteDate GALILEO_EPOCH =
-        new AbsoluteDate(DateComponents.GALILEO_EPOCH, TimeComponents.H00, TimeScalesFactory.getGST());
+            DataContext.getDefault().getTimeScales().getGalileoEpoch();
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time.
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getGpsEpoch()
      */
     public static final AbsoluteDate GPS_EPOCH =
-        new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, TimeScalesFactory.getGPS());
+            DataContext.getDefault().getTimeScales().getGpsEpoch();
 
     /** Reference epoch for QZSS weeks: 1980-01-06T00:00:00 QZSS time.
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getQzssEpoch()
      */
     public static final AbsoluteDate QZSS_EPOCH =
-        new AbsoluteDate(DateComponents.QZSS_EPOCH, TimeComponents.H00, TimeScalesFactory.getQZSS());
+            DataContext.getDefault().getTimeScales().getQzssEpoch();
 
     /** Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC.
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getBeidouEpoch()
      */
     public static final AbsoluteDate BEIDOU_EPOCH =
-        new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, TimeScalesFactory.getBDT());
+            DataContext.getDefault().getTimeScales().getBeidouEpoch();
 
     /** Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00 GLONASS time.
      * <p>By convention, TGLONASS = UTC + 3 hours.</p>
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getGlonassEpoch()
      */
     public static final AbsoluteDate GLONASS_EPOCH =
-                    new AbsoluteDate(DateComponents.GLONASS_EPOCH,
-                                     new TimeComponents(29.0), TimeScalesFactory.getTAI()).shiftedBy(-10800.0);
+            DataContext.getDefault().getTimeScales().getGlonassEpoch();
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
      * @see #createJulianEpoch(double)
      * @see #createBesselianEpoch(double)
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getJ2000Epoch()
      */
-    public static final AbsoluteDate J2000_EPOCH =
-        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
+    public static final AbsoluteDate J2000_EPOCH = // TODO
+            DataContext.getDefault().getTimeScales().getJ2000Epoch();
 
     /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate.
      * <p>
@@ -207,22 +205,28 @@ public class AbsoluteDate
      * As on 1970-01-01 MJD = 40587, UTC-TAI = 8.000082s
      * </p>
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
      * @see TimeScales#getJavaEpoch()
      */
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeScalesFactory.getTAI()).shiftedBy(8.000082);
+            DataContext.getDefault().getTimeScales().getJavaEpoch();
+
+    /**
+     * An arbitrary finite date. Uses when a non-null date is needed but its value doesn't
+     * matter.
+     */
+    public static final AbsoluteDate ARBITRARY_EPOCH = new AbsoluteDate(0, 0);
 
     /** Dummy date at infinity in the past direction.
      * @see TimeScales#getPastInfinity()
      */
-    public static final AbsoluteDate PAST_INFINITY = JAVA_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY);
+    public static final AbsoluteDate PAST_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY);
 
     /** Dummy date at infinity in the future direction.
      * @see TimeScales#getFutureInfinity()
      */
-    public static final AbsoluteDate FUTURE_INFINITY = JAVA_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
+    public static final AbsoluteDate FUTURE_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 617061803741806846L;
@@ -235,6 +239,10 @@ public class AbsoluteDate
     private final double offset;
 
     /** Create an instance with a default value ({@link #J2000_EPOCH}).
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see #AbsoluteDate(DateTimeComponents, TimeScale)
      */
     public AbsoluteDate() {
         epoch  = J2000_EPOCH.epoch;
@@ -504,6 +512,10 @@ public class AbsoluteDate
      * field introduced in version 4 of the standard is not used, then the
      * {@code preambleField2} parameter can be set to 0.
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context} if
+     * the CCSDS epoch is used.
+     *
      * @param preambleField1 first byte of the field specifying the format, often
      * not transmitted in data interfaces, as it is constant for a given data interface
      * @param preambleField2 second byte of the field specifying the format
@@ -515,18 +527,60 @@ public class AbsoluteDate
      * specifies the {@link #CCSDS_EPOCH CCSDS reference epoch} is used (and hence
      * may be null in this case)
      * @return an instance corresponding to the specified date
+     * @see #parseCCSDSUnsegmentedTimeCode(byte, byte, byte[], AbsoluteDate, AbsoluteDate)
      */
     public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(final byte preambleField1,
                                                              final byte preambleField2,
                                                              final byte[] timeField,
                                                              final AbsoluteDate agencyDefinedEpoch) {
+        return parseCCSDSUnsegmentedTimeCode(preambleField1, preambleField2, timeField,
+                agencyDefinedEpoch,
+                DataContext.getDefault().getTimeScales().getCcsdsEpoch());
+    }
+
+    /**
+     * Build an instance from a CCSDS Unsegmented Time Code (CUC).
+     * <p>
+     * CCSDS Unsegmented Time Code is defined in the blue book: CCSDS Time Code Format
+     * (CCSDS 301.0-B-4) published in November 2010
+     * </p>
+     * <p>
+     * If the date to be parsed is formatted using version 3 of the standard (CCSDS
+     * 301.0-B-3 published in 2002) or if the extension of the preamble field introduced
+     * in version 4 of the standard is not used, then the {@code preambleField2} parameter
+     * can be set to 0.
+     * </p>
+     *
+     * @param preambleField1     first byte of the field specifying the format, often not
+     *                           transmitted in data interfaces, as it is constant for a
+     *                           given data interface
+     * @param preambleField2     second byte of the field specifying the format (added in
+     *                           revision 4 of the CCSDS standard in 2010), often not
+     *                           transmitted in data interfaces, as it is constant for a
+     *                           given data interface (value ignored if presence not
+     *                           signaled in {@code preambleField1})
+     * @param timeField          byte array containing the time code
+     * @param agencyDefinedEpoch reference epoch, ignored if the preamble field specifies
+     *                           the {@link #CCSDS_EPOCH CCSDS reference epoch} is used
+     *                           (and hence may be null in this case)
+     * @param ccsdsEpoch         reference epoch, ignored if the preamble field specifies
+     *                           the agency epoch is used.
+     * @return an instance corresponding to the specified date
+     * @since 10.1
+     */
+    public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(
+            final byte preambleField1,
+            final byte preambleField2,
+            final byte[] timeField,
+            final AbsoluteDate agencyDefinedEpoch,
+            final AbsoluteDate ccsdsEpoch) {
 
         // time code identification and reference epoch
         final AbsoluteDate epoch;
         switch (preambleField1 & 0x70) {
             case 0x10:
                 // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
-                epoch = CCSDS_EPOCH;
+                epoch = ccsdsEpoch;
                 break;
             case 0x20:
                 // the reference epoch is agency defined
@@ -828,14 +882,17 @@ public class AbsoluteDate
      * <p>
      * This method reverts the formula above and computes an {@code AbsoluteDate} from the Julian Epoch.
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param julianEpoch Julian epoch, like 2000.0 for defining the classical reference J2000.0
      * @return a new instant
      * @see #J2000_EPOCH
      * @see #createBesselianEpoch(double)
+     * @see TimeScales#createJulianEpoch(double)
      */
     public static AbsoluteDate createJulianEpoch(final double julianEpoch) {
-        return new AbsoluteDate(J2000_EPOCH,
-                                Constants.JULIAN_YEAR * (julianEpoch - 2000.0));
+        return DataContext.getDefault().getTimeScales().createJulianEpoch(julianEpoch);
     }
 
     /** Build an instance corresponding to a Besselian Epoch (BE).
@@ -849,15 +906,17 @@ public class AbsoluteDate
      * <p>
      * This method reverts the formula above and computes an {@code AbsoluteDate} from the Besselian Epoch.
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param besselianEpoch Besselian epoch, like 1950 for defining the classical reference B1950.0
      * @return a new instant
      * @see #createJulianEpoch(double)
+     * @see TimeScales#createBesselianEpoch(double)
      */
     public static AbsoluteDate createBesselianEpoch(final double besselianEpoch) {
-        return new AbsoluteDate(J2000_EPOCH,
-                                MathArrays.linearCombination(Constants.BESSELIAN_YEAR, besselianEpoch - 1900,
-                                                             Constants.JULIAN_DAY, -36525,
-                                                             Constants.JULIAN_DAY, 0.31352));
+        return DataContext.getDefault().getTimeScales()
+                .createBesselianEpoch(besselianEpoch);
     }
 
     /** Get a time-shifted date.
@@ -1145,7 +1204,7 @@ public class AbsoluteDate
      * @return hashcode
      */
     public int hashCode() {
-        final long l = Double.doubleToLongBits(durationFrom(J2000_EPOCH));
+        final long l = Double.doubleToLongBits(durationFrom(ARBITRARY_EPOCH));
         return (int) (l ^ (l >>> 32));
     }
 

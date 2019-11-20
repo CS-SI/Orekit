@@ -14,6 +14,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 
 /**
  * Loads Earth Orientation Parameters (EOP)from a configured set of {@link
@@ -290,7 +291,9 @@ public class LazyLoadedEop {
             if (eopHistoryLoaders.containsKey(conventions)) {
                 for (final EOPHistoryLoader loader : eopHistoryLoaders.get(conventions)) {
                     try {
-                        loader.fillHistory(conventions.getNutationCorrectionConverter(), data);
+                        loader.fillHistory(
+                                conventions.getNutationCorrectionConverter(timeScales),
+                                data);
                     } catch (OrekitException oe) {
                         pendingException = oe;
                     }

@@ -47,7 +47,7 @@ public class TimeSpanMap<T> {
      */
     public TimeSpanMap(final T entry) {
         data = new TreeSet<Transition<T>>(new ChronologicalComparator());
-        data.add(new Transition<T>(AbsoluteDate.J2000_EPOCH, entry, entry));
+        data.add(new Transition<T>(AbsoluteDate.ARBITRARY_EPOCH, entry, entry));
     }
 
     /** Add an entry valid before a limit date.

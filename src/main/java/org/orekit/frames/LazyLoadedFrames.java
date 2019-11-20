@@ -334,8 +334,9 @@ public class LazyLoadedFrames implements Frames {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(parent, new EclipticProvider(conventions),
-                        true, factoryKey);
+                final EclipticProvider provider =
+                        new EclipticProvider(conventions, timeScales);
+                frame = new FactoryManagedFrame(parent, provider, true, factoryKey);
                 frames.put(factoryKey, frame);
             }
 
@@ -747,7 +748,7 @@ public class LazyLoadedFrames implements Frames {
                         null;
                 final TransformProvider shifting =
                         new ShiftingTransformProvider(
-                                new TODProvider(conventions, eopHistory, timeScales.getTAI()),
+                                new TODProvider(conventions, eopHistory, timeScales),
                                 CartesianDerivativesFilter.USE_PVA,
                                 AngularDerivativesFilter.USE_R,
                                 interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
@@ -818,7 +819,8 @@ public class LazyLoadedFrames implements Frames {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(parent, new MODProvider(conventions), true, factoryKey);
+                final MODProvider provider = new MODProvider(conventions, timeScales);
+                frame = new FactoryManagedFrame(parent, provider, true, factoryKey);
                 frames.put(factoryKey, frame);
             }
 
@@ -841,7 +843,7 @@ public class LazyLoadedFrames implements Frames {
                 final ShiftingTransformProvider todShifting =
                         (ShiftingTransformProvider) tod.getTransformProvider();
                 final TEMEProvider temeRaw =
-                        new TEMEProvider(IERSConventions.IERS_1996, null, timeScales.getTAI());
+                        new TEMEProvider(IERSConventions.IERS_1996, null, timeScales);
                 final TransformProvider temeShifting =
                         new ShiftingTransformProvider(temeRaw,
                                 CartesianDerivativesFilter.USE_PVA,

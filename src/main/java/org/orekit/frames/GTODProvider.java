@@ -87,8 +87,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
         final UT1Scale ut1 = timeScales.getUT1(eopHistory);
         this.conventions   = conventions;
         this.eopHistory    = eopHistory;
-        this.gastFunction  =
-                conventions.getGASTFunction(ut1, eopHistory, timeScales.getTAI());
+        this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory, timeScales);
     }
 
     /**

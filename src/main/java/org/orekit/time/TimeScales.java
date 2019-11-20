@@ -1,7 +1,9 @@
 package org.orekit.time;
 
+import org.hipparchus.util.MathArrays;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.Frames;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -243,4 +245,59 @@ public interface TimeScales {
      * @return the latest date.
      */
     AbsoluteDate getFutureInfinity();
+
+    /**
+     * Build an instance corresponding to a Julian Epoch (JE).
+     * <p>According to Lieske paper: <a
+     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&amp;defaultprint=YES&amp;filetype=.pdf.">
+     * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>,
+     * Astronomy and Astrophysics, vol. 73, no. 3, Mar. 1979, p. 282-284, Julian Epoch is
+     * related to Julian Ephemeris Date as:</p>
+     * <pre>
+     * JE = 2000.0 + (JED - 2451545.0) / 365.25
+     * </pre>
+     * <p>
+     * This method reverts the formula above and computes an {@code AbsoluteDate} from the
+     * Julian Epoch.
+     * </p>
+     *
+     * @param julianEpoch Julian epoch, like 2000.0 for defining the classical reference
+     *                    J2000.0
+     * @return a new instant
+     * @see #getJ2000Epoch()
+     * @see #createBesselianEpoch(double)
+     */
+    default AbsoluteDate createJulianEpoch(final double julianEpoch) {
+        return new AbsoluteDate(getJ2000Epoch(),
+                Constants.JULIAN_YEAR * (julianEpoch - 2000.0));
+    }
+
+    /**
+     * Build an instance corresponding to a Besselian Epoch (BE).
+     * <p>According to Lieske paper: <a
+     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&amp;defaultprint=YES&amp;filetype=.pdf.">
+     * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>,
+     * Astronomy and Astrophysics, vol. 73, no. 3, Mar. 1979, p. 282-284, Besselian Epoch
+     * is related to Julian Ephemeris Date as:</p>
+     * <pre>
+     * BE = 1900.0 + (JED - 2415020.31352) / 365.242198781
+     * </pre>
+     * <p>
+     * This method reverts the formula above and computes an {@code AbsoluteDate} from the
+     * Besselian Epoch.
+     * </p>
+     *
+     * @param besselianEpoch Besselian epoch, like 1950 for defining the classical
+     *                       reference B1950.0
+     * @return a new instant
+     * @see #createJulianEpoch(double)
+     */
+    default AbsoluteDate createBesselianEpoch(final double besselianEpoch) {
+        return new AbsoluteDate(getJ2000Epoch(),
+                MathArrays.linearCombination(
+                        Constants.BESSELIAN_YEAR, besselianEpoch - 1900,
+                        Constants.JULIAN_DAY, -36525,
+                        Constants.JULIAN_DAY, 0.31352));
+    }
+
 }
