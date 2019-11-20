@@ -34,7 +34,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -716,7 +715,9 @@ public class TDMParser extends DefaultHandler {
                                 tdmFile.setHeaderComment(parseInfo.commentTmp);
                                 parseInfo.commentTmp.clear();
                                 // Set creation date
-                                tdmFile.setCreationDate(new AbsoluteDate(parseInfo.keyValue.getValue(), TimeScalesFactory.getUTC()));
+                                tdmFile.setCreationDate(new AbsoluteDate(
+                                        parseInfo.keyValue.getValue(),
+                                        parseInfo.dataContext.getTimeScales().getUTC()));
                                 break;
 
                             case ORIGINATOR:
@@ -857,7 +858,9 @@ public class TDMParser extends DefaultHandler {
 
                         case CREATION_DATE:
                             // Set creation date
-                            parseInfo.tdmFile.setCreationDate(new AbsoluteDate(parseInfo.keyValue.getValue(), TimeScalesFactory.getUTC()));
+                            parseInfo.tdmFile.setCreationDate(new AbsoluteDate(
+                                    parseInfo.keyValue.getValue(),
+                                    parseInfo.dataContext.getTimeScales().getUTC()));
                             break;
 
                         case ORIGINATOR:

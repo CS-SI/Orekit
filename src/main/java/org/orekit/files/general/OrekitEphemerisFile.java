@@ -24,13 +24,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -144,6 +144,8 @@ public class OrekitEphemerisFile implements EphemerisFile {
          * has been stored internally. Defaults the celestial body to earth and
          * the interpolation size to the default.
          *
+         * <p>This method uses the {@link DataContext#getDefault() default data context}.
+         *
          * @param states
          *            a list of {@link SpacecraftState} that will comprise this
          *            new unit.
@@ -157,6 +159,8 @@ public class OrekitEphemerisFile implements EphemerisFile {
          * Injects pre-computed satellite states into this ephemeris file
          * object, returning the generated {@link OrekitEphemerisSegment} that
          * has been stored internally. Defaults the Celestial Body to be Earths
+         *
+         * <p>This method uses the {@link DataContext#getDefault() default data context}.
          *
          * @param states
          *            a list of {@link SpacecraftState} that will comprise this
@@ -176,6 +180,8 @@ public class OrekitEphemerisFile implements EphemerisFile {
          * object, returning the generated {@link OrekitEphemerisSegment} that
          * has been stored internally.
          *
+         * <p>This method uses the {@link DataContext#getDefault() default data context}.
+         *
          * @param states
          *            a list of {@link SpacecraftState} that will comprise this
          *            new unit.
@@ -185,9 +191,36 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            the number of interpolation samples that should be used
          *            when processed by another system
          * @return the generated {@link OrekitEphemerisSegment}
+         * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states, final CelestialBody body,
-                final int interpolationSampleSize) {
+                                                    final int interpolationSampleSize) {
+            return addNewSegment(states, body, interpolationSampleSize,
+                    DataContext.getDefault().getTimeScales().getUTC());
+        }
+
+        /**
+         * Injects pre-computed satellite states into this ephemeris file
+         * object, returning the generated {@link OrekitEphemerisSegment} that
+         * has been stored internally.
+         *
+         * @param states
+         *            a list of {@link SpacecraftState} that will comprise this
+         *            new unit.
+         * @param body
+         *            the celestial body the state's frames are with respect to
+         * @param interpolationSampleSize
+         *            the number of interpolation samples that should be used
+         *            when processed by another system
+         * @param timeScale
+         *            used in the new segment.
+         * @return the generated {@link OrekitEphemerisSegment}
+         * @since 10.1
+         */
+        public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states,
+                                                    final CelestialBody body,
+                                                    final int interpolationSampleSize,
+                                                    final TimeScale timeScale) {
             final int minimumSampleSize = 2;
             if (states == null || states.size() == 0) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "states");
@@ -217,7 +250,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
             final Frame frame = states.get(0).getFrame();
 
             final OrekitEphemerisSegment newSeg = new OrekitEphemerisSegment(coordinates, frame, body.getName(),
-                    body.getGM(), TimeScalesFactory.getUTC(), interpolationSampleSize);
+                    body.getGM(), timeScale, interpolationSampleSize);
             this.segments.add(newSeg);
 
             return newSeg;

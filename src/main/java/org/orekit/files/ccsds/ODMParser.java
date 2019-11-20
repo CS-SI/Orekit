@@ -28,7 +28,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -295,7 +294,9 @@ public abstract class ODMParser {
                     odmFile.setHeaderComment(comment);
                     comment.clear();
                 }
-                odmFile.setCreationDate(new AbsoluteDate(keyValue.getValue(), TimeScalesFactory.getUTC()));
+                odmFile.setCreationDate(new AbsoluteDate(
+                        keyValue.getValue(),
+                        dataContext.getTimeScales().getUTC()));
                 return true;
 
             case ORIGINATOR:
