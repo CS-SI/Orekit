@@ -23,6 +23,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -60,8 +61,8 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
 
     /** Simple constructor.
      * @param body the body to consider
-     * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
-     * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
+     * (ex: {@link CelestialBodies#getSun()} or
+     * {@link CelestialBodies#getMoon()})
      */
     public SingleBodyRelativeAttraction(final CelestialBody body) {
 

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -63,7 +64,7 @@ public class ODMMetaData {
     private CelestialBody centerBody;
 
     /** Tests whether the body corresponding to the center name can be
-     * created through the {@link org.orekit.bodies.CelestialBodyFactory} in order to obtain the
+     * created through {@link CelestialBodies} in order to obtain the
      * corresponding gravitational coefficient. */
     private boolean hasCreatableBody;
 
@@ -233,7 +234,7 @@ public class ODMMetaData {
     }
 
     /** Get boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link org.orekit.bodies.CelestialBodyFactory}.
+     * attribute can be created through the {@link CelestialBodies}.
      * @return true if {@link CelestialBody} can be created from centerName
      *         false otherwise
      */
@@ -242,7 +243,7 @@ public class ODMMetaData {
     }
 
     /** Set boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link org.orekit.bodies.CelestialBodyFactory}.
+     * attribute can be created through the {@link CelestialBodies}.
      * @param hasCreatableBody the boolean to be set.
      */
     void setHasCreatableBody(final boolean hasCreatableBody) {
