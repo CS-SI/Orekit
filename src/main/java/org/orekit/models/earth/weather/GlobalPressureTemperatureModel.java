@@ -19,13 +19,11 @@ package org.orekit.models.earth.weather;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataContext;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.Frame;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScale;
 
 /** The Global Pressure and Temperature model.
  * This model is an empirical model that provides the temperature and the pressure depending
@@ -64,8 +62,8 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
     /** Body frame related to body shape. */
     private final Frame bodyFrame;
 
-    /** UTC time scale. */
-    private final TimeScale utc;
+    /** Data context for time and gravity. */
+    private final DataContext dataContext;
 
     /** Build a new instance.
      * <p>
@@ -80,11 +78,10 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
      * @param longitude geodetic longitude, in radians
      * @param bodyFrame the frame to attach to the ellipsoid. The origin is at
      *                  the center of mass, the z axis is the minor axis.
-     * @see #GlobalPressureTemperatureModel(double, double, Frame, TimeScale) 
+     * @see #GlobalPressureTemperatureModel(double, double, Frame, DataContext)
      */
     public GlobalPressureTemperatureModel(final double latitude, final double longitude, final Frame bodyFrame) {
-        this(latitude, longitude, bodyFrame,
-                DataContext.getDefault().getTimeScales().getUTC());
+        this(latitude, longitude, bodyFrame, DataContext.getDefault());
     }
 
     /** Build a new instance.
@@ -96,19 +93,19 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
      * @param latitude geodetic latitude, in radians
      * @param longitude geodetic longitude, in radians
      * @param bodyFrame the frame to attach to the ellipsoid. The origin is at
-     * @param utc UTC time scale.
+     * @param dataContext to use for time and gravity.
      * @since 10.1
      */
     public GlobalPressureTemperatureModel(final double latitude,
                                           final double longitude,
                                           final Frame bodyFrame,
-                                          final TimeScale utc) {
+                                          final DataContext dataContext) {
         this.bodyFrame   = bodyFrame;
         this.latitude    = latitude;
         this.longitude   = longitude;
         this.temperature = Double.NaN;
         this.pressure    = Double.NaN;
-        this.utc = utc;
+        this.dataContext = dataContext;
     }
 
     /** Get the atmospheric temperature of the station depending its position.
@@ -129,7 +126,8 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
     public void weatherParameters(final double height, final AbsoluteDate date) {
 
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
+        final DateTimeComponents dtc =
+                date.getComponents(dataContext.getTimeScales().getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Reference day: 28 January 1980 (Niell, 1996)
@@ -143,8 +141,9 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
         final LegendrePolynomials p = new LegendrePolynomials(degree, order);
 
         // Geoid for height computation
-        final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(degree, order),
-                                      ReferenceEllipsoid.getWgs84(bodyFrame));
+        final Geoid geoid = new Geoid(
+                dataContext.getGravityFields().getNormalizedProvider(degree, order),
+                ReferenceEllipsoid.getWgs84(bodyFrame));
 
         // Corrected height
         final double correctedheight = FastMath.max(0.0, height - geoid.getUndulation(latitude, longitude, date));
