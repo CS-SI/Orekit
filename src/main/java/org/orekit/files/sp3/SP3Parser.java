@@ -134,12 +134,15 @@ public class SP3Parser implements EphemerisFileParser {
     /**
      * Default string to {@link Frame} conversion for {@link #SP3Parser()}.
      *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param name of the frame.
      * @return ITRF based on 2010 conventions,
      * with tidal effects considered during EOP interpolation.
      */
     private static Frame guessFrame(final String name) {
-        return FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        return DataContext.getDefault().getFrames()
+                .getITRF(IERSConventions.IERS_2010, false);
     }
 
     /**
