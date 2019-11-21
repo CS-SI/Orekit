@@ -328,6 +328,11 @@ public class OrekitEphemerisFile implements EphemerisFile {
         }
 
         @Override
+        public Frame getInertialFrame() {
+            return frame;
+        }
+
+        @Override
         public String getTimeScaleString() {
             return timeScaleString;
         }

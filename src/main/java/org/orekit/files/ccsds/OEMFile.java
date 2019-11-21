@@ -213,6 +213,15 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         }
 
         @Override
+        public Frame getInertialFrame() {
+            final Frame frame = getFrame();
+            if (frame.isPseudoInertial()) {
+                return frame;
+            }
+            return metaData.getODMFile().getDataContext().getFrames().getGCRF();
+        }
+
+        @Override
         public String getTimeScaleString() {
             return this.getMetaData().getTimeSystem().toString();
         }

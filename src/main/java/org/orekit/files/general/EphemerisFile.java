@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
@@ -182,11 +183,32 @@ public interface EphemerisFile {
         String getFrameString();
 
         /**
-         * Get the reference frame for this ephemeris segment.
+         * Get the reference frame for this ephemeris segment. The defining frame for
+         * {@link #getCoordinates()}.
          *
          * @return the reference frame for this segment. Never {@code null}.
          */
         Frame getFrame();
+
+        /**
+         * Get the inertial reference frame for this ephemeris segment. Defines the
+         * propagation frame for {@link #getPropagator()}.
+         *
+         * <p>The default implementation uses the {@link DataContext#getDefault() default
+         * data context} when {@link #getFrame()} is not inertial. It is recommended that
+         * classes override the default implementation.
+         *
+         * @return an reference frame that is ineratial, i.e. {@link
+         * Frame#isPseudoInertial()} is {@code true}. May be the same as {@link
+         * #getFrame()} if it is inertial.
+         */
+        default Frame getInertialFrame() {
+            final Frame frame = getFrame();
+            if (frame.isPseudoInertial()) {
+                return frame;
+            }
+            return DataContext.getDefault().getFrames().getGCRF();
+        }
 
         /**
          * Get the time scale for this ephemeris segment.
@@ -223,7 +245,7 @@ public interface EphemerisFile {
         CartesianDerivativesFilter getAvailableDerivatives();
 
         /**
-         * Get the coordinates for this ephemeris segment.
+         * Get the coordinates for this ephemeris segment in {@link #getFrame()}.
          *
          * @return a list of state vectors in chronological order. The coordinates are not
          * necessarily evenly spaced in time. The value of {@link
