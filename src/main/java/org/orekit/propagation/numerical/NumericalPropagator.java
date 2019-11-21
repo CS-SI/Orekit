@@ -26,6 +26,7 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -38,6 +39,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -158,13 +160,36 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngle#TRUE} for {@link
      * #setPositionAngleType(PositionAngle) position angle type}.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param integrator numerical integrator to use for propagation.
+     * @see #NumericalPropagator(ODEIntegrator, AttitudeProvider)
      */
     public NumericalPropagator(final ODEIntegrator integrator) {
+        this(integrator,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Create a new instance of NumericalPropagator, based on orbit definition mu.
+     * After creation, the instance is empty, i.e. the attitude provider is set to an
+     * unspecified default law and there are no perturbing forces at all.
+     * This means that if {@link #addForceModel addForceModel} is not
+     * called after creation, the integrated orbit will follow a Keplerian
+     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
+     * for {@link #setOrbitType(OrbitType) propagation
+     * orbit type} and {@link PositionAngle#TRUE} for {@link
+     * #setPositionAngleType(PositionAngle) position angle type}.
+     * @param integrator numerical integrator to use for propagation.
+     * @param attitudeProvider the attitude law.
+     * @since 10.1
+     */
+    public NumericalPropagator(final ODEIntegrator integrator,
+                               final AttitudeProvider attitudeProvider) {
         super(integrator, PropagationType.MEAN);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
-        setAttitudeProvider(DEFAULT_LAW);
+        setAttitudeProvider(attitudeProvider);
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);

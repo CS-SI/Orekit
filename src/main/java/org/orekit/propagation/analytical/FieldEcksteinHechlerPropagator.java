@@ -25,6 +25,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -34,6 +35,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -69,12 +71,18 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
 
     /** Build a propagator from FieldOrbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial FieldOrbit
      * @param provider for un-normalized zonal coefficients
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
+     * UnnormalizedSphericalHarmonicsProvider)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, DEFAULT_LAW, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+             initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
@@ -110,6 +118,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
      * <p>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial FieldOrbit
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m³/s²)
@@ -118,25 +129,34 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-          * @see org.orekit.utils.Constants
+     * @see org.orekit.utils.Constants
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, double,
+     * RealFieldElement, double, double, double, double, double)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, DEFAULT_LAW, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+             initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit, mass and potential provider.
      * <p>Attitude law is set to an unspecified non-null arbitrary value.</p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial FieldOrbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
+     * RealFieldElement, UnnormalizedSphericalHarmonicsProvider)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
     /** Build a propagator from FieldOrbit, mass and potential.
@@ -151,6 +171,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * <p>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial FieldOrbit
      * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -160,12 +182,15 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
+     * RealFieldElement, double, RealFieldElement, double, double, double, double, double)
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit, attitude provider and potential provider.

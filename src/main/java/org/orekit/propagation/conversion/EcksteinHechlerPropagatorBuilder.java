@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -43,6 +45,9 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
      * </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param templateOrbit reference orbit from which real orbits will be built
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
@@ -50,13 +55,44 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-          * @since 8.0
+     * @since 8.0
+     * @see #EcksteinHechlerPropagatorBuilder(Orbit,
+     * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider)
      */
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
                                             final PositionAngle positionAngle,
                                             final double positionScale) {
-        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale, true);
+        this(templateOrbit, provider, positionAngle, positionScale,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Build a new instance.
+     * <p>
+     * The template orbit is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, the orbit type, and is also
+     * used together with the {@code positionScale} to convert from the {@link
+     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters.
+     * </p>
+     * @param templateOrbit reference orbit from which real orbits will be built
+     * (note that the mu from this orbit will be overridden with the mu from the
+     * {@code provider})
+     * @param provider for un-normalized zonal coefficients
+     * @param positionAngle position angle type to use
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param attitudeProvider attitude law to use.
+     * @since 10.1
+     */
+    public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
+                                            final UnnormalizedSphericalHarmonicsProvider provider,
+                                            final PositionAngle positionAngle,
+                                            final double positionScale,
+                                            final AttitudeProvider attitudeProvider) {
+        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle,
+                positionScale, true, attitudeProvider);
         this.provider = provider;
     }
 
@@ -69,6 +105,9 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
      * </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param templateOrbit reference orbit from which real orbits will be built
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
@@ -84,7 +123,9 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-          * @since 8.0
+     * @since 8.0
+     * @see #EcksteinHechlerPropagatorBuilder(Orbit,
+     * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider)
      */
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final double referenceRadius,
@@ -157,7 +198,8 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
-        return new EcksteinHechlerPropagator(createInitialOrbit(), provider);
+        return new EcksteinHechlerPropagator(createInitialOrbit(), getAttitudeProvider(),
+                provider);
     }
 
 }

@@ -28,13 +28,14 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;
-import org.orekit.time.GLONASSScale;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -126,7 +127,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
 
         // Optional parameters
         /** The attitude provider. */
-        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        private AttitudeProvider attitudeProvider;
         /** The mass. */
         private double mass = DEFAULT_MASS;
         /** The ECI frame. */
@@ -139,7 +140,8 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         /** Initializes the builder.
          * <p>The GLONASS orbital elements is the only requested parameter to build a GLONASSPropagator.</p>
          * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+         *  default data context.<br>
          * The mass is set by default to the
          *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
          * The data context is by default to the
@@ -152,17 +154,48 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
          *  CIO/2010-based ITRF simple EOP} in the default data context.
          * </p>
          *
+         * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+         *
          * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASS propagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
+         * @see #Builder(GLONASSOrbitalElements, DataContext)
          */
         public Builder(final GLONASSOrbitalElements glonassOrbElt) {
+            this(glonassOrbElt, DataContext.getDefault());
+        }
+
+        /** Initializes the builder.
+         * <p>The GLONASS orbital elements is the only requested parameter to build a GLONASSPropagator.</p>
+         * <p>The attitude provider is set by default to the
+         *  {@link org.orekit.propagation.Propagator#getDefaultLaw(Frames)}.<br>
+         * The mass is set by default to the
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+         * The ECI frame is set by default to the
+         *  {@link Frames#getEME2000() EME2000 frame}.<br>
+         * The ECEF frame is set by default to the
+         *  {@link Frames#getITRF(IERSConventions, boolean) CIO/2010-based ITRF simple
+         *  EOP}.
+         * </p>
+         *
+         * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASS propagator.
+         * @param dataContext the data context to use for frames and time scales.
+         * @see #attitudeProvider(AttitudeProvider provider)
+         * @see #mass(double mass)
+         * @see #eci(Frame inertial)
+         * @see #ecef(Frame bodyFixed)
+         * @since 10.1
+         */
+        public Builder(final GLONASSOrbitalElements glonassOrbElt,
+                       final DataContext dataContext) {
             this.orbit = glonassOrbElt;
-            this.dataContext = DataContext.getDefault();
-            this.eci   = dataContext.getFrames().getEME2000();
-            this.ecef  = dataContext.getFrames().getITRF(IERSConventions.IERS_2010, true);
+            this.dataContext = dataContext;
+            final Frames frames = dataContext.getFrames();
+            this.eci   = frames.getEME2000();
+            this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
+            attitudeProvider = Propagator.getDefaultLaw(frames);
         }
 
         /** Sets the attitude provider.

@@ -35,6 +35,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -160,7 +161,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
 
         // Optional parameters
         /** The attitude provider. */
-        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        private AttitudeProvider attitudeProvider;
 
         /** The mass. */
         private double mass = DEFAULT_MASS;
@@ -174,13 +175,14 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         /**
          * Initializes the builder.
          * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+         *  default data context.<br>
          * The mass is set by default to the
          *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
          * The data context is by default to the
          *  {@link DataContext#getDefault() default data context}.<br>
          * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the data
+         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
          *  context.<br>
          * </p>
          *
@@ -200,6 +202,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             this.orbit          = glonassOrbElt;
             this.dataContext    = DataContext.getDefault();
             this.eci            = dataContext.getFrames().getEME2000();
+            attitudeProvider = Propagator.getDefaultLaw(dataContext.getFrames());
         }
 
         /**

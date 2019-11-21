@@ -21,12 +21,15 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -188,11 +191,28 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Selects the extrapolator to use with the selected TLE.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param tle the TLE to propagate.
      * @return the correct propagator.
+     * @see #selectExtrapolator(TLE, Frames)
      */
     public static TLEPropagator selectExtrapolator(final TLE tle) {
-        return selectExtrapolator(tle, DEFAULT_LAW, DEFAULT_MASS);
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames());
+    }
+
+    /** Selects the extrapolator to use with the selected TLE.
+     * @param tle the TLE to propagate.
+     * @param frames set of Frames to use in the propagator.
+     * @return the correct propagator.
+     * @since 10.1
+     */
+    public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
+        return selectExtrapolator(
+                tle,
+                Propagator.getDefaultLaw(frames),
+                DEFAULT_MASS);
     }
 
     /** Selects the extrapolator to use with the selected TLE.

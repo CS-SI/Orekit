@@ -81,7 +81,8 @@ public class OsculatingToMeanElementsConverter {
         final FiniteDifferencePropagatorConverter converter =
                 new FiniteDifferencePropagatorConverter(new KeplerianPropagatorBuilder(state.getOrbit(),
                                                                                        PositionAngle.MEAN,
-                                                                                       positionScale),
+                                                                                       positionScale,
+                                                                                       propagator.getAttitudeProvider()),
                                                         1.e-6, MAX_EVALUATION);
         final Propagator prop = converter.convert(propagator, timeSpan, satelliteRevolution * 36);
         return prop.getInitialState();

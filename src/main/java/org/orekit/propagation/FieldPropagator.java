@@ -22,7 +22,9 @@ import java.util.List;
 import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
@@ -49,7 +51,14 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-    /** Default attitude provider. */
+    /**
+     * Default attitude provider.
+     *
+     * <p>This field uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see Propagator#getDefaultLaw(Frames)
+     * @see InertialProvider#InertialProvider(Frame)
+     */
     AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 
     /** Indicator for slave mode. */

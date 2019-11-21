@@ -117,8 +117,10 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                                 final PositionAngle positionAngle,
                                 final double positionScale,
                                 final DataContext dataContext) {
-        super(TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getOrbit(),
-              positionAngle, positionScale, false);
+        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
+                        .getInitialState().getOrbit(),
+              positionAngle, positionScale, false,
+              Propagator.getDefaultLaw(dataContext.getFrames()));
         this.satelliteNumber         = templateTLE.getSatelliteNumber();
         this.classification          = templateTLE.getClassification();
         this.launchYear              = templateTLE.getLaunchYear();
@@ -167,7 +169,10 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                                 revolutionNumberAtEpoch, bStar,
                                 dataContext.getTimeScales().getUTC());
 
-        return TLEPropagator.selectExtrapolator(tle);
+        return TLEPropagator.selectExtrapolator(
+                tle,
+                getAttitudeProvider(),
+                Propagator.DEFAULT_MASS);
     }
 
 }

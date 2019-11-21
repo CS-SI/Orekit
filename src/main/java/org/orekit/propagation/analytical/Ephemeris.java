@@ -26,11 +26,13 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ImmutableTimeStampedCache;
@@ -79,11 +81,15 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * by up to the 1ms {@link #DEFAULT_EXTRAPOLATION_THRESHOLD_SEC default
      * extrapolation threshold}.
      * </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
           * @exception MathIllegalArgumentException if the number of states is smaller than
      * the number of points to use in interpolation
      * @see #Ephemeris(List, int, double)
+     * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
         throws MathIllegalArgumentException {
@@ -91,19 +97,42 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** Constructor with tabulated states.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
      * @param extrapolationThreshold the largest time difference in seconds between
      * the start or stop boundary of the ephemeris bounds to be doing extrapolation
-          * @exception MathIllegalArgumentException if the number of states is smaller than
+     * @exception MathIllegalArgumentException if the number of states is smaller than
      * the number of points to use in interpolation
      * @since 9.0
+     * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints,
                      final double extrapolationThreshold)
         throws MathIllegalArgumentException {
+        this(states, interpolationPoints, extrapolationThreshold,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
 
-        super(DEFAULT_LAW);
+    /** Constructor with tabulated states.
+     * @param states tabulates states
+     * @param interpolationPoints number of points to use in interpolation
+     * @param extrapolationThreshold the largest time difference in seconds between
+     * the start or stop boundary of the ephemeris bounds to be doing extrapolation
+     * @param attitudeProvider attitude law to use.
+     * @exception MathIllegalArgumentException if the number of states is smaller than
+     * the number of points to use in interpolation
+     * @since 10.1
+     */
+    public Ephemeris(final List<SpacecraftState> states,
+                     final int interpolationPoints,
+                     final double extrapolationThreshold,
+                     final AttitudeProvider attitudeProvider)
+        throws MathIllegalArgumentException {
+
+        super(attitudeProvider);
 
         if (states.size() < interpolationPoints) {
             throw new MathIllegalArgumentException(LocalizedCoreFormats.INSUFFICIENT_DIMENSION,
@@ -309,7 +338,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             if (FastMath.abs(dt) > closeEnoughTimeInSec) {
 
                 // used in case of attitude transition, the attitude computed is not at the current date.
-                final Ephemeris ephemeris = new Ephemeris(states, interpolationPoints, extrapolationThreshold);
+                final Ephemeris ephemeris = new Ephemeris(states, interpolationPoints, extrapolationThreshold, null);
                 return ephemeris.getPVCoordinates(date, f);
             }
 
