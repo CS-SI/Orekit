@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -150,9 +149,10 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            a list of {@link SpacecraftState} that will comprise this
          *            new unit.
          * @return the generated {@link OrekitEphemerisSegment}
+         * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states) {
-            return this.addNewSegment(states, CelestialBodyFactory.getEarth(), DEFAULT_INTERPOLATION_SIZE);
+            return this.addNewSegment(states, DEFAULT_INTERPOLATION_SIZE);
         }
 
         /**
@@ -169,10 +169,14 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            the number of interpolation samples that should be used
          *            when processed by another system
          * @return the generated {@link OrekitEphemerisSegment}
+         * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states,
                 final int interpolationSampleSize) {
-            return this.addNewSegment(states, CelestialBodyFactory.getEarth(), interpolationSampleSize);
+            return this.addNewSegment(
+                    states,
+                    DataContext.getDefault().getCelestialBodies().getEarth(),
+                    interpolationSampleSize);
         }
 
         /**

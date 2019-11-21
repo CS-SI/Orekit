@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.FieldTransform;
@@ -354,7 +355,8 @@ class JPLCelestialBody implements CelestialBody {
             try {
                 // first try to use the factory, in order to avoid building a new instance
                 // each time we deserialize and have the object properly cached
-                final CelestialBody factoryProvided = CelestialBodyFactory.getBody(name);
+                final CelestialBody factoryProvided =
+                        DataContext.getDefault().getCelestialBodies().getBody(name);
                 if (factoryProvided instanceof JPLCelestialBody) {
                     final JPLCelestialBody jplBody = (JPLCelestialBody) factoryProvided;
                     if (supportedNames.equals(jplBody.supportedNames) && generateType == jplBody.generateType) {

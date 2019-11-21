@@ -16,8 +16,9 @@
  */
 package org.orekit.files.ccsds;
 
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 
 /** Orbit central bodies for which a Celestial body can be created.
  * @author sports
@@ -27,112 +28,140 @@ public enum CenterName {
     /** Solar system barycenter aggregated body. */
     SOLAR_SYSTEM_BARYCENTER {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getSolarSystemBarycenter();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getSolarSystemBarycenter();
         }
     },
     /** Sun body. */
     SUN {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getSun();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getSun();
         }
     },
     /** Mercury body. */
     MERCURY {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getMercury();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getMercury();
         }
     },
     /** Venus body. */
     VENUS {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getVenus();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getVenus();
         }
     },
     /** Earth-Moon barycenter bodies pair. */
     EARTH_MOON {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getEarthMoonBarycenter();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getEarthMoonBarycenter();
         }
     },
     /** Earth body. */
     EARTH {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getEarth();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getEarth();
         }
     },
     /** Moon body. */
     MOON {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getMoon();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getMoon();
         }
     },
     /** Mars body. */
     MARS {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getMars();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getMars();
         }
     },
     /** Jupiter body. */
     JUPITER {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getJupiter();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getJupiter();
         }
     },
     /** Saturn body. */
     SATURN {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getSaturn();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getSaturn();
         }
     },
     /** Uranus body. */
     URANUS {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getUranus();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getUranus();
         }
     },
     /** Neptune body. */
     NEPTUNE {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getNeptune();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getNeptune();
         }
     },
     /** Pluto body. */
     PLUTO {
 
-        /** {@inheritDoc} */
-        public CelestialBody getCelestialBody() {
-            return CelestialBodyFactory.getPluto();
+        /** {@inheritDoc}
+         * @param celestialBodies*/
+        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+            return celestialBodies.getPluto();
         }
     };
 
     /**
      * Get the celestial body corresponding to the CCSDS constant.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @return celestial body corresponding to the CCSDS constant
+     * @see #getCelestialBody(CelestialBodies)
      */
-    public abstract CelestialBody getCelestialBody();
+    public CelestialBody getCelestialBody() {
+        return getCelestialBody(DataContext.getDefault().getCelestialBodies());
+    }
+
+    /**
+     * Get the celestial body corresponding to the CCSDS constant.
+     *
+     * @param celestialBodies the set of celestial bodies to use.
+     * @return celestial body corresponding to the CCSDS constant
+     * @since 10.1
+     */
+    public abstract CelestialBody getCelestialBody(CelestialBodies celestialBodies);
 
 }

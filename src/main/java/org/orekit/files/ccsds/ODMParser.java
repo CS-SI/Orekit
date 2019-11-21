@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -352,8 +353,11 @@ public abstract class ODMParser {
                 for (final CenterName c : CenterName.values()) {
                     if (c.name().equals(canonicalValue)) {
                         metaData.setHasCreatableBody(true);
-                        metaData.setCenterBody(c.getCelestialBody());
-                        metaData.getODMFile().setMuCreated(c.getCelestialBody().getGM());
+                        final CelestialBodies celestialBodies =
+                                getDataContext().getCelestialBodies();
+                        metaData.setCenterBody(c.getCelestialBody(celestialBodies));
+                        metaData.getODMFile().setMuCreated(
+                                c.getCelestialBody(celestialBodies).getGM());
                     }
                 }
                 return true;
