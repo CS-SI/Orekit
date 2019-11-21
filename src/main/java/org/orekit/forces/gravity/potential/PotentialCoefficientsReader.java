@@ -43,7 +43,7 @@ import org.orekit.time.TimeScale;
  *  which will determine which reader to use with the selected potential
  *  coefficients file.<p>
  *
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Fabien Maussion
  */
 public abstract class PotentialCoefficientsReader implements DataLoader {

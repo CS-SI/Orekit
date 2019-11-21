@@ -25,7 +25,7 @@ import org.orekit.time.TimeStamped;
  * either {@link NormalizedSphericalHarmonicsProvider} or
  * {@link SphericalHarmonicsProvider} implementations.
  * </p>
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Luc Maisonobe
  * @since 6.0
  */

@@ -36,7 +36,7 @@ import org.orekit.time.AbsoluteDate;
  * </code></pre>
  *
  * @author Luc Maisonobe
- * @see GravityFieldFactory
+ * @see GravityFields
  * @since 6.0
  */
 public interface SphericalHarmonicsProvider extends TideSystemProvider {

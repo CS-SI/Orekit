@@ -34,6 +34,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.FieldTransform;
@@ -160,7 +161,7 @@ public class Geoid implements EarthShape {
      *                           potential will be used. It is assumed that the
      *                           {@code geopotential} and the {@code
      *                           referenceEllipsoid} are defined in the same
-     *                           frame. Usually a {@link org.orekit.forces.gravity.potential.GravityFieldFactory#getConstantNormalizedProvider(int,
+     *                           frame. Usually a {@link GravityFields#getConstantNormalizedProvider(int,
      *                           int) constant geopotential} is used to define a
      *                           time-invariant Geoid.
      * @param referenceEllipsoid the normal gravity potential.

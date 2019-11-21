@@ -37,7 +37,7 @@ import org.orekit.utils.Constants;
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected gravity field file.</p>
  *
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Fabien Maussion
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
