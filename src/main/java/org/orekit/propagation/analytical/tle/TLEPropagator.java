@@ -26,7 +26,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -170,16 +169,35 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     private final double mass;
 
     /** Protected constructor for derived classes.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialTLE the unique TLE to propagate
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
      */
     protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                             final double mass) {
+        this(initialTLE, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /** Protected constructor for derived classes.
+     * @param initialTLE the unique TLE to propagate
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
+     * @since 10.1
+     */
+    protected TLEPropagator(final TLE initialTLE,
+                            final AttitudeProvider attitudeProvider,
+                            final double mass,
+                            final Frame teme) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
         this.tle  = initialTLE;
-        this.teme = FramesFactory.getTEME();
+        this.teme = teme;
         this.mass = mass;
         this.utc = initialTLE.getUtc();
         initializeCommons();
@@ -212,17 +230,38 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         return selectExtrapolator(
                 tle,
                 Propagator.getDefaultLaw(frames),
-                DEFAULT_MASS);
+                DEFAULT_MASS,
+                frames.getTEME());
+    }
+
+    /** Selects the extrapolator to use with the selected TLE.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param tle the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @return the correct propagator.
+     * @see #selectExtrapolator(TLE, AttitudeProvider, double, Frame)
+     */
+    public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
+                                                   final double mass) {
+        return selectExtrapolator(tle, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
      * @param tle the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
      * @return the correct propagator.
+     * @since 10.1
      */
-    public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
-                                                   final double mass) {
+    public static TLEPropagator selectExtrapolator(final TLE tle,
+                                                   final AttitudeProvider attitudeProvider,
+                                                   final double mass,
+                                                   final Frame teme) {
 
         final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         final double cosi0 = FastMath.cos(tle.getI());
@@ -237,9 +276,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
         // Period >= 225 minutes is deep space
         if (MathUtils.TWO_PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
-            return new DeepSDP4(tle, attitudeProvider, mass);
+            return new DeepSDP4(tle, attitudeProvider, mass, teme);
         } else {
-            return new SGP4(tle, attitudeProvider, mass);
+            return new SGP4(tle, attitudeProvider, mass, teme);
         }
     }
 

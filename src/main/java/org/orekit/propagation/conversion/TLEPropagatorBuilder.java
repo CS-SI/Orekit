@@ -172,7 +172,8 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
         return TLEPropagator.selectExtrapolator(
                 tle,
                 getAttitudeProvider(),
-                Propagator.DEFAULT_MASS);
+                Propagator.DEFAULT_MASS,
+                dataContext.getFrames().getTEME());
     }
 
 }

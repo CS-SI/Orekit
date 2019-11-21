@@ -19,9 +19,9 @@ package org.orekit.propagation.analytical.tle;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** This class contains methods to compute propagated coordinates with the SDP4 model.
@@ -61,10 +61,13 @@ abstract class SDP4  extends TLEPropagator {
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
      */
-    protected SDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                   final double mass) {
-        super(initialTLE, attitudeProvider, mass);
+    protected SDP4(final TLE initialTLE,
+                   final AttitudeProvider attitudeProvider,
+                   final double mass,
+                   final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
