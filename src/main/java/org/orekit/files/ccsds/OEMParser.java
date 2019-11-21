@@ -397,7 +397,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                             pi.covRefFrame   = null;
                         } else {
                             pi.covRefLofType = null;
-                            pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP());
+                            pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP(), getDataContext());
                         }
                         break;
                     case COVARIANCE_STOP :

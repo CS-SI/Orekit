@@ -226,7 +226,10 @@ public class OPMParser extends ODMParser {
                         if (manFrame.isLof()) {
                             pi.maneuver.setRefLofType(manFrame.getLofType());
                         } else {
-                            pi.maneuver.setRefFrame(manFrame.getFrame(getConventions(), isSimpleEOP()));
+                            pi.maneuver.setRefFrame(manFrame.getFrame(
+                                    getConventions(),
+                                    isSimpleEOP(),
+                                    getDataContext()));
                         }
                         break;
 

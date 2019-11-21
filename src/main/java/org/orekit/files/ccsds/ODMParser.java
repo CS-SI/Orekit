@@ -360,7 +360,8 @@ public abstract class ODMParser {
 
             case REF_FRAME:
                 metaData.setFrameString(keyValue.getValue());
-                metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions(), isSimpleEOP()));
+                metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue())
+                        .getFrame(getConventions(), isSimpleEOP(), getDataContext()));
                 return true;
 
             case REF_FRAME_EPOCH:
@@ -481,7 +482,8 @@ public abstract class ODMParser {
                 if (covFrame.isLof()) {
                     general.setCovRefLofType(covFrame.getLofType());
                 } else {
-                    general.setCovRefFrame(covFrame.getFrame(getConventions(), isSimpleEOP()));
+                    general.setCovRefFrame(covFrame
+                            .getFrame(getConventions(), isSimpleEOP(), getDataContext()));
                 }
                 return true;
 

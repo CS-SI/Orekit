@@ -549,7 +549,8 @@ public class TDMParser extends DefaultHandler {
 
                     case REFERENCE_FRAME:
                         metaData.setReferenceFrameString(keyValue.getValue());
-                        metaData.setReferenceFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(this.conventions, this.simpleEOP));
+                        metaData.setReferenceFrame(parseCCSDSFrame(keyValue.getValue())
+                                .getFrame(this.conventions, this.simpleEOP, dataContext));
                         break;
 
                     case TRANSMIT_DELAY_1: case TRANSMIT_DELAY_2: case TRANSMIT_DELAY_3:
