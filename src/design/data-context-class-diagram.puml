@@ -1,0 +1,211 @@
+' Copyright 2002-2019 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package org.orekit #ECEBD8 {
+
+    package data #DDEBD8 {
+
+      interface DataContext {
+        + {static} LazyLoadedDataContext getDefault()
+        + {static} setDefault(LazyLoadedDataContext)
+        ..
+        +TimeScales getTimeScales()
+        +Frames getFrames()
+        +CelestialBodies getCelestialBodies()
+        +...()
+      }
+      note right
+        manages configuration
+      end note
+
+      interface DataProvider {
+        +Pattern GZIP_FILE_PATTERN
+        +Pattern ZIP_ARCHIVE_PATTERN
+        +boolean feed(Pattern supported, DataLoader visitor)
+      }
+      note left
+        knows how to retrieve data
+        from storage, not parse it
+      end note
+
+      interface DataLoader {
+        +boolean stillAcceptsData()
+        +void loadData(InputStream input, String name)
+      }
+      note top
+        knows how to parse data,
+        not retrieve it from storage
+      end note
+
+      class NullDataContext {
+      }
+
+      DataContext <|-- NullDataContext
+
+      class LazyLoadedDataContext {
+        +DataProvidersManager getDataProvidersManager()
+        +LazyLoadedTimeScales getTimeScales()
+        +LazyLoadedFrames getFrames()
+        +LazyLoadedCelestialBodies getCelestialBodies()
+        +...()
+      }
+
+      DataContext <|-- LazyLoadedDataContext
+      LazyLoadedDataContext o-- DataProvidersManager
+
+      class PreloadedDataContext {
+      }
+      note right
+        Does not use DataLoader.
+        Constructed from a list
+        of leap seconds, EOP
+        entries, etc.
+      end note
+
+      DataContext <|-- PreloadedDataContext
+
+      class DataProvidersManager {
+        +String OREKIT_DATA_PATH
+        +DataProvidersManager getInstance()
+        +void addDefaultProviders()
+        +void addProvider(DataProvider provider)
+        +DataProvider removeProvider(Class<? extends DataProvider> providerClass)
+        +DataProvider removeProvider(DataProvider provider)
+        +void clearProviders()
+        +boolean isSupported(Class<? extends DataProvider> providerClass)
+        +boolean isSupported(DataProvider provider)
+        +List<DataProvider> getProviders()
+        +Set<String> getLoadedDataNames()
+        +void clearLoadedDataNames()
+        +boolean feed(String supportedNames, DataLoader loader)
+      }
+
+      DataProvidersManager "1" o--> "*" DataProvider : manages, feeds
+      DataProvider <|-- DirectoryCrawler
+      DataProvider <|-- ClassPathCrawler
+      DataProvider <|-- NetworkCrawler
+      DataProvider <|-- ZipJarCrawler
+      DataProvider --> DataLoader : feeds
+
+    }
+
+    package frames #DDEBD8 {
+      class LazyLoadedEop
+    }
+
+    package time #DDEBD8 {
+
+      interface TimeScales {
+        +TimeScale getTai()
+        +TimeScale getUtc()
+        +TimeScale getUt1()
+        +...()
+      }
+
+      DataContext o-- TimeScales
+
+      class LazyLoadedTimeScales {
+      }
+
+      TimeScales <|-- LazyLoadedTimeScales
+      LazyLoadedTimeScales o-- DataProvidersManager
+      LazyLoadedDataContext o-- LazyLoadedTimeScales
+      LazyLoadedTimeScales o-- LazyLoadedEop
+      LazyLoadedTimeScales o-- UTCTAIHistoryFilesLoader
+
+      DataLoader <|-- UTCTAIHistoryFilesLoader
+    }
+
+    package bodies #DDEBD8 {
+      interface CelestialBodies{
+        +CelestialBody getSun()
+        +CelestialBody getMoon()
+        +...()
+      }
+
+      DataContext o-- CelestialBodies
+
+      class LazyLoadedCelestialBodies {
+      }
+
+      interface CelestialBodyLoader {
+      }
+
+      CelestialBodies <|-- LazyLoadedCelestialBodies
+      LazyLoadedCelestialBodies o-- DataProvidersManager
+      LazyLoadedCelestialBodies o-- CelestialBodyLoader
+      LazyLoadedCelestialBodies o-- TimeScales
+      LazyLoadedDataContext o-- LazyLoadedCelestialBodies
+
+    }
+
+    package frames #DDEBD8 {
+
+      interface Frames {
+        +Frame getGcrf()
+        +Frame getItrf(...)
+        +...()
+      }
+
+      DataContext o-- Frames
+
+      class LazyLoadedFrames {
+      }
+
+      Frames <|-- LazyLoadedFrames
+      LazyLoadedFrames o-- LazyLoadedEop
+      LazyLoadedFrames o-- TimeScales
+      LazyLoadedFrames o-- CelestialBodies
+      LazyLoadedDataContext o-- LazyLoadedFrames
+
+      class LazyLoadedEop {
+      }
+
+      interface EOPHistoryLoader
+
+      LazyLoadedTimeScales o-- LazyLoadedEop
+      LazyLoadedEop o-- EOPHistoryLoader
+      LazyLoadedEop o-- DataProvidersManager
+
+    }
+
+  }
+
+  package user.application #F3EDF7 {
+    class MyDataContext #EAE6F7/B9B3D2
+    class MyProvider #EAE6F7/B9B3D2
+    class DataBase   #EAE6F7/B9B3D2
+    class Main       #EAE6F7/B9B3D2
+    DataContext <|-- MyDataContext
+    DataProvider <|-- MyProvider
+    MyDataContext o-- MyProvider
+    MyDataContext <-- Main : creates
+    MyProvider *--> "1" DataBase
+  }
+
+@enduml
