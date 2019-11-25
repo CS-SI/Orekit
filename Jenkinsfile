@@ -44,11 +44,12 @@ pipeline {
             // Official deployment on oss.sonatype.org will be done manually
             // NB: we skip tests on this stage
             when { anyOf { branch 'develop' ; branch 'master' }
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'jenkins-at-nexus',
-                                                  usernameVariable: 'NEXUS_USERNAME',
-                                                  passwordVariable: 'NEXUS_PASSWORD')]) {
-                    sh 'mvn $MAVEN_CLI_OPTS deploy -DskipTests=true -Pci-deploy'
+                steps {
+                    withCredentials([usernamePassword(credentialsId: 'jenkins-at-nexus',
+                                                      usernameVariable: 'NEXUS_USERNAME',
+                                                      passwordVariable: 'NEXUS_PASSWORD')]) {
+                        sh 'mvn $MAVEN_CLI_OPTS deploy -DskipTests=true -Pci-deploy'
+                    }
                 }
             }
         }
