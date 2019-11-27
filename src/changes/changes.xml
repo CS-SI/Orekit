@@ -21,10 +21,13 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
-	  <action dev="bryan" type="add" issue="622">
+      <action dev="bryan" type="add" issue="625">
+      	Added default constructors for DSSTZonal and DSSTTesseral. 
+      </action>   
+      <action dev="bryan" type="add" issue="622">
       	Added OrekitException for unknown number of frequencies in ANTEX files. 
       </action>
-	  <action dev="bryan" type="add" issue="621">
+      <action dev="bryan" type="add" issue="621">
       	Added OrekitException in the case where IONEX header is corrupted. 
       </action>
       <action dev="dylan" type="add" issue="359">
