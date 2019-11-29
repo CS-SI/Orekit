@@ -252,12 +252,6 @@
     <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
 
-  <!-- The following is a false positive from SpotBugs -->
-  <Match>
-  	<Class name="org.orekit.estimation.measurements.gnss.IntegerLeastSquareSolution" />
-    <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
-  </Match>
-
   <!-- the following is an intended switch fall-through in the SP3Parser -->
   <Match>
     <Class name="~.*\.SP3Parser$"/>
