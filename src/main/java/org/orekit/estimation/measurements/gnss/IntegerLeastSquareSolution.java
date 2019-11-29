@@ -74,7 +74,12 @@ public class IntegerLeastSquareSolution implements Comparable<IntegerLeastSquare
      */
     @Override
     public int hashCode() {
-        return solution.hashCode() ^ Double.hashCode(getSquaredDistance());
+        int hash = solution.length;
+        for (long s : solution) {
+            hash = hash ^ Long.hashCode(s);
+        }
+        hash = hash ^ Double.hashCode(getSquaredDistance());
+        return hash;
     }
 
 }
