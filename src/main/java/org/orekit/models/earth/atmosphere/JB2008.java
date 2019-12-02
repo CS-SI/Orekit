@@ -23,6 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -186,6 +187,7 @@ public class JB2008 implements Atmosphere {
      * @param earth the earth body shape
      * @see #JB2008(JB2008InputParameters, PVCoordinatesProvider, BodyShape, TimeScale)
      */
+    @DefaultDataContext
     public JB2008(final JB2008InputParameters parameters,
                   final PVCoordinatesProvider sun, final BodyShape earth) {
         this(parameters, sun, earth, DataContext.getDefault().getTimeScales().getUTC());

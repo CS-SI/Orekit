@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical.tle;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -177,6 +178,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param mass spacecraft mass (kg)
      * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                             final double mass) {
         this(initialTLE, attitudeProvider, mass,
@@ -216,6 +218,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @return the correct propagator.
      * @see #selectExtrapolator(TLE, Frames)
      */
+    @DefaultDataContext
     public static TLEPropagator selectExtrapolator(final TLE tle) {
         return selectExtrapolator(tle, DataContext.getDefault().getFrames());
     }
@@ -244,6 +247,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @return the correct propagator.
      * @see #selectExtrapolator(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
                                                    final double mass) {
         return selectExtrapolator(tle, attitudeProvider, mass,

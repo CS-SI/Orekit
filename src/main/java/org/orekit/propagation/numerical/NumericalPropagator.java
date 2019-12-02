@@ -24,6 +24,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -166,6 +167,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param integrator numerical integrator to use for propagation.
      * @see #NumericalPropagator(ODEIntegrator, AttitudeProvider)
      */
+    @DefaultDataContext
     public NumericalPropagator(final ODEIntegrator integrator) {
         this(integrator,
                 Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));

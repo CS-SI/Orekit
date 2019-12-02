@@ -27,6 +27,7 @@ import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -123,6 +124,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * @since 7.1
      * @see #SaastamoinenModel(double, double, double, String, DataProvidersManager)
      */
+    @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0,
                              final String deltaRFileName) {
         this(t0, p0, r0, deltaRFileName,

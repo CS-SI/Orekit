@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -81,6 +82,7 @@ public class ITRFVersionLoader {
      * @param supportedNames regular expression for supported files names
      * @see #ITRFVersionLoader(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public ITRFVersionLoader(final String supportedNames) {
         this(supportedNames, DataContext.getDefault().getDataProvidersManager());
     }
@@ -102,10 +104,13 @@ public class ITRFVersionLoader {
      * Build a loader for ITRF version configuration file using the default name. This
      * constructor uses the {@link DataContext#getDefault() default data context}.
      *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @see #ITRFVersionLoader(String)
      * @see #ITRFVersionLoader(String, DataProvidersManager)
      * @see #SUPPORTED_NAMES
      */
+    @DefaultDataContext
     public ITRFVersionLoader() {
         this(SUPPORTED_NAMES);
     }

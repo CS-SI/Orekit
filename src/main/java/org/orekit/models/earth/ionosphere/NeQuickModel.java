@@ -30,6 +30,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -107,6 +108,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param alpha effective ionisation level coefficients
      * @see #NeQuickModel(double[], TimeScale)
      */
+    @DefaultDataContext
     public NeQuickModel(final double[] alpha) {
         this(alpha, DataContext.getDefault().getTimeScales().getUTC());
     }

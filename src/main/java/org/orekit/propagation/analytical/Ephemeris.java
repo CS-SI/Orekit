@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -91,6 +92,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @see #Ephemeris(List, int, double)
      * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
+    @DefaultDataContext
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
         throws MathIllegalArgumentException {
         this(states, interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
@@ -109,6 +111,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @since 9.0
      * @see #Ephemeris(List, int, double, AttitudeProvider)
      */
+    @DefaultDataContext
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints,
                      final double extrapolationThreshold)
         throws MathIllegalArgumentException {

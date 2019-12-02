@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
@@ -174,6 +175,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @param field Field used by default
      * @see #FieldNumericalPropagator(Field, FieldODEIntegrator, AttitudeProvider)
      */
+    @DefaultDataContext
     public FieldNumericalPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
         this(field, integrator, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
     }

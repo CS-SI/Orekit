@@ -23,6 +23,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -163,6 +164,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
          * @see #ecef(Frame bodyFixed)
          * @see #Builder(GLONASSOrbitalElements, DataContext)
          */
+        @DefaultDataContext
         public Builder(final GLONASSOrbitalElements glonassOrbElt) {
             this(glonassOrbElt, DataContext.getDefault());
         }

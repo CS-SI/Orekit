@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
@@ -113,6 +114,7 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
      * @param type the type of Vienna tropospheric model (one or three)
      * @see #ViennaModelCoefficientsLoader(String, double, double, ViennaModelType, DataProvidersManager)
      */
+    @DefaultDataContext
     public ViennaModelCoefficientsLoader(final String supportedNames, final double latitude,
                                          final double longitude, final ViennaModelType type) {
         this(supportedNames, latitude, longitude, type, DataContext.getDefault().getDataProvidersManager());
@@ -152,6 +154,7 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
      * @param type the type of Vienna tropospheric model (one or three)
      * @see #ViennaModelCoefficientsLoader(String, double, double, ViennaModelType, DataProvidersManager)
      */
+    @DefaultDataContext
     public ViennaModelCoefficientsLoader(final double latitude, final double longitude,
                                          final ViennaModelType type) {
         this(DEFAULT_SUPPORTED_NAMES, latitude, longitude, type);

@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 
 /** Factory for different {@link GeoMagneticField} models.
@@ -55,6 +56,7 @@ public class GeoMagneticFieldFactory {
      * @return the geomagnetic fields used by this factory.
      * @since 10.1
      */
+    @DefaultDataContext
     public static LazyLoadedGeoMagneticFields getGeoMagneticFields() {
         return DataContext.getDefault().getGeoMagneticFields();
     }
@@ -65,6 +67,7 @@ public class GeoMagneticFieldFactory {
      * @return a {@link GeoMagneticField} for the given year and model
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
+    @DefaultDataContext
     public static GeoMagneticField getField(final FieldModel type, final double year) {
         return getGeoMagneticFields().getField(type, year);
     }
@@ -74,6 +77,7 @@ public class GeoMagneticFieldFactory {
      * @return a {@link GeoMagneticField} for the given year
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
+    @DefaultDataContext
     public static GeoMagneticField getIGRF(final double year) {
         return getGeoMagneticFields().getIGRF(year);
     }
@@ -83,6 +87,7 @@ public class GeoMagneticFieldFactory {
      * @return a {@link GeoMagneticField} for the given year
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
+    @DefaultDataContext
     public static GeoMagneticField getWMM(final double year) {
         return getGeoMagneticFields().getWMM(year);
     }

@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -161,6 +162,7 @@ public class TLE implements TimeStamped, Serializable {
      * @param line2 the second element (69 char String)
      * @see #TLE(String, String, TimeScale)
      */
+    @DefaultDataContext
     public TLE(final String line1, final String line2) {
         this(line1, line2, DataContext.getDefault().getTimeScales().getUTC());
     }
@@ -251,6 +253,7 @@ public class TLE implements TimeStamped, Serializable {
      * @see #TLE(int, char, int, int, String, int, int, AbsoluteDate, double, double,
      * double, double, double, double, double, double, int, double, TimeScale)
      */
+    @DefaultDataContext
     public TLE(final int satelliteNumber, final char classification,
                final int launchYear, final int launchNumber, final String launchPiece,
                final int ephemerisType, final int elementNumber, final AbsoluteDate epoch,

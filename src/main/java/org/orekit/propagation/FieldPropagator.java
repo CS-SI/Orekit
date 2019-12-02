@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
@@ -59,6 +60,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @see Propagator#getDefaultLaw(Frames)
      * @see InertialProvider#InertialProvider(Frame)
      */
+    @DefaultDataContext
     AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 
     /** Indicator for slave mode. */

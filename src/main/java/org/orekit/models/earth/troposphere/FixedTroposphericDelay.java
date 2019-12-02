@@ -25,6 +25,7 @@ import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolating
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -75,6 +76,7 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
      * @param supportedName a regular expression for supported resource names
      * @see #FixedTroposphericDelay(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public FixedTroposphericDelay(final String supportedName) {
         this(supportedName, DataContext.getDefault().getDataProvidersManager());
     }
@@ -110,8 +112,11 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
      * "tropospheric-delay.txt" via the {@link DataContext#getDefault() default data
      * context}.
      *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @return the default model
      */
+    @DefaultDataContext
     public static FixedTroposphericDelay getDefaultModel() {
         synchronized (FixedTroposphericDelay.class) {
             if (defaultModel == null) {

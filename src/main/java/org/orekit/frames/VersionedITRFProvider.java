@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -149,11 +150,13 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(version, rawProvider);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */

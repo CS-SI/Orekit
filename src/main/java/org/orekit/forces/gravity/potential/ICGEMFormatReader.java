@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -177,6 +178,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
      * @see #ICGEMFormatReader(String, boolean, TimeScale)
      */
+    @DefaultDataContext
     public ICGEMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         this(supportedNames, missingCoefficientsAllowed,
                 DataContext.getDefault().getTimeScales().getTT());

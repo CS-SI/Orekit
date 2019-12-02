@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -151,6 +152,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
          * @return the generated {@link OrekitEphemerisSegment}
          * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
+        @DefaultDataContext
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states) {
             return this.addNewSegment(states, DEFAULT_INTERPOLATION_SIZE);
         }
@@ -171,6 +173,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
          * @return the generated {@link OrekitEphemerisSegment}
          * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
+        @DefaultDataContext
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states,
                 final int interpolationSampleSize) {
             return this.addNewSegment(
@@ -197,6 +200,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
          * @return the generated {@link OrekitEphemerisSegment}
          * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
+        @DefaultDataContext
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states, final CelestialBody body,
                                                     final int interpolationSampleSize) {
             return addNewSegment(states, body, interpolationSampleSize,

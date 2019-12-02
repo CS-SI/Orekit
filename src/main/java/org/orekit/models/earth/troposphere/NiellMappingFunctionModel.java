@@ -25,6 +25,7 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -138,6 +139,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
      * @param latitude geodetic latitude of the station, in radians
      * @see #NiellMappingFunctionModel(double, TimeScale)
      */
+    @DefaultDataContext
     public NiellMappingFunctionModel(final double latitude) {
         this(latitude, DataContext.getDefault().getTimeScales().getUTC());
     }

@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -63,6 +64,7 @@ public class SGP4 extends TLEPropagator {
      * @param mass spacecraft mass (kg)
      * @see #SGP4(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     public SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                 final double mass) {
         this(initialTLE, attitudeProvider, mass,

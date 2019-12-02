@@ -22,6 +22,7 @@ import java.util.TimeZone;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -125,6 +126,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param field field used by default
      * @see #FieldAbsoluteDate(Field, AbsoluteDate)
      */
+    @DefaultDataContext
     public FieldAbsoluteDate(final Field<T> field) {
         final FieldAbsoluteDate<T> j2000 = getJ2000Epoch(field);
         this.field  = j2000.field;
@@ -430,6 +432,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see #parseCCSDSUnsegmentedTimeCode(Field, byte, byte, byte[], FieldAbsoluteDate,
      * FieldAbsoluteDate)
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSUnsegmentedTimeCode(final Field<T> field,
                                                                                                      final byte preambleField1,
                                                                                                      final byte preambleField2,
@@ -548,6 +551,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see #parseCCSDSDaySegmentedTimeCode(Field, byte, byte[], DateComponents,
      * TimeScale)
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(final Field<T> field,
                                                                                                       final byte preambleField, final byte[] timeField,
                                                                                                       final DateComponents agencyDefinedEpoch) {
@@ -654,6 +658,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @return an instance corresponding to the specified date
      * @see #parseCCSDSCalendarSegmentedTimeCode(byte, byte[], TimeScale)
      */
+    @DefaultDataContext
     public FieldAbsoluteDate<T> parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
         return parseCCSDSCalendarSegmentedTimeCode(preambleField, timeField,
                 DataContext.getDefault().getTimeScales().getUTC());
@@ -782,6 +787,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @see #createGPSDate(int, RealFieldElement, TimeScale)
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createGPSDate(final int weekNumber, final T milliInWeek) {
         return createGPSDate(weekNumber, milliInWeek,
                 DataContext.getDefault().getTimeScales().getGPS());
@@ -828,6 +834,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see #createBesselianEpoch(RealFieldElement)
      * @see #createJulianEpoch(RealFieldElement, TimeScales)
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createJulianEpoch(final T julianEpoch) {
         return createJulianEpoch(julianEpoch,
                 DataContext.getDefault().getTimeScales());
@@ -883,6 +890,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see #createJulianEpoch(RealFieldElement)
      * @see #createBesselianEpoch(RealFieldElement, TimeScales)
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createBesselianEpoch(final T besselianEpoch) {
         return createBesselianEpoch(besselianEpoch,
                 DataContext.getDefault().getTimeScales());
@@ -937,6 +945,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see AbsoluteDate#JULIAN_EPOCH
      * @see TimeScales#getJulianEpoch()
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJulianEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
                 DataContext.getDefault().getTimeScales().getJulianEpoch());
@@ -952,6 +961,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see AbsoluteDate#MODIFIED_JULIAN_EPOCH
      * @see TimeScales#getModifiedJulianEpoch()
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getModifiedJulianEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
                 DataContext.getDefault().getTimeScales().getModifiedJulianEpoch());
@@ -967,6 +977,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see AbsoluteDate#FIFTIES_EPOCH
      * @see TimeScales#getFiftiesEpoch()
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getFiftiesEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
                 DataContext.getDefault().getTimeScales().getFiftiesEpoch());
@@ -983,6 +994,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see AbsoluteDate#CCSDS_EPOCH
      * @see TimeScales#getCcsdsEpoch()
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getCCSDSEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
                 DataContext.getDefault().getTimeScales().getCcsdsEpoch());
@@ -998,6 +1010,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see AbsoluteDate#GALILEO_EPOCH
      * @see TimeScales#getGalileoEpoch()
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getGalileoEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
                 DataContext.getDefault().getTimeScales().getGalileoEpoch());
@@ -1013,6 +1026,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see AbsoluteDate#GPS_EPOCH
      * @see TimeScales#getGpsEpoch()
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getGPSEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
                 DataContext.getDefault().getTimeScales().getGpsEpoch());
@@ -1029,6 +1043,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see AbsoluteDate#J2000_EPOCH
      * @see TimeScales#getJ2000Epoch()
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJ2000Epoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
                 DataContext.getDefault().getTimeScales().getJ2000Epoch());
@@ -1048,6 +1063,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see AbsoluteDate#JAVA_EPOCH
      * @see TimeScales#getJavaEpoch()
      */
+    @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJavaEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
                 DataContext.getDefault().getTimeScales().getJavaEpoch());
@@ -1276,6 +1292,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @return date/time components
      * @see #getComponents(int, TimeScale)
      */
+    @DefaultDataContext
     public DateTimeComponents getComponents(final int minutesFromUTC) {
         return getComponents(minutesFromUTC,
                 DataContext.getDefault().getTimeScales().getUTC());
@@ -1345,6 +1362,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @return date/time components
      * @see #getComponents(TimeZone, TimeScale)
      */
+    @DefaultDataContext
     public DateTimeComponents getComponents(final TimeZone timeZone) {
         return getComponents(timeZone, DataContext.getDefault().getTimeScales().getUTC());
     }
@@ -1409,6 +1427,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * in ISO-8601 format with milliseconds accuracy
      * @see #toString(TimeScale)
      */
+    @DefaultDataContext
     public String toString() {
         return toString(DataContext.getDefault().getTimeScales().getUTC());
     }
@@ -1432,6 +1451,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * in ISO-8601 format with milliseconds accuracy
      * @see #toString(int, TimeScale)
      */
+    @DefaultDataContext
     public String toString(final int minutesFromUTC) {
         return toString(minutesFromUTC,
                 DataContext.getDefault().getTimeScales().getUTC());
@@ -1461,6 +1481,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * in ISO-8601 format with milliseconds accuracy
      * @see #toString(TimeZone, TimeScale)
      */
+    @DefaultDataContext
     public String toString(final TimeZone timeZone) {
         return toString(timeZone, DataContext.getDefault().getTimeScales().getUTC());
     }

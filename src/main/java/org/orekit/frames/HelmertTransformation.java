@@ -23,6 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -298,6 +299,7 @@ public class HelmertTransformation implements TransformProvider {
          * @since 9.2
          * @see #getTransformation(TimeScale)
          */
+        @DefaultDataContext
         public HelmertTransformation getTransformation() {
             return getTransformation(DataContext.getDefault().getTimeScales().getTT());
         }
@@ -320,6 +322,7 @@ public class HelmertTransformation implements TransformProvider {
          * @return new ITRF frame
          * @see #createTransformedITRF(Frame, String, TimeScale)
          */
+        @DefaultDataContext
         public Frame createTransformedITRF(final Frame parent, final String name) {
             return createTransformedITRF(parent, name,
                     DataContext.getDefault().getTimeScales().getTT());

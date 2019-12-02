@@ -32,6 +32,7 @@ import org.hipparchus.ode.sampling.ODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -167,6 +168,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @param propagationType type of orbit to output (mean or osculating).
      * @see #DSSTPropagator(ODEIntegrator, PropagationType, AttitudeProvider)
      */
+    @DefaultDataContext
     public DSSTPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
         this(integrator, propagationType,
                 Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
@@ -212,6 +214,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @param integrator numerical integrator to use for propagation.
      * @see #DSSTPropagator(ODEIntegrator, PropagationType, AttitudeProvider)
      */
+    @DefaultDataContext
     public DSSTPropagator(final ODEIntegrator integrator) {
         this(integrator, PropagationType.MEAN);
     }

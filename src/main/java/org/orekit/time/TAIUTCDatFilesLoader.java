@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
@@ -55,6 +56,7 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
      * @param supportedNames regular expression for supported files names
      * @see #TAIUTCDatFilesLoader(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public TAIUTCDatFilesLoader(final String supportedNames) {
         this(supportedNames, DataContext.getDefault().getDataProvidersManager());
     }

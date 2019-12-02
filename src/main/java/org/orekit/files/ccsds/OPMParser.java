@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -70,6 +71,7 @@ public class OPMParser extends ODMParser {
      * <p>This method uses the {@link DataContext#getDefault() default data context}. See
      * {@link #withDataContext(DataContext)}.
      */
+    @DefaultDataContext
     public OPMParser() {
         this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "",
                 DataContext.getDefault());

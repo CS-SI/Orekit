@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.HatanakaCompressFilter;
@@ -115,6 +116,7 @@ public class DataProvidersManager {
      * context: {@code DataContext.getDefault().getDataProvidersManager()}.
      */
     @Deprecated
+    @DefaultDataContext
     public static DataProvidersManager getInstance() {
         return DataContext.getDefault().getDataProvidersManager();
     }

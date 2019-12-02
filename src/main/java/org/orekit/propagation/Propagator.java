@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
@@ -68,6 +69,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * @see InertialProvider#InertialProvider(Rotation, Frame)
      * @see #getDefaultLaw(Frames)
      */
+    @DefaultDataContext
     AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 
     /** Indicator for slave mode. */

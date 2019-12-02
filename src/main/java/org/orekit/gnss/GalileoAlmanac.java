@@ -17,6 +17,7 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GalileoOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -117,6 +118,7 @@ public class GalileoAlmanac implements GalileoOrbitalElements {
      * @see #GalileoAlmanac(int, int, double, double, double, double, int, double, double,
      * double, double, double, double, int, int, int, AbsoluteDate)
      */
+    @DefaultDataContext
     public GalileoAlmanac(final int prn, final int week, final double toa,
                           final double dsqa, final double ecc, final double dinc,
                           final int iod, final double om0, final double dom,

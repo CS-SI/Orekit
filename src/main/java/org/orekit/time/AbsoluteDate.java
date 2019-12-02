@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -111,6 +112,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getJulianEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate JULIAN_EPOCH =
             DataContext.getDefault().getTimeScales().getJulianEpoch();
 
@@ -120,6 +122,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getModifiedJulianEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
             DataContext.getDefault().getTimeScales().getModifiedJulianEpoch();
 
@@ -129,6 +132,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getFiftiesEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate FIFTIES_EPOCH =
             DataContext.getDefault().getTimeScales().getFiftiesEpoch();
 
@@ -139,6 +143,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getCcsdsEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate CCSDS_EPOCH =
             DataContext.getDefault().getTimeScales().getCcsdsEpoch();
 
@@ -148,6 +153,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getGalileoEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate GALILEO_EPOCH =
             DataContext.getDefault().getTimeScales().getGalileoEpoch();
 
@@ -157,6 +163,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getGpsEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate GPS_EPOCH =
             DataContext.getDefault().getTimeScales().getGpsEpoch();
 
@@ -166,6 +173,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getQzssEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate QZSS_EPOCH =
             DataContext.getDefault().getTimeScales().getQzssEpoch();
 
@@ -175,6 +183,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getBeidouEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate BEIDOU_EPOCH =
             DataContext.getDefault().getTimeScales().getBeidouEpoch();
 
@@ -185,6 +194,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getGlonassEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate GLONASS_EPOCH =
             DataContext.getDefault().getTimeScales().getGlonassEpoch();
 
@@ -196,6 +206,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getJ2000Epoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate J2000_EPOCH = // TODO
             DataContext.getDefault().getTimeScales().getJ2000Epoch();
 
@@ -209,6 +220,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getJavaEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate JAVA_EPOCH =
             DataContext.getDefault().getTimeScales().getJavaEpoch();
 
@@ -244,6 +256,7 @@ public class AbsoluteDate
      *
      * @see #AbsoluteDate(DateTimeComponents, TimeScale)
      */
+    @DefaultDataContext
     public AbsoluteDate() {
         epoch  = J2000_EPOCH.epoch;
         offset = J2000_EPOCH.offset;
@@ -529,6 +542,7 @@ public class AbsoluteDate
      * @return an instance corresponding to the specified date
      * @see #parseCCSDSUnsegmentedTimeCode(byte, byte, byte[], AbsoluteDate, AbsoluteDate)
      */
+    @DefaultDataContext
     public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(final byte preambleField1,
                                                              final byte preambleField2,
                                                              final byte[] timeField,
@@ -639,6 +653,7 @@ public class AbsoluteDate
      * @return an instance corresponding to the specified date
      * @see #parseCCSDSDaySegmentedTimeCode(byte, byte[], DateComponents, TimeScale)
      */
+    @DefaultDataContext
     public static AbsoluteDate parseCCSDSDaySegmentedTimeCode(final byte preambleField, final byte[] timeField,
                                                               final DateComponents agencyDefinedEpoch) {
         return parseCCSDSDaySegmentedTimeCode(preambleField, timeField,
@@ -738,6 +753,7 @@ public class AbsoluteDate
      * @return an instance corresponding to the specified date
      * @see #parseCCSDSCalendarSegmentedTimeCode(byte, byte[], TimeScale)
      */
+    @DefaultDataContext
     public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
         return parseCCSDSCalendarSegmentedTimeCode(preambleField, timeField,
                 DataContext.getDefault().getTimeScales().getUTC());
@@ -891,6 +907,7 @@ public class AbsoluteDate
      * @see #createBesselianEpoch(double)
      * @see TimeScales#createJulianEpoch(double)
      */
+    @DefaultDataContext
     public static AbsoluteDate createJulianEpoch(final double julianEpoch) {
         return DataContext.getDefault().getTimeScales().createJulianEpoch(julianEpoch);
     }
@@ -914,6 +931,7 @@ public class AbsoluteDate
      * @see #createJulianEpoch(double)
      * @see TimeScales#createBesselianEpoch(double)
      */
+    @DefaultDataContext
     public static AbsoluteDate createBesselianEpoch(final double besselianEpoch) {
         return DataContext.getDefault().getTimeScales()
                 .createBesselianEpoch(besselianEpoch);
@@ -1083,6 +1101,7 @@ public class AbsoluteDate
      * @since 7.2
      * @see #getComponents(int, TimeScale)
      */
+    @DefaultDataContext
     public DateTimeComponents getComponents(final int minutesFromUTC) {
         return getComponents(minutesFromUTC,
                 DataContext.getDefault().getTimeScales().getUTC());
@@ -1143,6 +1162,7 @@ public class AbsoluteDate
      * @since 7.2
      * @see #getComponents(TimeZone, TimeScale)
      */
+    @DefaultDataContext
     public DateTimeComponents getComponents(final TimeZone timeZone) {
         return getComponents(timeZone, DataContext.getDefault().getTimeScales().getUTC());
     }
@@ -1216,6 +1236,7 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
      * @see #toString(TimeScale)
      */
+    @DefaultDataContext
     public String toString() {
         return toString(DataContext.getDefault().getTimeScales().getUTC());
     }
@@ -1240,6 +1261,7 @@ public class AbsoluteDate
      * @since 7.2
      * @see #toString(int, TimeScale)
      */
+    @DefaultDataContext
     public String toString(final int minutesFromUTC) {
         return toString(minutesFromUTC,
                 DataContext.getDefault().getTimeScales().getUTC());
@@ -1270,6 +1292,7 @@ public class AbsoluteDate
      * @since 7.2
      * @see #toString(TimeZone, TimeScale)
      */
+    @DefaultDataContext
     public String toString(final TimeZone timeZone) {
         return toString(timeZone, DataContext.getDefault().getTimeScales().getUTC());
     }

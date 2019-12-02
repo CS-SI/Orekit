@@ -23,6 +23,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
@@ -79,6 +80,7 @@ public class OceanTides extends AbstractForceModel {
      * @see #OceanTides(Frame, double, double, boolean, double, int, int, int,
      * IERSConventions, UT1Scale, GravityFields)
      */
+    @DefaultDataContext
     public OceanTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final int degree, final int order,
                       final IERSConventions conventions, final UT1Scale ut1) {
@@ -106,6 +108,7 @@ public class OceanTides extends AbstractForceModel {
      * @see #OceanTides(Frame, double, double, boolean, double, int, int, int,
      * IERSConventions, UT1Scale, GravityFields)
      */
+    @DefaultDataContext
     public OceanTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final boolean poleTide, final double step, final int nbPoints,
                       final int degree, final int order,

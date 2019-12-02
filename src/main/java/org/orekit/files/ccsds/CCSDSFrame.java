@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -301,6 +302,7 @@ public enum CCSDSFrame {
      * @see #isLof()
      * @see #getFrame(IERSConventions, boolean, DataContext)
      */
+    @DefaultDataContext
     public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
         return getFrame(conventions, simpleEOP, DataContext.getDefault());
     }

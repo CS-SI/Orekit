@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.hipparchus.exception.DummyLocalizable;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -130,6 +131,7 @@ public class TDMParser extends DefaultHandler {
      * <p>This method uses the {@link DataContext#getDefault() default data context}. See
      * {@link #withDataContext(DataContext)}.
      */
+    @DefaultDataContext
     public TDMParser() {
         this(TDMFileFormat.UNKNOWN, AbsoluteDate.FUTURE_INFINITY, null, true,
                 DataContext.getDefault());

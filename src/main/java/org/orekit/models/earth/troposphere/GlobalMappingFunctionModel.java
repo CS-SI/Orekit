@@ -24,6 +24,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -71,6 +72,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
      * @param longitude geodetic latitude of the station, in radians
      * @see #GlobalMappingFunctionModel(double, double, TimeScale)
      */
+    @DefaultDataContext
     public GlobalMappingFunctionModel(final double latitude, final double longitude) {
         this(latitude, longitude, DataContext.getDefault().getTimeScales().getUTC());
     }

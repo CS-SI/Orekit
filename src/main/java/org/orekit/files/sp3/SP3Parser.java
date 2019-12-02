@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -83,6 +84,7 @@ public class SP3Parser implements EphemerisFileParser {
      *
      * @see #SP3Parser(double, int, Function)
      */
+    @DefaultDataContext
     public SP3Parser() {
         this(Constants.EIGEN5C_EARTH_MU, 7, SP3Parser::guessFrame);
     }
@@ -102,6 +104,7 @@ public class SP3Parser implements EphemerisFileParser {
      *                             any 5 character string e.g. ITR92, IGb08.
      * @see #SP3Parser(double, int, Function, DataContext)
      */
+    @DefaultDataContext
     public SP3Parser(final double mu,
                      final int interpolationSamples,
                      final Function<? super String, ? extends Frame> frameBuilder) {
@@ -140,6 +143,7 @@ public class SP3Parser implements EphemerisFileParser {
      * @return ITRF based on 2010 conventions,
      * with tidal effects considered during EOP interpolation.
      */
+    @DefaultDataContext
     private static Frame guessFrame(final String name) {
         return DataContext.getDefault().getFrames()
                 .getITRF(IERSConventions.IERS_2010, false);

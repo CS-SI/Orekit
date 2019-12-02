@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -79,6 +80,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
      * UnnormalizedSphericalHarmonicsProvider)
      */
+    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
@@ -133,6 +135,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider, double,
      * RealFieldElement, double, double, double, double, double)
      */
+    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
@@ -153,6 +156,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
      * RealFieldElement, UnnormalizedSphericalHarmonicsProvider)
      */
+    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
@@ -185,6 +189,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @see #FieldEcksteinHechlerPropagator(FieldOrbit, AttitudeProvider,
      * RealFieldElement, double, RealFieldElement, double, double, double, double, double)
      */
+    @DefaultDataContext
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,

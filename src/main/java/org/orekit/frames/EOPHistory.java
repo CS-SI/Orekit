@@ -29,6 +29,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -87,6 +88,7 @@ public class EOPHistory implements Serializable {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @see #EOPHistory(IERSConventions, Collection, boolean, TimeScales)
      */
+    @DefaultDataContext
     protected EOPHistory(final IERSConventions conventions,
                          final Collection<EOPEntry> data,
                          final boolean simpleEOP) {
@@ -757,11 +759,13 @@ public class EOPHistory implements Serializable {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(conventions, getEntries(), tidalCorrection == null);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */

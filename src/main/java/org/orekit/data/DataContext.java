@@ -1,5 +1,6 @@
 package org.orekit.data;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.gravity.potential.GravityFields;
@@ -27,6 +28,7 @@ public interface DataContext {
      *
      * @return Orekit's default data context.
      */
+    @DefaultDataContext
     static LazyLoadedDataContext getDefault() {
         return DefaultDataContextHolder.INSTANCE;
     }

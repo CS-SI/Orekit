@@ -19,6 +19,7 @@ package org.orekit.time;
 import java.io.Serializable;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.utils.Constants;
@@ -68,6 +69,7 @@ public class GLONASSDate implements Serializable, TimeStamped {
      * @param secInNa the number of seconds since na start
      * @see #GLONASSDate(int, int, double, TimeScale)
      */
+    @DefaultDataContext
     public GLONASSDate(final int na, final int n4, final double secInNa) {
         this(na, n4, secInNa, DataContext.getDefault().getTimeScales().getGLONASS());
     }
@@ -103,6 +105,7 @@ public class GLONASSDate implements Serializable, TimeStamped {
      * @param date absolute date to consider
      * @see #GLONASSDate(AbsoluteDate, TimeScale)
      */
+    @DefaultDataContext
     public GLONASSDate(final AbsoluteDate date) {
         this(date, DataContext.getDefault().getTimeScales().getGLONASS());
     }
@@ -219,11 +222,13 @@ public class GLONASSDate implements Serializable, TimeStamped {
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(na, n4, secInNa);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */

@@ -18,6 +18,8 @@ package org.orekit.data;
 
 import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
+
 /** Interface for providing data files to {@link DataLoader file loaders}.
  * <p>
  * This interface defines a generic way to explore some collection holding
@@ -70,6 +72,7 @@ public interface DataProvider {
      * {@link DataProvidersManager#getInstance()}.
      */
     @Deprecated
+    @DefaultDataContext
     boolean feed(Pattern supported, DataLoader visitor);
 
     /** Feed a data file loader by browsing the data collection.

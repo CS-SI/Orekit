@@ -18,6 +18,7 @@ package org.orekit.attitudes;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -43,6 +44,7 @@ public class InertialProvider implements AttitudeProvider {
      * @see #InertialProvider(Rotation, Frame)
      * @see #InertialProvider(Frame)
      */
+    @DefaultDataContext
     public static final InertialProvider EME2000_ALIGNED =
         new InertialProvider(Rotation.IDENTITY);
 
@@ -56,6 +58,7 @@ public class InertialProvider implements AttitudeProvider {
      * @param rotation rotation from EME2000 to the desired satellite frame
      * @see #InertialProvider(Rotation, Frame)
      */
+    @DefaultDataContext
     public InertialProvider(final Rotation rotation) {
         this(rotation, DataContext.getDefault().getFrames().getEME2000());
     }

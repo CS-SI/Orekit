@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
@@ -57,6 +58,7 @@ public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
      *
      * @see #UTCTAIHistoryFilesLoader(DataProvidersManager)
      */
+    @DefaultDataContext
     public UTCTAIHistoryFilesLoader() {
         this(DataContext.getDefault().getDataProvidersManager());
     }
