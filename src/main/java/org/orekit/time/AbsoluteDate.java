@@ -1216,7 +1216,7 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
      * @see #toString(TimeScale)
      */
-    public String toString() { // TODO
+    public String toString() {
         return toString(DataContext.getDefault().getTimeScales().getUTC());
     }
 

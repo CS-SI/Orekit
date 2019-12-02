@@ -154,7 +154,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
                                        final AbsoluteDate date) {
 
         // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
-        final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0, (String) null);
+        final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0);
 
         // elevation = pi/2 because we compute the delay in the zenith direction
         final double zhd = saastamoinen.pathDelay(0.5 * FastMath.PI, height, parameters, date);
@@ -190,7 +190,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
         final T zero         = field.getZero();
 
         // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
-        final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0, (String) null);
+        final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0);
 
         // elevation = pi/2 because we compute the delay in the zenith direction
         final T zhd = saastamoinen.pathDelay(zero.add(0.5 * FastMath.PI), height, parameters, date);

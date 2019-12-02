@@ -59,7 +59,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
     private final OneAxisEllipsoid body;
 
     /** the timescale. */
-    private final TimeScale timeScale;
+    private final DataContext dataContext;
 
 
     /** Build a new detector.
@@ -73,8 +73,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param type the magnetic field model
      * @param body the body
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid,
-     * boolean, TimeScale)
+     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
     public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body)
         throws OrekitIllegalArgumentException {
@@ -93,8 +92,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid,
-     * boolean, TimeScale)
+     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
     public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
         throws OrekitIllegalArgumentException {
@@ -112,27 +110,26 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid,
-     * boolean, TimeScale)
+     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
     public MagneticFieldDetector(final double maxCheck, final double threshold, final double limit,
                                  final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
         throws OrekitIllegalArgumentException {
         this(maxCheck, threshold, limit, type, body, seaLevel,
-                DataContext.getDefault().getTimeScales().getUTC());
+                DataContext.getDefault());
     }
 
     /**
      * Build a detector.
      *
-     * @param maxCheck  maximal checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @param limit     the threshold value of magnetic field at see level
-     * @param type      the magnetic field model
-     * @param body      the body
-     * @param seaLevel  true if the magnetic field intensity is computed at the sea level,
-     *                  false if it is computed at satellite altitude
-     * @param utc       UTC time scale. Used to look up the magnetic field model.
+     * @param maxCheck    maximal checking interval (s)
+     * @param threshold   convergence threshold (s)
+     * @param limit       the threshold value of magnetic field at see level
+     * @param type        the magnetic field model
+     * @param body        the body
+     * @param seaLevel    true if the magnetic field intensity is computed at the sea
+     *                    level, false if it is computed at satellite altitude
+     * @param dataContext used to look up the magnetic field model.
      * @throws OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      * @since 10.1
      */
@@ -142,10 +139,10 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
                                  final FieldModel type,
                                  final OneAxisEllipsoid body,
                                  final boolean seaLevel,
-                                 final TimeScale utc)
+                                 final DataContext dataContext)
         throws OrekitIllegalArgumentException {
         this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<>(),
-             limit, type, body, seaLevel, utc);
+             limit, type, body, seaLevel, dataContext);
     }
 
     /** Private constructor with full parameters.
@@ -162,13 +159,13 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param type the magnetic field model
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
-     * @param utc UTC time scale. Used to look up the magnetic field model.
+     * @param dataContext used to look up the magnetic field model.
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
     private MagneticFieldDetector(final double maxCheck, final double threshold,
                                   final int maxIter, final EventHandler<? super MagneticFieldDetector> handler,
                                   final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel,
-                                  final TimeScale utc)
+                                  final DataContext dataContext)
         throws OrekitIllegalArgumentException {
 
         super(maxCheck, threshold, maxIter, handler);
@@ -177,7 +174,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
         this.type = type;
         this.body = body;
         this.seaLevel = seaLevel;
-        this.timeScale = utc;
+        this.dataContext = dataContext;
     }
 
     /** {@inheritDoc} */
@@ -186,7 +183,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
                                            final int newMaxIter, final EventHandler<? super MagneticFieldDetector> newHandler) {
         try {
             return new MagneticFieldDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                             limit, type, body, seaLevel, timeScale);
+                                             limit, type, body, seaLevel, dataContext);
         } catch (OrekitException e) {
             return null;
         }
@@ -195,8 +192,9 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
-        this.currentYear = s0.getDate().getComponents(timeScale).getDate().getYear();
-        this.field = GeoMagneticFieldFactory.getField(type, currentYear);
+        final TimeScale utc = dataContext.getTimeScales().getUTC();
+        this.currentYear = s0.getDate().getComponents(utc).getDate().getYear();
+        this.field = dataContext.getGeoMagneticFields().getField(type, currentYear);
     }
 
     /** Compute the value of the detection function.
@@ -215,9 +213,10 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      */
     public double g(final SpacecraftState s) {
         try {
-            if (s.getDate().getComponents(timeScale).getDate().getYear() != currentYear) {
-                this.currentYear = s.getDate().getComponents(timeScale).getDate().getYear();
-                this.field = GeoMagneticFieldFactory.getField(type, currentYear);
+            final TimeScale utc = dataContext.getTimeScales().getUTC();
+            if (s.getDate().getComponents(utc).getDate().getYear() != currentYear) {
+                this.currentYear = s.getDate().getComponents(utc).getDate().getYear();
+                this.field = dataContext.getGeoMagneticFields().getField(type, currentYear);
             }
             final GeodeticPoint geoPoint = body.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
             final double altitude;

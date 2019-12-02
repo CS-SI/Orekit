@@ -928,6 +928,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * years -1 and +1, hence this reference date lies in year -4712 and not
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param <T> the type of the field elements
      * @param field field for the components
      * @return the reference epoch for julian dates as a FieldAbsoluteDate
@@ -940,6 +943,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     }
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param <T> the type of the field elements
      * @param field field for the components
      * @return the reference epoch for modified julian dates as a FieldAbsoluteDate

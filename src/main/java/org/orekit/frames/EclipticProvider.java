@@ -67,7 +67,7 @@ public class EclipticProvider implements TransformProvider {
      * @param conventions IERS conventions
      * @see #EclipticProvider(IERSConventions, TimeScales)
      */
-    public EclipticProvider(final IERSConventions conventions) { // TODO
+    public EclipticProvider(final IERSConventions conventions) {
         this(conventions, DataContext.getDefault().getTimeScales());
     }
 

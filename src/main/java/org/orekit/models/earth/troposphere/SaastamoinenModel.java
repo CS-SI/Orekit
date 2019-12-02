@@ -96,6 +96,20 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** The humidity [percent]. */
     private double r0;
 
+    /**
+     * Create a new Saastamoinen model for the troposphere using the given environmental
+     * conditions and table from the reference book.
+     *
+     * @param t0 the temperature at the station [K]
+     * @param p0 the atmospheric pressure at the station [mbar]
+     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
+     * @see #SaastamoinenModel(double, double, double, String, DataProvidersManager)
+     * @since 10.1
+     */
+    public SaastamoinenModel(final double t0, final double p0, final double r0) {
+        this(t0, p0, r0, defaultDeltaR());
+    }
+
     /** Create a new Saastamoinen model for the troposphere using the given
      * environmental conditions. This constructor uses the {@link DataContext#getDefault()
      * default data context} if {@code deltaRFileName != null}.
@@ -168,7 +182,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * @return a Saastamoinen model with standard environmental values
      */
     public static SaastamoinenModel getStandardModel() {
-        return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, (String) null);
+        return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
     }
 
     /** {@inheritDoc}
