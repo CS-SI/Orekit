@@ -17,7 +17,9 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
 
@@ -57,7 +59,7 @@ public class IRNSSPropagator extends AbstractGNSSPropagator {
 
         // Optional parameters
         /** The attitude provider. */
-        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        private AttitudeProvider attitudeProvider;
         /** The mass. */
         private double mass = DEFAULT_MASS;
         /** The ECI frame. */
@@ -67,8 +69,7 @@ public class IRNSSPropagator extends AbstractGNSSPropagator {
 
         /** Initializes the builder.
          * <p>The IRNSS orbital elements is the only requested parameter to build a IRNSSPropagator.</p>
-         * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+         * <p>The attitude provider is set by default to be aligned with the J2000 frame.<br>
          * The mass is set by default to the
          *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
          * The ECI frame is set by default to the
@@ -78,15 +79,19 @@ public class IRNSSPropagator extends AbstractGNSSPropagator {
          * </p>
          *
          * @param irnssOrbElt the IRNSS orbital elements to be used by the IRNSSpropagator.
+         * @param frames      set of reference frames to use to initialize {@link
+         *                    #ecef(Frame)}, {@link #eci(Frame)}, and {@link
+         *                    #attitudeProvider(AttitudeProvider)}.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
          */
-        public Builder(final IRNSSOrbitalElements irnssOrbElt) {
+        public Builder(final IRNSSOrbitalElements irnssOrbElt, final Frames frames) {
             this.orbit = irnssOrbElt;
-            this.eci   = FramesFactory.getEME2000();
-            this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            this.eci   = frames.getEME2000();
+            this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
+            this.attitudeProvider = new InertialProvider(eci);
         }
 
         /** Sets the attitude provider.

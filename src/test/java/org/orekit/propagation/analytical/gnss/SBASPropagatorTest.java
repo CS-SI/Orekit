@@ -26,9 +26,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
@@ -47,6 +49,7 @@ public class SBASPropagatorTest {
 
     /** SBAS orbital elements. */
     private SBASNavigationData soe;
+    private Frames frames;
     
     @Before
     public void setUp() {
@@ -55,6 +58,7 @@ public class SBASPropagatorTest {
                                      2.406022248000e+07, -2.712500000000e-01, 3.250000000000e-04,
                                      3.460922568000e+07, 3.063125000000e-00, -1.500000000000e-04,
                                      1.964040000000e+04, 1.012000000000e-00, -1.250000000000e-04);
+        frames = DataContext.getDefault().getFrames();
     }
 
     @BeforeClass
@@ -65,7 +69,7 @@ public class SBASPropagatorTest {
     @Test
     public void testPropagationAtReferenceTime() {
         // SBAS propagator
-        final SBASPropagator propagator = new SBASPropagator.Builder(soe).build();
+        final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
         // Propagation
         final PVCoordinates pv = propagator.propagateInEcef(soe.getDate());
         // Position/Velocity/Acceleration
@@ -87,7 +91,7 @@ public class SBASPropagatorTest {
     @Test
     public void testPropagation() {
         // SBAS propagator
-        final SBASPropagator propagator = new SBASPropagator.Builder(soe).build();
+        final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
         // Propagation
         final PVCoordinates pv = propagator.propagateInEcef(soe.getDate().shiftedBy(1.0));
         // Position/Velocity/Acceleration
@@ -109,7 +113,7 @@ public class SBASPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the SBAS propagator from the ephemeris
-        final SBASPropagator propagator = new SBASPropagator.Builder(soe).build();
+        final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
         Assert.assertEquals("EME2000", propagator.getFrame().getName());
         Assert.assertEquals(3.986005e+14, propagator.getMU(), 1.0e6);
         Assert.assertEquals(propagator.getECI().getName(), propagator.getFrame().getName());
@@ -132,7 +136,7 @@ public class SBASPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        final SBASPropagator propagator = new SBASPropagator.Builder(soe).build();
+        final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
         SBASOrbitalElements elements = propagator.getSBASOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.SBAS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -160,14 +164,14 @@ public class SBASPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            final SBASPropagator propagator = new SBASPropagator.Builder(soe).build();
+            final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
             propagator.resetInitialState(propagator.getInitialState());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
-            final SBASPropagator propagator = new SBASPropagator.Builder(soe).build();
+            final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
