@@ -63,19 +63,19 @@ public interface EOPHistoryLoader {
          * <code>finals.*.xml</code> where * stands for a word like "all", "daily", or
          * "data".
          *
-         * @param conventions       used to convert between equinox-based and
-         *                          non-rotating-origin-based paradigms.
-         * @param itrfVersionLoader used to determine the ITRF version of parsed EOP.
-         * @param timeScales        used to parse the EOP data.
+         * @param conventions         used to convert between equinox-based and
+         *                            non-rotating-origin-based paradigms.
+         * @param itrfVersionProvider used to determine the ITRF version of parsed EOP.
+         * @param timeScales          used to parse the EOP data.
          * @return a new parser.
          */
         static Parser newFinalsXmlParser(
                 final IERSConventions conventions,
-                final ITRFVersionLoader itrfVersionLoader,
+                final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
             return new RapidDataAndPredictionXMLLoader.Parser(
                     conventions.getNutationCorrectionConverter(timeScales),
-                    itrfVersionLoader,
+                    itrfVersionProvider,
                     timeScales.getUTC());
         }
 
@@ -92,7 +92,7 @@ public interface EOPHistoryLoader {
          *
          * @param conventions         used to convert between equinox-based and
          *                            non-rotating-origin-based paradigms.
-         * @param itrfVersionLoader   used to determine the ITRF version of parsed EOP.
+         * @param itrfVersionProvider used to determine the ITRF version of parsed EOP.
          * @param timeScales          used to parse the EOP data.
          * @param isNonRotatingOrigin if true the supported files <em>must</em> contain
          *                            δX/δY nutation corrections, otherwise they
@@ -102,12 +102,12 @@ public interface EOPHistoryLoader {
          */
         static Parser newFinalsColumnsParser(
                 final IERSConventions conventions,
-                final ITRFVersionLoader itrfVersionLoader,
+                final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales,
                 final boolean isNonRotatingOrigin) {
             return new RapidDataAndPredictionColumnsLoader.Parser(
                     conventions.getNutationCorrectionConverter(timeScales),
-                    itrfVersionLoader,
+                    itrfVersionProvider,
                     timeScales.getUTC(),
                     isNonRotatingOrigin);
         }
@@ -119,39 +119,38 @@ public interface EOPHistoryLoader {
          * match one of the patterns {@code eopc04_##_IAU2000.##} or {@code eopc04_##.##}
          * where # stands for a digit character.
          *
-         * @param conventions       used to convert between equinox-based and
-         *                          non-rotating-origin-based paradigms.
-         * @param itrfVersionLoader used to determine the ITRF version of parsed EOP.
-         * @param timeScales        used to parse the EOP data.
+         * @param conventions         used to convert between equinox-based and
+         *                            non-rotating-origin-based paradigms.
+         * @param itrfVersionProvider used to determine the ITRF version of parsed EOP.
+         * @param timeScales          used to parse the EOP data.
          * @return a new parser.
          */
         static Parser newEopC04Parser(
                 final IERSConventions conventions,
-                final ITRFVersionLoader itrfVersionLoader,
+                final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
             return new EOPC04FilesLoader.Parser(
                     conventions.getNutationCorrectionConverter(timeScales),
-                    itrfVersionLoader,
+                    itrfVersionProvider,
                     timeScales.getUTC());
         }
 
         /**
          * Create a new parser for EOP data in the Bulletin B format.
          *
-         *
-         * @param conventions       used to convert between equinox-based and
-         *                          non-rotating-origin-based paradigms.
-         * @param itrfVersionLoader used to determine the ITRF version of parsed EOP.
-         * @param timeScales        used to parse the EOP data.
+         * @param conventions         used to convert between equinox-based and
+         *                            non-rotating-origin-based paradigms.
+         * @param itrfVersionProvider used to determine the ITRF version of parsed EOP.
+         * @param timeScales          used to parse the EOP data.
          * @return a new parser.
          */
         static Parser newBulletinBParser(
                 final IERSConventions conventions,
-                final ITRFVersionLoader itrfVersionLoader,
+                final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
             return new BulletinBFilesLoader.Parser(
                     conventions.getNutationCorrectionConverter(timeScales),
-                    itrfVersionLoader,
+                    itrfVersionProvider,
                     timeScales.getUTC());
         }
 

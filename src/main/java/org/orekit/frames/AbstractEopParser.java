@@ -17,22 +17,22 @@ abstract class AbstractEopParser implements Parser {
     /** Converter for nutation corrections. */
     private final IERSConventions.NutationCorrectionConverter converter;
     /** Configuration for ITRF versions. */
-    private final ITRFVersionLoader itrfVersionLoader;
+    private final ItrfVersionProvider itrfVersionProvider;
     /** UTC time scale. */
     private final TimeScale utc;
 
     /**
      * Simple constructor.
      *
-     * @param converter         converter to use
-     * @param itrfVersionLoader to use for determining the ITRF version of the EOP.
-     * @param utc               time scale for parsing dates.
+     * @param converter           converter to use
+     * @param itrfVersionProvider to use for determining the ITRF version of the EOP.
+     * @param utc                 time scale for parsing dates.
      */
     protected AbstractEopParser(final NutationCorrectionConverter converter,
-                                final ITRFVersionLoader itrfVersionLoader,
+                                final ItrfVersionProvider itrfVersionProvider,
                                 final TimeScale utc) {
         this.converter = converter;
-        this.itrfVersionLoader = itrfVersionLoader;
+        this.itrfVersionProvider = itrfVersionProvider;
         this.utc = utc;
     }
 
@@ -50,8 +50,8 @@ abstract class AbstractEopParser implements Parser {
      *
      * @return ITRF version loader.
      */
-    protected ITRFVersionLoader getItrfVersionLoader() {
-        return itrfVersionLoader;
+    protected ItrfVersionProvider getItrfVersionProvider() {
+        return itrfVersionProvider;
     }
 
     /**
