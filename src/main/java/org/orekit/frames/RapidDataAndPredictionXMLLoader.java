@@ -94,7 +94,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser extends AbstractEopParser {
+    static class Parser extends AbstractEopParser {
 
         /** History entries. */
         private List<EOPEntry> history;

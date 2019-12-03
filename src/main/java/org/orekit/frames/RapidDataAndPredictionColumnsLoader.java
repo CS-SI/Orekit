@@ -165,7 +165,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser extends AbstractEopParser {
+    static class Parser extends AbstractEopParser {
 
         /** Indicator for Non-Rotating Origin. */
         private final boolean isNonRotatingOrigin;

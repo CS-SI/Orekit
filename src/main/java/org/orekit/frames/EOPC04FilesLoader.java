@@ -166,7 +166,7 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser extends AbstractEopParser {
+    static class Parser extends AbstractEopParser {
 
         /**
          * Simple constructor.

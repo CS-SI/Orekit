@@ -246,7 +246,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser extends AbstractEopParser {
+    static class Parser extends AbstractEopParser {
 
         /** ITRF version configuration. */
         private ITRFVersionLoader.ITRFVersionConfiguration configuration;
