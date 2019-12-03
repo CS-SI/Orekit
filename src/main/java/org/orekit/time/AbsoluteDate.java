@@ -183,6 +183,7 @@ public class AbsoluteDate
      *
      * @see TimeScales#getIrnssEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate IRNSS_EPOCH =
             DataContext.getDefault().getTimeScales().getIrnssEpoch();
 
