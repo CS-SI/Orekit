@@ -34,6 +34,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -207,18 +208,22 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
                 getAttitudeProvider());
         propagator.setOrbitType(getOrbitType());
         propagator.setPositionAngleType(getPositionAngle());
+
+        // Configure force models
+        if (!hasNewtonianAttraction()) {
+            // There are no central attraction model yet, add it at the end of the list
+            addForceModel(new NewtonianAttraction(orbit.getMu()));
+        }
         for (ForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
 
-        if (!hasNewtonianAttraction()) {
-            // There are no central attraction model yet, add it at the end of the list
-            final NewtonianAttraction force = new NewtonianAttraction(orbit.getMu());
-            forceModels.add(force);
-            propagator.addForceModel(force);
-        }
-
         propagator.resetInitialState(state);
+
+        // Add additional equations to the propagator
+        for (AdditionalEquations equation: getAdditionalEquations()) {
+            propagator.addAdditionalEquations(equation);
+        }
 
         return propagator;
     }

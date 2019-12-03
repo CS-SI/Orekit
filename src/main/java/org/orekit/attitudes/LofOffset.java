@@ -83,15 +83,15 @@ public class LofOffset implements AttitudeProvider {
      *
      *   // note the call to revert and the conventions in the following statement
      *   double[] anglesV = offsetProper.revert().getAngles(order, RotationConvention.VECTOR_OPERATOR);
-     *   System.out.println(alpha1 + " == " + anglesV[0]);
-     *   System.out.println(alpha2 + " == " + anglesV[1]);
-     *   System.out.println(alpha3 + " == " + anglesV[2]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha1, anglesV[0]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha2, anglesV[1]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha3, anglesV[2]);
      *
      *   // note the conventions in the following statement
      *   double[] anglesF = offsetProper.getAngles(order, RotationConvention.FRAME_TRANSFORM);
-     *   System.out.println(alpha1 + " == " + anglesF[0]);
-     *   System.out.println(alpha2 + " == " + anglesF[1]);
-     *   System.out.println(alpha3 + " == " + anglesF[2]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha1, anglesF[0]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha2, anglesF[1]);
+     *   System.out.format(Locale.US, "%f == %f%n", alpha3, anglesF[2]);
      * </pre>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
      * @param type type of Local Orbital Frame

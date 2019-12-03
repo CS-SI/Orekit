@@ -260,6 +260,8 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return timeScales.getGST();
             case QZSS    : return timeScales.getQZSS();
             case BEIDOU  : return timeScales.getBDT();
+            case IRNSS   : return timeScales.getIRNSS();
+            case SBAS    : return timeScales.getGPS();
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -277,6 +279,8 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return timeScales.getGalileoEpoch();
             case QZSS    : return timeScales.getQzssEpoch();
             case BEIDOU  : return timeScales.getBeidouEpoch();
+            case IRNSS   : return timeScales.getIrnssEpoch();
+            case SBAS    : return timeScales.getGpsEpoch();
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -292,6 +296,8 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return DateComponents.GALILEO_EPOCH;
             case QZSS    : return DateComponents.QZSS_EPOCH;
             case BEIDOU  : return DateComponents.BEIDOU_EPOCH;
+            case IRNSS   : return DateComponents.IRNSS_EPOCH;
+            case SBAS    : return DateComponents.GPS_EPOCH;
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -352,7 +358,13 @@ public class GNSSDate implements Serializable, TimeStamped {
         QZSS(SatelliteSystem.QZSS, 1024),
 
         /** BeiDou. */
-        BEIDOU(SatelliteSystem.BEIDOU, 8192);
+        BEIDOU(SatelliteSystem.BEIDOU, 8192),
+
+        /** IRNSS. */
+        IRNSS(SatelliteSystem.IRNSS, 1024),
+
+        /** SBAS. */
+        SBAS(SatelliteSystem.SBAS, 1024);
 
         /** Map for the number of week in one GNSS rollover cycle. */
         private static final Map<SatelliteSystem, Integer> CYCLE_MAP = new HashMap<SatelliteSystem, Integer>();

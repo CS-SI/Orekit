@@ -110,22 +110,12 @@ The simplest way to use Orekit with Eclipse is to follow these steps:
     automatically selected. Click finish
 
 The Orekit library should be configured automatically, including the dependency
-to the underlying mathematical library. Note however that the tutorials
-that are present in the source distribution are not automatically added by
-this process (because the tutorials correspond to extra code and as such they
-are not referenced in the pom.xml file).
+to the underlying mathematical library.
 
 Now you have an orekit-x.y project in you workspace, and you can create your
 own application projects that will depend on the Orekit project.
 
 You can also check everything works correctly by running the junit tests.
 
-If you want to go further and run the tutorials, you should update the
-project configuration to add them. In the Eclipse Package Explorer tab,
-right-click on the orekit-x.y project and select from the conext menu
-the entry "Build Path -> Configure Build Path...". Then in the wizard that
-should appear, select the "Source" tab in the right pane, click the button
-"Add Folder...", open the "tutorials" folder, select the two sub-folders
-"java" and "resource" and click "OK". Now the projects should display the
-tutorials. Note that since 9.0, you need to have an "orekit-data" folder
-in your home directory in order to run the tutorials.
+If you want to go further and run the tutorials, you need to check the
+sister project [Orekit tutorials](https://gitlab.orekit.org/orekit/orekit-tutorials).

@@ -527,7 +527,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                 double[]          longitudes  = null;
                 AbsoluteDate      firstEpoch  = null;
                 AbsoluteDate      lastEpoch   = null;
-                AbsoluteDate      epoch       = null;
+                AbsoluteDate      epoch       = firstEpoch;
                 ArrayList<Double> values      = new ArrayList<>();
 
                 for (line = br.readLine(); line != null; line = br.readLine()) {
@@ -569,6 +569,14 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                 longitudes = parseCoordinate(line);
                                 break;
                             case "END OF HEADER" :
+                                // Check that latitude and longitude bondaries were found
+                                if (latitudes == null || longitudes == null) {
+                                    throw new OrekitException(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, getSupportedNames());
+                                }
+                                // Check that first and last epochs were found
+                                if (firstEpoch == null || lastEpoch == null) {
+                                    throw new OrekitException(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, getSupportedNames());
+                                }
                                 // At the end of the header, we build the IONEXHeader object
                                 header = new IONEXHeader(firstEpoch, lastEpoch, interval, nbOfMaps,
                                                          baseRadius, hIon, mappingF);

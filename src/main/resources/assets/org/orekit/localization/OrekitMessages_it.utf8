@@ -542,6 +542,12 @@ NO_TEC_DATA_IN_FILE_FOR_DATE = il file IONEX {0} non contiene dati TEC per la da
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = il numero di mappe {0} è incoerente con le specifiche dell''intestazione: {1} 
 
+# file {0} does not contain latitude and longitude bondaries in its header section
+NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = <MISSING TRANSLATION>
+
+# file {0} does not contain epoch of first or last map in its header section
+NO_EPOCH_IN_IONEX_HEADER = <MISSING TRANSLATION>
+
 # The first column of itrf-versions.conf is a plain prefix that is matched against the
 # name of each loaded file. It should not contain any regular expression syntax or
 # directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".

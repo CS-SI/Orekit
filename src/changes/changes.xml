@@ -21,6 +21,59 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="625">
+      	Added default constructors for DSSTZonal and DSSTTesseral. 
+      </action>   
+      <action dev="bryan" type="add" issue="622">
+      	Added OrekitException for unknown number of frequencies in ANTEX files. 
+      </action>
+      <action dev="bryan" type="add" issue="621">
+      	Added OrekitException in the case where IONEX header is corrupted. 
+      </action>
+      <action dev="dylan" type="add" issue="359">
+      	Added a specific test for issue 359 in BatchLSEstimatorTest.
+      	The test verifies that a Newtonian attraction is known
+      	by both the propagator builder and the propagator when
+      	it is not added explicitly.
+      </action>
+      <action dev="dylan" type="add" issue="367">
+      	Added write of covariance matrices in OEMWriter.
+      </action>
+      <action dev="dylan" type="fix" issue="619">
+        Fixed origin transform in CcsdsModifierFrame.
+      </action>
+      <action dev="bryan" type="add" issue="611">
+        Added SBAS orbit propagator.
+      </action>
+      <action dev="bryan" type="fix" issue="617">
+        Fixed null pointer exception in MultiplexedMeasurement.
+      </action>
+      <action dev="luc" type="fix" issue="575">
+        Allow users to provide custom convergence checkers for
+        batch least squares orbit determination.
+      </action>
+      <action dev="luc" type="add" issue="614">
+        Added multiplexed measurements.
+      </action>
+      <action dev="luc" type="fix" issue="616">
+        Fixed missed changes updates in ParameterDriversList embedding
+        other ParameterDriversList instances.
+      </action>
+      <action dev="luc" type="update">
+        Moved tutorials to a separate sister project.
+      </action>
+      <action dev="bryan" type="add" due-to="Shiva Iyer">
+        Added Laplace method for initial orbit determination.
+      </action>
+      <action dev="bryan" type="fix" issue="612">
+        Fixed DSST orbit determination tutorial.
+      </action>
+      <action dev="bryan" type="add" issue="610">
+        Added IRNSS orbit propagator.
+      </action>
+      <action dev="bryan" type="add" issue="608">
+        Added support for RINEX 3.04 files.
+      </action>
       <action dev="gabb" type="fix" issue="533">
         Fixed bugs in the derivatives computation in IodGooding.
         Fixed bugs in IodLambert when there's more than an half revolution

@@ -350,6 +350,13 @@ public class AntexLoader {
 
                             }
 
+                            // Check if the number of frequencies has been parsed
+                            if (patterns == null) {
+                                // null object, an OrekitException is thrown
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, name, line);
+                            }
+
                             final PhaseCenterVariationFunction phaseCenterVariation;
                             if (grid2D == null) {
                                 double max = 0;

@@ -245,9 +245,13 @@ public class OEMParserTest {
         Transform actualTransform = eme2000.getTransformTo(actualFrame, actualStart);
         CelestialBody mars = CelestialBodyFactory.getMars();
         TimeStampedPVCoordinates marsPV = mars.getPVCoordinates(actualStart, eme2000);
-        Assert.assertEquals(actualTransform.getTranslation(), marsPV.getPosition());
-        Assert.assertEquals(actualTransform.getVelocity(), marsPV.getVelocity());
-        Assert.assertEquals(actualTransform.getAcceleration(), marsPV.getAcceleration());
+        TimeStampedPVCoordinates marsPV_in_marscentered_frame = mars.getPVCoordinates(actualStart, actualFrame);
+        Assert.assertThat(
+        		marsPV_in_marscentered_frame,
+                OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
+        Assert.assertEquals(actualTransform.getTranslation(), marsPV.getPosition().negate());
+        Assert.assertEquals(actualTransform.getVelocity(), marsPV.getVelocity().negate());
+        Assert.assertEquals(actualTransform.getAcceleration(), marsPV.getAcceleration().negate());
         Assert.assertEquals(
                 Rotation.distance(actualTransform.getRotation(), Rotation.IDENTITY),
                 0.0, 0.0);

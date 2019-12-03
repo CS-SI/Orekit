@@ -110,7 +110,7 @@ public class CcsdsModifiedFrame extends Frame {
 
         @Override
         public Transform getTransform(final AbsoluteDate date) {
-            return new Transform(date, body.getPVCoordinates(date, frame));
+            return new Transform(date, body.getPVCoordinates(date, frame).negate());
         }
 
         @Override
@@ -118,7 +118,7 @@ public class CcsdsModifiedFrame extends Frame {
                 final FieldAbsoluteDate<T> date) {
             return new FieldTransform<>(
                     date,
-                    body.getPVCoordinates(date, frame));
+                    body.getPVCoordinates(date, frame).negate());
         }
 
     }
