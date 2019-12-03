@@ -233,6 +233,8 @@ public enum OrekitMessages implements Localizable {
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
     NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
     INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
+    NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER("file {0} does not contain latitude or longitude bondaries in its header section"),
+    NO_EPOCH_IN_IONEX_HEADER("file {0} does not contain epoch of first or last map in its header section"),
     ITRF_VERSIONS_PREFIX_ONLY("The first column of itrf-versions.conf is a plain " +
             "prefix that is matched against the name of each loaded file. It should " +
             "not contain any regular expression syntax or directory components, i.e. " +

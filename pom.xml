@@ -48,7 +48,7 @@
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>1.6-SNAPSHOT</orekit.hipparchus.version>
+    <orekit.hipparchus.version>1.6</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -160,6 +160,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Yannick Jeandroz</name>
+      <id>yannick</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>    
   </developers>
 
   <contributors>
@@ -209,9 +216,6 @@
       <name>James Housden</name>
     </contributor>
     <contributor>
-      <name>Yannick Jeandroz</name>
-    </contributor>
-    <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
     </contributor>
     <contributor>
@@ -240,6 +244,12 @@
     </contributor>
     <contributor>
       <name>Michael Turner</name>
+    </contributor>
+    <contributor>
+      <name>Gabriele Serafini</name>
+    </contributor>
+    <contributor>
+      <name>Shiva Iyer</name>
     </contributor>
   </contributors>
 
@@ -858,6 +868,43 @@
           </plugin>
         </plugins>
      </build>
+    </profile>
+    <profile>
+      <id>continuous-integration</id>
+      <activation>
+        <property>
+          <!-- Var Env set by GitLab-CI -->
+          <name>env.CI</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${orekit.maven-surefire-plugin.version}</version>
+            <configuration>
+              <!-- Orekit is mostly a computational library. -->
+              <!-- As there is not a lot of I/O it is better to not overide the number of CPU. -->
+              <forkCount>1C</forkCount>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- A profile to configure staging deployment (for continuous integration process) -->
+      <id>ci-deploy</id>
+      <distributionManagement>
+        <repository>
+          <id>ci-releases</id>
+          <url>https://packages.orekit.org/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ci-snapshots</id>
+            <url>https://packages.orekit.org/repository/maven-snapshots/</url>
+        </snapshotRepository>
+      </distributionManagement>
     </profile>
     <profile>
       <id>eclipse</id>

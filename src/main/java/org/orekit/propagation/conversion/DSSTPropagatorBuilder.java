@@ -36,6 +36,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -219,18 +220,22 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                 builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL),
                 propagationType,
                 getAttitudeProvider());
+
+        // Configure force models
+        if (!hasNewtonianAttraction()) {
+            // There are no central attraction model yet, add it at the end of the list
+            addForceModel(new DSSTNewtonianAttraction(orbit.getMu()));
+        }
         for (DSSTForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
 
-        if (!hasNewtonianAttraction()) {
-            // There are no central attraction model yet, add it at the end of the list
-            final DSSTNewtonianAttraction force = new DSSTNewtonianAttraction(orbit.getMu());
-            forceModels.add(force);
-            propagator.addForceModel(force);
-        }
-
         propagator.setInitialState(state, stateType);
+
+        // Add additional equations to the propagator
+        for (AdditionalEquations equation: getAdditionalEquations()) {
+            propagator.addAdditionalEquations(equation);
+        }
 
         return propagator;
     }

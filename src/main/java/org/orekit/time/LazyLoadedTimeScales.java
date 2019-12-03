@@ -385,6 +385,11 @@ public class LazyLoadedTimeScales implements TimeScales {
     }
 
     @Override
+    public AbsoluteDate getIrnssEpoch() {
+        return new AbsoluteDate(DateComponents.IRNSS_EPOCH, TimeComponents.H00, this.getIRNSS());
+    }
+
+    @Override
     public AbsoluteDate getBeidouEpoch() {
         return new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, this.getBDT());
     }

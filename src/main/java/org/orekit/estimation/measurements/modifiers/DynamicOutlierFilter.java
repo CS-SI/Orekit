@@ -32,8 +32,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends OutlierFilter<T>
-{
+public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends OutlierFilter<T> {
     /** Current value of sigma. */
     private double[] sigma;
 

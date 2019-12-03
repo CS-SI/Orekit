@@ -23,16 +23,22 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.OEMFile.CovarianceMatrix;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.VersionedITRF;
 import org.orekit.propagation.Propagator;
@@ -496,6 +502,46 @@ public class StreamingOemWriter {
             writer.append(Double.toString(pv.getVelocity().getY() * M_TO_KM)).append(" ");
             writer.append(Double.toString(pv.getVelocity().getZ() * M_TO_KM));
             writer.append(NEW_LINE);
+        }
+
+        /**
+         * Write covariance matrices of the segment according to section 5.2.5.
+         *
+         * @param covarianceMatrices the list of covariance matrices related to the segment.
+         * @throws IOException if the output stream throws one while writing.
+         */
+        public void writeCovarianceMatrices(final List<CovarianceMatrix> covarianceMatrices)
+                throws IOException {
+            writer.append("COVARIANCE_START").append(NEW_LINE);
+            // Sort to ensure having the matrices in chronological order when
+            // they are in the same data section (see section 5.2.5.7)
+            Collections.sort(covarianceMatrices, (mat1, mat2)->mat1.getEpoch().compareTo(mat2.getEpoch()));
+            for (final CovarianceMatrix covarianceMatrix : covarianceMatrices) {
+                final String epoch = dateToString(covarianceMatrix.getEpoch().getComponents(timeScale));
+                writeKeyValue(Keyword.EPOCH, epoch);
+
+                if (covarianceMatrix.getFrame() != null ) {
+                    writeKeyValue(Keyword.COV_REF_FRAME, guessFrame(covarianceMatrix.getFrame()));
+                } else if (covarianceMatrix.getLofType() != null) {
+                    if (covarianceMatrix.getLofType() == LOFType.QSW) {
+                        writeKeyValue(Keyword.COV_REF_FRAME, "RTN");
+                    } else if (covarianceMatrix.getLofType() == LOFType.TNW) {
+                        writeKeyValue(Keyword.COV_REF_FRAME, covarianceMatrix.getLofType().name());
+                    } else {
+                        throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, toString());
+                    }
+                }
+
+                final RealMatrix covRealMatrix = covarianceMatrix.getMatrix();
+                for (int i = 0; i < covRealMatrix.getRowDimension(); i++) {
+                    writer.append(Double.toString(covRealMatrix.getEntry(i, 0)));
+                    for (int j = 1; j < i + 1; j++) {
+                        writer.append(" ").append(Double.toString(covRealMatrix.getEntry(i, j)));
+                    }
+                    writer.append(NEW_LINE);
+                }
+            }
+            writer.append("COVARIANCE_STOP").append(NEW_LINE).append(NEW_LINE);
         }
 
         /**

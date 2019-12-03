@@ -27,6 +27,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.OEMFile.CovarianceMatrix;
 import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.OEMWriter.InterpolationMethod;
 import org.orekit.files.general.EphemerisFile;
@@ -209,7 +210,15 @@ public class OEMWriterTest {
             assertEquals(c1.getVelocity() + " -> " + c2.getVelocity(), 0.0,
                     Vector3D.distance(c1.getVelocity(), c2.getVelocity()), VELOCITY_PRECISION);
         }
-
+        assertEquals(block1.getCovarianceMatrices().size(), block2.getCovarianceMatrices().size());
+        for (int j = 0; j < block1.getCovarianceMatrices().size(); j++) {
+        	CovarianceMatrix covMat1 = block1.getCovarianceMatrices().get(j);
+        	CovarianceMatrix covMat2 = block2.getCovarianceMatrices().get(j);
+        	assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
+        	assertEquals(covMat1.getFrame(), covMat2.getFrame());
+        	assertEquals(covMat1.getLofType(), covMat2.getLofType());
+        	assertEquals(covMat1.getMatrix(),covMat2.getMatrix());       	
+        }
     }
 
     private static void compareOemEphemerisBlocksMetadata(ODMMetaData meta1, ODMMetaData meta2) {

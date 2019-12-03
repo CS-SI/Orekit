@@ -57,4 +57,29 @@ public class IntegerLeastSquareSolution implements Comparable<IntegerLeastSquare
         return Double.compare(getSquaredDistance(), other.getSquaredDistance());
     }
 
+    /** {@inheritDoc}
+     * @since 10.1
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if ((other != null) && (other instanceof IntegerLeastSquareSolution)) {
+            return getSquaredDistance() == ((IntegerLeastSquareSolution) other).getSquaredDistance();
+        }
+
+        return false;
+    }
+
+    /** {@inheritDoc}
+     * @since 10.1
+     */
+    @Override
+    public int hashCode() {
+        int hash = solution.length;
+        for (long s : solution) {
+            hash = hash ^ Long.hashCode(s);
+        }
+        hash = hash ^ Double.hashCode(getSquaredDistance());
+        return hash;
+    }
+
 }

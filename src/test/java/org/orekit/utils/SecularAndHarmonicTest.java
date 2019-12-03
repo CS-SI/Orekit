@@ -83,8 +83,7 @@ public class SecularAndHarmonicTest {
         double mst = 10.5;
 
         // this test has been extracted from a more complete tutorial
-        // on Low Earth Orbit phasing, which can be found in the tutorials
-        // folder of the Orekit source distribution
+        // on Low Earth Orbit phasing, which can be found in the Orekit tutorials sister project
         CircularOrbit initialGuessedOrbit =
                 new CircularOrbit(7169867.824275421,
                                   0.0, 0.0010289683741791197,

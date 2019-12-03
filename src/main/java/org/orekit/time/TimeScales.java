@@ -197,6 +197,13 @@ public interface TimeScales {
     AbsoluteDate getQzssEpoch();
 
     /**
+     * Reference epoch for IRNSS weeks: 1999-08-22T00:00:00 IRNSS time.
+     *
+     * @return IRNSS Epoch
+     */
+    AbsoluteDate getIrnssEpoch();
+
+    /**
      * Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC.
      *
      * @return Beidou Epoch

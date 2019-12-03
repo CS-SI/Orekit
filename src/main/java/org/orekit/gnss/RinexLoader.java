@@ -43,7 +43,7 @@ import org.orekit.time.TimeScales;
 /** Loader for Rinex measurements files.
  * <p>
  * Supported versions are: 2.00, 2.10, 2.11, 2.12 (unofficial), 2.20 (unofficial),
- * 3.00, 3.01, 3.02, and 3.03.
+ * 3.00, 3.01, 3.02, 3.03, and 3.04.
  * </p>
  * @see <a href="ftp://igs.org/pub/data/format/rinex2.txt">rinex 2.0</a>
  * @see <a href="ftp://igs.org/pub/data/format/rinex210.txt">rinex 2.10</a>
@@ -54,6 +54,7 @@ import org.orekit.time.TimeScales;
  * @see <a href="ftp://igs.org/pub/data/format/rinex301.pdf">rinex 3.01</a>
  * @see <a href="ftp://igs.org/pub/data/format/rinex302.pdf">rinex 3.02</a>
  * @see <a href="ftp://igs.org/pub/data/format/rinex303.pdf">rinex 3.03</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex304.pdf">rinex 3.04</a>
  * @since 9.2
  */
 public class RinexLoader {
@@ -293,7 +294,8 @@ public class RinexLoader {
 
                 if ((format100 != 200) && (format100 != 210) && (format100 != 211) &&
                     (format100 != 212) && (format100 != 220) && (format100 != 300) &&
-                    (format100 != 301) && (format100 != 302) && (format100 != 303)) {
+                    (format100 != 301) && (format100 != 302) && (format100 != 303) &&
+                    (format100 != 304)) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                 }
 
@@ -681,7 +683,7 @@ public class RinexLoader {
                                     case RINEX_VERSION_TYPE : {
                                         formatVersion = parseDouble(0, 9);
                                         format100     = (int) FastMath.rint(100 * formatVersion);
-                                        if ((format100 != 300) && (format100 != 301) && (format100 != 302) && (format100 != 303)) {
+                                        if ((format100 != 300) && (format100 != 301) && (format100 != 302) && (format100 != 303) && (format100 != 304)) {
                                             throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                                         }
                                         //File Type must be Observation_Data

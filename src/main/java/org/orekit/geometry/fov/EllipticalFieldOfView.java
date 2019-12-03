@@ -67,14 +67,24 @@ import org.orekit.propagation.events.VisibilityTrigger;
  * We define an ellipse on the sphere as the locus of points \(P\) such that the sum of
  * their angular distance to two foci \(F_+\) and \(F_-\) is constant, all points being on
  * the sphere. The relationship between the foci and the two half aperture angles \(\lambda\)
- * and \(\mu\) are:
- * \[F_\pm\left(\begin{gather*}
+ * and \(\mu\) with:
+ * \[\lambda \ge \mu \Rightarrow F_\pm\left(\begin{gather*}
  *   \pm\sin\delta\\
  *   0\\
  *   \cos\delta
  * \end{gather*}\right)
  * \quad\text{with}\quad
  * \cos\delta = \frac{\cos\lambda}{\cos\mu}\]
+ * </p>
+ * <p>
+ * and
+ * \[\mu \ge \lambda \Rightarrow F_\pm\left(\begin{gather*}
+ *   0\\
+ *   \pm\sin\delta\\
+ *   \cos\delta
+ * \end{gather*}\right)
+ * \quad\text{with}\quad
+ * \cos\delta = \frac{\cos\mu}{\cos\lambda}\]
  * </p>
  * <p>
  * It can be shown that the previous definition is equivalent to define first a regular
@@ -126,22 +136,19 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
     /** Unit vector along major axis. */
     private final Vector3D u;
 
-    /** Unit vector along minor axis. */
-    private final Vector3D v;
-
     /** First focus. */
     private final Vector3D focus1;
 
     /** Second focus. */
     private final Vector3D focus2;
 
-    /** Cross product of focii. */
+    /** Cross product of foci. */
     private final Vector3D crossF1F2;
 
-    /** Dot product of focii. */
+    /** Dot product of foci. */
     private final double dotF1F2;
 
-    /** Half angle between focii. */
+    /** Half angle between foci. */
     private final double gamma;
 
     /** Scaling factor for normalizing ellipse points. */
@@ -181,6 +188,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
 
         super(center, primaryMeridian, margin);
 
+        final Vector3D v;
         final double b;
         if (halfApertureAlongX >= halfApertureAlongY) {
             u = getX();
@@ -359,7 +367,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
         return new Vector3D(dEll.getX(), getX(), dEll.getY(), getY(), dEll.getZ(), getZ());
     }
 
-    /** Get a direction from distances to focii.
+    /** Get a direction from distances to foci.
      * <p>
      * if {@code d1} + {@code d2} = 2 max({@link #getHalfApertureAlongX()}, {@link #getHalfApertureAlongY()}),
      * then the point is on the ellipse boundary
@@ -378,7 +386,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
         return new Vector3D(a1, focus1, a2, focus2, FastMath.copySign(ac, sign), crossF1F2);
     }
 
-    /** Get a direction from distances to focii.
+    /** Get a direction from distances to foci.
      * <p>
      * if {@code d1} + {@code d2} = 2 max({@link #getHalfApertureAlongX()}, {@link #getHalfApertureAlongY()}),
      * then the point is on the ellipse boundary
