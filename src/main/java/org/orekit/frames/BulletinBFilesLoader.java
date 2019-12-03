@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -40,6 +40,7 @@ import org.orekit.time.Month;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 
 /** Loader for bulletin B files.
  * <p>Bulletin B files contain {@link EOPEntry
@@ -235,25 +236,23 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
-        final Parser parser = new Parser(converter);
-        this.feed(parser);
-        history.addAll(parser.history);
+        final ITRFVersionLoader itrfVersionLoader = new ITRFVersionLoader(
+                ITRFVersionLoader.SUPPORTED_NAMES,
+                getDataProvidersManager());
+        final Parser parser = new Parser(converter, itrfVersionLoader, getUtc());
+        final EopParserLoader loader = new EopParserLoader(parser);
+        this.feed(loader);
+        history.addAll(loader.getEop());
     }
 
     /** Internal class performing the parsing. */
-    private class Parser implements DataLoader {
-
-        /** Converter for nutation corrections. */
-        private final IERSConventions.NutationCorrectionConverter converter;
-
-        /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
+    private static class Parser extends AbstractEopParser {
 
         /** ITRF version configuration. */
         private ITRFVersionLoader.ITRFVersionConfiguration configuration;
 
         /** History entries. */
-        private final List<EOPEntry> history;
+        private List<EOPEntry> history;
 
         /** Map for fields read in different sections. */
         private final Map<Integer, double[]> fieldsMap;
@@ -270,15 +269,17 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
         /** End of final data. */
         private int mjdMax;
 
-        /** Simple constructor.
-         * @param converter converter to use
+        /**
+         * Simple constructor.
+         *
+         * @param converter         converter to use
+         * @param itrfVersionLoader to use for determining the ITRF version of the EOP.
+         * @param utc               time scale for parsing dates.
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter         = converter;
-            this.itrfVersionLoader = new ITRFVersionLoader(
-                    ITRFVersionLoader.SUPPORTED_NAMES,
-                    getDataProvidersManager());
-            this.history           = new ArrayList<>();
+        Parser(final NutationCorrectionConverter converter,
+               final ITRFVersionLoader itrfVersionLoader,
+               final TimeScale utc) {
+            super(converter, itrfVersionLoader, utc);
             this.fieldsMap         = new HashMap<>();
             this.lineNumber        = 0;
             this.mjdMin            = Integer.MAX_VALUE;
@@ -286,24 +287,20 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
         }
 
         /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        public void loadData(final InputStream input, final String name)
+        @Override
+        public Collection<EOPEntry> parse(final InputStream input, final String name)
             throws IOException {
-
-            configuration = null;
 
             // set up a reader for line-oriented bulletin B files
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
-            // reset parse info to start new file (do not clear history!)
+            // reset parse info to start new file
             fieldsMap.clear();
             lineNumber = 0;
             mjdMin     = Integer.MAX_VALUE;
             mjdMax     = Integer.MIN_VALUE;
+            history = new ArrayList<>();
+            configuration = null;
 
             // skip header up to section 1 and check if we are parsing an old or new format file
             final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
@@ -339,10 +336,10 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                     final AbsoluteDate mjdDate =
                             new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                              getUtc());
-                    final double[] equinox = converter.toEquinox(mjdDate, array[4], array[5]);
+                    final double[] equinox = getConverter().toEquinox(mjdDate, array[4], array[5]);
                     if (configuration == null || !configuration.isValid(mjd)) {
                         // get a configuration for current name and date range
-                        configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                        configuration = getItrfVersionLoader().getConfiguration(name, mjd);
                     }
                     history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
                                              equinox[0], equinox[1], array[4], array[5],
@@ -350,6 +347,8 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                 }
 
             }
+
+            return history;
 
         }
 
@@ -447,17 +446,17 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                                 Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS,
                                 Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS
                             };
-                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS,
                                 Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS
                             };
-                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                            configuration = getItrfVersionLoader().getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
                                                  configuration.getVersion(), mjdDate));

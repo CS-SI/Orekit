@@ -16,6 +16,9 @@
  */
 package org.orekit.frames;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
 import java.util.SortedSet;
 
 import org.orekit.utils.IERSConventions;
@@ -32,5 +35,25 @@ public interface EOPHistoryLoader {
      */
     void fillHistory(IERSConventions.NutationCorrectionConverter converter,
                      SortedSet<EOPEntry> history);
+
+    /**
+     * Interface for parsing EOP data files.
+     *
+     * @author Evan Ward
+     * @since 10.1
+     */
+    interface Parser {
+
+        /**
+         * Parse EOP from the given input stream.
+         *
+         * @param input stream to parse.
+         * @param name  of the stream for error messages.
+         * @return parsed EOP entries.
+         * @throws IOException if {@code input} throws one during parsing.
+         */
+        Collection<EOPEntry> parse(InputStream input, String name) throws IOException;
+
+    }
 
 }

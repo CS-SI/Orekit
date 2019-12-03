@@ -22,12 +22,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -36,6 +36,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 
 /** Loader for EOP xx C04 files.
  * <p>EOP xx C04 files contain {@link EOPEntry
@@ -155,43 +156,36 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
-        final Parser parser = new Parser(converter);
-        this.feed(parser);
-        history.addAll(parser.history);
+        final ITRFVersionLoader itrfVersionLoader = new ITRFVersionLoader(
+                ITRFVersionLoader.SUPPORTED_NAMES,
+                getDataProvidersManager());
+        final Parser parser = new Parser(converter, itrfVersionLoader, getUtc());
+        final EopParserLoader loader = new EopParserLoader(parser);
+        this.feed(loader);
+        history.addAll(loader.getEop());
     }
 
     /** Internal class performing the parsing. */
-    private class Parser implements DataLoader {
+    private static class Parser extends AbstractEopParser {
 
-        /** Converter for nutation corrections. */
-        private final IERSConventions.NutationCorrectionConverter converter;
-
-        /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
-
-        /** History entries. */
-        private final List<EOPEntry> history;
-
-        /** Simple constructor.
-         * @param converter converter to use
+        /**
+         * Simple constructor.
+         *
+         * @param converter         converter to use
+         * @param itrfVersionLoader to use for determining the ITRF version of the EOP.
+         * @param utc               time scale for parsing dates.
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter           = converter;
-            this.itrfVersionLoader   = new ITRFVersionLoader(
-                    ITRFVersionLoader.SUPPORTED_NAMES,
-                    getDataProvidersManager());
-            this.history             = new ArrayList<>();
+        Parser(final NutationCorrectionConverter converter,
+               final ITRFVersionLoader itrfVersionLoader,
+               final TimeScale utc) {
+            super(converter, itrfVersionLoader, utc);
         }
 
         /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        public void loadData(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final InputStream input, final String name)
             throws IOException, OrekitException {
 
+            final List<EOPEntry> history = new ArrayList<>();
             ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
             // set up a reader for line-oriented bulletin B files
@@ -242,17 +236,17 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                             Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
                             Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
                         };
-                        equinox = converter.toEquinox(date, nro[0], nro[1]);
+                        equinox = getConverter().toEquinox(date, nro[0], nro[1]);
                     } else {
                         equinox = new double[] {
                             Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
                             Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
                         };
-                        nro = converter.toNonRotating(date, equinox[0], equinox[1]);
+                        nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                     }
                     if (configuration == null || !configuration.isValid(mjd)) {
                         // get a configuration for current name and date range
-                        configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                        configuration = getItrfVersionLoader().getConfiguration(name, mjd);
                     }
                     history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
                                              configuration.getVersion(), date));
@@ -270,6 +264,7 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
+            return history;
         }
 
     }
