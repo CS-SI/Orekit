@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -31,7 +30,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -75,13 +73,13 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
     /** {@inheritDoc} */
     @Override
     public List<OffsetModel> loadOffsets() {
-        final Parser parser = new Parser();
+        final UtcTaiOffsetLoader parser = new UtcTaiOffsetLoader(new Parser());
         this.feed(parser);
         return parser.getOffsets();
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    public static class Parser implements UTCTAIOffsetsLoader.Parser {
 
         /** Regular expression for optional blanks. */
         private static final String BLANKS               = "\\p{Blank}*";
@@ -116,12 +114,9 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
         /** Data lines pattern. */
         private Pattern dataPattern;
 
-        /** UTC-TAI offsets. */
-        private List<OffsetModel> offsets;
-
         /** Simple constructor.
          */
-        Parser() {
+        public Parser() {
 
             // data lines read:
             // 1965 SEP  1 =JD 2439004.5  TAI-UTC=   3.8401300 S + (MJD - 38761.) X 0.001296 S
@@ -150,20 +145,7 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
                                           "\\p{Blank}*\\)\\p{Blank}+X" + STORED_REAL_FIELD +
                                           "\\p{Blank}*S" + LINE_END_REGEXP);
 
-            offsets = new ArrayList<>();
 
-        }
-
-        /** Get the parsed offsets.
-         * @return parsed offsets
-         */
-        public List<OffsetModel> getOffsets() {
-            return offsets;
-        }
-
-        /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return offsets.isEmpty();
         }
 
         /** Load UTC-TAI offsets entries read from some file.
@@ -173,12 +155,12 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
          * @param input data input stream
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception ParseException if data can't be parsed
          */
-        public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
+        @Override
+        public List<OffsetModel> parse(final InputStream input, final String name)
+            throws IOException {
 
-            offsets.clear();
+            final List<OffsetModel> offsets = new ArrayList<>();
 
             // set up a reader for line-oriented file
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
@@ -226,6 +208,8 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
             if (offsets.isEmpty()) {
                 throw new OrekitException(OrekitMessages.NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE, name);
             }
+
+            return offsets;
 
         }
 

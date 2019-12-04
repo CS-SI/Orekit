@@ -24,7 +24,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -193,7 +193,7 @@ public class JPLEphemeridesLoaderTest {
             Vector3D pInpopTCBLittle = bodysInpopTCBLittle.getPVCoordinates(date, eme2000).getPosition();
             Assert.assertEquals(0.0, pInpopTCBBig.distance(pInpopTCBLittle), 1.0e-10);
         }
-        for (String name : DataProvidersManager.getInstance().getLoadedDataNames()) {
+        for (String name : DataContext.getDefault().getDataProvidersManager().getLoadedDataNames()) {
             Assert.assertTrue(name.contains("inpop"));
         }
     }

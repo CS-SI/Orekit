@@ -92,9 +92,9 @@ public class Utils {
         GNSSDate.setRolloverReference(null);
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.clearOceanTidesReaders();
-        DataProvidersManager.getInstance().clearProviders();
-        DataProvidersManager.getInstance().clearFilters();
-        DataProvidersManager.getInstance().clearLoadedDataNames();
+        DataContext.getDefault().getDataProvidersManager().clearProviders();
+        DataContext.getDefault().getDataProvidersManager().clearFilters();
+        DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
         
     }
 

@@ -24,7 +24,6 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.GLONASSDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 
 /**
  * This class holds a GLONASS almanac as read from .agl files.

@@ -1,5 +1,27 @@
+/* Contributed in the public domain.
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.frames;
 
+import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+
+import org.orekit.bodies.CelestialBodies;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -239,5 +261,43 @@ public interface Frames {
      */
     FactoryManagedFrame getPZ9011(IERSConventions convention,
                                   boolean simpleEOP);
+
+    /* Helpers for creating instances */
+
+    /**
+     * Create a set of frames from the given data.
+     *
+     * @param timeScales      used to build the frames as well as the EOP data set.
+     * @param celestialBodies used to get {@link #getICRF()} which is the inertial frame
+     *                        of the solar system barycenter.
+     * @return a set of reference frame constructed from the given data.
+     * @see #of(TimeScales, Supplier)
+     */
+    static Frames of(final TimeScales timeScales,
+                     final CelestialBodies celestialBodies) {
+        return of(timeScales, () -> celestialBodies.getSolarSystemBarycenter()
+                .getInertiallyOrientedFrame());
+    }
+
+    /**
+     * Create a set of frames from the given data.
+     *
+     * @param timeScales   used to build the frames as well as the EOP data set.
+     * @param icrfSupplier used to get {@link #getICRF()}. For example, {@code
+     *                     celestialBodies.getSolarSystemBarycenter().getInertiallyOrientedFrame()}
+     * @return a set of reference frame constructed from the given data.
+     * @see CelestialBodies
+     * @see TimeScales#of(Collection, BiFunction)
+     */
+    static Frames of(final TimeScales timeScales,
+                     final Supplier<Frame> icrfSupplier) {
+        return new AbstractFrames(timeScales, icrfSupplier) {
+            @Override
+            public EOPHistory getEOPHistory(final IERSConventions conventions,
+                                            final boolean simpleEOP) {
+                return getTimeScales().getUT1(conventions, simpleEOP).getEOPHistory();
+            }
+        };
+    }
 
 }

@@ -20,7 +20,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
-import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
 
 /**

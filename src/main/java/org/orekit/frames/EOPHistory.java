@@ -90,7 +90,7 @@ public class EOPHistory implements Serializable {
      */
     @DefaultDataContext
     protected EOPHistory(final IERSConventions conventions,
-                         final Collection<EOPEntry> data,
+                         final Collection<? extends EOPEntry> data,
                          final boolean simpleEOP) {
         this(conventions, data, simpleEOP, DataContext.getDefault().getTimeScales());
     }
@@ -102,10 +102,10 @@ public class EOPHistory implements Serializable {
      * @param timeScales to use when computing EOP corrections.
      * @since 10.1
      */
-    protected EOPHistory(final IERSConventions conventions,
-                         final Collection<EOPEntry> data,
-                         final boolean simpleEOP,
-                         final TimeScales timeScales) {
+    public EOPHistory(final IERSConventions conventions,
+                      final Collection<? extends EOPEntry> data,
+                      final boolean simpleEOP,
+                      final TimeScales timeScales) {
         this(conventions,
                 data,
                 simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection(timeScales)),
@@ -120,7 +120,7 @@ public class EOPHistory implements Serializable {
      * @since 10.1
      */
     private EOPHistory(final IERSConventions conventions,
-                       final Collection<EOPEntry> data,
+                       final Collection<? extends EOPEntry> data,
                        final TimeVectorFunction tidalCorrection,
                        final TimeScales timeScales) {
         this.conventions      = conventions;
@@ -135,6 +135,15 @@ public class EOPHistory implements Serializable {
             cache = ImmutableTimeStampedCache.emptyCache();
             hasData = false;
         }
+    }
+
+    /**
+     * Determine if this history uses simplified EOP corrections.
+     *
+     * @return {@code true} if tidal corrections are ignored, {@code false} otherwise.
+     */
+    public boolean isSimpleEop() {
+        return tidalCorrection == null;
     }
 
     /**

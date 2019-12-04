@@ -184,7 +184,8 @@ public class GroundStation {
             throw new OrekitException(OrekitMessages.NO_EARTH_ORIENTATION_PARAMETERS);
         }
 
-        final UT1Scale baseUT1 = eopHistory.getTimeScales().getUT1(eopHistory);
+        final UT1Scale baseUT1 = eopHistory.getTimeScales()
+                .getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
         this.estimatedEarthFrameProvider = new EstimatedEarthFrameProvider(baseUT1);
         this.estimatedEarthFrame = new Frame(baseFrame.getParent(), estimatedEarthFrameProvider,
                                              baseFrame.getParent() + "-estimated");

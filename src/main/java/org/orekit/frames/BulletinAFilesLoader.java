@@ -378,7 +378,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
         private final Map<Integer, double[]> poleOffsetsFieldsMap;
 
         /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
+        private final ItrfVersionProvider itrfVersionProvider;
 
         /** ITRF version configuration. */
         private ITRFVersionLoader.ITRFVersionConfiguration configuration;
@@ -406,7 +406,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
         Parser() {
             this.eopFieldsMap         = new HashMap<>();
             this.poleOffsetsFieldsMap = new HashMap<>();
-            this.itrfVersionLoader    = new ITRFVersionLoader(
+            this.itrfVersionProvider = new ITRFVersionLoader(
                     ITRFVersionLoader.SUPPORTED_NAMES,
                     getDataProvidersManager());
             this.lineNumber           = 0;
@@ -495,7 +495,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                         // we have only pole offsets for this date
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = itrfVersionLoader.getConfiguration(fileName, mjd);
+                            configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
                         }
                         history.add(new EOPEntry(mjd,
                                                  0.0, 0.0, 0.0, 0.0,
@@ -530,7 +530,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
 
                     if (configuration == null || !configuration.isValid(mjd)) {
                         // get a configuration for current name and date range
-                        configuration = itrfVersionLoader.getConfiguration(fileName, mjd);
+                        configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
                     }
                     if (currentPole == null) {
                         // we have only EOP for this date

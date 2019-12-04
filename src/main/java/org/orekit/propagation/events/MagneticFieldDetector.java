@@ -24,7 +24,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.models.earth.GeoMagneticField;
-import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;

@@ -19,7 +19,7 @@ public class ITRFVersionLoaderTest {
     public void testVersion() {
         // setup
         Utils.setDataRoot("regular-data");
-        ITRFVersionLoader loader =
+        ItrfVersionProvider loader =
                 new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
 
         // action + verify
@@ -98,7 +98,7 @@ public class ITRFVersionLoaderTest {
     public void testLoaders() {
         // setup
         Utils.setDataRoot("regular-data");
-        ITRFVersionLoader loader =
+        ItrfVersionProvider loader =
                 new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
 
         Assert.assertThat(loader.getConfiguration("/finals.all", 55555).getVersion(),

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -28,7 +29,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -84,43 +84,40 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
-        final Parser parser = new Parser(converter);
-        this.feed(parser);
-        history.addAll(parser.history);
+        final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
+                ITRFVersionLoader.SUPPORTED_NAMES,
+                getDataProvidersManager());
+        final Parser parser = new Parser(converter, itrfVersionProvider, getUtc());
+        final EopParserLoader loader = new EopParserLoader(parser);
+        this.feed(loader);
+        history.addAll(loader.getEop());
     }
 
     /** Internal class performing the parsing. */
-    private class Parser implements DataLoader {
-
-        /** Converter for nutation corrections. */
-        private final IERSConventions.NutationCorrectionConverter converter;
-
-        /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
+    static class Parser extends AbstractEopParser {
 
         /** History entries. */
-        private final List<EOPEntry> history;
+        private List<EOPEntry> history;
 
-        /** Simple constructor.
-         * @param converter converter to use
+        /**
+         * Simple constructor.
+         *
+         * @param converter           converter to use
+         * @param itrfVersionProvider to use for determining the ITRF version of the EOP.
+         * @param utc                 time scale for parsing dates.
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter         = converter;
-            this.itrfVersionLoader = new ITRFVersionLoader(
-                    ITRFVersionLoader.SUPPORTED_NAMES,
-                    getDataProvidersManager());
-            this.history           = new ArrayList<>();
+        Parser(final IERSConventions.NutationCorrectionConverter converter,
+               final ItrfVersionProvider itrfVersionProvider,
+               final TimeScale utc) {
+            super(converter, itrfVersionProvider, utc);
         }
 
         /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        public void loadData(final InputStream input, final String name)
+        @Override
+        public Collection<EOPEntry> parse(final InputStream input, final String name)
             throws IOException, OrekitException {
             try {
+                this.history = new ArrayList<>();
                 // set up a reader for line-oriented bulletin B files
                 final XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
                 reader.setContentHandler(new EOPContentHandler(name));
@@ -129,6 +126,8 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
 
                 // read all file, ignoring header
                 reader.parse(new InputSource(new InputStreamReader(input, StandardCharsets.UTF_8)));
+
+                return history;
 
             } catch (SAXException se) {
                 if ((se.getCause() != null) && (se.getCause() instanceof OrekitException)) {
@@ -355,16 +354,16 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                             nro = new double[] {
                                 dx, dy
                             };
-                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 dpsi, deps
                             };
-                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
                                                  configuration.getVersion(), mjdDate));
@@ -414,16 +413,16 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                             nro = new double[] {
                                 dx, dy
                             };
-                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 dpsi, deps
                             };
-                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
-                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
                                                  configuration.getVersion(), mjdDate));

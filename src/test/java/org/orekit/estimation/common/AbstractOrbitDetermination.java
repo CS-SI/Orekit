@@ -52,6 +52,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.GzipFilter;
@@ -938,7 +939,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataProvidersManager.getInstance();
+            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
             manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
             final ParameterDriver[] drivers = setDrag(propagatorBuilder, atmosphere, new IsotropicDrag(area, cd));

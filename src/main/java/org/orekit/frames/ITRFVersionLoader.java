@@ -62,7 +62,7 @@ import org.orekit.time.DateComponents;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class ITRFVersionLoader {
+public class ITRFVersionLoader implements ItrfVersionProvider {
 
     /** Regular expression for supported files names. */
     public static final String SUPPORTED_NAMES = "itrf-versions.conf";
@@ -115,11 +115,7 @@ public class ITRFVersionLoader {
         this(SUPPORTED_NAMES);
     }
 
-    /** Get the ITRF version configuration defined by a given file at specified date.
-     * @param name EOP file name
-     * @param mjd date of the EOP in modified Julian day
-     * @return configuration valid around specified date in the file
-     */
+    @Override
     public ITRFVersionConfiguration getConfiguration(final String name, final int mjd) {
 
         for (final ITRFVersionConfiguration configuration : configurations) {
@@ -275,10 +271,10 @@ public class ITRFVersionLoader {
          * @param validityStart start of validity (included)
          * @param validityEnd end of validity (excluded)
          */
-        ITRFVersionConfiguration(final String prefix,
-                                 final ITRFVersion version,
-                                 final int validityStart,
-                                 final int validityEnd) {
+        public ITRFVersionConfiguration(final String prefix,
+                                        final ITRFVersion version,
+                                        final int validityStart,
+                                        final int validityEnd) {
             this.prefix        = prefix;
             this.version       = version;
             this.validityStart = validityStart;

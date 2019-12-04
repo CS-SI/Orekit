@@ -19,7 +19,6 @@ package org.orekit.gnss;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.analytical.gnss.IRNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 
 /**
  * Class for IRNSS almanac.

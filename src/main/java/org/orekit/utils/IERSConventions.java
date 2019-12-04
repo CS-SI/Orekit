@@ -58,7 +58,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.TimeVectorFunction;
 

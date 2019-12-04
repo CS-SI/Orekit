@@ -135,7 +135,7 @@ public class ZipJarCrawler implements DataProvider {
     @Deprecated
     @DefaultDataContext
     public boolean feed(final Pattern supported, final DataLoader visitor) {
-        return feed(supported, visitor, DataProvidersManager.getInstance());
+        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
     }
 
     /** {@inheritDoc} */
