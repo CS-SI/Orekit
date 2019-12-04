@@ -32,8 +32,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
- * Loads Earth Orientation Parameters (EOP)from a configured set of {@link
- * EOPHistoryLoader}s on demand. Methods are synchronized to it is safe for access from
+ * Loads Earth Orientation Parameters (EOP) from a configured set of {@link
+ * EOPHistoryLoader}s on demand. Methods are synchronized so it is safe for access from
  * multiple threads.
  *
  * @author Guylaine Prat
