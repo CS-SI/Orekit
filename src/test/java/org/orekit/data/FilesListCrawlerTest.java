@@ -50,7 +50,8 @@ public class FilesListCrawlerTest extends AbstractListCrawlerTest<File> {
         try {
             File existing   = new File(input("regular-data").getPath());
             File inexistent = new File(existing.getParent(), "inexistant-directory");
-            new FilesListCrawler(inexistent).feed(Pattern.compile(".*"), new CountingLoader());
+            new FilesListCrawler(inexistent).feed(Pattern.compile(".*"), new CountingLoader(),
+                                                  DataContext.getDefault().getDataProvidersManager());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertTrue(oe.getCause() instanceof FileNotFoundException);

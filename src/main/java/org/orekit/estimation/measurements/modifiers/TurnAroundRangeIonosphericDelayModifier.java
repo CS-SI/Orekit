@@ -29,7 +29,6 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;

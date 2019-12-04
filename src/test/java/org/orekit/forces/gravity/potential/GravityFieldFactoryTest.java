@@ -26,7 +26,7 @@ import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
@@ -71,7 +71,7 @@ public class GravityFieldFactoryTest {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 3);
         Assert.assertEquals(5, provider.getMaxDegree());
         Assert.assertEquals(3, provider.getMaxOrder());
-        Set<String> loaded = DataProvidersManager.getInstance().getLoadedDataNames();
+        Set<String> loaded = DataContext.getDefault().getDataProvidersManager().getLoadedDataNames();
         Assert.assertEquals(1, loaded.size());
         Assert.assertEquals("g007_eigen_05c_coef", new File(loaded.iterator().next()).getName());
     }
@@ -84,7 +84,7 @@ public class GravityFieldFactoryTest {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 3);
         Assert.assertEquals(5, provider.getMaxDegree());
         Assert.assertEquals(3, provider.getMaxOrder());
-        Set<String> loaded = DataProvidersManager.getInstance().getLoadedDataNames();
+        Set<String> loaded = DataContext.getDefault().getDataProvidersManager().getLoadedDataNames();
         Assert.assertEquals(1, loaded.size());
         Assert.assertEquals("eigen_cg03c_coef", new File(loaded.iterator().next()).getName());
     }

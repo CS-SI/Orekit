@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 
 public class AstronomicalAmplitudeReaderTest {
 
@@ -31,7 +31,7 @@ public class AstronomicalAmplitudeReaderTest {
         {
         AstronomicalAmplitudeReader reader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
-        DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
+        DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
         Map<Integer, Double> astronomicalAmplitudesMap = reader.getAstronomicalAmplitudesMap();
 
         Assert.assertEquals(81, astronomicalAmplitudesMap.size());
