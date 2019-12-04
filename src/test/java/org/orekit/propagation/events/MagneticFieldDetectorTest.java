@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -28,7 +28,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -65,7 +64,7 @@ public class MagneticFieldDetectorTest {
 		final String orekitCfgPath = "src/test/resources";
 
 		// Initialize Orekit
-		DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(orekitCfgPath)));
+		DataContext.getDefault().getDataProvidersManager().addProvider(new DirectoryCrawler(new File(orekitCfgPath)));
 
 		// Initialize constants
 		eme2000 = FramesFactory.getEME2000();
@@ -86,8 +85,8 @@ public class MagneticFieldDetectorTest {
 	@After
 	public void tearDown()
 	{
-		DataProvidersManager.getInstance().clearProviders();
-		DataProvidersManager.getInstance().clearLoadedDataNames();
+		DataContext.getDefault().getDataProvidersManager().clearProviders();
+		DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
 	}
 	
 	/**

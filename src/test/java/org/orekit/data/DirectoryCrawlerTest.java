@@ -35,14 +35,16 @@ public class DirectoryCrawlerTest {
     public void testNoDirectory() throws URISyntaxException {
         File existing = new File(getClass().getClassLoader().getResource("regular-data").toURI().getPath());
         File inexistent = new File(existing.getParent(), "inexistant-directory");
-        new DirectoryCrawler(inexistent).feed(Pattern.compile(".*"), new CountingLoader());
+        new DirectoryCrawler(inexistent).feed(Pattern.compile(".*"), new CountingLoader(),
+                                              DataContext.getDefault().getDataProvidersManager());
    }
 
     @Test(expected=OrekitException.class)
     public void testNotADirectory() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
-        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new CountingLoader());
+        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new CountingLoader(),
+                                                                   DataContext.getDefault().getDataProvidersManager());
     }
 
     @Test
@@ -50,7 +52,8 @@ public class DirectoryCrawlerTest {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         CountingLoader crawler = new CountingLoader();
-        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), crawler);
+        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), crawler,
+                                                                   DataContext.getDefault().getDataProvidersManager());
         Assert.assertTrue(crawler.getCount() > 0);
     }
 
@@ -59,7 +62,8 @@ public class DirectoryCrawlerTest {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
         CountingLoader crawler = new CountingLoader();
-        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), crawler);
+        new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), crawler,
+                                                                   DataContext.getDefault().getDataProvidersManager());
         Assert.assertTrue(crawler.getCount() > 0);
     }
 
@@ -69,7 +73,8 @@ public class DirectoryCrawlerTest {
             DirectoryCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         File parent = new File(url.toURI().getPath()).getParentFile();
         CountingLoader crawler = new CountingLoader();
-        new DirectoryCrawler(parent).feed(Pattern.compile(".*\\.txt$"), crawler);
+        new DirectoryCrawler(parent).feed(Pattern.compile(".*\\.txt$"), crawler,
+                                          DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(6, crawler.getCount());
     }
 
@@ -78,7 +83,8 @@ public class DirectoryCrawlerTest {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
-            new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new IOExceptionLoader());
+            new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new IOExceptionLoader(),
+                                                                       DataContext.getDefault().getDataProvidersManager());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -93,7 +99,8 @@ public class DirectoryCrawlerTest {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         try {
-            new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new ParseExceptionLoader());
+            new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new ParseExceptionLoader(),
+                                                                       DataContext.getDefault().getDataProvidersManager());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
