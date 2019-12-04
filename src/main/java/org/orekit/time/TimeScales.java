@@ -1,7 +1,12 @@
 package org.orekit.time;
 
+import java.util.Collection;
+import java.util.function.BiFunction;
+
 import org.hipparchus.util.MathArrays;
+import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistory;
+import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.Frames;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -14,6 +19,8 @@ import org.orekit.utils.IERSConventions;
  * @author Evan Ward
  * @see TimeScalesFactory
  * @see TimeScale
+ * @see LazyLoadedTimeScales
+ * @see #of(Collection, BiFunction)
  * @since 10.1
  */
 public interface TimeScales {
@@ -305,6 +312,35 @@ public interface TimeScales {
                         Constants.BESSELIAN_YEAR, besselianEpoch - 1900,
                         Constants.JULIAN_DAY, -36525,
                         Constants.JULIAN_DAY, 0.31352));
+    }
+
+    /* Helpers for creating new instances. */
+
+    /**
+     * Create a set of time scales where all the data is loaded from the given functions.
+     *
+     * @param utcMinusTai offsets used to compute UTC. If the pre-1972 linear offsets are
+     *                    missing they will be added.
+     * @param eopSupplier function to retrieve the EOP data. Since the EOP have to be
+     *                    reloaded every time a different {@link IERSConventions} is
+     *                    requested this function may be called multiple times. The
+     *                    requested conventions and the created time scales are passed as
+     *                    arguments. Attempting to call {@link #getUT1(IERSConventions,
+     *                    boolean)} or {@link #getGMST(IERSConventions, boolean)} on the
+     *                    time scales argument may result in unbounded recursion. To
+     *                    ignore EOP corrections this function should return an empty
+     *                    collection.
+     * @return a set of time scales based on the given data.
+     * @see UTCTAIOffsetsLoader.Parser
+     * @see EOPHistoryLoader.Parser
+     */
+    static TimeScales of(
+            final Collection<? extends OffsetModel> utcMinusTai,
+            final BiFunction<
+                    ? super IERSConventions,
+                    ? super TimeScales,
+                    ? extends Collection<? extends EOPEntry>> eopSupplier) {
+        return new PreloadedTimeScales(utcMinusTai, eopSupplier);
     }
 
 }

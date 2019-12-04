@@ -17,6 +17,9 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
@@ -55,10 +58,12 @@ public class UTCScale implements TimeScale {
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
      * @param tai TAI time scale this UTC time scale references.
-     * @param offsetModels UTC-TAI offsets
+     * @param offsets UTC-TAI offsets
      */
-    UTCScale(final TimeScale tai, final List<OffsetModel> offsetModels) {
-
+    UTCScale(final TimeScale tai, final Collection<? extends OffsetModel> offsets) {
+        // copy input so the original list is unmodified
+        final List<OffsetModel> offsetModels = new ArrayList<>(offsets);
+        offsetModels.sort(Comparator.comparing(OffsetModel::getStart));
         if (offsetModels.get(0).getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually
             // excerpt from UTC-TAI.history file:
@@ -91,7 +96,7 @@ public class UTCScale implements TimeScale {
         }
 
         // create cache
-        offsets = new UTCTAIOffset[offsetModels.size()];
+        this.offsets = new UTCTAIOffset[offsetModels.size()];
 
         UTCTAIOffset previous = null;
 
@@ -120,7 +125,7 @@ public class UTCScale implements TimeScale {
                     .shiftedBy(offset);
             previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef,
                     normalizedSlope, reference);
-            offsets[i] = previous;
+            this.offsets[i] = previous;
 
         }
 

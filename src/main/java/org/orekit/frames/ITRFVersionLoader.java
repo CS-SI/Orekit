@@ -266,10 +266,10 @@ public class ITRFVersionLoader implements ItrfVersionProvider {
          * @param validityStart start of validity (included)
          * @param validityEnd end of validity (excluded)
          */
-        ITRFVersionConfiguration(final String prefix,
-                                 final ITRFVersion version,
-                                 final int validityStart,
-                                 final int validityEnd) {
+        public ITRFVersionConfiguration(final String prefix,
+                                        final ITRFVersion version,
+                                        final int validityStart,
+                                        final int validityEnd) {
             this.prefix        = prefix;
             this.version       = version;
             this.validityStart = validityStart;

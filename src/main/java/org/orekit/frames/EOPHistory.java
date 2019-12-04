@@ -88,7 +88,7 @@ public class EOPHistory implements Serializable {
      * @see #EOPHistory(IERSConventions, Collection, boolean, TimeScales)
      */
     protected EOPHistory(final IERSConventions conventions,
-                         final Collection<EOPEntry> data,
+                         final Collection<? extends EOPEntry> data,
                          final boolean simpleEOP) {
         this(conventions, data, simpleEOP, DataContext.getDefault().getTimeScales());
     }
@@ -100,10 +100,10 @@ public class EOPHistory implements Serializable {
      * @param timeScales to use when computing EOP corrections.
      * @since 10.1
      */
-    protected EOPHistory(final IERSConventions conventions,
-                         final Collection<EOPEntry> data,
-                         final boolean simpleEOP,
-                         final TimeScales timeScales) {
+    public EOPHistory(final IERSConventions conventions,
+                      final Collection<? extends EOPEntry> data,
+                      final boolean simpleEOP,
+                      final TimeScales timeScales) {
         this(conventions,
                 data,
                 simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection(timeScales)),
@@ -118,7 +118,7 @@ public class EOPHistory implements Serializable {
      * @since 10.1
      */
     private EOPHistory(final IERSConventions conventions,
-                       final Collection<EOPEntry> data,
+                       final Collection<? extends EOPEntry> data,
                        final TimeVectorFunction tidalCorrection,
                        final TimeScales timeScales) {
         this.conventions      = conventions;
