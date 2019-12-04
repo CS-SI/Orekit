@@ -5,7 +5,6 @@ import java.util.function.BiFunction;
 
 import org.hipparchus.util.MathArrays;
 import org.orekit.frames.EOPEntry;
-import org.orekit.frames.EOPHistory;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.Frames;
 import org.orekit.utils.Constants;
@@ -49,24 +48,6 @@ public interface TimeScales {
      * @see Frames#getEOPHistory(IERSConventions, boolean)
      */
     UT1Scale getUT1(IERSConventions conventions, boolean simpleEOP);
-
-    /**
-     * Get the Universal Time 1 scale.
-     * <p>
-     * As this method allow associating any history with the time scale, it may involve
-     * large data sets. So this method does <em>not</em> cache the resulting {@link
-     * UT1Scale UT1Scale} instance, a new instance will be returned each time. In order to
-     * avoid wasting memory, calling {@link #getUT1(IERSConventions, boolean)} with the
-     * single enumerate corresponding to the conventions may be a better solution. This
-     * method is made available only for expert use.
-     * </p>
-     *
-     * @param history EOP parameters providing dUT1 (may be null if no correction is
-     *                desired)
-     * @return Universal Time 1 scale
-     * @see #getUT1(IERSConventions, boolean)
-     */
-    UT1Scale getUT1(EOPHistory history);
 
     /**
      * Get the Terrestrial Time scale.
@@ -281,10 +262,7 @@ public interface TimeScales {
      * @see #getJ2000Epoch()
      * @see #createBesselianEpoch(double)
      */
-    default AbsoluteDate createJulianEpoch(final double julianEpoch) {
-        return new AbsoluteDate(getJ2000Epoch(),
-                Constants.JULIAN_YEAR * (julianEpoch - 2000.0));
-    }
+    AbsoluteDate createJulianEpoch(double julianEpoch);
 
     /**
      * Build an instance corresponding to a Besselian Epoch (BE).
@@ -306,13 +284,7 @@ public interface TimeScales {
      * @return a new instant
      * @see #createJulianEpoch(double)
      */
-    default AbsoluteDate createBesselianEpoch(final double besselianEpoch) {
-        return new AbsoluteDate(getJ2000Epoch(),
-                MathArrays.linearCombination(
-                        Constants.BESSELIAN_YEAR, besselianEpoch - 1900,
-                        Constants.JULIAN_DAY, -36525,
-                        Constants.JULIAN_DAY, 0.31352));
-    }
+    AbsoluteDate createBesselianEpoch(double besselianEpoch);
 
     /* Helpers for creating new instances. */
 

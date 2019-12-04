@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
@@ -62,7 +63,8 @@ public class GTODProvider implements EOPBasedTransformProvider {
 
     /** Simple constructor.
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This method uses the {@link DataContext#getDefault() default data context} if
+     * {@code eopHistory == null}.
      *
      * @param conventions IERS conventions to use
      * @param eopHistory EOP history (may be null)
@@ -72,7 +74,10 @@ public class GTODProvider implements EOPBasedTransformProvider {
     @Deprecated
     protected GTODProvider(final IERSConventions conventions,
                            final EOPHistory eopHistory) {
-        this(conventions, eopHistory, DataContext.getDefault().getTimeScales());
+        this(conventions, eopHistory,
+                eopHistory == null ?
+                        DataContext.getDefault().getTimeScales() :
+                        eopHistory.getTimeScales());
     }
 
     /** Simple constructor.
@@ -84,7 +89,9 @@ public class GTODProvider implements EOPBasedTransformProvider {
     protected GTODProvider(final IERSConventions conventions,
                            final EOPHistory eopHistory,
                            final TimeScales timeScales) {
-        final UT1Scale ut1 = timeScales.getUT1(eopHistory);
+        final TimeScale ut1 = eopHistory == null ?
+                timeScales.getUTC() : // UT1 wihthout EOP is UTC
+                timeScales.getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
         this.conventions   = conventions;
         this.eopHistory    = eopHistory;
         this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory, timeScales);

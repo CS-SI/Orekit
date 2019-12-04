@@ -340,7 +340,7 @@ public abstract class AbstractFrames implements Frames {
                 final CIRFProvider cirfRaw = (CIRFProvider) cirfInterpolating.getRawProvider();
                 final EOPHistory eopHistory = cirfRaw.getEOPHistory();
                 final TIRFProvider provider =
-                        new TIRFProvider(eopHistory, getTimeScales().getUT1(eopHistory));
+                        new TIRFProvider(eopHistory, getTimeScales().getUT1(conventions, simpleEOP));
                 frame = new FactoryManagedFrame(cirf, provider, false, factoryKey);
                 frames.put(factoryKey, frame);
             }

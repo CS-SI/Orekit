@@ -19,7 +19,7 @@ import org.orekit.utils.IERSConventions;
  * @author Evan Ward
  * @since 10.1
  */
-class PreloadedTimeScales implements TimeScales {
+class PreloadedTimeScales extends AbstractTimeScales {
 
     /** TAI time scale. */
     private final TAIScale tai;
@@ -109,11 +109,6 @@ class PreloadedTimeScales implements TimeScales {
                                 c -> eopSupplier.apply(c, this)),
                         simpleEOP,
                         this)));
-    }
-
-    @Override
-    public UT1Scale getUT1(final EOPHistory history) {
-        return new UT1Scale(history, getUTC());
     }
 
     @Override

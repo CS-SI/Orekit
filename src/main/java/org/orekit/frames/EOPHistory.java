@@ -136,6 +136,15 @@ public class EOPHistory implements Serializable {
     }
 
     /**
+     * Determine if this history uses simplified EOP corrections.
+     *
+     * @return {@code true} if tidal corrections are ignored, {@code false} otherwise.
+     */
+    public boolean isSimpleEop() {
+        return tidalCorrection == null;
+    }
+
+    /**
      * Get the time scales used in computing EOP corrections.
      *
      * @return set of time scales.
