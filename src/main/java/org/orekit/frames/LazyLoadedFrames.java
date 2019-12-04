@@ -516,8 +516,7 @@ public class LazyLoadedFrames implements Frames {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final EOPHistory eopHistory =
-                        lazyLoadedEop.getEOPHistory(conventions, simpleEOP, timeScales);
+                final EOPHistory eopHistory = getEOPHistory(conventions, simpleEOP);
                 final TransformProvider shifting =
                         new ShiftingTransformProvider(new CIRFProvider(eopHistory),
                                 CartesianDerivativesFilter.USE_PVA,
@@ -745,7 +744,7 @@ public class LazyLoadedFrames implements Frames {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final EOPHistory eopHistory = applyEOPCorr ?
-                        lazyLoadedEop.getEOPHistory(conventions, simpleEOP, timeScales) :
+                        getEOPHistory(conventions, simpleEOP) :
                         null;
                 final TransformProvider shifting =
                         new ShiftingTransformProvider(
