@@ -25,10 +25,24 @@ package org.orekit.data;
 class DefaultDataContextHolder {
 
     /** The default Orekit data context. */
-    static LazyLoadedDataContext INSTANCE = new LazyLoadedDataContext();
+    private static LazyLoadedDataContext INSTANCE = new LazyLoadedDataContext();
 
     /** Private Constructor. */
     private DefaultDataContextHolder() {
+    }
+
+    /** Get the default Orekit data context.
+     * @return Orekit's default data context.
+     */
+    static LazyLoadedDataContext getInstance() {
+        return INSTANCE;
+    }
+
+    /** Set the default Orekit data context.
+     * @param context the new data context.
+     */
+    static void setInstance(final LazyLoadedDataContext context) {
+        INSTANCE = context;
     }
 
 }

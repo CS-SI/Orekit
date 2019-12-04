@@ -42,7 +42,7 @@ public interface DataContext {
      * @return Orekit's default data context.
      */
     static LazyLoadedDataContext getDefault() {
-        return DefaultDataContextHolder.INSTANCE;
+        return DefaultDataContextHolder.getInstance();
     }
 
     /**
@@ -56,7 +56,7 @@ public interface DataContext {
      * @see #getDefault()
      */
     static void setDefault(final LazyLoadedDataContext context) {
-        DefaultDataContextHolder.INSTANCE = context;
+        DefaultDataContextHolder.setInstance(context);
     }
 
     /**
