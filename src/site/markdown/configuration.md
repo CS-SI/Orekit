@@ -48,7 +48,7 @@ Orekit must be configured to find and read them at run time.
 In order to simplify data updates for users and to avoid transformations errors, Orekit
 uses each supported data set in the native format in which it is publicly available. So
 if a user wants to take into account the Earth Orientation Parameters for a given year,
-for example, he will simply download the corresponding file for IERS server at
+for example, he or she will simply download the corresponding file for IERS server at
 [http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html](http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html)
 and drop it in the data storage system Orekit is configured to use, without any change
 to the data file itself.
@@ -78,15 +78,15 @@ in the library itself.
     For everyday local use of a tool, data will mainly be stored in the user environment.
     A traditional architecture will involve two main data stores, one on a network shared
     disk for large general data sets handled at department level and another one as simple
-    files on the local user disk where he can put his own data sets for specific purposes.
-    The local data files may be set up in order to override system-level values for
+    files on the local user disk where he or she can put custom data sets for specific
+    purposes. The local data files may be set up in order to override system-level values for
     special cases.
 
   * New program added to an existing tools suite
 
     If a program using Orekit is integrated in an existing environment with its own
-    established data management system, the library must be configured to use this system
-    to retrieve the data instead of using its own internal system. This enables
+    established data management system, the library must be configured to use this existing
+    system to retrieve the data instead of using Orekit's own internal system. This enables
     smoother integration. It also simplifies system administration of the complete
     suite. It may even allow sharing some of its data with other tools.
 
@@ -102,43 +102,6 @@ in the library itself.
     than using explicit files locations on the server, one stores the data in the
     application classpath where it will be managed by the application server together
     with the application code itself.
-
-  * Small demonstration program distributed using Java WebStart for instant download/use
-
-    A demonstration program can be distributed using Java WebStart so that any user can
-    download it and try it almost instantly from a public web site. If the application is
-    not signed, it will run in a sandbox environment for security reasons (the application
-    is not trusted). The sandbox prevents access to the user disk. Data must be embedded
-    within the application jar file, in the internal classpath.
-
-## Data handling in Orekit
-
-The following diagram shows data handling in Orekit.
-
-![data class diagram](./images/design/data-class-diagram.png)
-
-When some data is read in Orekit (say JPL DE405 or DE406 ephemerides which are needed by
-the `CelestialBodyFactory` class), an implementation of the `DataLoader` interface is used.
-By default, it will be `JPLEphemeridesLoader` (this can be customized). This implementation knows the type
-of files it can handle based on their names (unxp1950.405, unxp2000.405 ...). It also
-knows the file format and what to do with the data. The data loader does not know where
-the data is and does not open the file itself.
-
-The task to locate and fetch the data is performed by classes implementing the
-`DataProvider` class. Each implementation is dedicated to one storage type (disk,
-classpath, direct download on network, access to a database, delegation to a user defined
-library ...). The providers crawl their storage medium and for each stored file ask the
-data loader if it supports the file according to its name. If the data loader supports it,
-then the provider will fetch the data from the storage medium and feed the loader with it.
-
-Which data loader to use is straightforward. The `CelestialBodyFactory` class for example
-can only handle JPL ephemerides so only one data loader can be used. It is hardcoded in
-the `CelestialBodyFactory` class as the default loader. Which data provider to use is customizable. The singleton
-class `DataProvidersManager` manages all the providers that should be used for
-data loading. The manager will typically be configured at application initialization time,
-depending on the use case and perhaps configuration data (environment variables, Java
-properties, users preferences ...). If the manager is not configured, a default configuration
-is set up.
 
 ## Default configuration
 
