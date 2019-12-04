@@ -39,7 +39,6 @@ import org.orekit.files.sp3.SP3File.SP3Coordinate;
 import org.orekit.files.sp3.SP3File.SP3FileType;
 import org.orekit.files.sp3.SP3File.TimeSystem;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;

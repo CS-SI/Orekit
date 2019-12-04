@@ -35,7 +35,7 @@ import org.junit.Assert;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
@@ -99,7 +99,7 @@ public class EstimationTestUtils {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         AstronomicalAmplitudeReader aaReader =
                         new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
-        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                                          0.01, FastMath.toRadians(1.0),
@@ -175,7 +175,7 @@ public class EstimationTestUtils {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         AstronomicalAmplitudeReader aaReader =
                         new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
-        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                                          0.01, FastMath.toRadians(1.0),

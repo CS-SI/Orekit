@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -38,7 +38,7 @@ public class FESCHatEpsilonReaderTest {
         try {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
-        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         OceanTidesReader reader2 = new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                             0.01, FastMath.toRadians(1.0),
@@ -46,7 +46,7 @@ public class FESCHatEpsilonReaderTest {
                                                             map);
         reader2.setMaxParseDegree(8);
         reader2.setMaxParseOrder(8);
-        DataProvidersManager.getInstance().feed(reader2.getSupportedNames(), reader2);
+        DataContext.getDefault().getDataProvidersManager().feed(reader2.getSupportedNames(), reader2);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.OCEAN_TIDE_LOAD_DEFORMATION_LIMITS, oe.getSpecifier());
             Assert.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
@@ -87,12 +87,12 @@ public class FESCHatEpsilonReaderTest {
         OceanTidesReader reader1 = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
         reader1.setMaxParseDegree(6);
         reader1.setMaxParseOrder(6);
-        DataProvidersManager.getInstance().feed(reader1.getSupportedNames(), reader1);
+        DataContext.getDefault().getDataProvidersManager().feed(reader1.getSupportedNames(), reader1);
         List<OceanTidesWave> waves1 =  reader1.getWaves();
 
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
-        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         OceanTidesReader reader2 = new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                             0.01, FastMath.toRadians(1.0),
@@ -100,7 +100,7 @@ public class FESCHatEpsilonReaderTest {
                                                             map);
         reader2.setMaxParseDegree(6);
         reader2.setMaxParseOrder(6);
-        DataProvidersManager.getInstance().feed(reader2.getSupportedNames(), reader2);
+        DataContext.getDefault().getDataProvidersManager().feed(reader2.getSupportedNames(), reader2);
         List<OceanTidesWave> waves2 =  reader2.getWaves();
 
         for (OceanTidesWave wave1 : waves1) {

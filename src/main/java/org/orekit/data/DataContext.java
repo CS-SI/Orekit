@@ -1,13 +1,27 @@
+/* Contributed in the public domain.
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.data;
 
 import org.orekit.bodies.CelestialBodies;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticFields;
 import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeScalesFactory;
 
@@ -28,7 +42,7 @@ public interface DataContext {
      * @return Orekit's default data context.
      */
     static LazyLoadedDataContext getDefault() {
-        return DefaultDataContextHolder.INSTANCE;
+        return DefaultDataContextHolder.getInstance();
     }
 
     /**
@@ -42,11 +56,11 @@ public interface DataContext {
      * @see #getDefault()
      */
     static void setDefault(final LazyLoadedDataContext context) {
-        DefaultDataContextHolder.INSTANCE = context;
+        DefaultDataContextHolder.setInstance(context);
     }
 
     /**
-     * Get a factory for constructing {@link TimeScale}s based on the auxiliary data in
+     * Get a factory for constructing {@link org.orekit.time.TimeScale}s based on the auxiliary data in
      * this context.
      *
      * @return the set of common time scales using this data context.
@@ -54,7 +68,7 @@ public interface DataContext {
     TimeScales getTimeScales();
 
     /**
-     * Get a factory constructing {@link Frame}s based on the auxiliary data in this
+     * Get a factory constructing {@link org.orekit.frames.Frame}s based on the auxiliary data in this
      * context.
      *
      * @return the set of common reference frames using this data context.
@@ -62,7 +76,7 @@ public interface DataContext {
     Frames getFrames();
 
     /**
-     * Get a factory constructing {@link CelestialBody}s based on the auxiliary data in
+     * Get a factory constructing {@link org.orekit.bodies.CelestialBody}s based on the auxiliary data in
      * this context.
      *
      * @return the set of common celestial bodies using this data context.
@@ -78,8 +92,8 @@ public interface DataContext {
     GravityFields getGravityFields();
 
     /**
-     * Get a factory constructing geomagnetic fields based on the auxiliary data in this
-     * context.
+     * Get a factory constructing {@link org.orekit.models.earth.GeoMagneticField}s based on the auxiliary
+     * data in this context.
      *
      * @return the geomagnetic fields using this data context.
      */
