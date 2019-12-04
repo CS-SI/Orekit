@@ -1,13 +1,11 @@
 package org.orekit.data;
 
 import org.orekit.bodies.CelestialBodies;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticFields;
 import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeScalesFactory;
 
@@ -46,7 +44,7 @@ public interface DataContext {
     }
 
     /**
-     * Get a factory for constructing {@link TimeScale}s based on the auxiliary data in
+     * Get a factory for constructing {@link org.orekit.time.TimeScale}s based on the auxiliary data in
      * this context.
      *
      * @return the set of common time scales using this data context.
@@ -54,7 +52,7 @@ public interface DataContext {
     TimeScales getTimeScales();
 
     /**
-     * Get a factory constructing {@link Frame}s based on the auxiliary data in this
+     * Get a factory constructing {@link org.orekit.frames.Frame}s based on the auxiliary data in this
      * context.
      *
      * @return the set of common reference frames using this data context.
@@ -62,7 +60,7 @@ public interface DataContext {
     Frames getFrames();
 
     /**
-     * Get a factory constructing {@link CelestialBody}s based on the auxiliary data in
+     * Get a factory constructing {@link org.orekit.bodies.CelestialBody}s based on the auxiliary data in
      * this context.
      *
      * @return the set of common celestial bodies using this data context.
@@ -78,8 +76,8 @@ public interface DataContext {
     GravityFields getGravityFields();
 
     /**
-     * Get a factory constructing geomagnetic fields based on the auxiliary data in this
-     * context.
+     * Get a factory constructing {@link org.orekit.models.earth.GeoMagneticField}s based on the auxiliary
+     * data in this context.
      *
      * @return the geomagnetic fields using this data context.
      */

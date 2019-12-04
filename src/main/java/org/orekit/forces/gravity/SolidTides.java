@@ -33,7 +33,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
