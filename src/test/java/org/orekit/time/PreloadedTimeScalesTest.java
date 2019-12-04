@@ -1,11 +1,15 @@
 package org.orekit.time;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.data.DirectoryCrawler;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.ITRFVersionLoader.ITRFVersionConfiguration;
@@ -113,6 +117,26 @@ public class PreloadedTimeScalesTest {
         Assert.assertEquals(-2e-5, -32.2889120 - ut12003Full.offsetFromTAI(date), 1e-5);
         Assert.assertEquals(-2e-5, -32.2889120 - ut11996Full.offsetFromTAI(date), 1e-5);
 
+    }
+
+    /** Compare with another data context. */
+    @Test
+    public void testComparison() {
+        // setup
+        LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
+        dataContext.getDataProvidersManager().addProvider(
+                new DirectoryCrawler(new File("src/test/resources/zero-EOP")));
+        LazyLoadedTimeScales other = dataContext.getTimeScales();
+        DateTimeComponents date = new DateTimeComponents(2002, 12, 30);
+
+        // action
+        final UT1Scale ut1 = timeScales.getUT1(IERSConventions.IERS_2010, true);
+        final UT1Scale otherUt1 = other.getUT1(IERSConventions.IERS_2010, true);
+        double actual = new AbsoluteDate(date, ut1)
+                .durationFrom(new AbsoluteDate(date, otherUt1));
+
+        // verify
+        Assert.assertEquals(0.2881680, actual, FastMath.ulp(32));
     }
 
 }
