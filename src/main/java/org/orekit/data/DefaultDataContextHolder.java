@@ -9,7 +9,7 @@ package org.orekit.data;
 class DefaultDataContextHolder {
 
     /** The default Orekit data context. */
-    static LazyLoadedDataContext INSTANCE = new LazyLoadedDataContext();
+    static volatile LazyLoadedDataContext INSTANCE = new LazyLoadedDataContext();
 
     /** Private Constructor. */
     private DefaultDataContextHolder() {
