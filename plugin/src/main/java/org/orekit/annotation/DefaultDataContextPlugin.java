@@ -4,16 +4,14 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import java.util.EnumSet;
+import java.util.Set;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
@@ -109,14 +107,6 @@ public class DefaultDataContextPlugin implements Plugin, TaskListener {
             return super.visitNewClass(newClassTree, aVoid);
         }
 
-        @Override
-        public Void visitMethodInvocation(final MethodInvocationTree methodInvocationTree,
-                                          final Void aVoid) {
-            // member select covers this case
-            // check(methodInvocationTree.getMethodSelect());
-            return super.visitMethodInvocation(methodInvocationTree, aVoid);
-        }
-
         /**
          * Print diagnostic information.
          *
@@ -147,38 +137,60 @@ public class DefaultDataContextPlugin implements Plugin, TaskListener {
          * @param element to check for {@link #ANNOTATION}.
          */
         private void check(final Tree tree, final Element element) {
-            if (element != null && element.getAnnotation(ANNOTATION) != null) {
-                // calling a method annotated with @DefaultDataContext
+            // element and its containing scopes.
+            if (isAnyElementAnnotated(element)) {
+                // using code annotated with @DefaultDataContext
                 // check if current scope is also annotated
-                final TreePath path = trees.getPath(root, tree);
-                final Scope scope = trees.getScope(path);
-                final TypeElement enclosingClass = scope.getEnclosingClass();
-                final ExecutableElement enclosingMethod = scope.getEnclosingMethod();
-                final boolean isClassAnnotated =
-                        enclosingClass.getAnnotation(ANNOTATION) != null;
-                final boolean isMethodAnnotated = enclosingMethod != null &&
-                        enclosingMethod.getAnnotation(ANNOTATION) != null;
-                boolean isFieldAnnotated = false;
-                if (enclosingMethod == null) {
-                    // not in a method, check field
-                    // iterate towards the root of the tree until we find a field
-                    TreePath next = path;
-                    while (next != null) {
-                        final Tree leaf = next.getLeaf();
-                        if (leaf.getKind() == Tree.Kind.VARIABLE) {
-                            isFieldAnnotated =
-                                    trees.getElement(next).getAnnotation(ANNOTATION) != null;
-                            break;
-                        }
-                        next = next.getParentPath();
-                    }
-                }
-                if (!(isClassAnnotated || isMethodAnnotated || isFieldAnnotated)) {
+                if (!isAnyElementAnnotated(trees.getPath(root, tree))) {
                     // calling the default data context from a method without an annotation
                     final String message = MESSAGE + " Used: " + element.getKind() + " " + element;
                     trees.printMessage(Diagnostic.Kind.WARNING, message, tree, root);
                 }
             }
+        }
+
+        /**
+         * Determine if any enclosing element has {@link #ANNOTATION}. Walks towards the
+         * tree root checking each node for the annotation.
+         *
+         * @param element to start the search from. May be {@code null}.
+         * @return {@code true} if {@code element} or any of its parents are annotated,
+         * {@code false} otherwise.
+         */
+        private boolean isAnyElementAnnotated(final Element element) {
+            Element e = element;
+            while (e != null) {
+                if (e.getAnnotation(ANNOTATION) != null) {
+                    return true;
+                }
+                e = e.getEnclosingElement();
+            }
+            return false;
+        }
+
+        /**
+         * Determine if any enclosing tree has {@link #ANNOTATION}. Walks towards the tree
+         * root checking each node for the annotation.
+         *
+         * @param path to start the search from. May be {@code null}.
+         * @return {@code true} if {@code path} or any of its parents are annotated,
+         * {@code false} otherwise.
+         */
+        private boolean isAnyElementAnnotated(final TreePath path) {
+            // Kinds of declarations which can be annotated
+            final Set<Tree.Kind> toCheck = EnumSet.of(
+                    Tree.Kind.METHOD, Tree.Kind.CLASS, Tree.Kind.VARIABLE,
+                    Tree.Kind.INTERFACE, Tree.Kind.ENUM);
+            TreePath next = path;
+            while (next != null) {
+                if (toCheck.contains(next.getLeaf().getKind())) {
+                    if (trees.getElement(next).getAnnotation(ANNOTATION) != null) {
+                        return true;
+                    }
+                }
+                next = next.getParentPath();
+            }
+            return false;
         }
 
     }

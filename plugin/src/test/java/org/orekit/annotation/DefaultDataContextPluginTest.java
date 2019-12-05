@@ -13,10 +13,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.TreeSet;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -26,10 +24,11 @@ import org.junit.Test;
  */
 public class DefaultDataContextPluginTest {
 
-    @Before
-    public void setUp() {
-    }
-
+    /**
+     * Check compiling an example program generates the expected number of warnings.
+     *
+     * @throws IOException on error.
+     */
     @Test
     public void testWarnings() throws IOException {
         // setup
@@ -42,6 +41,7 @@ public class DefaultDataContextPluginTest {
                 "-cp", System.getProperty("java.class.path"),
                 "-source", "1.8", "-target", "1.8",
                 "-d", output.toAbsolutePath().toString(),
+                "-Xmaxwarns", "9999",
                 "-Xplugin:dataContextPlugin"));
         Files.list(Paths.get("src/example/java"))
                 .forEach(a -> arguments.add(a.toAbsolutePath().toString()));
@@ -51,20 +51,27 @@ public class DefaultDataContextPluginTest {
 
         // verify
         String actual = err.toString();
-        // System.out.println(actual);
         // count warnings ignoring duplicates
         long count = Arrays.stream(actual.split("\n"))
                 .filter(s -> s.contains(DefaultDataContextPlugin.MESSAGE))
                 .count();
-        Assert.assertEquals(actual, count, 16);
+        Assert.assertEquals(actual, count, 30);
+        Assert.assertFalse(actual, actual.contains(" error:"));
+        Assert.assertEquals(actual, 0, retVal);
     }
 
-    private void rmTree(Path output) throws IOException {
-        if (!Files.exists(output)) {
+    /**
+     * {@code rm -r path}.
+     *
+     * @param path to remove.
+     * @throws IOException on error.
+     */
+    private void rmTree(Path path) throws IOException {
+        if (!Files.exists(path)) {
             return;
         }
         Files.walkFileTree(
-                output,
+                path,
                 new FileVisitor<Path>() {
                     @Override
                     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
