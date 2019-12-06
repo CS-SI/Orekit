@@ -30,6 +30,13 @@
 
     package data #DDEBD8 {
 
+      class PreloadedDataContext
+      note top
+        Does not use DataProvidersManager.
+        Constructed from a list of leap seconds,
+        EOP entries, etc.
+      end note
+
       interface DataContext {
         + {static} LazyLoadedDataContext getDefault()
         + {static} setDefault(LazyLoadedDataContext)
@@ -39,87 +46,25 @@
         +CelestialBodies getCelestialBodies()
         +...()
       }
-      note right
-        manages configuration
-      end note
-
-      interface DataProvider {
-        +Pattern GZIP_FILE_PATTERN
-        +Pattern ZIP_ARCHIVE_PATTERN
-        +boolean feed(Pattern supported, DataLoader visitor)
-      }
-      note left
-        knows how to retrieve data
-        from storage, not parse it
-      end note
-
-      interface DataLoader {
-        +boolean stillAcceptsData()
-        +void loadData(InputStream input, String name)
-      }
       note top
-        knows how to parse data,
-        not retrieve it from storage
+        manages factories
       end note
-
-      class NullDataContext {
-      }
-
-      DataContext <|-- NullDataContext
 
       class LazyLoadedDataContext {
         +DataProvidersManager getDataProvidersManager()
-        +LazyLoadedTimeScales getTimeScales()
-        +LazyLoadedFrames getFrames()
-        +LazyLoadedCelestialBodies getCelestialBodies()
-        +...()
       }
-
-      DataContext <|-- LazyLoadedDataContext
-      LazyLoadedDataContext o-- DataProvidersManager
-
-      class PreloadedDataContext {
-      }
-      note right
-        Does not use DataLoader.
-        Constructed from a list
-        of leap seconds, EOP
-        entries, etc.
-      end note
-
-      DataContext <|-- PreloadedDataContext
 
       class DataProvidersManager {
-        +String OREKIT_DATA_PATH
-        +DataProvidersManager getInstance()
-        +void addDefaultProviders()
-        +void addProvider(DataProvider provider)
-        +DataProvider removeProvider(Class<? extends DataProvider> providerClass)
-        +DataProvider removeProvider(DataProvider provider)
-        +void clearProviders()
-        +boolean isSupported(Class<? extends DataProvider> providerClass)
-        +boolean isSupported(DataProvider provider)
-        +List<DataProvider> getProviders()
-        +Set<String> getLoadedDataNames()
-        +void clearLoadedDataNames()
         +boolean feed(String supportedNames, DataLoader loader)
       }
 
-      DataProvidersManager "1" o--> "*" DataProvider : manages, feeds
-      DataProvider <|-- DirectoryCrawler
-      DataProvider <|-- ClassPathCrawler
-      DataProvider <|-- NetworkCrawler
-      DataProvider <|-- ZipJarCrawler
-      DataProvider --> DataLoader : feeds
+      LazyLoadedDataContext o--  DataProvidersManager
+      PreloadedDataContext  --|> DataContext
+      DataContext           <|-- LazyLoadedDataContext
 
-    }
-
-    package frames #DDEBD8 {
-      class LazyLoadedEop
     }
 
     package time #DDEBD8 {
-
       interface TimeScales {
         +TimeScale getTai()
         +TimeScale getUtc()
@@ -129,16 +74,11 @@
 
       DataContext o-- TimeScales
 
-      class LazyLoadedTimeScales {
-      }
+      class LazyLoadedTimeScales
 
-      TimeScales <|-- LazyLoadedTimeScales
-      LazyLoadedTimeScales o-- DataProvidersManager
-      LazyLoadedDataContext o-- LazyLoadedTimeScales
-      LazyLoadedTimeScales o-- LazyLoadedEop
-      LazyLoadedTimeScales o-- UTCTAIHistoryFilesLoader
+      TimeScales            <|-- LazyLoadedTimeScales
+      LazyLoadedDataContext o--  LazyLoadedTimeScales
 
-      DataLoader <|-- UTCTAIHistoryFilesLoader
     }
 
     package bodies #DDEBD8 {
@@ -148,19 +88,11 @@
         +...()
       }
 
-      DataContext o-- CelestialBodies
+      class LazyLoadedCelestialBodies
 
-      class LazyLoadedCelestialBodies {
-      }
-
-      interface CelestialBodyLoader {
-      }
-
-      CelestialBodies <|-- LazyLoadedCelestialBodies
-      LazyLoadedCelestialBodies o-- DataProvidersManager
-      LazyLoadedCelestialBodies o-- CelestialBodyLoader
-      LazyLoadedCelestialBodies o-- TimeScales
-      LazyLoadedDataContext o-- LazyLoadedCelestialBodies
+      DataContext           o--  CelestialBodies
+      CelestialBodies       <|-- LazyLoadedCelestialBodies
+      LazyLoadedDataContext o--  LazyLoadedCelestialBodies
 
     }
 
@@ -172,25 +104,16 @@
         +...()
       }
 
-      DataContext o-- Frames
+      class LazyLoadedFrames
 
-      class LazyLoadedFrames {
-      }
-
-      Frames <|-- LazyLoadedFrames
-      LazyLoadedFrames o-- LazyLoadedEop
-      LazyLoadedFrames o-- TimeScales
-      LazyLoadedFrames o-- CelestialBodies
-      LazyLoadedDataContext o-- LazyLoadedFrames
-
-      class LazyLoadedEop {
-      }
-
-      interface EOPHistoryLoader
-
-      LazyLoadedTimeScales o-- LazyLoadedEop
-      LazyLoadedEop o-- EOPHistoryLoader
-      LazyLoadedEop o-- DataProvidersManager
+      class LazyLoadedEop
+ 
+      DataContext           o--      Frames
+      Frames                <|--     LazyLoadedFrames
+      LazyLoadedTimeScales  o--      LazyLoadedEop
+      LazyLoadedFrames      o--      LazyLoadedEop
+      LazyLoadedFrames      o-right- CelestialBodies
+      LazyLoadedDataContext o--      LazyLoadedFrames 
 
     }
 
@@ -198,14 +121,13 @@
 
   package user.application #F3EDF7 {
     class MyDataContext #EAE6F7/B9B3D2
-    class MyProvider #EAE6F7/B9B3D2
-    class DataBase   #EAE6F7/B9B3D2
-    class Main       #EAE6F7/B9B3D2
-    DataContext <|-- MyDataContext
-    DataProvider <|-- MyProvider
-    MyDataContext o-- MyProvider
-    MyDataContext <-- Main : creates
-    MyProvider *--> "1" DataBase
+    class MyProvider    #EAE6F7/B9B3D2
+    class DataBase      #EAE6F7/B9B3D2
+    class Main          #EAE6F7/B9B3D2
+    DataContext   <|--     MyDataContext
+    MyDataContext o--      MyProvider
+    Main          -->      MyDataContext : creates
+    MyProvider    *--> "1" DataBase
   }
 
 @enduml
