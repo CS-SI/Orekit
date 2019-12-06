@@ -44,11 +44,11 @@
   }
 
   package user.application #F3EDF7 {
-    class "Container.Parser" as Nested #EAE6F7/B9B3D2
+    class "ContainerWithNestedCustomParser.Parser" as Nested #EAE6F7/B9B3D2
     class ContainerWithNestedCustomParser #EAE6F7/B9B3D2
     AbstractSelfFeedingLoader <|-- ContainerWithNestedCustomParser
     SomeData <--* ContainerWithNestedCustomParser
-    Nested -right-> ContainerWithNestedCustomParser
+    ContainerWithNestedCustomParser o-right- Nested
     DataLoader <|-- Nested
   }
 

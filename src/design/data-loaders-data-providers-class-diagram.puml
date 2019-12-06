@@ -56,7 +56,9 @@
         +boolean feed(String supportedNames, DataLoader loader)
       }
       note right
-        manages configuration
+        manages the providers
+        (i.e. knows how to retrieve
+        data from storage)
       end note
 
       interface DataLoader {
@@ -80,6 +82,9 @@
       interface NamedData.StreamOpener {
         +InputStream openStream()
       }
+      note right
+        allows lazy opening of stream
+      end note
 
       DataProvider "*" <--o "1" DataProvidersManager : manages, feeds
       DataProvidersManager "1" o--> "*" DataFilter: applies
@@ -89,7 +94,7 @@
       ZipJarCrawler    --|> DataProvider
       DataProvider --> DataLoader : feeds
       DataFilter -right-> NamedData : filters
-      NamedData -right-> NamedData.StreamOpener
+      NamedData -down-> NamedData.StreamOpener
       DataFilter <|-- GzipFilter
       DataFilter <|-- UnixFilter
 
