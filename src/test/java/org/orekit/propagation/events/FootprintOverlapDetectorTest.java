@@ -40,6 +40,10 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
+import org.orekit.geometry.fov.DoubleDihedraFieldOfView;
+import org.orekit.geometry.fov.FieldOfView;
+import org.orekit.geometry.fov.PolygonalFieldOfView;
+import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -70,10 +74,10 @@ public class FootprintOverlapDetectorTest {
             new S2Point(FastMath.toRadians( 120.0), FastMath.toRadians(5.0))
         };
         SphericalPolygonsSet aoi = new SphericalPolygonsSet(1.e-9, polygon);
-        FieldOfView fov = new FieldOfView(Vector3D.PLUS_J,
-                                          Vector3D.PLUS_I, FastMath.toRadians(5.),
-                                          Vector3D.PLUS_K, FastMath.toRadians(5.),
-                                          0.);
+        FieldOfView fov = new DoubleDihedraFieldOfView(Vector3D.PLUS_J,
+                                                       Vector3D.PLUS_I, FastMath.toRadians(5.),
+                                                       Vector3D.PLUS_K, FastMath.toRadians(5.),
+                                                       0.);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, itrf);
         FootprintOverlapDetector detector = new FootprintOverlapDetector(fov, earth, aoi, 20000.);
@@ -97,8 +101,10 @@ public class FootprintOverlapDetectorTest {
         final SphericalPolygonsSet france = buildFrance();
 
         // square field of view along Z axis (which is pointing sideways), aperture 5°, 0° margin
-        final FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
-                                                FastMath.toRadians(2.5), 4, 0.0);
+        final FieldOfView fov = new PolygonalFieldOfView(Vector3D.PLUS_K,
+                                                         DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
+                                                         Vector3D.PLUS_I,
+                                                         FastMath.toRadians(2.5), 4, 0.0);
         final FootprintOverlapDetector detector =
                 new FootprintOverlapDetector(fov, earth, france, 50000.0).
                 withMaxCheck(1.0).

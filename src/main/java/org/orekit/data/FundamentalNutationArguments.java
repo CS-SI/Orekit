@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -179,7 +180,7 @@ public class FundamentalNutationArguments implements Serializable {
             final DefinitionParser definitionParser = new DefinitionParser();
 
             // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
             int lineNumber = 0;
 
             // look for the reference date and the 14 polynomials

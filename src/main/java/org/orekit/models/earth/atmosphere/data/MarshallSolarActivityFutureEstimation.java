@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Iterator;
 import java.util.SortedSet;
@@ -483,7 +484,7 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
         }
 
         // read the data
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         boolean inData = false;
         final TimeScale utc = TimeScalesFactory.getUTC();
         DateComponents fileDate = null;

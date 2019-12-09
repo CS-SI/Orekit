@@ -157,6 +157,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         } else {
             states.addValidBefore(state, state.getDate());
         }
+        stateChanged(state);
     }
 
     /** {@inheritDoc} */

@@ -424,10 +424,11 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         final Map<String, T[]> newMap = new HashMap<String, T[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
-        if (absPva == null)
+        if (absPva == null) {
             return new FieldSpacecraftState<>(orbit, attitude, mass, newMap);
-        else
+        } else {
             return new FieldSpacecraftState<>(absPva, attitude, mass, newMap);
+        }
     }
 
     /** Check orbit and attitude dates are equal.

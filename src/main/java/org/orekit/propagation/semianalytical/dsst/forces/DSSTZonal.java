@@ -147,6 +147,24 @@ public class DSSTZonal implements DSSTForceModel {
     /** Flag for force model initialization with field elements. */
     private boolean pendingInitialization;
 
+    /** Constructor with default reference values.
+     * <p>
+     * When this constructor is used, maximum allowed values are used
+     * for the short periodic coefficients:
+     * </p>
+     * <ul>
+     *    <li> {@link #maxDegreeShortPeriodics} is set to {@code provider.getMaxDegree()} </li>
+     *    <li> {@link #maxEccPowShortPeriodics} is set to {@code min(provider.getMaxDegree() - 1, 4)}.
+     *         This parameter should not exceed 4 as higher values will exceed computer capacity </li>
+     *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
+     * </ul>
+     * @param provider provider for spherical harmonics
+     * @since 10.1
+     */
+    public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider) {
+        this(provider, provider.getMaxDegree(), FastMath.min(4, provider.getMaxDegree() - 1), 2 * provider.getMaxDegree() + 1);
+    }
+
     /** Simple constructor.
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
@@ -347,7 +365,9 @@ public class DSSTZonal implements DSSTForceModel {
                     final double cnm = harmonics.getUnnormalizedCnm(maxDeg, m);
                     final double snm = harmonics.getUnnormalizedSnm(maxDeg, m);
                     final double csnm = FastMath.hypot(cnm, snm);
-                    if (csnm == 0.) break;
+                    if (csnm == 0.) {
+                        break;
+                    }
                     // Set magnitude of last spherical harmonic term.
                     double lastTerm = 0.;
                     // Set current power of e and related indices.
@@ -451,7 +471,9 @@ public class DSSTZonal implements DSSTForceModel {
                     final T cnm = zero.add(harmonics.getUnnormalizedCnm(maxDeg, m));
                     final T snm = zero.add(harmonics.getUnnormalizedSnm(maxDeg, m));
                     final T csnm = FastMath.hypot(cnm, snm);
-                    if (csnm.getReal() == 0.) break;
+                    if (csnm.getReal() == 0.) {
+                        break;
+                    }
                     // Set magnitude of last spherical harmonic term.
                     T lastTerm = zero;
                     // Set current power of e and related indices.

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -26,6 +27,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -70,6 +72,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Position scale to use for the orbital drivers. */
     private final double positionScale;
 
+    /** Additional equations. */
+    private List<AdditionalEquations> additionalEquations;
+
     /** Build a new instance.
      * <p>
      * The template orbit is used as a model to {@link
@@ -109,6 +114,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
             driver.setSelected(true);
         }
+
+        this.additionalEquations  = new ArrayList<AdditionalEquations>();
 
         if (addDriverForCentralAttraction) {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
@@ -293,4 +300,23 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         // Change the initial orbit date in the builder
         this.initialOrbitDate = newOrbit.getDate();
     }
+
+    /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
+     * @param additional additional equations
+     * @since 10.1
+     */
+    public void addAdditionalEquations(final AdditionalEquations additional) {
+
+        additionalEquations.add(additional);
+
+    }
+
+    /** Get the list of additional equations.
+     * @return the list of additional equations
+     * @since 10.1
+     */
+    protected List<AdditionalEquations> getAdditionalEquations() {
+        return additionalEquations;
+    }
+
 }

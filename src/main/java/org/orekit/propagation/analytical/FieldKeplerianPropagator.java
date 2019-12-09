@@ -17,6 +17,9 @@
 package org.orekit.propagation.analytical;
 
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
@@ -103,7 +106,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
                                 getAttitudeProvider().getAttitude(initialOrbit,
                                                                   initialOrbit.getDate(),
                                                                   initialOrbit.getFrame()),
-                                mass, mu);
+                                mass, mu, Collections.emptyMap());
         states = new FieldTimeSpanMap<>(initialState, initialOrbit.getA().getField());
         super.resetInitialState(initialState);
     }
@@ -117,16 +120,21 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param attitude current attitude
      * @param mass current mass
      * @param mu gravity coefficient to use
+     * @param additionalStates additional states
      * @return fixed orbit
      */
     private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
-                                     final T mu) {
+                                     final T mu, final Map<String, T[]> additionalStates) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
         final FieldOrbit<T> fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
                                                               orbit.getDate(), mu, orbit.getFrame());
-        return new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
+        FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
+        for (final Map.Entry<String, T[]> entry : additionalStates.entrySet()) {
+            fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+        }
+        return fixedState;
     }
 
     /** {@inheritDoc} */
@@ -137,7 +145,8 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
         final FieldSpacecraftState<T> fixedState = fixState(state.getOrbit(),
                                                             state.getAttitude(),
                                                             state.getMass(),
-                                                            mu);
+                                                            mu,
+                                                            state.getAdditionalStates());
 
         initialState = fixedState;
         states       = new FieldTimeSpanMap<>(initialState, state.getDate().getField());
@@ -152,6 +161,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
         } else {
             states.addValidBefore(state, state.getDate());
         }
+        stateChanged(state);
     }
 
     /** {@inheritDoc} */

@@ -204,6 +204,8 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return TimeScalesFactory.getGST();
             case QZSS    : return TimeScalesFactory.getQZSS();
             case BEIDOU  : return TimeScalesFactory.getBDT();
+            case IRNSS   : return TimeScalesFactory.getIRNSS();
+            case SBAS    : return TimeScalesFactory.getGPS();
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -219,6 +221,8 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return AbsoluteDate.GALILEO_EPOCH;
             case QZSS    : return AbsoluteDate.QZSS_EPOCH;
             case BEIDOU  : return AbsoluteDate.BEIDOU_EPOCH;
+            case IRNSS   : return AbsoluteDate.IRNSS_EPOCH;
+            case SBAS    : return AbsoluteDate.GPS_EPOCH;
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -234,6 +238,8 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return DateComponents.GALILEO_EPOCH;
             case QZSS    : return DateComponents.QZSS_EPOCH;
             case BEIDOU  : return DateComponents.BEIDOU_EPOCH;
+            case IRNSS   : return DateComponents.IRNSS_EPOCH;
+            case SBAS    : return DateComponents.GPS_EPOCH;
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -294,7 +300,13 @@ public class GNSSDate implements Serializable, TimeStamped {
         QZSS(SatelliteSystem.QZSS, 1024),
 
         /** BeiDou. */
-        BEIDOU(SatelliteSystem.BEIDOU, 8192);
+        BEIDOU(SatelliteSystem.BEIDOU, 8192),
+
+        /** IRNSS. */
+        IRNSS(SatelliteSystem.IRNSS, 1024),
+
+        /** SBAS. */
+        SBAS(SatelliteSystem.SBAS, 1024);
 
         /** Map for the number of week in one GNSS rollover cycle. */
         private static final Map<SatelliteSystem, Integer> CYCLE_MAP = new HashMap<SatelliteSystem, Integer>();

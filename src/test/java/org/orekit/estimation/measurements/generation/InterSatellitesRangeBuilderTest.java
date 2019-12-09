@@ -87,13 +87,16 @@ public class InterSatellitesRangeBuilderTest {
 
     private void doTest(long seed, double startPeriod, double endPeriod, double tolerance) {
         Generator generator = new Generator();
-        ObservableSatellite receiver = generator.addPropagator(buildPropagator());
+        generator.addPropagator(buildPropagator()); // dummy first propagator
+        generator.addPropagator(buildPropagator()); // dummy second propagator
+        ObservableSatellite receiver = generator.addPropagator(buildPropagator()); // useful third propagator
+        generator.addPropagator(buildPropagator()); // dummy fourth propagator
         final Orbit o1 = context.initialOrbit;
         // for the second satellite, we simply reverse velocity
         final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPVCoordinates().getPosition(),
                                                               o1.getPVCoordinates().getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
-        ObservableSatellite remote = generator.addPropagator(new KeplerianPropagator(o2));
+        ObservableSatellite remote = generator.addPropagator(new KeplerianPropagator(o2)); // useful sixth propagator
         final double step = 60.0;
 
         // beware that in order to avoid deadlocks, the slave PV coordinates provider

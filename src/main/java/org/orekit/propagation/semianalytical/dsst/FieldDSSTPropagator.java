@@ -34,6 +34,7 @@ import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStepHandler;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
@@ -142,6 +143,12 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
 
     /** Number of grid points per integration step to be used in interpolation of short periodics coefficients.*/
     private static final int INTERPOLATION_POINTS_PER_STEP = 3;
+
+    /** Default value for epsilon. */
+    private static final double EPSILON_DEFAULT = 1.0e-13;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 200;
 
     /** Flag specifying whether the initial orbital state is given with osculating elements. */
     private boolean initialIsOsculating;
@@ -493,7 +500,36 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
     public FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
                                                     final AttitudeProvider attitudeProvider,
                                                     final Collection<DSSTForceModel> forceModel) {
-        final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel);
+        return computeMeanState(osculating, attitudeProvider, forceModel, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean state <b>in a DSST sense</b>, corresponding to the
+     * osculating SpacecraftState in input, and according to the Force models
+     * taken into account.
+     * </p><p>
+     * Since the osculating state is obtained with the computation of
+     * short-periodic variation of each force model, the resulting output will
+     * depend on the force models parameterized in input.
+     * </p><p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating Osculating state to convert
+     * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
+     * like atmospheric drag, radiation pressure or specific user-defined models)
+     * @param forceModel Forces to take into account
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @return mean state in a DSST sense
+     * @since 10.1
+     */
+    public FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
+                                                    final AttitudeProvider attitudeProvider,
+                                                    final Collection<DSSTForceModel> forceModel,
+                                                    final double epsilon,
+                                                    final int maxIterations) {
+        final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel, epsilon, maxIterations);
         return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
     }
 
@@ -598,12 +634,14 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModel force models
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
      * @return mean state
+     * @since 10.1
      */
     @SuppressWarnings("unchecked")
-    private FieldOrbit<T> computeMeanOrbit(final FieldSpacecraftState<T> osculating,
-                                           final AttitudeProvider attitudeProvider,
-                                           final Collection<DSSTForceModel> forceModel) {
+    private FieldOrbit<T> computeMeanOrbit(final FieldSpacecraftState<T> osculating, final AttitudeProvider attitudeProvider, final Collection<DSSTForceModel> forceModel,
+                                           final double epsilon, final int maxIterations) {
 
         // zero
         final T zero = field.getZero();
@@ -612,11 +650,11 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         FieldEquinoctialOrbit<T> meanOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(osculating.getOrbit());
 
         // threshold for each parameter
-        final T epsilon    = zero.add(1.0e-13);
-        final T thresholdA = epsilon.multiply(FastMath.abs(meanOrbit.getA()).add(1.));
-        final T thresholdE = epsilon.multiply(meanOrbit.getE().add(1.));
-        final T thresholdI = epsilon.multiply(meanOrbit.getI().add(1.));
-        final T thresholdL = epsilon.multiply(FastMath.PI);
+        final T epsilonT   = zero.add(epsilon);
+        final T thresholdA = epsilonT.multiply(FastMath.abs(meanOrbit.getA()).add(1.));
+        final T thresholdE = epsilonT.multiply(meanOrbit.getE().add(1.));
+        final T thresholdI = epsilonT.multiply(meanOrbit.getI().add(1.));
+        final T thresholdL = epsilonT.multiply(FastMath.PI);
 
         // ensure all Gaussian force models can rely on attitude
         for (final DSSTForceModel force : forceModel) {
@@ -624,7 +662,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         }
 
         int i = 0;
-        while (i++ < 200) {
+        while (i++ < maxIterations) {
 
             final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass());
 
@@ -647,7 +685,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
             final T deltaEy = osculating.getEquinoctialEy().subtract(rebuilt.getEquinoctialEy());
             final T deltaHx = osculating.getHx().subtract(rebuilt.getHx());
             final T deltaHy = osculating.getHy().subtract(rebuilt.getHy());
-            final T deltaLv = aux.normalizeAngle(osculating.getLv().subtract(rebuilt.getLv()), zero);
+            final T deltaLv = MathUtils.normalizeAngle(osculating.getLv().subtract(rebuilt.getLv()), zero);
 
             // check convergence
             if (FastMath.abs(deltaA).getReal()  < thresholdA.getReal() &&

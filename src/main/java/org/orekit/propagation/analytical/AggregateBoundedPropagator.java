@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -71,6 +72,27 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
                 this.propagators.firstEntry().getValue().getInitialState());
     }
 
+    @Override
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+        // #589 override this method for a performance benefit,
+        // getPropagator(date).propagate(date) is only called once
+
+        // do propagation
+        final SpacecraftState state = getPropagator(date).propagate(date);
+
+        // evaluate attitude
+        final Attitude attitude =
+                getAttitudeProvider().getAttitude(this, date, state.getFrame());
+
+        // build raw state
+        if (state.isOrbitDefined()) {
+            return new SpacecraftState(
+                    state.getOrbit(), attitude, state.getMass(), state.getAdditionalStates());
+        } else {
+            return new SpacecraftState(
+                    state.getAbsPVA(), attitude, state.getMass(), state.getAdditionalStates());
+        }
+    }
 
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,

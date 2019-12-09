@@ -155,14 +155,17 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         return i;
     }
 
+    /** {@inheritDoc} */
     public int getNeighborsSize() {
         return this.neighborsSize;
     }
 
+    /** {@inheritDoc} */
     public T getEarliest() {
         return this.data.get(0);
     }
 
+    /** {@inheritDoc} */
     public T getLatest() {
         return this.data.get(this.data.size() - 1);
     }

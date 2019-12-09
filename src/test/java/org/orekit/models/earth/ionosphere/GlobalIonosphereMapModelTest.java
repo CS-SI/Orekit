@@ -221,4 +221,43 @@ public class GlobalIonosphereMapModelTest {
 
     }
 
+    @Test
+    /**
+     * The goal of this test is to verify if an OrekitException is thrown when latitude or longitude
+     * bondaries are not present in the header section of the Global Ionosphere Map.
+     */
+    public void testIssue621() {
+        final String fileName  = "missing-lat-lon-header-gpsg0150.19i";
+        final double latitude  = FastMath.toRadians(30.0);
+        final double longitude = FastMath.toRadians(-130.0);
+
+        try {
+            GlobalIonosphereMapModel corruptedModel = new GlobalIonosphereMapModel(fileName);
+            corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
+                         new GeodeticPoint(latitude, longitude, 0.0));
+            Assert.fail("An exception should have been thrown");
+            
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testMissingEpochInHeader() {
+        final String fileName  = "missing-epoch-header-gpsg0150.19i";
+        final double latitude  = FastMath.toRadians(30.0);
+        final double longitude = FastMath.toRadians(-130.0);
+
+        try {
+            GlobalIonosphereMapModel corruptedModel = new GlobalIonosphereMapModel(fileName);
+            corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
+                         new GeodeticPoint(latitude, longitude, 0.0));
+            Assert.fail("An exception should have been thrown");
+            
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, oe.getSpecifier());
+        }
+
+    }
+
 }

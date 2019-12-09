@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -155,7 +156,7 @@ public class AntexLoader {
         public void loadData(final InputStream input, final String name)
             throws IOException, OrekitException {
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
                 // placeholders for parsed data
                 int                              lineNumber           = 0;
@@ -324,6 +325,13 @@ public class AntexLoader {
                                 throw new OrekitException(OrekitMessages.MISMATCHED_FREQUENCIES,
                                                           name, lineNumber, frequency, endFrequency);
 
+                            }
+
+                            // Check if the number of frequencies has been parsed
+                            if (patterns == null) {
+                                // null object, an OrekitException is thrown
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, name, line);
                             }
 
                             final PhaseCenterVariationFunction phaseCenterVariation;

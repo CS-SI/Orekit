@@ -199,6 +199,35 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Flag for force model initialization with field elements. */
     private boolean pendingInitialization;
 
+    /** Simple constructor with default reference values.
+     * <p>
+     * When this constructor is used, maximum allowed values are used
+     * for the short periodic coefficients:
+     * </p>
+     * <ul>
+     *    <li> {@link #maxDegreeTesseralSP} is set to {@code provider.getMaxDegree()} </li>
+     *    <li> {@link #maxOrderTesseralSP} is set to {@code provider.getMaxOrder()}. </li>
+     *    <li> {@link #maxEccPowTesseralSP} is set to 4 </li>
+     *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code min(provider.getMaxDegree() + 4, 12)}.
+     *         This parameter should not exceed 12 as higher values will exceed computer capacity </li>
+     *    <li> {@link #maxDegreeMdailyTesseralSP} is set to {@code provider.getMaxDegree()} </li>
+     *    <li> {@link #maxOrderMdailyTesseralSP} is set to {@code provider.getMaxOrder()} </li>
+     *    <li> {@link #maxEccPowMdailyTesseralSP} is set to min(provider.getMaxDegree() - 2, 4).
+     *         This parameter should not exceed 4 as higher values will exceed computer capacity </li>
+     * </ul>
+     * @param centralBodyFrame rotating body frame
+     * @param centralBodyRotationRate central body rotation rate (rad/s)
+     * @param provider provider for spherical harmonics
+     * @since 10.1
+     */
+    public DSSTTesseral(final Frame centralBodyFrame,
+                        final double centralBodyRotationRate,
+                        final UnnormalizedSphericalHarmonicsProvider provider) {
+        this(centralBodyFrame, centralBodyRotationRate, provider, provider.getMaxDegree(),
+             provider.getMaxOrder(), 4,  FastMath.min(12, provider.getMaxDegree() + 4),
+             provider.getMaxDegree(), provider.getMaxOrder(), FastMath.min(4, provider.getMaxDegree() - 2));
+    }
+
     /** Simple constructor.
      * @param centralBodyFrame rotating body frame
      * @param centralBodyRotationRate central body rotation rate (rad/s)
@@ -918,13 +947,13 @@ public class DSSTTesseral implements DSSTForceModel {
             }
         }
 
-        return new double[][] {{dUdaCos,  dUdaSin},
-                               {dUdhCos,  dUdhSin},
-                               {dUdkCos,  dUdkSin},
-                               {dUdlCos,  dUdlSin},
-                               {dUdAlCos, dUdAlSin},
-                               {dUdBeCos, dUdBeSin},
-                               {dUdGaCos, dUdGaSin}};
+        return new double[][] { { dUdaCos,  dUdaSin  },
+                                { dUdhCos,  dUdhSin  },
+                                { dUdkCos,  dUdkSin  },
+                                { dUdlCos,  dUdlSin  },
+                                { dUdAlCos, dUdAlSin },
+                                { dUdBeCos, dUdBeSin },
+                                { dUdGaCos, dUdGaSin } };
     }
 
     /** Compute the n-SUM for potential derivatives components.
