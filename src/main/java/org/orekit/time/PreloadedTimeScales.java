@@ -118,11 +118,9 @@ class PreloadedTimeScales extends AbstractTimeScales {
     public UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
         return ut1Map.computeIfAbsent(
                 new Pair<>(conventions, simpleEOP),
-                k -> getUT1(new EOPHistory(
+            k -> getUT1(new EOPHistory(
                         conventions,
-                        eopMap.computeIfAbsent(
-                                conventions,
-                                c -> eopSupplier.apply(c, this)),
+                        eopMap.computeIfAbsent(conventions, c -> eopSupplier.apply(c, this)),
                         simpleEOP,
                         this)));
     }
@@ -170,8 +168,8 @@ class PreloadedTimeScales extends AbstractTimeScales {
     @Override
     public GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
         return gmstMap.computeIfAbsent(
-                new Pair<>(conventions, simpleEOP),
-                k -> new GMSTScale(getUT1(conventions, simpleEOP)));
+            new Pair<>(conventions, simpleEOP),
+            k -> new GMSTScale(getUT1(conventions, simpleEOP)));
     }
 
     @Override
