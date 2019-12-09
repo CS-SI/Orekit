@@ -19,11 +19,9 @@ package org.orekit.time;
 import java.util.Collection;
 import java.util.function.BiFunction;
 
-import org.hipparchus.util.MathArrays;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.Frames;
-import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
