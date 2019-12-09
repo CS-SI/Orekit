@@ -21,9 +21,7 @@ import com.sun.source.util.TaskListener;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.TreeInfo;
 
 /**
@@ -100,10 +98,7 @@ public class DefaultDataContextPlugin implements Plugin, TaskListener {
 
         @Override
         public Void visitNewClass(final NewClassTree newClassTree, final Void aVoid) {
-            // need a hack to get the constructor
-            // constructor has no associated Tree
-            final Symbol constructorSymbol = ((JCNewClass) newClassTree).constructor;
-            check(newClassTree, constructorSymbol);
+            check(newClassTree);
             return super.visitNewClass(newClassTree, aVoid);
         }
 
@@ -126,7 +121,7 @@ public class DefaultDataContextPlugin implements Plugin, TaskListener {
          * @param tree to check.
          */
         private void check(final Tree tree) {
-            final Element element = TreeInfo.symbol((JCTree) tree);
+            final Element element = TreeInfo.symbolFor((JCTree) tree);
             check(tree, element);
         }
 
