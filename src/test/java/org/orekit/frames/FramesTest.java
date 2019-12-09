@@ -1,16 +1,23 @@
 package org.orekit.frames;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.data.DirectoryCrawler;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.frames.ITRFVersionLoader.ITRFVersionConfiguration;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.OffsetModel;
 import org.orekit.time.TAIUTCDatFilesLoader.Parser;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -31,7 +38,7 @@ public class FramesTest {
     @Before
     public void setUp() throws IOException {
         final String leapPath = "/USNO/tai-utc.dat";
-        final String eopPath = "/rapid-data-columns/finals.daily";
+        final String eopPath = "/rapid-data-columns/finals2000A.daily";
         final ITRFVersionConfiguration configuration = new ITRFVersionConfiguration(
                 "", ITRFVersion.ITRF_2014, Integer.MIN_VALUE, Integer.MAX_VALUE);
         final ItrfVersionProvider itrfVersionProvider = (name, mjd) -> configuration;
@@ -92,6 +99,31 @@ public class FramesTest {
         }
         // ICRF
         Assert.assertEquals(null, frames.getICRF());
+    }
+
+    /** Check transforms between frames from different data contexts. */
+    @Test
+    public void testComparison() {
+        // setup
+        Frames frames = Frames.of(timeScales, () -> null);
+        LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
+        dataContext.getDataProvidersManager().addProvider(
+                new DirectoryCrawler(new File("src/test/resources/regular-data")));
+        LazyLoadedFrames other = dataContext.getFrames();
+        AbsoluteDate date = new AbsoluteDate(2011, 5, 1, timeScales.getUTC());
+
+        // verify
+        Assert.assertSame(frames.getGCRF(), other.getGCRF());
+        Frame itrf = frames.getITRF(IERSConventions.IERS_2010, true);
+        Frame otherItrf = other.getITRF(IERSConventions.IERS_2010, true);
+        Transform transform = itrf.getTransformTo(otherItrf, date);
+        final double angle = transform.getRotation().getAngle();
+        // rough estimate based on EOP file
+        final double expected = new Vector3D(
+                0.2449186 / Constants.JULIAN_DAY * 2 * FastMath.PI,
+                0.341136 * Constants.ARC_SECONDS_TO_RADIANS,
+                0.3e-3 * Constants.ARC_SECONDS_TO_RADIANS).getNorm();
+        Assert.assertEquals(expected, angle, 1e-2 * expected);
     }
 
 }

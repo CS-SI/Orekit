@@ -33,7 +33,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
-import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
