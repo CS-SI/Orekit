@@ -24,8 +24,7 @@ variables:
 verify:
   stage: verify
   script:
-    - mvn $MAVEN_CLI_OPTS verify
-    - mvn $MAVEN_CLI_OPTS site
+    - mvn $MAVEN_CLI_OPTS verify site
     - mvn $MAVEN_CLI_OPTS sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
   artifacts:
     paths:
