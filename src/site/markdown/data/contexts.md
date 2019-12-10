@@ -31,9 +31,9 @@ not cover all needs as:
     with different needs,
   - research or analysis programs that need to compare computation results using
     different assumptions, for example different sets of EOP
-  - converters that need to modified data computed in one context to another context,
-    for example to update coordinates computed with rapid EOP when final EOP become
-    available
+  - converters that need to modify data computed in one context so it can be used in
+    another context, for example to update coordinates computed with rapid EOP when
+    final EOP become available
 
 Orekit must be configured appropriately to select the proper context for each task.
 
@@ -44,8 +44,8 @@ the constants for predefined precession-nutation models are already embedded in 
 library, they are not associated with any data context. Small and simple data sets are
 defined by setting constants in the code itself. This is the case for the 32.184 seconds
 offset between Terrestrial Time and International Atomic Time scales for example. Large
-or complex fixed data are embedded by copying the corresponding resource files inside
-the compiled jar, under the assets directory as is. This is the case for the IAU-2000
+or complex fixed data are embedded by copying the corresponding resource files as is inside
+the compiled jar, under the assets directory. This is the case for the IAU-2000
 precession-nutation model tables for example. There is nothing to configure for these
 fixed data sets as they are embedded within the library, so users may ignore them completely.
 
@@ -70,24 +70,26 @@ scale, and EOP data for creating the `UT1` time scale. There is one factory for 
 that will need EOP data for Earth frame. There is one factory for celestial bodies that
 will need planetary ephemerides data for all bodies.
 
-The `DataContext` interface has predefined implementations. One is `PreloadedDataContext`
-that embeds everything it needs and therefore is self-contained. Another one is
-`LazyLoadedDataContext` that loads data on the fly from external resources (typically files)
-when first accessed and relies on a `DataProvidersManager` in order to find how to locate
-and parse these resources.
+The `DataContext` interface has one implementation `LazyLoadedDataContext` that loads data
+on the fly from external resources (typically files) when first accessed and relies on a
+`DataProvidersManager` in order to find how to locate and parse these resources.
 
-Use could provide their own implementation of `DataContext`, for example if all the data
+Users could provide their own implementation of `DataContext`, for example if all the data
 is stored in a mission-specific database, which would not fit with the resources or
 files-based `LazyLoadedDataContext` and `DataProvidersManager`.
 
-Providing an implementation of `DataContext` consist in creating custom factories and
+Providing an implementation of `DataContext` consists in creating custom factories and
 set up one class to get a single access point to all of them. The predefined `LazyLoadedDataContext`
 uses `LazyLoadedTimeScales`, `LazyLoadedFrames`, `LazyLoadedEOP` and `LazyLoadedCelstialBodies`
 for example, all of them relying on the same `DataProvidersManager` to seek and load data. In
 this implementation, some factories depend on other ones as one data context must provide
 consistent data. The EOP data for example is used by both `LazyLoadedframes` (for Earth frames)
-and by `LazyLoadedTimeScales` (for `UT1`). the `LazyLoadedFrames` also depends on the `CelestialBodies`
+and by `LazyLoadedTimeScales` (for `UT1`). The `LazyLoadedFrames` also depends on the `CelestialBodies`
 interface (for `ICRF`).
+
+There are some static methods in the various factories (`TimeScales.of(...)`, `Frames.of(...)`
+that create factories with preloaded constant data. These method are useful for
+users who need to implement their own data context.
 
 ## Using a context
 
@@ -98,7 +100,7 @@ the desired context:
 
     Frame itrf = myDataContext.getFrames().getITRF();
 
-Sometimes, the reference is implicit and hidden within  Orekit code. In this case, a default
+Sometimes, the reference is implicit and hidden within Orekit code. In this case, a default
 context is used. As an example, creating the builder for a Galileo specialized propagator with
 only the `GalileoOrbitalElements` will automatically retrieve both the EME2000 and the ITRF
 frames from a default context. If the default context is not the one the user wants to use,

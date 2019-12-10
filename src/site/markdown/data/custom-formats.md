@@ -69,4 +69,3 @@ Users can look at the implementation of `BulletinAFilesLoader` to see how it wor
 This can be used either to load data that is already known to Orekit (like EOP), but
 only the file format is unknown, or it can be used to load custom data.
 
-

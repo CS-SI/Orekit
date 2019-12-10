@@ -38,7 +38,9 @@
     <menu name="Data">
       <item name="Contexts"               href="/data/contexts.html"              />
       <item name="Default configuration"  href="/data/default-configuration.html" />
+      <item name="Filtering"              href="/data/filtering.html"             />
       <item name="Custom formats"         href="/data/custom-formats.html"        />
+      <item name="Custom filters"         href="/data/custom-filters.html"        />
     </menu>
     <menu name="Architecture">
       <item name="Attitudes"     href="/architecture/attitudes.html"     />

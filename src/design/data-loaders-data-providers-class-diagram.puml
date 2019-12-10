@@ -56,7 +56,7 @@
         +boolean feed(String supportedNames, DataLoader loader)
       }
       note right
-        manages the providers
+        manages providers and filters
         (i.e. knows how to retrieve
         data from storage)
       end note
@@ -70,21 +70,9 @@
         not retrieve it from storage
       end note
 
-      interface DataFilter [[java:org.orekit.data.DataFilter]] {
-	     NamedData filter(NamedData original)
+      interface DataFilter {
+         NamedData filter(NamedData original)
       }
-
-      class NamedData {
-      	+String getName()
-      	+NamedData.StreamOpener getStreamOpener()
-      }
-
-      interface NamedData.StreamOpener {
-        +InputStream openStream()
-      }
-      note right
-        allows lazy opening of stream
-      end note
 
       DataProvider "*" <--o "1" DataProvidersManager : manages, feeds
       DataProvidersManager "1" o--> "*" DataFilter: applies
@@ -93,10 +81,6 @@
       NetworkCrawler   --|> DataProvider
       ZipJarCrawler    --|> DataProvider
       DataProvider --> DataLoader : feeds
-      DataFilter -right-> NamedData : filters
-      NamedData -down-> NamedData.StreamOpener
-      DataFilter <|-- GzipFilter
-      DataFilter <|-- UnixFilter
 
     }
 
@@ -107,11 +91,6 @@
         implemented this way
       end note
       DataLoader <|-- DummyLoader
-    }
-
-    package gnss #DDEBD8 {
-      class HatanakaCompressFilter
-      DataFilter <|-- HatanakaCompressFilter
     }
 
   }
