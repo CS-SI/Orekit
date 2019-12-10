@@ -1,6 +1,5 @@
 stages:
 - verify
-- release
 - deploy
 
 default:
@@ -33,17 +32,18 @@ verify:
       junit:
         - target/surefire-reports/*.xml
 
-release:
-  stage: release
-  script:
-    - mvn $MAVEN_CLI_OPTS -DskipTests=true assembly:single
-  artifacts:
-    paths:
-      - target/*.zip
-  only:
-    - /^release-[.0-9]+$/
-
+# On main branches (develop, release-*, master)
+# the produced artifacts are deployed on the Nexus of the project
+# (https://packages.orekit.org/)
 deploy:
   stage: deploy
   script:
-    - mvn $MAVEN_CLI_OPTS javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
+    - mvn $MAVEN_CLI_OPTS assembly:single javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
+  artifacts:
+    paths:
+      - target/*.zip
+      - target/*.jar
+  only:
+    - develop
+    - /^release-[.0-9]+$/
+    - master
