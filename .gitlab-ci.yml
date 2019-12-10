@@ -46,4 +46,4 @@ release:
 deploy:
   stage: deploy
   script:
-    - mvn $MAVEN_CLI_OPTS deploy -DskipTests=true -Pci-deploy
+    - mvn $MAVEN_CLI_OPTS javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
