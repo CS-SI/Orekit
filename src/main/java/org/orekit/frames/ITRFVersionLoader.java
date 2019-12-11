@@ -263,8 +263,8 @@ public class ITRFVersionLoader implements ItrfVersionProvider {
         /** Simple constructor.
          * @param prefix file names to which this configuration applies
          * @param version ITRF version
-         * @param validityStart start of validity (included)
-         * @param validityEnd end of validity (excluded)
+         * @param validityStart start of validity MJD (included)
+         * @param validityEnd end of validity MJD (excluded)
          */
         public ITRFVersionConfiguration(final String prefix,
                                         final ITRFVersion version,
