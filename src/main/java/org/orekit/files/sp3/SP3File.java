@@ -182,9 +182,6 @@ public class SP3File implements EphemerisFile {
     /** Maps {@link #coordinateSystem} to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
 
-    /** Inertial frame to use when building a propagator. */
-    private final Frame inertialFrame;
-
     /** A map containing satellite information. */
     private Map<String, SP3Ephemeris> satellites;
 
@@ -194,17 +191,13 @@ public class SP3File implements EphemerisFile {
      * @param mu                   is the standard gravitational parameter in m^3 / s^2.
      * @param interpolationSamples number of samples to use in interpolation.
      * @param frameBuilder         for constructing a reference frame from the identifier
-     * @param inertialFrame        inertial reference frame to use when building a
-     *                             propagator..
      */
     SP3File(final double mu,
             final int interpolationSamples,
-            final Function<? super String, ? extends Frame> frameBuilder,
-            final Frame inertialFrame) {
+            final Function<? super String, ? extends Frame> frameBuilder) {
         this.mu = mu;
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder = frameBuilder;
-        this.inertialFrame = inertialFrame;
         // must be linked has map to preserve order of satellites in the file.
         satellites = new LinkedHashMap<>();
     }
@@ -546,15 +539,6 @@ public class SP3File implements EphemerisFile {
         @Override
         public Frame getFrame() {
             return frameBuilder.apply(getFrameString());
-        }
-
-        @Override
-        public Frame getInertialFrame() {
-            final Frame frame = getFrame();
-            if (frame.isPseudoInertial()) {
-                return frame;
-            }
-            return inertialFrame;
         }
 
         @Override
