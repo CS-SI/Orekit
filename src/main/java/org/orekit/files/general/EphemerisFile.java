@@ -194,11 +194,12 @@ public interface EphemerisFile {
          * Get the inertial reference frame for this ephemeris segment. Defines the
          * propagation frame for {@link #getPropagator()}.
          *
-         * <p>The default implementation uses the {@link DataContext#getDefault() default
-         * data context} when {@link #getFrame()} is not inertial. It is recommended that
-         * classes override the default implementation.
+         * <p>The default implementation returns {@link #getFrame()} if it is inertial.
+         * Otherwise it returns {@link Frame#getRoot()}. Implementors are encouraged to
+         * override this default implementation if a more suitable inertial frame is
+         * available.
          *
-         * @return an reference frame that is ineratial, i.e. {@link
+         * @return an reference frame that is inertial, i.e. {@link
          * Frame#isPseudoInertial()} is {@code true}. May be the same as {@link
          * #getFrame()} if it is inertial.
          */
@@ -207,7 +208,7 @@ public interface EphemerisFile {
             if (frame.isPseudoInertial()) {
                 return frame;
             }
-            return DataContext.getDefault().getFrames().getGCRF();
+            return Frame.getRoot();
         }
 
         /**

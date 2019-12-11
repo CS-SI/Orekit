@@ -15,7 +15,7 @@
 # Default configuration
 
 The default configuration for data handling is to have one [data context](./contexts.html)
-that loads data lazily, i.e. on the fly only when each peace of data is first needed.
+that loads data lazily, i.e. on the fly only when each piece of data is first needed.
 This was the only possible configuration up to Orekit 10.0, as multiple data contexts
 were introduced in version 10.1.
 
@@ -55,9 +55,9 @@ in the library itself.
 
     If a program using Orekit is integrated in an existing environment with its own
     established data management system, the library must be configured to use this existing
-    system to retrieve the data instead of using Orekit's own internal system. This enables
-    smoother integration. It also simplifies system administration of the complete
-    suite. It may even allow sharing some of its data with other tools.
+    system to retrieve the existing data instead of using Orekit's own internal system. This
+    enables smoother integration. It also simplifies system administration of the complete
+    suite and avoids data duplication.
 
   * Standalone application on a small networked device
 
@@ -90,12 +90,12 @@ The following diagram shows the data handling in Orekit at lowest level.
 
 ![data class diagram](../images/design/data-loaders-data-providers-class-diagram.png)
 
-When some data is read in Orekit (say JPL DE405 or DE406 ephemerides which are needed by
-the `LazyLoadedCelestialBody` class), an implementation of the `DataLoader` interface is used.
-By default, it will be `JPLEphemeridesLoader` (this can be customized). This implementation knows the type
-of files it can handle based on their names (unxp1950.405, unxp2000.405 ...). It also
-knows the file format and what to do with the data. The data loader does not know where
-the data is and does not open the file itself.
+When some data is read in Orekit (say JPL DE405 or DE430 ephemerides which are needed by
+the `LazyLoadedCelestialBody` class), an implementation of the `DataLoader` interface is
+used. By default, it will be `JPLEphemeridesLoader` (this can be customized). This
+implementation knows the type of files it can handle based on their names (unxp1950.405,
+lnxp1990.430 ...). It also knows the file format and what to do with the data. The data
+loader does not know where the data is and does not open the file itself.
 
 The task to locate and fetch the data is performed by classes implementing the
 `DataProvider` class. Each implementation is dedicated to one storage type (disk,
@@ -135,7 +135,7 @@ one location only. This implies that if for example EOP data is split into yearl
 directory `eop/yearly` and into weekly BulletinA files in directory `eop/weekly`, then users
 should not configure separately the two locations `eop/yearly` and `eop/weekly` as this would lead
 only the first configured location to be used and the second one being ignored. This directories
-organization is perfectly acceptable, but it should be configred as only one location specifying
+organization is perfectly acceptable, but it should be configured as only one location specifying
 the top level directory `eop` (sub-directories are searched recursively automatically). This design choice
 allows setting up configurations where users provide their own subsets of data (for example Earth
 Orientation Parameters only) and prevent the system wide configuration to be used for this subset
@@ -152,17 +152,22 @@ implies reading all the file (because the zip format puts a central directory at
 archive). So if a zip archive contains both large planetary ephemerides, long term EOP data and
 large gravity fields, loading the few hundreds of bytes corresponding to a UTC-TAI file still
 implies reading all the other data that will be ignored, just to finally find the central directory
-to locate the small desired file. There is much less overhead in expanding the zip file as a
-directories tree and point Orekit to the location of the top directory.
+to locate the small desired file, and rewind everything to recover its data (either by reading a
+second time the file, or by having preserved everything in memory). There is much less overhead in
+expanding the zip file as a directories tree beforehand and point Orekit to the location of the top
+directory.
 
 Data files may also be compressed using gzip or Unix compress to save some disk space. Compressed files
-are uncompressed directly in memory. Compressing text-based files like Bulletin B or EOPC04
+are uncompressed directly during parsing, with only the current needed compressed and uncompressed
+blocks being kept in memory. Compressing text-based files like Bulletin B, EOPC04 or RINEX
 saves a lot of disk space, but compressing the JPL binary files saves very little space.
 Using compressed files inside a zip archive is also irrelevant as zip/jar files are themselves
 compressed and stacking compression algorithms only slows down reading speed without saving any disk
-space.
+space (except for the specialized Hatanaka compression for RINEX files which as it remains text is
+often stacked with Unix or gzip compression). The filtering feature is explained in the
+[filtering](./filtering.html) page.
 
-Since nothing is written to disk (there are no temporary files), user provided data sets may
+Since nothing is ever written to disk (there are no temporary files), user provided data sets may
 be stored on non-writable media like disk partitions with restricted access or CD/DVD media.
 
 ![directories tree](../images/directories-tree.png)
@@ -189,9 +194,12 @@ This happens for example if data must be embedded within the application and loa
 the classpath. This also happens if the data must be retrieved from a dynamic or virtual
 storage medium like a database, a web site or a local data handling library.
 
-The configuration corresponds to the list of data providers stored in the `DataProvidersManager`
-singleton. In order to set up a custom configuration, the `DataProvidersManager` must be purged and specific
-data providers must be added in an appropriate order.
+The custom configuration may be set up by using a dedicated [data context](./contexts.html),
+for example if a mission-dedicated database is used, or by configuration the default
+`DataProvidersManager` if the data storage remains mainly resource/files oriented.
+
+Configuration a `DataProvidersManager` involves purging it (if it already existed) and adding
+specific data providers in an appropriate order.
 
 The data providers predefined by the Orekit library are the following ones:
 
@@ -202,20 +210,18 @@ The data providers predefined by the Orekit library are the following ones:
     internet sites through a corporate proxy server)
 
 Users can also add their own implementations of the `DataProvider` interface and
-register them to the `DataProvidersManager` instance. Typical examples of user
-defined implementations are providers fetching data from a relational database or
-providers fetching data using an external library.
+register them to the `DataProvidersManager` instance.
 
 ## Quick recommended setup
 
 For convenience, the simplest configuration
 is to download the [orekit-data-master.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)
-file from the forge, to unzip it anywhere you want, rename the `orekit-data-master` folder that will be created
-into `orekit-data` and add the following lines at the start of your program:
+file from the forge, to unzip it anywhere users want, rename the `orekit-data-master` folder that will be created
+into `orekit-data` and add the following lines at the start of users programs:
 
 
     File orekitData = new File("/path/to/the/folder/orekit-data");
-    DataProvidersManager manager = DataProvidersManager.getInstance();
+    DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
     manager.addProvider(new DirectoryCrawler(orekitData));
 
 This zip file contains JPL DE 430 ephemerides from 1990

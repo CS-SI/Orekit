@@ -30,13 +30,6 @@
 
     package data #DDEBD8 {
 
-      class PreloadedDataContext
-      note top
-        Does not use DataProvidersManager.
-        Constructed from a list of leap seconds,
-        EOP entries, etc.
-      end note
-
       interface DataContext {
         + {static} LazyLoadedDataContext getDefault()
         + {static} setDefault(LazyLoadedDataContext)
@@ -59,13 +52,13 @@
       }
 
       LazyLoadedDataContext o--  DataProvidersManager
-      PreloadedDataContext  --|> DataContext
       DataContext           <|-- LazyLoadedDataContext
 
     }
 
     package time #DDEBD8 {
       interface TimeScales {
+        {static} +TimeScales of(utcMinusTai, eopSupplier)
         +TimeScale getTai()
         +TimeScale getUtc()
         +TimeScale getUt1()
@@ -99,6 +92,8 @@
     package frames #DDEBD8 {
 
       interface Frames {
+        {static} +Frames of(timeScales, celestialBodies)
+        {static} +Frames of(timeScales, icrfSupplier)
         +Frame getGcrf()
         +Frame getItrf(...)
         +...()

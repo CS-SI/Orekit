@@ -74,7 +74,7 @@ public class SP3Parser implements EphemerisFileParser {
     /** Mapping from frame identifier in the file to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
     /** Set of time scales. */
-    private final DataContext dataContext;
+    private final TimeScales timeScales;
 
     /**
      * Create an SP3 parser using default values.
@@ -101,13 +101,14 @@ public class SP3Parser implements EphemerisFileParser {
      * @param frameBuilder         is a function that can construct a frame from an SP3
      *                             coordinate system string. The coordinate system can be
      *                             any 5 character string e.g. ITR92, IGb08.
-     * @see #SP3Parser(double, int, Function, DataContext)
+     * @see #SP3Parser(double, int, Function, TimeScales)
      */
     @DefaultDataContext
     public SP3Parser(final double mu,
                      final int interpolationSamples,
                      final Function<? super String, ? extends Frame> frameBuilder) {
-        this(mu, interpolationSamples, frameBuilder, DataContext.getDefault());
+        this(mu, interpolationSamples, frameBuilder,
+                DataContext.getDefault().getTimeScales());
     }
 
     /**
@@ -120,17 +121,17 @@ public class SP3Parser implements EphemerisFileParser {
      * @param interpolationSamples is the number of samples to use when interpolating.
      * @param frameBuilder         is a function that can construct a frame from an SP3
      *                             coordinate system string. The coordinate system can be
-     * @param dataContext          the set of time scales used for parsing dates.
+     * @param timeScales           the set of time scales used for parsing dates.
      * @since 10.1
      */
     public SP3Parser(final double mu,
                      final int interpolationSamples,
                      final Function<? super String, ? extends Frame> frameBuilder,
-                     final DataContext dataContext) {
+                     final TimeScales timeScales) {
         this.mu = mu;
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder = frameBuilder;
-        this.dataContext = dataContext;
+        this.timeScales = timeScales;
     }
 
     /**
@@ -287,9 +288,8 @@ public class SP3Parser implements EphemerisFileParser {
 
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
-            this.timeScales = dataContext.getTimeScales();
-            file               = new SP3File(mu, interpolationSamples, frameBuilder,
-                    dataContext.getFrames().getGCRF());
+            this.timeScales = SP3Parser.this.timeScales;
+            file               = new SP3File(mu, interpolationSamples, frameBuilder);
             latestEpoch        = null;
             latestPosition     = null;
             latestClock        = 0.0;
