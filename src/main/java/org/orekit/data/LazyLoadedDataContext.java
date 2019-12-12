@@ -87,8 +87,8 @@ public class LazyLoadedDataContext implements DataContext {
                 this.frames = new LazyLoadedFrames(
                                                    eop, getTimeScales(), getCelestialBodies());
             }
+            return this.frames;
         }
-        return this.frames;
     }
 
     @Override
@@ -99,8 +99,8 @@ public class LazyLoadedDataContext implements DataContext {
                 this.bodies = new LazyLoadedCelestialBodies(
                                                             getDataProvidersManager(), getTimeScales(), gcrf);
             }
+            return this.bodies;
         }
-        return this.bodies;
     }
 
     @Override
