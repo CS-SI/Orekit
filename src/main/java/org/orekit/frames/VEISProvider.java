@@ -49,7 +49,7 @@ class VEISProvider implements TransformProvider {
     private static final double VSTD = 7.292115146705209e-5;
 
     /** Set of time scales to use. */
-    private final TimeScales timeScales;
+    private final transient TimeScales timeScales;
 
     /** Reference date. */
     private final AbsoluteDate vstReference;

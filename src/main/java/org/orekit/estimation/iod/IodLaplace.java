@@ -33,7 +33,7 @@ import org.orekit.utils.PVCoordinates;
  *
  *
  * Reference:
- *    Bate, R., Mueller, D. D., & White, J. E. (1971). Fundamentals of astrodynamics.
+ *    Bate, R., Mueller, D. D., &amp; White, J. E. (1971). Fundamentals of astrodynamics.
  *    New York: Dover Publications.
  *
  * @author Shiva Iyer

@@ -82,12 +82,10 @@ public class LazyLoadedDataContext implements DataContext {
 
     @Override
     public LazyLoadedFrames getFrames() {
-        if (this.frames == null) {
-            synchronized (this) {
-                if (this.frames == null) {
-                    this.frames = new LazyLoadedFrames(
-                            eop, getTimeScales(), getCelestialBodies());
-                }
+        synchronized (this) {
+            if (this.frames == null) {
+                this.frames = new LazyLoadedFrames(
+                                                   eop, getTimeScales(), getCelestialBodies());
             }
         }
         return this.frames;
@@ -95,13 +93,11 @@ public class LazyLoadedDataContext implements DataContext {
 
     @Override
     public LazyLoadedCelestialBodies getCelestialBodies() {
-        if (this.bodies == null) {
-            synchronized (this) {
-                if (this.bodies == null) {
-                    final Frame gcrf = Frame.getRoot();
-                    this.bodies = new LazyLoadedCelestialBodies(
-                            getDataProvidersManager(), getTimeScales(), gcrf);
-                }
+        synchronized (this) {
+            if (this.bodies == null) {
+                final Frame gcrf = Frame.getRoot();
+                this.bodies = new LazyLoadedCelestialBodies(
+                                                            getDataProvidersManager(), getTimeScales(), gcrf);
             }
         }
         return this.bodies;
