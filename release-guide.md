@@ -191,6 +191,7 @@ checksums:
 - orekit-X.Y.jar
 - orekit-X.Y-sources.jar
 - orekit-X.Y-javadoc.jar
+- orekit-X.Y-sources.zip
 
 The signature and checksum files have similar names with added extensions `.asc`,
 `.md5` and `.sha1`.
