@@ -19,15 +19,20 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.OEMFile.OemSatelliteEphemeris;
 import org.orekit.files.ccsds.StreamingOemWriter.Segment;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -107,6 +112,19 @@ public class StreamingOemWriterTest {
                 FramesFactory.getEME2000(), "EME2000",
                 CelestialBodyFactory.getMars(), "MARS");
         assertThat(StreamingOemWriter.guessFrame(frame), CoreMatchers.is("EME2000"));
+
+        // check unknown frame
+        Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                               Constants.WGS84_EARTH_FLATTENING,
+                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                          new GeodeticPoint(1.2, 2.3, 45.6),
+                                          "dummy");
+        assertThat(StreamingOemWriter.guessFrame(topo), CoreMatchers.is("dummy"));
+
+        // check a fake ICRF
+        Frame fakeICRF = new Frame(FramesFactory.getGCRF(), Transform.IDENTITY,
+                                      CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial");
+        assertThat(StreamingOemWriter.guessFrame(fakeICRF), CoreMatchers.is("ICRF"));
     }
 
     /**
@@ -138,6 +156,14 @@ public class StreamingOemWriterTest {
                 FramesFactory.getEME2000(), "EME2000",
                 CelestialBodyFactory.getMars(), "MARS");
         assertThat(StreamingOemWriter.guessCenter(frame), CoreMatchers.is("MARS"));
+
+        // check unknown frame
+        Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                               Constants.WGS84_EARTH_FLATTENING,
+                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                          new GeodeticPoint(1.2, 2.3, 45.6),
+                                          "dummy");
+        assertThat(StreamingOemWriter.guessCenter(topo), CoreMatchers.is("UNKNOWN"));
     }
 
 

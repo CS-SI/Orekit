@@ -29,7 +29,7 @@ themselves without loss of precision.
 
 The implemented TLE model conforms to new 2006 corrected model.
 More information on the TLE format can be found on the
-[CelesTrak](http://www.celestrak.com/) website.
+[CelesTrak](https://www.celestrak.com/) website.
 
 ## Evolution
 
