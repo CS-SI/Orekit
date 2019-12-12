@@ -54,7 +54,7 @@ public class IodLaplace {
 
     /** Estimate orbit from three line of sight angles from the same location.
      *
-     * @param frame Intertial frame for observer coordinates and orbit estimate
+     * @param frame inertial frame for observer coordinates and orbit estimate
      * @param obsPva Observer coordinates at time obsDate2
      * @param obsDate1 date of observation 1
      * @param los1 line of sight unit vector 1
