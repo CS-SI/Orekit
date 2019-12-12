@@ -163,6 +163,7 @@ public class Utils {
                                               double[][] data) {
         IERSConventions.NutationCorrectionConverter converter =
                 conventions.getNutationCorrectionConverter();
+        final TimeScale utc = DataContext.getDefault().getTimeScales().getUTC();
         final List<EOPEntry> list = new ArrayList<EOPEntry>();
         for (double[] row : data) {
             final AbsoluteDate date =
@@ -196,7 +197,8 @@ public class Utils {
                                   Constants.ARC_SECONDS_TO_RADIANS * row[3],
                                   Constants.ARC_SECONDS_TO_RADIANS * row[4],
                                   equinox[0], equinox[1],
-                                  nro[0], nro[1], version));
+                                  nro[0], nro[1], version,
+                                  AbsoluteDate.createMJDDate((int) row[0], 0.0, utc)));
         }
         return list;
     }

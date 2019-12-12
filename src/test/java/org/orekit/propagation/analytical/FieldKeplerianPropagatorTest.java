@@ -37,6 +37,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -256,6 +257,11 @@ public class FieldKeplerianPropagatorTest {
     @Test
     public void testSetting() {
         doTestSetting(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testDefaultLaw() {
+        Assert.assertSame(InertialProvider.EME2000_ALIGNED, FieldPropagator.DEFAULT_LAW);
     }
 
     private <T extends RealFieldElement<T>> void doTestSameDateCartesian(Field<T> field) {
