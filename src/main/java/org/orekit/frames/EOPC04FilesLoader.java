@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -145,12 +146,12 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
     /** Build a loader for IERS EOP C04 files.
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to the EOP C04 files.
-     * @param utc UTC time scale.
+     * @param utcSupplier UTC time scale.
      */
     EOPC04FilesLoader(final String supportedNames,
                       final DataProvidersManager manager,
-                      final TimeScale utc) {
-        super(supportedNames, manager, utc);
+                      final Supplier<TimeScale> utcSupplier) {
+        super(supportedNames, manager, utcSupplier);
     }
 
     /** {@inheritDoc} */

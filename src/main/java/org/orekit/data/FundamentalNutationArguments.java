@@ -124,7 +124,7 @@ public class FundamentalNutationArguments implements Serializable {
     private final double[] paCoefficients;
 
     /** Set of time scales to use in computations. */
-    private final TimeScales timeScales;
+    private final transient TimeScales timeScales;
 
     /** Build a model of fundamental arguments from an IERS table file.
      *
