@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.util.function.Supplier;
+
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.time.TimeScale;
@@ -29,20 +31,20 @@ public class AbstractEopLoader extends AbstractSelfFeedingLoader {
 
 
     /** UTC time scale used for parsing files. */
-    private final TimeScale utc;
+    private final Supplier<TimeScale> utcSupplier;
 
     /**
      * Simple constructor.
      *
      * @param supportedNames regular expression for supported files names.
      * @param manager        provides access to the EOP files.
-     * @param utc            UTC time scale.
+     * @param utcSupplier    UTC time scale.
      */
     public AbstractEopLoader(final String supportedNames,
                              final DataProvidersManager manager,
-                             final TimeScale utc) {
+                             final Supplier<TimeScale> utcSupplier) {
         super(supportedNames, manager);
-        this.utc = utc;
+        this.utcSupplier = utcSupplier;
     }
 
     /**
@@ -51,7 +53,7 @@ public class AbstractEopLoader extends AbstractSelfFeedingLoader {
      * @return UTC time scale.
      */
     protected TimeScale getUtc() {
-        return utc;
+        return utcSupplier.get();
     }
 
 }

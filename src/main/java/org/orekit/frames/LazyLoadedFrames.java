@@ -87,7 +87,7 @@ public class LazyLoadedFrames extends AbstractFrames {
                 eopC04SupportedNames,
                 bulletinBSupportedNames,
                 bulletinASupportedNames,
-                getTimeScales().getUTC());
+                () -> getTimeScales().getUTC());
     }
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
@@ -124,7 +124,7 @@ public class LazyLoadedFrames extends AbstractFrames {
                 eopC04SupportedNames,
                 bulletinBSupportedNames,
                 bulletinASupportedNames,
-                getTimeScales().getUTC());
+                () -> getTimeScales().getUTC());
     }
 
     /** Add a loader for Earth Orientation Parameters history.

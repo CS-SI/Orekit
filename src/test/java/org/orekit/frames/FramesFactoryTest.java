@@ -333,7 +333,7 @@ public class FramesFactoryTest {
         SortedSet<EOPEntry> rawEquinox = new TreeSet<EOPEntry>(new ChronologicalComparator());
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
-        new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, utc)
+        new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc)
                 .fillHistory(converter, rawEquinox);
         Assert.assertEquals(181, rawEquinox.size());
         for (final EOPEntry entry : rawEquinox) {
@@ -352,7 +352,7 @@ public class FramesFactoryTest {
         final SortedSet<EOPEntry> rawNRO = new TreeSet<EOPEntry>(new ChronologicalComparator());
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
-        new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, utc)
+        new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc)
                 .fillHistory(converter, rawNRO);
         Assert.assertEquals(181, rawNRO.size());
         for (final EOPEntry entry : rawNRO) {

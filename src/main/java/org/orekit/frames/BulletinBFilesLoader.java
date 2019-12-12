@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -225,12 +226,12 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
     /** Build a loader for IERS bulletins B files.
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to the bulletin B files.
-     * @param utc UTC time scale.
+     * @param utcSupplier UTC time scale.
      */
     BulletinBFilesLoader(final String supportedNames,
                          final DataProvidersManager manager,
-                         final TimeScale utc) {
-        super(supportedNames, manager, utc);
+                         final Supplier<TimeScale> utcSupplier) {
+        super(supportedNames, manager, utcSupplier);
     }
 
     /** {@inheritDoc} */
