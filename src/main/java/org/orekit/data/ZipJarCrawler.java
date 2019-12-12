@@ -358,6 +358,42 @@ public class ZipJarCrawler implements DataProvider {
                 }
             }
 
+            @Override
+            public int available() throws IOException {
+                return zip.available();
+            }
+
+            @Override
+            public int read(final byte[] b, final int off, final int len)
+                    throws IOException {
+                return zip.read(b, off, len);
+            }
+
+            @Override
+            public long skip(final long n) throws IOException {
+                return zip.skip(n);
+            }
+
+            @Override
+            public boolean markSupported() {
+                return zip.markSupported();
+            }
+
+            @Override
+            public void mark(final int readlimit) {
+                zip.mark(readlimit);
+            }
+
+            @Override
+            public void reset() throws IOException {
+                zip.reset();
+            }
+
+            @Override
+            public int read(final byte[] b) throws IOException {
+                return zip.read(b);
+            }
+
         }
 
     }

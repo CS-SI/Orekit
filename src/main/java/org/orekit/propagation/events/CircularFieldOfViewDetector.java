@@ -34,7 +34,9 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see FieldOfViewDetector
  * @see VisibilityTrigger
  * @author V&eacute;ronique Pommier-Maurussane
- * @deprecated as of 10.1, replaced by {@link FieldOfViewDetector} and {@link CircularFieldOfView}
+ * @deprecated as of 10.1, replaced by {@link FieldOfViewDetector} and {@link
+ * CircularFieldOfView}. Note that {@link FieldOfViewDetector#g(SpacecraftState)} has the
+ * opposite sign convention of {@link #g(SpacecraftState)}.
  */
 @Deprecated
 public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldOfViewDetector> {
@@ -160,7 +162,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
      * </p>
      */
     public double g(final SpacecraftState s) {
-        return generalDetector.g(s);
+        return -generalDetector.g(s);
     }
 
 }

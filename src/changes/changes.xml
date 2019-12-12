@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action def="evan" type="fix" issue="629">
+        Improve performance of ZipJarCrawler.
+      </action>
       <action dev="bryan" type="add" issue="625">
       	Added default constructors for DSSTZonal and DSSTTesseral. 
       </action>   
