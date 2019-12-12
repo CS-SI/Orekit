@@ -191,6 +191,7 @@ checksums:
 - orekit-X.Y.jar
 - orekit-X.Y-sources.jar
 - orekit-X.Y-javadoc.jar
+- orekit-X.Y-sources.zip
 
 The signature and checksum files have similar names with added extensions `.asc`,
 `.md5` and `.sha1`.
@@ -218,7 +219,7 @@ The site is generated locally using:
 Once generated, the site can be archived and uploaded to the Orekit site:
 
     cd target/site
-    scp -r * user@host:/var/www/www.orekit.org/staging/site-orekit-X.Y
+    scp -r * user@host:/var/www/mvn-site/site-orekit-X.Y
 
 
 If you need help with this step ask ask Sébastien Dinot
