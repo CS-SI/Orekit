@@ -158,8 +158,10 @@ public class UnixCompressFilterTest {
         InputStream is = filtered.getStreamOpener().openStream();
         List<Integer> output = new ArrayList<>();
         while (true) {
+            boolean shouldWork = is.available() > 0;
             final int r = is.read();
             if (r < 0) {
+                Assert.assertFalse(shouldWork);
                 int[] result = new int[output.size()];
                 for (int i = 0; i < result.length; ++i) {
                     result[i] = output.get(i);
