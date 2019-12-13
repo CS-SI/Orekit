@@ -41,11 +41,12 @@ with groupID org.orekit and artifactId orekit so maven
 internal mechanism will download automatically all artifacts and dependencies
 as required.
 
+#foreach()
 |  package |                                              link                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------------|
-|  source  | [orekit-10.0-sources.zip](https://www.orekit.org/download/orekit-latest-sources.zip)                                                 |
-|  binary  | [orekit-10.0.jar](https://www.orekit.org/download/orekit-latest.jar)                                                                 |
-|  javadoc | [orekit-10.0-javadoc.jar](https://www.orekit.org/download/orekit-latest-javadoc.jar)                                                 |
+|  source  | [orekit-10.0-sources.zip](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/10.0/orekit-10.0-sources.zip)                                                 |
+|  binary  | [orekit-10.0.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/10.0/orekit-10.0.jar)                                                                 |
+|  javadoc | [orekit-10.0-javadoc.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/10.0/orekit-10.0-javadoc.jar)                                                 |
 version 10.0 downloads (release date: 2019-06-24)
 
 |  package |                                              link                                                                                     |
