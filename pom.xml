@@ -53,6 +53,7 @@
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
+    <tools.jar.path>${java.home}/../lib/tools.jar</tools.jar.path>
   </properties>
 
   <developers>
@@ -278,24 +279,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.orekit</groupId>
-      <artifactId>annotation</artifactId>
-      <version>${version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.orekit</groupId>
-      <artifactId>plugin</artifactId>
-      <version>${version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>com.sun</groupId>
-      <artifactId>tools</artifactId>
-      <scope>system</scope>
-      <version>1.8</version>
-      <systemPath>${java.home}/../lib/tools.jar</systemPath>
-    </dependency>
-    <dependency>
       <groupId>org.hipparchus</groupId>
       <artifactId>hipparchus-core</artifactId>
       <version>${orekit.hipparchus.version}</version>
@@ -372,6 +355,40 @@
             <arg>-Xplugin:dataContextPlugin</arg>
           </compilerArgs>
         </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <excludes>
+                <!-- don't recompile the compiler plugin. -->
+                <exclude>org/orekit/compiler/**</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- need to compile these two packages before the rest so that the compiler
+                 plugin will work. -->
+            <id>plugin-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <!-- the phase before compile. -->
+            <phase>process-resources</phase>
+            <configuration>
+              <includes>
+                <include>org/orekit/annotation/**</include>
+                <include>org/orekit/compiler/**</include>
+              </includes>
+              <compilerArgs>
+                <arg>-Xlint:deprecation</arg>
+                <!-- Add the Java compiler to the classpath. This avoids creating a system
+                     dependency which is inherited by projects using Orekit. -->
+                <arg>-classpath</arg>
+                <arg>${tools.jar.path}</arg>
+              </compilerArgs>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -474,6 +491,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${orekit.maven-surefire-plugin.version}</version>
+        <configuration>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${tools.jar.path}</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

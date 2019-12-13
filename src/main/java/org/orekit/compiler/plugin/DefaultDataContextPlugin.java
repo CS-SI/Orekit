@@ -1,4 +1,4 @@
-package org.orekit.annotation;
+package org.orekit.compiler.plugin;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -23,9 +23,17 @@ import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
+import org.orekit.annotation.DefaultDataContext;
 
 /**
  * Processes {@link DefaultDataContext} to issue warnings at compile time.
+ *
+ * <p>To use this plugin add {@code -Xplugin:dataContextPlugin} to the javac command line.
+ * Tested with OpenJDK 8 and 11.
+ *
+ * <p>Do not reference this class unless executing within {@code javac} or you have added
+ * {@code tools.jar} to the class path. {@code tools.jar} is part of the JDK, not JRE, and
+ * is typically located at {@code JAVA_HOME/../lib/tools.jar}.
  *
  * @author Evan Ward
  * @since 10.1

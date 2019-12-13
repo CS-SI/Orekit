@@ -1,4 +1,4 @@
-package org.orekit.annotation;
+package org.orekit.compiler.plugin;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -43,7 +43,7 @@ public class DefaultDataContextPluginTest {
                 "-d", output.toAbsolutePath().toString(),
                 "-Xmaxwarns", "9999",
                 "-Xplugin:dataContextPlugin"));
-        Files.list(Paths.get("src/example/java"))
+        Files.list(Paths.get("src/test/resources/compiler-plugin"))
                 .forEach(a -> arguments.add(a.toAbsolutePath().toString()));
 
         // action
