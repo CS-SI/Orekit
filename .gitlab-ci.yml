@@ -1,6 +1,7 @@
 stages:
 - verify
 - release
+- qa
 
 default:
   # Default image
@@ -24,6 +25,7 @@ verify:
   stage: verify
   script:
     - mvn $MAVEN_CLI_OPTS verify site
+    - mvn $MAVEN_CLI_OPTS sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
   artifacts:
     paths:
       - target/*.jar
