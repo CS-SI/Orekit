@@ -1012,8 +1012,8 @@ public class NRLMSISE00 implements Atmosphere {
     /** Switches for cross effects. */
     private final int[] swc;
 
-    /** UT1 time scale. */
-    private final TimeScale ut1;
+    /** UT time scale. */
+    private final TimeScale ut;
 
     /** Constructor.
      * <p>
@@ -1053,14 +1053,16 @@ public class NRLMSISE00 implements Atmosphere {
      * @param parameters the solar and magnetic activity data
      * @param sun the Sun position
      * @param earth the Earth body shape
-     * @param ut1 UT1 time scale.
+     * @param ut UT time scale. The original documentation for NRLMSISE00 does not
+     *           distinguish between UTC and UT1. In Orekit 10.0 {@code
+     *           TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true)} was used.
      * @since 10.1
      */
     public NRLMSISE00(final NRLMSISE00InputParameters parameters,
                       final PVCoordinatesProvider sun,
                       final BodyShape earth,
-                      final TimeScale ut1) {
-        this(parameters, sun, earth, allOnes(), allOnes(), ut1);
+                      final TimeScale ut) {
+        this(parameters, sun, earth, allOnes(), allOnes(), ut);
     }
 
     /** Constructor.
@@ -1077,20 +1079,20 @@ public class NRLMSISE00 implements Atmosphere {
      * @param earth the Earth body shape
      * @param sw switches for main effects
      * @param swc switches for cross effects
-     * @param ut1 UT1 time scale.
+     * @param ut UT time scale.
      */
     private NRLMSISE00(final NRLMSISE00InputParameters parameters,
                        final PVCoordinatesProvider sun,
                        final BodyShape earth,
                        final int[] sw,
                        final int[] swc,
-                       final TimeScale ut1) {
+                       final TimeScale ut) {
         this.inputParams = parameters;
         this.sun         = sun;
         this.earth       = earth;
         this.sw          = sw;
         this.swc         = swc;
-        this.ut1 = ut1;
+        this.ut = ut;
     }
 
     /** Change a switch.
@@ -1121,7 +1123,7 @@ public class NRLMSISE00 implements Atmosphere {
             newSwc[number] = newSw[number];
         }
 
-        return new NRLMSISE00(inputParams, sun, earth, newSwc, newSwc, ut1);
+        return new NRLMSISE00(inputParams, sun, earth, newSwc, newSwc, ut);
 
     }
 
@@ -1154,7 +1156,7 @@ public class NRLMSISE00 implements Atmosphere {
         }
 
         // compute day number in current year and the seconds within the day
-        final DateTimeComponents dtc = date.getComponents(ut1);
+        final DateTimeComponents dtc = date.getComponents(ut);
         final int    doy = dtc.getDate().getDayOfYear();
         final double sec = dtc.getTime().getSecondsInLocalDay();
 
@@ -1191,9 +1193,9 @@ public class NRLMSISE00 implements Atmosphere {
         }
 
         // compute day number in current year and the seconds within the day
-        final DateTimeComponents dtc = dateD.getComponents(ut1);
+        final DateTimeComponents dtc = dateD.getComponents(ut);
         final int    doy = dtc.getDate().getDayOfYear();
-        final T sec = date.durationFrom(new AbsoluteDate(dtc.getDate(), TimeComponents.H00, ut1));
+        final T sec = date.durationFrom(new AbsoluteDate(dtc.getDate(), TimeComponents.H00, ut));
 
         // compute geodetic position (km and °)
         final FieldGeodeticPoint<T> inBody = earth.transform(position, frame, date);
