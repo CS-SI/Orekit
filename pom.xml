@@ -755,7 +755,13 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
-          <additionalOptions>--allow-script-in-comments -header &apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</additionalOptions>
+          <additionalOptions>
+            <option>--allow-script-in-comments</option>
+            <option>-header</option>
+            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>-extdirs</option>
+            <option>${tools.jar.dir}</option>
+          </additionalOptions>
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
