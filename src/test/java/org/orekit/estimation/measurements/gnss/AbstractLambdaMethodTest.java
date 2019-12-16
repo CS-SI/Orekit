@@ -172,6 +172,11 @@ public abstract class AbstractLambdaMethodTest {
         Assert.assertEquals(6l, solutions[1].getSolution()[0]);
         Assert.assertEquals(4l, solutions[1].getSolution()[1]);
         Assert.assertEquals(4l, solutions[1].getSolution()[2]);
+        Assert.assertEquals(solutions[0], solutions[0]);
+        Assert.assertNotEquals(solutions[0], solutions[1]);
+        Assert.assertNotEquals(solutions[0], "");
+        Assert.assertNotEquals(solutions[0], null);
+        Assert.assertEquals(-958532080, solutions[0].hashCode());
 
     }
 
