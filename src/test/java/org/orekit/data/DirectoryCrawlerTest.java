@@ -70,7 +70,7 @@ public class DirectoryCrawlerTest {
         File parent = new File(url.toURI().getPath()).getParentFile();
         CountingLoader crawler = new CountingLoader();
         new DirectoryCrawler(parent).feed(Pattern.compile(".*\\.txt$"), crawler);
-        Assert.assertEquals(6, crawler.getCount());
+        Assert.assertEquals(7, crawler.getCount());
     }
 
     @Test(expected=OrekitException.class)
