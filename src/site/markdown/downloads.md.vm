@@ -41,13 +41,16 @@ with groupID org.orekit and artifactId orekit so maven
 internal mechanism will download automatically all artifacts and dependencies
 as required.
 
-#foreach( $version in ["10.0"] )
+#set ( $versions = {"10.0": "2019-06-24"} )
+#foreach( $version in $versions.entrySet() )
+
 |  package |                                              link                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------------|
-|  source  | [orekit-${version}-sources.zip](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version}/orekit-${version}-sources.zip) |
-|  binary  | [orekit-${version}.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version}/orekit-${version}.jar)                 |
-|  javadoc | [orekit-${version}-javadoc.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version}/orekit-${version}-javadoc.jar) |
-version ${version} downloads
+|  source  | [orekit-${version.key}-sources.zip](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}-sources.zip) |
+|  binary  | [orekit-${version.key}.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}.jar)                 |
+|  javadoc | [orekit-${version.key}-javadoc.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}-javadoc.jar) |
+version ${version.key} downloads (release date: ${version.value})
+
 #end
 
 |  package |                                              link                                                                                     |
