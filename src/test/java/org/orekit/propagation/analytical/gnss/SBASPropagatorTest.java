@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -36,6 +37,7 @@ import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -65,7 +67,14 @@ public class SBASPropagatorTest {
     @Test
     public void testPropagationAtReferenceTime() {
         // SBAS propagator
-        final SBASPropagator propagator = new SBASPropagator.Builder(soe).build();
+        final SBASPropagator propagator = new SBASPropagator.
+                        Builder(soe).
+                        attitudeProvider(InertialProvider.EME2000_ALIGNED).
+                        mu(SBASOrbitalElements.SBAS_MU).
+                        mass(SBASPropagator.DEFAULT_MASS).
+                        eci(FramesFactory.getEME2000()).
+                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, true)).
+                        build();
         // Propagation
         final PVCoordinates pv = propagator.propagateInEcef(soe.getDate());
         // Position/Velocity/Acceleration
