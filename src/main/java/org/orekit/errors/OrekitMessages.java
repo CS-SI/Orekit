@@ -246,7 +246,8 @@ public enum OrekitMessages implements Localizable {
     NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE("file {0} is not a supported Hatanaka-compressed file"),
     INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS("invalid measurement types {0} and {1} for the combination of measurements {2}"),
     INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS("frequencies {0} and {1} are incompatibles for the {2} combination"),
-    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates");
+    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates"),
+    EXCEPTIONAL_DATA_CONTEXT("Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.");
 
     // CHECKSTYLE: resume JavadocVariable check
 
