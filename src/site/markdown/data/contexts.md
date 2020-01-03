@@ -111,3 +111,71 @@ proper constructor/method to call depending on their needs.
 
 This feature is mostly interesting for applications that need multiple contexts.
 
+## Avoiding the default data context
+
+When an application needs to use a custom data context and avoid using the default data
+context there are a couple tools to help find where the default data context is used.
+First is a compiler plugin that detects when an application uses a
+method/constructor/field/class that has been annotated with `@DefaultDataContext` from a
+method/constructor/field/class that does not have that annotation. All methods,
+constructors, and fields in Orekit that use the default data context have the annotation.
+This annotation and plugin operates similarly to the `@Deprecated` annotation. It will
+find all uses that are known at compile time. To use the plugin add
+`-Xplugin:dataContextPlugin` to the `javac` command line arguments. For example, here is a
+snippet from a `pom.xml` that uses the compiler plugin:
+
+```xml
+<project>
+  ...
+  <dependencies>
+    <dependency>
+      <groupId>org.orekit</groupId>
+      <artifactId>orekit</artifactId>
+      <version>10.1</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <showWarnings>true</showWarnings>
+          <compilerArgs>
+            <arg>-Xplugin:dataContextPlugin</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+```
+
+The compiler plugin can detect uses of the default data context that are known at compile
+time, but it is unable to detect polymorphic uses of the default data context. For example
+the plugin will detect that `Object o = AbsoluteDate.J2000_EPOCH;` uses the default data
+context, but not `o.toString();`. To detect the latter types a runtime tool is needed.
+
+The second tool for detecting uses of the default data context is
+`ExceptionalDataContext`. This is a `DataContext` that simply throws an exception whenever
+one of its methods is called. This can be used when running tests to ensure that none of
+the tested code accesses the default data context. Because some static fields in Orekit
+are initialized using the default data context those classes must be initialized before
+replacing the default data context. To use `ExceptionalDataContext` run the following code
+before any other code that uses Orekit:
+
+```java
+// Force initialization of classes with static fields that use the default data context
+Object o = AbsoluteDate.ARBITRARY_DATE;
+o = InertialProvider.EME2000_ALIGNED;
+// Prevent further use of the default data context
+DataContext.setDefault(new ExceptionalDataContext());
+```
+
+`ExceptionalDataContext` is unable to detect uses of static fields that use the default
+data context, such as those in `AbsoluteDate` and `InertialProvider`. Using both the
+compiler plugin and `ExceptionalDataContext` together will be able to detect all uses of
+the default data context. This provides a way to verify that the correct instance of an
+overloaded constructor or method is called so as to avoid any surprise uses of the default
+data context.
