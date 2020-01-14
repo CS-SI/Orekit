@@ -13,7 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -30,6 +34,8 @@ import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -112,6 +118,9 @@ public class StreamingOemWriterTest {
                 FramesFactory.getEME2000(), "EME2000",
                 CelestialBodyFactory.getMars(), "MARS");
         assertThat(StreamingOemWriter.guessFrame(frame), CoreMatchers.is("EME2000"));
+        Vector3D v = frame.getTransformProvider().getTransform(AbsoluteDate.J2000_EPOCH).getTranslation();
+        FieldVector3D<Decimal64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance())).getTranslation();
+        Assert.assertEquals(0.0, FieldVector3D.distance(v64, v).getReal(), 1.0e-10);
 
         // check unknown frame
         Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

@@ -10,6 +10,9 @@ quick studies up to critical operations. As a library, Orekit provides basic
 elements (orbits, dates, attitude, frames, ...) and various algorithms to
 handle them (conversions, propagations, pointing, ...).
 
+[![](https://sonar.orekit.org/api/project_badges/measure?project=org.orekit%3Aorekit&metric=alert_status)](https://sonar.orekit.org/dashboard?id=org.orekit%3Aorekit)
+[![](https://sonar.orekit.org/api/project_badges/measure?project=org.orekit%3Aorekit&metric=coverage)](https://sonar.orekit.org/dashboard?id=org.orekit%3Aorekit)
+
 ## Download
 
 ### Official releases

@@ -34,7 +34,6 @@
             <property name="caseIndent"  value="4"/>
         </module>
         <module name="JavadocMethod">
-            <property name="allowUndeclaredRTE" value="true"/>
             <property name="validateThrows" value="false"/>
         </module>
         <module name="JavadocStyle"/>
@@ -108,6 +107,7 @@
     </module>
     <module name="RegexpHeader">
       <property name="headerFile" value="${checkstyle.header.file}" />
+      <property name="fileExtensions" value="java" />
     </module>
     <module name="FileTabCharacter"/>
     <module name="NewlineAtEndOfFile"/>

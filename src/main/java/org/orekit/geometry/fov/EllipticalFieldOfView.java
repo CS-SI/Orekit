@@ -27,9 +27,6 @@ import org.orekit.propagation.events.VisibilityTrigger;
 
 /** Class representing a spacecraft sensor Field Of View with elliptical shape.
  * <p>
- * There are several ways to define an elliptical shape on the unit sphere.
- * </p>
- * <p>
  * Without loss of generality, one can assume that with a suitable rotation
  * the ellipse center is along the Z<sub>ell</sub> axis and the ellipse principal axes
  * are along the X<sub>ell</sub> and Y<sub>ell</sub> axes. The first defining
@@ -37,7 +34,8 @@ import org.orekit.propagation.events.VisibilityTrigger;
  * them by giving directly the Z<sub>ell</sub> axis as the {@code center} of
  * the ellipse, and giving a {@code primaryMeridian} vector in the (+X<sub>ell</sub>,
  * Z<sub>ell</sub>) half-plane. It is allowed to have {@code primaryMeridian} not
- * orthogonal to {@code center} as orthogonality will be fixed internally.
+ * orthogonal to {@code center} as orthogonality will be fixed internally (i.e
+ * {@code primaryMeridian} may be different from X<sub>ell</sub>).
  * </p>
  * <p>
  * We can define angular coordinates \((\alpha, \beta)\) as dihedra angles around the
@@ -67,7 +65,7 @@ import org.orekit.propagation.events.VisibilityTrigger;
  * We define an ellipse on the sphere as the locus of points \(P\) such that the sum of
  * their angular distance to two foci \(F_+\) and \(F_-\) is constant, all points being on
  * the sphere. The relationship between the foci and the two half aperture angles \(\lambda\)
- * and \(\mu\) with:
+ * and \(\mu\) is:
  * \[\lambda \ge \mu \Rightarrow F_\pm\left(\begin{gather*}
  *   \pm\sin\delta\\
  *   0\\

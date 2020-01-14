@@ -75,7 +75,7 @@ public class DirectoryCrawlerTest {
         CountingLoader crawler = new CountingLoader();
         new DirectoryCrawler(parent).feed(Pattern.compile(".*\\.txt$"), crawler,
                                           DataContext.getDefault().getDataProvidersManager());
-        Assert.assertEquals(6, crawler.getCount());
+        Assert.assertEquals(7, crawler.getCount());
     }
 
     @Test(expected=OrekitException.class)

@@ -401,6 +401,23 @@ public class HatanakaCompressFilterTest {
     }
 
     @Test
+    public void testSingleByteReads() throws IOException, NoSuchAlgorithmException {
+
+        final String name = "rinex/arev0440.16d.Z";
+        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        try (InputStream is = filtered.getStreamOpener().openStream()) {
+            int count = 0;
+            while (is.read() >= 0) {
+                ++count;
+            }
+            Assert.assertEquals(7060, count);
+        }
+
+    }
+
+    @Test
     public void testDifferential3rdOrder() {
         doTestDifferential(15, 3, 3,
                            new long[] {

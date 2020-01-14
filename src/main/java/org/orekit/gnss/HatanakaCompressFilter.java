@@ -85,7 +85,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private final BufferedReader reader;
 
         /** Pending uncompressed output lines. */
-        private String pending;
+        private byte[] pending;
 
         /** Number of characters already output in pending lines. */
         private int countOut;
@@ -110,6 +110,13 @@ public class HatanakaCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         @Override
         public int read() throws IOException {
+            final byte[] b = new byte[1];
+            return read(b, 0, 1) < 0 ? -1 : b[0];
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int read(final byte[] b, final int offset, final int len) throws IOException {
 
             if (pending == null) {
                 // we need to read another section from the underlying stream and uncompress it
@@ -119,18 +126,25 @@ public class HatanakaCompressFilter implements DataFilter {
                     // there are no lines left
                     return -1;
                 } else {
-                    pending = format.uncompressSection(firstLine);
+                    pending = format.uncompressSection(firstLine).getBytes(StandardCharsets.UTF_8);
                 }
             }
 
-            if (countOut == pending.length()) {
-                // output an end of line
-                pending = null;
-                return '\n';
+            // copy as many characters as possible from current line
+            int n = FastMath.min(len, pending.length - countOut);
+            System.arraycopy(pending, countOut, b, offset, n);
+
+            if (n < len) {
+                // line has been completed and we can still output end of line
+                b[offset + n] = '\n';
+                pending       = null;
+                ++n;
             } else {
-                // output a character from the uncompressed line
-                return pending.charAt(countOut++);
+                // there are still some pending characters
+                countOut += n;
             }
+
+            return n;
 
         }
 
