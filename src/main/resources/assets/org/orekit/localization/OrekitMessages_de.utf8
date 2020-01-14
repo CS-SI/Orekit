@@ -455,7 +455,7 @@ NULL_ARGUMENT = Das Argument {0} kann nicht "null" sein
 VALUE_NOT_FOUND = Der Wert {0} konnte nicht in {1} gefunden werden
 
 # Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = Das Ephemeris Dateiformat unterstützt keine Mehrfachobjekte
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = Das Ephemeris Dateiformat unterstützt nicht mehrere Weltraumobjekte
 
 # Klobuchar coefficients α or β could not be loaded from {0}
 KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Klobuchar Koeffizienten α oder β konntent nicht von {0} geladen werden
