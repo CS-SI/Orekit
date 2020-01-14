@@ -260,7 +260,7 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = unerwartet zwei Höhenwerte: {
 UNSUPPORTED_PARAMETER_NAME = nicht unterstützter Parametername {0}, unterstützte Namen {1}
 
 # scale factor for parameter {0} is too small: {1}
-TOO_SMALL_SCALE_FOR_PARAMETER = Skalierungfaktor für Parameter {0} ist zu klein: {1}
+TOO_SMALL_SCALE_FOR_PARAMETER = Skalierungsfaktor für Parameter {0} ist zu klein: {1}
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = unbekannter zusätzlicher Zustand "{0}"
@@ -320,10 +320,10 @@ CCSDS_INVALID_FRAME = Koordinatennetz {0} ist nicht gültig im Kontext dieser OD
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = inkonsistente Zeitreferenz im Ephemeris-Block: {0} ≠ {1}
 
 # Inconsistent time systems in the observations blocks: {0} ≠ {1}
-CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = Inkonsistente Zeitsysteme in den Überwachungsblöcken: {0} ≠ {1}
+CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = Inkonsistente Zeitsysteme in den Beobachtungsblöcken: {0} ≠ {1}
 
 # Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
-CCSDS_TDM_INCONSISTENT_DATA_LINE = Inkonsistente Daten in der TDM Datei bei Zeile {0} in Datei {1}.\nEine TDM Zeile sollte wie folgt aussehen: \"keyword = epoch value\".\nWohingegen die momentane Zeile wie folgt aussieht: {2}
+CCSDS_TDM_INCONSISTENT_DATA_LINE = Inkonsistente Daten in der TDM Datei bei Zeile {0} in Datei {1}.\nEine TDM Zeile sollte wie folgt aussehen: \"keyword = epoch value\".\nMomentane Zeile: {2}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = Kein CCSDS TDM Schlagwort bei Zeile {0} in Datei {1} gefunden:\n{2}
@@ -332,7 +332,7 @@ CCSDS_TDM_KEYWORD_NOT_FOUND = Kein CCSDS TDM Schlagwort bei Zeile {0} in Datei {
 CCSDS_TIME_SYSTEM_NOT_READ_YET = Parameter {0} benötigt ein Zeitsystem um interpretiert zu werden
 
 # Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Inkonsistente XML Beobachtungsblock bei Zeile {0} in TDM Date {1}.\nEin TDM Beobachtungsblock sollte wie folgt aussehen:\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Inkonsistente XML Beobachtungsblock bei Zeile {0} in TDM Datum {1}.\nEin TDM Beobachtungsblock sollte wie folgt aussehen:\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
 
 # TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
 CCSDS_TDM_UNKNOWN_FORMAT = Das Format der TDM Datei {0} ist unbekannt. Bitte geben Sie ein Format an: KEYVALUE oder XML
@@ -410,13 +410,13 @@ ORBIT_TYPE_NOT_ALLOWED = Umlaufbahntyp {0} ist hier nicht erlaubt, gültige Type
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = Beschleunigte Bezugssysteme sind nicht als Referenz für Trägheitskräfte geeignet
 
 # method not available in the absence of a central body
-METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = Die Methode ist ohne den Zentralkörper nicht verfügbar
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = Die Methode ist ohne den zentralen Körper nicht verfügbar
 
 # operation not available between frames {0} and {1}
 INCOMPATIBLE_FRAMES = Die Operation ist zwischen den Rahmen {0} und {1} nicht verfügbar
 
 # orbit not defined, state rather contains an absolute position-velocity-acceleration
-UNDEFINED_ORBIT = Der Orbit ist nicht definiert! Der momentane Stand enthält vielmehr eine absolute Positions-Geschwindigkeits-Beschleunigung
+UNDEFINED_ORBIT = Der Orbit ist nicht definiert! Der momentane Stand enthält eine absolute Positions-Geschwindigkeits-Beschleunigung
 
 # absolute position-velocity-acceleration not defined, state rather contains an orbit
 UNDEFINED_ABSOLUTE_PVCOORDINATES = Die absolute Positions-Geschwindigkeits-Beschleunigung wurde nicht definiert! Der momentane Stand enthält einen Orbit
@@ -446,7 +446,7 @@ CCSDS_NO_CORRESPONDING_TIME_SCALE = Das CCSDS Zeitsystem {0} hat keine entsprech
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = Die Benutzung des Zeitsystems {0} in CCSDS Dateien benötigt zusätzliche ICD und ist nicht von Orekit implementiert
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
-NOT_ENOUGH_PROPAGATORS = Das erstellen von Aggregate-Propagator benötigt zumindest einen Bestandteil des Propagator, es wurden keine zur Verfügung gestellt
+NOT_ENOUGH_PROPAGATORS = Das erstellen von AggregatePropagator benötigt zumindest einen Bestandteil des Propagator. Es wurden keine zur Verfügung gestellt
 
 # argument {0} cannot be null
 NULL_ARGUMENT = Das Argument {0} kann nicht "null" sein
