@@ -59,7 +59,22 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
     private final double     rbar;
+    
+    /** Simple constructor with custom force.
+     * @param atmosphere atmospheric model
+     * @param force atmospheric drag force model
+     * @param spacecraft spacecraft model
+     * @param mu         central attraction coefficient
+     */
+    public DSSTAtmosphericDrag(Atmosphere atmosphere, DragForce force, DragSensitive spacecraft, double mu) {
+        //Call to the constructor from superclass using the numerical drag model as ForceModel
+        super("DSST-drag-", GAUSS_THRESHOLD, force, mu);
+        this.atmosphere = atmosphere;
+        this.spacecraft = spacecraft;
 
+        rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+    }
+    
     /** Simple constructor assuming spherical spacecraft.
      * @param atmosphere atmospheric model
      * @param cd drag coefficient
@@ -77,13 +92,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      * @param mu central attraction coefficient
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft, final double mu) {
-
-        //Call to the constructor from superclass using the numerical drag model as ForceModel
-        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft), mu);
-
-        this.atmosphere = atmosphere;
-        this.spacecraft = spacecraft;
-        this.rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        this(atmosphere, new DragForce(atmosphere, spacecraft), spacecraft, mu);
     }
 
     /** Get the atmospheric model.
