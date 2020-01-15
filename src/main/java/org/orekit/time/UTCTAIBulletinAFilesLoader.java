@@ -31,6 +31,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -60,16 +63,29 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
+public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
+        implements UTCTAIOffsetsLoader {
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Build a loader for IERS bulletins A files.
-    * @param supportedNames regular expression for supported files names
-    */
+    /**
+     * Build a loader for IERS bulletins A files. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @param supportedNames regular expression for supported files names
+     */
+    @DefaultDataContext
     public UTCTAIBulletinAFilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Build a loader for IERS bulletins A files.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param manager        provides access to the bulletin A files.
+     */
+    public UTCTAIBulletinAFilesLoader(final String supportedNames,
+                                      final DataProvidersManager manager) {
+        super(supportedNames, manager);
     }
 
     /** {@inheritDoc} */
@@ -77,12 +93,12 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
     public List<OffsetModel> loadOffsets() {
 
         final Parser parser = new Parser();
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        this.feed(parser);
         final SortedMap<Integer, Integer> taiUtc = parser.getTaiUtc();
         final SortedMap<Integer, Double>  ut1Utc = parser.getUt1Utc();
 
         // identify UT1-UTC discontinuities
-        final List<Integer> leapDays = new ArrayList<Integer>();
+        final List<Integer> leapDays = new ArrayList<>();
         Map.Entry<Integer, Double> previous = null;
         for (final Map.Entry<Integer, Double> entry : ut1Utc.entrySet()) {
             if (previous != null) {
@@ -95,7 +111,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
             previous = entry;
         }
 
-        final List<OffsetModel> offsets = new ArrayList<OffsetModel>();
+        final List<OffsetModel> offsets = new ArrayList<>();
 
         if (!taiUtc.isEmpty()) {
 
@@ -360,8 +376,8 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
         /** Simple constructor.
          */
         Parser() {
-            this.taiUtc     = new TreeMap<Integer, Integer>();
-            this.ut1Utc     = new TreeMap<Integer, Double>();
+            this.taiUtc     = new TreeMap<>();
+            this.ut1Utc     = new TreeMap<>();
             this.lineNumber = 0;
         }
 
@@ -395,11 +411,10 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
             lineNumber =  0;
 
             // loop over sections
-            final List<Section> remaining = new ArrayList<Section>();
-            remaining.addAll(Arrays.asList(Section.values()));
-            for (Section section = nextSection(remaining, reader, name);
-                    section != null;
-                    section = nextSection(remaining, reader, name)) {
+            final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
+            for (Section section = nextSection(remaining, reader);
+                 section != null;
+                 section = nextSection(remaining, reader)) {
 
                 if (section == Section.TAI_UTC) {
                     loadTaiUtc(section, reader, name);
@@ -423,11 +438,10 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
         /** Skip to next section header.
          * @param sections sections to check for
          * @param reader reader from where file content is obtained
-         * @param name name of the file (or zip entry)
          * @return the next section or null if no section is found until end of file
          * @exception IOException if data can't be read
          */
-        private Section nextSection(final List<Section> sections, final BufferedReader reader, final String name)
+        private Section nextSection(final List<Section> sections, final BufferedReader reader)
             throws IOException {
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {

@@ -17,11 +17,9 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -62,7 +60,7 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
      */
     public ClockCorrectionsProvider(final GPSOrbitalElements gpsOrbit) {
         this.gpsOrbit = gpsOrbit;
-        this.clockRef = new GNSSDate(gpsOrbit.getWeek(), gpsOrbit.getToc() * 1000.0, SatelliteSystem.GPS).getDate();
+        this.clockRef = gpsOrbit.getDate();
     }
 
     /** {@inheritDoc} */

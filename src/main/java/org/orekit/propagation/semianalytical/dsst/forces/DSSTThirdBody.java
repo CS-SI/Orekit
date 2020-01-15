@@ -36,6 +36,7 @@ import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -150,7 +151,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @param mu central attraction coefficient
-     *  @see org.orekit.bodies.CelestialBodyFactory
+     *  @see CelestialBodies
      */
     public DSSTThirdBody(final CelestialBody body, final double mu) {
         bodyParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,

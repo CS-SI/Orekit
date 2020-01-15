@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import org.orekit.time.TimeScale;
+
 /** Specific version of International Terrestrial Reference Frame.
  * <p>
  * This class represents an ITRF with a specific version, regardless of
@@ -34,12 +36,13 @@ public class VersionedITRF extends Frame {
      * @param version ITRF version this provider should generate
      * @param rawProvider raw ITRF provider
      * @param name name of the frame
+     * @param tt TT time scale.
      * @exception IllegalArgumentException if the parent frame is null
      */
     VersionedITRF(final Frame parent, final ITRFVersion version,
-                  final ITRFProvider rawProvider, final String name)
+                  final ITRFProvider rawProvider, final String name, final TimeScale tt)
         throws IllegalArgumentException {
-        super(parent, new VersionedITRFProvider(version, rawProvider), name);
+        super(parent, new VersionedITRFProvider(version, rawProvider, tt), name);
     }
 
     /** Get the ITRF version.

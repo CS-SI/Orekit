@@ -29,15 +29,17 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** This atmosphere model is the realization of the DTM-2000 model.
@@ -171,13 +173,35 @@ public class DTM2000 implements Atmosphere {
     /** Earth body shape. */
     private BodyShape earth;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** Simple constructor for independent computation.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param parameters the solar and magnetic activity data
+     * @param sun the sun position
+     * @param earth the earth body shape
+     * @see #DTM2000(DTM2000InputParameters, PVCoordinatesProvider, BodyShape, TimeScale)
+     */
+    @DefaultDataContext
+    public DTM2000(final DTM2000InputParameters parameters,
+                   final PVCoordinatesProvider sun, final BodyShape earth) {
+        this(parameters, sun, earth, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
     /** Simple constructor for independent computation.
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
+     * @param utc UTC time scale.
+     * @since 10.1
      */
     public DTM2000(final DTM2000InputParameters parameters,
-                   final PVCoordinatesProvider sun, final BodyShape earth) {
+                   final PVCoordinatesProvider sun,
+                   final BodyShape earth,
+                   final TimeScale utc) {
 
         synchronized (DTM2000.class) {
             // lazy reading of model coefficients
@@ -190,6 +214,7 @@ public class DTM2000 implements Atmosphere {
         this.sun = sun;
         this.inputParams = parameters;
 
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
@@ -331,7 +356,7 @@ public class DTM2000 implements Atmosphere {
         }
 
         // compute day number in current year
-        final int day = date.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
+        final int day = date.getComponents(utc).getDate().getDayOfYear();
         //position in ECEF so we only have to do the transform once
         final Frame ecef = earth.getBodyFrame();
         final Vector3D pEcef = frame.getTransformTo(ecef, date)
@@ -369,7 +394,7 @@ public class DTM2000 implements Atmosphere {
         }
 
         // compute day number in current year
-        final int day = date.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
+        final int day = date.getComponents(utc).getDate().getDayOfYear();
         // position in ECEF so we only have to do the transform once
         final Frame ecef = earth.getBodyFrame();
         final FieldVector3D<T> pEcef = frame.getTransformTo(ecef, date).transformPosition(position);

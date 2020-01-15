@@ -24,6 +24,9 @@
       <action def="luc" type="fix" issue="632" due-to="Evan Ward">
         Fixed projection to ellipsoid at pole.
       </action>
+      <action dev="evan,luc,yannick" type="add" issue="607">
+        Add DataContext, a way to load separate sets of EOP, leap seconds, etc.
+      </action>
       <action def="luc" type="fix" issue="630">
         Improve performance of UnixCompressFilter.
       </action>

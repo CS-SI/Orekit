@@ -24,13 +24,15 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UT1Scale;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -60,14 +62,55 @@ public class GTODProvider implements EOPBasedTransformProvider {
     private final transient TimeScalarFunction gastFunction;
 
     /** Simple constructor.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context} if
+     * {@code eopHistory == null}.
+     *
      * @param conventions IERS conventions to use
      * @param eopHistory EOP history (may be null)
+     * @deprecated use {@link #GTODProvider(IERSConventions, EOPHistory, TimeScales)}
+     * instead.
      */
-    protected GTODProvider(final IERSConventions conventions, final EOPHistory eopHistory) {
-        final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
+    @Deprecated
+    @DefaultDataContext
+    protected GTODProvider(final IERSConventions conventions,
+                           final EOPHistory eopHistory) {
+        this(conventions, eopHistory,
+                eopHistory == null ?
+                        DataContext.getDefault().getTimeScales() :
+                        eopHistory.getTimeScales());
+    }
+
+    /** Simple constructor.
+     * @param conventions IERS conventions to use
+     * @param eopHistory EOP history (may be null)
+     * @param timeScales  set of time scales to use.
+     * @since 10.1
+     */
+    protected GTODProvider(final IERSConventions conventions,
+                           final EOPHistory eopHistory,
+                           final TimeScales timeScales) {
+        final TimeScale ut1 = eopHistory == null ?
+                timeScales.getUTC() : // UT1 wihthout EOP is UTC
+                timeScales.getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
         this.conventions   = conventions;
         this.eopHistory    = eopHistory;
-        this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory);
+        this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory, timeScales);
+    }
+
+    /**
+     * Private constructor.
+     *
+     * @param conventions  IERS conventions to use
+     * @param eopHistory   EOP history (may be null)
+     * @param gastFunction GAST function
+     */
+    private GTODProvider(final IERSConventions conventions,
+                         final EOPHistory eopHistory,
+                         final TimeScalarFunction gastFunction) {
+        this.conventions = conventions;
+        this.eopHistory = eopHistory;
+        this.gastFunction = gastFunction;
     }
 
     /** {@inheritDoc} */
@@ -79,7 +122,8 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public GTODProvider getNonInterpolatingProvider() {
-        return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
+        return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory(),
+                gastFunction);
     }
 
     /** {@inheritDoc} */
@@ -127,11 +171,13 @@ public class GTODProvider implements EOPBasedTransformProvider {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(conventions, eopHistory);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -158,7 +204,8 @@ public class GTODProvider implements EOPBasedTransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new GTODProvider(conventions, eopHistory);
+                return new GTODProvider(conventions, eopHistory,
+                        DataContext.getDefault().getTimeScales());
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

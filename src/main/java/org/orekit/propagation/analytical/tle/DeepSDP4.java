@@ -18,9 +18,11 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 
 
@@ -165,13 +167,33 @@ public class DeepSDP4 extends SDP4 {
     private boolean isDundeeCompliant = true;
 
     /** Constructor for a unique initial TLE.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @see #DeepSDP4(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     public DeepSDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                       final double mass) {
-        super(initialTLE, attitudeProvider, mass);
+                    final double mass) {
+        this(initialTLE, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /** Constructor for a unique initial TLE.
+     * @param initialTLE the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
+     * @since 10.1
+     */
+    public DeepSDP4(final TLE initialTLE,
+                    final AttitudeProvider attitudeProvider,
+                    final double mass,
+                    final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.
@@ -186,10 +208,10 @@ public class DeepSDP4 extends SDP4 {
         final double aqnv = 1.0 / a0dp;
 
         // Compute julian days since 1900
-        final double daysSince1900 =
-            (tle.getDate().durationFrom(AbsoluteDate.JULIAN_EPOCH) +
-             tle.getDate().timeScalesOffset(TimeScalesFactory.getUTC(), TimeScalesFactory.getTT())) / Constants.JULIAN_DAY - 2415020;
-
+        final double daysSince1900 = (tle.getDate()
+                .getComponents(utc)
+                .offsetFrom(DateTimeComponents.JULIAN_EPOCH)) /
+                Constants.JULIAN_DAY - 2415020;
 
         double cc = C1SS;
         double ze = ZES;

@@ -31,23 +31,23 @@
     package data #DDEBD8 {
 
       interface DataProvider {
-        +Pattern GZIP_FILE_PATTERN
-        +Pattern ZIP_ARCHIVE_PATTERN
-        +boolean feed(Pattern supported, DataLoader visitor)
+        +boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager)
       }
-      note right
+      note left
         knows how to retrieve data
         from storage, not parse it
       end note
 
       class DataProvidersManager {
         +String OREKIT_DATA_PATH
-        +DataProvidersManager getInstance()
         +void addDefaultProviders()
         +void addProvider(DataProvider provider)
         +DataProvider removeProvider(Class<? extends DataProvider> providerClass)
         +DataProvider removeProvider(DataProvider provider)
         +void clearProviders()
+        +addFilter(final DataFilter filter)
+        +void clearFilters()
+        +NamedData applyAllFilters(final NamedData original)
         +boolean isSupported(Class<? extends DataProvider> providerClass)
         +boolean isSupported(DataProvider provider)
         +List<DataProvider> getProviders()
@@ -55,8 +55,10 @@
         +void clearLoadedDataNames()
         +boolean feed(String supportedNames, DataLoader loader)
       }
-      note top
-        manages configuration
+      note right
+        manages providers and filters
+        (i.e. knows how to retrieve
+        data from storage)
       end note
 
       interface DataLoader {
@@ -68,7 +70,12 @@
         not retrieve it from storage
       end note
 
+      interface DataFilter {
+         NamedData filter(NamedData original)
+      }
+
       DataProvider "*" <--o "1" DataProvidersManager : manages, feeds
+      DataProvidersManager "1" o--> "*" DataFilter: applies
       DirectoryCrawler --|> DataProvider
       ClassPathCrawler --|> DataProvider
       NetworkCrawler   --|> DataProvider
@@ -77,30 +84,15 @@
 
     }
 
-    package time #DDEBD8 {
-      DataLoader <|-- UTCTAIHistoryFilesLoader
+    package "..." as dummy #DDEBD8 {
+      class "...Loader" as DummyLoader
+      note bottom
+        all Orekit loaders are
+        implemented this way
+      end note
+      DataLoader <|-- DummyLoader
     }
 
-    package frames #DDEBD8 {
-      interface EOPHistoryLoader
-      DataLoader <|.. EOPHistoryLoader
-    }
-
-    package various.other.packages #DDEBD8 {
-      class "...DataLoader" as DummyDataLoader
-      DataLoader <|-- DummyDataLoader
-    }
-
-  }
-
-  package user.application #F3EDF7 {
-    class MyProvider #EAE6F7/B9B3D2
-    class DataBase   #EAE6F7/B9B3D2
-    class Main       #EAE6F7/B9B3D2
-    DataProvider <|-- MyProvider
-    DataProvidersManager <-- Main : configures
-    MyProvider <--* Main
-    MyProvider *--> "1" DataBase
   }
 
 @enduml

@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitMessages;
 
 
 /** Supported Ocean load Deformation coefficients (Love numbers k'<sub>i</sub>).
- * @see GravityFieldFactory
+ * @see GravityFields
  * @since 6.1
  * @author Luc Maisonobe
  */

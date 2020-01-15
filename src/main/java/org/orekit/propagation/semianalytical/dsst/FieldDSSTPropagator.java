@@ -35,8 +35,10 @@ import org.hipparchus.ode.sampling.FieldODEStepHandler;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -47,6 +49,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
@@ -172,11 +175,38 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      *  is not called after creation, the integrated orbit will
      *  follow a Keplerian evolution only.
      *  </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      *  @param field field used by default
      *  @param integrator numerical integrator to use for propagation.
      *  @param propagationType type of orbit to output (mean or osculating).
+     * @see #FieldDSSTPropagator(Field, FieldODEIntegrator, PropagationType,
+     * AttitudeProvider)
      */
+    @DefaultDataContext
     public FieldDSSTPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final PropagationType propagationType) {
+        this(field, integrator, propagationType,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Create a new instance of DSSTPropagator.
+     *  <p>
+     *  After creation, there are no perturbing forces at all.
+     *  This means that if {@link #addForceModel addForceModel}
+     *  is not called after creation, the integrated orbit will
+     *  follow a Keplerian evolution only.
+     *  </p>
+     * @param field field used by default
+     *  @param integrator numerical integrator to use for propagation.
+     * @param propagationType type of orbit to output (mean or osculating).
+     * @param attitudeProvider attitude law to use.
+     * @since 10.1
+     */
+    public FieldDSSTPropagator(final Field<T> field,
+                               final FieldODEIntegrator<T> integrator,
+                               final PropagationType propagationType,
+                               final AttitudeProvider attitudeProvider) {
         super(field, integrator, propagationType);
         this.field  = field;
         forceModels = new ArrayList<DSSTForceModel>();
@@ -184,7 +214,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.MEAN);
-        setAttitudeProvider(DEFAULT_LAW);
+        setAttitudeProvider(attitudeProvider);
         setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
     }
 
@@ -196,10 +226,35 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      *  follow a Keplerian evolution only. Only the mean orbits
      *  will be generated.
      *  </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      *  @param field fied used by default
      *  @param integrator numerical integrator to use for propagation.
+     * @see #FieldDSSTPropagator(Field, FieldODEIntegrator, AttitudeProvider)
      */
+    @DefaultDataContext
     public FieldDSSTPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
+        this(field, integrator,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Create a new instance of DSSTPropagator.
+     *  <p>
+     *  After creation, there are no perturbing forces at all.
+     *  This means that if {@link #addForceModel addForceModel}
+     *  is not called after creation, the integrated orbit will
+     *  follow a Keplerian evolution only. Only the mean orbits
+     *  will be generated.
+     *  </p>
+     * @param field fied used by default
+     *  @param integrator numerical integrator to use for propagation.
+     * @param attitudeProvider attitude law to use.
+     * @since 10.1
+     */
+    public FieldDSSTPropagator(final Field<T> field,
+                               final FieldODEIntegrator<T> integrator,
+                               final AttitudeProvider attitudeProvider) {
         super(field, integrator, PropagationType.MEAN);
         this.field  = field;
         forceModels = new ArrayList<DSSTForceModel>();
@@ -207,7 +262,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.MEAN);
-        setAttitudeProvider(DEFAULT_LAW);
+        setAttitudeProvider(attitudeProvider);
         setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
     }
 

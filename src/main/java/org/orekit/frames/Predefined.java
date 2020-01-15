@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 
-/** Predefined frames provided by {@link FramesFactory}.
+/** Predefined frames provided by {@link Frames}.
  * @author Luc Maisonobe
  */
 public enum Predefined {

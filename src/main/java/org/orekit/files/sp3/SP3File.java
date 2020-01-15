@@ -191,7 +191,6 @@ public class SP3File implements EphemerisFile {
      * @param mu                   is the standard gravitational parameter in m^3 / s^2.
      * @param interpolationSamples number of samples to use in interpolation.
      * @param frameBuilder         for constructing a reference frame from the identifier
-     *                             in the file.
      */
     SP3File(final double mu,
             final int interpolationSamples,

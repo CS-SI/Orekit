@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -56,14 +58,42 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     /** Current mass for initial state (kg). */
     private double mass;
 
-    /** Attitude provider. */
-    private AttitudeProvider attProvider;
-
     /** Type of the orbit used for the propagation.*/
     private PropagationType propagationType;
 
     /** Type of the elements used to define the orbital state.*/
     private PropagationType stateType;
+
+    /** Build a new instance.
+     * <p>
+     * The reference orbit is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, and is also used together
+     * with the {@code positionScale} to convert from the {@link
+     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters.
+     * </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param referenceOrbit reference orbit from which real orbits will be built
+     * @param builder first order integrator builder
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param propagationType type of the orbit used for the propagation (mean or osculating)
+     * @param stateType type of the elements used to define the orbital state (mean or osculating)
+     * @see #DSSTPropagatorBuilder(Orbit, ODEIntegratorBuilder, double, PropagationType,
+     * PropagationType, AttitudeProvider)
+     */
+    @DefaultDataContext
+    public DSSTPropagatorBuilder(final Orbit referenceOrbit,
+                                 final ODEIntegratorBuilder builder,
+                                 final double positionScale,
+                                 final PropagationType propagationType,
+                                 final PropagationType stateType) {
+        this(referenceOrbit, builder, positionScale, propagationType, stateType,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
 
     /** Build a new instance.
      * <p>
@@ -80,17 +110,19 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * (typically set to the expected standard deviation of the position)
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
+     * @param attitudeProvider attitude law.
+     * @since 10.1
      */
     public DSSTPropagatorBuilder(final Orbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
                                  final double positionScale,
                                  final PropagationType propagationType,
-                                 final PropagationType stateType) {
-        super(referenceOrbit, PositionAngle.MEAN, positionScale, true);
+                                 final PropagationType stateType,
+                                 final AttitudeProvider attitudeProvider) {
+        super(referenceOrbit, PositionAngle.MEAN, positionScale, true, attitudeProvider);
         this.builder           = builder;
         this.forceModels       = new ArrayList<DSSTForceModel>();
         this.mass              = Propagator.DEFAULT_MASS;
-        this.attProvider       = Propagator.DEFAULT_LAW;
         this.propagationType   = propagationType;
         this.stateType         = stateType;
     }
@@ -104,8 +136,8 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                                   builder,
                                                   getPositionScale(),
                                                   propagationType,
-                                                  stateType);
-        copyBuilder.setAttitudeProvider(attProvider);
+                                                  stateType,
+                                                  getAttitudeProvider());
         copyBuilder.setMass(mass);
         for (DSSTForceModel model : forceModels) {
             copyBuilder.addForceModel(model);
@@ -127,21 +159,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     public List<DSSTForceModel> getAllForceModels()
     {
         return Collections.unmodifiableList(forceModels);
-    }
-
-    /** Get the attitudeProvider.
-     * @return the attitude provider
-     */
-    public AttitudeProvider getAttitudeProvider()
-    {
-        return attProvider;
-    }
-
-    /** Set the attitude provider.
-     * @param attitudeProvider attitude provider
-     */
-    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
-        this.attProvider = attitudeProvider;
     }
 
     /** Get the mass.
@@ -196,11 +213,13 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
         setParameters(normalizedParameters);
         final EquinoctialOrbit orbit    = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit());
-        final Attitude         attitude = attProvider.getAttitude(orbit, orbit.getDate(), getFrame());
+        final Attitude         attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
         final SpacecraftState  state    = new SpacecraftState(orbit, attitude, mass);
 
-        final DSSTPropagator propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL), propagationType);
-        propagator.setAttitudeProvider(attProvider);
+        final DSSTPropagator propagator = new DSSTPropagator(
+                builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL),
+                propagationType,
+                getAttitudeProvider());
 
         // Configure force models
         if (!hasNewtonianAttraction()) {

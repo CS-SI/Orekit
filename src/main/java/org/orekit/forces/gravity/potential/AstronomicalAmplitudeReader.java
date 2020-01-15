@@ -100,7 +100,7 @@ public class AstronomicalAmplitudeReader implements DataLoader {
         this.columnHf       = columnHf;
         this.scale          = scale;
 
-        this.amplitudesMap  = new HashMap<Integer, Double>();
+        this.amplitudesMap  = new HashMap<>();
 
     }
 

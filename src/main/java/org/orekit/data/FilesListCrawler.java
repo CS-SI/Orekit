@@ -23,7 +23,6 @@ import java.io.InputStream;
 
 
 /** Provider for data files in an explicit list.
-
  * <p>
  * Zip archives entries are supported recursively.
  * </p>

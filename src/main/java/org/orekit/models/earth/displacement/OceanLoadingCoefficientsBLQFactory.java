@@ -29,7 +29,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -56,7 +59,7 @@ import org.orekit.errors.OrekitMessages;
  * @since 9.1
  * @author Luc Maisonobe
  */
-public class OceanLoadingCoefficientsBLQFactory {
+public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoader {
 
     /** Default supported files name pattern for Onsala Space Observatory files in BLQ format. */
     public static final String DEFAULT_BLQ_SUPPORTED_NAMES = "^.+\\.blq$";
@@ -82,13 +85,11 @@ public class OceanLoadingCoefficientsBLQFactory {
         1, 2, 0, 3, 3, 1, 2, 0, 2, 1, 0
     };
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Parsed coefficients. */
     private final List<OceanLoadingCoefficients> coefficients;
 
-    /** Simple constructor.
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
      * <p>
      * Files in BLQ format can be generated using the form at the
      * <a href="http://holt.oso.chalmers.se/loading/">Bos-Scherneck web site</a>,
@@ -96,10 +97,32 @@ public class OceanLoadingCoefficientsBLQFactory {
      * </p>
      * @param supportedNames regular expression for supported files names
      * @see #DEFAULT_BLQ_SUPPORTED_NAMES
+     * @see #OceanLoadingCoefficientsBLQFactory(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public OceanLoadingCoefficientsBLQFactory(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
 
-        this.supportedNames = supportedNames;
+    /**
+     * This constructor allows specification of the source of the BLQ auxiliary data
+     * files.
+     *
+     * <p>
+     * Files in BLQ format can be generated using the form at the
+     * <a href="http://holt.oso.chalmers.se/loading/">Bos-Scherneck web site</a>,
+     * selecting BLQ as the output format.
+     * </p>
+     * @param supportedNames regular expression for supported files names
+     * @param dataProvidersManager provides access to auxiliary data files.
+     * @see #DEFAULT_BLQ_SUPPORTED_NAMES
+     * @since 10.1
+     */
+    public OceanLoadingCoefficientsBLQFactory(
+            final String supportedNames,
+            final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
+
         this.coefficients   = new ArrayList<>();
 
     }
@@ -108,7 +131,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      */
     private void loadsIfNeeded() {
         if (coefficients.isEmpty()) {
-            DataProvidersManager.getInstance().feed(supportedNames, new BLQParser());
+            feed(new BLQParser());
         }
     }
 
@@ -120,10 +143,11 @@ public class OceanLoadingCoefficientsBLQFactory {
         loadsIfNeeded();
 
         // extract sites names from the map
-        final List<String> sites = coefficients.stream().map(c -> c.getSiteName()).collect(Collectors.toList());
-
-        // sort to ensure we have a reproducible order
-        sites.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
+        final List<String> sites = coefficients.stream()
+                .map(OceanLoadingCoefficients::getSiteName)
+                // sort to ensure we have a reproducible order
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList());
 
         return sites;
 
@@ -143,7 +167,7 @@ public class OceanLoadingCoefficientsBLQFactory {
         if (!optional.isPresent()) {
             throw new OrekitException(OrekitMessages.STATION_NOT_FOUND,
                                       site,
-                                      getSites().stream().collect(Collectors.joining(", ")));
+                                      String.join(", ", getSites()));
         }
 
         return optional.get();
@@ -154,7 +178,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      * <p>
      * when completing the web site form, the email received as the following form:
      * </p>
-     * <pre>
+     * <pre>{@literal
      * $$ Ocean loading displacement
      * $$
      * $$ Calculated on holt using olfg/olmpp of H.-G. Scherneck
@@ -209,7 +233,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      * $$ END TABLE
      * Errors:
      * Warnings:
-     * </pre>
+     * }</pre>
      * <p>
      * We only parse blocks 7 lines blocks starting with the lines with the station names
      * and their coordinates and the 6 data lines that follows. Several such blocks may

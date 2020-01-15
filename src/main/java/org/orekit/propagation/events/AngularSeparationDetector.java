@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -27,7 +28,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Detects when spacecraft comes close to a moving beacon, as seen from a moving observer.
  * <p>The main use case for this detector is when the observer is in fact a ground
  * station, modeled as a {@link org.orekit.frames.TopocentricFrame} and when the beacon
- * is the {@link org.orekit.bodies.CelestialBodyFactory#getSun() Sun}, for computing
+ * is the {@link CelestialBodies#getSun() Sun}, for computing
  * interferences for the telemetry link. Another similar case is when the beacon is
  * another spacecraft, for interferences computation.</p>
  * <p>The default handler behavior is to {@link Action#STOP stop}

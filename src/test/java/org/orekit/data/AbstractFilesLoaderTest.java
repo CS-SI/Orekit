@@ -20,13 +20,21 @@ import java.util.SortedSet;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.Utils;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
 public abstract class AbstractFilesLoaderTest {
 
+    protected DataProvidersManager manager =
+            DataContext.getDefault().getDataProvidersManager();
+
+    protected TimeScale utc;
+
     protected void setRoot(String directoryName) {
         Utils.setDataRoot(directoryName);
+        manager = DataContext.getDefault().getDataProvidersManager();
+        utc = DataContext.getDefault().getTimeScales().getUTC();
     }
 
     protected int getMaxGap(SortedSet<? extends TimeStamped> history) {

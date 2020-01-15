@@ -59,7 +59,8 @@ class CIRFProvider implements EOPBasedTransformProvider {
     CIRFProvider(final EOPHistory eopHistory) {
 
         // load the nutation model
-        xysPxy2Function = eopHistory.getConventions().getXYSpXY2Function();
+        xysPxy2Function = eopHistory.getConventions()
+                .getXYSpXY2Function(eopHistory.getTimeScales());
 
         // store correction to the model
         this.eopHistory = eopHistory;

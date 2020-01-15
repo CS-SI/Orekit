@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.exception.DummyLocalizable;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 
 
@@ -42,6 +43,7 @@ import org.orekit.errors.OrekitException;
  * @see NetworkCrawler
  * @see FilesListCrawler
  * @author Luc Maisonobe
+ * @param <T> The type of resource, e.g. File or URL.
  */
 public abstract class AbstractListCrawler<T> implements DataProvider {
 
@@ -95,8 +97,18 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
      */
     protected abstract InputStream getStream(T input) throws IOException;
 
-    /** {@inheritDoc} */
+    @Override
+    @Deprecated
+    @DefaultDataContext
     public boolean feed(final Pattern supported, final DataLoader visitor) {
+        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean feed(final Pattern supported,
+                        final DataLoader visitor,
+                        final DataProvidersManager manager) {
 
         try {
             OrekitException delayedException = null;
@@ -110,14 +122,14 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
                         if (ZIP_ARCHIVE_PATTERN.matcher(fileName).matches()) {
 
                             // browse inside the zip/jar file
-                            getZipJarCrawler(input).feed(supported, visitor);
+                            getZipJarCrawler(input).feed(supported, visitor, manager);
                             loaded = true;
 
                         } else {
 
                             // apply all registered filters
                             NamedData data = new NamedData(fileName, () -> getStream(input));
-                            data = DataProvidersManager.getInstance().applyAllFilters(data);
+                            data = manager.applyAllFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file

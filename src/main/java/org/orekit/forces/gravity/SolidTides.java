@@ -33,6 +33,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.time.TimeScales;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -96,9 +97,10 @@ public class SolidTides extends AbstractForceModel {
                       final double step, final int nbPoints,
                       final IERSConventions conventions, final UT1Scale ut1,
                       final CelestialBody... bodies) {
+        final TimeScales timeScales = ut1.getEOPHistory().getTimeScales();
         final SolidTidesField raw =
                 new SolidTidesField(conventions.getLoveNumbers(),
-                                    conventions.getTideFrequencyDependenceFunction(ut1),
+                                    conventions.getTideFrequencyDependenceFunction(ut1, timeScales),
                                     conventions.getPermanentTide(),
                                     poleTide ? conventions.getSolidPoleTide(ut1.getEOPHistory()) : null,
                                              centralBodyFrame, ae, mu, centralTideSystem, bodies);

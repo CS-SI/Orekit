@@ -20,10 +20,11 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -76,7 +77,7 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
         private double mu;
 
         /** The attitude provider. */
-        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        private AttitudeProvider attitudeProvider;
 
         /** The mass. */
         private double mass = DEFAULT_MASS;
@@ -102,17 +103,21 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
          * </p>
          *
          * @param sbasOrbElt the SBAS orbital elements to be used by the SBAS propagator.
+         * @param frames     set of reference frames to use to initialize {@link
+         *                   #ecef(Frame)}, {@link #eci(Frame)}, and {@link
+         *                   #attitudeProvider(AttitudeProvider)}.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mu(double coefficient)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
          */
-        public Builder(final SBASOrbitalElements sbasOrbElt) {
+        public Builder(final SBASOrbitalElements sbasOrbElt, final Frames frames) {
             this.orbit = sbasOrbElt;
-            this.eci   = FramesFactory.getEME2000();
-            this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            this.eci   = frames.getEME2000();
+            this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
             this.mu    = SBASOrbitalElements.SBAS_MU;
+            this.attitudeProvider = new InertialProvider(eci);
         }
 
         /** Sets the attitude provider.

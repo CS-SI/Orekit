@@ -163,13 +163,13 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getReferenceDate() {
-        return AbsoluteDate.J2000_EPOCH;
+        return AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     /** {@inheritDoc} */
     @Override
     public double getOffset(final AbsoluteDate date) {
-        return date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        return date.durationFrom(getReferenceDate());
     }
 
     /** {@inheritDoc} */

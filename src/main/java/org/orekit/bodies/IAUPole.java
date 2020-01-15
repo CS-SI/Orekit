@@ -39,7 +39,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * href="http://astrogeology.usgs.gov/Projects/WGCCRE/">working group
  * site</a>.
  * </p>
- * @see CelestialBodyFactory
+ * @see CelestialBodies
  * @author Luc Maisonobe
  */
 public interface IAUPole extends Serializable {

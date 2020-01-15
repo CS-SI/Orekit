@@ -24,10 +24,12 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
 /** The Vienna3 tropospheric delay model for radio techniques.
@@ -63,18 +65,44 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     /** Geodetic site longitude, radians.*/
     private final double longitude;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** Build a new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
+     * @param zenithDelay Values of hydrostatic and wet delays
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude geodetic latitude of the station, in radians
+     * @see #ViennaThreeModel(double[], double[], double, double, TimeScale)
+     */
+    @DefaultDataContext
+    public ViennaThreeModel(final double[] coefficientA, final double[] zenithDelay,
+                            final double latitude, final double longitude) {
+        this(coefficientA, zenithDelay, latitude, longitude,
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
+
     /** Build a new instance.
      * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
      * @param zenithDelay Values of hydrostatic and wet delays
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
+     * @param utc UTC time scale.
+     * @since 10.1
      */
-    public ViennaThreeModel(final double[] coefficientA, final double[] zenithDelay,
-                          final double latitude, final double longitude) {
+    public ViennaThreeModel(final double[] coefficientA,
+                            final double[] zenithDelay,
+                            final double latitude,
+                            final double longitude,
+                            final TimeScale utc) {
         this.coefficientsA = coefficientA.clone();
         this.zenithDelay   = zenithDelay.clone();
         this.latitude      = latitude;
         this.longitude     = longitude;
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
@@ -82,7 +110,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     public double[] mappingFactors(final double elevation, final double height,
                                    final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
@@ -169,7 +197,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
         final T zero         = field.getZero();
 
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))

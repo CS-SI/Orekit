@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.orbits.Orbit;
@@ -142,7 +143,8 @@ public class AlongTrackAiming implements TileAiming {
                                                                                      final boolean isAscending) {
 
         // find the span of the next half track
-        final Propagator propagator = new KeplerianPropagator(orbit);
+        final Propagator propagator =
+                new KeplerianPropagator(orbit, new InertialProvider(orbit.getFrame()));
         final HalfTrackSpanHandler handler = new HalfTrackSpanHandler(isAscending);
         final LatitudeExtremumDetector detector =
                         new LatitudeExtremumDetector(0.25 * orbit.getKeplerianPeriod(), 1.0e-3, ellipsoid).

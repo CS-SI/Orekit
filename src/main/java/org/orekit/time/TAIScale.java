@@ -19,7 +19,7 @@ package org.orekit.time;
 import org.hipparchus.RealFieldElement;
 
 /** International Atomic Time.
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate

@@ -20,6 +20,7 @@ package org.orekit.files.ccsds;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -66,6 +67,9 @@ public abstract class ODMFile {
 
     /** Initial Date for MET or MRT time systems. */
     private AbsoluteDate missionReferenceDate;
+
+    /** Data context. */
+    private DataContext dataContext;
 
     /** ODMFile constructor. */
     public ODMFile() {
@@ -238,6 +242,24 @@ public abstract class ODMFile {
      */
     void setOriginator(final String originator) {
         this.originator = originator;
+    }
+
+    /**
+     * Get the data context.
+     *
+     * @return the data context used for creating frames, time scales, etc.
+     */
+    public DataContext getDataContext() {
+        return dataContext;
+    }
+
+    /**
+     * Set the data context.
+     *
+     * @param dataContext used for creating frames, time scales, etc.
+     */
+    void setDataContext(final DataContext dataContext) {
+        this.dataContext = dataContext;
     }
 
 }

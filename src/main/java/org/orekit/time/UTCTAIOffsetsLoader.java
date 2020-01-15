@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /** Interface for loading UTC-TAI offsets data files.
@@ -29,5 +31,25 @@ public interface UTCTAIOffsetsLoader {
      * prior to 1972 are missing, they will be inserted automatically)
      */
     List<OffsetModel> loadOffsets();
+
+    /**
+     * Interface for parsing UTC-TAI offsets from a stream.
+     *
+     * @author Evan Ward
+     * @since 10.1
+     */
+    interface Parser {
+
+        /**
+         * Parse leap seconds from the input stream.
+         *
+         * @param input stream to parse.
+         * @param name  of the input stream to use in error messages.
+         * @return parsed UTC-TAI offsets.
+         * @throws IOException if {@code input} throws one during parsing.
+         */
+        List<OffsetModel> parse(InputStream input, String name) throws IOException;
+
+    }
 
 }

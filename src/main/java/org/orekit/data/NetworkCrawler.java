@@ -28,7 +28,6 @@ import org.orekit.errors.OrekitException;
 
 
 /** Provider for data files directly fetched from network.
-
  * <p>
  * This class handles a list of URLs pointing to data files or zip/jar on
  * the net. Since the net is not a tree structure the list elements

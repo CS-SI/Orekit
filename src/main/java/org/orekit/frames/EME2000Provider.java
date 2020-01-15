@@ -52,7 +52,7 @@ class EME2000Provider extends FixedTransformProvider {
     protected EME2000Provider() {
 
         // build the bias transform
-        super(new Transform(AbsoluteDate.J2000_EPOCH,
+        super(new Transform(AbsoluteDate.ARBITRARY_EPOCH,
                             new Rotation(Vector3D.PLUS_I, D_EPSILON_B, RotationConvention.VECTOR_OPERATOR).
                             compose(new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0), RotationConvention.VECTOR_OPERATOR).
                                     compose(new Rotation(Vector3D.PLUS_K, -ALPHA_0, RotationConvention.VECTOR_OPERATOR), RotationConvention.VECTOR_OPERATOR),

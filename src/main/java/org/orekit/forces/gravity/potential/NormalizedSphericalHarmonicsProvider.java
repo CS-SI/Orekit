@@ -20,7 +20,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
 /** Interface used to provide normalized spherical harmonics coefficients.
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Luc Maisonobe
  * @since 6.0
  */
