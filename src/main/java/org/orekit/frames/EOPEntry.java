@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -83,6 +84,7 @@ public class EOPEntry implements TimeStamped, Serializable {
      * double, double, double, ITRFVersion, AbsoluteDate)} instead.
      */
     @Deprecated
+    @DefaultDataContext
     public EOPEntry(final int mjd, final double dt, final double lod,
                     final double x, final double y,
                     final double ddPsi, final double ddEps,

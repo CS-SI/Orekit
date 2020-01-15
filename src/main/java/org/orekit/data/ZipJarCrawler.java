@@ -32,6 +32,7 @@ import java.util.zip.ZipInputStream;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 
 
@@ -132,6 +133,7 @@ public class ZipJarCrawler implements DataProvider {
 
     @Override
     @Deprecated
+    @DefaultDataContext
     public boolean feed(final Pattern supported, final DataLoader visitor) {
         return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
     }

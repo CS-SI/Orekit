@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
@@ -90,6 +91,7 @@ public class GLONASSEphemeris implements GLONASSOrbitalElements {
      * @see #GLONASSEphemeris(int, int, double, double, double, double, double, double,
      * double, double, double, double, AbsoluteDate)
      */
+    @DefaultDataContext
     public GLONASSEphemeris(final int n4, final int nt, final double tb,
                             final double x, final double xDot, final double xDotDot,
                             final double y, final double yDot, final double yDotDot,

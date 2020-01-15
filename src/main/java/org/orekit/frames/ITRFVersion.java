@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -144,6 +145,7 @@ public enum ITRFVersion {
      * @return transform from {@code origin} to {@code destination}
      * @see #getConverter(ITRFVersion, ITRFVersion, TimeScale)
      */
+    @DefaultDataContext
     public static Converter getConverter(final ITRFVersion origin, final ITRFVersion destination) {
         return getConverter(origin, destination,
                 DataContext.getDefault().getTimeScales().getTT());

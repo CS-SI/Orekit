@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -89,6 +90,7 @@ public class GPSPropagator extends AbstractGNSSPropagator {
          * @see #ecef(Frame bodyFixed)
          * @see #Builder(GPSOrbitalElements, Frames)
          */
+        @DefaultDataContext
         public Builder(final GPSOrbitalElements gpsOrbElt) {
             this(gpsOrbElt, DataContext.getDefault().getFrames());
         }

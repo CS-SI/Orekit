@@ -55,6 +55,9 @@
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
     <!-- sonar related properties -->
     <sonar.host.url>https://sonar.orekit.org/</sonar.host.url>
+    <!-- for building javac plugin -->
+    <tools.jar.dir>${java.home}/../lib/</tools.jar.dir>
+    <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
 
   <developers>
@@ -350,8 +353,46 @@
         <configuration>
           <source>${orekit.compiler.source}</source>
           <target>${orekit.compiler.target}</target>
-          <compilerArgument>-Xlint:deprecation</compilerArgument>
+          <showWarnings>true</showWarnings>
+          <compilerArgs>
+            <arg>-Xlint:deprecation</arg>
+            <arg>-Xplugin:dataContextPlugin</arg>
+          </compilerArgs>
         </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <excludes>
+                <!-- don't recompile the compiler plugin. -->
+                <exclude>org/orekit/compiler/**</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- need to compile these two packages before the rest so that the compiler
+                 plugin will work. -->
+            <id>plugin-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <!-- the phase before compile. -->
+            <phase>process-resources</phase>
+            <configuration>
+              <includes>
+                <include>org/orekit/annotation/**</include>
+                <include>org/orekit/compiler/**</include>
+              </includes>
+              <compilerArgs>
+                <arg>-Xlint:deprecation</arg>
+                <!-- Add the Java compiler to the classpath. This avoids creating a system
+                     dependency which is inherited by projects using Orekit. -->
+                <arg>-classpath</arg>
+                <arg>${tools.jar.path}</arg>
+              </compilerArgs>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -454,6 +495,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${orekit.maven-surefire-plugin.version}</version>
+        <configuration>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${tools.jar.path}</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -471,7 +517,13 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
-          <additionalOptions>--allow-script-in-comments -header &apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</additionalOptions>
+          <additionalOptions>
+            <option>--allow-script-in-comments</option>
+            <option>-header</option>
+            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>-extdirs</option>
+            <option>${tools.jar.dir}</option>
+          </additionalOptions>
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
@@ -706,7 +758,13 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
-          <additionalOptions>--allow-script-in-comments -header &apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</additionalOptions>
+          <additionalOptions>
+            <option>--allow-script-in-comments</option>
+            <option>-header</option>
+            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>-extdirs</option>
+            <option>${tools.jar.dir}</option>
+          </additionalOptions>
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>

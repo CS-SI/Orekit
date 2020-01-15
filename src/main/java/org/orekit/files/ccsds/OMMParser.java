@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -75,9 +76,53 @@ public class OMMParser extends ODMParser {
      * <p>This method uses the {@link DataContext#getDefault() default data context}. See
      * {@link #withDataContext(DataContext)}.
      */
+    @DefaultDataContext
     public OMMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "",
-                DataContext.getDefault());
+        this(DataContext.getDefault());
+    }
+
+    /** Constructor with data context.
+     * <p>
+     * This class is immutable, and hence thread safe. When parts
+     * must be changed, such as reference date for Mission Elapsed Time or
+     * Mission Relative Time time systems, or the gravitational coefficient or
+     * the IERS conventions, the various {@code withXxx} methods must be called,
+     * which create a new immutable instance with the new parameters. This
+     * is a combination of the
+     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
+     * pattern</a> and a
+     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * interface</a>.
+     * </p>
+     * <p>
+     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
+     * If such time systems are used, it must be initialized before parsing by calling {@link
+     * #withMissionReferenceDate(AbsoluteDate)}.
+     * </p>
+     * <p>
+     * The gravitational coefficient is not set here. If it is needed in order
+     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
+     * be initialized before parsing by calling {@link #withMu(double)}.
+     * </p>
+     * <p>
+     * The IERS conventions to use is not set here. If it is needed in order to
+     * parse some reference frames or UT1 time scale, it must be initialized before
+     * parsing by calling {@link #withConventions(IERSConventions)}.
+     * </p>
+     * <p>
+     * The international designator parameters (launch year, launch number and
+     * launch piece) are not set here. If they are needed, they must be initialized before
+     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
+     * </p>
+     *
+     * @param dataContext used by the parser.
+     *
+     * @see #OMMParser()
+     * @see #withDataContext(DataContext)
+     * @since 10.1
+     */
+    public OMMParser(final DataContext dataContext) {
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", dataContext);
     }
 
     /** Complete constructor.

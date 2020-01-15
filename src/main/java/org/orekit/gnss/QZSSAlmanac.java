@@ -17,6 +17,7 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.QZSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -99,6 +100,7 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
      * @see #QZSSAlmanac(String, int, int, double, double, double, double, double, double,
      * double, double, double, double, int, AbsoluteDate)
      */
+    @DefaultDataContext
     public QZSSAlmanac(final String source, final int prn,
                        final int week, final double toa,
                        final double sqa, final double ecc, final double inc,

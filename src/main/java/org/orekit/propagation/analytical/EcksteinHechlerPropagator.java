@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -104,6 +105,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider,
      * UnnormalizedSphericalHarmonicsProvider)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
@@ -157,6 +159,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
      * double, double, double, double, double)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
@@ -176,6 +179,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double,
      * UnnormalizedSphericalHarmonicsProvider)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
@@ -208,6 +212,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
      * double, double, double, double, double)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,

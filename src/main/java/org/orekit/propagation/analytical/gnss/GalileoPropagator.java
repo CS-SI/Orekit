@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -90,6 +91,7 @@ public class GalileoPropagator extends AbstractGNSSPropagator {
          * @see #ecef(Frame bodyFixed)
          * @see #Builder(GalileoOrbitalElements, Frames)
          */
+        @DefaultDataContext
         public Builder(final GalileoOrbitalElements galileoOrbElt) {
             this(galileoOrbElt, DataContext.getDefault().getFrames());
         }

@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -137,6 +138,7 @@ public class FundamentalNutationArguments implements Serializable {
      * @see #FundamentalNutationArguments(IERSConventions, TimeScale, List, TimeScales)
      * @see #FundamentalNutationArguments(IERSConventions, TimeScale, InputStream, String, TimeScales)
      */
+    @DefaultDataContext
     public FundamentalNutationArguments(final IERSConventions conventions,
                                         final TimeScale timeScale,
                                         final InputStream stream, final String name) {
@@ -176,6 +178,7 @@ public class FundamentalNutationArguments implements Serializable {
      * @since 6.1
      * @see #FundamentalNutationArguments(IERSConventions, TimeScale, List, TimeScales)
      */
+    @DefaultDataContext
     public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
                                         final List<double[]> coefficients) {
         this(conventions, timeScale, coefficients,
@@ -447,6 +450,7 @@ public class FundamentalNutationArguments implements Serializable {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(conventions, timeScale,
                                       Arrays.asList(lCoefficients, lPrimeCoefficients, fCoefficients,
@@ -457,6 +461,7 @@ public class FundamentalNutationArguments implements Serializable {
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */

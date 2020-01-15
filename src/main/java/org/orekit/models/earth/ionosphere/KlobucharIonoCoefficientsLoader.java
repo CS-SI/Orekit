@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
@@ -84,6 +85,7 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
      *                       with Klobuchar coefficients.
      * @see #KlobucharIonoCoefficientsLoader(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public KlobucharIonoCoefficientsLoader(final String supportedNames) {
         this(supportedNames, DataContext.getDefault().getDataProvidersManager());
     }
@@ -109,6 +111,7 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
      * @see #KlobucharIonoCoefficientsLoader(String, DataProvidersManager)
      * @see #KlobucharIonoCoefficientsLoader(String)
      */
+    @DefaultDataContext
     public KlobucharIonoCoefficientsLoader() {
         this(DEFAULT_SUPPORTED_NAMES);
     }

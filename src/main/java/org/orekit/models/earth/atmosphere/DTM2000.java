@@ -29,6 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -184,6 +185,7 @@ public class DTM2000 implements Atmosphere {
      * @param earth the earth body shape
      * @see #DTM2000(DTM2000InputParameters, PVCoordinatesProvider, BodyShape, TimeScale)
      */
+    @DefaultDataContext
     public DTM2000(final DTM2000InputParameters parameters,
                    final PVCoordinatesProvider sun, final BodyShape earth) {
         this(parameters, sun, earth, DataContext.getDefault().getTimeScales().getUTC());

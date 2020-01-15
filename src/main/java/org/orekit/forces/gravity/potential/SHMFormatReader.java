@@ -28,6 +28,7 @@ import java.util.Locale;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -78,6 +79,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
      * @see #SHMFormatReader(String, boolean, TimeScale)
      */
+    @DefaultDataContext
     public SHMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         this(supportedNames, missingCoefficientsAllowed,
                 DataContext.getDefault().getTimeScales().getTT());

@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
@@ -95,6 +96,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
      * @see #loadData()
      * @see #SEMParser(String, DataProvidersManager, TimeScales)
      */
+    @DefaultDataContext
     public SEMParser(final String supportedNames) {
         this(supportedNames,
                 DataContext.getDefault().getDataProvidersManager(),

@@ -30,6 +30,7 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -125,6 +126,7 @@ public class RinexLoader {
      * @param supportedNames regular expression for supported files names
      * @see #RinexLoader(String, DataProvidersManager, TimeScales)
      */
+    @DefaultDataContext
     public RinexLoader(final String supportedNames) {
         this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
                 DataContext.getDefault().getTimeScales());
@@ -157,6 +159,7 @@ public class RinexLoader {
      * @param name name of the file (or zip entry)
      * @see #RinexLoader(InputStream, String, TimeScales)
      */
+    @DefaultDataContext
     public RinexLoader(final InputStream input, final String name) {
         this(input, name, DataContext.getDefault().getTimeScales());
     }

@@ -23,6 +23,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -68,6 +69,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
      * @param latitude geodetic latitude of the station, in radians
      * @see #ViennaOneModel(double[], double[], double, TimeScale)
      */
+    @DefaultDataContext
     public ViennaOneModel(final double[] coefficientA, final double[] zenithDelay,
                           final double latitude) {
         this(coefficientA, zenithDelay, latitude,

@@ -35,6 +35,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
@@ -170,6 +171,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      *                       DataLoader)}.
      * @see #GlobalIonosphereMapModel(String, DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public GlobalIonosphereMapModel(final String supportedNames) {
         this(supportedNames,
                 DataContext.getDefault().getDataProvidersManager(),

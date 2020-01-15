@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -75,6 +76,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * @see #NumericalPropagatorBuilder(Orbit, ODEIntegratorBuilder, PositionAngle,
      * double, AttitudeProvider)
      */
+    @DefaultDataContext
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
                                       final PositionAngle positionAngle,

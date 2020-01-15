@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -169,6 +170,7 @@ public enum CcsdsTimeScale {
      * @return parsed {@code date}.
      * @see #parseDate(String, IERSConventions, AbsoluteDate, TimeScales)
      */
+    @DefaultDataContext
     public AbsoluteDate parseDate(final String date,
                                   final IERSConventions conventions,
                                   final AbsoluteDate missionReferenceDate) {
@@ -201,6 +203,7 @@ public enum CcsdsTimeScale {
      * @param conventions IERS Conventions for the {@link #GMST} and {@link #UT1} scales.
      * @return the time scale.
      */
+    @DefaultDataContext
     public TimeScale getTimeScale(final IERSConventions conventions) {
         return getTimeScale(conventions, DataContext.getDefault().getTimeScales());
     }

@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -100,6 +101,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
      * @see #GRGSFormatReader(String, boolean, TimeScale)
      */
+    @DefaultDataContext
     public GRGSFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         this(supportedNames, missingCoefficientsAllowed,
                 DataContext.getDefault().getTimeScales().getTT());

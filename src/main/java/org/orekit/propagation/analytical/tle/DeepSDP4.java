@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -174,6 +175,7 @@ public class DeepSDP4 extends SDP4 {
      * @param mass spacecraft mass (kg)
      * @see #DeepSDP4(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     public DeepSDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                     final double mass) {
         this(initialTLE, attitudeProvider, mass,

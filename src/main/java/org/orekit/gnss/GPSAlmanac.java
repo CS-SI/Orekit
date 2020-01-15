@@ -17,6 +17,7 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -99,6 +100,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
      * @see #GPSAlmanac(String, int, int, int, double, double, double, double, double,
      * double, double, double, double, double, int, int, int, AbsoluteDate)
      */
+    @DefaultDataContext
     public GPSAlmanac(final String source, final int prn, final int svn,
                       final int week, final double toa,
                       final double sqa, final double ecc, final double inc,

@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
@@ -256,6 +257,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
      * @see #JPLEphemeridesLoader(String, EphemerisType, DataProvidersManager, TimeScales,
      * Frame)
      */
+    @DefaultDataContext
     public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
         this(supportedNames, generateType,
                 DataContext.getDefault().getDataProvidersManager(),

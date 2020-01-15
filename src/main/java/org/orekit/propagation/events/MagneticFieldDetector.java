@@ -17,6 +17,7 @@
 
 package org.orekit.propagation.events;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
@@ -30,6 +31,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.time.UTCScale;
 
 /** Detector for South-Atlantic anomaly frontier crossing.
  * <p>
@@ -74,6 +76,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
+    @DefaultDataContext
     public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body)
         throws OrekitIllegalArgumentException {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, type, body, false);
@@ -93,6 +96,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
+    @DefaultDataContext
     public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
         throws OrekitIllegalArgumentException {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, type, body, seaLevel);
@@ -111,6 +115,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
+    @DefaultDataContext
     public MagneticFieldDetector(final double maxCheck, final double threshold, final double limit,
                                  final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
         throws OrekitIllegalArgumentException {

@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -104,6 +105,7 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
      * @see #GLONASSAlmanac(int, int, int, int, int, double, double, double, double,
      * double, double, double, double, double, double, TimeScale)
      */
+    @DefaultDataContext
     public GLONASSAlmanac(final int channel, final int health,
                           final int day, final int month, final int year,
                           final double ta, final double lambda,

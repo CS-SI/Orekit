@@ -33,6 +33,7 @@ import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -142,6 +143,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
      * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
      * DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public GlobalPressureTemperature2Model(final String supportedNames, final double latitude,
                                            final double longitude, final Geoid geoid) {
         this(supportedNames, latitude, longitude, geoid,
@@ -206,6 +208,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
      * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
      * DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public GlobalPressureTemperature2Model(final double latitude, final double longitude, final Geoid geoid) {
         this(DEFAULT_SUPPORTED_NAMES, latitude, longitude, geoid);
     }

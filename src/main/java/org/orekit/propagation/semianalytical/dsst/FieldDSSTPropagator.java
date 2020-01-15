@@ -35,6 +35,7 @@ import org.hipparchus.ode.sampling.FieldODEStepHandler;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
@@ -183,6 +184,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @see #FieldDSSTPropagator(Field, FieldODEIntegrator, PropagationType,
      * AttitudeProvider)
      */
+    @DefaultDataContext
     public FieldDSSTPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final PropagationType propagationType) {
         this(field, integrator, propagationType,
                 Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
@@ -231,6 +233,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      *  @param integrator numerical integrator to use for propagation.
      * @see #FieldDSSTPropagator(Field, FieldODEIntegrator, AttitudeProvider)
      */
+    @DefaultDataContext
     public FieldDSSTPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
         this(field, integrator,
                 Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));

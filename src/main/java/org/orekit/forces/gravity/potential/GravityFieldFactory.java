@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -73,6 +74,7 @@ public class GravityFieldFactory {
      * @return the gravity fields used by this factory.
      * @since 10.1
      */
+    @DefaultDataContext
     public static LazyLoadedGravityFields getGravityFields() {
         return DataContext.getDefault().getGravityFields();
     }
@@ -82,6 +84,7 @@ public class GravityFieldFactory {
      * @see #addDefaultPotentialCoefficientsReaders()
      * @see #clearPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void addPotentialCoefficientsReader(final PotentialCoefficientsReader reader) {
         getGravityFields().addPotentialCoefficientsReader(reader);
     }
@@ -95,6 +98,7 @@ public class GravityFieldFactory {
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #clearPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void addDefaultPotentialCoefficientsReaders() {
         getGravityFields().addDefaultPotentialCoefficientsReaders();
     }
@@ -103,6 +107,7 @@ public class GravityFieldFactory {
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #addDefaultPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void clearPotentialCoefficientsReaders() {
         getGravityFields().clearPotentialCoefficientsReaders();
     }
@@ -112,6 +117,7 @@ public class GravityFieldFactory {
      * @see #addDefaultPotentialCoefficientsReaders()
      * @see #clearPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void addOceanTidesReader(final OceanTidesReader reader) {
         getGravityFields().addOceanTidesReader(reader);
     }
@@ -120,6 +126,7 @@ public class GravityFieldFactory {
      * @param oldc ocean load deformation coefficients
      * @see #getOceanLoadDeformationCoefficients()
      */
+    @DefaultDataContext
     public static void configureOceanLoadDeformationCoefficients(final OceanLoadDeformationCoefficients oldc) {
         getGravityFields().configureOceanLoadDeformationCoefficients(oldc);
     }
@@ -134,6 +141,7 @@ public class GravityFieldFactory {
      * @return ocean load deformation coefficients
      * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
      */
+    @DefaultDataContext
     public static OceanLoadDeformationCoefficients getOceanLoadDeformationCoefficients() {
         return getGravityFields().getOceanLoadDeformationCoefficients();
     }
@@ -163,6 +171,7 @@ public class GravityFieldFactory {
      * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
      * @see #getOceanLoadDeformationCoefficients()
      */
+    @DefaultDataContext
     public static void addDefaultOceanTidesReaders() {
         getGravityFields().addDefaultOceanTidesReaders();
     }
@@ -171,6 +180,7 @@ public class GravityFieldFactory {
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #addDefaultPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void clearOceanTidesReaders() {
         getGravityFields().clearOceanTidesReaders();
     }
@@ -190,6 +200,7 @@ public class GravityFieldFactory {
      * @since 6.0
      * @see #getNormalizedProvider(int, int)
      */
+    @DefaultDataContext
     public static NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree,
                                                                                      final int order) {
         return getGravityFields().getConstantNormalizedProvider(degree, order);
@@ -210,6 +221,7 @@ public class GravityFieldFactory {
      * @since 6.0
      * @see #getConstantNormalizedProvider(int, int)
      */
+    @DefaultDataContext
     public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final int degree,
                                                                              final int order) {
         return getGravityFields().getNormalizedProvider(degree, order);
@@ -230,6 +242,7 @@ public class GravityFieldFactory {
      * @since 6.0
      * @see #getUnnormalizedProvider(int, int)
      */
+    @DefaultDataContext
     public static UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree,
                                                                                          final int order) {
         return getGravityFields().getConstantUnnormalizedProvider(degree, order);
@@ -250,6 +263,7 @@ public class GravityFieldFactory {
      * @since 6.0
      * @see #getConstantUnnormalizedProvider(int, int)
      */
+    @DefaultDataContext
     public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final int degree,
                                                                                  final int order) {
         return getGravityFields().getUnnormalizedProvider(degree, order);
@@ -269,6 +283,7 @@ public class GravityFieldFactory {
      * @return a reader containing already loaded data
      * @since 6.0
      */
+    @DefaultDataContext
     public static PotentialCoefficientsReader readGravityField(final int maxParseDegree,
                                                                final int maxParseOrder) {
         return getGravityFields().readGravityField(maxParseDegree, maxParseOrder);
@@ -296,6 +311,7 @@ public class GravityFieldFactory {
      * @return list of tides waves containing already loaded data
      * @since 6.1
      */
+    @DefaultDataContext
     public static List<OceanTidesWave> getOceanTidesWaves(final int degree, final int order) {
         return getGravityFields().getOceanTidesWaves(degree, order);
     }

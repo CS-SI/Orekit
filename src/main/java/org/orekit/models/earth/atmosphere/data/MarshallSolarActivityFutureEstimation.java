@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
@@ -159,6 +160,7 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
      * @param strengthLevel selected strength level of activity
      * @see #MarshallSolarActivityFutureEstimation(String, StrengthLevel, DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public MarshallSolarActivityFutureEstimation(final String supportedNames,
                                                  final StrengthLevel strengthLevel) {
         this(supportedNames, strengthLevel,

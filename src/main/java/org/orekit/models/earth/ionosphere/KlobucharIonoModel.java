@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
@@ -85,6 +86,7 @@ public class KlobucharIonoModel implements IonosphericModel {
      * @param beta coefficients of a cubic equation representing the period of the model.
      * @see #KlobucharIonoModel(double[], double[], TimeScale)
      */
+    @DefaultDataContext
     public KlobucharIonoModel(final double[] alpha, final double[] beta) {
         this(alpha, beta, DataContext.getDefault().getTimeScales().getGPS());
     }

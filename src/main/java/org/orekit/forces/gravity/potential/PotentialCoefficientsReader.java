@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
@@ -93,6 +94,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param missingCoefficientsAllowed allow missing coefficients in the input data
      * @see #PotentialCoefficientsReader(String, boolean, TimeScale)
      */
+    @DefaultDataContext
     protected PotentialCoefficientsReader(final String supportedNames,
                                           final boolean missingCoefficientsAllowed) {
         this(supportedNames, missingCoefficientsAllowed,

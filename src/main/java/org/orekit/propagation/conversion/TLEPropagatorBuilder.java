@@ -18,6 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -92,6 +93,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * @since 7.1
      * @see #TLEPropagatorBuilder(TLE, PositionAngle, double, DataContext)
      */
+    @DefaultDataContext
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
                                 final double positionScale) {
         this(templateTLE, positionAngle, positionScale, DataContext.getDefault());

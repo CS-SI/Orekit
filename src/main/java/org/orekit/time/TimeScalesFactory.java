@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.LazyLoadedEop;
@@ -51,6 +52,7 @@ public class TimeScalesFactory implements Serializable {
      *
      * @return the time scales used by this factory.
      */
+    @DefaultDataContext
     public static LazyLoadedTimeScales getTimeScales() {
         return DataContext.getDefault().getTimeScales();
     }
@@ -64,6 +66,7 @@ public class TimeScalesFactory implements Serializable {
      * @see #clearUTCTAIOffsetsLoaders()
      * @since 7.1
      */
+    @DefaultDataContext
     public static void addUTCTAIOffsetsLoader(final UTCTAIOffsetsLoader loader) {
         getTimeScales().addUTCTAIOffsetsLoader(loader);
     }
@@ -87,6 +90,7 @@ public class TimeScalesFactory implements Serializable {
      * @see #clearUTCTAIOffsetsLoaders()
      * @since 7.1
      */
+    @DefaultDataContext
     public static void addDefaultUTCTAIOffsetsLoaders() {
         getTimeScales().addDefaultUTCTAIOffsetsLoaders();
     }
@@ -97,6 +101,7 @@ public class TimeScalesFactory implements Serializable {
      * @see #addDefaultUTCTAIOffsetsLoaders()
      * @since 7.1
      */
+    @DefaultDataContext
     public static void clearUTCTAIOffsetsLoaders() {
         getTimeScales().clearUTCTAIOffsetsLoaders();
     }
@@ -104,6 +109,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the International Atomic Time scale.
      * @return International Atomic Time scale
      */
+    @DefaultDataContext
     public static TAIScale getTAI() {
         return getTimeScales().getTAI();
     }
@@ -119,6 +125,7 @@ public class TimeScalesFactory implements Serializable {
      * @return Universal Time Coordinate scale
      * @see #addDefaultUTCTAIOffsetsLoaders()
      */
+    @DefaultDataContext
     public static UTCScale getUTC() {
         return getTimeScales().getUTC();
     }
@@ -137,6 +144,7 @@ public class TimeScalesFactory implements Serializable {
      * @see #getUTC()
      * @see LazyLoadedEop#getEOPHistory(IERSConventions, boolean, TimeScales)
      */
+    @DefaultDataContext
     public static UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
         return getTimeScales().getUT1(conventions, simpleEOP);
     }
@@ -156,6 +164,7 @@ public class TimeScalesFactory implements Serializable {
      * @return Universal Time 1 scale
      * @see #getUT1(IERSConventions, boolean)
      */
+    @DefaultDataContext
     public static UT1Scale getUT1(final EOPHistory history) {
         return getTimeScales().getUT1(history);
     }
@@ -163,6 +172,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Terrestrial Time scale.
      * @return Terrestrial Time scale
      */
+    @DefaultDataContext
     public static TTScale getTT() {
         return getTimeScales().getTT();
     }
@@ -170,6 +180,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Galileo System Time scale.
      * @return Galileo System Time scale
      */
+    @DefaultDataContext
     public static GalileoScale getGST() {
         return getTimeScales().getGST();
     }
@@ -177,6 +188,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the GLObal NAvigation Satellite System time scale.
      * @return  GLObal NAvigation Satellite System time scale
      */
+    @DefaultDataContext
     public static GLONASSScale getGLONASS() {
         return getTimeScales().getGLONASS();
     }
@@ -184,6 +196,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Quasi-Zenith Satellite System time scale.
      * @return  Quasi-Zenith Satellite System time scale
      */
+    @DefaultDataContext
     public static QZSSScale getQZSS() {
         return getTimeScales().getQZSS();
     }
@@ -191,6 +204,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Global Positioning System scale.
      * @return Global Positioning System scale
      */
+    @DefaultDataContext
     public static GPSScale getGPS() {
         return getTimeScales().getGPS();
     }
@@ -198,6 +212,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Geocentric Coordinate Time scale.
      * @return Geocentric Coordinate Time scale
      */
+    @DefaultDataContext
     public static TCGScale getTCG() {
         return getTimeScales().getTCG();
     }
@@ -205,6 +220,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Barycentric Dynamic Time scale.
      * @return Barycentric Dynamic Time scale
      */
+    @DefaultDataContext
     public static TDBScale getTDB() {
         return getTimeScales().getTDB();
     }
@@ -212,6 +228,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Barycentric Coordinate Time scale.
      * @return Barycentric Coordinate Time scale
      */
+    @DefaultDataContext
     public static TCBScale getTCB() {
         return getTimeScales().getTCB();
     }
@@ -222,6 +239,7 @@ public class TimeScalesFactory implements Serializable {
      * @return Greenwich Mean Sidereal Time scale
      * @since 7.0
      */
+    @DefaultDataContext
     public static GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
         return getTimeScales().getGMST(conventions, simpleEOP);
     }
@@ -229,6 +247,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Indian Regional Navigation Satellite System time scale.
      * @return  Indian Regional Navigation Satellite System time scale
      */
+    @DefaultDataContext
     public static IRNSSScale getIRNSS() {
         return getTimeScales().getIRNSS();
     }
@@ -236,6 +255,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the BeiDou Navigation Satellite System time scale.
      * @return  BeiDou Navigation Satellite System time scale
      */
+    @DefaultDataContext
     public static BDTScale getBDT() {
         return getTimeScales().getBDT();
     }

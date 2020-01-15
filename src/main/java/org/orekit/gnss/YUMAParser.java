@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.hipparchus.util.Pair;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
@@ -107,6 +108,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
      * @see #loadData()
      * @see #YUMAParser(String, DataProvidersManager, TimeScales)
     */
+    @DefaultDataContext
     public YUMAParser(final String supportedNames) {
         this(supportedNames,
                 DataContext.getDefault().getDataProvidersManager(),

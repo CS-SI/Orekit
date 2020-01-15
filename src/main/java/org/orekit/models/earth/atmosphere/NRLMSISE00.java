@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -1033,6 +1034,7 @@ public class NRLMSISE00 implements Atmosphere {
      * @see #NRLMSISE00(NRLMSISE00InputParameters, PVCoordinatesProvider, BodyShape,
      * TimeScale)
      */
+    @DefaultDataContext
     public NRLMSISE00(final NRLMSISE00InputParameters parameters,
                       final PVCoordinatesProvider sun,
                       final BodyShape earth) {

@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -148,6 +149,7 @@ class JPLCelestialBody implements CelestialBody {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTOCelestialBody(supportedNames, generateType, name);
     }
@@ -260,6 +262,7 @@ class JPLCelestialBody implements CelestialBody {
          * </p>
          * @return data transfer object that will be serialized
          */
+        @DefaultDataContext
         private Object writeReplace() {
             return new DTOInertialFrame(supportedNames, generateType, name);
         }
@@ -315,6 +318,7 @@ class JPLCelestialBody implements CelestialBody {
          * </p>
          * @return data transfer object that will be serialized
          */
+        @DefaultDataContext
         private Object writeReplace() {
             return new DTOBodyFrame(supportedNames, generateType, name);
         }
@@ -322,6 +326,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private abstract static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -378,6 +383,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for complete celestial body serialization. */
+    @DefaultDataContext
     private static class DTOCelestialBody extends DataTransferObject {
 
         /** Serializable UID. */
@@ -402,6 +408,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for inertially oriented frame serialization. */
+    @DefaultDataContext
     private static class DTOInertialFrame extends DataTransferObject {
 
         /** Serializable UID. */
@@ -426,6 +433,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Specialization of the data transfer object for body oriented frame serialization. */
+    @DefaultDataContext
     private static class DTOBodyFrame extends DataTransferObject {
 
         /** Serializable UID. */

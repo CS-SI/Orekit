@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical;
 import java.util.Collections;
 import java.util.Map;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -52,6 +53,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @param initialOrbit initial orbit
      * @see #KeplerianPropagator(Orbit, AttitudeProvider)
      */
+    @DefaultDataContext
     public KeplerianPropagator(final Orbit initialOrbit) {
         this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
                 initialOrbit.getMu(), DEFAULT_MASS);
@@ -66,6 +68,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @param mu central attraction coefficient (m³/s²)
      * @see #KeplerianPropagator(Orbit, AttitudeProvider, double)
      */
+    @DefaultDataContext
     public KeplerianPropagator(final Orbit initialOrbit, final double mu) {
         this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
                 mu, DEFAULT_MASS);

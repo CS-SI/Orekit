@@ -17,6 +17,7 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.BeidouOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -99,6 +100,7 @@ public class BeidouAlmanac implements BeidouOrbitalElements {
      * @see #BeidouAlmanac(int, int, double, double, double, double, double, double,
      * double, double, double, double, double, int, AbsoluteDate)
      */
+    @DefaultDataContext
     public BeidouAlmanac(final int prn, final int week, final double toa,
                          final double sqa, final double ecc,
                          final double inc0, final double dinc,

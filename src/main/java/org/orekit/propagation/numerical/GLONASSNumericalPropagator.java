@@ -23,6 +23,7 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -194,6 +195,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          */
+        @DefaultDataContext
         public Builder(final ClassicalRungeKuttaIntegrator integrator,
                        final GLONASSEphemeris glonassOrbElt,
                        final boolean isAccAvailable) {

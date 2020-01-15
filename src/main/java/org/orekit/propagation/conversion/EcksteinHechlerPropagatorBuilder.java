@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -59,6 +60,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @see #EcksteinHechlerPropagatorBuilder(Orbit,
      * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
                                             final PositionAngle positionAngle,
@@ -127,6 +129,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @see #EcksteinHechlerPropagatorBuilder(Orbit,
      * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final double referenceRadius,
                                             final double mu,

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -84,6 +85,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * @see #DSSTPropagatorBuilder(Orbit, ODEIntegratorBuilder, double, PropagationType,
      * PropagationType, AttitudeProvider)
      */
+    @DefaultDataContext
     public DSSTPropagatorBuilder(final Orbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
                                  final double positionScale,

@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -72,6 +73,7 @@ public class AntexLoader {
      * @param supportedNames regular expression for supported files names
      * @see #AntexLoader(String, DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public AntexLoader(final String supportedNames) {
         this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
                 DataContext.getDefault().getTimeScales().getGPS());

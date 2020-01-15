@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -91,6 +92,7 @@ public class BeidouPropagator extends AbstractGNSSPropagator {
          * @see #ecef(Frame bodyFixed)
          * @see #Builder(BeidouOrbitalElements, Frames)
          */
+        @DefaultDataContext
         public Builder(final BeidouOrbitalElements bdsOrbElt) {
             this(bdsOrbElt, DataContext.getDefault().getFrames());
         }

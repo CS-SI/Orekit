@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -92,6 +93,7 @@ public class QZSSPropagator extends AbstractGNSSPropagator {
          * @see #ecef(Frame bodyFixed)
          * @see #Builder(QZSSOrbitalElements, Frames)
          */
+        @DefaultDataContext
         public Builder(final QZSSOrbitalElements qzssOrbElt) {
             this(qzssOrbElt, DataContext.getDefault().getFrames());
         }

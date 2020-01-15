@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
@@ -98,6 +99,7 @@ public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoade
      * @see #DEFAULT_BLQ_SUPPORTED_NAMES
      * @see #OceanLoadingCoefficientsBLQFactory(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public OceanLoadingCoefficientsBLQFactory(final String supportedNames) {
         this(supportedNames, DataContext.getDefault().getDataProvidersManager());
     }

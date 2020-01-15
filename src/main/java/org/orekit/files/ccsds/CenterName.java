@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
@@ -151,6 +152,7 @@ public enum CenterName {
      * @return celestial body corresponding to the CCSDS constant
      * @see #getCelestialBody(CelestialBodies)
      */
+    @DefaultDataContext
     public CelestialBody getCelestialBody() {
         return getCelestialBody(DataContext.getDefault().getCelestialBodies());
     }

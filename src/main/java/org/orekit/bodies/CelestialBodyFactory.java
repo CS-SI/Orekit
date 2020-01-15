@@ -16,6 +16,7 @@
  */
 package org.orekit.bodies;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 
 /** Factory class for bodies of the solar system.
@@ -121,6 +122,7 @@ public class CelestialBodyFactory {
      *
      * @return the reference frames used by this factory.
      */
+    @DefaultDataContext
     public static LazyLoadedCelestialBodies getCelestialBodies() {
         return DataContext.getDefault().getCelestialBodies();
     }
@@ -132,6 +134,7 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
+    @DefaultDataContext
     public static void addCelestialBodyLoader(final String name,
                                               final CelestialBodyLoader loader) {
         getCelestialBodies().addCelestialBodyLoader(name, loader);
@@ -150,6 +153,7 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
+    @DefaultDataContext
     public static void addDefaultCelestialBodyLoader(final String supportedNames) {
         getCelestialBodies().addDefaultCelestialBodyLoader(supportedNames);
     }
@@ -168,6 +172,7 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
+    @DefaultDataContext
     public static void addDefaultCelestialBodyLoader(final String name,
                                                      final String supportedNames) {
         getCelestialBodies().addDefaultCelestialBodyLoader(name, supportedNames);
@@ -183,6 +188,7 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders()
      * @see #clearCelestialBodyCache(String)
      */
+    @DefaultDataContext
     public static void clearCelestialBodyLoaders(final String name) {
         getCelestialBodies().clearCelestialBodyLoaders(name);
     }
@@ -195,6 +201,7 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyCache()
      */
+    @DefaultDataContext
     public static void clearCelestialBodyLoaders() {
         getCelestialBodies().clearCelestialBodyLoaders();
     }
@@ -202,6 +209,7 @@ public class CelestialBodyFactory {
     /** Clear the specified celestial body from the internal cache.
      * @param name name of the body
      */
+    @DefaultDataContext
     public static void clearCelestialBodyCache(final String name) {
         getCelestialBodies().clearCelestialBodyCache(name);
     }
@@ -213,6 +221,7 @@ public class CelestialBodyFactory {
      * will result in a reload of the requested body from the configured loader(s).
      * </p>
      */
+    @DefaultDataContext
     public static void clearCelestialBodyCache() {
         getCelestialBodies().clearCelestialBodyCache();
     }
@@ -227,6 +236,7 @@ public class CelestialBodyFactory {
      * </p>
      * @return solar system barycenter aggregated body
      */
+    @DefaultDataContext
     public static CelestialBody getSolarSystemBarycenter() {
         return getCelestialBodies().getSolarSystemBarycenter();
     }
@@ -234,6 +244,7 @@ public class CelestialBodyFactory {
     /** Get the Sun singleton body.
      * @return Sun body
      */
+    @DefaultDataContext
     public static CelestialBody getSun() {
         return getCelestialBodies().getSun();
     }
@@ -241,6 +252,7 @@ public class CelestialBodyFactory {
     /** Get the Mercury singleton body.
      * @return Sun body
      */
+    @DefaultDataContext
     public static CelestialBody getMercury() {
         return getCelestialBodies().getMercury();
     }
@@ -248,6 +260,7 @@ public class CelestialBodyFactory {
     /** Get the Venus singleton body.
      * @return Venus body
      */
+    @DefaultDataContext
     public static CelestialBody getVenus() {
         return getCelestialBodies().getVenus();
     }
@@ -262,6 +275,7 @@ public class CelestialBodyFactory {
      * </p>
      * @return Earth-Moon barycenter bodies pair
      */
+    @DefaultDataContext
     public static CelestialBody getEarthMoonBarycenter() {
         return getCelestialBodies().getEarthMoonBarycenter();
     }
@@ -269,6 +283,7 @@ public class CelestialBodyFactory {
     /** Get the Earth singleton body.
      * @return Earth body
      */
+    @DefaultDataContext
     public static CelestialBody getEarth() {
         return getCelestialBodies().getEarth();
     }
@@ -276,6 +291,7 @@ public class CelestialBodyFactory {
     /** Get the Moon singleton body.
      * @return Moon body
      */
+    @DefaultDataContext
     public static CelestialBody getMoon() {
         return getCelestialBodies().getMoon();
     }
@@ -283,6 +299,7 @@ public class CelestialBodyFactory {
     /** Get the Mars singleton body.
      * @return Mars body
      */
+    @DefaultDataContext
     public static CelestialBody getMars() {
         return getCelestialBodies().getMars();
     }
@@ -290,6 +307,7 @@ public class CelestialBodyFactory {
     /** Get the Jupiter singleton body.
      * @return Jupiter body
      */
+    @DefaultDataContext
     public static CelestialBody getJupiter() {
         return getCelestialBodies().getJupiter();
     }
@@ -297,6 +315,7 @@ public class CelestialBodyFactory {
     /** Get the Saturn singleton body.
      * @return Saturn body
      */
+    @DefaultDataContext
     public static CelestialBody getSaturn() {
         return getCelestialBodies().getSaturn();
     }
@@ -304,6 +323,7 @@ public class CelestialBodyFactory {
     /** Get the Uranus singleton body.
      * @return Uranus body
      */
+    @DefaultDataContext
     public static CelestialBody getUranus() {
         return getCelestialBodies().getUranus();
     }
@@ -311,6 +331,7 @@ public class CelestialBodyFactory {
     /** Get the Neptune singleton body.
      * @return Neptune body
      */
+    @DefaultDataContext
     public static CelestialBody getNeptune() {
         return getCelestialBodies().getNeptune();
     }
@@ -318,6 +339,7 @@ public class CelestialBodyFactory {
     /** Get the Pluto singleton body.
      * @return Pluto body
      */
+    @DefaultDataContext
     public static CelestialBody getPluto() {
         return getCelestialBodies().getPluto();
     }
@@ -336,6 +358,7 @@ public class CelestialBodyFactory {
      * @param name name of the celestial body
      * @return celestial body
      */
+    @DefaultDataContext
     public static CelestialBody getBody(final String name) {
         return getCelestialBodies().getBody(name);
     }

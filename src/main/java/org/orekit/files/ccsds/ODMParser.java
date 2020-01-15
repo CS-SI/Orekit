@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -91,6 +92,7 @@ public abstract class ODMParser {
      * int, int, String, DataContext)} instead.
      */
     @Deprecated
+    @DefaultDataContext
     protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu,
                         final IERSConventions conventions, final boolean simpleEOP,
                         final int launchYear, final int launchNumber, final String launchPiece) {

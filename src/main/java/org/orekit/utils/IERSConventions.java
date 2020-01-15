@@ -30,6 +30,7 @@ import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.DataContext;
 import org.orekit.data.DelaunayArguments;
@@ -2370,6 +2371,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getNutationReferenceEpoch(TimeScales)
      */
+    @DefaultDataContext
     public AbsoluteDate getNutationReferenceEpoch() {
         return getNutationReferenceEpoch(DataContext.getDefault().getTimeScales());
     }
@@ -2395,6 +2397,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #evaluateTC(AbsoluteDate, TimeScales)
      */
+    @DefaultDataContext
     public double evaluateTC(final AbsoluteDate date) {
         return evaluateTC(date, DataContext.getDefault().getTimeScales());
     }
@@ -2423,6 +2426,7 @@ public enum IERSConventions {
      * @since 9.0
      * @see #evaluateTC(FieldAbsoluteDate, TimeScales)
      */
+    @DefaultDataContext
     public <T extends RealFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date) {
         return evaluateTC(date, DataContext.getDefault().getTimeScales());
     }
@@ -2466,6 +2470,7 @@ public enum IERSConventions {
      * @see #getNutationArguments(TimeScale, TimeScales)
      * @see #getNutationArguments(TimeScales)
      */
+    @DefaultDataContext
     public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale) {
         return getNutationArguments(timeScale, DataContext.getDefault().getTimeScales());
     }
@@ -2491,6 +2496,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getMeanObliquityFunction(TimeScales)
      */
+    @DefaultDataContext
     public TimeScalarFunction getMeanObliquityFunction() {
         return getMeanObliquityFunction(DataContext.getDefault().getTimeScales());
     }
@@ -2515,6 +2521,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getXYSpXY2Function(TimeScales)
      */
+    @DefaultDataContext
     public TimeVectorFunction getXYSpXY2Function() {
         return getXYSpXY2Function(DataContext.getDefault().getTimeScales());
     }
@@ -2549,6 +2556,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getEarthOrientationAngleFunction(TimeScale, TimeScale)
      */
+    @DefaultDataContext
     public TimeScalarFunction getEarthOrientationAngleFunction(final TimeScale ut1) {
         return getEarthOrientationAngleFunction(ut1,
                 DataContext.getDefault().getTimeScales().getTAI());
@@ -2587,6 +2595,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getPrecessionFunction(TimeScales)
      */
+    @DefaultDataContext
     public TimeVectorFunction getPrecessionFunction()
     {
         return getPrecessionFunction(DataContext.getDefault().getTimeScales());
@@ -2620,6 +2629,7 @@ public enum IERSConventions {
      * and the correction of equation of equinoxes
      * @since 6.1
      */
+    @DefaultDataContext
     public TimeVectorFunction getNutationFunction() {
         return getNutationFunction(DataContext.getDefault().getTimeScales());
     }
@@ -2646,6 +2656,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getGMSTFunction(TimeScale, TimeScales)
      */
+    @DefaultDataContext
     public TimeScalarFunction getGMSTFunction(final TimeScale ut1) {
         return getGMSTFunction(ut1, DataContext.getDefault().getTimeScales());
     }
@@ -2670,6 +2681,7 @@ public enum IERSConventions {
      * @since 9.0
      * @see #getGMSTRateFunction(TimeScale, TimeScales)
      */
+    @DefaultDataContext
     public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) {
         return getGMSTRateFunction(ut1,
                 DataContext.getDefault().getTimeScales());
@@ -2700,6 +2712,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getGASTFunction(TimeScale, EOPHistory, TimeScales)
      */
+    @DefaultDataContext
     public TimeScalarFunction getGASTFunction(final TimeScale ut1,
                                               final EOPHistory eopHistory) {
         final TimeScales timeScales = eopHistory != null ?
@@ -2731,6 +2744,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getEOPTidalCorrection(TimeScales)
      */
+    @DefaultDataContext
     public TimeVectorFunction getEOPTidalCorrection() {
         return getEOPTidalCorrection(DataContext.getDefault().getTimeScales());
     }
@@ -2760,6 +2774,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getTideFrequencyDependenceFunction(TimeScale, TimeScales)
      */
+    @DefaultDataContext
     public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1) {
         return getTideFrequencyDependenceFunction(ut1,
                 DataContext.getDefault().getTimeScales());
@@ -3008,6 +3023,7 @@ public enum IERSConventions {
      * @since 6.1
      * @see #getNutationCorrectionConverter(TimeScales)
      */
+    @DefaultDataContext
     public NutationCorrectionConverter getNutationCorrectionConverter() {
         return getNutationCorrectionConverter(DataContext.getDefault().getTimeScales());
     }

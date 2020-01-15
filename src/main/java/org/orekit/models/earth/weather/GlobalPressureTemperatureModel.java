@@ -18,6 +18,7 @@ package org.orekit.models.earth.weather;
 
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.models.earth.Geoid;
@@ -80,6 +81,7 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
      *                  the center of mass, the z axis is the minor axis.
      * @see #GlobalPressureTemperatureModel(double, double, Frame, DataContext)
      */
+    @DefaultDataContext
     public GlobalPressureTemperatureModel(final double latitude, final double longitude, final Frame bodyFrame) {
         this(latitude, longitude, bodyFrame, DataContext.getDefault());
     }

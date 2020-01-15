@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.orbits.Orbit;
@@ -48,6 +49,7 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * @since 8.0
      * @see #KeplerianPropagatorBuilder(Orbit, PositionAngle, double, AttitudeProvider)
      */
+    @DefaultDataContext
     public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
                                       final double positionScale) {
         this(templateOrbit, positionAngle, positionScale,

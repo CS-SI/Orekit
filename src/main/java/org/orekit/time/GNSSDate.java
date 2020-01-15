@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -91,6 +92,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      * @param system satellite system to consider
      * @see #GNSSDate(int, double, SatelliteSystem, TimeScales)
      */
+    @DefaultDataContext
     public GNSSDate(final int weekNumber, final double milliInWeek,
                     final SatelliteSystem system) {
         this(weekNumber, milliInWeek, system, DataContext.getDefault().getTimeScales());
@@ -167,6 +169,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      * @param system satellite system to consider
      * @see #GNSSDate(AbsoluteDate, SatelliteSystem, TimeScales)
      */
+    @DefaultDataContext
     public GNSSDate(final AbsoluteDate date, final SatelliteSystem system) {
         this(date, system, DataContext.getDefault().getTimeScales());
     }
@@ -305,11 +308,13 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(weekNumber, milliInWeek, system);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
