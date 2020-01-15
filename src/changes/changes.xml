@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action def="luc" type="fix" issue="632" due-to="Evan Ward">
+        Fixed projection to ellipsoid at pole.
+      </action>
       <action def="luc" type="fix" issue="630">
         Improve performance of UnixCompressFilter.
       </action>

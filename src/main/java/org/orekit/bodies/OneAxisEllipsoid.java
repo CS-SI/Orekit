@@ -349,7 +349,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
         // set up the 2D meridian ellipse
         final Ellipse meridian = new Ellipse(Vector3D.ZERO,
-                                             new Vector3D(p.getX() / r, p.getY() / r, 0),
+                                             r == 0 ? Vector3D.PLUS_I : new Vector3D(p.getX() / r, p.getY() / r, 0),
                                              Vector3D.PLUS_K,
                                              getA(), getC(), bodyFrame);
 
@@ -371,7 +371,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double                   r             = FastMath.hypot(p.getX(), p.getY());
 
         // set up the 2D ellipse corresponding to first principal curvature along meridian
-        final Vector3D meridian = new Vector3D(p.getX() / r, p.getY() / r, 0);
+        final Vector3D meridian = r == 0 ? Vector3D.PLUS_I : new Vector3D(p.getX() / r, p.getY() / r, 0);
         final Ellipse firstPrincipalCurvature =
                 new Ellipse(Vector3D.ZERO, meridian, Vector3D.PLUS_K, getA(), getC(), bodyFrame);
 
