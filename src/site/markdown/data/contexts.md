@@ -24,8 +24,8 @@ These data can also be completely embedded within an application built on top of
 One set of consistent data is referred to as a data context.
 
 Regular standalone applications will use only one data context, i.e. one set of EOP,
-one set of JPL ephemerides, one history of leap seconds... One data context does
-not cover all needs as:
+one set of JPL ephemerides, one history of leap seconds... But only one data context
+is not enough for some needs such as:
 
   - server applications that may answer to request from completely different clients
     with different needs,
@@ -59,7 +59,7 @@ through a data context and Orekit must be configured to find and load them at ru
 
 ## Context handling in Orekit
 
-The following class diagram show how contexts are handled in Orekit.
+The following class diagram shows how contexts are handled in Orekit.
 
 ![data class diagram](../images/design/data-context-class-diagram.png)
 
@@ -74,16 +74,16 @@ The `DataContext` interface has one implementation `LazyLoadedDataContext` that 
 on the fly from external resources (typically files) when first accessed and relies on a
 `DataProvidersManager` in order to find how to locate and parse these resources.
 
-Users could provide their own implementation of `DataContext`, for example if all the data
+Users can provide their own implementation of `DataContext`, for example if all the data
 is stored in a mission-specific database, which would not fit with the resources or
 files-based `LazyLoadedDataContext` and `DataProvidersManager`.
 
 Providing an implementation of `DataContext` consists in creating custom factories and
-set up one class to get a single access point to all of them. The predefined `LazyLoadedDataContext`
-uses `LazyLoadedTimeScales`, `LazyLoadedFrames`, `LazyLoadedEOP` and `LazyLoadedCelstialBodies`
+setting up one class to get a single access point to all of them. The predefined `LazyLoadedDataContext`
+uses `LazyLoadedTimeScales`, `LazyLoadedFrames`, `LazyLoadedEOP` and `LazyLoadedCelestialBodies`
 for example, all of them relying on the same `DataProvidersManager` to seek and load data. In
 this implementation, some factories depend on other ones as one data context must provide
-consistent data. The EOP data for example is used by both `LazyLoadedframes` (for Earth frames)
+consistent data. The EOP data for example is used by both `LazyLoadedFrames` (for Earth frames)
 and by `LazyLoadedTimeScales` (for `UT1`). The `LazyLoadedFrames` also depends on the `CelestialBodies`
 interface (for `ICRF`).
 
