@@ -21,7 +21,6 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
@@ -184,12 +183,8 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
     @Override
     protected MagneticFieldDetector create(final double newMaxCheck, final double newThreshold,
                                            final int newMaxIter, final EventHandler<? super MagneticFieldDetector> newHandler) {
-        try {
-            return new MagneticFieldDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                             limit, type, body, seaLevel, dataContext);
-        } catch (OrekitException e) {
-            return null;
-        }
+        return new MagneticFieldDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                         limit, type, body, seaLevel, dataContext);
     }
 
     /** {@inheritDoc} */
@@ -215,26 +210,21 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * angle, with some sign tweaks to ensure continuity
      */
     public double g(final SpacecraftState s) {
-        try {
-            final TimeScale utc = dataContext.getTimeScales().getUTC();
-            if (s.getDate().getComponents(utc).getDate().getYear() != currentYear) {
-                this.currentYear = s.getDate().getComponents(utc).getDate().getYear();
-                this.field = dataContext.getGeoMagneticFields().getField(type, currentYear);
-            }
-            final GeodeticPoint geoPoint = body.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
-            final double altitude;
-            if (seaLevel) {
-                altitude = 0;
-            }
-            else {
-                altitude = geoPoint.getAltitude();
-            }
-            final double value = field.calculateField(geoPoint.getLatitude(), geoPoint.getLongitude(), altitude).getTotalIntensity();
-            return value - limit;
-
-        } catch (OrekitException e) {
-            e.printStackTrace();
-            return -1;
+        final TimeScale utc = dataContext.getTimeScales().getUTC();
+        if (s.getDate().getComponents(utc).getDate().getYear() != currentYear) {
+            this.currentYear = s.getDate().getComponents(utc).getDate().getYear();
+            this.field = dataContext.getGeoMagneticFields().getField(type, currentYear);
         }
+        final GeodeticPoint geoPoint = body.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+        final double altitude;
+        if (seaLevel) {
+            altitude = 0;
+        }
+        else {
+            altitude = geoPoint.getAltitude();
+        }
+        final double value = field.calculateField(geoPoint.getLatitude(), geoPoint.getLongitude(), altitude).getTotalIntensity();
+        return value - limit;
     }
+
 }
