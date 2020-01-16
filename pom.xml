@@ -362,11 +362,26 @@
         <executions>
           <execution>
             <id>default-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
             <configuration>
               <excludes>
                 <!-- don't recompile the compiler plugin. -->
                 <exclude>org/orekit/compiler/**</exclude>
               </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default-test-compile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <testExcludes>
+                <!-- don't recompile the compiler plugin. -->
+                <testExclude>org/orekit/compiler/**</testExclude>
+              </testExcludes>
             </configuration>
           </execution>
           <execution>
