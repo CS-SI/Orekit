@@ -373,7 +373,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>default-test-compile</id>
+            <id>default-testCompile</id>
             <goals>
               <goal>testCompile</goal>
             </goals>
