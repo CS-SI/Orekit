@@ -109,6 +109,14 @@ The simplest way to use Orekit with Eclipse is to follow these steps:
     source distribution. The "pom.xml" file describing the project will be
     automatically selected. Click finish
 
+  * note that eclipse cannot use the Orekit embedded compiler plugin that detects
+   use of the default data context (added in 10.1), so the plugin source and its
+   tests must be excluded. Due to bug [559258](https://bugs.eclipse.org/bugs/show_bug.cgi?id=559258),
+   eclipse does not exclude the tests, so users should add by themselves the pattern
+   org/orekit/compiler/** to the excluded sources in the Build Path -> Configure
+   Build Path..." wizard for the src/test/java folder (Eclipse automatically
+   set it for the src/main/java folder)
+
 The Orekit library should be configured automatically, including the dependency
 to the underlying mathematical library.
 
