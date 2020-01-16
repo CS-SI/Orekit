@@ -44,6 +44,7 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -85,7 +86,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
             java.lang.reflect.Field firingField = ConstantThrustManeuver.class.getDeclaredField("firing");
             firingField.setAccessible(true);
             boolean firing = firingField.getBoolean(forceModel);
-            double thrust = forceModel.getParameterDriver(ConstantThrustManeuver.THRUST).getValue();
+            double thrust = forceModel.getParameterDriver(BasicConstantThrustPropulsionModel.THRUST).getValue();
             java.lang.reflect.Field directionField = ConstantThrustManeuver.class.getDeclaredField("direction");
             directionField.setAccessible(true);
             Vector3D direction;
