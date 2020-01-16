@@ -44,7 +44,6 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -83,21 +82,15 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass) {
         try {
-            java.lang.reflect.Field firingField = ConstantThrustManeuver.class.getDeclaredField("firing");
-            firingField.setAccessible(true);
-            boolean firing = firingField.getBoolean(forceModel);
-            double thrust = forceModel.getParameterDriver(BasicConstantThrustPropulsionModel.THRUST).getValue();
-            java.lang.reflect.Field directionField = ConstantThrustManeuver.class.getDeclaredField("direction");
-            directionField.setAccessible(true);
-            Vector3D direction;
-            direction = (Vector3D) directionField.get(forceModel);
+            boolean firing = ((Maneuver) forceModel).getManeuverTriggers().isFiring(new double[] {});            
+            Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             if (firing) {
-                return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
+                return new FieldVector3D<>(mass.reciprocal(), rotation.applyInverseTo(thrustVector));
             } else {
                 // constant (and null) acceleration when not firing
                 return FieldVector3D.getZero(mass.getField());
             }
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }
@@ -144,7 +137,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
         maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
-        checkStateJacobianVs80Implementation(midState, maneuver, law, 1.0e-20, false);
+        checkStateJacobianVs80Implementation(midState, maneuver, law, 1e-20, false);
 
     }
 
@@ -548,7 +541,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                            Vector3D.PLUS_I, "along-X-");
         maneuver.init(state, state.getDate().shiftedBy(3600.0));
 
-        checkParameterDerivative(state, maneuver, "along-X-thrust",    1.0e-3, 3.0e-14);
+        checkParameterDerivative(state, maneuver, "along-X-thrust",    1.0e-3, 4.3e-14);
         checkParameterDerivative(state, maneuver, "along-X-flow rate", 1.0e-3, 1.0e-15);
 
     }

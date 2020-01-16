@@ -91,11 +91,6 @@ public abstract class AbstractForceModelTest {
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
-        //debug
-        System.out.println("Driver: " + drivers[selected].getName());
-        System.out.println("actual: " + delta.getNorm());
-        System.out.println("delta : " + tol * reference.getNorm());
-        //debug
         Assert.assertEquals(0., delta.getNorm(), tol * reference.getNorm());
 
     }
