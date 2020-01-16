@@ -32,5 +32,9 @@
             <username>${env.NEXUS_USERNAME}</username>
             <password>${env.NEXUS_PASSWORD}</password>
         </server>
+        <server>
+            <id>website</id>
+            <privateKey>${user.home}/.ssh/id_website</privateKey>
+        </server>
     </servers>
 </settings>
