@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.orekit.data.ClasspathCrawler;
 import org.orekit.data.DataProvidersManager;

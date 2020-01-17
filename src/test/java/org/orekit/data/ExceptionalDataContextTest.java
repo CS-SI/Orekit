@@ -129,6 +129,7 @@ public class ExceptionalDataContextTest {
     private void hack() {
         Object o = AbsoluteDate.ARBITRARY_EPOCH;
         o = InertialProvider.EME2000_ALIGNED;
+        Assert.assertNotNull(o);
     }
 
 }

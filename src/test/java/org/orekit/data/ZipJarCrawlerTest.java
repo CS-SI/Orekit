@@ -49,6 +49,7 @@ public class ZipJarCrawlerTest {
         Assert.assertEquals(6, crawler.getCount());
     }
 
+    @Deprecated
     @Test
     public void testExtraMethods() throws URISyntaxException {
         URL url =
