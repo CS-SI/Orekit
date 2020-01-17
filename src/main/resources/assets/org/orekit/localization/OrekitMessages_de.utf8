@@ -422,7 +422,7 @@ UNDEFINED_ORBIT = Der Orbit ist nicht definiert! Der momentane Stand enthält ei
 UNDEFINED_ABSOLUTE_PVCOORDINATES = Die absolute Positions-Geschwindigkeits-Beschleunigung wurde nicht definiert! Der momentane Stand enthält einen Orbit
 
 # an inertial force model has to be used when propagating in non-inertial frame {0}
-INERTIAL_FORCE_MODEL_MISSING = Ein Trägheitskräftemodel muss benutzt werden, während einer Ausbreitung in einem nicht trägen Rahmen
+INERTIAL_FORCE_MODEL_MISSING = Ein Trägheitskräftemodel muss benutzt werden, während einer Ausbreitung in nicht trägen Rahmen {0}
 
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = Keine SEM Almanac Datei gefunden
