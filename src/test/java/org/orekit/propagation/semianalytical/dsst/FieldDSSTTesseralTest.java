@@ -32,7 +32,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -76,7 +75,6 @@ public class FieldDSSTTesseralTest {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
 
-    @DefaultDataContext
     private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
         
         final T zero = field.getZero();
@@ -142,7 +140,6 @@ public class FieldDSSTTesseralTest {
         doTestShortPeriodTerms(Decimal64Field.getInstance());
     }
 
-    @DefaultDataContext
     @SuppressWarnings("unchecked")
     private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
         
@@ -204,7 +201,6 @@ public class FieldDSSTTesseralTest {
         doTestIssue625(Decimal64Field.getInstance());
     }
 
-    @DefaultDataContext
     private <T extends RealFieldElement<T>> void doTestIssue625(final Field<T> field) {
 
         final T zero = field.getZero();

@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -48,7 +47,6 @@ public class DOPComputerTest {
     private GeodeticPoint location;
     private TimeScale     utc;
 
-    @DefaultDataContext
     @Before
     public void setUp() {
         // Sets the root of data to read
