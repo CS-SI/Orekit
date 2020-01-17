@@ -38,7 +38,8 @@ interface ManeuverTriggers {
      * @param initialState initial spacecraft state (at the start of propagation).
      * @param target date of propagation. Not equal to {@code initialState.getDate()}.
      */
-    void init(SpacecraftState initialState, AbsoluteDate target);
+    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    }
 
     /** Get the event detectors associated with the triggers.
      * @return the event detectors
