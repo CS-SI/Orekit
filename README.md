@@ -83,6 +83,6 @@ More detailed information is available in the
 
 ## License
 
-Orekit is licensed by [CS Systèmes d'Information](https://www.c-s.fr/) under
+Orekit is licensed by [CS Group](https://www.c-s.fr/) under
 the [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 A copy of this license is provided in the [LICENSE.txt](LICENSE.txt) file.
