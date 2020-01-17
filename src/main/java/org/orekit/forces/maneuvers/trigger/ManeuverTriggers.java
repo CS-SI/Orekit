@@ -31,7 +31,7 @@ import org.orekit.utils.ParameterDriver;
 /** Generic interface for the maneuver triggers used in a {@link Maneuver}.
  * @author Maxime Journot
  */
-interface ManeuverTriggers {
+public interface ManeuverTriggers {
 
     /** Initialization method.
      *  Called in when Maneuver.init(...) is called (from ForceModel.init(...)).

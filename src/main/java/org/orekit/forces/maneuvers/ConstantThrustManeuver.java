@@ -18,9 +18,9 @@ package org.orekit.forces.maneuvers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.forces.maneuvers2.propulsion.AbstractConstantThrustPropulsionModel;
-import org.orekit.forces.maneuvers2.propulsion.BasicConstantThrustPropulsionModel;
-import org.orekit.forces.maneuvers2.trigger.DateBasedManeuverTriggers;
+import org.orekit.forces.maneuvers.propulsion.AbstractConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.time.AbsoluteDate;
 
 /** This class implements a simple maneuver with constant thrust.
