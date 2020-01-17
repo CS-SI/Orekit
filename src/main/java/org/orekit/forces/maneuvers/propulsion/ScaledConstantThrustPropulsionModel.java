@@ -23,16 +23,13 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 /** Thrust propulsion model with parameters (for estimation) represented by scale factors
  *  on the X, Y and Z axis of the spacecraft frame.
  * @author Maxime Journot
  */
-public class ScaledConstantThrustPropulsionModel implements ThrustPropulsionModel {
+public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustPropulsionModel {
 
     /** Parameter name for the scale factor on the X component of the thrust in S/C frame. */
     public static final String THRUSTX_SCALE_FACTOR = "TX scale factor";
@@ -55,22 +52,6 @@ public class ScaledConstantThrustPropulsionModel implements ThrustPropulsionMode
     private final ParameterDriver scaleFactorThrustYDriver;
     /** Parameter driver for the scale factor on the Z component of the thrust in S/C frame. */
     private final ParameterDriver scaleFactorThrustZDriver;
-
-    /** Constant flow rate value (kg/s). */
-    private final double flowRate;
-
-    /** Initial thrust vector in S/C frame (N). */
-    private final Vector3D initialThrustVector;
-
-    /** User-defined name of the maneuver.
-     * This String attribute is empty by default.
-     * It is added as a prefix to the parameter drivers of the maneuver.
-     * The purpose is to differentiate between drivers in the case where several maneuvers
-     * were added to a propagator force model.
-     * Additionally, the user can retrieve the whole maneuver by looping on the force models of a propagator,
-     * scanning for its name.
-     */
-    private final String name;
 
     /** Constructor with infinite possible deviation for the scale factors.
      * @param thrust the thrust (N)
@@ -101,9 +82,7 @@ public class ScaledConstantThrustPropulsionModel implements ThrustPropulsionMode
                                                final String name,
                                                final double minScaleFactor,
                                                final double maxScaleFactor) {
-        this.name = name;
-        this.flowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
-        this.initialThrustVector = direction.normalize().scalarMultiply(thrust);
+        super(thrust, isp, direction, name);
 
         // Build the parameter drivers, using maneuver name as prefix
         ParameterDriver scaleFactorThrustXD = null;
@@ -136,20 +115,14 @@ public class ScaledConstantThrustPropulsionModel implements ThrustPropulsionMode
     private Vector3D getThrustVector(final double scaleFactorX,
                                      final double scaleFactorY,
                                      final double scaleFactorZ) {
-        return new Vector3D(initialThrustVector.getX() * scaleFactorX,
-                            initialThrustVector.getY() * scaleFactorY,
-                            initialThrustVector.getZ() * scaleFactorZ);
+        return new Vector3D(getInitialThrustVector().getX() * scaleFactorX,
+                            getInitialThrustVector().getY() * scaleFactorY,
+                            getInitialThrustVector().getZ() * scaleFactorZ);
     }
 
     /** {@inheritDoc} */
     @Override
-    public String getName() {
-        return name;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Vector3D getThrustVector(final SpacecraftState s) {
+    public Vector3D getThrustVector() {
         return getThrustVector(scaleFactorThrustXDriver.getValue(),
                                scaleFactorThrustYDriver.getValue(),
                                scaleFactorThrustZDriver.getValue());
@@ -157,8 +130,8 @@ public class ScaledConstantThrustPropulsionModel implements ThrustPropulsionMode
 
     /** {@inheritDoc} */
     @Override
-    public double getFlowRate(final SpacecraftState s) {
-        return flowRate;
+    public double getFlowRate() {
+        return getInitialFlowrate();
     }
 
     /** {@inheritDoc} */
@@ -171,29 +144,27 @@ public class ScaledConstantThrustPropulsionModel implements ThrustPropulsionMode
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustVector(final SpacecraftState s, final double parameters[]) {
+    public Vector3D getThrustVector(final double parameters[]) {
         return getThrustVector(parameters[0], parameters[1], parameters[2]);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double getFlowRate(final SpacecraftState s, final double[] parameters) {
-        return flowRate;
+    public double getFlowRate(final double[] parameters) {
+        return getInitialFlowrate();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldSpacecraftState<T> s,
-                                                                            final T parameters[]) {
-        return new FieldVector3D<T>(parameters[0].multiply(initialThrustVector.getX()),
-                        parameters[1].multiply(initialThrustVector.getY()),
-                        parameters[2].multiply(initialThrustVector.getZ()));
+    public <T extends RealFieldElement<T>> FieldVector3D<T> getThrustVector(final T parameters[]) {
+        return new FieldVector3D<T>(parameters[0].multiply(getInitialThrustVector().getX()),
+                        parameters[1].multiply(getInitialThrustVector().getY()),
+                        parameters[2].multiply(getInitialThrustVector().getZ()));
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T getFlowRate(final FieldSpacecraftState<T> s,
-                                                         final T[] parameters) {
-        return parameters[0].getField().getZero().add(flowRate);
+    public <T extends RealFieldElement<T>> T getFlowRate(final T[] parameters) {
+        return parameters[0].getField().getZero().add(getInitialFlowrate());
     }
 }
