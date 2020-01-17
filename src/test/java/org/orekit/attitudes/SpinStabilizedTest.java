@@ -27,6 +27,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -49,6 +50,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 public class SpinStabilizedTest {
 
+    @DefaultDataContext
     @Test
     public void testBBQMode() {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
