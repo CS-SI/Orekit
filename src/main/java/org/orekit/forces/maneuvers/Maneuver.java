@@ -255,7 +255,7 @@ public class Maneuver extends AbstractForceModel {
         // Then maneuver triggers' drivers
         System.arraycopy(maneuverTriggersDrivers, 0, drivers, propulsionModelDriversLength, maneuverTriggersDriversLength);
 
-        // Return full frivers' array
+        // Return full drivers' array
         return drivers;
     }
 
