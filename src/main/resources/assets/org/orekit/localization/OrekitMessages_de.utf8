@@ -542,10 +542,10 @@ NO_TEC_DATA_IN_FILE_FOR_DATE = IONEX Datei {0} beinhaltet keine TEC Daten für D
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = Anzahl an Karten {0} ist nicht konsistent mit der Kopfzeilen-Spezifikation: {1}
 
 # file {0} does not contain latitude or longitude bondaries in its header section
-NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = <MISSING TRANSLATION>
+NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = Die Datei {0} beinhaltet in der Kopfzeile keine Breiten- oder Längengrad Begrenzungen
 
 # file {0} does not contain epoch of first or last map in its header section
-NO_EPOCH_IN_IONEX_HEADER = <MISSING TRANSLATION>
+NO_EPOCH_IN_IONEX_HEADER = Die Datei {0} beinhaltet in der Kopfzeile keine Epoche der ersten oder letzten Karte
 
 # The first column of itrf-versions.conf is a plain prefix that is matched against the
 # name of each loaded file. It should not contain any regular expression syntax or
@@ -556,26 +556,26 @@ ITRF_VERSIONS_PREFIX_ONLY = Die erste Spalte der itrf-versions.conf ist ein einf
 CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = Die Berechnung der Zielrichtung an einem einzelnen Punkt ist nicht möglich: latitude = {0}, longitude = {1}
 
 # STEC integration did not converge
-STEC_INTEGRATION_DID_NOT_CONVERGE = <MISSING TRANSLATION>
+STEC_INTEGRATION_DID_NOT_CONVERGE = Die STEC-Integration konvergierte nicht
 
 # MODIP grid not be loaded from {0}
-MODIP_GRID_NOT_LOADED = <MISSING TRANSLATION>
+MODIP_GRID_NOT_LOADED = Das MODIP-Gitter kann nicht von {0} geladen werden
 
 # NeQuick coefficient f2 or fm3 not be loaded from {0}
-NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
+NEQUICK_F2_FM3_NOT_LOADED = Der NeQuick Koeffizient f2 oder fm3 kann nicht von {0} geladen werden
 
 # file {0} is not a supported Hatanaka-compressed file
-NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = {0} ist keine unterstützte Hatanaka Datei
 
 # invalid measurement types {0} and {1} for the combination of measurements {2}
-INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = Ungültige Messtypen {0} und {1} für folgende Kombination von Messungen {2}
 
 # frequencies {0} and {1} are incompatibles for the {2} combination
-INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = Die Frequenzen {0} und {1} sind nicht kompatibel für folgende Kombinationen {2}
 
 # observations {0} and {1} are not in chronological dates
-NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = Die Beobachtungen {0} und {1} besitzen keine chronologischen Daten
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
-EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
+EXCEPTIONAL_DATA_CONTEXT = Momentan wird noch die ExceptionalDataContext Klasse benutzt. Diese wird typischerweise ausschließlich für das Erkennen von Entwicklerfehler benutzt.
 
