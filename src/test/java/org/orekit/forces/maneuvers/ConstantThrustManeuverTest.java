@@ -82,10 +82,13 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass) {
         try {
-            boolean firing = ((Maneuver) forceModel).getManeuverTriggers().isFiring(new double[] {});            
-            Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
+            final boolean firing = ((Maneuver) forceModel).getManeuverTriggers().isFiring(new double[] {});            
+            final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
+            final double thrust = thrustVector.getNorm();
+            final Vector3D direction = thrustVector.normalize();
+            
             if (firing) {
-                return new FieldVector3D<>(mass.reciprocal(), rotation.applyInverseTo(thrustVector));
+                return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
             } else {
                 // constant (and null) acceleration when not firing
                 return FieldVector3D.getZero(mass.getField());
@@ -137,7 +140,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
         maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
-        checkStateJacobianVs80Implementation(midState, maneuver, law, 1e-20, false);
+        checkStateJacobianVs80Implementation(midState, maneuver, law, 1.0e-20, false);
 
     }
 
@@ -541,7 +544,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                            Vector3D.PLUS_I, "along-X-");
         maneuver.init(state, state.getDate().shiftedBy(3600.0));
 
-        checkParameterDerivative(state, maneuver, "along-X-thrust",    1.0e-3, 4.3e-14);
+        checkParameterDerivative(state, maneuver, "along-X-thrust",    1.0e-3, 7.1e-14);
         checkParameterDerivative(state, maneuver, "along-X-flow rate", 1.0e-3, 1.0e-15);
 
     }

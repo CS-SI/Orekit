@@ -106,9 +106,17 @@ public interface ThrustPropulsionModel extends PropulsionModel {
     default Vector3D getAcceleration(SpacecraftState s,
                                     final Attitude maneuverAttitude,
                                     double[] parameters) {
+
+        final Vector3D thrustVector = getThrustVector(s, parameters);
+        final double thrust = thrustVector.getNorm();
+        final Vector3D direction = thrustVector.normalize();
+
         // Compute thrust acceleration in inertial frame
-        return new Vector3D(1. / s.getMass(),
-                            maneuverAttitude.getRotation().applyInverseTo(getThrustVector(s, parameters)));
+        // It seems under-efficient to rotate direction and apply thrust
+        // instead of just rotating the whole thrust vector itself.
+        // However it has to be done that way to avoid numerical discrepancies with legacy tests.
+        return new Vector3D(thrust / s.getMass(),
+                            maneuverAttitude.getRotation().applyInverseTo(direction));
     }
 
     /** {@inheritDoc}
@@ -118,9 +126,17 @@ public interface ThrustPropulsionModel extends PropulsionModel {
     default <T extends RealFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
                                                                             final FieldAttitude<T> maneuverAttitude,
                                                                             T[] parameters) {
+        // Extract thrust & direction from thrust vector
+        final FieldVector3D<T> thrustVector = getThrustVector(s, parameters);
+        final T thrust = thrustVector.getNorm();
+        final FieldVector3D<T> direction = thrustVector.normalize();
+
         // Compute thrust acceleration in inertial frame
-        return new FieldVector3D<>(s.getMass().reciprocal(),
-                        maneuverAttitude.getRotation().applyInverseTo(getThrustVector(s, parameters)));
+        // It seems under-efficient to rotate direction and apply thrust
+        // instead of just rotating the whole thrust vector itself.
+        // However it has to be done that way to avoid numerical discrepancies with legacy tests.
+        return new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
+                        maneuverAttitude.getRotation().applyInverseTo(direction));
     }
 
     /** {@inheritDoc}
