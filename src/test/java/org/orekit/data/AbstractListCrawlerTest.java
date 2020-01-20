@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,7 +36,7 @@ public abstract class AbstractListCrawlerTest<T> {
     @Before
     public void setUp() {
         // Clear any filters that another test may have left
-        DataProvidersManager.getInstance().clearFilters();
+        DataContext.getDefault().getDataProvidersManager().clearFilters();
     }
 
     @Test
@@ -49,7 +49,7 @@ public abstract class AbstractListCrawlerTest<T> {
         Assert.assertEquals(4, nc.getInputs().size());
         nc.addInput(input("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"));
         Assert.assertEquals(5, nc.getInputs().size());
-        nc.feed(Pattern.compile(".*"), crawler);
+        nc.feed(Pattern.compile(".*"), crawler, DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(5, crawler.getCount());
     }
 
@@ -60,21 +60,24 @@ public abstract class AbstractListCrawlerTest<T> {
         nc.addInput(input("compressed-data/UTC-TAI.history.gz"));
         nc.addInput(input("compressed-data/eopc04_08_IAU2000.00.gz"));
         nc.addInput(input("compressed-data/eopc04_08_IAU2000.02.gz"));
-        nc.feed(Pattern.compile("^eopc04.*"), crawler);
+        nc.feed(Pattern.compile("^eopc04.*"), crawler,
+                DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(2, crawler.getCount());
     }
 
     @Test
     public void multiZip() {
         CountingLoader crawler = new CountingLoader();
-        build("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler);
+        build("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler,
+                                               DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test(expected=OrekitException.class)
     public void ioException() {
         try {
-            build("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new IOExceptionLoader());
+            build("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new IOExceptionLoader(),
+                                                       DataContext.getDefault().getDataProvidersManager());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -87,7 +90,8 @@ public abstract class AbstractListCrawlerTest<T> {
     @Test(expected=OrekitException.class)
     public void parseException() {
         try {
-            build("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new ParseExceptionLoader());
+            build("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new ParseExceptionLoader(),
+                                                       DataContext.getDefault().getDataProvidersManager());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());

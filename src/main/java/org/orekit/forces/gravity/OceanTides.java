@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,10 +23,12 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.OceanTidesWave;
 import org.orekit.frames.Frame;
@@ -34,6 +36,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.time.TimeScales;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -60,6 +63,9 @@ public class OceanTides extends AbstractForceModel {
      * This constructor uses pole tides, the default {@link #DEFAULT_STEP step} and default
      * {@link #DEFAULT_POINTS number of points} for the tides field interpolation.
      * </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param centralBodyFrame rotating body frame
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
@@ -70,14 +76,45 @@ public class OceanTides extends AbstractForceModel {
      * @see #DEFAULT_STEP
      * @see #DEFAULT_POINTS
      * @see #OceanTides(Frame, double, double, boolean, double, int, int, int, IERSConventions, UT1Scale)
-     * @see GravityFieldFactory#getOceanTidesWaves(int, int)
+     * @see GravityFields#getOceanTidesWaves(int, int)
+     * @see #OceanTides(Frame, double, double, boolean, double, int, int, int,
+     * IERSConventions, UT1Scale, GravityFields)
      */
+    @DefaultDataContext
     public OceanTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final int degree, final int order,
                       final IERSConventions conventions, final UT1Scale ut1) {
         this(centralBodyFrame, ae, mu, true,
              DEFAULT_STEP, DEFAULT_POINTS, degree, order,
              conventions, ut1);
+    }
+
+    /** Simple constructor.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param centralBodyFrame rotating body frame
+     * @param ae central body reference radius
+     * @param mu central body attraction coefficient
+     * @param poleTide if true, pole tide is computed
+     * @param step time step between sample points for interpolation
+     * @param nbPoints number of points to use for interpolation, if less than 2
+     * then no interpolation is performed (thus greatly increasing computation cost)
+     * @param degree degree of the tide model to load
+     * @param order order of the tide model to load
+     * @param conventions IERS conventions used for loading ocean pole tide
+     * @param ut1 UT1 time scale
+     * @see GravityFields#getOceanTidesWaves(int, int)
+     * @see #OceanTides(Frame, double, double, boolean, double, int, int, int,
+     * IERSConventions, UT1Scale, GravityFields)
+     */
+    @DefaultDataContext
+    public OceanTides(final Frame centralBodyFrame, final double ae, final double mu,
+                      final boolean poleTide, final double step, final int nbPoints,
+                      final int degree, final int order,
+                      final IERSConventions conventions, final UT1Scale ut1) {
+        this(centralBodyFrame, ae, mu, poleTide, step, nbPoints, degree, order,
+                conventions, ut1, DataContext.getDefault().getGravityFields());
     }
 
     /** Simple constructor.
@@ -92,19 +129,23 @@ public class OceanTides extends AbstractForceModel {
      * @param order order of the tide model to load
      * @param conventions IERS conventions used for loading ocean pole tide
      * @param ut1 UT1 time scale
-     * @see GravityFieldFactory#getOceanTidesWaves(int, int)
+     * @param gravityFields used to compute ocean tides.
+     * @see GravityFields#getOceanTidesWaves(int, int)
+     * @since 10.1
      */
     public OceanTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final boolean poleTide, final double step, final int nbPoints,
                       final int degree, final int order,
-                      final IERSConventions conventions, final UT1Scale ut1) {
+                      final IERSConventions conventions, final UT1Scale ut1,
+                      final GravityFields gravityFields) {
 
         // load the ocean tides model
-        final List<OceanTidesWave> waves = GravityFieldFactory.getOceanTidesWaves(degree, order);
+        final List<OceanTidesWave> waves = gravityFields.getOceanTidesWaves(degree, order);
 
+        final TimeScales timeScales = ut1.getEOPHistory().getTimeScales();
         final OceanTidesField raw =
                 new OceanTidesField(ae, mu, waves,
-                                    conventions.getNutationArguments(ut1),
+                                    conventions.getNutationArguments(ut1, timeScales),
                                     poleTide ? conventions.getOceanPoleTide(ut1.getEOPHistory()) : null);
 
         final NormalizedSphericalHarmonicsProvider provider;

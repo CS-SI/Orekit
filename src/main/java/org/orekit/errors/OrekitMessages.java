@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -246,7 +246,8 @@ public enum OrekitMessages implements Localizable {
     NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE("file {0} is not a supported Hatanaka-compressed file"),
     INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS("invalid measurement types {0} and {1} for the combination of measurements {2}"),
     INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS("frequencies {0} and {1} are incompatibles for the {2} combination"),
-    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates");
+    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates"),
+    EXCEPTIONAL_DATA_CONTEXT("Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.");
 
     // CHECKSTYLE: resume JavadocVariable check
 

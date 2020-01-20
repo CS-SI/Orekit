@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,7 +21,7 @@ import org.hipparchus.RealFieldElement;
 /** Geocentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Earth.
  * This time scale depends linearly from {@link TTScale Terrestrial Time}.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
@@ -43,28 +43,32 @@ public class TCGScale implements TimeScale {
      *   <li>1977-01-01T00:00:00.000 TAI</li>
      * </ul>
      */
-    private static final AbsoluteDate REFERENCE_DATE =
-        new AbsoluteDate(1977, 01, 01, TimeScalesFactory.getTAI());
+    private final AbsoluteDate referenceDate;
 
     /** Offset between TT and TAI scales. */
-    private static final double TT_OFFSET =
-        TimeScalesFactory.getTT().offsetFromTAI(REFERENCE_DATE);
+    private final double ttOffset;
 
-    /** Package private constructor for the factory.
+    /**
+     * Package private constructor for the factory.
+     *
+     * @param tt  TT time scale.
+     * @param tai TAI time scale.
      */
-    TCGScale() {
+    TCGScale(final TimeScale tt, final TimeScale tai) {
+        referenceDate = new AbsoluteDate(1977, 01, 01, tai);
+        ttOffset = tt.offsetFromTAI(referenceDate);
     }
 
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        return TT_OFFSET + LG_RATE * date.durationFrom(REFERENCE_DATE);
+        return ttOffset + LG_RATE * date.durationFrom(referenceDate);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.durationFrom(REFERENCE_DATE).multiply(LG_RATE).add(TT_OFFSET);
+        return date.durationFrom(referenceDate).multiply(LG_RATE).add(ttOffset);
     }
 
     /** {@inheritDoc} */

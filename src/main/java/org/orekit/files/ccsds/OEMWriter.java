@@ -1,5 +1,5 @@
 /* Copyright 2016 Applied Defense Solutions (ADS)
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * ADS licenses this file to You under the Apache License, Version 2.0

@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,14 @@
  */
 package org.orekit.files.ccsds;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -35,15 +37,15 @@ public enum CcsdsTimeScale {
     /** Greenwich Mean Sidereal Time. */
     GMST {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getGMST(conventions, false);
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getGMST(conventions, false);
         }
     },
     /** Global Positioning System. */
     GPS {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getGPS();
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getGPS();
         }
     },
     /** Mission Elapsed Time. */
@@ -51,7 +53,8 @@ public enum CcsdsTimeScale {
         @Override
         public AbsoluteDate parseDate(final String date,
                                       final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
+                                      final AbsoluteDate missionReferenceDate,
+                                      final TimeScales timeScales) {
             final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
             final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
                     clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
@@ -60,7 +63,7 @@ public enum CcsdsTimeScale {
         }
 
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     "MET");
@@ -71,7 +74,8 @@ public enum CcsdsTimeScale {
         @Override
         public AbsoluteDate parseDate(final String date,
                                       final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
+                                      final AbsoluteDate missionReferenceDate,
+                                      final TimeScales timeScales) {
             final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
             final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
                     clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
@@ -80,7 +84,7 @@ public enum CcsdsTimeScale {
         }
 
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     "MRT");
@@ -91,14 +95,15 @@ public enum CcsdsTimeScale {
         @Override
         public AbsoluteDate parseDate(final String date,
                                       final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
+                                      final AbsoluteDate missionReferenceDate,
+                                      final TimeScales timeScales) {
             throw new OrekitException(
                     OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
                     this.name());
         }
 
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     this.name());
@@ -107,52 +112,71 @@ public enum CcsdsTimeScale {
     /** International Atomic Time. */
     TAI {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getTAI();
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getTAI();
         }
     },
     /** Barycentric Coordinate Time. */
     TCB {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getTCB();
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getTCB();
         }
     },
     /** Barycentric Dynamical Time. */
     TDB {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getTDB();
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getTDB();
         }
     },
     /** Geocentric Coordinate Time. */
     TCG {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getTCG();
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getTCG();
         }
     },
     /** Terrestrial Time. */
     TT {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getTT();
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getTT();
         }
     },
     /** Universal Time. */
     UT1 {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getUT1(conventions, false);
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getUT1(conventions, false);
         }
     },
     /** Universal Coordinated Time. */
     UTC {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions) {
-            return TimeScalesFactory.getUTC();
+        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
+            return timeScales.getUTC();
         }
     };
+
+    /**
+     * Parse a date in this time scale.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param date                 a CCSDS date string.
+     * @param conventions          IERS conventions for {@link #UT1} and {@link #GMST}.
+     * @param missionReferenceDate epoch for {@link #MET} and {@link #MRT}.
+     * @return parsed {@code date}.
+     * @see #parseDate(String, IERSConventions, AbsoluteDate, TimeScales)
+     */
+    @DefaultDataContext
+    public AbsoluteDate parseDate(final String date,
+                                  final IERSConventions conventions,
+                                  final AbsoluteDate missionReferenceDate) {
+        return parseDate(date, conventions, missionReferenceDate,
+                DataContext.getDefault().getTimeScales());
+    }
 
     /**
      * Parse a date in this time scale.
@@ -160,21 +184,39 @@ public enum CcsdsTimeScale {
      * @param date                 a CCSDS date string.
      * @param conventions          IERS conventions for {@link #UT1} and {@link #GMST}.
      * @param missionReferenceDate epoch for {@link #MET} and {@link #MRT}.
+     * @param timeScales the set of time scales to use.
      * @return parsed {@code date}.
+     * @since 10.1
      */
     public AbsoluteDate parseDate(final String date,
                                   final IERSConventions conventions,
-                                  final AbsoluteDate missionReferenceDate) {
-        return new AbsoluteDate(date, this.getTimeScale(conventions));
+                                  final AbsoluteDate missionReferenceDate,
+                                  final TimeScales timeScales) {
+        return new AbsoluteDate(date, this.getTimeScale(conventions, timeScales));
+    }
+
+    /**
+     * Get the corresponding {@link TimeScale}.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param conventions IERS Conventions for the {@link #GMST} and {@link #UT1} scales.
+     * @return the time scale.
+     */
+    @DefaultDataContext
+    public TimeScale getTimeScale(final IERSConventions conventions) {
+        return getTimeScale(conventions, DataContext.getDefault().getTimeScales());
     }
 
     /**
      * Get the corresponding {@link TimeScale}.
      *
      * @param conventions IERS Conventions for the {@link #GMST} and {@link #UT1} scales.
+     * @param timeScales the set of time scales to use.
      * @return the time scale.
      */
-    public abstract TimeScale getTimeScale(IERSConventions conventions);
+    public abstract TimeScale getTimeScale(IERSConventions conventions,
+                                           TimeScales timeScales);
 
     /**
      * Check if {@code timeScale} is one of the values supported by this enum.

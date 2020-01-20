@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -32,8 +32,10 @@ import org.hipparchus.ode.sampling.ODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -43,6 +45,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -164,17 +167,41 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  is not called after creation, the integrated orbit will
      *  follow a Keplerian evolution only.
      *  </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      *  @param integrator numerical integrator to use for propagation.
      *  @param propagationType type of orbit to output (mean or osculating).
+     * @see #DSSTPropagator(ODEIntegrator, PropagationType, AttitudeProvider)
      */
+    @DefaultDataContext
     public DSSTPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
+        this(integrator, propagationType,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Create a new instance of DSSTPropagator.
+     *  <p>
+     *  After creation, there are no perturbing forces at all.
+     *  This means that if {@link #addForceModel addForceModel}
+     *  is not called after creation, the integrated orbit will
+     *  follow a Keplerian evolution only.
+     *  </p>
+     * @param integrator numerical integrator to use for propagation.
+     * @param propagationType type of orbit to output (mean or osculating).
+     * @param attitudeProvider the attitude law.
+     * @since 10.1
+     */
+    public DSSTPropagator(final ODEIntegrator integrator,
+                          final PropagationType propagationType,
+                          final AttitudeProvider attitudeProvider) {
         super(integrator, propagationType);
         forceModels = new ArrayList<DSSTForceModel>();
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.MEAN);
-        setAttitudeProvider(DEFAULT_LAW);
+        setAttitudeProvider(attitudeProvider);
         setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
     }
 
@@ -187,17 +214,15 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  follow a Keplerian evolution only. Only the mean orbits
      *  will be generated.
      *  </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      *  @param integrator numerical integrator to use for propagation.
+     * @see #DSSTPropagator(ODEIntegrator, PropagationType, AttitudeProvider)
      */
+    @DefaultDataContext
     public DSSTPropagator(final ODEIntegrator integrator) {
-        super(integrator, PropagationType.MEAN);
-        forceModels = new ArrayList<DSSTForceModel>();
-        initMapper();
-        // DSST uses only equinoctial orbits and mean longitude argument
-        setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.MEAN);
-        setAttitudeProvider(DEFAULT_LAW);
-        setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
+        this(integrator, PropagationType.MEAN);
     }
 
     /** Set the central attraction coefficient μ.

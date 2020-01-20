@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -32,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
 /** This class is a container for a single set of TLE data.
@@ -148,13 +150,33 @@ public class TLE implements TimeStamped, Serializable {
     /** Second line. */
     private String line2;
 
-    /** Simple constructor from unparsed two lines.
+    /** The UTC scale. */
+    private final TimeScale utc;
+
+    /** Simple constructor from unparsed two lines. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
      * before trying to build this object.<p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
+     * @see #TLE(String, String, TimeScale)
      */
+    @DefaultDataContext
     public TLE(final String line1, final String line2) {
+        this(line1, line2, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /** Simple constructor from unparsed two lines using the given time scale as UTC.
+     *
+     * <p>The static method {@link #isFormatOK(String, String)} should be called
+     * before trying to build this object.<p>
+     * @param line1 the first element (69 char String)
+     * @param line2 the second element (69 char String)
+     * @param utc the UTC time scale.
+     * @since 10.1
+     */
+    public TLE(final String line1, final String line2, final TimeScale utc) {
 
         // identification
         satelliteNumber = parseInteger(line1, 2, 5);
@@ -178,7 +200,7 @@ public class TLE implements TimeStamped, Serializable {
         final double secondsB  = (df % 31250l) / 31250.0;
         epoch = new AbsoluteDate(new DateComponents(year, dayInYear),
                                  new TimeComponents(secondsA, secondsB),
-                                 TimeScalesFactory.getUTC());
+                                 utc);
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
@@ -203,10 +225,13 @@ public class TLE implements TimeStamped, Serializable {
         // save the lines
         this.line1 = line1;
         this.line2 = line2;
+        this.utc = utc;
 
     }
 
-    /** Simple constructor from already parsed elements.
+    /** Simple constructor from already parsed elements. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
      * @param launchYear launch year (all digits)
@@ -225,7 +250,10 @@ public class TLE implements TimeStamped, Serializable {
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
      * @param bStar ballistic coefficient
+     * @see #TLE(int, char, int, int, String, int, int, AbsoluteDate, double, double,
+     * double, double, double, double, double, double, int, double, TimeScale)
      */
+    @DefaultDataContext
     public TLE(final int satelliteNumber, final char classification,
                final int launchYear, final int launchNumber, final String launchPiece,
                final int ephemerisType, final int elementNumber, final AbsoluteDate epoch,
@@ -233,6 +261,44 @@ public class TLE implements TimeStamped, Serializable {
                final double meanMotionSecondDerivative, final double e, final double i,
                final double pa, final double raan, final double meanAnomaly,
                final int revolutionNumberAtEpoch, final double bStar) {
+        this(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
+                ephemerisType, elementNumber, epoch, meanMotion,
+                meanMotionFirstDerivative, meanMotionSecondDerivative, e, i, pa, raan,
+                meanAnomaly, revolutionNumberAtEpoch, bStar,
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /** Simple constructor from already parsed elements using the given time scale as UTC.
+     *
+     * @param satelliteNumber satellite number
+     * @param classification classification (U for unclassified)
+     * @param launchYear launch year (all digits)
+     * @param launchNumber launch number
+     * @param launchPiece launch piece
+     * @param ephemerisType type of ephemeris
+     * @param elementNumber element number
+     * @param epoch elements epoch
+     * @param meanMotion mean motion (rad/s)
+     * @param meanMotionFirstDerivative mean motion first derivative (rad/s²)
+     * @param meanMotionSecondDerivative mean motion second derivative (rad/s³)
+     * @param e eccentricity
+     * @param i inclination (rad)
+     * @param pa argument of perigee (rad)
+     * @param raan right ascension of ascending node (rad)
+     * @param meanAnomaly mean anomaly (rad)
+     * @param revolutionNumberAtEpoch revolution number at epoch
+     * @param bStar ballistic coefficient
+     * @param utc the UTC time scale.
+     * @since 10.1
+     */
+    public TLE(final int satelliteNumber, final char classification,
+               final int launchYear, final int launchNumber, final String launchPiece,
+               final int ephemerisType, final int elementNumber, final AbsoluteDate epoch,
+               final double meanMotion, final double meanMotionFirstDerivative,
+               final double meanMotionSecondDerivative, final double e, final double i,
+               final double pa, final double raan, final double meanAnomaly,
+               final int revolutionNumberAtEpoch, final double bStar,
+               final TimeScale utc) {
 
         // identification
         this.satelliteNumber = satelliteNumber;
@@ -260,7 +326,17 @@ public class TLE implements TimeStamped, Serializable {
         // don't build the line until really needed
         this.line1 = null;
         this.line2 = null;
+        this.utc = utc;
 
+    }
+
+    /**
+     * Get the UTC time scale used to create this TLE.
+     *
+     * @return UTC time scale.
+     */
+    TimeScale getUtc() {
+        return utc;
     }
 
     /** Get the first line.
@@ -301,7 +377,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(addPadding("launchPiece",  launchPiece, ' ', 3, false));
 
         buffer.append(' ');
-        final DateTimeComponents dtc = epoch.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = epoch.getComponents(utc);
         buffer.append(addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true));
         buffer.append(addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true));
         buffer.append('.');

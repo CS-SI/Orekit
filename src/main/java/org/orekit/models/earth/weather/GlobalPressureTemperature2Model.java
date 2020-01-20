@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -33,6 +33,8 @@ import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -40,7 +42,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.troposphere.ViennaOneModel;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** The Global Pressure and Temperature 2 (GPT2) model.
@@ -124,36 +126,62 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
     /** water vapour pressure, in hPa. */
     private double e0;
 
-    /** The height of the station in m. */
-    private double height;
-
     /** Geoid used to compute the undulations. */
     private final Geoid geoid;
 
-    /** Current date. */
-    private AbsoluteDate date;
+    /** UTC time scale. */
+    private final TimeScale utc;
 
-    /** Constructor with supported names given by user.
+    /**
+     * Constructor with supported names given by user. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * @param supportedNames supported names
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude longitude geodetic longitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
+     * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
+     * DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public GlobalPressureTemperature2Model(final String supportedNames, final double latitude,
                                            final double longitude, final Geoid geoid) {
+        this(supportedNames, latitude, longitude, geoid,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Constructor with supported names and source of GPT2 auxiliary data given by user.
+     *
+     * @param supportedNames supported names
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude longitude geodetic longitude of the station, in radians
+     * @param geoid level surface of the gravity potential of a body
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @param utc UTC time scale.
+     * @since 10.1
+     */
+    public GlobalPressureTemperature2Model(final String supportedNames,
+                                           final double latitude,
+                                           final double longitude,
+                                           final Geoid geoid,
+                                           final DataProvidersManager dataProvidersManager,
+                                           final TimeScale utc) {
         this.coefficientsA = null;
         this.temperature   = Double.NaN;
         this.pressure      = Double.NaN;
         this.e0            = Double.NaN;
         this.geoid         = geoid;
         this.latitude      = latitude;
+        this.utc = utc;
 
         // get the lazily loaded shared grid
         Grid grid = SHARED_GRID.get();
         if (grid == null) {
             // this is the first instance we create, we need to load the grid data
             final Parser parser = new Parser();
-            DataProvidersManager.getInstance().feed(supportedNames, parser);
+            dataProvidersManager.feed(supportedNames, parser);
             SHARED_GRID.compareAndSet(null, parser.grid);
             grid = parser.grid;
         }
@@ -170,11 +198,17 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
 
     }
 
-    /** Constructor with default supported names.
+    /**
+     * Constructor with default supported names. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body
+     * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
+     * DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public GlobalPressureTemperature2Model(final double latitude, final double longitude, final Geoid geoid) {
         this(DEFAULT_SUPPORTED_NAMES, latitude, longitude, geoid);
     }
@@ -214,10 +248,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
     @Override
     public void weatherParameters(final double stationHeight, final AbsoluteDate currentDate) {
 
-        this.date      = currentDate;
-        this.height    = stationHeight;
-
-        final int dayOfYear = currentDate.getComponents(TimeScalesFactory.getUTC()).getDate().getDayOfYear();
+        final int dayOfYear = currentDate.getComponents(utc).getDate().getDayOfYear();
 
         // ah and aw coefficients
         coefficientsA = new double[] {
@@ -226,8 +257,8 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
         };
 
         // Corrected height (can be negative)
-        final double undu            = geoid.getUndulation(latitude, longitude, date);
-        final double correctedheight = height - undu - interpolate(e -> e.hS);
+        final double undu            = geoid.getUndulation(latitude, longitude, currentDate);
+        final double correctedheight = stationHeight - undu - interpolate(e -> e.hS);
 
         // Temperature gradient [K/m]
         final double dTdH = interpolate(e -> evaluate(dayOfYear, e.dT)) * 0.001;
@@ -483,7 +514,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
             latKey       = (int) FastMath.rint(latDegree * DEG_TO_MAS);
             lonKey       = (int) FastMath.rint(lonDegree * DEG_TO_MAS);
 
-            hS           = Double.valueOf(fields[23]);
+            hS           = Double.parseDouble(fields[23]);
 
             pressure0    = createModel(fields, 2);
             temperature0 = createModel(fields, 7);

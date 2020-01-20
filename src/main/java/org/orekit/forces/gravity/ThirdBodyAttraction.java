@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -59,8 +60,8 @@ public class ThirdBodyAttraction extends AbstractForceModel {
 
     /** Simple constructor.
      * @param body the third body to consider
-     * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
-     * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
+     * (ex: {@link CelestialBodies#getSun()} or
+     * {@link CelestialBodies#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
         try {

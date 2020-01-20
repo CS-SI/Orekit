@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,9 +23,12 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -241,7 +244,7 @@ public class HelmertTransformation implements TransformProvider {
         private final ITRFVersion destination;
 
         /** Transformation. */
-        private final HelmertTransformation transformation;
+        private final HelmertTransformationWithoutTimeScale transformation;
 
         /** Simple constructor.
          * @param origin origin ITRF
@@ -268,7 +271,7 @@ public class HelmertTransformation implements TransformProvider {
             this.origin         = origin;
             this.destination    = destination;
             this.transformation =
-                    new HelmertTransformation(new AbsoluteDate(refYear, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
+                    new HelmertTransformationWithoutTimeScale(new DateTimeComponents(refYear, 1, 1, 12, 0, 0),
                                               t1, t2, t3, r1, r2, r3, t1Dot, t2Dot, t3Dot, r1Dot, r2Dot, r3Dot);
         }
 
@@ -289,20 +292,127 @@ public class HelmertTransformation implements TransformProvider {
         }
 
         /** Get the underlying {@link HelmertTransformation}.
+         *
+         * <p>This method uses the {@link DataContext#getDefault() default data context}.
+         *
          * @return underlying {@link HelmertTransformation}
          * @since 9.2
+         * @see #getTransformation(TimeScale)
          */
+        @DefaultDataContext
         public HelmertTransformation getTransformation() {
-            return transformation;
+            return getTransformation(DataContext.getDefault().getTimeScales().getTT());
+        }
+
+        /** Get the underlying {@link HelmertTransformation}.
+         * @return underlying {@link HelmertTransformation}
+         * @param tt TT time scale.
+         * @since 10.1
+         */
+        public HelmertTransformation getTransformation(final TimeScale tt) {
+            return transformation.withTimeScale(tt);
+        }
+
+        /** Create an ITRF frame by transforming another ITRF frame.
+         *
+         * <p>This method uses the {@link DataContext#getDefault() default data context}.
+         *
+         * @param parent parent ITRF frame
+         * @param name name of the frame to create
+         * @return new ITRF frame
+         * @see #createTransformedITRF(Frame, String, TimeScale)
+         */
+        @DefaultDataContext
+        public Frame createTransformedITRF(final Frame parent, final String name) {
+            return createTransformedITRF(parent, name,
+                    DataContext.getDefault().getTimeScales().getTT());
         }
 
         /** Create an ITRF frame by transforming another ITRF frame.
          * @param parent parent ITRF frame
          * @param name name of the frame to create
+         * @param tt TT time scale.
          * @return new ITRF frame
+         * @since 10.1
          */
-        public Frame createTransformedITRF(final Frame parent, final String name) {
-            return new Frame(parent, transformation, name);
+        public Frame createTransformedITRF(final Frame parent,
+                                           final String name,
+                                           final TimeScale tt) {
+            return new Frame(parent, getTransformation(tt), name);
+        }
+
+    }
+
+    /**
+     * A {@link HelmertTransformation} without reference to a {@link TimeScale}. This
+     * class is needed to maintain compatibility with Orekit 10.0 since {@link Predefined}
+     * is an enum and it had a reference to the TT time scale.
+     */
+    private static class HelmertTransformationWithoutTimeScale {
+
+        /** Cartesian part of the transform. */
+        private final PVCoordinates cartesian;
+
+        /** Global rotation vector (applying rotation is done by computing cross product). */
+        private final Vector3D rotationVector;
+
+        /** First time derivative of the rotation (norm representing angular rate). */
+        private final Vector3D rotationRate;
+
+        /** Reference epoch of the transform. */
+        private final DateTimeComponents epoch;
+
+        /** Build a transform from its primitive operations.
+         * @param epoch reference epoch of the transform
+         * @param t1 translation parameter along X axis (BEWARE, this is in mm)
+         * @param t2 translation parameter along Y axis (BEWARE, this is in mm)
+         * @param t3 translation parameter along Z axis (BEWARE, this is in mm)
+         * @param r1 rotation parameter around X axis (BEWARE, this is in mas)
+         * @param r2 rotation parameter around Y axis (BEWARE, this is in mas)
+         * @param r3 rotation parameter around Z axis (BEWARE, this is in mas)
+         * @param t1Dot rate of translation parameter along X axis (BEWARE, this is in mm/y)
+         * @param t2Dot rate of translation parameter along Y axis (BEWARE, this is in mm/y)
+         * @param t3Dot rate of translation parameter along Z axis (BEWARE, this is in mm/y)
+         * @param r1Dot rate of rotation parameter around X axis (BEWARE, this is in mas/y)
+         * @param r2Dot rate of rotation parameter around Y axis (BEWARE, this is in mas/y)
+         * @param r3Dot rate of rotation parameter around Z axis (BEWARE, this is in mas/y)
+         */
+        HelmertTransformationWithoutTimeScale(
+                final DateTimeComponents epoch,
+                final double t1, final double t2, final double t3,
+                final double r1, final double r2, final double r3,
+                final double t1Dot, final double t2Dot, final double t3Dot,
+                final double r1Dot, final double r2Dot, final double r3Dot) {
+
+            // conversion parameters to SI units
+            final double mmToM    = 1.0e-3;
+            final double masToRad = 1.0e-3 * Constants.ARC_SECONDS_TO_RADIANS;
+
+            this.epoch          = epoch;
+            this.cartesian = new PVCoordinates(new Vector3D(t1 * mmToM,
+                    t2 * mmToM,
+                    t3 * mmToM),
+                    new Vector3D(t1Dot * mmToM / Constants.JULIAN_YEAR,
+                            t2Dot * mmToM / Constants.JULIAN_YEAR,
+                            t3Dot * mmToM / Constants.JULIAN_YEAR));
+            this.rotationVector = new Vector3D(r1 * masToRad,
+                    r2 * masToRad,
+                    r3 * masToRad);
+            this.rotationRate   = new Vector3D(r1Dot * masToRad / Constants.JULIAN_YEAR,
+                    r2Dot * masToRad / Constants.JULIAN_YEAR,
+                    r3Dot * masToRad / Constants.JULIAN_YEAR);
+
+        }
+
+        /**
+         * Get the Helmert transformation with reference to the given time scale.
+         *
+         * @param tt TT time scale.
+         * @return Helmert transformation.
+         */
+        public HelmertTransformation withTimeScale(final TimeScale tt) {
+            return new HelmertTransformation(cartesian, rotationVector, rotationRate,
+                    new AbsoluteDate(epoch, tt));
         }
 
     }
@@ -358,6 +468,24 @@ public class HelmertTransformation implements TransformProvider {
                                            r2Dot * masToRad / Constants.JULIAN_YEAR,
                                            r3Dot * masToRad / Constants.JULIAN_YEAR);
 
+    }
+
+    /**
+     * Private constructor.
+     *
+     * @param cartesian      part of the transform.
+     * @param rotationVector global rotation vector.
+     * @param rotationRate   time derivative of rotation.
+     * @param epoch          of transform.
+     */
+    private HelmertTransformation(final PVCoordinates cartesian,
+                                  final Vector3D rotationVector,
+                                  final Vector3D rotationRate,
+                                  final AbsoluteDate epoch) {
+        this.cartesian = cartesian;
+        this.rotationVector = rotationVector;
+        this.rotationRate = rotationRate;
+        this.epoch = epoch;
     }
 
     /** Get the reference epoch of the transform.

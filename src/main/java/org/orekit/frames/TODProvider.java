@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,12 +23,15 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.TimeScalarFunction;
+import org.orekit.time.TimeScales;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 
 /** Provider for True of Date (ToD) frame.
@@ -53,15 +56,40 @@ class TODProvider implements EOPBasedTransformProvider {
     /** Function computing the nutation angles. */
     private final transient TimeVectorFunction nutationFunction;
 
-    /** Simple constructor.
-     * @param conventions IERS conventions to apply
-     * @param eopHistory EOP history
+
+    /**
+     * Simple constructor.
+     *  @param conventions IERS conventions to apply
+     * @param eopHistory  EOP history, or {@code null} if no correction should be
+     *                    applied.
+     * @param timeScales         TAI time scale.
      */
-    TODProvider(final IERSConventions conventions, final EOPHistory eopHistory) {
+    TODProvider(final IERSConventions conventions,
+                final EOPHistory eopHistory,
+                final TimeScales timeScales) {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
-        this.obliquityFunction = conventions.getMeanObliquityFunction();
-        this.nutationFunction  = conventions.getNutationFunction();
+        this.obliquityFunction = conventions.getMeanObliquityFunction(timeScales);
+        this.nutationFunction  =
+                conventions.getNutationFunction(timeScales);
+    }
+
+    /**
+     * Private constructor.
+     *
+     * @param conventions       IERS conventions to use.
+     * @param eopHistory        or {@code null} if no correction should be applied.
+     * @param obliquityFunction to use.
+     * @param nutationFunction  to use.
+     */
+    private TODProvider(final IERSConventions conventions,
+                        final EOPHistory eopHistory,
+                        final TimeScalarFunction obliquityFunction,
+                        final TimeVectorFunction nutationFunction) {
+        this.conventions = conventions;
+        this.eopHistory = eopHistory;
+        this.obliquityFunction = obliquityFunction;
+        this.nutationFunction = nutationFunction;
     }
 
     /** {@inheritDoc} */
@@ -73,7 +101,8 @@ class TODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public TODProvider getNonInterpolatingProvider() {
-        return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
+        return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory(),
+                obliquityFunction, nutationFunction);
     }
 
     /** {@inheritDoc} */
@@ -145,11 +174,13 @@ class TODProvider implements EOPBasedTransformProvider {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(conventions, eopHistory);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -176,7 +207,8 @@ class TODProvider implements EOPBasedTransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new TODProvider(conventions, eopHistory);
+                return new TODProvider(conventions, eopHistory,
+                        DataContext.getDefault().getTimeScales());
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

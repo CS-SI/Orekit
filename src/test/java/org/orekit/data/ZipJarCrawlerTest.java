@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -34,7 +34,8 @@ public class ZipJarCrawlerTest {
     @Test
     public void testMultiZipClasspath() {
         CountingLoader crawler = new CountingLoader();
-        new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler);
+        new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler,
+                                                           DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(6, crawler.getCount());
     }
 
@@ -43,10 +44,12 @@ public class ZipJarCrawlerTest {
         URL url =
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader();
-        new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler);
+        new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler,
+                                                                DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(6, crawler.getCount());
     }
 
+    @Deprecated
     @Test
     public void testExtraMethods() throws URISyntaxException {
         URL url =

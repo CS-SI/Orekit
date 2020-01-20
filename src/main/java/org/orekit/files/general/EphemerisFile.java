@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -182,11 +182,33 @@ public interface EphemerisFile {
         String getFrameString();
 
         /**
-         * Get the reference frame for this ephemeris segment.
+         * Get the reference frame for this ephemeris segment. The defining frame for
+         * {@link #getCoordinates()}.
          *
          * @return the reference frame for this segment. Never {@code null}.
          */
         Frame getFrame();
+
+        /**
+         * Get the inertial reference frame for this ephemeris segment. Defines the
+         * propagation frame for {@link #getPropagator()}.
+         *
+         * <p>The default implementation returns {@link #getFrame()} if it is inertial.
+         * Otherwise it returns {@link Frame#getRoot()}. Implementors are encouraged to
+         * override this default implementation if a more suitable inertial frame is
+         * available.
+         *
+         * @return an reference frame that is inertial, i.e. {@link
+         * Frame#isPseudoInertial()} is {@code true}. May be the same as {@link
+         * #getFrame()} if it is inertial.
+         */
+        default Frame getInertialFrame() {
+            final Frame frame = getFrame();
+            if (frame.isPseudoInertial()) {
+                return frame;
+            }
+            return Frame.getRoot();
+        }
 
         /**
          * Get the time scale for this ephemeris segment.
@@ -223,7 +245,7 @@ public interface EphemerisFile {
         CartesianDerivativesFilter getAvailableDerivatives();
 
         /**
-         * Get the coordinates for this ephemeris segment.
+         * Get the coordinates for this ephemeris segment in {@link #getFrame()}.
          *
          * @return a list of state vectors in chronological order. The coordinates are not
          * necessarily evenly spaced in time. The value of {@link

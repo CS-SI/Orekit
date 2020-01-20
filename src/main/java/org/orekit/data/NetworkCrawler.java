@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,7 +28,6 @@ import org.orekit.errors.OrekitException;
 
 
 /** Provider for data files directly fetched from network.
-
  * <p>
  * This class handles a list of URLs pointing to data files or zip/jar on
  * the net. Since the net is not a tree structure the list elements

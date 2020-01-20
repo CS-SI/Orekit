@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,7 +26,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 
 /** Veis 1950 Frame.
@@ -39,10 +39,6 @@ class VEISProvider implements TransformProvider {
     /** Serializable UID. */
     private static final long serialVersionUID = 20130530L;
 
-    /** Reference date. */
-    private static AbsoluteDate VST_REFERENCE =
-        new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeScalesFactory.getTAI());
-
     /** 1st coef for Veis sidereal time computation in radians (100.075542 deg). */
     private static final double VST0 = 1.746647708617871;
 
@@ -52,9 +48,21 @@ class VEISProvider implements TransformProvider {
     /** Veis sidereal time derivative in rad/s. */
     private static final double VSTD = 7.292115146705209e-5;
 
-    /** Constructor for the singleton.
+    /** Set of time scales to use. */
+    private final transient TimeScales timeScales;
+
+    /** Reference date. */
+    private final AbsoluteDate vstReference;
+
+    /**
+     * Constructor for the singleton.
+     *
+     * @param timeScales to use when computing the transform.
      */
-    VEISProvider() {
+    VEISProvider(final TimeScales timeScales) {
+        this.timeScales = timeScales;
+        this.vstReference =
+                new AbsoluteDate(DateComponents.FIFTIES_EPOCH, timeScales.getTAI());
     }
 
     /** {@inheritDoc} */
@@ -62,8 +70,8 @@ class VEISProvider implements TransformProvider {
     public Transform getTransform(final AbsoluteDate date) {
 
         // offset from FIFTIES epoch (UT1 scale)
-        final double dtai = date.durationFrom(VST_REFERENCE);
-        final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
+        final double dtai = date.durationFrom(vstReference);
+        final double dutc = timeScales.getUTC().offsetFromTAI(date);
         final double dut1 = 0.0; // fixed at 0 since Veis parent is GTOD frame WITHOUT EOP corrections
 
         final double tut1 = dtai + dutc + dut1;
@@ -88,8 +96,8 @@ class VEISProvider implements TransformProvider {
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // offset from FIFTIES epoch (UT1 scale)
-        final T dtai = date.durationFrom(VST_REFERENCE);
-        final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date.toAbsoluteDate());
+        final T dtai = date.durationFrom(vstReference);
+        final double dutc = timeScales.getUTC().offsetFromTAI(date.toAbsoluteDate());
         final double dut1 = 0.0; // fixed at 0 since Veis parent is GTOD frame WITHOUT EOP corrections
 
         final T tut1 = dtai.add(dutc + dut1);

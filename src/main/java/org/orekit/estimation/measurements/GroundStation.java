@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -42,7 +42,6 @@ import org.orekit.frames.Transform;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.ParameterDriver;
 
@@ -185,7 +184,8 @@ public class GroundStation {
             throw new OrekitException(OrekitMessages.NO_EARTH_ORIENTATION_PARAMETERS);
         }
 
-        final UT1Scale baseUT1 = TimeScalesFactory.getUT1(eopHistory);
+        final UT1Scale baseUT1 = eopHistory.getTimeScales()
+                .getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
         this.estimatedEarthFrameProvider = new EstimatedEarthFrameProvider(baseUT1);
         this.estimatedEarthFrame = new Frame(baseFrame.getParent(), estimatedEarthFrameProvider,
                                              baseFrame.getParent() + "-estimated");
@@ -193,7 +193,9 @@ public class GroundStation {
         if (displacements.length == 0) {
             arguments = null;
         } else {
-            arguments = eopHistory.getConventions().getNutationArguments(estimatedEarthFrameProvider.getEstimatedUT1());
+            arguments = eopHistory.getConventions().getNutationArguments(
+                    estimatedEarthFrameProvider.getEstimatedUT1(),
+                    eopHistory.getTimeScales());
         }
 
         this.displacements = displacements.clone();

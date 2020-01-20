@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,10 +23,12 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
 /** The Vienna1 tropospheric delay model for radio techniques.
@@ -55,16 +57,43 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
     /** Geodetic site latitude, radians.*/
     private final double latitude;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /** Build a new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
      * @param zenithDelay Values of hydrostatic and wet delays
      * @param latitude geodetic latitude of the station, in radians
+     * @see #ViennaOneModel(double[], double[], double, TimeScale)
      */
+    @DefaultDataContext
     public ViennaOneModel(final double[] coefficientA, final double[] zenithDelay,
                           final double latitude) {
+        this(coefficientA, zenithDelay, latitude,
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Build a new instance.
+     *
+     * @param coefficientA The a coefficients for the computation of the wet and
+     *                     hydrostatic mapping functions.
+     * @param zenithDelay  Values of hydrostatic and wet delays
+     * @param latitude     geodetic latitude of the station, in radians
+     * @param utc          UTC time scale.
+     * @since 10.1
+     */
+    public ViennaOneModel(final double[] coefficientA,
+                          final double[] zenithDelay,
+                          final double latitude,
+                          final TimeScale utc) {
         this.coefficientsA = coefficientA.clone();
         this.zenithDelay   = zenithDelay.clone();
         this.latitude      = latitude;
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
@@ -114,7 +143,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
     public double[] mappingFactors(final double elevation, final double height,
                                    final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // General constants | Hydrostatic part
@@ -168,7 +197,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         final T zero = field.getZero();
 
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // General constants | Hydrostatic part

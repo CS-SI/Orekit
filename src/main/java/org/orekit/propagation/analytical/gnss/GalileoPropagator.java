@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,12 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Frames;
+import org.orekit.propagation.Propagator;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -56,7 +59,7 @@ public class GalileoPropagator extends AbstractGNSSPropagator {
 
         // Optional parameters
         /** The attitude provider. */
-        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        private AttitudeProvider attitudeProvider;
         /** The mass. */
         private double mass = DEFAULT_MASS;
         /** The ECI frame. */
@@ -67,7 +70,36 @@ public class GalileoPropagator extends AbstractGNSSPropagator {
         /** Initializes the builder.
          * <p>The Galileo orbital elements is the only requested parameter to build a GalileoPropagator.</p>
          * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+         *  default data context.<br>
+         * The mass is set by default to the
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+         * The ECI frame is set by default to the
+         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+         *  context.<br>
+         * The ECEF frame is set by default to the
+         *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+         *  CIO/2010-based ITRF simple EOP} in the default data context.
+         * </p>
+         *
+         * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+         *
+         * @param galileoOrbElt the Galileo orbital elements to be used by the Galileo propagator.
+         * @see #attitudeProvider(AttitudeProvider provider)
+         * @see #mass(double mass)
+         * @see #eci(Frame inertial)
+         * @see #ecef(Frame bodyFixed)
+         * @see #Builder(GalileoOrbitalElements, Frames)
+         */
+        @DefaultDataContext
+        public Builder(final GalileoOrbitalElements galileoOrbElt) {
+            this(galileoOrbElt, DataContext.getDefault().getFrames());
+        }
+
+        /** Initializes the builder.
+         * <p>The Galileo orbital elements is the only requested parameter to build a GalileoPropagator.</p>
+         * <p>The attitude provider is set by default to the
+         *  {@link org.orekit.propagation.Propagator#getDefaultLaw(Frames) DEFAULT_LAW}.<br>
          * The mass is set by default to the
          *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
          * The ECI frame is set by default to the
@@ -77,15 +109,18 @@ public class GalileoPropagator extends AbstractGNSSPropagator {
          * </p>
          *
          * @param galileoOrbElt the Galileo orbital elements to be used by the Galileo propagator.
+         * @param frames to use building the propagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
+         * @since 10.1
          */
-        public Builder(final GalileoOrbitalElements galileoOrbElt) {
+        public Builder(final GalileoOrbitalElements galileoOrbElt, final Frames frames) {
             this.orbit = galileoOrbElt;
-            this.eci   = FramesFactory.getEME2000();
-            this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            this.eci   = frames.getEME2000();
+            this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
+            attitudeProvider = Propagator.getDefaultLaw(frames);
         }
 
         /** Sets the attitude provider.

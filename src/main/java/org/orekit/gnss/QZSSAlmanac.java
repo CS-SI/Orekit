@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,6 +17,8 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.QZSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
@@ -73,6 +75,43 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
     /** First order clock correction. */
     private final double af1;
 
+    /** Date of validity. */
+    private final AbsoluteDate date;
+
+    /**
+     * Constructor.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param source the source of the almanac (SEM, YUMA, user defined)
+     * @param prn the PRN number
+     * @param week the QZSS week
+     * @param toa the Time of Applicability
+     * @param sqa the Square Root of Semi-Major Axis (m^1/2)
+     * @param ecc the eccentricity
+     * @param inc the inclination (rad)
+     * @param om0 the geographic longitude of the orbital plane at the weekly epoch (rad)
+     * @param dom the Rate of Right Ascension (rad/s)
+     * @param aop the Argument of Perigee (rad)
+     * @param anom the Mean Anomaly (rad)
+     * @param af0 the Zeroth Order Clock Correction (s)
+     * @param af1 the First Order Clock Correction (s/s)
+     * @param health the Health status
+     * @see #QZSSAlmanac(String, int, int, double, double, double, double, double, double,
+     * double, double, double, double, int, AbsoluteDate)
+     */
+    @DefaultDataContext
+    public QZSSAlmanac(final String source, final int prn,
+                       final int week, final double toa,
+                       final double sqa, final double ecc, final double inc,
+                       final double om0, final double dom, final double aop,
+                       final double anom, final double af0, final double af1,
+                       final int health) {
+        this(source, prn, week, toa, sqa, ecc, inc, om0, dom, aop, anom, af0, af1, health,
+                new GNSSDate(week, toa * 1000., SatelliteSystem.QZSS,
+                        DataContext.getDefault().getTimeScales()).getDate());
+    }
+
     /**
      * Constructor.
      *
@@ -90,13 +129,15 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
      * @param af0 the Zeroth Order Clock Correction (s)
      * @param af1 the First Order Clock Correction (s/s)
      * @param health the Health status
+     * @param date of applicability corresponding to {@code week} and {@code toa}.
+     * @since 10.1
      */
     public QZSSAlmanac(final String source, final int prn,
                        final int week, final double toa,
                        final double sqa, final double ecc, final double inc,
                        final double om0, final double dom, final double aop,
                        final double anom, final double af0, final double af1,
-                       final int health) {
+                       final int health, final AbsoluteDate date) {
         this.src = source;
         this.prn = prn;
         this.week = week;
@@ -111,6 +152,7 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
         this.af0 = af0;
         this.af1 = af1;
         this.health = health;
+        this.date = date;
     }
 
     /**
@@ -225,7 +267,7 @@ public class QZSSAlmanac implements QZSSOrbitalElements  {
 
     @Override
     public AbsoluteDate getDate() {
-        return new GNSSDate(week, toa * 1000., SatelliteSystem.QZSS).getDate();
+        return date;
     }
 
     /**

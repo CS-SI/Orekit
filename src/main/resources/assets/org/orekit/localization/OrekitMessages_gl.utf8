@@ -575,3 +575,6 @@ INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
 
 # observations {0} and {1} are not in chronological dates
 NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+
+# Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
+EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>

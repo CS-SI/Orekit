@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -33,7 +33,7 @@ import org.orekit.utils.PVCoordinates;
  *
  *
  * Reference:
- *    Bate, R., Mueller, D. D., & White, J. E. (1971). Fundamentals of astrodynamics.
+ *    Bate, R., Mueller, D. D., &amp; White, J. E. (1971). Fundamentals of astrodynamics.
  *    New York: Dover Publications.
  *
  * @author Shiva Iyer
@@ -54,7 +54,7 @@ public class IodLaplace {
 
     /** Estimate orbit from three line of sight angles from the same location.
      *
-     * @param frame Intertial frame for observer coordinates and orbit estimate
+     * @param frame inertial frame for observer coordinates and orbit estimate
      * @param obsPva Observer coordinates at time obsDate2
      * @param obsDate1 date of observation 1
      * @param los1 line of sight unit vector 1

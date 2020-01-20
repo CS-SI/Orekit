@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -52,6 +52,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.GzipFilter;
@@ -938,7 +939,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataProvidersManager.getInstance();
+            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
             manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
             final ParameterDriver[] drivers = setDrag(propagatorBuilder, atmosphere, new IsotropicDrag(area, cd));

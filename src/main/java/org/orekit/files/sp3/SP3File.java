@@ -1,5 +1,5 @@
 /* Copyright 2002-2012 Space Applications Services
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -191,7 +191,6 @@ public class SP3File implements EphemerisFile {
      * @param mu                   is the standard gravitational parameter in m^3 / s^2.
      * @param interpolationSamples number of samples to use in interpolation.
      * @param frameBuilder         for constructing a reference frame from the identifier
-     *                             in the file.
      */
     SP3File(final double mu,
             final int interpolationSamples,

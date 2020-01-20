@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,14 @@
  */
 package org.orekit.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GLONASSDate;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 
 /**
  * This class holds a GLONASS almanac as read from .agl files.
@@ -77,6 +79,44 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
     /**  Correction of time relative to GLONASS system time. */
     private final double tGlo;
 
+    /** GLONASS time scale. */
+    private final TimeScale glonass;
+
+    /**
+     * Constructor.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param channel the frequency channel from -7 to 6)
+     * @param health the Health status
+     * @param day the day of Almanac
+     * @param month the month of Almanac
+     * @param year the year of Almanac
+     * @param ta the reference time of the almanac (s)
+     * @param lambda the Greenwich longitude of ascending node of orbit (rad)
+     * @param deltaI the correction to the mean value of inclination (rad)
+     * @param pa the argument of perigee (rad)
+     * @param ecc the eccentricity
+     * @param deltaT the correction to the mean value of Draconian period (s)
+     * @param deltaTDot the rate of change of orbital period
+     * @param tGlo2UTC the correction from GLONASS to UTC (s)
+     * @param tGPS2Glo the correction to GPS time relative GLONASS (s)
+     * @param tGlo the correction of time relative to GLONASS system time (s)
+     * @see #GLONASSAlmanac(int, int, int, int, int, double, double, double, double,
+     * double, double, double, double, double, double, TimeScale)
+     */
+    @DefaultDataContext
+    public GLONASSAlmanac(final int channel, final int health,
+                          final int day, final int month, final int year,
+                          final double ta, final double lambda,
+                          final double deltaI, final double pa,
+                          final double ecc, final double deltaT, final double deltaTDot,
+                          final double tGlo2UTC, final double tGPS2Glo, final double tGlo) {
+        this(channel, health, day, month, year, ta, lambda, deltaI, pa, ecc, deltaT,
+                deltaTDot, tGlo2UTC, tGPS2Glo, tGlo,
+                DataContext.getDefault().getTimeScales().getGLONASS());
+    }
+
     /**
      * Constructor.
      *
@@ -95,13 +135,16 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
      * @param tGlo2UTC the correction from GLONASS to UTC (s)
      * @param tGPS2Glo the correction to GPS time relative GLONASS (s)
      * @param tGlo the correction of time relative to GLONASS system time (s)
+     * @param glonass GLONASS time scale.
+     * @since 10.1
      */
     public GLONASSAlmanac(final int channel, final int health,
                           final int day, final int month, final int year,
                           final double ta, final double lambda,
                           final double deltaI, final double pa,
                           final double ecc, final double deltaT, final double deltaTDot,
-                          final double tGlo2UTC, final double tGPS2Glo, final double tGlo) {
+                          final double tGlo2UTC, final double tGPS2Glo, final double tGlo,
+                          final TimeScale glonass) {
         this.channel = channel;
         this.health = health;
         this.day = day;
@@ -117,13 +160,14 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
         this.tGlo2UTC = tGlo2UTC;
         this.tGPS2Glo = tGPS2Glo;
         this.tGlo = tGlo;
+        this.glonass = glonass;
     }
 
     @Override
     public AbsoluteDate getDate() {
         final DateComponents date = new DateComponents(year, month, day);
         final TimeComponents time = new TimeComponents(ta);
-        return new AbsoluteDate(date, time, TimeScalesFactory.getGLONASS());
+        return new AbsoluteDate(date, time, glonass);
     }
 
     @Override
@@ -208,13 +252,13 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
 
     @Override
     public int getNa() {
-        final GLONASSDate gloDate = new GLONASSDate(getDate());
+        final GLONASSDate gloDate = new GLONASSDate(getDate(), glonass);
         return gloDate.getDayNumber();
     }
 
     @Override
     public int getN4() {
-        final GLONASSDate gloDate = new GLONASSDate(getDate());
+        final GLONASSDate gloDate = new GLONASSDate(getDate(), glonass);
         return gloDate.getIntervalNumber();
     }
 }

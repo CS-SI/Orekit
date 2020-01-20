@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,9 @@ package org.orekit.files.ccsds;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -45,7 +48,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -287,8 +289,9 @@ public class StreamingOemWriter {
         this.metadata = new LinkedHashMap<>(metadata);
         // set default metadata
         this.metadata.putIfAbsent(Keyword.CCSDS_OEM_VERS, CCSDS_OEM_VERS);
+        // creation date is informational only
         this.metadata.putIfAbsent(Keyword.CREATION_DATE,
-                new AbsoluteDate(new Date(), TimeScalesFactory.getUTC()).toString());
+                ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT));
         this.metadata.putIfAbsent(Keyword.ORIGINATOR, DEFAULT_ORIGINATOR);
         this.metadata.putIfAbsent(Keyword.TIME_SYSTEM, timeScale.getName());
     }

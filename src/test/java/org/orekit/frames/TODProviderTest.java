@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -32,6 +32,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -49,7 +50,7 @@ public class TODProviderTest {
     @Test
     public void testRotationRate() {
         TransformProvider provider =
-                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null),
+                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null, DataContext.getDefault().getTimeScales()),
                                                    CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
@@ -209,7 +210,7 @@ public class TODProviderTest {
         // the points.
         // We finally select 6 interpolation points separated by 1 hour each
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996, false);
-        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory, DataContext.getDefault().getTimeScales());
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating,
                                                    CartesianDerivativesFilter.USE_PVA,
@@ -263,7 +264,7 @@ public class TODProviderTest {
         // sampling. All values between 3e-15 and 6e-15 are really equivalent: it is
         // mostly numerical noise. The best settings are 6 or 8 points every 2 or 3 hours.
         // We finally select 6 interpolation points separated by 3 hours each
-        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null, DataContext.getDefault().getTimeScales());
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(nonInterpolating,
                                                            CartesianDerivativesFilter.USE_PVA,
@@ -377,7 +378,8 @@ public class TODProviderTest {
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
         TODProvider provider = new TODProvider(IERSConventions.IERS_2010,
-                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
+                                               DataContext.getDefault().getTimeScales());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);

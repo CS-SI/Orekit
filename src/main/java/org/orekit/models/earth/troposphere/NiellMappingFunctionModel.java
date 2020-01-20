@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,10 +25,12 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
 /** The Niell Mapping Function  model for radio wavelengths.
@@ -127,10 +129,29 @@ public class NiellMappingFunctionModel implements MappingFunction {
     /** Geodetic site latitude, radians.*/
     private final double latitude;
 
-    /** Buils a new instance.
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** Builds a new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param latitude geodetic latitude of the station, in radians
+     * @see #NiellMappingFunctionModel(double, TimeScale)
      */
+    @DefaultDataContext
     public NiellMappingFunctionModel(final double latitude) {
+        this(latitude, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /** Builds a new instance.
+     * @param latitude geodetic latitude of the station, in radians
+     * @param utc UTC time scale.
+     * @since 10.1
+     */
+    public NiellMappingFunctionModel(final double latitude,
+                                     final TimeScale utc) {
+        this.utc = utc;
         // Interpolation functions for hydrostatic coefficients
         this.ahAverageFunction    = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_AH_AVERAGE);
         this.bhAverageFunction    = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_BH_AVERAGE);
@@ -151,7 +172,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
     public double[] mappingFactors(final double elevation, final double height,
                                    final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor
@@ -195,7 +216,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final T zero = field.getZero();
 
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor

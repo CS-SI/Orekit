@@ -37,6 +37,7 @@
     <orekit.maven-project-info-reports-plugin.version>3.0.0</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>3.1.0</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.7.1</orekit.maven-site-plugin.version>
+    <orekit.maven-wagon-ssh-plugin.version>3.3.4</orekit.maven-wagon-ssh-plugin.version>
     <orekit.maven-source-plugin.version>3.1.0</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>2.22.2</orekit.maven-surefire-report-plugin.version>
@@ -55,7 +56,17 @@
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
     <!-- sonar related properties -->
     <sonar.host.url>https://sonar.orekit.org/</sonar.host.url>
+    <!-- for building javac plugin -->
+    <tools.jar.dir>${java.home}/../lib/</tools.jar.dir>
+    <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
+
+  <distributionManagement>
+    <site>
+      <id>website</id>
+      <url>scp://cochise@spoutnik.orekit.org/var/www/mvn-sites/site-orekit-${project.version}</url>
+    </site>
+  </distributionManagement>
 
   <developers>
     <developer>
@@ -221,6 +232,9 @@
       <name>Fran&#231;ois-Xavier Laffont</name>
     </contributor>
     <contributor>
+      <name>Lukas Matt</name>
+    </contributor>
+    <contributor>
       <name>Vincent Mouraux</name>
     </contributor>
     <contributor>
@@ -256,7 +270,7 @@
   </contributors>
 
   <organization>
-    <name>CS Syst&#232;mes d&#039;Information</name>
+    <name>CS Group</name>
     <url>http://www.c-s.fr/</url>
   </organization>
 
@@ -350,8 +364,66 @@
         <configuration>
           <source>${orekit.compiler.source}</source>
           <target>${orekit.compiler.target}</target>
-          <compilerArgument>-Xlint:deprecation</compilerArgument>
+          <showWarnings>true</showWarnings>
+          <compilerArgs>
+            <arg>-Xlint:deprecation</arg>
+            <arg>-Xplugin:dataContextPlugin</arg>
+          </compilerArgs>
         </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <!-- don't recompile the compiler plugin. -->
+                <exclude>org/orekit/compiler/**</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default-testCompile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <compilerArgs>
+                <arg>-Xlint:deprecation</arg>
+                <!-- don't activate the compiler plugin for Orekit own tests -->
+                <!-- thousands of tests use intentionally the default context -->
+              </compilerArgs>
+              <testExcludes>
+                <!-- don't recompile the compiler plugin. -->
+                <testExclude>org/orekit/compiler/**</testExclude>
+              </testExcludes>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- need to compile these two packages before the rest so that the compiler
+                 plugin will work. -->
+            <id>plugin-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <!-- the phase before compile. -->
+            <phase>process-resources</phase>
+            <configuration>
+              <includes>
+                <include>org/orekit/annotation/**</include>
+                <include>org/orekit/compiler/**</include>
+              </includes>
+              <compilerArgs>
+                <arg>-Xlint:deprecation</arg>
+                <!-- Add the Java compiler to the classpath. This avoids creating a system
+                     dependency which is inherited by projects using Orekit. -->
+                <arg>-classpath</arg>
+                <arg>${tools.jar.path}</arg>
+              </compilerArgs>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -449,11 +521,23 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>${orekit.maven-site-plugin.version}</version>
+          <dependencies>
+            <dependency><!-- add support for ssh/scp -->
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-ssh</artifactId>
+              <version>${orekit.maven-wagon-ssh-plugin.version}</version>
+            </dependency>
+          </dependencies>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${orekit.maven-surefire-plugin.version}</version>
+        <configuration>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${tools.jar.path}</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -471,8 +555,14 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
-          <additionalOptions>--allow-script-in-comments -header &apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</additionalOptions>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <additionalOptions>
+            <option>--allow-script-in-comments</option>
+            <option>-header</option>
+            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>-extdirs</option>
+            <option>${tools.jar.dir}</option>
+          </additionalOptions>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Group</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
@@ -697,7 +787,7 @@
         <version>${orekit.maven-jxr-plugin.version}</version>
         <configuration>
           <linkJavadoc>false</linkJavadoc>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Group</a>. All rights reserved.]]></bottom>
         </configuration>
       </plugin>
       <plugin>
@@ -706,8 +796,14 @@
         <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
-          <additionalOptions>--allow-script-in-comments -header &apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</additionalOptions>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
+          <additionalOptions>
+            <option>--allow-script-in-comments</option>
+            <option>-header</option>
+            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>-extdirs</option>
+            <option>${tools.jar.dir}</option>
+          </additionalOptions>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Group</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>

@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,8 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -60,16 +62,28 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      */
     public AggregateBoundedPropagator(
             final Collection<? extends BoundedPropagator> propagators) {
-        super(DEFAULT_LAW);
-        if (propagators.isEmpty()) {
-            throw new OrekitException(OrekitMessages.NOT_ENOUGH_PROPAGATORS);
-        }
+        super(defaultAttitude(propagators));
         this.propagators = new TreeMap<>();
         for (final BoundedPropagator propagator : propagators) {
             this.propagators.put(propagator.getMinDate(), propagator);
         }
         super.resetInitialState(
                 this.propagators.firstEntry().getValue().getInitialState());
+    }
+
+    /**
+     * Helper function for the constructor.
+     * @param propagators to consider.
+     * @return attitude provider.
+     */
+    private static AttitudeProvider defaultAttitude(
+            final Collection<? extends BoundedPropagator> propagators) {
+        // this check is needed here because it can't be before the super() call in the
+        // constructor.
+        if (propagators.isEmpty()) {
+            throw new OrekitException(OrekitMessages.NOT_ENOUGH_PROPAGATORS);
+        }
+        return new InertialProvider(propagators.iterator().next().getFrame());
     }
 
     @Override

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -30,13 +30,15 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 
 /** Loader for Rinex measurements files.
  * <p>
@@ -113,24 +115,68 @@ public class RinexLoader {
     /** Rinex Observations. */
     private final List<ObservationDataSet> observationDataSets;
 
+    /** Set of time scales. */
+    private final TimeScales timeScales;
+
     /** Simple constructor.
      * <p>
      * This constructor is used when the rinex files are managed by the
-     * global {@link DataProvidersManager DataProvidersManager}.
+     * global {@link DataContext#getDefault() default data context}.
      * </p>
      * @param supportedNames regular expression for supported files names
+     * @see #RinexLoader(String, DataProvidersManager, TimeScales)
      */
+    @DefaultDataContext
     public RinexLoader(final String supportedNames) {
-        observationDataSets = new ArrayList<>();
-        DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales());
     }
 
-    /** Simple constructor.
+    /**
+     * Create a RINEX loader/parser with the given source of RINEX auxiliary data files.
+     *
+     * <p>
+     * This constructor is used when the rinex files are managed by the given
+     * {@code dataProvidersManager}.
+     * </p>
+     * @param supportedNames regular expression for supported files names
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @param timeScales the set of time scales to use when parsing dates.
+     * @since 10.1
+     */
+    public RinexLoader(final String supportedNames,
+                       final DataProvidersManager dataProvidersManager,
+                       final TimeScales timeScales) {
+        observationDataSets = new ArrayList<>();
+        this.timeScales = timeScales;
+        dataProvidersManager.feed(supportedNames, new Parser());
+    }
+
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
+     *
      * @param input data input stream
      * @param name name of the file (or zip entry)
+     * @see #RinexLoader(InputStream, String, TimeScales)
      */
+    @DefaultDataContext
     public RinexLoader(final InputStream input, final String name) {
+        this(input, name, DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Loads RINEX from the given input stream using the specified auxiliary data.
+     *
+     * @param input data input stream
+     * @param name name of the file (or zip entry)
+     * @param timeScales the set of time scales to use when parsing dates.
+     * @since 10.1
+     */
+    public RinexLoader(final InputStream input,
+                       final String name,
+                       final TimeScales timeScales) {
         try {
+            this.timeScales = timeScales;
             observationDataSets = new ArrayList<>();
             new Parser().loadData(input, name);
         } catch (IOException ioe) {
@@ -349,24 +395,24 @@ public class RinexLoader {
                                     case TIME_OF_FIRST_OBS :
                                         switch (satelliteSystem) {
                                             case GPS:
-                                                timeScale = TimeScalesFactory.getGPS();
+                                                timeScale = timeScales.getGPS();
                                                 break;
                                             case GALILEO:
-                                                timeScale = TimeScalesFactory.getGST();
+                                                timeScale = timeScales.getGST();
                                                 break;
                                             case GLONASS:
-                                                timeScale = TimeScalesFactory.getGLONASS();
+                                                timeScale = timeScales.getGLONASS();
                                                 break;
                                             case MIXED:
                                                 //in Case of Mixed data, Timescale must be specified in the Time of First line
                                                 timeScaleStr = parseString(48, 3);
 
                                                 if (timeScaleStr.equals(GPS)) {
-                                                    timeScale = TimeScalesFactory.getGPS();
+                                                    timeScale = timeScales.getGPS();
                                                 } else if (timeScaleStr.equals(GAL)) {
-                                                    timeScale = TimeScalesFactory.getGST();
+                                                    timeScale = timeScales.getGST();
                                                 } else if (timeScaleStr.equals(GLO)) {
-                                                    timeScale = TimeScalesFactory.getGLONASS();
+                                                    timeScale = timeScales.getGLONASS();
                                                 } else {
                                                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                                                 }
@@ -412,7 +458,7 @@ public class RinexLoader {
                                                 try {
                                                     typesObs.add(ObservationType.valueOf(parseString(10 + (6 * i), 2)));
                                                 } catch (IllegalArgumentException iae) {
-                                                    throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
+                                                    throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                               parseString(10 + (6 * i), 2), name, lineNumber);
                                                 }
                                             }
@@ -713,39 +759,39 @@ public class RinexLoader {
                                     case TIME_OF_FIRST_OBS :
                                         switch(satelliteSystem) {
                                             case GPS:
-                                                timeScale = TimeScalesFactory.getGPS();
+                                                timeScale = timeScales.getGPS();
                                                 break;
                                             case GALILEO:
-                                                timeScale = TimeScalesFactory.getGST();
+                                                timeScale = timeScales.getGST();
                                                 break;
                                             case GLONASS:
-                                                timeScale = TimeScalesFactory.getGLONASS();
+                                                timeScale = timeScales.getGLONASS();
                                                 break;
                                             case QZSS:
-                                                timeScale = TimeScalesFactory.getQZSS();
+                                                timeScale = timeScales.getQZSS();
                                                 break;
                                             case BEIDOU:
-                                                timeScale = TimeScalesFactory.getBDT();
+                                                timeScale = timeScales.getBDT();
                                                 break;
                                             case IRNSS:
-                                                timeScale = TimeScalesFactory.getIRNSS();
+                                                timeScale = timeScales.getIRNSS();
                                                 break;
                                             case MIXED:
                                                 //in Case of Mixed data, Timescale must be specified in the Time of First line
                                                 timeScaleStr = parseString(48, 3);
 
                                                 if (timeScaleStr.equals(GPS)) {
-                                                    timeScale = TimeScalesFactory.getGPS();
+                                                    timeScale = timeScales.getGPS();
                                                 } else if (timeScaleStr.equals(GAL)) {
-                                                    timeScale = TimeScalesFactory.getGST();
+                                                    timeScale = timeScales.getGST();
                                                 } else if (timeScaleStr.equals(GLO)) {
-                                                    timeScale = TimeScalesFactory.getGLONASS();
+                                                    timeScale = timeScales.getGLONASS();
                                                 } else if (timeScaleStr.equals(QZS)) {
-                                                    timeScale = TimeScalesFactory.getQZSS();
+                                                    timeScale = timeScales.getQZSS();
                                                 } else if (timeScaleStr.equals(BDT)) {
-                                                    timeScale = TimeScalesFactory.getBDT();
+                                                    timeScale = timeScales.getBDT();
                                                 } else if (timeScaleStr.equals(IRN)) {
-                                                    timeScale = TimeScalesFactory.getIRNSS();
+                                                    timeScale = timeScales.getIRNSS();
                                                 } else {
                                                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                                                 }
@@ -799,7 +845,7 @@ public class RinexLoader {
                                                 try {
                                                     typeObs.add(ObservationType.valueOf(parseString(7 + (4 * i), 3)));
                                                 } catch (IllegalArgumentException iae) {
-                                                    throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
+                                                    throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                               parseString(7 + (4 * i), 3), name, lineNumber);
                                                 }
                                             }

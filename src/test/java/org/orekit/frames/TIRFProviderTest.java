@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,9 +36,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.IERSConventions;
@@ -148,7 +150,9 @@ public class TIRFProviderTest {
 
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        TIRFProvider provider = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+        TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
@@ -179,7 +183,9 @@ public class TIRFProviderTest {
         throws InterruptedException, ExecutionException {
 
         // subject under test
-        final TIRFProvider tirf = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false));
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider tirf = new TIRFProvider(eopHistory, ut1);
         // arbitrary date
         final AbsoluteDate start = new AbsoluteDate("2009-09-19T23:59:45.000", TimeScalesFactory.getUTC());
         // in seconds = 15min

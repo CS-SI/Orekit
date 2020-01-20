@@ -25,6 +25,8 @@ import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolating
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -68,13 +70,30 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
     }
 
     /** Creates a new {@link FixedTroposphericDelay} instance, and loads the
-     * delay values from the given resource via the {@link DataProvidersManager}.
+     * delay values from the given resource via the {@link DataContext#getDefault()
+     * default data context}.
+     *
      * @param supportedName a regular expression for supported resource names
+     * @see #FixedTroposphericDelay(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public FixedTroposphericDelay(final String supportedName) {
+        this(supportedName, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Creates a new {@link FixedTroposphericDelay} instance, and loads the delay values
+     * from the given resource via the specified data manager.
+     *
+     * @param supportedName a regular expression for supported resource names
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @since 10.1
+     */
+    public FixedTroposphericDelay(final String supportedName,
+                                  final DataProvidersManager dataProvidersManager) {
 
         final InterpolationTableLoader loader = new InterpolationTableLoader();
-        DataProvidersManager.getInstance().feed(supportedName, loader);
+        dataProvidersManager.feed(supportedName, loader);
 
         if (!loader.stillAcceptsData()) {
             xArr = loader.getAbscissaGrid();
@@ -90,9 +109,14 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
     }
 
     /** Returns the default model, loading delay values from the file
-     * "tropospheric-delay.txt".
+     * "tropospheric-delay.txt" via the {@link DataContext#getDefault() default data
+     * context}.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @return the default model
      */
+    @DefaultDataContext
     public static FixedTroposphericDelay getDefaultModel() {
         synchronized (FixedTroposphericDelay.class) {
             if (defaultModel == null) {
@@ -172,13 +196,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
-    }
-
-    /** Make sure the unserializable bivariate interpolation function is properly rebuilt.
-     * @return replacement object, with bivariate function properly set up
-     */
-    private Object readResolve() {
-        return new FixedTroposphericDelay(xArr, yArr, fArr);
     }
 
 }

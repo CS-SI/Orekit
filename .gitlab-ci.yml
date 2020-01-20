@@ -36,7 +36,7 @@ verify:
 # On main branches (develop, release-*, master)
 # the produced artifacts are deployed on the Nexus of the project
 # (https://packages.orekit.org/)
-deploy:
+deploy:artifacts:
   stage: deploy
   script:
     - mvn $MAVEN_CLI_OPTS assembly:single javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
@@ -48,3 +48,32 @@ deploy:
     - develop
     - /^release-[.0-9]+$/
     - master
+
+
+deploy:site:
+  stage: deploy
+  before_script:
+  ##
+  ## Create the SSH directory and give it the right permissions
+  ##
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+
+  ##
+  ## We're using tr to fix line endings which makes ed25519 keys work
+  ## without extra base64 encoding.
+  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  ##
+  - echo "$SSH_SECRET_KEY" > ~/.ssh/id_website
+  - chmod 700 ~/.ssh/id_website
+  
+  ##
+  ## Add known hosts
+  ##
+  - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
+  script:
+  - mvn $MAVEN_CLI_OPTS site:deploy
+  only:
+  - master
+  - /^release-[.0-9]+$/
+  - develop

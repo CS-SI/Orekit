@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,10 @@
 package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
  * <p>
@@ -53,13 +56,33 @@ public class SGP4 extends TLEPropagator {
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Constructor for a unique initial TLE.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @see #SGP4(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     public SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                       final double mass) {
-        super(initialTLE, attitudeProvider, mass);
+                final double mass) {
+        this(initialTLE, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /** Constructor for a unique initial TLE.
+     * @param initialTLE the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
+     * @since 10.1
+     */
+    public SGP4(final TLE initialTLE,
+                final AttitudeProvider attitudeProvider,
+                final double mass,
+                final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.frames;
+
+import org.orekit.time.TimeScale;
 
 /** Specific version of International Terrestrial Reference Frame.
  * <p>
@@ -34,12 +36,13 @@ public class VersionedITRF extends Frame {
      * @param version ITRF version this provider should generate
      * @param rawProvider raw ITRF provider
      * @param name name of the frame
+     * @param tt TT time scale.
      * @exception IllegalArgumentException if the parent frame is null
      */
     VersionedITRF(final Frame parent, final ITRFVersion version,
-                  final ITRFProvider rawProvider, final String name)
+                  final ITRFProvider rawProvider, final String name, final TimeScale tt)
         throws IllegalArgumentException {
-        super(parent, new VersionedITRFProvider(version, rawProvider), name);
+        super(parent, new VersionedITRFProvider(version, rawProvider, tt), name);
     }
 
     /** Get the ITRF version.

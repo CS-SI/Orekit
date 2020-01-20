@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,7 @@ import org.hipparchus.RealFieldElement;
 
 /** Galileo system time scale.
  * <p>By convention, TGST = UTC + 13s at Galileo epoch (1999-08-22T00:00:00Z).</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * <p>
  * Galileo System Time and GPS time are very close scales. Without any errors, they

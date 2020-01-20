@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,9 +25,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.IRNSSAlmanac;
 import org.orekit.gnss.SatelliteSystem;
@@ -42,22 +44,27 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class IRNSSPropagatorTest {
 
     private static IRNSSOrbitalElements almanac;
+    private static Frames frames;
 
     @BeforeClass
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 1 for April 1st 2014 (Source: Rinex 3.04 format - Table A19)
-        almanac = new IRNSSAlmanac(1, 1786, 172800.0,
+        final int week = 1786;
+        final double toa = 172800.0;
+        almanac = new IRNSSAlmanac(1, week, toa,
         		6.493487739563E03, 2.257102518342E-03, 4.758105460020e-01,
         		-8.912102146884E-01, -4.414469594664e-09, -2.999907424014,
-        		-1.396094758025, -9.473115205765e-04, 1.250555214938e-12);
+                -1.396094758025, -9.473115205765e-04, 1.250555214938e-12,
+                new GNSSDate(week, toa * 1000, SatelliteSystem.IRNSS).getDate());
+        frames = DataContext.getDefault().getFrames();
     }
 
     @Test
     public void testIRNSSCycle() {
         // Builds the IRNSS propagator from the almanac
-        final IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac).build();
+        final IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac, frames).build();
         // Propagate at the IRNSS date and one IRNSS cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -72,7 +79,7 @@ public class IRNSSPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the IRNSS propagator from the almanac
-        final IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac).build();
+        final IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac, frames).build();
         Assert.assertEquals("EME2000", propagator.getFrame().getName());
         Assert.assertEquals(3.986005e+14, IRNSSOrbitalElements.IRNSS_MU, 1.0e6);
         // Defines some date
@@ -90,14 +97,14 @@ public class IRNSSPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-           IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac).build();
+           IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac, frames).build();
             propagator.resetInitialState(propagator.getInitialState());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
-            IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac).build();
+            IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac, frames).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -112,7 +119,7 @@ public class IRNSSPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac).build();
+        IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac, frames).build();
         IRNSSOrbitalElements elements = propagator.getIRNSSOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.IRNSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -141,7 +148,7 @@ public class IRNSSPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the IRNSSPropagator from the almanac
-        final IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac).build();
+        final IRNSSPropagator propagator = new IRNSSPropagator.Builder(almanac, frames).build();
         // In order to test the issue, we volontary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);

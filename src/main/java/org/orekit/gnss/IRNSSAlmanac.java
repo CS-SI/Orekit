@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,7 +19,6 @@ package org.orekit.gnss;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.analytical.gnss.IRNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 
 /**
  * Class for IRNSS almanac.
@@ -69,10 +68,12 @@ public class IRNSSAlmanac implements IRNSSOrbitalElements {
     /** First order clock correction. */
     private final double af1;
 
+    /** Date of aplicability. */
+    private final AbsoluteDate date;
+
     /**
      * Constructor.
-     *
-     * @param prn the PRN number
+     *  @param prn the PRN number
      * @param week the GPS week
      * @param toa the Time of Applicability
      * @param sqa the Square Root of Semi-Major Axis (m^1/2)
@@ -84,11 +85,13 @@ public class IRNSSAlmanac implements IRNSSOrbitalElements {
      * @param anom the Mean Anomaly (rad)
      * @param af0 the Zeroth Order Clock Correction (s)
      * @param af1 the First Order Clock Correction (s/s)
+     * @param date of applicability corresponding to {@code toa}.
      */
     public IRNSSAlmanac(final int prn, final int week, final double toa,
-                       final double sqa, final double ecc, final double inc,
-                       final double om0, final double dom, final double aop,
-                       final double anom, final double af0, final double af1) {
+                        final double sqa, final double ecc, final double inc,
+                        final double om0, final double dom, final double aop,
+                        final double anom, final double af0, final double af1,
+                        final AbsoluteDate date) {
         this.prn = prn;
         this.week = week;
         this.toa = toa;
@@ -101,11 +104,12 @@ public class IRNSSAlmanac implements IRNSSOrbitalElements {
         this.anom = anom;
         this.af0 = af0;
         this.af1 = af1;
+        this.date = date;
     }
 
     @Override
     public AbsoluteDate getDate() {
-        return new GNSSDate(week, toa * 1000., SatelliteSystem.IRNSS).getDate();
+        return date;
     }
 
     @Override

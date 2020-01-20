@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,9 +18,10 @@ package org.orekit.attitudes;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -36,7 +37,14 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class InertialProvider implements AttitudeProvider {
 
 
-    /** Dummy attitude provider, perfectly aligned with the EME2000 frame. */
+    /** Dummy attitude provider, perfectly aligned with the EME2000 frame.
+     *
+     * <p>This field uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see #InertialProvider(Rotation, Frame)
+     * @see #InertialProvider(Frame)
+     */
+    @DefaultDataContext
     public static final InertialProvider EME2000_ALIGNED =
         new InertialProvider(Rotation.IDENTITY);
 
@@ -44,12 +52,38 @@ public class InertialProvider implements AttitudeProvider {
     private final Frame satelliteFrame;
 
     /** Creates new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param rotation rotation from EME2000 to the desired satellite frame
+     * @see #InertialProvider(Rotation, Frame)
      */
+    @DefaultDataContext
     public InertialProvider(final Rotation rotation) {
+        this(rotation, DataContext.getDefault().getFrames().getEME2000());
+    }
+
+    /**
+     * Creates new instance aligned with the given frame.
+     *
+     * @param frame the reference frame for the attitude.
+     */
+    public InertialProvider(final Frame frame) {
+        this(Rotation.IDENTITY, frame);
+    }
+
+    /**
+     * Creates new instance with a fixed attitude in the given frame.
+     *
+     * @param rotation  rotation from {@code reference} to the desired satellite frame
+     * @param reference frame for {@code rotation}.
+     * @since 10.1
+     */
+    public InertialProvider(final Rotation rotation,
+                            final Frame reference) {
         satelliteFrame =
-            new Frame(FramesFactory.getEME2000(), new Transform(AbsoluteDate.J2000_EPOCH, rotation),
-                      null, false);
+            new Frame(reference,
+                    new Transform(AbsoluteDate.ARBITRARY_EPOCH, rotation), null, false);
     }
 
     /** {@inheritDoc} */

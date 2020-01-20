@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -56,7 +56,7 @@ public interface TimeScale extends Serializable {
      * @see #offsetFromTAI(AbsoluteDate)
      */
     default double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
+        final AbsoluteDate reference = new AbsoluteDate(date, time, new TAIScale());
         double offset = 0;
         for (int i = 0; i < 8; i++) {
             offset = -offsetFromTAI(reference.shiftedBy(offset));

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -100,7 +100,7 @@ public class AstronomicalAmplitudeReader implements DataLoader {
         this.columnHf       = columnHf;
         this.scale          = scale;
 
-        this.amplitudesMap  = new HashMap<Integer, Double>();
+        this.amplitudesMap  = new HashMap<>();
 
     }
 

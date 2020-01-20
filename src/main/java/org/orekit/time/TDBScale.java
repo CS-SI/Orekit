@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -49,25 +49,37 @@ public class TDBScale implements TimeScale {
     /** Factor for sin(2g). */
     private static final double SIN_2G_FACTOR = 0.000014;
 
-    /** Package private constructor for the factory.
+    /** TT time scale. */
+    private final TimeScale tt;
+
+    /** Reference Epoch. */
+    private final AbsoluteDate j2000Epoch;
+
+    /**
+     * Package private constructor for the factory.
+     *
+     * @param tt         TT time scale.
+     * @param j2000Epoch reference date for this time scale.
      */
-    TDBScale() {
+    TDBScale(final TimeScale tt, final AbsoluteDate j2000Epoch) {
+        this.tt = tt;
+        this.j2000Epoch = j2000Epoch;
     }
 
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
+        final double dtDays = date.durationFrom(j2000Epoch) / Constants.JULIAN_DAY;
         final double g = FastMath.toRadians(G0 + G1 * dtDays);
-        return TimeScalesFactory.getTT().offsetFromTAI(date) + (SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g));
+        return tt.offsetFromTAI(date) + (SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        final T dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH).divide(Constants.JULIAN_DAY);
+        final T dtDays = date.durationFrom(j2000Epoch).divide(Constants.JULIAN_DAY);
         final T g = dtDays.multiply(G1).add(G0).multiply(FastMath.PI / 180);
-        return TimeScalesFactory.getTT().offsetFromTAI(date).
+        return tt.offsetFromTAI(date).
                         add(g.sin().multiply(SIN_G_FACTOR).add(g.multiply(2).sin().multiply(SIN_2G_FACTOR)));
     }
 

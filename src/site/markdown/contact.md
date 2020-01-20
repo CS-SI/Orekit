@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2020 CS Group
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -34,10 +34,10 @@ oriented or administrative) at the following email address:
 
 ## Administrative contact
 
-If you want to discuss with the space division staff at CS Systèmes d'Information,
+If you want to discuss with the space division staff at CS Group,
 please use the following address:
 
-    CS Systèmes d'Information
+    CS Group
     BU E-space & Geoinformation
     parc de la plaine - 5 rue Brindejonc des Moulinais
     BP 15872

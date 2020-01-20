@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -270,7 +270,8 @@ public class OMMFile extends OGMFile {
                        metaData.getLaunchYear(), metaData.getLaunchNumber(), metaData.getLaunchPiece(),
                        ephemerisType, Integer.parseInt(elementSetNo), getEpoch(),
                        meanMotion, meanMotionDot, meanMotionDotDot,
-                       getE(), getI(), getPa(), getRaan(), getAnomaly(), revAtEpoch, bStar);
+                       getE(), getI(), getPa(), getRaan(), getAnomaly(), revAtEpoch,
+                       bStar, getDataContext().getTimeScales().getUTC());
     }
 
     public static class OMMMetaData extends ODMMetaData {

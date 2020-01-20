@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,17 +23,21 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
@@ -108,6 +112,9 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
 
+    /** Data context for propagation. */
+    private final DataContext dataContext;
+
     /**
      * This nested class aims at building a GLONASSPropagator.
      * <p>It implements the classical builder pattern.</p>
@@ -121,36 +128,76 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
 
         // Optional parameters
         /** The attitude provider. */
-        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        private AttitudeProvider attitudeProvider;
         /** The mass. */
         private double mass = DEFAULT_MASS;
         /** The ECI frame. */
         private Frame eci  = null;
         /** The ECEF frame. */
         private Frame ecef = null;
+        /** Data context. */
+        private DataContext dataContext;
 
         /** Initializes the builder.
          * <p>The GLONASS orbital elements is the only requested parameter to build a GLONASSPropagator.</p>
          * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+         *  default data context.<br>
          * The mass is set by default to the
          *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+         * The data context is by default to the
+         *  {@link DataContext#getDefault() default data context}.<br>
          * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+         *  context.<br>
          * The ECEF frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
+         *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+         *  CIO/2010-based ITRF simple EOP} in the default data context.
          * </p>
+         *
+         * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
          *
          * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASS propagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
+         * @see #Builder(GLONASSOrbitalElements, DataContext)
          */
+        @DefaultDataContext
         public Builder(final GLONASSOrbitalElements glonassOrbElt) {
+            this(glonassOrbElt, DataContext.getDefault());
+        }
+
+        /** Initializes the builder.
+         * <p>The GLONASS orbital elements is the only requested parameter to build a GLONASSPropagator.</p>
+         * <p>The attitude provider is set by default to the
+         *  {@link org.orekit.propagation.Propagator#getDefaultLaw(Frames)}.<br>
+         * The mass is set by default to the
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+         * The ECI frame is set by default to the
+         *  {@link Frames#getEME2000() EME2000 frame}.<br>
+         * The ECEF frame is set by default to the
+         *  {@link Frames#getITRF(IERSConventions, boolean) CIO/2010-based ITRF simple
+         *  EOP}.
+         * </p>
+         *
+         * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASS propagator.
+         * @param dataContext the data context to use for frames and time scales.
+         * @see #attitudeProvider(AttitudeProvider provider)
+         * @see #mass(double mass)
+         * @see #eci(Frame inertial)
+         * @see #ecef(Frame bodyFixed)
+         * @since 10.1
+         */
+        public Builder(final GLONASSOrbitalElements glonassOrbElt,
+                       final DataContext dataContext) {
             this.orbit = glonassOrbElt;
-            this.eci   = FramesFactory.getEME2000();
-            this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            this.dataContext = dataContext;
+            final Frames frames = dataContext.getFrames();
+            this.eci   = frames.getEME2000();
+            this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
+            attitudeProvider = Propagator.getDefaultLaw(frames);
         }
 
         /** Sets the attitude provider.
@@ -193,6 +240,19 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
             return this;
         }
 
+        /**
+         * Sets the data context used by the propagator. Does not update the ECI or ECEF
+         * frames which must be done separately using {@link #eci(Frame)} and {@link
+         * #ecef(Frame)}.
+         *
+         * @param context used for propagation.
+         * @return the updated builder.
+         */
+        public Builder dataContext(final DataContext context) {
+            this.dataContext = context;
+            return this;
+        }
+
         /** Finalizes the build.
          *
          * @return the built GLONASSPropagator
@@ -209,6 +269,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      */
     private GLONASSAnalyticalPropagator(final Builder builder) {
         super(builder.attitudeProvider);
+        this.dataContext = builder.dataContext;
         // Stores the GLONASS orbital elements
         this.glonassOrbit = builder.orbit;
         // Sets the start date as the date of the orbital elements
@@ -454,8 +515,9 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
      * @return the duration from GLONASS orbit Reference epoch (s)
      */
     private DerivativeStructure getdTpr(final AbsoluteDate date) {
-        final GLONASSDate tEnd = new GLONASSDate(date);
-        final GLONASSDate tSta = new GLONASSDate(glonassOrbit.getDate());
+        final TimeScale glonass = dataContext.getTimeScales().getGLONASS();
+        final GLONASSDate tEnd = new GLONASSDate(date, glonass);
+        final GLONASSDate tSta = new GLONASSDate(glonassOrbit.getDate(), glonass);
         final int n  = tEnd.getDayNumber();
         final int na = tSta.getDayNumber();
         final int deltaN;

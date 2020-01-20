@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.exception.DummyLocalizable;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 
 
@@ -42,6 +43,7 @@ import org.orekit.errors.OrekitException;
  * @see NetworkCrawler
  * @see FilesListCrawler
  * @author Luc Maisonobe
+ * @param <T> The type of resource, e.g. File or URL.
  */
 public abstract class AbstractListCrawler<T> implements DataProvider {
 
@@ -95,8 +97,18 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
      */
     protected abstract InputStream getStream(T input) throws IOException;
 
-    /** {@inheritDoc} */
+    @Override
+    @Deprecated
+    @DefaultDataContext
     public boolean feed(final Pattern supported, final DataLoader visitor) {
+        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean feed(final Pattern supported,
+                        final DataLoader visitor,
+                        final DataProvidersManager manager) {
 
         try {
             OrekitException delayedException = null;
@@ -110,14 +122,14 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
                         if (ZIP_ARCHIVE_PATTERN.matcher(fileName).matches()) {
 
                             // browse inside the zip/jar file
-                            getZipJarCrawler(input).feed(supported, visitor);
+                            getZipJarCrawler(input).feed(supported, visitor, manager);
                             loaded = true;
 
                         } else {
 
                             // apply all registered filters
                             NamedData data = new NamedData(fileName, () -> getStream(input));
-                            data = DataProvidersManager.getInstance().applyAllFilters(data);
+                            data = manager.applyAllFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file

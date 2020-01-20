@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,17 +19,21 @@ package org.orekit.propagation.analytical.tle;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -64,6 +68,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** Initial state. */
     protected final TLE tle;
+
+    /** UTC time scale. */
+    protected final TimeScale utc;
 
     /** final RAAN. */
     protected double xnode;
@@ -163,17 +170,38 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     private final double mass;
 
     /** Protected constructor for derived classes.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialTLE the unique TLE to propagate
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
      */
+    @DefaultDataContext
     protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                             final double mass) {
+        this(initialTLE, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /** Protected constructor for derived classes.
+     * @param initialTLE the unique TLE to propagate
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
+     * @since 10.1
+     */
+    protected TLEPropagator(final TLE initialTLE,
+                            final AttitudeProvider attitudeProvider,
+                            final double mass,
+                            final Frame teme) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
         this.tle  = initialTLE;
-        this.teme = FramesFactory.getTEME();
+        this.teme = teme;
         this.mass = mass;
+        this.utc = initialTLE.getUtc();
         initializeCommons();
         sxpInitialize();
         // set the initial state
@@ -183,21 +211,61 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Selects the extrapolator to use with the selected TLE.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param tle the TLE to propagate.
      * @return the correct propagator.
+     * @see #selectExtrapolator(TLE, Frames)
      */
+    @DefaultDataContext
     public static TLEPropagator selectExtrapolator(final TLE tle) {
-        return selectExtrapolator(tle, DEFAULT_LAW, DEFAULT_MASS);
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames());
+    }
+
+    /** Selects the extrapolator to use with the selected TLE.
+     * @param tle the TLE to propagate.
+     * @param frames set of Frames to use in the propagator.
+     * @return the correct propagator.
+     * @since 10.1
+     */
+    public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
+        return selectExtrapolator(
+                tle,
+                Propagator.getDefaultLaw(frames),
+                DEFAULT_MASS,
+                frames.getTEME());
+    }
+
+    /** Selects the extrapolator to use with the selected TLE.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param tle the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @return the correct propagator.
+     * @see #selectExtrapolator(TLE, AttitudeProvider, double, Frame)
+     */
+    @DefaultDataContext
+    public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
+                                                   final double mass) {
+        return selectExtrapolator(tle, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
      * @param tle the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
      * @return the correct propagator.
+     * @since 10.1
      */
-    public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
-                                                   final double mass) {
+    public static TLEPropagator selectExtrapolator(final TLE tle,
+                                                   final AttitudeProvider attitudeProvider,
+                                                   final double mass,
+                                                   final Frame teme) {
 
         final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         final double cosi0 = FastMath.cos(tle.getI());
@@ -212,9 +280,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
         // Period >= 225 minutes is deep space
         if (MathUtils.TWO_PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
-            return new DeepSDP4(tle, attitudeProvider, mass);
+            return new DeepSDP4(tle, attitudeProvider, mass, teme);
         } else {
-            return new SGP4(tle, attitudeProvider, mass);
+            return new SGP4(tle, attitudeProvider, mass, teme);
         }
     }
 
