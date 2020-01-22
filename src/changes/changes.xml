@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action def="luc" type="fix" issue="635">
+        Fixed inconsistency in constant thrust maneuver acceleration.
+      </action>
       <action def="evan" type="add" >
         Added an annotation and a compiler plugin that generates a warning
         when default context is used without being explicitly annotated.
