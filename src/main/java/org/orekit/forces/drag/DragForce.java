@@ -269,7 +269,7 @@ public class DragForce extends AbstractForceModel {
 
         return rho;
     }
-    
+
     /** Get the atmospheric model.
      * @return atmosphere model
      */

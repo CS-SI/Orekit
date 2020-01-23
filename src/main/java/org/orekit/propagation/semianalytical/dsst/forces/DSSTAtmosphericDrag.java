@@ -56,10 +56,10 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
     private final double     rbar;
-    
+
     /** Simple constructor with custom force.
      * @param force atmospheric drag force model
-     * @param mu         central attraction coefficient
+     * @param mu central attraction coefficient
      */
     public DSSTAtmosphericDrag(final DragForce force, final double mu) {
         //Call to the constructor from superclass using the numerical drag model as ForceModel
@@ -87,7 +87,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft, final double mu) {
 
         //Call to the constructor from superclass using the numerical drag model as ForceModel
-        this( new DragForce(atmosphere, spacecraft), mu);
+        this(new DragForce(atmosphere, spacecraft), mu);
     }
 
     /** Get the atmospheric model.
