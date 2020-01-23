@@ -269,4 +269,18 @@ public class DragForce extends AbstractForceModel {
 
         return rho;
     }
+
+    /** Get the atmospheric model.
+     * @return atmosphere model
+     */
+    public Atmosphere getAtmosphere() {
+        return atmosphere;
+    }
+
+    /** Get spacecraft that are sensitive to atmospheric drag forces.
+     * @return drag sensitive spacecraft model
+     */
+    public DragSensitive getSpacecraft() {
+        return spacecraft;
+    }
 }
