@@ -577,4 +577,4 @@ INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = frekvensene {0} og {1
 NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observasjonene {0} og {1} er ikke kronologiske datoer
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
-EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
+EXCEPTIONAL_DATA_CONTEXT = Bruk av ExceptionalDataContext funnet. Denne brukes typisk til å oppdage utviklingsproblemer.
