@@ -577,4 +577,4 @@ INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = frecvențele {0} și 
 NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observațiile de la datele {0} și {1} nu sunt în ordine cronologică
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
-EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
+EXCEPTIONAL_DATA_CONTEXT = a fost detectată o utilizare a ExceptionalDataContext. Acest mecanism este utilizat în general pentru detectarea unei erori de dezvoltare
