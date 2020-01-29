@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link PVCoordinates}.
@@ -323,12 +324,28 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
 
     }
 
-    /** Return a string representation of this position/velocity pair.
-     * @return string representation of this position/velocity pair
+    /** Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @return string representation of this.
      */
+    @Override
+    @DefaultDataContext
     public String toString() {
+        return toString(DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * @param utc time scale used to print the date.
+     * @return string representation of this.
+     */
+    public String toString(final TimeScale utc) {
         final String comma = ", ";
-        return new StringBuffer().append('{').append(date).append(", P(").
+        return new StringBuffer().append('{').
+                                  append(date.toString(utc)).append(", P(").
                                   append(getPosition().getX()).append(comma).
                                   append(getPosition().getY()).append(comma).
                                   append(getPosition().getZ()).append("), V(").

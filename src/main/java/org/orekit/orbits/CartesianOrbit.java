@@ -712,7 +712,18 @@ public class CartesianOrbit extends Orbit {
      * @return a string representation of this object
      */
     public String toString() {
-        return "Cartesian parameters: " + getPVCoordinates().toString();
+        // use only the six defining elements, like the other Orbit.toString() methods
+        final String comma = ", ";
+        final PVCoordinates pv = getPVCoordinates();
+        final Vector3D p = pv.getPosition();
+        final Vector3D v = pv.getVelocity();
+        return "Cartesian parameters: {P(" +
+                p.getX() + comma +
+                p.getY() + comma +
+                p.getZ() + "), V(" +
+                v.getX() + comma +
+                v.getY() + comma +
+                v.getZ() + ")}";
     }
 
     /** Replace the instance with a data transfer object for serialization.
