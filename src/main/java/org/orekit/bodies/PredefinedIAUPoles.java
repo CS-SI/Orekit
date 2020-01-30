@@ -93,7 +93,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return toRadians(d(date).multiply(W_DOT).add(W0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W0));
         }
 
     }
@@ -183,8 +183,8 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
-                                       toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
+            return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
+                                       FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
         }
 
         /** {@inheritDoc} */
@@ -201,12 +201,12 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
-            return toRadians(d(date).multiply(W_DOT).add(W_0).
-                             add(toRadians(d.multiply(M1_DOT).add(M1_0)).sin().multiply(M1_COEFF)).
-                             add(toRadians(d.multiply(M2_DOT).add(M2_0)).sin().multiply(M2_COEFF)).
-                             add(toRadians(d.multiply(M3_DOT).add(M3_0)).sin().multiply(M3_COEFF)).
-                             add(toRadians(d.multiply(M4_DOT).add(M4_0)).sin().multiply(M4_COEFF)).
-                             add(toRadians(d.multiply(M5_DOT).add(M5_0)).sin().multiply(M5_COEFF)));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0).
+                             add(FastMath.toRadians(d.multiply(M1_DOT).add(M1_0)).sin().multiply(M1_COEFF)).
+                             add(FastMath.toRadians(d.multiply(M2_DOT).add(M2_0)).sin().multiply(M2_COEFF)).
+                             add(FastMath.toRadians(d.multiply(M3_DOT).add(M3_0)).sin().multiply(M3_COEFF)).
+                             add(FastMath.toRadians(d.multiply(M4_DOT).add(M4_0)).sin().multiply(M4_COEFF)).
+                             add(FastMath.toRadians(d.multiply(M5_DOT).add(M5_0)).sin().multiply(M5_COEFF)));
         }
 
     }
@@ -250,7 +250,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return toRadians(d(date).multiply(W_DOT).add(W_0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
     }
@@ -295,8 +295,8 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
-                                       toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
+            return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
+                                       FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
         }
 
         /** {@inheritDoc} */
@@ -311,7 +311,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
         @Override
         public <T extends RealFieldElement<T>> FieldVector3D<T> getNode(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0 + 90.0)),
+            return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0 + 90.0)),
                                        date.getField().getZero());
         }
 
@@ -322,7 +322,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return toRadians(d(date).multiply(W_DOT).add(W_0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
     }
@@ -549,23 +549,23 @@ abstract class PredefinedIAUPoles implements IAUPole {
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
             final T t = t(date);
-            return new FieldVector3D<>(toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0).
-                                                 add(toRadians(d.multiply(E01_DOT).add(E01_0)).sin().multiply(E01_SIN)).
-                                                 add(toRadians(d.multiply(E02_DOT).add(E02_0)).sin().multiply(E02_SIN)).
-                                                 add(toRadians(d.multiply(E03_DOT).add(E03_0)).sin().multiply(E03_SIN)).
-                                                 add(toRadians(d.multiply(E04_DOT).add(E04_0)).sin().multiply(E04_SIN)).
-                                                 add(toRadians(d.multiply(E06_DOT).add(E06_0)).sin().multiply(E06_SIN)).
-                                                 add(toRadians(d.multiply(E10_DOT).add(E10_0)).sin().multiply(E10_SIN)).
-                                                 add(toRadians(d.multiply(E13_DOT).add(E13_0)).sin().multiply(E13_SIN))),
-                                       toRadians(t.multiply(DELTA_DOT).add(DELTA_0).
-                                                 add(toRadians(d.multiply(E01_DOT).add(E01_0)).cos().multiply(E01_COS)).
-                                                 add(toRadians(d.multiply(E02_DOT).add(E02_0)).cos().multiply(E02_COS)).
-                                                 add(toRadians(d.multiply(E03_DOT).add(E03_0)).cos().multiply(E03_COS)).
-                                                 add(toRadians(d.multiply(E04_DOT).add(E04_0)).cos().multiply(E04_COS)).
-                                                 add(toRadians(d.multiply(E06_DOT).add(E06_0)).cos().multiply(E06_COS)).
-                                                 add(toRadians(d.multiply(E07_DOT).add(E07_0)).cos().multiply(E07_COS)).
-                                                 add(toRadians(d.multiply(E10_DOT).add(E10_0)).cos().multiply(E10_COS)).
-                                                 add(toRadians(d.multiply(E13_DOT).add(E13_0)).cos().multiply(E13_COS))));
+            return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0).
+                                                 add(FastMath.toRadians(d.multiply(E01_DOT).add(E01_0)).sin().multiply(E01_SIN)).
+                                                 add(FastMath.toRadians(d.multiply(E02_DOT).add(E02_0)).sin().multiply(E02_SIN)).
+                                                 add(FastMath.toRadians(d.multiply(E03_DOT).add(E03_0)).sin().multiply(E03_SIN)).
+                                                 add(FastMath.toRadians(d.multiply(E04_DOT).add(E04_0)).sin().multiply(E04_SIN)).
+                                                 add(FastMath.toRadians(d.multiply(E06_DOT).add(E06_0)).sin().multiply(E06_SIN)).
+                                                 add(FastMath.toRadians(d.multiply(E10_DOT).add(E10_0)).sin().multiply(E10_SIN)).
+                                                 add(FastMath.toRadians(d.multiply(E13_DOT).add(E13_0)).sin().multiply(E13_SIN))),
+                                       FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0).
+                                                 add(FastMath.toRadians(d.multiply(E01_DOT).add(E01_0)).cos().multiply(E01_COS)).
+                                                 add(FastMath.toRadians(d.multiply(E02_DOT).add(E02_0)).cos().multiply(E02_COS)).
+                                                 add(FastMath.toRadians(d.multiply(E03_DOT).add(E03_0)).cos().multiply(E03_COS)).
+                                                 add(FastMath.toRadians(d.multiply(E04_DOT).add(E04_0)).cos().multiply(E04_COS)).
+                                                 add(FastMath.toRadians(d.multiply(E06_DOT).add(E06_0)).cos().multiply(E06_COS)).
+                                                 add(FastMath.toRadians(d.multiply(E07_DOT).add(E07_0)).cos().multiply(E07_COS)).
+                                                 add(FastMath.toRadians(d.multiply(E10_DOT).add(E10_0)).cos().multiply(E10_COS)).
+                                                 add(FastMath.toRadians(d.multiply(E13_DOT).add(E13_0)).cos().multiply(E13_COS))));
         }
 
         /** {@inheritDoc} */
@@ -590,20 +590,20 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
-            return toRadians(d.multiply(d.multiply(W_DOT_DOT).add(W_DOT)).add(W_0).
-                             add(toRadians(d.multiply(E01_DOT).add(E01_0)).sin().multiply(E01_W_SIN)).
-                             add(toRadians(d.multiply(E02_DOT).add(E02_0)).sin().multiply(E02_W_SIN)).
-                             add(toRadians(d.multiply(E03_DOT).add(E03_0)).sin().multiply(E03_W_SIN)).
-                             add(toRadians(d.multiply(E04_DOT).add(E04_0)).sin().multiply(E04_W_SIN)).
-                             add(toRadians(d.multiply(E05_DOT).add(E05_0)).sin().multiply(E05_W_SIN)).
-                             add(toRadians(d.multiply(E06_DOT).add(E06_0)).sin().multiply(E06_W_SIN)).
-                             add(toRadians(d.multiply(E07_DOT).add(E07_0)).sin().multiply(E07_W_SIN)).
-                             add(toRadians(d.multiply(E08_DOT).add(E08_0)).sin().multiply(E08_W_SIN)).
-                             add(toRadians(d.multiply(E09_DOT).add(E09_0)).sin().multiply(E09_W_SIN)).
-                             add(toRadians(d.multiply(E10_DOT).add(E10_0)).sin().multiply(E10_W_SIN)).
-                             add(toRadians(d.multiply(E11_DOT).add(E11_0)).sin().multiply(E11_W_SIN)).
-                             add(toRadians(d.multiply(E12_DOT).add(E12_0)).sin().multiply(E12_W_SIN)).
-                             add(toRadians(d.multiply(E13_DOT).add(E13_0)).sin().multiply(E13_W_SIN)));
+            return FastMath.toRadians(d.multiply(d.multiply(W_DOT_DOT).add(W_DOT)).add(W_0).
+                                      add(FastMath.toRadians(d.multiply(E01_DOT).add(E01_0)).sin().multiply(E01_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E02_DOT).add(E02_0)).sin().multiply(E02_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E03_DOT).add(E03_0)).sin().multiply(E03_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E04_DOT).add(E04_0)).sin().multiply(E04_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E05_DOT).add(E05_0)).sin().multiply(E05_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E06_DOT).add(E06_0)).sin().multiply(E06_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E07_DOT).add(E07_0)).sin().multiply(E07_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E08_DOT).add(E08_0)).sin().multiply(E08_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E09_DOT).add(E09_0)).sin().multiply(E09_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E10_DOT).add(E10_0)).sin().multiply(E10_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E11_DOT).add(E11_0)).sin().multiply(E11_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E12_DOT).add(E12_0)).sin().multiply(E12_W_SIN)).
+                                      add(FastMath.toRadians(d.multiply(E13_DOT).add(E13_0)).sin().multiply(E13_W_SIN)));
         }
 
     }
@@ -648,8 +648,8 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
-                                       toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
+            return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
+                                       FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
         }
 
         /** {@inheritDoc} */
@@ -659,7 +659,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return toRadians(d(date).multiply(W_DOT).add(W_0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
     }
@@ -782,19 +782,19 @@ abstract class PredefinedIAUPoles implements IAUPole {
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
 
             final T t = t(date);
-            final T ja = toRadians(t.multiply(JA_DOT).add(JA_0));
-            final T jb = toRadians(t.multiply(JB_DOT).add(JB_0));
-            final T jc = toRadians(t.multiply(JC_DOT).add(JC_0));
-            final T jd = toRadians(t.multiply(JD_DOT).add(JD_0));
-            final T je = toRadians(t.multiply(JE_DOT).add(JE_0));
+            final T ja = FastMath.toRadians(t.multiply(JA_DOT).add(JA_0));
+            final T jb = FastMath.toRadians(t.multiply(JB_DOT).add(JB_0));
+            final T jc = FastMath.toRadians(t.multiply(JC_DOT).add(JC_0));
+            final T jd = FastMath.toRadians(t.multiply(JD_DOT).add(JD_0));
+            final T je = FastMath.toRadians(t.multiply(JE_DOT).add(JE_0));
 
-            return new FieldVector3D<>(toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0).
+            return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0).
                                                  add(ja.sin().multiply(JA_SIN)).
                                                  add(jb.sin().multiply(JB_SIN)).
                                                  add(jc.sin().multiply(JC_SIN)).
                                                  add(jd.sin().multiply(JD_SIN)).
                                                  add(je.sin().multiply(JE_SIN))),
-                                       toRadians(t.multiply(DELTA_DOT).add(DELTA_0).
+                                       FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0).
                                                  add(ja.cos().multiply(JA_COS)).
                                                  add(jb.cos().multiply(JB_COS)).
                                                  add(jc.cos().multiply(JC_COS)).
@@ -810,7 +810,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return toRadians(d(date).multiply(W_DOT).add(W_0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
     }
@@ -855,8 +855,8 @@ abstract class PredefinedIAUPoles implements IAUPole {
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
-                                       toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
+            return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0)),
+                                       FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0)));
         }
 
         /** {@inheritDoc} */
@@ -866,7 +866,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return toRadians(d(date).multiply(W_DOT).add(W_0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
     }
@@ -910,7 +910,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return toRadians(d(date).multiply(W_DOT).add(W_0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
     }
@@ -963,9 +963,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
-            final T n = toRadians(t(date).multiply(N_DOT).add(N_0));
-            return new FieldVector3D<>(toRadians(n.sin().multiply(ALPHA_SIN).add(ALPHA_0)),
-                                       toRadians(n.cos().multiply(DELTA_COS).add(DELTA_0)));
+            final T n = FastMath.toRadians(t(date).multiply(N_DOT).add(N_0));
+            return new FieldVector3D<>(FastMath.toRadians(n.sin().multiply(ALPHA_SIN).add(ALPHA_0)),
+                                       FastMath.toRadians(n.cos().multiply(DELTA_COS).add(DELTA_0)));
         }
 
         /** {@inheritDoc} */
@@ -976,8 +976,8 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            final T n = toRadians(t(date).multiply(N_DOT).add(N_0));
-            return toRadians(d(date).multiply(W_DOT).add(n.sin().multiply(W_SIN)).add(W_0));
+            final T n = FastMath.toRadians(t(date).multiply(N_DOT).add(N_0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(n.sin().multiply(W_SIN)).add(W_0));
         }
 
     }
@@ -1021,7 +1021,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return toRadians(d(date).multiply(W_DOT).add(W_0));
+            return FastMath.toRadians(d(date).multiply(W_DOT).add(W_0));
         }
 
     }
@@ -1176,15 +1176,6 @@ abstract class PredefinedIAUPoles implements IAUPole {
         final FieldAbsoluteDate<T> j2000Epoch =
                 new FieldAbsoluteDate<>(date.getField(), timeScales.getJ2000Epoch());
         return date.offsetFrom(j2000Epoch, timeScales.getTDB()).divide(Constants.JULIAN_DAY);
-    }
-
-    /** Convert an angle to radians.
-     * @param angleInDegrees angle in degrees
-     * @param <T> type of the filed elements
-     * @return angle in radians
-     */
-    private static <T extends RealFieldElement<T>> T toRadians(final T angleInDegrees) {
-        return angleInDegrees.multiply(FastMath.PI / 180);
     }
 
 }
