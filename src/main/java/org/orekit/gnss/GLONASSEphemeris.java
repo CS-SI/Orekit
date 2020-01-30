@@ -146,6 +146,16 @@ public class GLONASSEphemeris implements GLONASSOrbitalElements {
     }
 
     @Override
+    public int getN4() {
+        return n4;
+    }
+
+    @Override
+    public int getNa() {
+        return nt;
+    }
+
+    @Override
     public double getTime() {
         return tb;
     }
