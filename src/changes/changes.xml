@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="627">
+        Fix TimeScalesFactory.getGMST(conventions, simpleEop) always returning the same
+        value.
+      </action>
       <action dev="evan" type="fix" issue="636">
         Fix UT1 and Earth rotation during a leap second. Was off by 1 second.
       </action>

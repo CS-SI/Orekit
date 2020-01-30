@@ -16,7 +16,11 @@
  */
 package org.orekit.time;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Pair;
 import org.orekit.frames.EOPHistory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -29,6 +33,18 @@ import org.orekit.utils.IERSConventions;
  * @since 10.1
  */
 public abstract class AbstractTimeScales implements TimeScales {
+
+    /** GMST time scales. */
+    private final ConcurrentMap<Pair<IERSConventions, Boolean>, GMSTScale> gmstMap;
+    /** UT1 time scales. */
+    private final ConcurrentMap<Pair<IERSConventions, Boolean>, UT1Scale> ut1Map;
+
+    /** Simple constructor. */
+    public AbstractTimeScales() {
+        final int n = IERSConventions.values().length;
+        gmstMap = new ConcurrentHashMap<>(n * 2);
+        ut1Map = new ConcurrentHashMap<>(n * 2);
+    }
 
     /**
      * Get the Universal Time 1 scale.
@@ -48,6 +64,30 @@ public abstract class AbstractTimeScales implements TimeScales {
      */
     protected UT1Scale getUT1(final EOPHistory history) {
         return new UT1Scale(history, getUTC());
+    }
+
+    /**
+     * Get the EOP history for the given conventions.
+     *
+     * @param conventions to use in computing the EOP history.
+     * @param simpleEOP   whether to ignore some small tidal effects.
+     * @return EOP history.
+     */
+    protected abstract EOPHistory getEopHistory(IERSConventions conventions,
+                                                boolean simpleEOP);
+
+    @Override
+    public UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
+        return ut1Map.computeIfAbsent(
+            new Pair<>(conventions, simpleEOP),
+            k -> getUT1(getEopHistory(conventions, simpleEOP)));
+    }
+
+    @Override
+    public GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
+        return gmstMap.computeIfAbsent(
+            new Pair<>(conventions, simpleEOP),
+            k -> new GMSTScale(getUT1(conventions, simpleEOP)));
     }
 
     @Override

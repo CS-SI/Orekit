@@ -18,9 +18,7 @@ package org.orekit.time;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -52,12 +50,6 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
     /** International Atomic Time scale. */
     private TAIScale tai = null;
 
-    /** Universal Time 1 scale (tidal effects ignored). */
-    private Map<IERSConventions, UT1Scale> ut1MapSimpleEOP = new HashMap<>();
-
-    /** Universal Time 1 scale (tidal effects considered). */
-    private Map<IERSConventions, UT1Scale> ut1MapCompleteEOP = new HashMap<>();
-
     /** Terrestrial Time scale. */
     private TTScale tt = null;
 
@@ -81,9 +73,6 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
 
     /** Barycentric Coordinate Time scale. */
     private TCBScale tcb = null;
-
-    /** Greenwich Mean Sidereal Time scale. */
-    private GMSTScale gmst = null;
 
     /** IRNSS System Time scale. */
     private IRNSSScale irnss = null;
@@ -204,17 +193,16 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
 
     @Override
     public UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
+        // synchronized to maintain the same semantics as Orekit 10.0
         synchronized (this) {
-
-            final Map<IERSConventions, UT1Scale> map =
-                    simpleEOP ? ut1MapSimpleEOP : ut1MapCompleteEOP;
-            UT1Scale ut1 = map.get(conventions);
-            if (ut1 == null) {
-                ut1 = getUT1(lazyLoadedEop.getEOPHistory(conventions, simpleEOP, this));
-                map.put(conventions, ut1);
-            }
-            return ut1;
+            return super.getUT1(conventions, simpleEOP);
         }
+    }
+
+    @Override
+    protected EOPHistory getEopHistory(final IERSConventions conventions,
+                                       final boolean simpleEOP) {
+        return lazyLoadedEop.getEOPHistory(conventions, simpleEOP, this);
     }
 
     // need to make this public for compatibility. Provides access to UT1 constructor.
@@ -330,14 +318,9 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
 
     @Override
     public GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
+        // synchronized to maintain the same semantics as Orekit 10.0
         synchronized (this) {
-
-            if (gmst == null) {
-                gmst = new GMSTScale(getUT1(conventions, simpleEOP));
-            }
-
-            return gmst;
-
+            return super.getGMST(conventions, simpleEOP);
         }
     }
 
