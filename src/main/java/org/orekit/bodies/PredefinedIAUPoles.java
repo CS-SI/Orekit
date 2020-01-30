@@ -42,6 +42,9 @@ import org.orekit.utils.Constants;
  */
 abstract class PredefinedIAUPoles implements IAUPole {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20200130L;
+
     /** Time scales. */
     private final TimeScales timeScales;
 
@@ -56,6 +59,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     /** IAU pole and prime meridian model for Sun. */
     private static class Sun extends PredefinedIAUPoles {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the prime meridian. */
         private static final double W0 = 84.176;
@@ -100,6 +106,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     /** IAU pole and prime meridian model for Mercury. */
     private static class Mercury extends PredefinedIAUPoles {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 281.0097;
@@ -214,6 +223,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
     /** IAU pole and prime meridian model for Venus. */
     private static class Venus extends PredefinedIAUPoles {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
+
         /** Constant term of the prime meridian. */
         private static final double W_0 = 160.20;
 
@@ -257,6 +269,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     /** IAU pole and prime meridian model for Earth. */
     private static class Earth extends PredefinedIAUPoles {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 =  0.00;
@@ -329,6 +344,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     /** IAU pole and prime meridian model for the Moon. */
     private static class Moon extends PredefinedIAUPoles {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 269.9949;
@@ -611,6 +629,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
     /** IAU pole and prime meridian model for Mars. */
     private static class Mars extends PredefinedIAUPoles {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
+
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 317.68143;
 
@@ -666,6 +687,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     /** IAU pole and prime meridian model for Jupiter. */
     private static class Jupiter extends PredefinedIAUPoles {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 268.056595;
@@ -818,6 +842,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
     /** IAU pole and prime meridian model for Saturn. */
     private static class Saturn extends PredefinedIAUPoles {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
+
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 40.589;
 
@@ -874,6 +901,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
     /** IAU pole and prime meridian model for Uranus. */
     private static class Uranus extends PredefinedIAUPoles {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
+
         /** Constant term of the prime meridian. */
         private static final double W_0 = 203.81;
 
@@ -917,6 +947,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
     /** IAU pole and prime meridian model for Neptune. */
     private static class Neptune extends PredefinedIAUPoles {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
 
         /** Constant term of the right ascension of the pole. */
         private static final double ALPHA_0 = 299.36;
@@ -985,6 +1018,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
     /** IAU pole and prime meridian model for Pluto. */
     private static class Pluto extends PredefinedIAUPoles {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
+
         /** Constant term of the prime meridian. */
         private static final double W_0 = 302.695;
 
@@ -1034,6 +1070,9 @@ abstract class PredefinedIAUPoles implements IAUPole {
      * </p>
      */
     private static class GcrfAligned extends PredefinedIAUPoles {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20200130L;
 
         /**
          * Simple constructor.
