@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
 
-import org.hipparchus.util.Pair;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistory;
 import org.orekit.utils.IERSConventions;
@@ -68,10 +67,6 @@ class PreloadedTimeScales extends AbstractTimeScales {
             ? extends Collection<? extends EOPEntry>> eopSupplier;
     /** Cached EOP data. */
     private final ConcurrentMap<IERSConventions, Collection<? extends EOPEntry>> eopMap;
-    /** UT1 time scales. */
-    private final ConcurrentMap<Pair<IERSConventions, Boolean>, UT1Scale> ut1Map;
-    /** GMST time scales. */
-    private final ConcurrentMap<Pair<IERSConventions, Boolean>, GMSTScale> gmstMap;
 
     /**
      * Create a new set of time scales from the given data.
@@ -99,8 +94,6 @@ class PreloadedTimeScales extends AbstractTimeScales {
         tcb = new TCBScale(tdb, tai);
         final int n = IERSConventions.values().length;
         eopMap = new ConcurrentHashMap<>(n);
-        ut1Map = new ConcurrentHashMap<>(n * 2);
-        gmstMap = new ConcurrentHashMap<>(n * 2);
         this.eopSupplier = eopSupplier;
     }
 
@@ -115,14 +108,13 @@ class PreloadedTimeScales extends AbstractTimeScales {
     }
 
     @Override
-    public UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
-        return ut1Map.computeIfAbsent(
-                new Pair<>(conventions, simpleEOP),
-            k -> getUT1(new EOPHistory(
-                        conventions,
-                        eopMap.computeIfAbsent(conventions, c -> eopSupplier.apply(c, this)),
-                        simpleEOP,
-                        this)));
+    protected EOPHistory getEopHistory(final IERSConventions conventions,
+                                       final boolean simpleEOP) {
+        return new EOPHistory(
+                conventions,
+                eopMap.computeIfAbsent(conventions, c -> eopSupplier.apply(c, this)),
+                simpleEOP,
+                this);
     }
 
     @Override
@@ -163,13 +155,6 @@ class PreloadedTimeScales extends AbstractTimeScales {
     @Override
     public TCBScale getTCB() {
         return tcb;
-    }
-
-    @Override
-    public GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
-        return gmstMap.computeIfAbsent(
-            new Pair<>(conventions, simpleEOP),
-            k -> new GMSTScale(getUT1(conventions, simpleEOP)));
     }
 
     @Override
