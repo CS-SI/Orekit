@@ -25,7 +25,7 @@ import org.orekit.utils.IERSConventions;
 /**
  * This class aims at propagating a IRNSS orbit from {@link IRNSSOrbitalElements}.
  *
- * @see "Indian Regiona Navigation Satellite System, Signal In Space ICD
+ * @see "Indian Regional Navigation Satellite System, Signal In Space ICD
  *       for standard positioning service, version 1.1"
  *
  * @author Bryan Cazabonne
