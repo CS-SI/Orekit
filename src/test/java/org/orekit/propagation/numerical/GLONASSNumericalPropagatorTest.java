@@ -82,7 +82,9 @@ public class GLONASSNumericalPropagatorTest {
         Assert.assertEquals(0.0, poe.getXDotDot(), Precision.SAFE_MIN);
         Assert.assertEquals(0.0, poe.getYDotDot(), Precision.SAFE_MIN);
         Assert.assertEquals(0.0, poe.getZDotDot(), Precision.SAFE_MIN);
-        
+        Assert.assertEquals(5,   poe.getN4());
+        Assert.assertEquals(251, poe.getNa());
+
         // Propagation
         final SpacecraftState finalState = propagator.propagate(target);
         final PVCoordinates pvFinal = finalState.getPVCoordinates(FramesFactory.getPZ9011(IERSConventions.IERS_2010, true));

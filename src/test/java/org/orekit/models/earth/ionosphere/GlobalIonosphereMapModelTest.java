@@ -20,6 +20,12 @@
  */
 package org.orekit.models.earth.ionosphere;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.Decimal64Field;
@@ -274,6 +280,26 @@ public class GlobalIonosphereMapModelTest {
             Assert.assertEquals(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, oe.getSpecifier());
         }
 
+    }
+
+    @Test
+    public void testSerialization() throws IOException, ClassNotFoundException {
+        GlobalIonosphereMapModel original = new GlobalIonosphereMapModel("gpsg0150.19i");
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(original);
+
+        Assert.assertTrue(bos.size() > 150);
+        Assert.assertTrue(bos.size() < 200);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        GlobalIonosphereMapModel deserialized = (GlobalIonosphereMapModel) ois.readObject();
+
+        AbsoluteDate date = new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC());
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(30.0), FastMath.toRadians(-130.0), 0.0);
+        Assert.assertEquals(original.getTEC(date, point), deserialized.getTEC(date, point), 1.0e-12);
     }
 
 }

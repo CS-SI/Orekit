@@ -25,6 +25,8 @@
       <Class name="~.*\.KeplerianPropagator$" />
       <Class name="~.*\.EcksteinHechlerPropagator$" />
       <Class name="~.*\.Ephemeris$" />
+      <Class name="~.*\.GlobalIonosphereMapModel$" />
+      <Class name="~.*\.MarshallSolarActivityFutureEstimation$" />
       <Class name="~.*\.IntegratedEphemeris$" />
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
       <Class name="~.*\.NumericalPropagator\$OsculatingMapper$" />

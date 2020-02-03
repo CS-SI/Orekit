@@ -89,7 +89,7 @@ public class GalileoPropagator extends AbstractGNSSPropagator {
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #Builder(GalileoOrbitalElements, Frames)
+         * @see #GalileoPropagator.Builder(GalileoOrbitalElements galileoOrbElt, Frames frames)
          */
         @DefaultDataContext
         public Builder(final GalileoOrbitalElements galileoOrbElt) {

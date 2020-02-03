@@ -36,6 +36,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
 import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
@@ -586,6 +587,50 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
     /** {@inheritDoc} */
     public boolean stillAcceptsData() {
         return true;
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    @DefaultDataContext
+    private Object writeReplace() {
+        return new DataTransferObject(getSupportedNames(), strengthLevel);
+    }
+
+    /** Internal class used only for serialization. */
+    @DefaultDataContext
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -5212198874900835369L;
+
+        /** Regular expression that matches the names of the IONEX files. */
+        private final String supportedNames;
+
+        /** Selected strength level of activity. */
+        private final StrengthLevel strengthLevel;
+
+        /** Simple constructor.
+         * @param supportedNames regular expression for supported files names
+         * @param strengthLevel selected strength level of activity
+         */
+        DataTransferObject(final String supportedNames,
+                           final StrengthLevel strengthLevel) {
+            this.supportedNames = supportedNames;
+            this.strengthLevel  = strengthLevel;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link MarshallSolarActivityFutureEstimation}.
+         * @return replacement {@link MarshallSolarActivityFutureEstimation}
+         */
+        private Object readResolve() {
+            try {
+                return new MarshallSolarActivityFutureEstimation(supportedNames, strengthLevel);
+            } catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
+            }
+        }
+
     }
 
 }

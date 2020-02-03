@@ -88,7 +88,7 @@ public class GPSPropagator extends AbstractGNSSPropagator {
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #Builder(GPSOrbitalElements, Frames)
+         * @see #GPSPropagator.Builder(GPSOrbitalElements gpsOrbElt, Frames frames)
          */
         @DefaultDataContext
         public Builder(final GPSOrbitalElements gpsOrbElt) {
