@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.1" date="TBD" description="TBD">
+      <action dev="ward" type="fix" issue="639" due-to="qmor">
+        In Ellipsoid.pointOnLimb(...) improved numerical stability by cancelling terms.
+      </action>
       <action dev="maxime" type="fix" issue="639">
         Fixed pointOnLimb method in bodies.Ellipsoid class. Normalized equations should now avoid numerical issues.
       </action>

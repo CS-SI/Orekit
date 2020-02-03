@@ -282,6 +282,20 @@ public class Ellipsoid implements Serializable {
         // beta' = x'o
         // alpha' = x'o² + y'o²
         // gamma' = 1 - y'o²
+        //
+        // Simplifying to  cancel a term of x'o².
+        // delta' = y (x'o² + y'o² - 1)
+        //
+        // After solving for xt1, xt2 using (3) the values are substituted into (2) to
+        // compute yt1, yt2. Then terms of x'o may be canceled from the expressions for
+        // yt1 and yt2. Additionally a point discontinuity is removed at y'o=0 from both
+        // yt1 and yt2.
+        //
+        // y't1 = (y'o - x'o d) / (x'o² + y'o²)
+        // y't2 = (x'o y'o + d) / (x + sqrt(delta'))
+        //
+        // where:
+        // d = sign(y'o) sqrt(x'o² + y'o² - 1)
 
         // Get the point in ellipse plane frame (2D)
         final Vector2D observer2D = section.toPlane(observer);
@@ -298,27 +312,35 @@ public class Ellipsoid implements Serializable {
 
         // Compute the roots
         // We know there are two solutions as we already checked the point is outside ellipsoid
-        final double sqrtp = FastMath.sqrt(xpo2 - alphap * gammap);
+        final double sqrt = FastMath.sqrt(ypo2 + xpo2 - 1);
+        final double sqrtp = FastMath.abs(ypo) * sqrt;
+        final double sqrtSigned = FastMath.copySign(sqrt, ypo);
 
         // Compute the roots (ordered by value)
         final double   xpt1;
         final double   xpt2;
+        final double   ypt1;
+        final double   ypt2;
         if (xpo > 0) {
             final double s = xpo + sqrtp;
             // xpt1 = (beta' + sqrt(delta')) / alpha' (with beta' = x'o)
             xpt1 = s / alphap;
             // x't2 = gamma' / (beta' + sqrt(delta')) since x't1 * x't2 = gamma' / alpha'
             xpt2 = gammap / s;
+            ypt1 = (ypo - xpo * sqrtSigned) / alphap;
+            ypt2 = (xpo * ypo + sqrtSigned) / s;
         } else {
             final double s = xpo - sqrtp;
             // x't1 and x't2 are reverted compared to previous
             xpt1 = gammap / s;
             xpt2 = s / alphap;
+            ypt2 = (ypo + xpo * sqrtSigned) / alphap;
+            ypt1 = (xpo * ypo - sqrtSigned) / s;
         }
 
         // De-normalize and express the two solutions in 3D
-        final Vector3D tp1 = section.toSpace(new Vector2D(ap * xpt1, (bp / ypo) * (1. - xpt1 * xpo)));
-        final Vector3D tp2 = section.toSpace(new Vector2D(ap * xpt2, (bp / ypo) * (1. - xpt2 * xpo)));
+        final Vector3D tp1 = section.toSpace(new Vector2D(ap * xpt1, bp * ypt1));
+        final Vector3D tp2 = section.toSpace(new Vector2D(ap * xpt2, bp * ypt2));
 
         // Return the limb point in the direction of the outside point
         return Vector3D.distance(tp1, outside) <= Vector3D.distance(tp2, outside) ? tp1 : tp2;
