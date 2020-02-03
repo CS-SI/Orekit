@@ -91,7 +91,7 @@ public class QZSSPropagator extends AbstractGNSSPropagator {
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #Builder(QZSSOrbitalElements, Frames)
+         * @see #QZSSPropagator.Builder(QZSSOrbitalElements qzssOrbElt, Frames frames)
          */
         @DefaultDataContext
         public Builder(final QZSSOrbitalElements qzssOrbElt) {

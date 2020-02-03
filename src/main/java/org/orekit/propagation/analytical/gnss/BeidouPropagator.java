@@ -90,7 +90,7 @@ public class BeidouPropagator extends AbstractGNSSPropagator {
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #Builder(BeidouOrbitalElements, Frames)
+         * @see #BeidouPropagator.Builder(BeidouOrbitalElements bdsOrbElt, Frames frames)
          */
         @DefaultDataContext
         public Builder(final BeidouOrbitalElements bdsOrbElt) {

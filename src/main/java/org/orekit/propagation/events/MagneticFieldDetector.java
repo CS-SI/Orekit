@@ -72,7 +72,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param type the magnetic field model
      * @param body the body
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
     @DefaultDataContext
     public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body)
@@ -92,7 +92,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
     @DefaultDataContext
     public MagneticFieldDetector(final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel)
@@ -111,7 +111,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
-     * @see #MagneticFieldDetector(double, double, double, FieldModel, OneAxisEllipsoid, boolean, DataContext)
+     * @see #MagneticFieldDetector(double, double, double, GeoMagneticFieldFactory.FieldModel, OneAxisEllipsoid, boolean, DataContext)
      */
     @DefaultDataContext
     public MagneticFieldDetector(final double maxCheck, final double threshold, final double limit,

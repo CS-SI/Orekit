@@ -162,7 +162,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #Builder(GLONASSOrbitalElements, DataContext)
+         * @see #GLONASSAnalyticalPropagator.Builder(GLONASSOrbitalElements glonassOrbElt, DataContext dataContext)
          */
         @DefaultDataContext
         public Builder(final GLONASSOrbitalElements glonassOrbElt) {

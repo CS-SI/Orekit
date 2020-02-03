@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -478,6 +480,14 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         }
     }
 
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    @DefaultDataContext
+    private Object writeReplace() {
+        return new DataTransferObject(getSupportedNames());
+    }
+
     /** Parser for IONEX files. */
     private class Parser implements DataLoader {
 
@@ -889,6 +899,36 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
          */
         public boolean isMappingFunction() {
             return isMappingFunction;
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    @DefaultDataContext
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 201928052L;
+
+        /** Regular expression that matches the names of the IONEX files. */
+        private final String supportedNames;
+
+        /** Simple constructor.
+         * @param supportedNames regular expression that matches the names of the IONEX files
+         */
+        DataTransferObject(final String supportedNames) {
+            this.supportedNames = supportedNames;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link GlobalIonosphereMapModel}.
+         * @return replacement {@link GlobalIonosphereMapModel}
+         */
+        private Object readResolve() {
+            try {
+                return new GlobalIonosphereMapModel(supportedNames);
+            } catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
+            }
         }
 
     }
