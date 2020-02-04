@@ -122,12 +122,12 @@ Commit the `changes.xml` file.
 
 Several files must be updated to take into account the new version:
 
-|            file name             |           usage            |                                     required update                                                    |
-|----------------------------------|----------------------------|--------------------------------------------------------------------------------------------------------|
-| `build.xml`                      | building file for Ant users| Update project version number. Check all dependencies' versions are consistent with pom.xml            |
-| `src/site/markdown/index.md`     | site home page             | Update the text about the latest available version, including important changes from **changes.xml**   |
-| `src/site/markdown/downloads.md` | downloads links            | Add a table with the links for files of the new versions, don't forget the date in the table caption   |
-| `src/site/markdown/faq.md`       | FAQ                        | Add line to the table of dependencies.                                                                 |
+|            file name                |           usage            |                                     required update                                                    |
+|-------------------------------------|----------------------------|--------------------------------------------------------------------------------------------------------|
+| `build.xml`                         | building file for Ant users| Update project version number. Check all dependencies' versions are consistent with pom.xml            |
+| `src/site/markdown/index.md`        | site home page             | Update the text about the latest available version, including important changes from **changes.xml**   |
+| `src/site/markdown/downloads.md.vm` | downloads links            | Declare the new versions, don't forget the date                                                        |
+| `src/site/markdown/faq.md`          | FAQ                        | Add line to the table of dependencies.                                                                 |
 
 Make sure the ant build works: `ant clean clean-lib jar javadoc`.
 

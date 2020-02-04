@@ -46,9 +46,9 @@ as required.
 
 |  package |                                              link                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------------|
-|  source  | [orekit-${version.key}-sources.zip](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}-sources.zip) |
-|  binary  | [orekit-${version.key}.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}.jar)                 |
-|  javadoc | [orekit-${version.key}-javadoc.jar](https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${version.key}/orekit-${version.key}-javadoc.jar) |
+|  source  | [orekit-${version.key}-sources.zip](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}-sources.zip) |
+|  binary  | [orekit-${version.key}.jar](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}.jar)                 |
+|  javadoc | [orekit-${version.key}-javadoc.jar](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}-javadoc.jar) |
 version ${version.key} downloads (release date: ${version.value})
 
 #end
