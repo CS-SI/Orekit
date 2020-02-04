@@ -216,14 +216,8 @@ The site is generated locally using:
 
     LANG=C mvn site
 
-Once generated, the site can be archived and uploaded to the Orekit site:
-
-    cd target/site
-    scp -r * user@host:/var/www/mvn-site/site-orekit-X.Y
-
-
-If you need help with this step ask ask Sébastien Dinot
-<sebastien.dinot@c-s.fr>.
+The official site is automatically updated on the hosting platform when work is 
+merged into branches `develop`, `release-*` or `master`.
 
 ## Calling for the vote
 
