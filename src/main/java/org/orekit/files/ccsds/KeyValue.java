@@ -42,12 +42,15 @@ import org.orekit.errors.OrekitMessages;
  */
 class KeyValue {
 
+    /** Regular expression for spaces. */
+    private static final Pattern SPACE = Pattern.compile("\\p{Space}+");
+
     /** Regular expression for splitting lines. */
-    private final Pattern PATTERN =
+    private static final Pattern PATTERN =
             Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?\\p{Space}*");
 
     /** Regular expression for user defined keywords. */
-    private final Pattern USER_DEFINED_KEYWORDS =
+    private static final Pattern USER_DEFINED_KEYWORDS =
             Pattern.compile("USER_DEFINED_[A-Z][A-Z_]*");
 
     /** Line from which pair is extracted. */
@@ -105,10 +108,8 @@ class KeyValue {
             if (recognized == Keyword.COMMENT) {
                 value = rawValue;
             } else {
-                value = rawValue.
-                        toUpperCase(Locale.US).
-                        replace('_', ' ').
-                        replaceAll("\\p{Space}+", " ");
+                value = SPACE.matcher(rawValue.toUpperCase(Locale.US).replace('_', ' '))
+                        .replaceAll(" ");
             }
         } else {
             key     = "";
