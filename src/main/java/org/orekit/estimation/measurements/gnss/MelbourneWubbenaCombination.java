@@ -149,12 +149,7 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
         }
         // Verify if used frequencies are the same.
         // Possible numerical error is taken into account by using a threshold of acceptance
-        if (FastMath.abs(frequency[0] - frequency[2]) - FastMath.abs(frequency[1] - frequency[3]) < THRESHOLD) {
-            // Frequencies used for the combinations are the same
-            return true;
-        } else {
-            return false;
-        }
+        return (FastMath.abs(frequency[0] - frequency[2]) - FastMath.abs(frequency[1] - frequency[3])) < THRESHOLD;
     }
 
     /** {@inheritDoc} */
