@@ -284,7 +284,7 @@ public class Ellipsoid implements Serializable {
         // gamma' = 1 - y'o²
         //
         // Simplifying to  cancel a term of x'o².
-        // delta' = y (x'o² + y'o² - 1)
+        // delta' = y'o (x'o² + y'o² - 1) = y'o (alpha' - 1)
         //
         // After solving for xt1, xt2 using (3) the values are substituted into (2) to
         // compute yt1, yt2. Then terms of x'o may be canceled from the expressions for
@@ -295,7 +295,7 @@ public class Ellipsoid implements Serializable {
         // y't2 = (x'o y'o + d) / (x + sqrt(delta'))
         //
         // where:
-        // d = sign(y'o) sqrt(x'o² + y'o² - 1)
+        // d = sign(y'o) sqrt(alpha' - 1)
 
         // Get the point in ellipse plane frame (2D)
         final Vector2D observer2D = section.toPlane(observer);
@@ -312,7 +312,7 @@ public class Ellipsoid implements Serializable {
 
         // Compute the roots
         // We know there are two solutions as we already checked the point is outside ellipsoid
-        final double sqrt = FastMath.sqrt(ypo2 + xpo2 - 1);
+        final double sqrt = FastMath.sqrt(alphap - 1);
         final double sqrtp = FastMath.abs(ypo) * sqrt;
         final double sqrtSigned = FastMath.copySign(sqrt, ypo);
 
@@ -327,13 +327,15 @@ public class Ellipsoid implements Serializable {
             xpt1 = s / alphap;
             // x't2 = gamma' / (beta' + sqrt(delta')) since x't1 * x't2 = gamma' / alpha'
             xpt2 = gammap / s;
+            // Get the corresponding values of y't
             ypt1 = (ypo - xpo * sqrtSigned) / alphap;
             ypt2 = (xpo * ypo + sqrtSigned) / s;
         } else {
             final double s = xpo - sqrtp;
-            // x't1 and x't2 are reverted compared to previous
+            // x't1 and x't2 are reverted compared to previous solution
             xpt1 = gammap / s;
             xpt2 = s / alphap;
+            // Get the corresponding values of y't
             ypt2 = (ypo + xpo * sqrtSigned) / alphap;
             ypt1 = (xpo * ypo - sqrtSigned) / s;
         }
