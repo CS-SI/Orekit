@@ -39,10 +39,9 @@ verify:
 deploy:artifacts:
   stage: deploy
   script:
-    - mvn $MAVEN_CLI_OPTS assembly:single javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
+    - mvn $MAVEN_CLI_OPTS javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
   artifacts:
     paths:
-      - target/*.zip
       - target/*.jar
   only:
     - develop@orekit/orekit
