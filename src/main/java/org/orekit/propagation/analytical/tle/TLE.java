@@ -236,7 +236,7 @@ public class TLE implements TimeStamped, Serializable {
      * @param classification classification (U for unclassified)
      * @param launchYear launch year (all digits)
      * @param launchNumber launch number
-     * @param launchPiece launch piece
+     * @param launchPiece launch piece (3 char String)
      * @param ephemerisType type of ephemeris
      * @param elementNumber element number
      * @param epoch elements epoch
@@ -274,7 +274,7 @@ public class TLE implements TimeStamped, Serializable {
      * @param classification classification (U for unclassified)
      * @param launchYear launch year (all digits)
      * @param launchNumber launch number
-     * @param launchPiece launch piece
+     * @param launchPiece launch piece (3 char String)
      * @param ephemerisType type of ephemeris
      * @param elementNumber element number
      * @param epoch elements epoch
