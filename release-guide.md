@@ -176,7 +176,7 @@ When these settings have been set up, generating the artifacts is done by
 running the following commands:
 
     mvn clean
-    mvn assembly:single deploy -DskipStagingRepositoryClose=true -Prelease
+    mvn deploy -DskipStagingRepositoryClose=true -Prelease
 
 During the generation, maven will trigger gpg which will ask the user for the
 pass phrase to access the signing key. Maven didn’t prompt for me, so I had to
@@ -191,7 +191,6 @@ checksums:
 - orekit-X.Y.jar
 - orekit-X.Y-sources.jar
 - orekit-X.Y-javadoc.jar
-- orekit-X.Y-sources.zip
 
 The signature and checksum files have similar names with added extensions `.asc`,
 `.md5` and `.sha1`.
@@ -199,11 +198,6 @@ The signature and checksum files have similar names with added extensions `.asc`
 Sometimes, the deployment to Sonatype OSS site also adds files with double extension
 `.asc.md5` and `.asc.sha1`, which are in fact checksum files on a signature file
 and serve no purpose and can be deleted.
-
-It is also possible that you get `orekit-X.Y-src.zip` (together with signature and
-checksums) uploaded to Sonatype OSS site. These files can also be deleted as they
-are not intended to be downloaded using maven but will rather be made available
-directly on Orekit website.
 
 Remove `orekit-X.Y.source-jar*` since they are duplicates of the
 `orekit-X.Y-sources.jar*` artifacts. (We can’t figure out how to make maven
@@ -317,7 +311,7 @@ Navigate to Self > Settings > Access Tokens. Enter a name, date, and check the
 “api” box, then click “Create personal access token”. Copy the token into the
 following command:
 
-    for f in $( ls target/orekit-X.Y*{.zip,.jar}{,.asc} ) ; do
+    for f in $( ls target/orekit-X.Y*.jar{,.asc} ) ; do
         curl --request POST --header "PRIVATE-TOKEN: <token>" --form "file=@$f" \
             https://gitlab.orekit.org/api/v4/projects/1/uploads
     done
