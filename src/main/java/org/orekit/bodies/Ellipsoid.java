@@ -284,7 +284,7 @@ public class Ellipsoid implements Serializable {
         // gamma' = 1 - y'o²
         //
         // Simplifying to  cancel a term of x'o².
-        // delta' = y'o (x'o² + y'o² - 1) = y'o (alpha' - 1)
+        // delta' = y'o² (x'o² + y'o² - 1) = y'o² (alpha' - 1)
         //
         // After solving for xt1, xt2 using (3) the values are substituted into (2) to
         // compute yt1, yt2. Then terms of x'o may be canceled from the expressions for
