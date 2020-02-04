@@ -110,7 +110,7 @@ public class EclipseDetectorTest {
         Assert.assertEquals( 4310.742, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
         Assert.assertTrue(events.get(3).getEventDetector() == withoutFlattening);
         Assert.assertTrue(events.get(3).isIncreasing());
-        Assert.assertEquals( 4317.155, events.get(3).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertEquals( 4317.155, events.get(3).getState().getDate().durationFrom(iniDate), 1.6e-3);
         Assert.assertTrue(events.get(4).getEventDetector() == withoutFlattening);
         Assert.assertFalse(events.get(4).isIncreasing());
         Assert.assertEquals( 8189.250, events.get(4).getState().getDate().durationFrom(iniDate), 1.0e-3);
