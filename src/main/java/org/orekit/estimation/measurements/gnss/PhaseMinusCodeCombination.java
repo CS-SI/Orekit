@@ -41,7 +41,7 @@ public class PhaseMinusCodeCombination extends AbstractSingleFrequencyCombinatio
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     PhaseMinusCodeCombination(final SatelliteSystem system) {
         super(CombinationType.PHASE_MINUS_CODE, system);

@@ -41,7 +41,7 @@ public class GRAPHICCombination extends AbstractSingleFrequencyCombination {
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     GRAPHICCombination(final SatelliteSystem system) {
         super(CombinationType.GRAPHIC, system);

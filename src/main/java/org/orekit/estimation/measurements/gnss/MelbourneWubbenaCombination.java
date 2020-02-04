@@ -69,7 +69,7 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     MelbourneWubbenaCombination(final SatelliteSystem system) {
         this.system = system;

@@ -52,7 +52,7 @@ public class IonosphereFreeCombination extends AbstractDualFrequencyCombination 
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     IonosphereFreeCombination(final SatelliteSystem system) {
         super(CombinationType.IONO_FREE, system);

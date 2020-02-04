@@ -48,7 +48,7 @@ public class GeometryFreeCombination extends AbstractDualFrequencyCombination {
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     GeometryFreeCombination(final SatelliteSystem system) {
         super(CombinationType.GEOMETRY_FREE, system);
