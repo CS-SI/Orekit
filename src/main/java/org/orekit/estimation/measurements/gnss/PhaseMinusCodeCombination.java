@@ -49,7 +49,7 @@ public class PhaseMinusCodeCombination extends AbstractSingleFrequencyCombinatio
 
     /** {@inheritDoc} */
     @Override
-    protected double getCombinedValue(final double phase, final double pseudoRange, final double f) {
+    protected double getCombinedValue(final double phase, final double pseudoRange) {
         // Combination does not depend on the frequency
         return phase - pseudoRange;
     }

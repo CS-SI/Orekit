@@ -137,7 +137,7 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
         final double f = freq1.getMHzFrequency();
 
         // Combined value
-        final double combinedValue = getCombinedValue(phase.getValue(), pseudoRange.getValue(), f);
+        final double combinedValue = getCombinedValue(phase.getValue(), pseudoRange.getValue());
 
         // Combined observation data
         return new CombinedObservationData(CombinationType.PHASE_MINUS_CODE, MeasurementType.COMBINED_RANGE_PHASE,
@@ -148,10 +148,9 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
      * Get the combined observed value of two measurements.
      * @param phase observed value of the phase measurement
      * @param pseudoRange observed value of the range measurement
-     * @param f frequency of both measurements in MHz
      * @return combined observed value
      */
-    protected abstract double getCombinedValue(double phase, double pseudoRange, double f);
+    protected abstract double getCombinedValue(double phase, double pseudoRange);
 
     /**
      * Verifies if two observation data can be combine.

@@ -49,7 +49,7 @@ public class GRAPHICCombination extends AbstractSingleFrequencyCombination {
 
     /** {@inheritDoc} */
     @Override
-    protected double getCombinedValue(final double phase, final double pseudoRange, final double f) {
+    protected double getCombinedValue(final double phase, final double pseudoRange) {
         // Combination does not depend on the frequency
         return 0.5 * (phase + pseudoRange);
     }
