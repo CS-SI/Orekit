@@ -22,7 +22,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <orekit.spotbugs-maven-plugin.version>3.1.12</orekit.spotbugs-maven-plugin.version>
     <orekit.jacoco-maven-plugin.version>0.8.4</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-assembly-plugin.version>3.1.1</orekit.maven-assembly-plugin.version>
     <orekit.maven-bundle-plugin.version>4.2.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>3.1.0</orekit.maven-checkstyle-plugin.version>
@@ -420,15 +419,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>${orekit.maven-assembly-plugin.version}</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/assembly/source-distribution-assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.felix</groupId>
