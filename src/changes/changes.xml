@@ -20,14 +20,25 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="10.1" date="TBD" description="TBD">
+    <release version="10.1" date="2020-02-11"
+             description="Version 10.1 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 10.1 are: wind-up effect for phase measurement, NeQuick ionospheric model,
+             support for Hatanaka compact RINEX format, methods for the combination
+             of GNSS measurements, Laplace method for initial orbit determination,
+             a new Field Of View package, comparison methods for absolute dates,
+             a new multiplexed measurement, specialized propagators for GNSS constellation,
+             default constructors for DSST force models, covariance matrices in OEM writer,
+             a new data context implementation, connection with Gitlab CI, improved documentation,
+             the migration of the tutorials to a separate sister project, as well as several other minor
+             features and bug fixes. See the list below for a full description of the changes.">
       <action dev="ward" type="fix">
         Improve performance of loading CCSDS files.
       </action>
       <action dev="ward" type="fix" issue="639" due-to="qmor">
         In Ellipsoid.pointOnLimb(...) improved numerical stability by cancelling terms.
       </action>
-      <action dev="maxime" type="fix" issue="639">
+      <action dev="maxime" type="fix" issue="639" due-to="qmor">
         Fixed pointOnLimb method in bodies.Ellipsoid class. Normalized equations should now avoid numerical issues.
       </action>
       <action dev="evan" type="fix" issue="627">
