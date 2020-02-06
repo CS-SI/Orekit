@@ -57,11 +57,6 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            script {
-                if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
-                    archiveArtifacts artifacts: 'target/*.zip', fingerprint: true
-                }
-            }
             junit testResults: '**/target/surefire-reports/*.xml'
             jacoco execPattern: 'target/**.exec',
                    classPattern: '**/classes',
