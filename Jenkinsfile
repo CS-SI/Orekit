@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
-                        sh 'mvn verify'
+                        sh 'mvn verify site'
                     }
                     else if ( env.BRANCH_NAME ==~ /^develop$/ ) {
                         sh 'mvn install site'
