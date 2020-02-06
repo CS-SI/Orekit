@@ -156,13 +156,14 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
          * </p>
          *
          * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+         * Another data context can be set using
+         * {@code Builder(final GLONASSOrbitalElements gpsOrbElt, final DataContext dataContext)}</p>
          *
          * @param glonassOrbElt the GLONASS orbital elements to be used by the GLONASS propagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #GLONASSAnalyticalPropagator.Builder(GLONASSOrbitalElements glonassOrbElt, DataContext dataContext)
          */
         @DefaultDataContext
         public Builder(final GLONASSOrbitalElements glonassOrbElt) {

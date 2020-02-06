@@ -25,14 +25,14 @@ import org.orekit.gnss.SatelliteSystem;
  * combination of measurements.
  * </p>
  * <pre>
- *    m<sub>f</sub> =  0.5 * (Φ<sub>f</sub> + R<sub>f</sub>)
+ *    mf =  0.5 * (Φf + Rf)
  * </pre>
  * With:
  * <ul>
- * <li>m<sub>f</sub> : GRAPHIC measurement.</li>
- * <li>Φ<sub>f</sub> : Phase measurement.</li>
- * <li>R<sub>f</sub> : Code measurement.</li>
- * <li>f             : Frequency.</li>
+ * <li>mf : GRAPHIC measurement.</li>
+ * <li>Φf : Phase measurement.</li>
+ * <li>Rf : Code measurement.</li>
+ * <li>f  : Frequency.</li>
  * </ul>
  * @author Bryan Cazabonne
  * @since 10.1

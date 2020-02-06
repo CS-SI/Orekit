@@ -85,13 +85,14 @@ public class QZSSPropagator extends AbstractGNSSPropagator {
          * </p>
          *
          * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+         * Another data context can be set using
+         * {@code Builder(final QZSSOrbitalElements gpsOrbElt, final Frames frames)}</p>
          *
          * @param qzssOrbElt the QZSS orbital elements to be used by the QZSSpropagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #QZSSPropagator.Builder(QZSSOrbitalElements qzssOrbElt, Frames frames)
          */
         @DefaultDataContext
         public Builder(final QZSSOrbitalElements qzssOrbElt) {
