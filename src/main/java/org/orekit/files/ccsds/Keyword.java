@@ -37,7 +37,7 @@ public enum Keyword {
 
     /** Comments specific to a ODM file. */
     COMMENT,
-    /** CCSDS OEM format version. */
+    /** File creation date in UTC. */
     CREATION_DATE,
     /** Creating agency or operator. */
     ORIGINATOR,
@@ -74,7 +74,7 @@ public enum Keyword {
     CCSDS_OPM_VERS,
     /** CCSDS OMM format version. */
     CCSDS_OMM_VERS,
-    /** File creation date in UTC. */
+    /** CCSDS OEM format version. */
     CCSDS_OEM_VERS,
     /** Spacecraft name for which the orbit state is provided. */
     OBJECT_NAME,
