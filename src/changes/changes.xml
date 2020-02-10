@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="10.1" date="2020-02-11"
+    <release version="10.1" date="2020-02-15"
              description="Version 10.1 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced
              in 10.1 are: wind-up effect for phase measurement, NeQuick ionospheric model,
