@@ -1027,7 +1027,7 @@ public class DSSTPropagatorTest {
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         dsstProp = new DSSTPropagator(integrator);
-        dsstProp.setInitialState(initialState, PropagationType.OSCULATING);
+        dsstProp.setInitialState(initialState, PropagationType.MEAN);
     }
 
     private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
