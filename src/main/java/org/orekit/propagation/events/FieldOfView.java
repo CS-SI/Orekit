@@ -17,11 +17,13 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.enclosing.EnclosingBall;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.Region;
 import org.hipparchus.geometry.partitioning.RegionFactory;
+import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
@@ -86,6 +88,56 @@ public class FieldOfView extends PolygonalFieldOfView {
         super(center,
               PolygonalFieldOfView.DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
               meridian, insideRadius, n, margin);
+    }
+
+    /** Get the angular offset of target point with respect to the Field Of View Boundary.
+     * <p>
+     * The offset is roughly an angle with respect to the closest boundary point,
+     * corrected by the margin and using some approximation far from the Field Of View.
+     * It is positive if the target is outside of the Field Of view, negative inside,
+     * and zero if the point is exactly on the boundary (always taking the margin
+     * into account).
+     * </p>
+     * <p>
+     * As Field Of View can have complex shapes that may require long computation,
+     * when the target point can be proven to be outside of the Field Of View, a
+     * faster but approximate computation is done, that underestimates the offset.
+     * This approximation is only performed about 0.01 radians outside of the zone
+     * and is designed to still return a positive value if the full accurate computation
+     * would return a positive value. When target point is close to the zone (and
+     * furthermore when it is inside the zone), the full accurate computation is
+     * performed. This setup allows this offset to be used as a reliable way to
+     * detect Field Of View boundary crossings, which correspond to sign changes of
+     * the offset.
+     * </p>
+     * @param lineOfSight line of sight from the center of the Field Of View support
+     * unit sphere to the target in Field Of View canonical frame
+     * @return an angular offset negative if the target is visible within the Field Of
+     * View and positive if it is outside of the Field Of View, including the margin
+     * (note that this cannot take into account interposing bodies)
+     * @deprecated as of 10.1, replaced by {@link org.orekit.geometry.fov.FieldOfView#offsetFromBoundary(Vector3D, double, VisibilityTrigger)}
+     */
+    @Deprecated
+    public double offsetFromBoundary(final Vector3D lineOfSight) {
+
+        final S2Point                          los    = new S2Point(lineOfSight);
+        final SphericalPolygonsSet             zone   = getZone();
+        final EnclosingBall<Sphere2D, S2Point> cap    = zone.getEnclosingCap();
+        final double                           margin = getMargin();
+
+        // for faster computation, we start using only the surrounding cap, to filter out
+        // far away points (which correspond to most of the points if the Field Of View is small)
+        final double crudeDistance = cap.getCenter().distance(los) - cap.getRadius();
+        if (crudeDistance - margin > FastMath.max(FastMath.abs(margin), 0.01)) {
+            // we know we are strictly outside of the zone,
+            // use the crude distance to compute the (positive) return value
+            return crudeDistance - margin;
+        }
+
+        // we are close, we need to compute carefully the exact offset;
+        // we project the point to the closest zone boundary
+        return zone.projectToBoundary(los).getOffset() - margin;
+
     }
 
     /** Create polygon.
