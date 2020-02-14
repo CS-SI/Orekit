@@ -74,6 +74,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
 
 public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
@@ -247,6 +248,18 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Assert.assertEquals(dragCd3,  drivers[3].getValue(), 0.);
         Assert.assertEquals("custom-Cd", drivers[3].getName());
         
+        
+        // Test #getDragSensitiveSpan method
+        Assert.assertEquals(isoDrag, forceModel.getDragSensitiveSpan(date).getData());
+        Assert.assertEquals(isoDrag2, forceModel.getDragSensitiveSpan(date.shiftedBy(-dt - 86400.)).getData());
+        Assert.assertEquals(isoDrag1, forceModel.getDragSensitiveSpan(date.shiftedBy(+dt + 1.)).getData());
+        Assert.assertEquals(isoDrag3, forceModel.getDragSensitiveSpan(date.shiftedBy(2 * dt + 1.)).getData());
+        
+        // Test #extractDragSensitiveRange
+        TimeSpanMap<DragSensitive> dragMap = forceModel.extractDragSensitiveRange(date, date.shiftedBy(dt + 1.));
+        Assert.assertEquals(isoDrag, dragMap.getSpan(date).getData());
+        Assert.assertEquals(isoDrag1, dragMap.getSpan(date.shiftedBy(dt + 86400.)).getData());
+        Assert.assertEquals(isoDrag, dragMap.getSpan(date.shiftedBy(-dt - 86400.)).getData());
     }
     
 
