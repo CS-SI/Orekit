@@ -26,16 +26,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
-import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
-import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.random.GaussianRandomGenerator;
-import org.hipparchus.random.RandomGenerator;
-import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
-import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -326,7 +319,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "Cd3", 1.0e-4, 2.0e-12);
     }
 
-    /** Test check state Jacobian computation. */
+    /** Test state Jacobian computation. */
     @Test
     public void testStateJacobianSphere()
         {
@@ -841,7 +834,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 6.0e-8, false);
     }
 
-    /** Test check state Jacobian computation. */
+    /** Test state Jacobian computation. */
     @Test
     public void testGlobalStateJacobianBox()
         {
@@ -924,6 +917,8 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      * expansion of dX to the result.*/
     @Test
     public void RealFieldTest() {
+        // Initial field Keplerian orbit
+        // The variables are the six orbital parameters
         DSFactory factory = new DSFactory(6, 4);
         DerivativeStructure a_0 = factory.variable(0, 7e6);
         DerivativeStructure e_0 = factory.variable(1, 0.01);
@@ -935,25 +930,31 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
 
+        // Initial date = J2000 epoch
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
-
+        
+        // J2000 frame
         Frame EME = FramesFactory.getEME2000();
 
+        // Create initial field Keplerian orbit
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
-
+        
+        // Initial field and classical S/Cs
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
-
         SpacecraftState iSR = initialState.toSpacecraftState();
 
+        // Field integrator and classical integrator
         ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator =
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
         OrbitType type = OrbitType.EQUINOCTIAL;
+        
+        // Field and classical numerical propagators
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
@@ -961,111 +962,59 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
         NP.setOrbitType(type);
         NP.setInitialState(iSR);
-
-        final DragForce forceModel =
-                        new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
+        
+        
+        // Set up force model
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        
+        // Atmosphere
+        final Atmosphere atmosphere = new HarrisPriester(sun,
                                                          new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                               Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
-                                      new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                                     Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));       
+        // Time span drag force model init
+        double dragCd0 = 1.;
+        double dragCl0 = 0.1;
+        double dragCd1 = 2.;
+        double dragCl1 = 0.2;
+        double dragCd2 = 3.;
+        double dragCl2 = 0.3;
+        double dt = 1000.;
+        
+        // Build the force model
+        BoxAndSolarArraySpacecraft box0 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, sun, 20.0,
+                                                                         Vector3D.PLUS_J, dragCd0, dragCl0, 0.7, 0.2);
+        BoxAndSolarArraySpacecraft box1 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, sun, 20.0,
+                                                                         Vector3D.PLUS_J, dragCd1, dragCl1, 0.7, 0.2);
+        BoxAndSolarArraySpacecraft box2 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, sun, 20.0,
+                                                                         Vector3D.PLUS_J, dragCd2, dragCl2, 0.7, 0.2);
+        TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, box0);
+        forceModel.addDragSensitiveValidAfter(box1, J2000.toAbsoluteDate().shiftedBy(dt));
+        forceModel.addDragSensitiveValidBefore(box2, J2000.toAbsoluteDate().shiftedBy(-dt));
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
-        FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
-        SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
-        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
-        PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
-
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
-
-        long number = 23091991;
-        RandomGenerator RG = new Well19937a(number);
-        GaussianRandomGenerator NGG = new GaussianRandomGenerator(RG);
-        UncorrelatedRandomVectorGenerator URVG = new UncorrelatedRandomVectorGenerator(new double[] {0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 },
-                                                                                       new double[] {1e3, 0.005, 0.005, 0.01, 0.01, 0.01},
-                                                                                       NGG);
-        double a_R = a_0.getReal();
-        double e_R = e_0.getReal();
-        double i_R = i_0.getReal();
-        double R_R = R_0.getReal();
-        double O_R = O_0.getReal();
-        double n_R = n_0.getReal();
-        for (int ii = 0; ii < 1; ii++){
-            double[] rand_next = URVG.nextVector();
-            double a_shift = a_R + rand_next[0];
-            double e_shift = e_R + rand_next[1];
-            double i_shift = i_R + rand_next[2];
-            double R_shift = R_R + rand_next[3];
-            double O_shift = O_R + rand_next[4];
-            double n_shift = n_R + rand_next[5];
-
-            KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
-                                                           PositionAngle.MEAN,
-                                                           EME,
-                                                           J2000.toAbsoluteDate(),
-                                                           Constants.EIGEN5C_EARTH_MU
-                                                           );
-
-            SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
-
-            NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
-
-            shift_NP.setInitialState(shift_iSR);
-
-            shift_NP.addForceModel(forceModel);
-
-            SpacecraftState finalState_shift = shift_NP.propagate(target.toAbsoluteDate());
-
-
-            PVCoordinates finPVC_shift = finalState_shift.getPVCoordinates();
-
-            //position check
-
-            FieldVector3D<DerivativeStructure> pos_DS = finPVC_DS.getPosition();
-            double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double y_DS = pos_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double z_DS = pos_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-
-            //System.out.println(pos_DS.getX().getPartialDerivative(1));
-
-            double x = finPVC_shift.getPosition().getX();
-            double y = finPVC_shift.getPosition().getY();
-            double z = finPVC_shift.getPosition().getZ();
-            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 1e-5);
-            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 1e-5);
-            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 1e-5);
-
-            //velocity check
-
-            FieldVector3D<DerivativeStructure> vel_DS = finPVC_DS.getVelocity();
-            double vx_DS = vel_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vy_DS = vel_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vz_DS = vel_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vx = finPVC_shift.getVelocity().getX();
-            double vy = finPVC_shift.getVelocity().getY();
-            double vz = finPVC_shift.getVelocity().getZ();
-            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 1e-7);
-            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 1e-7);
-            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 1e-7);
-            //acceleration check
-
-            FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
-            double ax_DS = acc_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double ay_DS = acc_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double az_DS = acc_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double ax = finPVC_shift.getAcceleration().getX();
-            double ay = finPVC_shift.getAcceleration().getY();
-            double az = finPVC_shift.getAcceleration().getZ();
-            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 1e-5);
-            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 1e-5);
-            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 1e-5);
-        }
-
-
+        
+        // Do the test
+        // -----------
+        
+        // Propagate inside 1st drag model
+        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 0.9 * dt, NP, FNP,
+                                  1.0e-30, 6.0e-09, 2.0e-10, 5.0e-11,
+                                  1, false);
+        
+        // Propagate to 2nd drag model (reset propagator first)
+        FNP.resetInitialState(initialState);
+        NP.resetInitialState(iSR);
+        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1.1 * dt, NP, FNP,
+                                  1.0e-30, 2.0e-08, 8.0e-11, 1.0e-10,
+                                  1, false);
+        
+        // Propagate to 3rd drag model  (reset propagator first)
+        FNP.resetInitialState(initialState);
+        NP.resetInitialState(iSR);
+        checkRealFieldPropagation(FKO, PositionAngle.MEAN, -1.1 * dt, NP, FNP,
+                                  1.0e-15, 2.0e-08, 2.0e-09, 2.0e-09,
+                                  1, false);
     }
 
 
@@ -1075,10 +1024,12 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
     doing something in the Propagator and the FieldPropagator)*/
     @Test
     public void RealFieldExpectErrorTest() {
-        DSFactory factory = new DSFactory(6, 5);
+        // Initial field Keplerian orbit
+        // The variables are the six orbital parameters
+        DSFactory factory = new DSFactory(6, 4);
         DerivativeStructure a_0 = factory.variable(0, 7e6);
         DerivativeStructure e_0 = factory.variable(1, 0.01);
-        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
+        DerivativeStructure i_0 = factory.variable(2, 1.2);
         DerivativeStructure R_0 = factory.variable(3, 0.7);
         DerivativeStructure O_0 = factory.variable(4, 0.5);
         DerivativeStructure n_0 = factory.variable(5, 0.1);
@@ -1086,30 +1037,31 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
 
+        // Initial date = J2000 epoch
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
-
+        
+        // J2000 frame
         Frame EME = FramesFactory.getEME2000();
 
+        // Create initial field Keplerian orbit
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
-
+        
+        // Initial field and classical S/Cs
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
-
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
 
-
-        AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
-        AdaptiveStepsizeIntegrator RIntegrator =
-                        new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
-        RIntegrator.setInitialStepSize(60);
-
+        // Field integrator and classical integrator
+        ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator =
+                        new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
+        ClassicalRungeKuttaIntegrator RIntegrator =
+                        new ClassicalRungeKuttaIntegrator(6);
+        OrbitType type = OrbitType.EQUINOCTIAL;
+        
+        // Field and classical numerical propagators
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
@@ -1117,18 +1069,39 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
         NP.setOrbitType(type);
         NP.setInitialState(iSR);
-
-        final DragForce forceModel =
-                        new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
+        
+        
+        // Set up force model
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        
+        // Atmosphere
+        final Atmosphere atmosphere = new HarrisPriester(sun,
                                                          new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                               Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
-                                      new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                                     Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));       
+        // Time span drag force model init
+        double dragCd0 = 1.;
+        double dragCl0 = 0.1;
+        double dragCd1 = 2.;
+        double dragCl1 = 0.2;
+        double dragCd2 = 3.;
+        double dragCl2 = 0.3;
+        double dt = 1. * 1100.;
+        
+        // Build the force model
+        BoxAndSolarArraySpacecraft box0 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, sun, 20.0,
+                                                                         Vector3D.PLUS_J, dragCd0, dragCl0, 0.7, 0.2);
+        BoxAndSolarArraySpacecraft box1 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, sun, 20.0,
+                                                                         Vector3D.PLUS_J, dragCd1, dragCl1, 0.7, 0.2);
+        BoxAndSolarArraySpacecraft box2 = new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, sun, 20.0,
+                                                                         Vector3D.PLUS_J, dragCd2, dragCl2, 0.7, 0.2);
+        TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, box0);
+        forceModel.addDragSensitiveValidAfter(box1, J2000.toAbsoluteDate().shiftedBy(dt));
+        forceModel.addDragSensitiveValidBefore(box2, J2000.toAbsoluteDate().shiftedBy(-dt));
         FNP.addForceModel(forceModel);
-     //NOT ADDING THE FORCE MODEL TO THE NUMERICAL PROPAGATOR   NP.addForceModel(forceModel);
+        // NOT ADDING THE FORCE MODEL TO THE NUMERICAL PROPAGATOR   NP.addForceModel(forceModel);
 
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(100.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
@@ -1144,9 +1117,13 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Utils.setDataRoot("regular-data");
     }
     
-    @Test
-    //@Ignore
-    public void testSeveralDragForceModel() {
+    /** This method is not a test.
+     * It is an example on how to use the time span drag force model
+     * and how the derivatives of the different drag coefficients with respect
+     * to orbital states are computed throughout a propagation.
+     */
+    //@Test
+    public void exampleTimeSpanDragForceDerivatives() {
         
         AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 0, 0, 0., TimeScalesFactory.getUTC());
         Frame frame       = FramesFactory.getEME2000();
@@ -1187,6 +1164,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
             dates[i]  = initialDate.shiftedBy(duration * dt[i]);
             for (ParameterDriver driver : shapes[i].getDragParametersDrivers()) {
                 //driver.setName("Cd - " + dates[i].getComponents(TimeScalesFactory.getUTC()).getTime().toString());
+                driver.setName("Cd" + (i+1));
                 driver.setSelected(sel[i]);
             }
         }        
@@ -1221,44 +1199,47 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
         propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(orbit, mass)));
         AbsoluteDate finalDate = initialDate.shiftedBy(duration);
-        final int nParams = partials.getSelectedParameters().getNbParams();
         
-        // prepare jacob and mapper
-        double[][] dYdP = new double[6][nParams];
-        JacobiansMapper mapper = partials.getMapper();
-        
-        SpacecraftState[] states = new SpacecraftState[nModel];
-        
-        states[1] = propagator.propagate(dates[1].shiftedBy(-1.));
+        // Propagator inside 1st model, just before 2nd
+        propagator.propagate(dates[1].shiftedBy(-1.));
+        printCd(dragForce, propagator);
+        printState(propagator);
+        printJacobian(partials, propagator);
+
+        // Propagator inside 2nd model, just before 3rd        
+        propagator.propagate(dates[2].shiftedBy(-1.));
         printCd(dragForce, propagator);
         printState(propagator);
         printJacobian(partials, propagator);
         
-        propagator.propagate(dates[1].shiftedBy(+1.));
-        
-        states[2] = propagator.propagate(dates[2].shiftedBy(-1.));
+        // Propagate inside 3rd model
+        propagator.propagate(finalDate);
         printCd(dragForce, propagator);
         printState(propagator);
         printJacobian(partials, propagator);
-        
-        SpacecraftState state = propagator.propagate(finalDate);
-        printCd(dragForce, propagator);
-        printState(propagator);
-        printJacobian(partials, propagator);
-            
-        double x = 1;
     }
     
+    /** Print current drag coefficient at propagator date.
+     * @param dragForce time span drag force model
+     * @param propagator propagator
+     */
     public void printCd(TimeSpanDragForce dragForce, Propagator propagator) {
         AbsoluteDate t = propagator.getInitialState().getDate();
         System.out.println("\nCd @" + t + ": " + dragForce.getDragSensitive(t).getDragParametersDrivers()[0].getValue());
     }
     
+    /** Print current state at propagator date.
+     * @param propagator propagator
+     */
     public void printState(Propagator propagator) {
         AbsoluteDate t = propagator.getInitialState().getDate();
-        System.out.println("\nState @" + t + ": " + propagator.getInitialState());
+        System.out.println("State @" + t + ": " + propagator.getInitialState());
     }
     
+    /** Print current Jacobian of current drag coefficient with respect to current orbital state at propagator date.
+     * @param partials partial derivatives equations
+     * @param propagator propagator
+     */
     public void printJacobian(final PartialDerivativesEquations partials,
                               final Propagator propagator) {
         
@@ -1270,14 +1251,14 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Print drivers' names
         System.out.println("Jacobian at " + propagator.getInitialState().getDate());
         for (ParameterDriver driver : partials.getSelectedParameters().getDrivers()) {
-            System.out.format(Locale.US, "\t %s", driver.getName());
+            System.out.format(Locale.US, "\t %15s", driver.getName());
         }
         System.out.println();
         
         // Get Jacobian and print it
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < nParams; j++) {
-                System.out.format(Locale.US, "\t %10.5f", dYdP[i][j]);
+                System.out.format(Locale.US, "\t %15.5f", dYdP[i][j]);
             }
             System.out.println();
         }
