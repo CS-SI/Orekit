@@ -61,6 +61,9 @@ public class TimeSpanMap<T> {
      * AbsoluteDate)}. Repeating a transition date will lead to unexpected
      * result and is not supported.
      * </p>
+     * <p>
+     * Using addValidBefore(entry, t) will make 'entry' valid in ]-∞, t[ (note the open bracket).
+     * </p>
      * @param entry entry to add
      * @param latestValidityDate date before which the entry is valid
      * (must be different from <em>all</em> dates already used for transitions)
@@ -102,6 +105,9 @@ public class TimeSpanMap<T> {
      * by a call to this method or by a call to {@link #addValidBefore(Object,
      * AbsoluteDate)}. Repeating a transition date will lead to unexpected
      * result and is not supported.
+     * </p>
+     * <p>
+     * Using addValidAfter(entry, t) will make 'entry' valid [t, +∞[ (note the closed bracket).
      * </p>
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
