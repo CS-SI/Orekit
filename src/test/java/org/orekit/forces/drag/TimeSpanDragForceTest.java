@@ -17,15 +17,12 @@
 package org.orekit.forces.drag;
 
 
-import java.util.Locale;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -35,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -50,7 +46,6 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
-import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -61,9 +56,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
-import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -832,19 +825,19 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Orbit orbit = refOrbit.shiftedBy(0.);
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 7.0e-9, false);
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.0e-6, false);
         
         // Check state derivatives inside 2nd box model
         orbit = refOrbit.shiftedBy(1.1 * dt);
         state = new SpacecraftState(orbit,
                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 4.0e-9, false);
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.0e-6, false);
 
         // Check state derivatives inside 3rd box model
         orbit = refOrbit.shiftedBy(-1.1 * dt);
         state = new SpacecraftState(orbit,
                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 6.0e-8, false);
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 6.0e-6, false);
     }
 
     /** Test state Jacobian computation. */
@@ -1128,153 +1121,6 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
-    }
-    
-    /** This method is not a test.
-     * It is an example on how to use the time span drag force model
-     * and how the derivatives of the different drag coefficients with respect
-     * to orbital states are computed throughout a propagation.
-     */
-    //@Test
-    public void exampleTimeSpanDragForceDerivatives() {
-        
-        AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 0, 0, 0., TimeScalesFactory.getUTC());
-        Frame frame       = FramesFactory.getEME2000();
-        double rpe         = 160.e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
-        double rap         = 180.e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
-        double inc         = FastMath.toRadians(0.);
-        double aop         = FastMath.toRadians(0.);
-        double raan        = FastMath.toRadians(0.);
-        double mean        = FastMath.toRadians(180.);  
-        double mass        = 100.;
-        KeplerianOrbit orbit = new KeplerianOrbit(0.5 * (rpe + rap), (rap - rpe) / (rpe + rap),
-                                                  inc, aop, raan, mean, PositionAngle.MEAN,
-                                                  frame, initialDate, Constants.EIGEN5C_EARTH_MU);
-
-        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        BodyShape earthShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, itrf);
-        Atmosphere atmosphere = new SimpleExponentialAtmosphere(earthShape, 2.6e-10, 200000, 26000);
-        
-        // Simulation duration
-        final double duration = 3600.;
-        
-        // Drag area
-        final double dragArea = 10.;
-        
-        
-        // Arrays of Cds, date as frac of duration and drivers' selection
-        final double[] Cds  = new double[] {1., 2., 3.};
-        final double[] dt   = new double[] {0., 1./2., 3./4.};
-        final boolean[] sel = new boolean[] {true, true, true};
-        
-        
-        // Arrays of drag model
-        int nModel = Cds.length;
-        final IsotropicDrag[] shapes = new IsotropicDrag[nModel];
-        final AbsoluteDate[]  dates  = new AbsoluteDate[nModel];
-        for (int i = 0; i < nModel; i++) {
-            shapes[i] = new IsotropicDrag(dragArea, Cds[i]);
-            dates[i]  = initialDate.shiftedBy(duration * dt[i]);
-            for (ParameterDriver driver : shapes[i].getDragParametersDrivers()) {
-                //driver.setName("Cd - " + dates[i].getComponents(TimeScalesFactory.getUTC()).getTime().toString());
-                driver.setName("Cd" + (i+1));
-                driver.setSelected(sel[i]);
-            }
-        }        
-        
-        // Build time span drag force model
-        TimeSpanDragForce dragForce = new TimeSpanDragForce(atmosphere, shapes[0]);
-        for (int i = 0; i < nModel; i++) {
-            dragForce.addDragSensitiveValidAfter(shapes[i], dates[i]);    
-        }
-        
-        // Check values
-        for(ParameterDriver driver : dragForce.getParametersDrivers()) {
-            System.out.println(driver.getName() + " = " + driver.getValue());
-        }
-
-        
-        DragForce singleDragForce = new DragForce(atmosphere, new IsotropicDrag(dragArea, 1.));
-        for (ParameterDriver driver : singleDragForce.getParametersDrivers()) {
-            driver.setName(driver.getName() + " - single");
-            driver.setSelected(true);
-        }
-        
-        
-        // Set up propagator
-        double[][]          tolerance  = NumericalPropagator.tolerances(0.1, orbit, OrbitType.CARTESIAN);
-        AbstractIntegrator  integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerance[0], tolerance[1]);
-        NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setMu(orbit.getMu());
-        propagator.addForceModel(dragForce);
-        //propagator.addForceModel(singleDragForce);
-        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
-        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(orbit, mass)));
-        AbsoluteDate finalDate = initialDate.shiftedBy(duration);
-        
-        // Propagator inside 1st model, just before 2nd
-        propagator.propagate(dates[1].shiftedBy(-1.));
-        printCd(dragForce, propagator);
-        printState(propagator);
-        printJacobian(partials, propagator);
-
-        // Propagator inside 2nd model, just before 3rd        
-        propagator.propagate(dates[2].shiftedBy(-1.));
-        printCd(dragForce, propagator);
-        printState(propagator);
-        printJacobian(partials, propagator);
-        
-        // Propagate inside 3rd model
-        propagator.propagate(finalDate);
-        printCd(dragForce, propagator);
-        printState(propagator);
-        printJacobian(partials, propagator);
-    }
-    
-    /** Print current drag coefficient at propagator date.
-     * @param dragForce time span drag force model
-     * @param propagator propagator
-     */
-    public void printCd(TimeSpanDragForce dragForce, Propagator propagator) {
-        AbsoluteDate t = propagator.getInitialState().getDate();
-        System.out.println("\nCd @" + t + ": " + dragForce.getDragSensitive(t).getDragParametersDrivers()[0].getValue());
-    }
-    
-    /** Print current state at propagator date.
-     * @param propagator propagator
-     */
-    public void printState(Propagator propagator) {
-        AbsoluteDate t = propagator.getInitialState().getDate();
-        System.out.println("State @" + t + ": " + propagator.getInitialState());
-    }
-    
-    /** Print current Jacobian of current drag coefficient with respect to current orbital state at propagator date.
-     * @param partials partial derivatives equations
-     * @param propagator propagator
-     */
-    public void printJacobian(final PartialDerivativesEquations partials,
-                              final Propagator propagator) {
-        
-        final int nParams = partials.getSelectedParameters().getNbParams();
-        final double[][] dYdP = new double[6][nParams];
-        JacobiansMapper mapper = partials.getMapper();
-        mapper.getParametersJacobian(propagator.getInitialState(), dYdP);
-        
-        // Print drivers' names
-        System.out.println("Jacobian at " + propagator.getInitialState().getDate());
-        for (ParameterDriver driver : partials.getSelectedParameters().getDrivers()) {
-            System.out.format(Locale.US, "\t %15s", driver.getName());
-        }
-        System.out.println();
-        
-        // Get Jacobian and print it
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < nParams; j++) {
-                System.out.format(Locale.US, "\t %15.5f", dYdP[i][j]);
-            }
-            System.out.println();
-        }
     }
 }
 
