@@ -29,6 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -41,6 +42,8 @@ import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
@@ -137,16 +140,35 @@ public class TimeSpanDragForce extends AbstractForceModel {
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
 
-    /** Spacecraft. */
+    /** TimeSpanMap of DragSensitive objects. */
     private final TimeSpanMap<DragSensitive> dragSensitiveTimeSpanMap;
 
-    /** Simple constructor.
+    /** Time scale used for the default names of the drag parameter drivers. */
+    private final TimeScale timeScale;
+
+    /** Constructor with default UTC time scale for the default names of the drag parameter drivers.
      * @param atmosphere atmospheric model
-     * @param spacecraft the initial object physical and geometric information
+     * @param spacecraft Time scale used for the default names of the drag parameter drivers
      */
-    public TimeSpanDragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
+    @DefaultDataContext
+    public TimeSpanDragForce(final Atmosphere atmosphere,
+                             final DragSensitive spacecraft) {
         this.atmosphere = atmosphere;
         this.dragSensitiveTimeSpanMap = new TimeSpanMap<>(spacecraft);
+        this.timeScale = TimeScalesFactory.getUTC();
+    }
+
+    /** Constructor.
+     * @param atmosphere atmospheric model
+     * @param spacecraft the initial object physical and geometric information
+     * @param timeScale Time scale used for the default names of the drag parameter drivers
+     */
+    public TimeSpanDragForce(final Atmosphere atmosphere,
+                             final DragSensitive spacecraft,
+                             final TimeScale timeScale) {
+        this.atmosphere = atmosphere;
+        this.dragSensitiveTimeSpanMap = new TimeSpanMap<>(spacecraft);
+        this.timeScale = timeScale;
     }
 
     /** Add a DragSensitive entry valid before a limit date.<br>
@@ -185,7 +207,7 @@ public class TimeSpanDragForce extends AbstractForceModel {
         return dragSensitiveTimeSpanMap.get(date);
     }
 
-    /** Get the {@link DragSensitive} {@link TimeSpanMap.Span Span} containing a specified date.
+    /** Get the {@link DragSensitive} {@link Span} containing a specified date.
      * @param date date belonging to the desired time span
      * @return the DragSensitive time span containing the specified date
      */
@@ -209,8 +231,8 @@ public class TimeSpanDragForce extends AbstractForceModel {
         return dragSensitiveTimeSpanMap.extractRange(start, end);
     }
 
-    /** Get the {@link TimeSpanMap.Transition Transitions} of the drag sensitive time span map.
-     * @return the {@link TimeSpanMap.Transition Transitions} for the drag sensitive time span map
+    /** Get the {@link Transition}s of the drag sensitive time span map.
+     * @return the {@link Transition}s for the drag sensitive time span map
      */
     public NavigableSet<Transition<DragSensitive>> getTransitions() {
         return dragSensitiveTimeSpanMap.getTransitions();
@@ -476,7 +498,7 @@ public class TimeSpanDragForce extends AbstractForceModel {
             // If the name is the default name for DragSensitive parameter drivers
             // Modify the name to add the prefix and the date
             if (driverName.equals(DragSensitive.DRAG_COEFFICIENT) || driverName.equals(DragSensitive.LIFT_RATIO)) {
-                driver.setName(driverName + datePrefix + date.toString());
+                driver.setName(driverName + datePrefix + date.toString(timeScale));
             }
         }
         return dragSensitive;

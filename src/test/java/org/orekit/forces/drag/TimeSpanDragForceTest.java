@@ -287,7 +287,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dragCd  = 1.2;
         final IsotropicDrag isotropicDrag = new IsotropicDrag(dragArea, dragCd);
         isotropicDrag.getDragParametersDrivers()[0].setName("Cd");
-        final TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, isotropicDrag);
+        final TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, isotropicDrag, TimeScalesFactory.getUTC());
         
                 
         // After t2 = t + 4h
