@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 
 /**
  * The ADMFile (Attitude Data Message) class represents any of the two attitude
@@ -46,6 +49,9 @@ public abstract class ADMFile {
 
     /** Data context. */
     private DataContext dataContext;
+
+    /** IERS conventions used. */
+    private IERSConventions conventions;
 
     /**
      * Constructor.
@@ -110,18 +116,32 @@ public abstract class ADMFile {
         this.originator = originator;
     }
 
-    /**
-     * Get the data context.
-     *
+    /** Get IERS conventions.
+     * @return conventions IERS conventions
+     */
+    public IERSConventions getConventions() {
+        if (conventions != null) {
+            return conventions;
+        } else {
+            throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+        }
+    }
+
+    /** Set IERS conventions.
+     * @param conventions IERS conventions to be set
+     */
+    void setConventions(final IERSConventions conventions) {
+        this.conventions = conventions;
+    }
+
+    /** Get the data context.
      * @return the data context used for creating frames, time scales, etc.
      */
     public DataContext getDataContext() {
         return dataContext;
     }
 
-    /**
-     * Set the data context.
-     *
+    /** Set the data context.
      * @param dataContext used for creating frames, time scales, etc.
      */
     void setDataContext(final DataContext dataContext) {

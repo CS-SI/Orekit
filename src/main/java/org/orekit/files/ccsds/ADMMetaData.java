@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.time.TimeScale;
+
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
  * @since 10.2
@@ -71,6 +73,16 @@ public class ADMMetaData {
      */
     void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
+    }
+
+    /** Get the time scale.
+     * @return the time scale.
+     * @see #getTimeSystem()
+     */
+    public TimeScale getTimeScale() {
+        return getTimeSystem().getTimeScale(
+                admFile.getConventions(),
+                admFile.getDataContext().getTimeScales());
     }
 
     /** Get the spacecraft name for which the orbit state is provided.
