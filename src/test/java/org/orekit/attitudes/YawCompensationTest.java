@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -364,10 +364,9 @@ public class YawCompensationTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
+    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final YawCompensation provider,
                                                             final Orbit orbit, final AbsoluteDate date,
-                                                            final Frame frame)
-        {
+                                                            final Frame frame) {
 
         final Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
@@ -383,6 +382,9 @@ public class YawCompensationTest {
         Assert.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     9.0e-9);
         Assert.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 8.0e-7);
 
+        Assert.assertEquals(provider.getYawAngle(orbit, date, frame),
+                            provider.getYawAngle(orbitF, dateF, frame).getReal(),
+                            1.0e-12);
     }
 
     @Before

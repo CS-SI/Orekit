@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,11 +18,13 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 
 
-/** Base class for the predefined frames that are managed by {@link FramesFactory}.
+/** Base class for the predefined frames that are managed by {@link Frames}.
  * @author Luc Maisonobe
  */
 public class FactoryManagedFrame extends Frame {
@@ -59,11 +61,13 @@ public class FactoryManagedFrame extends Frame {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(factoryKey);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -85,7 +89,8 @@ public class FactoryManagedFrame extends Frame {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return FramesFactory.getFrame(Predefined.valueOf(name));
+                return DataContext.getDefault().getFrames()
+                        .getFrame(Predefined.valueOf(name));
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

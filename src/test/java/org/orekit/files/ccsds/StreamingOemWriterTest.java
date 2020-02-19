@@ -1,3 +1,19 @@
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.files.ccsds;
 
 import static org.junit.Assert.assertEquals;
@@ -13,21 +29,32 @@ import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.OEMFile.OemSatelliteEphemeris;
 import org.orekit.files.ccsds.StreamingOemWriter.Segment;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -107,6 +134,22 @@ public class StreamingOemWriterTest {
                 FramesFactory.getEME2000(), "EME2000",
                 CelestialBodyFactory.getMars(), "MARS");
         assertThat(StreamingOemWriter.guessFrame(frame), CoreMatchers.is("EME2000"));
+        Vector3D v = frame.getTransformProvider().getTransform(AbsoluteDate.J2000_EPOCH).getTranslation();
+        FieldVector3D<Decimal64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance())).getTranslation();
+        Assert.assertEquals(0.0, FieldVector3D.distance(v64, v).getReal(), 1.0e-10);
+
+        // check unknown frame
+        Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                               Constants.WGS84_EARTH_FLATTENING,
+                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                          new GeodeticPoint(1.2, 2.3, 45.6),
+                                          "dummy");
+        assertThat(StreamingOemWriter.guessFrame(topo), CoreMatchers.is("dummy"));
+
+        // check a fake ICRF
+        Frame fakeICRF = new Frame(FramesFactory.getGCRF(), Transform.IDENTITY,
+                                      CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial");
+        assertThat(StreamingOemWriter.guessFrame(fakeICRF), CoreMatchers.is("ICRF"));
     }
 
     /**
@@ -138,6 +181,14 @@ public class StreamingOemWriterTest {
                 FramesFactory.getEME2000(), "EME2000",
                 CelestialBodyFactory.getMars(), "MARS");
         assertThat(StreamingOemWriter.guessCenter(frame), CoreMatchers.is("MARS"));
+
+        // check unknown frame
+        Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                               Constants.WGS84_EARTH_FLATTENING,
+                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                          new GeodeticPoint(1.2, 2.3, 45.6),
+                                          "dummy");
+        assertThat(StreamingOemWriter.guessCenter(topo), CoreMatchers.is("UNKNOWN"));
     }
 
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -75,10 +75,10 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                             final String name) {
 
         super(parentShape.getBodyFrame(),
-              new Transform(AbsoluteDate.J2000_EPOCH,
-                            new Transform(AbsoluteDate.J2000_EPOCH,
+              new Transform(AbsoluteDate.ARBITRARY_EPOCH,
+                            new Transform(AbsoluteDate.ARBITRARY_EPOCH,
                                           parentShape.transform(point).negate()),
-                            new Transform(AbsoluteDate.J2000_EPOCH,
+                            new Transform(AbsoluteDate.ARBITRARY_EPOCH,
                                           new Rotation(point.getEast(), point.getZenith(),
                                                        Vector3D.PLUS_I, Vector3D.PLUS_K),
                                           Vector3D.ZERO)),
@@ -394,7 +394,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         final Vector3D  observed = new Vector3D(distance * cosEl * sinAz,
                                                 distance * cosEl * cosAz,
                                                 distance * sinEl);
-        return parentShape.transform(observed, this, AbsoluteDate.J2000_EPOCH);
+        return parentShape.transform(observed, this, AbsoluteDate.ARBITRARY_EPOCH);
     }
 
     /** Get the {@link PVCoordinates} of the topocentric frame origin in the selected frame.

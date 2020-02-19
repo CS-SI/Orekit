@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -67,6 +67,9 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     /** Reference epoch for QZSS weeks: 1980-01-06. */
     public static final DateComponents QZSS_EPOCH;
+
+    /** Reference epoch for IRNSS weeks: 1999-08-22. */
+    public static final DateComponents IRNSS_EPOCH;
 
     /** Reference epoch for BeiDou weeks: 2006-01-01. */
     public static final DateComponents BEIDOU_EPOCH;
@@ -144,6 +147,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         GALILEO_EPOCH         = new DateComponents(1999, 8, 22);
         GPS_EPOCH             = new DateComponents(1980, 1, 6);
         QZSS_EPOCH            = new DateComponents(1980, 1, 6);
+        IRNSS_EPOCH           = new DateComponents(1999, 8, 22);
         BEIDOU_EPOCH          = new DateComponents(2006, 1, 1);
         GLONASS_EPOCH         = new DateComponents(1996, 1, 1);
         J2000_EPOCH           = new DateComponents(2000, 1, 1);

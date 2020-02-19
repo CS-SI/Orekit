@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,7 +21,8 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -92,6 +93,7 @@ import org.orekit.utils.Constants;
  * Instances of the <code>AbsoluteDate</code> class are guaranteed to be immutable.
  * </p>
  * @author Luc Maisonobe
+ * @author Evan Ward
  * @see TimeScale
  * @see TimeStamped
  * @see ChronologicalComparator
@@ -105,67 +107,148 @@ public class AbsoluteDate
      * years -1 and +1, hence this reference date lies in year -4712 and not
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getJulianEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate JULIAN_EPOCH =
-        new AbsoluteDate(DateComponents.JULIAN_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
+            DataContext.getDefault().getTimeScales().getJulianEpoch();
 
-    /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time. */
+    /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time.
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getModifiedJulianEpoch()
+     */
+    @DefaultDataContext
     public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
-        new AbsoluteDate(DateComponents.MODIFIED_JULIAN_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
+            DataContext.getDefault().getTimeScales().getModifiedJulianEpoch();
 
-    /** Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time. */
+    /** Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time.
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getFiftiesEpoch()
+     */
+    @DefaultDataContext
     public static final AbsoluteDate FIFTIES_EPOCH =
-        new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
+            DataContext.getDefault().getTimeScales().getFiftiesEpoch();
 
     /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4):
-     * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC). */
+     * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC).
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getCcsdsEpoch()
+     */
+    @DefaultDataContext
     public static final AbsoluteDate CCSDS_EPOCH =
-        new AbsoluteDate(DateComponents.CCSDS_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
+            DataContext.getDefault().getTimeScales().getCcsdsEpoch();
 
-    /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 GST. */
+    /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 GST.
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getGalileoEpoch()
+     */
+    @DefaultDataContext
     public static final AbsoluteDate GALILEO_EPOCH =
-        new AbsoluteDate(DateComponents.GALILEO_EPOCH, TimeComponents.H00, TimeScalesFactory.getGST());
+            DataContext.getDefault().getTimeScales().getGalileoEpoch();
 
-    /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time. */
+    /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time.
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getGpsEpoch()
+     */
+    @DefaultDataContext
     public static final AbsoluteDate GPS_EPOCH =
-        new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, TimeScalesFactory.getGPS());
+            DataContext.getDefault().getTimeScales().getGpsEpoch();
 
-    /** Reference epoch for QZSS weeks: 1980-01-06T00:00:00 QZSS time. */
+    /** Reference epoch for QZSS weeks: 1980-01-06T00:00:00 QZSS time.
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getQzssEpoch()
+     */
+    @DefaultDataContext
     public static final AbsoluteDate QZSS_EPOCH =
-        new AbsoluteDate(DateComponents.QZSS_EPOCH, TimeComponents.H00, TimeScalesFactory.getQZSS());
+            DataContext.getDefault().getTimeScales().getQzssEpoch();
 
-    /** Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC. */
+    /** Reference epoch for IRNSS weeks: 1999-08-22T00:00:00 IRNSS time.
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getIrnssEpoch()
+     */
+    @DefaultDataContext
+    public static final AbsoluteDate IRNSS_EPOCH =
+            DataContext.getDefault().getTimeScales().getIrnssEpoch();
+
+    /** Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC.
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getBeidouEpoch()
+     */
+    @DefaultDataContext
     public static final AbsoluteDate BEIDOU_EPOCH =
-        new AbsoluteDate(DateComponents.BEIDOU_EPOCH, TimeComponents.H00, TimeScalesFactory.getBDT());
+            DataContext.getDefault().getTimeScales().getBeidouEpoch();
 
     /** Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00 GLONASS time.
      * <p>By convention, TGLONASS = UTC + 3 hours.</p>
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getGlonassEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate GLONASS_EPOCH =
-                    new AbsoluteDate(DateComponents.GLONASS_EPOCH,
-                                     new TimeComponents(29.0), TimeScalesFactory.getTAI()).shiftedBy(-10800.0);
+            DataContext.getDefault().getTimeScales().getGlonassEpoch();
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
      * @see #createJulianEpoch(double)
      * @see #createBesselianEpoch(double)
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getJ2000Epoch()
      */
-    public static final AbsoluteDate J2000_EPOCH =
-        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
+    @DefaultDataContext
+    public static final AbsoluteDate J2000_EPOCH = // TODO
+            DataContext.getDefault().getTimeScales().getJ2000Epoch();
 
     /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate.
      * <p>
      * Between 1968-02-01 and 1972-01-01, UTC-TAI = 4.213 170 0s + (MJD - 39 126) x 0.002 592s.
      * As on 1970-01-01 MJD = 40587, UTC-TAI = 8.000082s
      * </p>
+     *
+     * <p>This constant uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see TimeScales#getJavaEpoch()
      */
+    @DefaultDataContext
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeScalesFactory.getTAI()).shiftedBy(8.000082);
+            DataContext.getDefault().getTimeScales().getJavaEpoch();
 
-    /** Dummy date at infinity in the past direction. */
-    public static final AbsoluteDate PAST_INFINITY = JAVA_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY);
+    /**
+     * An arbitrary finite date. Uses when a non-null date is needed but its value doesn't
+     * matter.
+     */
+    public static final AbsoluteDate ARBITRARY_EPOCH = new AbsoluteDate(0, 0);
 
-    /** Dummy date at infinity in the future direction. */
-    public static final AbsoluteDate FUTURE_INFINITY = JAVA_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
+    /** Dummy date at infinity in the past direction.
+     * @see TimeScales#getPastInfinity()
+     */
+    public static final AbsoluteDate PAST_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY);
+
+    /** Dummy date at infinity in the future direction.
+     * @see TimeScales#getFutureInfinity()
+     */
+    public static final AbsoluteDate FUTURE_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 617061803741806846L;
@@ -178,7 +261,12 @@ public class AbsoluteDate
     private final double offset;
 
     /** Create an instance with a default value ({@link #J2000_EPOCH}).
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see #AbsoluteDate(DateTimeComponents, TimeScale)
      */
+    @DefaultDataContext
     public AbsoluteDate() {
         epoch  = J2000_EPOCH.epoch;
         offset = J2000_EPOCH.offset;
@@ -447,6 +535,10 @@ public class AbsoluteDate
      * field introduced in version 4 of the standard is not used, then the
      * {@code preambleField2} parameter can be set to 0.
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context} if
+     * the CCSDS epoch is used.
+     *
      * @param preambleField1 first byte of the field specifying the format, often
      * not transmitted in data interfaces, as it is constant for a given data interface
      * @param preambleField2 second byte of the field specifying the format
@@ -458,18 +550,61 @@ public class AbsoluteDate
      * specifies the {@link #CCSDS_EPOCH CCSDS reference epoch} is used (and hence
      * may be null in this case)
      * @return an instance corresponding to the specified date
+     * @see #parseCCSDSUnsegmentedTimeCode(byte, byte, byte[], AbsoluteDate, AbsoluteDate)
      */
+    @DefaultDataContext
     public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(final byte preambleField1,
                                                              final byte preambleField2,
                                                              final byte[] timeField,
                                                              final AbsoluteDate agencyDefinedEpoch) {
+        return parseCCSDSUnsegmentedTimeCode(preambleField1, preambleField2, timeField,
+                agencyDefinedEpoch,
+                DataContext.getDefault().getTimeScales().getCcsdsEpoch());
+    }
+
+    /**
+     * Build an instance from a CCSDS Unsegmented Time Code (CUC).
+     * <p>
+     * CCSDS Unsegmented Time Code is defined in the blue book: CCSDS Time Code Format
+     * (CCSDS 301.0-B-4) published in November 2010
+     * </p>
+     * <p>
+     * If the date to be parsed is formatted using version 3 of the standard (CCSDS
+     * 301.0-B-3 published in 2002) or if the extension of the preamble field introduced
+     * in version 4 of the standard is not used, then the {@code preambleField2} parameter
+     * can be set to 0.
+     * </p>
+     *
+     * @param preambleField1     first byte of the field specifying the format, often not
+     *                           transmitted in data interfaces, as it is constant for a
+     *                           given data interface
+     * @param preambleField2     second byte of the field specifying the format (added in
+     *                           revision 4 of the CCSDS standard in 2010), often not
+     *                           transmitted in data interfaces, as it is constant for a
+     *                           given data interface (value ignored if presence not
+     *                           signaled in {@code preambleField1})
+     * @param timeField          byte array containing the time code
+     * @param agencyDefinedEpoch reference epoch, ignored if the preamble field specifies
+     *                           the {@link #CCSDS_EPOCH CCSDS reference epoch} is used
+     *                           (and hence may be null in this case)
+     * @param ccsdsEpoch         reference epoch, ignored if the preamble field specifies
+     *                           the agency epoch is used.
+     * @return an instance corresponding to the specified date
+     * @since 10.1
+     */
+    public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(
+            final byte preambleField1,
+            final byte preambleField2,
+            final byte[] timeField,
+            final AbsoluteDate agencyDefinedEpoch,
+            final AbsoluteDate ccsdsEpoch) {
 
         // time code identification and reference epoch
         final AbsoluteDate epoch;
         switch (preambleField1 & 0x70) {
             case 0x10:
                 // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
-                epoch = CCSDS_EPOCH;
+                epoch = ccsdsEpoch;
                 break;
             case 0x20:
                 // the reference epoch is agency defined
@@ -516,6 +651,9 @@ public class AbsoluteDate
      * CCSDS Day Segmented Time Code is defined in the blue book:
      * CCSDS Time Code Format (CCSDS 301.0-B-4) published in November 2010
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param preambleField field specifying the format, often not transmitted in
      * data interfaces, as it is constant for a given data interface
      * @param timeField byte array containing the time code
@@ -523,9 +661,35 @@ public class AbsoluteDate
      * specifies the {@link #CCSDS_EPOCH CCSDS reference epoch} is used (and hence
      * may be null in this case)
      * @return an instance corresponding to the specified date
+     * @see #parseCCSDSDaySegmentedTimeCode(byte, byte[], DateComponents, TimeScale)
      */
+    @DefaultDataContext
     public static AbsoluteDate parseCCSDSDaySegmentedTimeCode(final byte preambleField, final byte[] timeField,
                                                               final DateComponents agencyDefinedEpoch) {
+        return parseCCSDSDaySegmentedTimeCode(preambleField, timeField,
+                agencyDefinedEpoch, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /** Build an instance from a CCSDS Day Segmented Time Code (CDS).
+     * <p>
+     * CCSDS Day Segmented Time Code is defined in the blue book:
+     * CCSDS Time Code Format (CCSDS 301.0-B-4) published in November 2010
+     * </p>
+     * @param preambleField field specifying the format, often not transmitted in
+     * data interfaces, as it is constant for a given data interface
+     * @param timeField byte array containing the time code
+     * @param agencyDefinedEpoch reference epoch, ignored if the preamble field
+     * specifies the {@link #CCSDS_EPOCH CCSDS reference epoch} is used (and hence
+     * may be null in this case)
+     * @param utc      time scale used to compute date and time components.
+     * @return an instance corresponding to the specified date
+     * @since 10.1
+     */
+    public static AbsoluteDate parseCCSDSDaySegmentedTimeCode(
+            final byte preambleField,
+            final byte[] timeField,
+            final DateComponents agencyDefinedEpoch,
+            final TimeScale utc) {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x40) {
@@ -581,8 +745,28 @@ public class AbsoluteDate
 
         final DateComponents date = new DateComponents(epoch, day);
         final TimeComponents time = new TimeComponents(seconds);
-        return new AbsoluteDate(date, time, TimeScalesFactory.getUTC()).shiftedBy(milli * 1.0e-3 + subMilli / divisor);
+        return new AbsoluteDate(date, time, utc).shiftedBy(milli * 1.0e-3 + subMilli / divisor);
 
+    }
+
+    /** Build an instance from a CCSDS Calendar Segmented Time Code (CCS).
+     * <p>
+     * CCSDS Calendar Segmented Time Code is defined in the blue book:
+     * CCSDS Time Code Format (CCSDS 301.0-B-4) published in November 2010
+     * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param preambleField field specifying the format, often not transmitted in
+     * data interfaces, as it is constant for a given data interface
+     * @param timeField byte array containing the time code
+     * @return an instance corresponding to the specified date
+     * @see #parseCCSDSCalendarSegmentedTimeCode(byte, byte[], TimeScale)
+     */
+    @DefaultDataContext
+    public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
+        return parseCCSDSCalendarSegmentedTimeCode(preambleField, timeField,
+                DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Build an instance from a CCSDS Calendar Segmented Time Code (CCS).
@@ -593,9 +777,14 @@ public class AbsoluteDate
      * @param preambleField field specifying the format, often not transmitted in
      * data interfaces, as it is constant for a given data interface
      * @param timeField byte array containing the time code
+     * @param utc      time scale used to compute date and time components.
      * @return an instance corresponding to the specified date
+     * @since 10.1
      */
-    public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
+    public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(
+            final byte preambleField,
+            final byte[] timeField,
+            final TimeScale utc) {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x50) {
@@ -638,7 +827,7 @@ public class AbsoluteDate
             divisor *= 100;
         }
 
-        return new AbsoluteDate(date, time, TimeScalesFactory.getUTC()).shiftedBy(subSecond / divisor);
+        return new AbsoluteDate(date, time, utc).shiftedBy(subSecond / divisor);
 
     }
 
@@ -719,14 +908,18 @@ public class AbsoluteDate
      * <p>
      * This method reverts the formula above and computes an {@code AbsoluteDate} from the Julian Epoch.
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param julianEpoch Julian epoch, like 2000.0 for defining the classical reference J2000.0
      * @return a new instant
      * @see #J2000_EPOCH
      * @see #createBesselianEpoch(double)
+     * @see TimeScales#createJulianEpoch(double)
      */
+    @DefaultDataContext
     public static AbsoluteDate createJulianEpoch(final double julianEpoch) {
-        return new AbsoluteDate(J2000_EPOCH,
-                                Constants.JULIAN_YEAR * (julianEpoch - 2000.0));
+        return DataContext.getDefault().getTimeScales().createJulianEpoch(julianEpoch);
     }
 
     /** Build an instance corresponding to a Besselian Epoch (BE).
@@ -740,15 +933,18 @@ public class AbsoluteDate
      * <p>
      * This method reverts the formula above and computes an {@code AbsoluteDate} from the Besselian Epoch.
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param besselianEpoch Besselian epoch, like 1950 for defining the classical reference B1950.0
      * @return a new instant
      * @see #createJulianEpoch(double)
+     * @see TimeScales#createBesselianEpoch(double)
      */
+    @DefaultDataContext
     public static AbsoluteDate createBesselianEpoch(final double besselianEpoch) {
-        return new AbsoluteDate(J2000_EPOCH,
-                                MathArrays.linearCombination(Constants.BESSELIAN_YEAR, besselianEpoch - 1900,
-                                                             Constants.JULIAN_DAY, -36525,
-                                                             Constants.JULIAN_DAY, 0.31352));
+        return DataContext.getDefault().getTimeScales()
+                .createBesselianEpoch(besselianEpoch);
     }
 
     /** Get a time-shifted date.
@@ -906,14 +1102,34 @@ public class AbsoluteDate
     }
 
     /** Split the instance into date/time components for a local time.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
      * negative Westward UTC)
      * @return date/time components
-          * @since 7.2
+     * @since 7.2
+     * @see #getComponents(int, TimeScale)
      */
+    @DefaultDataContext
     public DateTimeComponents getComponents(final int minutesFromUTC) {
+        return getComponents(minutesFromUTC,
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
 
-        final DateTimeComponents utcComponents = getComponents(TimeScalesFactory.getUTC());
+    /**
+     * Split the instance into date/time components for a local time.
+     *
+     * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
+     *                       negative Westward UTC)
+     * @param utc            time scale used to compute date and time components.
+     * @return date/time components
+     * @since 10.1
+     */
+    public DateTimeComponents getComponents(final int minutesFromUTC,
+                                            final TimeScale utc) {
+
+        final DateTimeComponents utcComponents = getComponents(utc);
 
         // shift the date according to UTC offset, but WITHOUT touching the seconds,
         // as they may exceed 60.0 during a leap seconds introduction,
@@ -948,13 +1164,32 @@ public class AbsoluteDate
     }
 
     /** Split the instance into date/time components for a time zone.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param timeZone time zone
      * @return date/time components
-          * @since 7.2
+     * @since 7.2
+     * @see #getComponents(TimeZone, TimeScale)
      */
+    @DefaultDataContext
     public DateTimeComponents getComponents(final TimeZone timeZone) {
-        final long milliseconds = FastMath.round(1000 * offsetFrom(JAVA_EPOCH, TimeScalesFactory.getUTC()));
-        return getComponents(timeZone.getOffset(milliseconds) / 60000);
+        return getComponents(timeZone, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Split the instance into date/time components for a time zone.
+     *
+     * @param timeZone time zone
+     * @param utc      time scale used to computed date and time components.
+     * @return date/time components
+     * @since 10.1
+     */
+    public DateTimeComponents getComponents(final TimeZone timeZone,
+                                            final TimeScale utc) {
+        final AbsoluteDate javaEpoch = new AbsoluteDate(DateComponents.JAVA_EPOCH, utc);
+        final long milliseconds = FastMath.round(1000 * offsetFrom(javaEpoch, utc));
+        return getComponents(timeZone.getOffset(milliseconds) / 60000, utc);
     }
 
     /** Compare the instance with another date.
@@ -963,7 +1198,12 @@ public class AbsoluteDate
      * is before, simultaneous, or after the specified date.
      */
     public int compareTo(final AbsoluteDate date) {
-        return Double.compare(durationFrom(date),  0);
+        final double duration = durationFrom(date);
+        if (!Double.isNaN(duration)) {
+            return Double.compare(duration, 0.0);
+        }
+        // both dates are infinity or one is NaN or both are NaN
+        return Double.compare(offset, date.offset);
     }
 
     /** {@inheritDoc} */
@@ -971,7 +1211,7 @@ public class AbsoluteDate
         return this;
     }
 
-    /** Check if the instance represent the same time as another instance.
+    /** Check if the instance represents the same time as another instance.
      * @param date other date
      * @return true if the instance and the other date refer to the same instant
      */
@@ -990,20 +1230,124 @@ public class AbsoluteDate
 
     }
 
+    /** Check if the instance represents the same time as another.
+     * @param other the instant to compare this date to
+     * @return true if the instance and the argument refer to the same instant
+     * @see #isCloseTo(TimeStamped, double)
+     * @since 10.1
+     */
+    public boolean isEqualTo(final TimeStamped other) {
+        return this.equals(other.getDate());
+    }
+
+    /** Check if the instance time is close to another.
+     * @param other the instant to compare this date to
+     * @param tolerance the separation, in seconds, under which the two instants will be considered close to each other
+     * @return true if the duration between the instance and the argument is strictly below the tolerance
+     * @see #isEqualTo(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isCloseTo(final TimeStamped other, final double tolerance) {
+        return FastMath.abs(this.durationFrom(other.getDate())) < tolerance;
+    }
+
+    /** Check if the instance represents a time that is strictly before another.
+     * @param other the instant to compare this date to
+     * @return true if the instance is strictly before the argument when ordering chronologically
+     * @see #isBeforeOrEqualTo(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isBefore(final TimeStamped other) {
+        return this.compareTo(other.getDate()) < 0;
+    }
+
+    /** Check if the instance represents a time that is strictly after another.
+     * @param other the instant to compare this date to
+     * @return true if the instance is strictly after the argument when ordering chronologically
+     * @see #isAfterOrEqualTo(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isAfter(final TimeStamped other) {
+        return this.compareTo(other.getDate()) > 0;
+    }
+
+    /** Check if the instance represents a time that is before or equal to another.
+     * @param other the instant to compare this date to
+     * @return true if the instance is before (or equal to) the argument when ordering chronologically
+     * @see #isBefore(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isBeforeOrEqualTo(final TimeStamped other) {
+        return this.isEqualTo(other) || this.isBefore(other);
+    }
+
+    /** Check if the instance represents a time that is after or equal to another.
+     * @param other the instant to compare this date to
+     * @return true if the instance is after (or equal to) the argument when ordering chronologically
+     * @see #isAfterOrEqualTo(TimeStamped)
+     * @since 10.1
+     */
+    public boolean isAfterOrEqualTo(final TimeStamped other) {
+        return this.isEqualTo(other) || this.isAfter(other);
+    }
+
+    /** Check if the instance represents a time that is strictly between two others representing
+     * the boundaries of a time span. The two boundaries can be provided in any order: in other words,
+     * whether <code>boundary</code> represents a time that is before or after <code>otherBoundary</code> will
+     * not change the result of this method.
+     * @param boundary one end of the time span
+     * @param otherBoundary the other end of the time span
+     * @return true if the instance is strictly between the two arguments when ordering chronologically
+     * @see #isBetweenOrEqualTo(TimeStamped, TimeStamped)
+     * @since 10.1
+     */
+    public boolean isBetween(final TimeStamped boundary, final TimeStamped otherBoundary) {
+        final TimeStamped beginning;
+        final TimeStamped end;
+        if (boundary.getDate().isBefore(otherBoundary)) {
+            beginning = boundary;
+            end = otherBoundary;
+        } else {
+            beginning = otherBoundary;
+            end = boundary;
+        }
+        return this.isAfter(beginning) && this.isBefore(end);
+    }
+
+    /** Check if the instance represents a time that is between two others representing
+     * the boundaries of a time span, or equal to one of them. The two boundaries can be provided in any order:
+     * in other words, whether <code>boundary</code> represents a time that is before or after
+     * <code>otherBoundary</code> will not change the result of this method.
+     * @param boundary one end of the time span
+     * @param otherBoundary the other end of the time span
+     * @return true if the instance is between the two arguments (or equal to at least one of them)
+     * when ordering chronologically
+     * @see #isBetween(TimeStamped, TimeStamped)
+     * @since 10.1
+     */
+    public boolean isBetweenOrEqualTo(final TimeStamped boundary, final TimeStamped otherBoundary) {
+        return this.isEqualTo(boundary) || this.isEqualTo(otherBoundary) || this.isBetween(boundary, otherBoundary);
+    }
+
     /** Get a hashcode for this date.
      * @return hashcode
      */
     public int hashCode() {
-        final long l = Double.doubleToLongBits(durationFrom(J2000_EPOCH));
+        final long l = Double.doubleToLongBits(durationFrom(ARBITRARY_EPOCH));
         return (int) (l ^ (l >>> 32));
     }
 
     /** Get a String representation of the instant location in UTC time scale.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @return a string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
+     * @see #toString(TimeScale)
      */
+    @DefaultDataContext
     public String toString() {
-        return toString(TimeScalesFactory.getUTC());
+        return toString(DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Get a String representation of the instant location.
@@ -1016,26 +1360,64 @@ public class AbsoluteDate
     }
 
     /** Get a String representation of the instant location for a local time.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
      * negative Westward UTC).
      * @return string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-          * @since 7.2
+     * @since 7.2
+     * @see #toString(int, TimeScale)
      */
+    @DefaultDataContext
     public String toString(final int minutesFromUTC) {
-        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
-        return getComponents(minutesFromUTC).toString(minuteDuration);
+        return toString(minutesFromUTC,
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Get a String representation of the instant location for a local time.
+     *
+     * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
+     *                       negative Westward UTC).
+     * @param utc            time scale used to compute date and time components.
+     * @return string representation of the instance, in ISO-8601 format with milliseconds
+     * accuracy
+     * @since 10.1
+     */
+    public String toString(final int minutesFromUTC, final TimeScale utc) {
+        final int minuteDuration = utc.minuteDuration(this);
+        return getComponents(minutesFromUTC, utc).toString(minuteDuration);
     }
 
     /** Get a String representation of the instant location for a time zone.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param timeZone time zone
      * @return string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-          * @since 7.2
+     * @since 7.2
+     * @see #toString(TimeZone, TimeScale)
      */
+    @DefaultDataContext
     public String toString(final TimeZone timeZone) {
-        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
-        return getComponents(timeZone).toString(minuteDuration);
+        return toString(timeZone, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Get a String representation of the instant location for a time zone.
+     *
+     * @param timeZone time zone
+     * @param utc      time scale used to compute date and time components.
+     * @return string representation of the instance, in ISO-8601 format with milliseconds
+     * accuracy
+     * @since 10.1
+     */
+    public String toString(final TimeZone timeZone, final TimeScale utc) {
+        final int minuteDuration = utc.minuteDuration(this);
+        return getComponents(timeZone, utc).toString(minuteDuration);
     }
 
 }

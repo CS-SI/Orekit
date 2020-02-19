@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,12 +20,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -75,15 +79,16 @@ import org.orekit.time.DateTimeComponents;
  *  90.0  25.0 0.00116059  0.00055318  2.3043  0.0096
  *  90.0  27.5 0.00116059  0.00055318  2.3043  0.0096
  * </pre>
+ *
+ * <p>It is not safe for multiple threads to share a single instance of this class.
+ *
  * @author Bryan Cazabonne
  */
-public class ViennaModelCoefficientsLoader implements DataLoader {
+public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
+        implements DataLoader {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "VMF*_\\\\*\\*\\.*H$";
-
-    /** Regular expression for supported file name. */
-    private String supportedNames;
 
     /** The hydrostatic and wet a coefficients loaded. */
     private double[] coefficientsA;
@@ -100,30 +105,56 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
     /** Vienna tropospheric model type.*/
     private ViennaModelType type;
 
-    /** Constructor with supported names given by user.
+    /** Constructor with supported names given by user. This constructor uses the
+     * {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames Supported names
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
      * @param type the type of Vienna tropospheric model (one or three)
+     * @see #ViennaModelCoefficientsLoader(String, double, double, ViennaModelType, DataProvidersManager)
      */
+    @DefaultDataContext
     public ViennaModelCoefficientsLoader(final String supportedNames, final double latitude,
                                          final double longitude, final ViennaModelType type) {
+        this(supportedNames, latitude, longitude, type, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Constructor with supported names and source of mapping function files given by the
+     * user.
+     *
+     * @param supportedNames Supported names
+     * @param latitude       geodetic latitude of the station, in radians
+     * @param longitude      geodetic latitude of the station, in radians
+     * @param type           the type of Vienna tropospheric model (one or three)
+     * @param dataProvidersManager provides access to auxiliary files.
+     * @since 10.1
+     */
+    public ViennaModelCoefficientsLoader(final String supportedNames,
+                                         final double latitude,
+                                         final double longitude,
+                                         final ViennaModelType type,
+                                         final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
         this.coefficientsA  = null;
         this.zenithDelay    = null;
-        this.supportedNames = supportedNames;
         this.type           = type;
         this.latitude       = latitude;
 
         // Normalize longitude between 0 and 2π
         this.longitude = MathUtils.normalizeAngle(longitude, FastMath.PI);
-
     }
 
-    /** Constructor with default supported names.
+    /** Constructor with default supported names. This constructor uses the
+     * {@link DataContext#getDefault() default data context}.
+     *
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
      * @param type the type of Vienna tropospheric model (one or three)
+     * @see #ViennaModelCoefficientsLoader(String, double, double, ViennaModelType, DataProvidersManager)
      */
+    @DefaultDataContext
     public ViennaModelCoefficientsLoader(final double latitude, final double longitude,
                                          final ViennaModelType type) {
         this(DEFAULT_SUPPORTED_NAMES, latitude, longitude, type);
@@ -151,21 +182,20 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         return zenithDelay.clone();
     }
 
-    /** Returns the supported names of the loader.
-     * @return the supported names
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /** Load the data using supported names .
      */
     public void loadViennaCoefficients() {
-        DataProvidersManager.getInstance().feed(supportedNames, this);
+        feed(this);
 
         // Throw an exception if ah, ah, zh or zw were not loaded properly
         if (coefficientsA == null || zenithDelay == null) {
-            throw new OrekitException(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED, supportedNames);
+            throw new OrekitException(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED,
+                    getSupportedNames());
         }
     }
 
@@ -185,7 +215,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         // Correct month format is with 2-digits.
         final String monthString;
         if (month < 10) {
-            monthString = "0" + String.valueOf(month);
+            monthString = "0" + month;
         } else {
             monthString = String.valueOf(month);
         }
@@ -193,7 +223,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         // Correct day format is with 2-digits.
         final String dayString;
         if (day < 10) {
-            dayString = "0" + String.valueOf(day);
+            dayString = "0" + day;
         } else {
             dayString = String.valueOf(day);
         }
@@ -201,7 +231,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         // Correct hour format is with 2-digits.
         final String hourString;
         if (hour < 10) {
-            hourString = "0" + String.valueOf(hour);
+            hourString = "0" + hour;
         } else {
             hourString = String.valueOf(hour);
         }
@@ -210,10 +240,10 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         // For VMF1 it starts with "VMFG" whereas with VMF3 it starts with "VMF3"
         switch (type) {
             case VIENNA_ONE:
-                this.supportedNames = String.format("VMFG_%04d%2s%2s.H%2s", year, monthString, dayString, hourString);
+                setSupportedNames(String.format("VMFG_%04d%2s%2s.H%2s", year, monthString, dayString, hourString));
                 break;
             case VIENNA_THREE:
-                this.supportedNames = String.format("VMF3_%04d%2s%2s.H%2s", year, monthString, dayString, hourString);
+                setSupportedNames(String.format("VMF3_%04d%2s%2s.H%2s", year, monthString, dayString, hourString));
                 break;
             default:
                 break;
@@ -238,7 +268,7 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
         throws IOException, ParseException {
 
         // Open stream and parse data
-        final BufferedReader br = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
         final String splitter = "\\s+";
 
@@ -260,12 +290,12 @@ public class ViennaModelCoefficientsLoader implements DataLoader {
                     final String[] range_line = line.split(splitter);
 
                     // Latitudes list
-                    for (double lat = Double.valueOf(range_line[2]); lat <= Double.valueOf(range_line[3]); lat = lat + Double.valueOf(range_line[6])) {
+                    for (double lat = Double.parseDouble(range_line[2]); lat <= Double.parseDouble(range_line[3]); lat = lat + Double.parseDouble(range_line[6])) {
                         latitudes.add(FastMath.toRadians(lat));
                     }
 
                     // Longitude list
-                    for (double lon = Double.valueOf(range_line[4]); lon <= Double.valueOf(range_line[5]); lon = lon + Double.valueOf(range_line[7])) {
+                    for (double lon = Double.parseDouble(range_line[4]); lon <= Double.parseDouble(range_line[5]); lon = lon + Double.parseDouble(range_line[7])) {
                         longitudes.add(FastMath.toRadians(lon));
                         // For VFM1 files, header specify that longitudes end at 360°
                         // In reality they end at 357.5°. That is why we stop the loop when the longitude

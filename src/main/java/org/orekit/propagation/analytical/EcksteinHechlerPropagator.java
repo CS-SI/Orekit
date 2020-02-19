@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,7 +24,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -34,6 +36,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
@@ -94,13 +97,19 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider,
+     * UnnormalizedSphericalHarmonicsProvider)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, provider,
-             provider.onDate(initialOrbit.getDate()));
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /**
@@ -136,6 +145,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      *
      * <p> C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial orbit
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m³/s²)
@@ -144,24 +155,35 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-          * @see org.orekit.utils.Constants
+     * @see org.orekit.utils.Constants
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
+     * double, double, double, double, double)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
-        this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
      * <p>Attitude law is set to an unspecified non-null arbitrary value.</p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double,
+     * UnnormalizedSphericalHarmonicsProvider)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate()));
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -176,6 +198,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      *
      * <p> C<sub>n,0</sub> = -J<sub>n</sub>
      *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -185,12 +209,16 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     * @see #EcksteinHechlerPropagator(Orbit, AttitudeProvider, double, double, double,
+     * double, double, double, double, double)
      */
+    @DefaultDataContext
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
-        this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from orbit, attitude provider and potential provider.
@@ -313,6 +341,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         } else {
             models.addValidBefore(newModel, state.getDate());
         }
+        stateChanged(state);
     }
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.

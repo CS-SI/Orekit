@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,8 +27,10 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -41,6 +43,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
@@ -165,21 +168,50 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngle#TRUE} for {@link
      * #setPositionAngleType(PositionAngle) position angle type}.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param integrator numerical integrator to use for propagation.
      * @param field Field used by default
+     * @see #FieldNumericalPropagator(Field, FieldODEIntegrator, AttitudeProvider)
      */
+    @DefaultDataContext
     public FieldNumericalPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
+        this(field, integrator, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Create a new instance of NumericalPropagator, based on orbit definition mu.
+     * After creation, the instance is empty, i.e. the attitude provider is set to an
+     * unspecified default law and there are no perturbing forces at all.
+     * This means that if {@link #addForceModel addForceModel} is not
+     * called after creation, the integrated orbit will follow a Keplerian
+     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
+     * for {@link #setOrbitType(OrbitType) propagation
+     * orbit type} and {@link PositionAngle#TRUE} for {@link
+     * #setPositionAngleType(PositionAngle) position angle type}.
+     * @param field Field used by default
+     * @param integrator numerical integrator to use for propagation.
+     * @param attitudeProvider attitude law to use.
+     * @since 10.1
+     */
+    public FieldNumericalPropagator(final Field<T> field,
+                                    final FieldODEIntegrator<T> integrator,
+                                    final AttitudeProvider attitudeProvider) {
         super(field, integrator, PropagationType.MEAN);
         this.field = field;
         forceModels = new ArrayList<ForceModel>();
         initMapper(field);
-        setAttitudeProvider(DEFAULT_LAW);
+        setAttitudeProvider(attitudeProvider);
         setMu(field.getZero().add(Double.NaN));
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }
 
+    /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
+     * @param ignoreCentralAttraction if true, {@link NewtonianAttraction} is <em>not</em>
+     * added automatically if missing
+     */
     public void setIgnoreCentralAttraction(final boolean ignoreCentralAttraction) {
         this.ignoreCentralAttraction = ignoreCentralAttraction;
     }
@@ -632,9 +664,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         Arrays.fill(relTol, dP.divide(r2.sqrt()).getReal());
 
-        return new double[][]{
-            absTol, relTol
-        };
+        return new double[][] { absTol, relTol };
 
     }
 

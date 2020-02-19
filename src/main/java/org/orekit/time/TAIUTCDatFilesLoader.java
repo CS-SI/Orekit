@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,14 +20,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.data.DataLoader;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -39,31 +41,45 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
+public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
+        implements UTCTAIOffsetsLoader {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "^tai-utc\\.dat$";
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Build a loader for tai-utc.dat file from USNO.
+    /**
+     * Build a loader for tai-utc.dat file from USNO. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
+     * @see #TAIUTCDatFilesLoader(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public TAIUTCDatFilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Build a loader for tai-utc.dat file from USNO.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param manager        provides access to the {@code tai-utc.dat} file.
+     */
+    public TAIUTCDatFilesLoader(final String supportedNames,
+                                final DataProvidersManager manager) {
+        super(supportedNames, manager);
     }
 
     /** {@inheritDoc} */
     @Override
     public List<OffsetModel> loadOffsets() {
-        final Parser parser = new Parser();
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        final UtcTaiOffsetLoader parser = new UtcTaiOffsetLoader(new Parser());
+        this.feed(parser);
         return parser.getOffsets();
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    public static class Parser implements UTCTAIOffsetsLoader.Parser {
 
         /** Regular expression for optional blanks. */
         private static final String BLANKS               = "\\p{Blank}*";
@@ -98,12 +114,9 @@ public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
         /** Data lines pattern. */
         private Pattern dataPattern;
 
-        /** UTC-TAI offsets. */
-        private List<OffsetModel> offsets;
-
         /** Simple constructor.
          */
-        Parser() {
+        public Parser() {
 
             // data lines read:
             // 1965 SEP  1 =JD 2439004.5  TAI-UTC=   3.8401300 S + (MJD - 38761.) X 0.001296 S
@@ -132,20 +145,7 @@ public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
                                           "\\p{Blank}*\\)\\p{Blank}+X" + STORED_REAL_FIELD +
                                           "\\p{Blank}*S" + LINE_END_REGEXP);
 
-            offsets = new ArrayList<OffsetModel>();
 
-        }
-
-        /** Get the parsed offsets.
-         * @return parsed offsets
-         */
-        public List<OffsetModel> getOffsets() {
-            return offsets;
-        }
-
-        /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return offsets.isEmpty();
         }
 
         /** Load UTC-TAI offsets entries read from some file.
@@ -155,15 +155,15 @@ public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
          * @param input data input stream
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception ParseException if data can't be parsed
          */
-        public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
+        @Override
+        public List<OffsetModel> parse(final InputStream input, final String name)
+            throws IOException {
 
-            offsets.clear();
+            final List<OffsetModel> offsets = new ArrayList<>();
 
             // set up a reader for line-oriented file
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // read all file, ignoring not recognized lines
             int lineNumber = 0;
@@ -208,6 +208,8 @@ public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
             if (offsets.isEmpty()) {
                 throw new OrekitException(OrekitMessages.NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE, name);
             }
+
+            return offsets;
 
         }
 

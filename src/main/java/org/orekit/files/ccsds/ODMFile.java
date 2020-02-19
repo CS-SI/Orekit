@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,7 @@ package org.orekit.files.ccsds;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -66,6 +67,9 @@ public abstract class ODMFile {
 
     /** Initial Date for MET or MRT time systems. */
     private AbsoluteDate missionReferenceDate;
+
+    /** Data context. */
+    private DataContext dataContext;
 
     /** ODMFile constructor. */
     public ODMFile() {
@@ -238,6 +242,24 @@ public abstract class ODMFile {
      */
     void setOriginator(final String originator) {
         this.originator = originator;
+    }
+
+    /**
+     * Get the data context.
+     *
+     * @return the data context used for creating frames, time scales, etc.
+     */
+    public DataContext getDataContext() {
+        return dataContext;
+    }
+
+    /**
+     * Set the data context.
+     *
+     * @param dataContext used for creating frames, time scales, etc.
+     */
+    void setDataContext(final DataContext dataContext) {
+        this.dataContext = dataContext;
     }
 
 }

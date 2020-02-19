@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,10 +29,14 @@ import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.OrekitParseException;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /** Reader for the ICGEM gravity field format.
@@ -79,7 +84,7 @@ import org.orekit.utils.Constants;
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected gravity field file.</p>
  *
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Luc Maisonobe
  */
 public class ICGEMFormatReader extends PotentialCoefficientsReader {
@@ -141,14 +146,11 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Gravity field coefficient cosine amplitude. */
     private static final String ACOS                    = "acos";
 
-    /** Tide system. */
-    private TideSystem tideSystem;
-
     /** Indicator for normalized coefficients. */
     private boolean normalized;
 
     /** Reference date. */
-    private DateComponents referenceDate;
+    private AbsoluteDate referenceDate;
 
     /** Secular trend of the cosine coefficients. */
     private final List<List<Double>> cTrend;
@@ -169,18 +171,39 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     private final Map<Double, List<List<Double>>> sSin;
 
     /** Simple constructor.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
+     * @see #ICGEMFormatReader(String, boolean, TimeScale)
      */
+    @DefaultDataContext
     public ICGEMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
-        super(supportedNames, missingCoefficientsAllowed);
+        this(supportedNames, missingCoefficientsAllowed,
+                DataContext.getDefault().getTimeScales().getTT());
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param supportedNames             regular expression for supported files names
+     * @param missingCoefficientsAllowed if true, allows missing coefficients in the input
+     *                                   data
+     * @param timeScale                  to use when parsing dates.
+     * @since 10.1
+     */
+    public ICGEMFormatReader(final String supportedNames,
+                             final boolean missingCoefficientsAllowed,
+                             final TimeScale timeScale) {
+        super(supportedNames, missingCoefficientsAllowed, timeScale);
         referenceDate = null;
-        cTrend = new ArrayList<List<Double>>();
-        sTrend = new ArrayList<List<Double>>();
-        cCos   = new HashMap<Double, List<List<Double>>>();
-        cSin   = new HashMap<Double, List<List<Double>>>();
-        sCos   = new HashMap<Double, List<List<Double>>>();
-        sSin   = new HashMap<Double, List<List<Double>>>();
+        cTrend = new ArrayList<>();
+        sTrend = new ArrayList<>();
+        cCos   = new HashMap<>();
+        cSin   = new HashMap<>();
+        sCos   = new HashMap<>();
+        sSin   = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -200,9 +223,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         // by default, the field is normalized with unknown tide system
         // (will be overridden later if non-default)
         normalized = true;
-        tideSystem = TideSystem.UNKNOWN;
+        TideSystem tideSystem = TideSystem.UNKNOWN;
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         boolean inHeader = true;
         double[][] c               = null;
         double[][] s               = null;
@@ -273,10 +296,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                                                                                    Integer.parseInt(tab[7].substring(6, 8)));
                                 if (referenceDate == null) {
                                     // first reference found, store it
-                                    referenceDate = localRef;
-                                } else if (!referenceDate.equals(localRef)) {
+                                    referenceDate = toDate(localRef);
+                                } else if (!referenceDate.equals(toDate(localRef))) {
                                     throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
-                                                              referenceDate, localRef, name);
+                                                              referenceDate, toDate(localRef), name);
                                 }
                             }
 
@@ -304,10 +327,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                             // extract arrays corresponding to period
                             final Double period = Double.valueOf(tab[7]);
                             if (!cCos.containsKey(period)) {
-                                cCos.put(period, new ArrayList<List<Double>>());
-                                cSin.put(period, new ArrayList<List<Double>>());
-                                sCos.put(period, new ArrayList<List<Double>>());
-                                sSin.put(period, new ArrayList<List<Double>>());
+                                cCos.put(period, new ArrayList<>());
+                                cSin.put(period, new ArrayList<>());
+                                sCos.put(period, new ArrayList<>());
+                                sSin.put(period, new ArrayList<>());
                             }
                             final List<List<Double>> cCosPeriod = cCos.get(period);
                             final List<List<Double>> cSinPeriod = cSin.get(period);

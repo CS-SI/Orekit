@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,6 +36,7 @@ import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -143,6 +144,27 @@ public class BeidouPropagatorTest {
     }
 
     @Test
+    public void testPosition() {
+        // Initial BeiDou orbital elements (Ref: IGS)
+        final BeidouOrbitalElements boe = new BeidouEphemeris(7, 713, 284400.0, 6492.84515953064, 0.00728036486543715,
+                                                              2.1815194404696853E-9, 0.9065628903946735, 0.0, -0.6647664535282437,
+                                                              -3.136916379444212E-9, -2.6584351442773304, 0.9614806010234702,
+                                                              7.306225597858429E-6, -6.314832717180252E-6, 406.96875,
+                                                              225.9375, -7.450580596923828E-9, -1.4062970876693726E-7);
+        // Date of the BeiDou orbital elements (GPStime - BDTtime = 14s)
+        final AbsoluteDate target = boe.getDate().shiftedBy(-14.0);
+        // Build the BeiDou propagator
+        final BeidouPropagator propagator = new BeidouPropagator.Builder(boe).build();
+        // Compute the PV coordinates at the date of the BeiDou orbital elements
+        final PVCoordinates pv = propagator.getPVCoordinates(target, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        // Computed position
+        final Vector3D computedPos = pv.getPosition();
+        // Expected position (reference from sp3 file WUM0MGXULA_20192470700_01D_05M_ORB.SP33)
+        final Vector3D expectedPos = new Vector3D(-10260690.520, 24061180.795, -32837341.074);
+        Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 3.1);
+    }
+
+    @Test
     public void testIssue544() {
         // Builds the BeidouPropagator from the almanac
         final BeidouPropagator propagator = new BeidouPropagator.Builder(almanac).build();
@@ -152,6 +174,152 @@ public class BeidouPropagatorTest {
         // Verify that an infinite loop did not occur
         Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assert.assertEquals(Vector3D.NaN, pv0.getVelocity());
+        
+    }
+
+    private class BeidouEphemeris implements BeidouOrbitalElements {
+
+        private int prn;
+        private int week;
+        private double toe;
+        private double sma;
+        private double deltaN;
+        private double ecc;
+        private double inc;
+        private double iDot;
+        private double om0;
+        private double dom;
+        private double aop;
+        private double anom;
+        private double cuc;
+        private double cus;
+        private double crc;
+        private double crs;
+        private double cic;
+        private double cis;
+
+        /**
+         * Build a new instance.
+         */
+        BeidouEphemeris(int prn, int week, double toe, double sqa, double ecc,
+                        double deltaN, double inc, double iDot, double om0,
+                        double dom, double aop, double anom, double cuc,
+                        double cus, double crc, double crs, double cic, double cis) {
+            this.prn    = prn;
+            this.week   = week;
+            this.toe    = toe;
+            this.sma    = sqa * sqa;
+            this.ecc    = ecc;
+            this.deltaN = deltaN;
+            this.inc    = inc;
+            this.iDot   = iDot;
+            this.om0    = om0;
+            this.dom    = dom;
+            this.aop    = aop;
+            this.anom   = anom;
+            this.cuc    = cuc;
+            this.cus    = cus;
+            this.crc    = crc;
+            this.crs    = crs;
+            this.cic    = cic;
+            this.cis    = cis;
+        }
+
+        @Override
+        public int getPRN() {
+            return prn;
+        }
+
+        @Override
+        public int getWeek() {
+            return week;
+        }
+
+        @Override
+        public double getTime() {
+            return toe;
+        }
+
+        @Override
+        public double getSma() {
+            return sma;
+        }
+
+        @Override
+        public double getMeanMotion() {
+            final double absA = FastMath.abs(sma);
+            return FastMath.sqrt(BEIDOU_MU / absA) / absA + deltaN;
+        }
+
+        @Override
+        public double getE() {
+            return ecc;
+        }
+
+        @Override
+        public double getI0() {
+            return inc;
+        }
+
+        @Override
+        public double getIDot() {
+            return iDot;
+        }
+
+        @Override
+        public double getOmega0() {
+            return om0;
+        }
+
+        @Override
+        public double getOmegaDot() {
+            return dom;
+        }
+
+        @Override
+        public double getPa() {
+            return aop;
+        }
+
+        @Override
+        public double getM0() {
+            return anom;
+        }
+
+        @Override
+        public double getCuc() {
+            return cuc;
+        }
+
+        @Override
+        public double getCus() {
+            return cus;
+        }
+
+        @Override
+        public double getCrc() {
+            return crc;
+        }
+
+        @Override
+        public double getCrs() {
+            return crs;
+        }
+
+        @Override
+        public double getCic() {
+            return cic;
+        }
+
+        @Override
+        public double getCis() {
+            return cis;
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return new GNSSDate(week, toe * 1000., SatelliteSystem.BEIDOU).getDate();
+        }
         
     }
 

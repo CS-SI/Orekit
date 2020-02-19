@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,11 +19,14 @@ package org.orekit.propagation.analytical;
 import java.util.Collections;
 import java.util.Map;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
@@ -44,19 +47,31 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * <p>The central attraction coefficient μ is set to the same value used
      * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial orbit
+     * @see #KeplerianPropagator(Orbit, AttitudeProvider)
      */
+    @DefaultDataContext
     public KeplerianPropagator(final Orbit initialOrbit) {
-        this(initialOrbit, DEFAULT_LAW, initialOrbit.getMu(), DEFAULT_MASS);
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                initialOrbit.getMu(), DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param initialOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
+     * @see #KeplerianPropagator(Orbit, AttitudeProvider, double)
      */
+    @DefaultDataContext
     public KeplerianPropagator(final Orbit initialOrbit, final double mu) {
-        this(initialOrbit, DEFAULT_LAW, mu, DEFAULT_MASS);
+        this(initialOrbit, Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                mu, DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and attitude provider.
@@ -157,6 +172,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         } else {
             states.addValidBefore(state, state.getDate());
         }
+        stateChanged(state);
     }
 
     /** {@inheritDoc} */

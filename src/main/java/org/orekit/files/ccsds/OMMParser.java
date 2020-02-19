@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,11 +20,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -69,9 +72,57 @@ public class OMMParser extends ODMParser {
      * launch piece) are not set here. If they are needed, they must be initialized before
      * parsing by calling {@link #withInternationalDesignator(int, int, String)}
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
+     * {@link #withDataContext(DataContext)}.
      */
+    @DefaultDataContext
     public OMMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "");
+        this(DataContext.getDefault());
+    }
+
+    /** Constructor with data context.
+     * <p>
+     * This class is immutable, and hence thread safe. When parts
+     * must be changed, such as reference date for Mission Elapsed Time or
+     * Mission Relative Time time systems, or the gravitational coefficient or
+     * the IERS conventions, the various {@code withXxx} methods must be called,
+     * which create a new immutable instance with the new parameters. This
+     * is a combination of the
+     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
+     * pattern</a> and a
+     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * interface</a>.
+     * </p>
+     * <p>
+     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
+     * If such time systems are used, it must be initialized before parsing by calling {@link
+     * #withMissionReferenceDate(AbsoluteDate)}.
+     * </p>
+     * <p>
+     * The gravitational coefficient is not set here. If it is needed in order
+     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
+     * be initialized before parsing by calling {@link #withMu(double)}.
+     * </p>
+     * <p>
+     * The IERS conventions to use is not set here. If it is needed in order to
+     * parse some reference frames or UT1 time scale, it must be initialized before
+     * parsing by calling {@link #withConventions(IERSConventions)}.
+     * </p>
+     * <p>
+     * The international designator parameters (launch year, launch number and
+     * launch piece) are not set here. If they are needed, they must be initialized before
+     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
+     * </p>
+     *
+     * @param dataContext used by the parser.
+     *
+     * @see #OMMParser()
+     * @see #withDataContext(DataContext)
+     * @since 10.1
+     */
+    public OMMParser(final DataContext dataContext) {
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", dataContext);
     }
 
     /** Complete constructor.
@@ -82,35 +133,38 @@ public class OMMParser extends ODMParser {
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @param dataContext used to retrieve frames, time scales, etc.
      */
     private OMMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber, final String launchPiece) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece);
+                      final int launchYear, final int launchNumber,
+                      final String launchPiece, final DataContext dataContext) {
+        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
+                launchPiece, dataContext);
     }
 
     /** {@inheritDoc} */
     public OMMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OMMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OMMParser withMu(final double newMu) {
         return new OMMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OMMParser withConventions(final IERSConventions newConventions) {
         return new OMMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OMMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
@@ -118,7 +172,13 @@ public class OMMParser extends ODMParser {
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
         return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece);
+                             newLaunchYear, newLaunchNumber, newLaunchPiece, getDataContext());
+    }
+
+    @Override
+    public OMMParser withDataContext(final DataContext newDataContext) {
+        return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
+                getLaunchYear(), getLaunchNumber(), getLaunchPiece(), newDataContext);
     }
 
     /** {@inheritDoc} */
@@ -139,7 +199,7 @@ public class OMMParser extends ODMParser {
         try {
 
             final BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                    new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
@@ -150,6 +210,7 @@ public class OMMParser extends ODMParser {
             pi.file.setMissionReferenceDate(getMissionReferenceDate());
             pi.file.setMuSet(getMu());
             pi.file.setConventions(getConventions());
+            pi.file.setDataContext(getDataContext());
             pi.file.getMetaData().setLaunchYear(getLaunchYear());
             pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
             pi.file.getMetaData().setLaunchPiece(getLaunchPiece());

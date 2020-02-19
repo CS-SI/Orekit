@@ -1,0 +1,128 @@
+' Copyright 2002-2020 CS Group
+' Licensed to CS Group (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package org.orekit #ECEBD8 {
+
+    package data #DDEBD8 {
+
+      interface DataContext {
+        + {static} LazyLoadedDataContext getDefault()
+        + {static} setDefault(LazyLoadedDataContext)
+        ..
+        +TimeScales getTimeScales()
+        +Frames getFrames()
+        +CelestialBodies getCelestialBodies()
+        +...()
+      }
+      note top
+        manages factories
+      end note
+
+      class LazyLoadedDataContext {
+        +DataProvidersManager getDataProvidersManager()
+      }
+
+      class DataProvidersManager {
+        +boolean feed(String supportedNames, DataLoader loader)
+      }
+
+      LazyLoadedDataContext o--  DataProvidersManager
+      DataContext           <|-- LazyLoadedDataContext
+
+    }
+
+    package time #DDEBD8 {
+      interface TimeScales {
+        {static} +TimeScales of(utcMinusTai, eopSupplier)
+        +TimeScale getTai()
+        +TimeScale getUtc()
+        +TimeScale getUt1()
+        +...()
+      }
+
+      DataContext o-- TimeScales
+
+      class LazyLoadedTimeScales
+
+      TimeScales            <|-- LazyLoadedTimeScales
+      LazyLoadedDataContext o--  LazyLoadedTimeScales
+
+    }
+
+    package bodies #DDEBD8 {
+      interface CelestialBodies{
+        +CelestialBody getSun()
+        +CelestialBody getMoon()
+        +...()
+      }
+
+      class LazyLoadedCelestialBodies
+
+      DataContext           o--  CelestialBodies
+      CelestialBodies       <|-- LazyLoadedCelestialBodies
+      LazyLoadedDataContext o--  LazyLoadedCelestialBodies
+
+    }
+
+    package frames #DDEBD8 {
+
+      interface Frames {
+        {static} +Frames of(timeScales, celestialBodies)
+        {static} +Frames of(timeScales, icrfSupplier)
+        +Frame getGcrf()
+        +Frame getItrf(...)
+        +...()
+      }
+
+      class LazyLoadedFrames
+
+      class LazyLoadedEop
+ 
+      DataContext           o--      Frames
+      Frames                <|--     LazyLoadedFrames
+      LazyLoadedTimeScales  o--      LazyLoadedEop
+      LazyLoadedFrames      o--      LazyLoadedEop
+      LazyLoadedFrames      o-right- CelestialBodies
+      LazyLoadedDataContext o--      LazyLoadedFrames 
+
+    }
+
+  }
+
+  package user.application #F3EDF7 {
+    class MyDataContext #EAE6F7/B9B3D2
+    class MyProvider    #EAE6F7/B9B3D2
+    class DataBase      #EAE6F7/B9B3D2
+    class Main          #EAE6F7/B9B3D2
+    DataContext   <|--     MyDataContext
+    MyDataContext o--      MyProvider
+    Main          -->      MyDataContext : creates
+    MyProvider    *--> "1" DataBase
+  }
+
+@enduml

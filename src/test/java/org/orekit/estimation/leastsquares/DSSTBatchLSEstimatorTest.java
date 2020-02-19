@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -42,6 +42,8 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -468,6 +470,40 @@ public class DSSTBatchLSEstimatorTest {
                                      0.0, 0.40,
                                      0.0, 1.9e-3,
                                      0.0, 7.3e-7);
+    }
+
+    @Test
+    public void testIssue359() {
+    	DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final DSSTPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(true, 1.0e-6, 60.0, 1.0);
+        
+        // Select the central attraction coefficient (here there is only the central attraction coefficient)
+        // as estimated parameter
+        propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        // create perfect PV measurements
+        final DSSTPropagator propagator = (DSSTPropagator) DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+        		DSSTEstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               0.0, 1.0, 300.0);
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
+        // Verify that the propagator, the builder and the estimator know mu
+        final String driverName = DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
+        Assert.assertTrue(propagator.getAllForceModels().get(0) instanceof DSSTNewtonianAttraction);
+        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof DSSTNewtonianAttraction);
+        Assert.assertNotNull(estimatedParameters.findByName(driverName));
+        Assert.assertTrue(propagator.getAllForceModels().get(0).getParametersDrivers()[0].isSelected());
+        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParametersDrivers()[0].isSelected());
     }
 
 }

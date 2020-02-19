@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -34,6 +34,7 @@ import org.orekit.utils.Constants;
  * Unit tests for {@link ReferenceEllipsoid}.
  *
  * @author E. Ward
+ * @author G. Prat
  */
 public class ReferenceEllipsoidTest {
 
@@ -138,13 +139,84 @@ public class ReferenceEllipsoidTest {
         Frame frame = FramesFactory.getGCRF();
 
         // action
-
         ReferenceEllipsoid wgs84 = ReferenceEllipsoid.getWgs84(frame);
 
         // verify
         Assert.assertEquals(
                 wgs84.getC2n0(1), Constants.WGS84_EARTH_C20 / c20factor, 3e-9);
         assertThat(wgs84.getBodyFrame(), is(frame));
+    }
+
+    /**
+     * check {@link ReferenceEllipsoid#getGrs80(Frame)}
+     */
+    @Test
+    public void testGetGrs80() {
+        // setup
+        double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
+        Frame frame = FramesFactory.getGCRF();
+
+        // action
+        ReferenceEllipsoid grs80 = ReferenceEllipsoid.getGrs80(frame);
+
+        // verify
+        Assert.assertEquals(
+                grs80.getC2n0(1), Constants.GRS80_EARTH_C20 / c20factor, 3e-9);
+        assertThat(grs80.getBodyFrame(), is(frame));
+    }
+
+    /**
+     * check {@link ReferenceEllipsoid#getIers96(Frame)}
+     */
+    @Test
+    public void testGetIers96() {
+        // setup
+        double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
+        Frame frame = FramesFactory.getGCRF();
+
+        // action
+        ReferenceEllipsoid iers96 = ReferenceEllipsoid.getIers96(frame);
+
+        // verify
+        Assert.assertEquals(
+                iers96.getC2n0(1), Constants.IERS96_EARTH_C20 / c20factor, 3e-9);
+        assertThat(iers96.getBodyFrame(), is(frame));
+    }
+    
+    /**
+     * check {@link ReferenceEllipsoid#getIers2003(Frame)}
+     */
+    @Test
+    public void testGetIers2003() {
+        // setup
+        double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
+        Frame frame = FramesFactory.getGCRF();
+
+        // action
+        ReferenceEllipsoid iers2003 = ReferenceEllipsoid.getIers2003(frame);
+
+        // verify
+        Assert.assertEquals(
+                iers2003.getC2n0(1), Constants.IERS2003_EARTH_C20 / c20factor, 3e-9);
+        assertThat(iers2003.getBodyFrame(), is(frame));
+    }
+
+    /**
+     * check {@link ReferenceEllipsoid#getIers2010(Frame)}
+     */
+    @Test
+    public void testGetIers2010() {
+        // setup
+        double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
+        Frame frame = FramesFactory.getGCRF();
+
+        // action
+        ReferenceEllipsoid iers2010 = ReferenceEllipsoid.getIers2010(frame);
+
+        // verify
+        Assert.assertEquals(
+                iers2010.getC2n0(1), Constants.IERS2010_EARTH_C20 / c20factor, 3e-9);
+        assertThat(iers2010.getBodyFrame(), is(frame));
     }
 
     /** check {@link ReferenceEllipsoid#getEllipsoid()} */

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
@@ -25,6 +29,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -33,9 +39,11 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -53,6 +61,7 @@ public class DSSTPropagatorBuilderTest {
     private EquinoctialOrbit orbit;
     private DSSTPropagator propagator;
     private DSSTForceModel moon;
+    private DSSTForceModel sun;
 
     @Test
     public void testIntegrators01() {
@@ -173,6 +182,75 @@ public class DSSTPropagatorBuilderTest {
         
     }
 
+    @Test
+    public void testIssue598() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
+                                                                  dp54Builder,
+                                                                  1.0,
+                                                                  PropagationType.MEAN,
+                                                                  PropagationType.MEAN);
+        builder.addForceModel(moon);
+        // Verify that there is no Newtonian attration force model
+        assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Build the DSST propagator (not used here)
+        builder.buildPropagator(builder.getSelectedNormalizedParameters());
+        // Verify the addition of the Newtonian attraction force model
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Add a new force model to ensure the Newtonian attraction stay at the last position
+        builder.addForceModel(sun);
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+    }
+
+    @Test
+    public void testAdditionalEquations() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
+                                                                  dp54Builder,
+                                                                  1.0,
+                                                                  PropagationType.MEAN,
+                                                                  PropagationType.MEAN);
+        builder.addForceModel(moon);
+        builder.addForceModel(sun);
+
+        // Add additional equations
+        builder.addAdditionalEquations(new AdditionalEquations() {
+
+            public String getName() {
+                return "linear";
+            }
+
+            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+                pDot[0] = 1.0;
+                return new double[7];
+            }
+        });
+
+        builder.addAdditionalEquations(new AdditionalEquations() {
+
+    	    public String getName() {
+    	        return "linear";
+    	    }
+
+    	    public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+    	        pDot[0] = 1.0;
+    	        return new double[7];
+    	    }
+        });
+
+        try {
+    	    // Build the propagator
+    	    builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+        }
+    }
+    
     @Before
     public void setUp() throws IOException, ParseException {
         
@@ -202,13 +280,20 @@ public class DSSTPropagatorBuilderTest {
                                      earthFrame,
                                      initDate,
                                      mu);
-        
+
         moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
-        
+        sun = new DSSTThirdBody(CelestialBodyFactory.getSun(), mu);
+
         tolerance  = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
         propagator = new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]));
         propagator.setInitialState(new SpacecraftState(orbit, 1000.), PropagationType.MEAN);
         propagator.addForceModel(moon);
 
     }
+
+    private boolean hasNewtonianAttraction(final List<DSSTForceModel> forceModels) {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof DSSTNewtonianAttraction;
+    }
+
 }

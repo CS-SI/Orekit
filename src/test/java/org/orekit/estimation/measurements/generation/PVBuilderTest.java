@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -91,7 +91,10 @@ public class PVBuilderTest {
         final double highRateStep = 5.0;
         final double burstPeriod  = 300.0;
 
-        final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+        generator.addPropagator(buildPropagator()); // dummy first propagator
+        generator.addPropagator(buildPropagator()); // dummy second propagator
+        ObservableSatellite satellite = generator.addPropagator(buildPropagator()); // useful third propagator
+        generator.addPropagator(buildPropagator()); // dummy fourth propagator
         generator.addScheduler(new ContinuousScheduler<>(getBuilder(new Well19937a(seed), satellite),
                                                          new BurstSelector(maxBurstSize, highRateStep, burstPeriod,
                                                                            TimeScalesFactory.getUTC())));

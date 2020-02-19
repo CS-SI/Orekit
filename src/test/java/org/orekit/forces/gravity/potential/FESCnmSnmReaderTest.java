@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -34,7 +34,7 @@ public class FESCnmSnmReaderTest {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004-corrupted-line.dat", 1.0e-11);
             reader.setMaxParseDegree(5);
             reader.setMaxParseOrder(5);
-             DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
+             DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -49,7 +49,7 @@ public class FESCnmSnmReaderTest {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
             reader.setMaxParseDegree(20);
             reader.setMaxParseOrder(5);
-            DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
+            DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS, oe.getSpecifier());
@@ -64,7 +64,7 @@ public class FESCnmSnmReaderTest {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
             reader.setMaxParseDegree(5);
             reader.setMaxParseOrder(20);
-            DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
+            DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS, oe.getSpecifier());
@@ -79,7 +79,7 @@ public class FESCnmSnmReaderTest {
         OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
         reader.setMaxParseDegree(5);
         reader.setMaxParseOrder(5);
-        DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
+        DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
         List<OceanTidesWave> waves = reader.getWaves();
         Assert.assertEquals(18, waves.size());
         for (OceanTidesWave wave : waves) {

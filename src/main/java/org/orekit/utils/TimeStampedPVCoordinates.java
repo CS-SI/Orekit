@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,10 +25,13 @@ import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link PVCoordinates}.
@@ -321,12 +324,28 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
 
     }
 
-    /** Return a string representation of this position/velocity pair.
-     * @return string representation of this position/velocity pair
+    /** Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @return string representation of this.
      */
+    @Override
+    @DefaultDataContext
     public String toString() {
+        return toString(DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * @param utc time scale used to print the date.
+     * @return string representation of this.
+     */
+    public String toString(final TimeScale utc) {
         final String comma = ", ";
-        return new StringBuffer().append('{').append(date).append(", P(").
+        return new StringBuffer().append('{').
+                                  append(date.toString(utc)).append(", P(").
                                   append(getPosition().getX()).append(comma).
                                   append(getPosition().getY()).append(comma).
                                   append(getPosition().getZ()).append("), V(").
@@ -341,11 +360,13 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
@@ -360,8 +381,10 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         private DTO(final TimeStampedPVCoordinates pv) {
 
             // decompose date
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
+            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             this.d = new double[] {
                 epoch, offset,
@@ -376,7 +399,9 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
          * @return replacement {@link TimeStampedPVCoordinates}
          */
         private Object readResolve() {
-            return new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            return new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                                 new Vector3D(d[2], d[3], d[ 4]),
                                                 new Vector3D(d[5], d[6], d[ 7]),
                                                 new Vector3D(d[8], d[9], d[10]));

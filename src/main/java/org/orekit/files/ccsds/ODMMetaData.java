@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 
 /** This class gathers the meta-data present in the Orbital Data Message (ODM).
  * @author sports
@@ -62,7 +64,7 @@ public class ODMMetaData {
     private CelestialBody centerBody;
 
     /** Tests whether the body corresponding to the center name can be
-     * created through the {@link org.orekit.bodies.CelestialBodyFactory} in order to obtain the
+     * created through {@link CelestialBodies} in order to obtain the
      * corresponding gravitational coefficient. */
     private boolean hasCreatableBody;
 
@@ -117,6 +119,20 @@ public class ODMMetaData {
      */
     void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
+    }
+
+    /**
+     * Get the time scale.
+     *
+     * @return the time scale.
+     * @see #getTimeSystem()
+     * @throws OrekitException if there is not corresponding time scale.
+     * @since 10.1
+     */
+    TimeScale getTimeScale() {
+        return getTimeSystem().getTimeScale(
+                odmFile.getConventions(),
+                odmFile.getDataContext().getTimeScales());
     }
 
     /** Get the spacecraft name for which the orbit state is provided.
@@ -218,7 +234,7 @@ public class ODMMetaData {
     }
 
     /** Get boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link org.orekit.bodies.CelestialBodyFactory}.
+     * attribute can be created through the {@link CelestialBodies}.
      * @return true if {@link CelestialBody} can be created from centerName
      *         false otherwise
      */
@@ -227,7 +243,7 @@ public class ODMMetaData {
     }
 
     /** Set boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link org.orekit.bodies.CelestialBodyFactory}.
+     * attribute can be created through the {@link CelestialBodies}.
      * @param hasCreatableBody the boolean to be set.
      */
     void setHasCreatableBody(final boolean hasCreatableBody) {

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,31 +18,43 @@ package org.orekit.data;
 
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.Before;
 import org.orekit.errors.OrekitException;
 
-public class NetworkCrawlerTest {
+public class NetworkCrawlerTest extends AbstractListCrawlerTest<URL> {
 
-    @Before
-    public void setUp() {
-        // Clear any filters that another test may have left
-        DataProvidersManager.getInstance().clearFilters();
+    protected URL input(String resource) {
+        return NetworkCrawlerTest.class.getClassLoader().getResource(resource);
     }
 
-    @Test(expected=OrekitException.class)
+    protected NetworkCrawler build(String... inputs) {
+        URL[] converted = new URL[inputs.length];
+        for (int i = 0; i < inputs.length; ++i) {
+            converted[i] = input(inputs[i]);
+        }
+        final NetworkCrawler nc = new NetworkCrawler(converted);
+        nc.setTimeout(20);
+        return nc;
+    }
+
+    @Test
     public void noElement() throws MalformedURLException {
-        File existing   = new File(url("regular-data").getPath());
-        File inexistent = new File(existing.getParent(), "inexistant-directory");
-        new NetworkCrawler(inexistent.toURI().toURL()).feed(Pattern.compile(".*"), new CountingLoader());
+        try {
+            File existing   = new File(input("regular-data").getPath());
+            File inexistent = new File(existing.getParent(), "inexistant-directory");
+            new NetworkCrawler(inexistent.toURI().toURL()).feed(Pattern.compile(".*"), new CountingLoader(),
+                                                                DataContext.getDefault().getDataProvidersManager());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertTrue(oe.getCause() instanceof FileNotFoundException);
+            Assert.assertTrue(oe.getLocalizedMessage().contains("inexistant-directory"));
+        }
     }
 
     // WARNING!
@@ -51,7 +63,7 @@ public class NetworkCrawlerTest {
     // settings according to your local network or remove the proxy authentication
     // settings if you have a transparent connection to internet
 //    @Test
-//    public void remote() throws java.net.MalformedURLException, OrekitException, URISyntaxException {
+//    public void remote() throws java.net.MalformedURLException {
 //
 //        System.setProperty("http.proxyHost",     "proxy.your.domain.com");
 //        System.setProperty("http.proxyPort",     "8080");
@@ -65,100 +77,5 @@ public class NetworkCrawlerTest {
 //        Assert.assertEquals(1, loader.getCount());
 //
 //    }
-
-    @Test
-    public void local() {
-        CountingLoader crawler = new CountingLoader();
-        NetworkCrawler nc = new NetworkCrawler(url("regular-data/UTC-TAI.history"),
-                           url("regular-data/de405-ephemerides/unxp0000.405"),
-                           url("regular-data/de405-ephemerides/unxp0001.405"),
-                           url("regular-data/de406-ephemerides/unxp0000.406"),
-                           url("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"),
-                           url("no-data"));
-        nc.setTimeout(20);
-        nc.feed(Pattern.compile(".*"), crawler);
-        Assert.assertEquals(6, crawler.getCount());
-    }
-
-    @Test
-    public void compressed() {
-        CountingLoader crawler = new CountingLoader();
-        new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
-                           url("compressed-data/eopc04_08_IAU2000.00.gz"),
-                           url("compressed-data/eopc04_08_IAU2000.02.gz")).feed(Pattern.compile("^eopc04.*"), crawler);
-        Assert.assertEquals(2, crawler.getCount());
-    }
-
-    @Test
-    public void multiZip() {
-        CountingLoader crawler = new CountingLoader();
-        new NetworkCrawler(url("zipped-data/multizip.zip")).feed(Pattern.compile(".*\\.txt$"), crawler);
-        Assert.assertEquals(6, crawler.getCount());
-    }
-
-    @Test(expected=OrekitException.class)
-    public void ioException() {
-        try {
-            new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(Pattern.compile(".*"), new IOExceptionLoader());
-        } catch (OrekitException oe) {
-            // expected behavior
-            Assert.assertNotNull(oe.getCause());
-            Assert.assertEquals(IOException.class, oe.getCause().getClass());
-            Assert.assertEquals("dummy error", oe.getMessage());
-            throw oe;
-        }
-    }
-
-    @Test(expected=OrekitException.class)
-    public void parseException() {
-        try {
-            new NetworkCrawler(url("regular-data/UTC-TAI.history")).feed(Pattern.compile(".*"), new ParseExceptionLoader());
-        } catch (OrekitException oe) {
-            // expected behavior
-            Assert.assertNotNull(oe.getCause());
-            Assert.assertEquals(ParseException.class, oe.getCause().getClass());
-            Assert.assertEquals("dummy error", oe.getMessage());
-            throw oe;
-        }
-    }
-
-    private static class CountingLoader implements DataLoader {
-        private int count = 0;
-        public boolean stillAcceptsData() {
-            return true;
-        }
-        public void loadData(InputStream input, String name) {
-            ++count;
-        }
-        public int getCount() {
-            return count;
-        }
-    }
-
-    private static class IOExceptionLoader implements DataLoader {
-        public boolean stillAcceptsData() {
-            return true;
-        }
-        public void loadData(InputStream input, String name) throws IOException {
-            if (name.endsWith("UTC-TAI.history")) {
-                throw new IOException("dummy error");
-            }
-        }
-    }
-
-    private static class ParseExceptionLoader implements DataLoader {
-        public boolean stillAcceptsData() {
-            return true;
-        }
-        public void loadData(InputStream input, String name) throws ParseException {
-            if (name.endsWith("UTC-TAI.history")) {
-                throw new ParseException("dummy error", 0);
-            }
-        }
-    }
-
-    private URL url(String resource) {
-        return DirectoryCrawlerTest.class.getClassLoader().getResource(resource);
-    }
 
 }

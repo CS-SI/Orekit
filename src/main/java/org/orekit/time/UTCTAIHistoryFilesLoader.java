@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,13 +20,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataLoader;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -42,25 +44,42 @@ import org.orekit.errors.OrekitMessages;
  * hierarchy.</p>
  * @author Luc Maisonobe
  */
-public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
+public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
+        implements UTCTAIOffsetsLoader {
 
     /** Supported files name pattern. */
     private static final String SUPPORTED_NAMES = "^UTC-TAI\\.history$";
 
-    /** Build a loader for UTC-TAI history file. */
+    /**
+     * Build a loader for UTC-TAI history file. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @see #UTCTAIHistoryFilesLoader(DataProvidersManager)
+     */
+    @DefaultDataContext
     public UTCTAIHistoryFilesLoader() {
+        this(DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /**
+     * Build a loader for UTC-TAI history file.
+     *
+     * @param manager provides access to the {@code UTC-TAI.history} file.
+     */
+    public UTCTAIHistoryFilesLoader(final DataProvidersManager manager) {
+        super(SUPPORTED_NAMES, manager);
     }
 
     /** {@inheritDoc} */
     @Override
     public List<OffsetModel> loadOffsets() {
-        final Parser parser = new Parser();
-        DataProvidersManager.getInstance().feed(SUPPORTED_NAMES, parser);
+        final UtcTaiOffsetLoader parser = new UtcTaiOffsetLoader(new Parser());
+        this.feed(parser);
         return parser.getOffsets();
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    public static class Parser implements UTCTAIOffsetsLoader.Parser {
 
         /** Regular data lines pattern. */
         private Pattern regularPattern;
@@ -68,12 +87,9 @@ public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
         /** Last line pattern pattern. */
         private Pattern lastPattern;
 
-        /** Parsed offsets. */
-        private final List<OffsetModel> offsets;
-
         /** Simple constructor.
          */
-        Parser() {
+        public Parser() {
 
             // the data lines in the UTC time steps data files have the following form:
             // 1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
@@ -116,35 +132,25 @@ public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
             lastPattern    = Pattern.compile(start + yearField + monthField + dayField +
                                              separator + offsetField + finalBlanks);
 
-            offsets = new ArrayList<OffsetModel>();
 
-        }
-
-        /** Get the parsed offsets.
-         * @return parsed offsets
-         */
-        public List<OffsetModel> getOffsets() {
-            return offsets;
-        }
-
-        /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return offsets.isEmpty();
         }
 
         /** Load UTC-TAI offsets entries read from some file.
+         *
+         * {@inheritDoc}
+         *
          * @param input data input stream
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception ParseException if data can't be parsed
          */
-        public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
+        @Override
+        public List<OffsetModel> parse(final InputStream input, final String name)
+            throws IOException {
 
-            offsets.clear();
+            final List<OffsetModel> offsets = new ArrayList<>();
 
             // set up a reader for line-oriented file
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // read all file, ignoring not recognized lines
             final String emptyYear = "    ";
@@ -189,7 +195,7 @@ public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
                                                                           Month.parseMonth(matcher.group(2)),
                                                                           Integer.parseInt(matcher.group(3).trim()));
 
-                        final Integer offset = Integer.valueOf(matcher.group(matcher.groupCount()));
+                        final int offset = Integer.parseInt(matcher.group(matcher.groupCount()));
                         if ((lastDate != null) && leapDay.compareTo(lastDate) <= 0) {
                             throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_IN_FILE,
                                                       name, lineNumber);
@@ -208,6 +214,7 @@ public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
                 throw new OrekitException(OrekitMessages.NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE, name);
             }
 
+            return offsets;
         }
 
     }

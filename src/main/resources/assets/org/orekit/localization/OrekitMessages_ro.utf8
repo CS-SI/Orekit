@@ -1,5 +1,5 @@
 # internal error, please notify development team by creating an issue at {0}
-INTERNAL_ERROR = <MISSING TRANSLATION>
+INTERNAL_ERROR = eroare internă, vă rugăm să informați echipa de dezvoltare prin adăugarea unui tichet la {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitudinea ({0} m) este sub limita permisă de {1} m 
@@ -407,22 +407,22 @@ OUT_OF_RANGE_DERIVATION_ORDER = ordinul de derivare {0} este in afara domeniului
 ORBIT_TYPE_NOT_ALLOWED = tipul de orbită {0} nu este permis aici, tipuri permise: {1}
 
 # non pseudo-inertial frame {0} is not suitable as reference for inertial forces
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = sistemul de referință ne pseudo-inerțial {0} nu este adecvat pentru forțele inerțiale
 
 # method not available in the absence of a central body
-METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = <MISSING TRANSLATION>
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = metodă indisponibilă în absența unui corp central
 
 # operation not available between frames {0} and {1}
-INCOMPATIBLE_FRAMES = <MISSING TRANSLATION>
+INCOMPATIBLE_FRAMES = operație indisponibilă între sistemele de referință {0} și {1}
 
 # orbit not defined, state rather contains an absolute position-velocity-acceleration
-UNDEFINED_ORBIT = <MISSING TRANSLATION>
+UNDEFINED_ORBIT = orbită nedefinită, starea conține mai degrabă valori absolute pentru poziție-viteză-accelerație
 
 # absolute position-velocity-acceleration not defined, state rather contains an orbit
-UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
+UNDEFINED_ABSOLUTE_PVCOORDINATES = valori absolute pentru poziție-viteză-accelerație nedefinite, starea conține mai degrabă o orbită
 
 # an inertial force model has to be used when propagating in non-inertial frame {0}
-INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>
+INERTIAL_FORCE_MODEL_MISSING = un model de forțe inerțiale este necesar pentru a se propaga în sistemul de referință ne pseudo-inerțial {0}
 
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = niciun fișier SEM almanah nu a fost găsit
@@ -479,7 +479,7 @@ UNKNOWN_SATELLITE_SYSTEM = sistemul de sateliți {0} este necunoscut
 UNKNOWN_SATELLITE_ANTENNA_CODE = codul {0} de antenă satelit este necunoscut
 
 # frequency {0} is not supported by antenna {1}
-UNSUPPORTED_FREQUENCY_FOR_ANTENNA = <MISSING TRANSLATION>
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frecvența {0} nu este luată în considerare de antena {1}
 
 # cannot find satellite {0} in satellite system {1}
 CANNOT_FIND_SATELLITE_IN_SYSTEM = imposibil de găsit satelitul {0}  in sistemul de sateliți {1}
@@ -521,30 +521,60 @@ UNEXPECTED_END_OF_FILE = final neașteptat al fișierului {0}
 CORRUPTED_FILE = fișierul {0} este corupt
 
 # Vienna coefficients ah or aw or zh or zw could not be loaded from {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = <MISSING TRANSLATION>
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = imposibil de încărcat coeficienții modelului Vienna ah, aw, zh sau zw din {0}
 
 # Vienna coefficients ah or aw or zh or zw not available for date {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = coeficienții modelului Vienna ah, aw, zh sau zw nu sunt disponibili pentru data {0}
 
 # file {0} does not contain Vienna coefficients ah, aw, zh or zw
-NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = fișierul {0} nu conține coeficienții modelului Vienna ah, aw, zh sau zw
 
 # irregular or incomplete grid in file {0}
-IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
+IRREGULAR_OR_INCOMPLETE_GRID = grilă neregulată sau incompletă în fișierul {0}
 
 # invalid satellite system {0}
-INVALID_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+INVALID_SATELLITE_SYSTEM = sistemul satelit {0} este invalid
 
 # IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
+NO_TEC_DATA_IN_FILE_FOR_DATE = fișierul IONEX {0} nu conține informații TEC pentru data {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
-INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = <MISSING TRANSLATION>
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = numărul de hărți {0} este incompatibil cu specificațiile din antet: {1}
+
+# file {0} does not contain latitude and longitude bondaries in its header section
+NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = fișierul {0} nu conține limite pentru latitudine și longitudine în antet
+
+# file {0} does not contain epoch of first or last map in its header section
+NO_EPOCH_IN_IONEX_HEADER = fișierul {0} nu conține data de început sau de final a hărții în antetul său
 
 # The first column of itrf-versions.conf is a plain prefix that is matched against the
 # name of each loaded file. It should not contain any regular expression syntax or
 # directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
-ITRF_VERSIONS_PREFIX_ONLY = <MISSING TRANSLATION>
+ITRF_VERSIONS_PREFIX_ONLY = prima coloană din fișierul itrf-versions.conf este un prefix simplu ce este comparat cu numele fiecărui fișier încărcat. În cadrul acestui prefix nu se pot folosi expresii regulate sau caractere utilizate ca separatori de cale cum ar fi \"/\" sau \"\\\". Valoarea curentă este: \"{0}\".
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
-CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = <MISSING TRANSLATION>
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = imposibil de calculat direcția pentru punctul singular: latitudine = {0}, longitudine = {1}
+
+# STEC integration did not converge
+STEC_INTEGRATION_DID_NOT_CONVERGE = integrarea STEC nu a convers
+
+# MODIP grid not be loaded from {0}
+MODIP_GRID_NOT_LOADED = nu poate încărca grila MODIP din {0}
+
+# NeQuick coefficient f2 or fm3 not be loaded from {0}
+NEQUICK_F2_FM3_NOT_LOADED = imposibil de încărcat coeficienții NeQuick f2 sau fm3 din {0}
+
+# file {0} is not a supported Hatanaka-compressed file
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = fișierul {0} nu este recunoscut ca fișier comprimat prin metoda Hatakana
+
+# invalid measurement types {0} and {1} for the combination of measurements {2}
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = tipurile de măsuri {0} și {1} sunt incompatibile pentru combinația de măsuri {2}
+
+# frequencies {0} and {1} are incompatibles for the {2} combination
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = frecvențele {0} și {1} sunt incompatibile pentru combinația {2}
+
+# observations {0} and {1} are not in chronological dates
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observațiile de la datele {0} și {1} nu sunt în ordine cronologică
+
+# Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
+EXCEPTIONAL_DATA_CONTEXT = a fost detectată o utilizare a ExceptionalDataContext. Acest mecanism este utilizat în general pentru detectarea unei erori de dezvoltare

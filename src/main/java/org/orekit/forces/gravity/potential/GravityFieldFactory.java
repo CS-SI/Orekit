@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,13 +16,12 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -32,6 +31,10 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  */
 public class GravityFieldFactory {
+
+    /* These constants were left here instead of being moved to LazyLoadedGravityFields
+     * because they are public.
+     */
 
     /** Default regular expression for ICGEM files. */
     public static final String ICGEM_FILENAME = "^(.*\\.gfc)|(g(\\d)+_eigen[-_](\\w)+_coef)$";
@@ -54,18 +57,6 @@ public class GravityFieldFactory {
     /** Default regular expression for FES Hf tides files. */
     public static final String FES_HF_FILENAME = "^hf-fes(\\d)+.dat$";
 
-    /** Potential readers. */
-    private static final List<PotentialCoefficientsReader> READERS =
-        new ArrayList<PotentialCoefficientsReader>();
-
-    /** Ocean tides readers. */
-    private static final List<OceanTidesReader> OCEAN_TIDES_READERS =
-        new ArrayList<OceanTidesReader>();
-
-    /** Ocean load deformation coefficients. */
-    private static OceanLoadDeformationCoefficients OCEAN_LOAD_DEFORMATION_COEFFICIENTS =
-        OceanLoadDeformationCoefficients.IERS_2010;
-
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
      * nor a default constructor. This private constructor prevents
@@ -74,15 +65,28 @@ public class GravityFieldFactory {
     private GravityFieldFactory() {
     }
 
+    /* Data loading methods. */
+
+    /**
+     * Get the instance of {@link GravityFields} that is called by the static methods of
+     * this class.
+     *
+     * @return the gravity fields used by this factory.
+     * @since 10.1
+     */
+    @DefaultDataContext
+    public static LazyLoadedGravityFields getGravityFields() {
+        return DataContext.getDefault().getGravityFields();
+    }
+
     /** Add a reader for gravity fields.
      * @param reader custom reader to add for the gravity field
      * @see #addDefaultPotentialCoefficientsReaders()
      * @see #clearPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void addPotentialCoefficientsReader(final PotentialCoefficientsReader reader) {
-        synchronized (READERS) {
-            READERS.add(reader);
-        }
+        getGravityFields().addPotentialCoefficientsReader(reader);
     }
 
     /** Add the default readers for gravity fields.
@@ -94,23 +98,18 @@ public class GravityFieldFactory {
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #clearPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void addDefaultPotentialCoefficientsReaders() {
-        synchronized (READERS) {
-            READERS.add(new ICGEMFormatReader(ICGEM_FILENAME, false));
-            READERS.add(new SHMFormatReader(SHM_FILENAME, false));
-            READERS.add(new EGMFormatReader(EGM_FILENAME, false));
-            READERS.add(new GRGSFormatReader(GRGS_FILENAME, false));
-        }
+        getGravityFields().addDefaultPotentialCoefficientsReaders();
     }
 
     /** Clear gravity field readers.
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #addDefaultPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void clearPotentialCoefficientsReaders() {
-        synchronized (READERS) {
-            READERS.clear();
-        }
+        getGravityFields().clearPotentialCoefficientsReaders();
     }
 
     /** Add a reader for ocean tides.
@@ -118,18 +117,18 @@ public class GravityFieldFactory {
      * @see #addDefaultPotentialCoefficientsReaders()
      * @see #clearPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void addOceanTidesReader(final OceanTidesReader reader) {
-        synchronized (OCEAN_TIDES_READERS) {
-            OCEAN_TIDES_READERS.add(reader);
-        }
+        getGravityFields().addOceanTidesReader(reader);
     }
 
     /** Configure ocean load deformation coefficients.
      * @param oldc ocean load deformation coefficients
      * @see #getOceanLoadDeformationCoefficients()
      */
+    @DefaultDataContext
     public static void configureOceanLoadDeformationCoefficients(final OceanLoadDeformationCoefficients oldc) {
-        OCEAN_LOAD_DEFORMATION_COEFFICIENTS = oldc;
+        getGravityFields().configureOceanLoadDeformationCoefficients(oldc);
     }
 
     /** Get the configured ocean load deformation coefficients.
@@ -142,8 +141,9 @@ public class GravityFieldFactory {
      * @return ocean load deformation coefficients
      * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
      */
+    @DefaultDataContext
     public static OceanLoadDeformationCoefficients getOceanLoadDeformationCoefficients() {
-        return OCEAN_LOAD_DEFORMATION_COEFFICIENTS;
+        return getGravityFields().getOceanLoadDeformationCoefficients();
     }
 
     /** Add the default READERS for ocean tides.
@@ -171,32 +171,18 @@ public class GravityFieldFactory {
      * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
      * @see #getOceanLoadDeformationCoefficients()
      */
+    @DefaultDataContext
     public static void addDefaultOceanTidesReaders() {
-        synchronized (OCEAN_TIDES_READERS) {
-
-            OCEAN_TIDES_READERS.add(new FESCnmSnmReader(FES_CNM_SNM_FILENAME, 1.0e-11));
-
-            final AstronomicalAmplitudeReader aaReader =
-                    new AstronomicalAmplitudeReader(FES_HF_FILENAME, 5, 2, 3, 1.0);
-            DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
-            final Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
-            OCEAN_TIDES_READERS.add(new FESCHatEpsilonReader(FES_CHAT_EPSILON_FILENAME,
-                                                             0.01, FastMath.toRadians(1.0),
-                                                             getOceanLoadDeformationCoefficients(),
-                                                             map));
-
-
-        }
+        getGravityFields().addDefaultOceanTidesReaders();
     }
 
     /** Clear ocean tides readers.
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #addDefaultPotentialCoefficientsReaders()
      */
+    @DefaultDataContext
     public static void clearOceanTidesReaders() {
-        synchronized (OCEAN_TIDES_READERS) {
-            OCEAN_TIDES_READERS.clear();
-        }
+        getGravityFields().clearOceanTidesReaders();
     }
 
     /** Get the constant gravity field coefficients provider from the first supported file.
@@ -214,11 +200,10 @@ public class GravityFieldFactory {
      * @since 6.0
      * @see #getNormalizedProvider(int, int)
      */
+    @DefaultDataContext
     public static NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree,
                                                                                      final int order) {
-        final PotentialCoefficientsReader reader = readGravityField(degree, order);
-        final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(true, degree, order);
-        return new WrappingNormalizedProvider(provider);
+        return getGravityFields().getConstantNormalizedProvider(degree, order);
     }
 
     /** Get the gravity field coefficients provider from the first supported file.
@@ -236,45 +221,10 @@ public class GravityFieldFactory {
      * @since 6.0
      * @see #getConstantNormalizedProvider(int, int)
      */
+    @DefaultDataContext
     public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final int degree,
                                                                              final int order) {
-        final PotentialCoefficientsReader reader = readGravityField(degree, order);
-        final RawSphericalHarmonicsProvider provider = reader.getProvider(true, degree, order);
-        return new WrappingNormalizedProvider(provider);
-    }
-
-    /** Create a time-independent {@link NormalizedSphericalHarmonicsProvider} from canonical coefficients.
-     * <p>
-     * Note that contrary to the other factory method, this one does not read any data, it simply uses
-     * the provided data
-     * </p>
-     * @param ae central body reference radius
-     * @param mu central body attraction coefficient
-     * @param tideSystem tide system
-     * @param normalizedC normalized tesseral-sectorial coefficients (cosine part)
-     * @param normalizedS normalized tesseral-sectorial coefficients (sine part)
-     * @return provider for normalized coefficients
-     * @since 6.0
-     */
-    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final double ae, final double mu,
-                                                                             final TideSystem tideSystem,
-                                                                             final double[][] normalizedC,
-                                                                             final double[][] normalizedS) {
-        return new WrappingNormalizedProvider(new ConstantSphericalHarmonics(ae, mu, tideSystem,
-                                                                             normalizedC, normalizedS));
-    }
-
-    /** Create a {@link NormalizedSphericalHarmonicsProvider} from an {@link UnnormalizedSphericalHarmonicsProvider}.
-     * <p>
-     * Note that contrary to the other factory method, this one does not read any data, it simply uses
-     * the provided data.
-     * </p>
-     * @param unnormalized provider to normalize
-     * @return provider for normalized coefficients
-     * @since 6.0
-     */
-    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final UnnormalizedSphericalHarmonicsProvider unnormalized) {
-        return new Normalizer(unnormalized);
+        return getGravityFields().getNormalizedProvider(degree, order);
     }
 
     /** Get the constant gravity field coefficients provider from the first supported file.
@@ -292,11 +242,10 @@ public class GravityFieldFactory {
      * @since 6.0
      * @see #getUnnormalizedProvider(int, int)
      */
+    @DefaultDataContext
     public static UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree,
                                                                                          final int order) {
-        final PotentialCoefficientsReader reader = readGravityField(degree, order);
-        final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(false, degree, order);
-        return new WrappingUnnormalizedProvider(provider);
+        return getGravityFields().getConstantUnnormalizedProvider(degree, order);
     }
 
     /** Get the gravity field coefficients provider from the first supported file.
@@ -314,45 +263,10 @@ public class GravityFieldFactory {
      * @since 6.0
      * @see #getConstantUnnormalizedProvider(int, int)
      */
+    @DefaultDataContext
     public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final int degree,
                                                                                  final int order) {
-        final PotentialCoefficientsReader reader = readGravityField(degree, order);
-        final RawSphericalHarmonicsProvider provider = reader.getProvider(false, degree, order);
-        return new WrappingUnnormalizedProvider(provider);
-    }
-
-    /** Create a time-independent {@link UnnormalizedSphericalHarmonicsProvider} from canonical coefficients.
-     * <p>
-     * Note that contrary to the other factory method, this one does not read any data, it simply uses
-     * the provided data
-     * </p>
-     * @param ae central body reference radius
-     * @param mu central body attraction coefficient
-     * @param tideSystem tide system
-     * @param unnormalizedC un-normalized tesseral-sectorial coefficients (cosine part)
-     * @param unnormalizedS un-normalized tesseral-sectorial coefficients (sine part)
-     * @return provider for un-normalized coefficients
-     * @since 6.0
-     */
-    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final double ae, final double mu,
-                                                                                 final TideSystem tideSystem,
-                                                                                 final double[][] unnormalizedC,
-                                                                                 final double[][] unnormalizedS) {
-        return new WrappingUnnormalizedProvider(new ConstantSphericalHarmonics(ae, mu, tideSystem,
-                                                                               unnormalizedC, unnormalizedS));
-    }
-
-    /** Create an {@link UnnormalizedSphericalHarmonicsProvider} from a {@link NormalizedSphericalHarmonicsProvider}.
-     * <p>
-     * Note that contrary to the other factory method, this one does not read any data, it simply uses
-     * the provided data.
-     * </p>
-     * @param normalized provider to un-normalize
-     * @return provider for un-normalized coefficients
-     * @since 6.0
-     */
-    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final NormalizedSphericalHarmonicsProvider normalized) {
-        return new Unnormalizer(normalized);
+        return getGravityFields().getUnnormalizedProvider(degree, order);
     }
 
     /** Read a gravity field coefficients provider from the first supported file.
@@ -369,67 +283,10 @@ public class GravityFieldFactory {
      * @return a reader containing already loaded data
      * @since 6.0
      */
+    @DefaultDataContext
     public static PotentialCoefficientsReader readGravityField(final int maxParseDegree,
                                                                final int maxParseOrder) {
-
-        synchronized (READERS) {
-
-            if (READERS.isEmpty()) {
-                addDefaultPotentialCoefficientsReaders();
-            }
-
-            // test the available readers
-            for (final PotentialCoefficientsReader reader : READERS) {
-                reader.setMaxParseDegree(maxParseDegree);
-                reader.setMaxParseOrder(maxParseOrder);
-                DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
-                if (!reader.stillAcceptsData()) {
-                    return reader;
-                }
-            }
-        }
-
-        throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
-
-    }
-
-    /** Get a un-normalization factors array.
-     * <p>
-     * Un-normalized coefficients are obtained by multiplying normalized
-     * coefficients by the factors array elements.
-     * </p>
-     * @param degree maximal degree
-     * @param order maximal order
-     * @return triangular un-normalization factors array
-     * @since 6.0
-     */
-    public static double[][] getUnnormalizationFactors(final int degree, final int order) {
-
-        // allocate a triangular array
-        final int rows = degree + 1;
-        final double[][] factor = new double[rows][];
-        factor[0] = new double[] {
-            1.0
-        };
-
-        // compute the factors
-        for (int n = 1; n <= degree; n++) {
-            final double[] row = new double[FastMath.min(n, order) + 1];
-            row[0] = FastMath.sqrt(2 * n + 1);
-            double coeff = 2.0 * (2 * n + 1);
-            for (int m = 1; m < row.length; m++) {
-                coeff /= (n - m + 1) * (n + m);
-                row[m] = FastMath.sqrt(coeff);
-                if (row[m] < Precision.SAFE_MIN) {
-                    throw new OrekitException(OrekitMessages.GRAVITY_FIELD_NORMALIZATION_UNDERFLOW,
-                                              n, m);
-                }
-            }
-            factor[n] = row;
-        }
-
-        return factor;
-
+        return getGravityFields().readGravityField(maxParseDegree, maxParseOrder);
     }
 
     /** Get the ocean tides waves from the first supported file.
@@ -454,26 +311,115 @@ public class GravityFieldFactory {
      * @return list of tides waves containing already loaded data
      * @since 6.1
      */
+    @DefaultDataContext
     public static List<OceanTidesWave> getOceanTidesWaves(final int degree, final int order) {
+        return getGravityFields().getOceanTidesWaves(degree, order);
+    }
 
-        synchronized (OCEAN_TIDES_READERS) {
+    /* static helper methods that don't load data. */
 
-            if (OCEAN_TIDES_READERS.isEmpty()) {
-                addDefaultOceanTidesReaders();
-            }
+    /** Create a time-independent {@link NormalizedSphericalHarmonicsProvider} from canonical coefficients.
+     * <p>
+     * Note that contrary to the other factory method, this one does not read any data, it simply uses
+     * the provided data
+     * </p>
+     * @param ae central body reference radius
+     * @param mu central body attraction coefficient
+     * @param tideSystem tide system
+     * @param normalizedC normalized tesseral-sectorial coefficients (cosine part)
+     * @param normalizedS normalized tesseral-sectorial coefficients (sine part)
+     * @return provider for normalized coefficients
+     * @since 6.0
+     */
+    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final double ae, final double mu,
+                                                                             final TideSystem tideSystem,
+                                                                             final double[][] normalizedC,
+                                                                             final double[][] normalizedS) {
+        return new WrappingNormalizedProvider(new ConstantSphericalHarmonics(ae, mu, tideSystem,
+                normalizedC, normalizedS));
+    }
 
-            // test the available readers
-            for (final OceanTidesReader reader : OCEAN_TIDES_READERS) {
-                reader.setMaxParseDegree(degree);
-                reader.setMaxParseOrder(order);
-                DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
-                if (!reader.stillAcceptsData()) {
-                    return reader.getWaves();
+    /** Create a {@link NormalizedSphericalHarmonicsProvider} from an {@link UnnormalizedSphericalHarmonicsProvider}.
+     * <p>
+     * Note that contrary to the other factory method, this one does not read any data, it simply uses
+     * the provided data.
+     * </p>
+     * @param unnormalized provider to normalize
+     * @return provider for normalized coefficients
+     * @since 6.0
+     */
+    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final UnnormalizedSphericalHarmonicsProvider unnormalized) {
+        return new Normalizer(unnormalized);
+    }
+
+    /** Create a time-independent {@link UnnormalizedSphericalHarmonicsProvider} from canonical coefficients.
+     * <p>
+     * Note that contrary to the other factory method, this one does not read any data, it simply uses
+     * the provided data
+     * </p>
+     * @param ae central body reference radius
+     * @param mu central body attraction coefficient
+     * @param tideSystem tide system
+     * @param unnormalizedC un-normalized tesseral-sectorial coefficients (cosine part)
+     * @param unnormalizedS un-normalized tesseral-sectorial coefficients (sine part)
+     * @return provider for un-normalized coefficients
+     * @since 6.0
+     */
+    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final double ae, final double mu,
+                                                                                 final TideSystem tideSystem,
+                                                                                 final double[][] unnormalizedC,
+                                                                                 final double[][] unnormalizedS) {
+        return new WrappingUnnormalizedProvider(new ConstantSphericalHarmonics(ae, mu, tideSystem,
+                unnormalizedC, unnormalizedS));
+    }
+
+    /** Create an {@link UnnormalizedSphericalHarmonicsProvider} from a {@link NormalizedSphericalHarmonicsProvider}.
+     * <p>
+     * Note that contrary to the other factory method, this one does not read any data, it simply uses
+     * the provided data.
+     * </p>
+     * @param normalized provider to un-normalize
+     * @return provider for un-normalized coefficients
+     * @since 6.0
+     */
+    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final NormalizedSphericalHarmonicsProvider normalized) {
+        return new Unnormalizer(normalized);
+    }
+
+    /** Get a un-normalization factors array.
+     * <p>
+     * Un-normalized coefficients are obtained by multiplying normalized
+     * coefficients by the factors array elements.
+     * </p>
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return triangular un-normalization factors array
+     * @since 6.0
+     */
+    public static double[][] getUnnormalizationFactors(final int degree, final int order) {
+
+        // allocate a triangular array
+        final int rows = degree + 1;
+        final double[][] factor = new double[rows][];
+        factor[0] = new double[] {1.0};
+
+        // compute the factors
+        for (int n = 1; n <= degree; n++) {
+            final double[] row = new double[FastMath.min(n, order) + 1];
+            row[0] = FastMath.sqrt(2 * n + 1);
+            double coeff = 2.0 * (2 * n + 1);
+            for (int m = 1; m < row.length; m++) {
+                coeff /= (n - m + 1) * (n + m);
+                row[m] = FastMath.sqrt(coeff);
+                if (row[m] < Precision.SAFE_MIN) {
+                    throw new OrekitException(OrekitMessages.GRAVITY_FIELD_NORMALIZATION_UNDERFLOW,
+                            n, m);
                 }
             }
+            factor[n] = row;
         }
 
-        throw new OrekitException(OrekitMessages.NO_OCEAN_TIDE_DATA_LOADED);
+        return factor;
 
     }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -35,10 +36,14 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -47,7 +52,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
 /**
@@ -117,7 +122,8 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  *
  */
-public class GlobalIonosphereMapModel implements IonosphericModel {
+public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
+        implements IonosphericModel {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 201928052L;
@@ -152,21 +158,46 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
     /** Epoch of the last TEC map as read in the header of the IONEX file. */
     private AbsoluteDate endDate;
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Map of interpolated TEC at a specific date. */
     private Map<AbsoluteDate, Double> tecMap;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /**
-     * Constructor with supported names given by user.
-     * @param supportedNames supported name
+     * Constructor with supported names given by user. This constructor uses the {@link
+     * DataContext#getDefault() default data context}.
+     *
+     * @param supportedNames regular expression that matches the names of the IONEX files
+     *                       to be loaded. See {@link DataProvidersManager#feed(String,
+     *                       DataLoader)}.
+     * @see #GlobalIonosphereMapModel(String, DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public GlobalIonosphereMapModel(final String supportedNames) {
-        this.supportedNames = supportedNames;
+        this(supportedNames,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Constructor that uses user defined supported names and data context.
+     *
+     * @param supportedNames       regular expression that matches the names of the IONEX
+     *                             files to be loaded. See {@link DataProvidersManager#feed(String,
+     *                             DataLoader)}.
+     * @param dataProvidersManager provides access to auxiliary data files.
+     * @param utc                  UTC time scale.
+     * @since 10.1
+     */
+    public GlobalIonosphereMapModel(final String supportedNames,
+                                    final DataProvidersManager dataProvidersManager,
+                                    final TimeScale utc) {
+        super(supportedNames, dataProvidersManager);
         this.latitude       = Double.NaN;
         this.longitude      = Double.NaN;
         this.tecMap         = new HashMap<>();
+        this.utc = utc;
     }
 
     /**
@@ -296,13 +327,13 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
         checkDate(date);
 
         // Date and Time components
-        final DateTimeComponents dateTime = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dateTime = date.getComponents(utc);
         // Find the two closest dates of the current date
         final double secInDay   = dateTime.getTime().getSecondsInLocalDay();
         final double ratio      = FastMath.floor(secInDay / dt) * dt;
         final AbsoluteDate tI   = new AbsoluteDate(dateTime.getDate(),
                                                    new TimeComponents(ratio),
-                                                   TimeScalesFactory.getUTC());
+                                                   utc);
         final AbsoluteDate tIp1 = tI.shiftedBy(dt);
 
         // Get the TEC values at the two closest dates
@@ -334,13 +365,13 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
         final Field<T> field = date.getField();
 
         // Date and Time components
-        final DateTimeComponents dateTime = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dateTime = date.getComponents(utc);
         // Find the two closest dates of the current date
         final double secInDay           = dateTime.getTime().getSecondsInLocalDay();
         final double ratio              = FastMath.floor(secInDay / dt) * dt;
         final FieldAbsoluteDate<T> tI   = new FieldAbsoluteDate<>(field, dateTime.getDate(),
                                                                   new TimeComponents(ratio),
-                                                                  TimeScalesFactory.getUTC());
+                                                                  utc);
         final FieldAbsoluteDate<T> tIp1 = tI.shiftedBy(dt);
 
         // Get the TEC values at the two closest dates
@@ -408,7 +439,7 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
 
             // Read file
             final Parser parser = new Parser();
-            DataProvidersManager.getInstance().feed(supportedNames, parser);
+            feed(parser);
 
             // File header
             final IONEXHeader top = parser.getIONEXHeader();
@@ -435,7 +466,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
      */
     private void checkDate(final AbsoluteDate date) {
         if (startDate.durationFrom(date) > 0 || date.durationFrom(endDate) > 0) {
-            throw new OrekitException(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, supportedNames, date);
+            throw new OrekitException(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE,
+                    getSupportedNames(), date);
         }
     }
 
@@ -446,6 +478,14 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
         if (tecMap.size() != nbMaps) {
             throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE, tecMap.size(), nbMaps);
         }
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    @DefaultDataContext
+    private Object writeReplace() {
+        return new DataTransferObject(getSupportedNames());
     }
 
     /** Parser for IONEX files. */
@@ -499,7 +539,7 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                 double[]          longitudes  = null;
                 AbsoluteDate      firstEpoch  = null;
                 AbsoluteDate      lastEpoch   = null;
-                AbsoluteDate      epoch       = null;
+                AbsoluteDate      epoch       = firstEpoch;
                 ArrayList<Double> values      = new ArrayList<>();
 
                 for (line = br.readLine(); line != null; line = br.readLine()) {
@@ -523,11 +563,7 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                 baseRadius = parseDouble(line, 2, 6) * KM_TO_M;
                                 break;
                             case "MAPPING FUNCTION" :
-                                if (parseString(line, 2, 4).equals("NONE")) {
-                                    mappingF = false;
-                                } else {
-                                    mappingF = true;
-                                }
+                                mappingF = !parseString(line, 2, 4).equals("NONE");
                                 break;
                             case "EXPONENT" :
                                 exponent = parseInt(line, 4, 2);
@@ -545,6 +581,14 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                 longitudes = parseCoordinate(line);
                                 break;
                             case "END OF HEADER" :
+                                // Check that latitude and longitude bondaries were found
+                                if (latitudes == null || longitudes == null) {
+                                    throw new OrekitException(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, getSupportedNames());
+                                }
+                                // Check that first and last epochs were found
+                                if (firstEpoch == null || lastEpoch == null) {
+                                    throw new OrekitException(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, getSupportedNames());
+                                }
                                 // At the end of the header, we build the IONEXHeader object
                                 header = new IONEXHeader(firstEpoch, lastEpoch, interval, nbOfMaps,
                                                          baseRadius, hIon, mappingF);
@@ -573,8 +617,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                         !line.endsWith(EPOCH)) {
                                         line = line.trim();
                                         final String[] readLine = line.split(splitter);
-                                        for (int i = 0; i < readLine.length; i++) {
-                                            values.add(Double.valueOf(readLine[i]));
+                                        for (final String s : readLine) {
+                                            values.add(Double.valueOf(s));
                                         }
                                     }
                                 }
@@ -586,8 +630,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                             // The size of this line is lower than 60.
                             line = line.trim();
                             final String[] readLine = line.split(splitter);
-                            for (int i = 0; i < readLine.length; i++) {
-                                values.add(Double.valueOf(readLine[i]));
+                            for (final String s : readLine) {
+                                values.add(Double.valueOf(s));
                             }
                         }
                     }
@@ -661,7 +705,7 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                     parseInt(line, 18, 6),
                                     parseInt(line, 24, 6),
                                     parseDouble(line, 30, 13),
-                                    TimeScalesFactory.getUTC());
+                                    utc);
         }
 
         /** Build the coordinate array from a parsed line.
@@ -855,6 +899,36 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
          */
         public boolean isMappingFunction() {
             return isMappingFunction;
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    @DefaultDataContext
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 201928052L;
+
+        /** Regular expression that matches the names of the IONEX files. */
+        private final String supportedNames;
+
+        /** Simple constructor.
+         * @param supportedNames regular expression that matches the names of the IONEX files
+         */
+        DataTransferObject(final String supportedNames) {
+            this.supportedNames = supportedNames;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link GlobalIonosphereMapModel}.
+         * @return replacement {@link GlobalIonosphereMapModel}
+         */
+        private Object readResolve() {
+            try {
+                return new GlobalIonosphereMapModel(supportedNames);
+            } catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
+            }
         }
 
     }

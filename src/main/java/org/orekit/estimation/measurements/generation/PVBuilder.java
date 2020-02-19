@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -57,10 +57,10 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
         final ObservableSatellite satellite = getSatellites()[0];
         final double[] sigma                = getTheoreticalStandardDeviation();
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
 
         // create a dummy measurement
-        final PV dummy = new PV(state.getDate(), Vector3D.NaN, Vector3D.NaN,
+        final PV dummy = new PV(relevant[0].getDate(), Vector3D.NaN, Vector3D.NaN,
                                 sigma[0], sigma[1], baseWeight, satellite);
         for (final EstimationModifier<PV> modifier : getModifiers()) {
             dummy.addModifier(modifier);
@@ -76,7 +76,7 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
         }
 
         // estimate the perfect value of the measurement
-        final double[] pv = dummy.estimate(0, 0, states).getEstimatedValue();
+        final double[] pv = dummy.estimate(0, 0, relevant).getEstimatedValue();
 
         // add the noise
         final double[] noise = getNoise();
@@ -90,7 +90,7 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
         }
 
         // generate measurement
-        final PV measurement = new PV(state.getDate(),
+        final PV measurement = new PV(relevant[0].getDate(),
                                       new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5]),
                                       sigma[0], sigma[1], baseWeight, satellite);
         for (final EstimationModifier<PV> modifier : getModifiers()) {

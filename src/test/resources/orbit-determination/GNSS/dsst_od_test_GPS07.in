@@ -737,4 +737,4 @@ estimator.max.evaluations                               = 25
 satellite.id.in.rinex.files = G07
 
 # comma-separated list of measurements files (in the same directory as this file)
-measurements.files = shld0440.16o, seat0440.16o, sbch0440.16o, brig0440.16o, azbh0440.16o
+measurements.files = shld0440.16d.Z, seat0440.16d.Z, sbch0440.16d.Z, brig0440.16d.Z, azbh0440.16d.Z

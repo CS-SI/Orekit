@@ -541,6 +541,12 @@ NO_TEC_DATA_IN_FILE_FOR_DATE = le fichier IONEX {0} ne contient pas de données 
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = le nombre de cartes {0} est incompatible avec les specifications de l''en-tête: {1}
 
+# file {0} does not contain latitude or longitude bondaries in its header section
+NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = {0} ne contient pas de limites en latitude ou en longitude dans son en-tête
+
+# file {0} does not contain epoch of first or last map in its header section
+NO_EPOCH_IN_IONEX_HEADER = {0} ne contient pas de date de début ou de fin de carte dans son en-tête
+
 # The first column of itrf-versions.conf is a plain prefix that is matched against the
 # name of each loaded file. It should not contain any regular expression syntax or
 # directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
@@ -548,3 +554,27 @@ ITRF_VERSIONS_PREFIX_ONLY = la première colonne du fichier itrf-versions.conf e
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
 CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = impossible de calculer la direction de pointage pour le point singulier: latitude = {0}, longitude = {1}
+
+# STEC integration did not converge
+STEC_INTEGRATION_DID_NOT_CONVERGE = l''integration du STEC n''a pas convergée
+
+# MODIP grid not be loaded from {0}
+MODIP_GRID_NOT_LOADED = impossible de charger la grille de MODIP depuis {0}
+
+# NeQuick coefficient f2 or fm3 not be loaded from {0}
+NEQUICK_F2_FM3_NOT_LOADED = impossible de charger les coefficients NeQuick f2 et fm3 depuis {0}
+
+# file {0} is not a supported Hatanaka-compressed file
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = le fichier {0} n''est pas reconnu en tant que fichier compressé par la méthode d''Hatakana
+
+# invalid measurement types {0} and {1} for the combination of measurements {2}
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = les types de mesure {0} et {1} sont incompatibles pour la combinaison de mesures {2}
+
+# frequencies {0} and {1} are incompatibles for the {2} combination
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = les fréquences {0} et {1} sont incompatibles pour la combinaison {2}
+
+# observations {0} and {1} are not in chronological dates
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = les observations aux dates {0} et {1} ne sont pas dans l''ordre chronologique
+
+# Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
+EXCEPTIONAL_DATA_CONTEXT = une utilisation de ExceptionalDataContext a été détectée. Ce mécanisme est généralement activé explicitement pour détecter des erreur de développement

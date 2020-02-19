@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,21 +20,24 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 
 /** Loader for EOP xx C04 files.
  * <p>EOP xx C04 files contain {@link EOPEntry
@@ -68,7 +71,7 @@ import org.orekit.utils.IERSConventions;
  * </p>
  * @author Luc Maisonobe
  */
-class EOPC04FilesLoader implements EOPHistoryLoader {
+class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
     /** Pattern to match the columns header. */
     private static final Pattern COLUMNS_HEADER_PATTERN;
@@ -140,81 +143,62 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
 
     }
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Build a loader for IERS EOP C04 files.
      * @param supportedNames regular expression for supported files names
+     * @param manager provides access to the EOP C04 files.
+     * @param utcSupplier UTC time scale.
      */
-    EOPC04FilesLoader(final String supportedNames) {
-        this.supportedNames = supportedNames;
+    EOPC04FilesLoader(final String supportedNames,
+                      final DataProvidersManager manager,
+                      final Supplier<TimeScale> utcSupplier) {
+        super(supportedNames, manager, utcSupplier);
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
-        final Parser parser = new Parser(converter);
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
-        history.addAll(parser.history);
+        final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
+                ITRFVersionLoader.SUPPORTED_NAMES,
+                getDataProvidersManager());
+        final Parser parser = new Parser(converter, itrfVersionProvider, getUtc());
+        final EopParserLoader loader = new EopParserLoader(parser);
+        this.feed(loader);
+        history.addAll(loader.getEop());
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
+    static class Parser extends AbstractEopParser {
 
-        /** Converter for nutation corrections. */
-        private final IERSConventions.NutationCorrectionConverter converter;
-
-        /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
-
-        /** History entries. */
-        private final List<EOPEntry> history;
-
-        /** Current line number. */
-        private int lineNumber;
-
-        /** Current line. */
-        private String line;
-
-        /** Indicator for header parsing. */
-        private boolean inHeader;
-
-        /** Indicator for Non-Rotating Origin. */
-        private boolean isNonRotatingOrigin;
-
-        /** Simple constructor.
-         * @param converter converter to use
+        /**
+         * Simple constructor.
+         *
+         * @param converter           converter to use
+         * @param itrfVersionProvider to use for determining the ITRF version of the EOP.
+         * @param utc                 time scale for parsing dates.
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter           = converter;
-            this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
-            this.history             = new ArrayList<EOPEntry>();
-            this.lineNumber          = 0;
-            this.inHeader            = true;
-            this.isNonRotatingOrigin = false;
+        Parser(final NutationCorrectionConverter converter,
+               final ItrfVersionProvider itrfVersionProvider,
+               final TimeScale utc) {
+            super(converter, itrfVersionProvider, utc);
         }
 
         /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        public void loadData(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final InputStream input, final String name)
             throws IOException, OrekitException {
 
+            final List<EOPEntry> history = new ArrayList<>();
             ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
             // set up a reader for line-oriented bulletin B files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // reset parse info to start new file (do not clear history!)
-            lineNumber          = 0;
-            inHeader            = true;
-            isNonRotatingOrigin = false;
+            int lineNumber              = 0;
+            boolean inHeader            = true;
+            boolean isNonRotatingOrigin = false;
 
             // read all file
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++lineNumber;
                 boolean parsed = false;
 
@@ -239,7 +223,7 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
                         throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
                                                   name, dc.getYear(), dc.getMonth(), dc.getDay(), mjd);
                     }
-                    final AbsoluteDate date = new AbsoluteDate(dc, TimeScalesFactory.getUTC());
+                    final AbsoluteDate date = new AbsoluteDate(dc, getUtc());
 
                     // the first six fields are consistent with the expected format
                     final double x     = Double.parseDouble(fields[POLE_X_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
@@ -253,26 +237,26 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
                             Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
                             Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
                         };
-                        equinox = converter.toEquinox(date, nro[0], nro[1]);
+                        equinox = getConverter().toEquinox(date, nro[0], nro[1]);
                     } else {
                         equinox = new double[] {
                             Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
                             Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
                         };
-                        nro = converter.toNonRotating(date, equinox[0], equinox[1]);
+                        nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                     }
                     if (configuration == null || !configuration.isValid(mjd)) {
                         // get a configuration for current name and date range
-                        configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                        configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                     }
                     history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                             configuration.getVersion()));
+                                             configuration.getVersion(), date));
                     parsed = true;
 
                 }
                 if (!(inHeader || parsed)) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, name, line);
+                            lineNumber, name, line);
                 }
             }
 
@@ -281,6 +265,7 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
+            return history;
         }
 
     }

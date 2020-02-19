@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.orekit.propagation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Common handling of {@link Propagator} methods for analytical propagators.
@@ -61,6 +63,9 @@ public abstract class AbstractPropagator implements Propagator {
     /** Additional state providers. */
     private final List<AdditionalStateProvider> additionalStateProviders;
 
+    /** States managed by neither additional equations nor state providers. */
+    private final Map<String, TimeSpanMap<double[]>> unmanagedStates;
+
     /** Initial state. */
     private SpacecraftState initialState;
 
@@ -71,6 +76,7 @@ public abstract class AbstractPropagator implements Propagator {
         stepHandler              = null;
         fixedStepSize            = Double.NaN;
         additionalStateProviders = new ArrayList<AdditionalStateProvider>();
+        unmanagedStates          = new HashMap<>();
     }
 
     /** Set a start date.
@@ -177,7 +183,7 @@ public abstract class AbstractPropagator implements Propagator {
     /** Update state by adding all additional states.
      * @param original original state
      * @return updated state, with all additional states included
-          * @see #addAdditionalStateProvider(AdditionalStateProvider)
+     * @see #addAdditionalStateProvider(AdditionalStateProvider)
      */
     protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
 
@@ -185,17 +191,10 @@ public abstract class AbstractPropagator implements Propagator {
         // which may already contain additional states, for example in interpolated ephemerides
         SpacecraftState updated = original;
 
-        if (initialState != null) {
-            // there is an initial state
-            // (null initial states occur for example in interpolated ephemerides)
-            // copy the additional states present in initialState but otherwise not managed
-            for (final Map.Entry<String, double[]> initial : initialState.getAdditionalStates().entrySet()) {
-                if (!isAdditionalStateManaged(initial.getKey())) {
-                    // this additional state was in the initial state, but is unknown to the propagator
-                    // we simply copy its initial value as is
-                    updated = updated.addAdditionalState(initial.getKey(), initial.getValue());
-                }
-            }
+        // update the states not managed by providers
+        for (final Map.Entry<String, TimeSpanMap<double[]>> entry : unmanagedStates.entrySet()) {
+            updated = updated.addAdditionalState(entry.getKey(),
+                                                 entry.getValue().get(original.getDate()));
         }
 
         // update the additional states managed by providers
@@ -264,6 +263,46 @@ public abstract class AbstractPropagator implements Propagator {
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
+    }
+
+    /** Initialize propagation.
+     * @since 10.1
+     */
+    protected void initializePropagation() {
+
+        unmanagedStates.clear();
+
+        if (initialState != null) {
+            // there is an initial state
+            // (null initial states occur for example in interpolated ephemerides)
+            // copy the additional states present in initialState but otherwise not managed
+            for (final Map.Entry<String, double[]> initial : initialState.getAdditionalStates().entrySet()) {
+                if (!isAdditionalStateManaged(initial.getKey())) {
+                    // this additional state is in the initial state, but is unknown to the propagator
+                    // we store it in a way event handlers may change it
+                    unmanagedStates.put(initial.getKey(), new TimeSpanMap<>(initial.getValue()));
+                }
+            }
+        }
+    }
+
+    /** Notify about a state change.
+     * @param state new state
+     */
+    protected void stateChanged(final SpacecraftState state) {
+        final AbsoluteDate date    = state.getDate();
+        final boolean      forward = date.durationFrom(getStartDate()) >= 0.0;
+        for (final Map.Entry<String, double[]> changed : state.getAdditionalStates().entrySet()) {
+            final TimeSpanMap<double[]> tsm = unmanagedStates.get(changed.getKey());
+            if (tsm != null) {
+                // this is an unmanaged state
+                if (forward) {
+                    tsm.addValidAfter(changed.getValue(), date);
+                } else {
+                    tsm.addValidBefore(changed.getValue(), date);
+                }
+            }
+        }
     }
 
 }

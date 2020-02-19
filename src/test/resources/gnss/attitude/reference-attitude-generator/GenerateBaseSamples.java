@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -58,7 +58,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AggregateBoundedPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GPSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -262,7 +262,7 @@ public class GenerateBaseSamples {
 
         @Override
         public void handleStep(final SpacecraftState s, final boolean isLast) {
-            GPSDate       gpsDate    = new GPSDate(s.getDate());
+            GNSSDate      gpsDate    = new GNSSDate(s.getDate(), SatelliteSystem.GPS);
             PVCoordinates pvSatInert = s.getPVCoordinates();
             Transform     t          = s.getFrame().getTransformTo(itrf, s.getDate());
             Vector3D      pSat       = t.transformPosition(pvSatInert.getPosition());

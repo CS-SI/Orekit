@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,13 +28,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.HatanakaCompressFilter;
 
-/** Singleton class managing all supported {@link DataProvider data providers}.
-
+/** This class manages supported {@link DataProvider data providers}.
  * <p>
- * This class is the single point of access for all data loading features. It
+ * This class is the primary point of access for all data loading features. It
  * is used for example to load Earth Orientation Parameters used by IERS frames,
  * to load UTC leap seconds used by time scales, to load planetary ephemerides ...
  *
@@ -89,29 +90,35 @@ public class DataProvidersManager {
     /** Loaded data. */
     private final Set<String> loaded;
 
-    /** Build an instance with default configuration.
-     * <p>
-     * This is a singleton, so the constructor is private.
-     * </p>
-     */
-    private DataProvidersManager() {
-        providers = new ArrayList<DataProvider>();
+    /** Build an instance with default configuration. */
+    public DataProvidersManager() {
+        providers = new ArrayList<>();
         filters   = new ArrayList<>();
-        loaded    = new LinkedHashSet<String>();
+        loaded    = new LinkedHashSet<>();
 
         // set up predefined filters
         addFilter(new GzipFilter());
         addFilter(new UnixCompressFilter());
+        addFilter(new HatanakaCompressFilter());
 
         predefinedFilters = filters.size();
 
     }
 
-    /** Get the unique instance.
-     * @return unique instance of the manager.
+    /**
+     * Get the default instance.
+     *
+     * @return default instance of the manager.
+     * @see DataContext
+     * @deprecated This class is no longer a singleton. In order to support loading
+     * multiple data sets code should be updated to accept an instance of this class. If
+     * you need to maintain compatibility with Orekit 10.0's behavior use the default data
+     * context: {@code DataContext.getDefault().getDataProvidersManager()}.
      */
+    @Deprecated
+    @DefaultDataContext
     public static DataProvidersManager getInstance() {
-        return LazyHolder.INSTANCE;
+        return DataContext.getDefault().getDataProvidersManager();
     }
 
     /** Add the default providers configuration.
@@ -227,9 +234,7 @@ public class DataProvidersManager {
      * @since 9.2
      */
     public void clearFilters() {
-        for (int i = filters.size() - 1; i >= predefinedFilters; --i) {
-            filters.remove(i);
-        }
+        filters.subList(predefinedFilters, filters.size()).clear();
     }
 
     /** Apply all the relevant data filters, taking care of layers.
@@ -354,7 +359,7 @@ public class DataProvidersManager {
             try {
 
                 // try to feed the visitor using the current provider
-                if (provider.feed(supported, monitoredLoader)) {
+                if (provider.feed(supported, monitoredLoader, this)) {
                     return true;
                 }
 
@@ -401,28 +406,6 @@ public class DataProvidersManager {
             // monitor the fact new data has been loaded
             loaded.add(name);
 
-        }
-
-    }
-
-    /** Holder for the manager singleton.
-     * <p>
-     * We use the Initialization on demand holder idiom to store
-     * the singletons, as it is both thread-safe, efficient (no
-     * synchronization) and works with all versions of java.
-     * </p>
-     */
-    private static class LazyHolder {
-
-        /** Unique instance. */
-        private static final DataProvidersManager INSTANCE = new DataProvidersManager();
-
-        /** Private constructor.
-         * <p>This class is a utility class, it should neither have a public
-         * nor a default constructor. This private constructor prevents
-         * the compiler from generating one automatically.</p>
-         */
-        private LazyHolder() {
         }
 
     }

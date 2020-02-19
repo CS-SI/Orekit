@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -81,7 +82,8 @@ public class MODProviderTest {
 
         };
 
-        MODProvider modProvider = new MODProvider(IERSConventions.IERS_1996);
+        MODProvider modProvider = new MODProvider(IERSConventions.IERS_1996,
+                DataContext.getDefault().getTimeScales());
 
         for (double dt = -5 * Constants.JULIAN_YEAR; dt < 5 * Constants.JULIAN_YEAR; dt += 10 * Constants.JULIAN_DAY) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
@@ -138,7 +140,8 @@ public class MODProviderTest {
 
         };
 
-        MODProvider modProvider = new MODProvider(IERSConventions.IERS_2003);
+        MODProvider modProvider = new MODProvider(IERSConventions.IERS_2003,
+                DataContext.getDefault().getTimeScales());
 
         for (double dt = -Constants.JULIAN_CENTURY; dt < Constants.JULIAN_CENTURY; dt += 50 * Constants.JULIAN_DAY) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
@@ -415,7 +418,8 @@ public class MODProviderTest {
 
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        MODProvider provider = new MODProvider(IERSConventions.IERS_2010);
+        MODProvider provider = new MODProvider(IERSConventions.IERS_2010,
+                DataContext.getDefault().getTimeScales());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);

@@ -1,0 +1,102 @@
+' Copyright 2002-2020 CS Group
+' Licensed to CS Group (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                                true
+  skinparam NoteBackgroundColor                 #F3EFEB
+  skinparam NoteBorderColor                     #691616
+  skinparam NoteFontColor                       #691616
+  skinparam SequenceActorBorderColor            #6A584B
+  skinparam SequenceParticipantBackgroundColor  #F3EFEB/CCC9C5
+  skinparam SequenceParticipantBorderColor      #6A584B
+  skinparam SequenceLifeLineBackgroundColor     #CCC9C5/F3EFEB
+  skinparam SequenceLifeLineBorderColor         #6A584B
+  skinparam SequenceArrowColor                  #6A584B
+  skinparam SequenceBorderColor                 #6A584B
+  skinparam SequenceFontSize                    11
+
+  hide footbox
+
+  participant DataProvidersManager
+  participant GzipFilter
+  participant "DataProvider\nDirectoryCrawler" as DirectoryCrawler
+  participant MSAFEPattern
+  participant "DataLoader\nMSAFELoader" as MSAFELoader
+  participant "NamedData\nutc-tai.dat" as NamedData1
+  participant "NamedData\nmay2019f10_prd.txt.gz" as NamedData2
+  participant "NamedData\nmay2019f10_prd.txt" as NamedData3
+
+  activate DataProvidersManager
+    DataProvidersManager -> DirectoryCrawler : feed
+    activate DirectoryCrawler
+      create NamedData1
+      DirectoryCrawler                    ->           NamedData1 : create
+      DirectoryCrawler                    ->         DataProvidersManager : applyFilters
+      activate DataProvidersManager
+        DataProvidersManager  -> GzipFilter : filter
+        activate GzipFilter
+          GzipFilter -> NamedData1 : getName
+          return no filtering
+        deactivate GzipFilter
+        DataProvidersManager                    -->         DirectoryCrawler
+      deactivate DataProvidersManager
+      DirectoryCrawler -> MSAFEPattern : check name
+      activate MSAFEPattern
+        MSAFEPattern --> DirectoryCrawler : no match
+      deactivate MSAFEPattern
+      DirectoryCrawler -> DirectoryCrawler : drop utc-tai.dat
+      create NamedData2
+      DirectoryCrawler                    ->           NamedData2 : create
+      DirectoryCrawler                    ->         DataProvidersManager : applyFilters
+      activate DataProvidersManager
+        DataProvidersManager  -> GzipFilter : filter
+        activate GzipFilter
+          GzipFilter -> NamedData2 : getName
+          create NamedData3
+           GzipFilter -> NamedData3 : create
+          return filtered NamedData
+        deactivate GzipFilter
+        DataProvidersManager -> DataProvidersManager : restart loop on filters
+        DataProvidersManager  -> GzipFilter : filter
+        activate GzipFilter
+          GzipFilter -> NamedData3 : getName
+          return no filtering
+        deactivate GzipFilter
+        DataProvidersManager                    -->         DirectoryCrawler
+      deactivate DataProvidersManager
+      DirectoryCrawler -> MSAFEPattern : check name
+      activate MSAFEPattern
+        MSAFEPattern --> DirectoryCrawler : match found
+      deactivate MSAFEPattern
+      DirectoryCrawler -> NamedData3 : openStream
+      activate NamedData3
+        NamedData3 -> NamedData2 : openStream
+        activate NamedData2
+          NamedData2 --> NamedData3 : compressed stream
+        deactivate NamedData2
+          NamedData3 --> DirectoryCrawler : uncompressed stream
+      deactivate NamedData3
+      DirectoryCrawler -> MSAFELoader : feed
+      activate MSAFELoader
+        MSAFELoader -> MSAFELoader : parse data
+        MSAFELoader --> DirectoryCrawler
+      deactivate MSAFELoader
+      DirectoryCrawler --> DataProvidersManager
+    deactivate DirectoryCrawler
+  deactivate DataProvidersManager
+
+@enduml

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -62,10 +62,10 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
         final ObservableSatellite satellite = getSatellites()[0];
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
 
         // create a dummy measurement
-        final RangeRate dummy = new RangeRate(station, state.getDate(), Double.NaN, sigma, baseWeight, twoway, satellite);
+        final RangeRate dummy = new RangeRate(station, relevant[0].getDate(), Double.NaN, sigma, baseWeight, twoway, satellite);
         for (final EstimationModifier<RangeRate> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -80,7 +80,7 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
         }
 
         // estimate the perfect value of the measurement
-        double rangeRate = dummy.estimate(0, 0, states).getEstimatedValue()[0];
+        double rangeRate = dummy.estimate(0, 0, relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();
@@ -89,7 +89,7 @@ public class RangeRateBuilder extends AbstractMeasurementBuilder<RangeRate> {
         }
 
         // generate measurement
-        final RangeRate measurement = new RangeRate(station, state.getDate(), rangeRate,
+        final RangeRate measurement = new RangeRate(station, relevant[0].getDate(), rangeRate,
                                                     sigma, baseWeight, twoway, satellite);
         for (final EstimationModifier<RangeRate> modifier : getModifiers()) {
             measurement.addModifier(modifier);

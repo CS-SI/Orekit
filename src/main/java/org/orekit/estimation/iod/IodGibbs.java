@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -118,6 +118,24 @@ public class IodGibbs {
         final AbsoluteDate date = date2;
 
         // compute the equivalent Keplerian orbit
-        return new KeplerianOrbit(pv, frame, date, mu);
+        final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, date, mu);
+
+        //define the reverse orbit
+        final PVCoordinates pv2 = new PVCoordinates(r2, vlEci.scalarMultiply(-1));
+        final KeplerianOrbit orbit2 = new KeplerianOrbit(pv2, frame, date, mu);
+
+        //check which orbit is correct
+        final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
+                getPVCoordinates().getPosition();
+        final double dist = estP3.subtract(r3).getNorm();
+        final Vector3D estP3_2 = orbit2.shiftedBy(date3.durationFrom(date2)).
+                getPVCoordinates().getPosition();
+        final double dist2 = estP3_2.subtract(r3).getNorm();
+
+        if (dist <= dist2) {
+            return orbit;
+        } else {
+            return orbit2;
+        }
     }
 }

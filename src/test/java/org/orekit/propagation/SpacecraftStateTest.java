@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -33,6 +33,8 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -54,6 +56,9 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -293,6 +298,105 @@ public class SpacecraftStateTest {
     }
 
     @Test
+    public void testAdditionalTestResetOnEventAnalytical() {
+
+        // Build orbit
+        AbsoluteDate date0 = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC());
+        Orbit orbit = new KeplerianOrbit(7.1E6, 0, 0, 0, 0, 0,
+                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         Constants.WGS84_EARTH_MU);
+
+        // Build propagator
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+
+        // Create initial state with one additional state and add it to the propagator
+        final String name = "A";
+        SpacecraftState initialState = new SpacecraftState(orbit).
+                                       addAdditionalState(name, new double[] { -1 });
+
+        propagator.resetInitialState(initialState);
+
+        // Create date detector and handler
+        AbsoluteDate changeDate = date0.shiftedBy(3);
+        DateDetector dateDetector = new DateDetector(changeDate).
+                                    withHandler(new EventHandler<DateDetector>() {
+
+            @Override
+            public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
+              return Action.RESET_STATE;
+            }
+
+            @Override
+            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+                return oldState.addAdditionalState(name, new double[] { +1 });
+            }
+
+        });
+
+        propagator.addEventDetector(dateDetector);
+        propagator.setMasterMode(0.125, (s, isFinal) -> {
+            if (s.getDate().durationFrom(changeDate) < -0.001) {
+                Assert.assertEquals(-1, s.getAdditionalState(name)[0], 1.0e-15);
+            } else if (s.getDate().durationFrom(changeDate) > +0.001) {
+                Assert.assertEquals(+1, s.getAdditionalState(name)[0], 1.0e-15);
+            }
+        });
+        SpacecraftState finalState = propagator.propagate(date0, date0.shiftedBy(5));
+        Assert.assertEquals(+1, finalState.getAdditionalState(name)[0], 1.0e-15);
+
+    }
+
+    @Test
+    public void testAdditionalTestResetOnEventNumerical() {
+
+        // Build orbit
+        AbsoluteDate date0 = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC());
+        Orbit orbit = new KeplerianOrbit(7.1E6, 0, 0, 0, 0, 0,
+                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         Constants.WGS84_EARTH_MU);
+
+        // Build propagator
+        ODEIntegrator odeIntegrator = new DormandPrince853Integrator(1E-3, 1E3, 1E-6, 1E-6);
+        NumericalPropagator propagator = new NumericalPropagator(odeIntegrator);
+
+        // Create initial state with one additional state and add it to the propagator
+        final String name = "A";
+        SpacecraftState initialState = new SpacecraftState(orbit).
+                        addAdditionalState(name, new double[] { -1 });
+
+        propagator.setInitialState(initialState);
+
+        // Create date detector and handler
+        AbsoluteDate changeDate = date0.shiftedBy(3);
+        DateDetector dateDetector = new DateDetector(changeDate).
+                                    withHandler(new EventHandler<DateDetector>() {
+
+            @Override
+            public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
+                return Action.RESET_STATE;
+            }
+
+            @Override
+            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+                return oldState.addAdditionalState(name, new double[] { +1 });
+            }
+
+        });
+
+        propagator.addEventDetector(dateDetector);
+        propagator.setMasterMode(0.125, (s, isFinal) -> {
+            if (s.getDate().durationFrom(changeDate) < -0.001) {
+                Assert.assertEquals(-1, s.getAdditionalState(name)[0], 1.0e-15);
+            } else if (s.getDate().durationFrom(changeDate) > +0.001) {
+                Assert.assertEquals(+1, s.getAdditionalState(name)[0], 1.0e-15);
+            }
+        });
+        SpacecraftState finalState = propagator.propagate(date0, date0.shiftedBy(5));
+        Assert.assertEquals(+1, finalState.getAdditionalState(name)[0], 1.0e-15);
+
+    }
+
+    @Test
     public void testSerialization()
             throws IOException, ClassNotFoundException, OrekitException {
 
@@ -409,7 +513,7 @@ public class SpacecraftStateTest {
         Assert.assertEquals(3.0, deserialized.getAdditionalState("p2")[2], 1.0e-15);
 
     }
-    
+
     @Test
     public void testAdditionalStatesAbsPV() {
 
@@ -419,7 +523,7 @@ public class SpacecraftStateTest {
         double vx_f    = 0;
         double vy_f    = 0;
         double vz_f    = 0.1;
-        
+
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
@@ -432,7 +536,7 @@ public class SpacecraftStateTest {
         prop.setOrbitType(null);
 
         final SpacecraftState initialState = new SpacecraftState(absPV_f);
-        
+
         prop.resetInitialState(initialState);
 
         final SpacecraftState state = prop.propagate(absPV_f.getDate().shiftedBy(60));

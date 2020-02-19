@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -70,7 +70,7 @@ class ITRFProvider implements EOPBasedTransformProvider {
     public Transform getTransform(final AbsoluteDate date) {
 
         // offset from J2000 epoch in Julian centuries
-        final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        final double tts = date.durationFrom(eopHistory.getTimeScales().getJ2000Epoch());
         final double ttc =  tts / Constants.JULIAN_CENTURY;
 
         // pole correction parameters
@@ -93,7 +93,7 @@ class ITRFProvider implements EOPBasedTransformProvider {
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // offset from J2000 epoch in Julian centuries
-        final T tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        final T tts = date.durationFrom(eopHistory.getTimeScales().getJ2000Epoch());
         final T ttc =  tts.divide(Constants.JULIAN_CENTURY);
 
         // pole correction parameters

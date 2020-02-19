@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -57,6 +58,20 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * otherwise some short passes could be missed.</p>
      * @param pvTarget Position/velocity provider of the considered target
      * @param fov Field Of View
+     * @deprecated as of 10.1, replaced by {@link #FieldOfViewDetector(PVCoordinatesProvider, FieldOfView)}
+     */
+    @Deprecated
+    public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final org.orekit.propagation.events.FieldOfView fov) {
+        this(pvTarget, 0.0, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV, fov);
+    }
+
+    /** Build a new instance.
+     * <p>The maximal interval between distance to FOV boundary checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param pvTarget Position/velocity provider of the considered target
+     * @param fov Field Of View
+     * @since 10.1
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final FieldOfView fov) {
         this(pvTarget, 0.0, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV, fov);
@@ -68,12 +83,31 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * otherwise some short passes could be missed.</p>
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodie
+     * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
-     * @since 10.0
+     * @since 10.1
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                final VisibilityTrigger trigger, final FieldOfView fov) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing<FieldOfViewDetector>(),
+             pvTarget, radiusTarget, trigger, fov);
+    }
+
+    /** Build a new instance.
+     * <p>The maximal interval between distance to FOV boundary checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param pvTarget Position/velocity provider of the considered target
+     * @param radiusTarget radius of the target, considered to be a spherical body (m)
+     * @param trigger visibility trigger for spherical bodies
+     * @param fov Field Of View
+     * @since 10.0
+     * @deprecated as of 10.1, replaced by {@link #FieldOfViewDetector(PVCoordinatesProvider, double, VisibilityTrigger, FieldOfView)}
+     */
+    @Deprecated
+    public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
+                               final VisibilityTrigger trigger, final org.orekit.propagation.events.FieldOfView fov) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing<FieldOfViewDetector>(),
              pvTarget, radiusTarget, trigger, fov);
@@ -91,7 +125,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * @param handler event handler to call at event occurrences
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
-     * @param trigger visibility trigger for spherical bodie
+     * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
      */
     private FieldOfViewDetector(final double maxCheck, final double threshold, final int maxIter,
@@ -123,20 +157,34 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
     /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
+    }
+
+    /** Get the Field Of View.
+     * @return Field Of View, if detector has been built from a
+     * {@link org.orekit.propagation.events.FieldOfView}, or null of the
+     * detector was built from another implementation of {@link FieldOfView}
+     * @deprecated as of 10.1, replaced by {@link #getFOV()}
+     */
+    @Deprecated
+    public org.orekit.propagation.events.FieldOfView getFieldOfView() {
+        return fov instanceof org.orekit.propagation.events.FieldOfView ?
+               (org.orekit.propagation.events.FieldOfView) fov :
+               null;
     }
 
     /** {@inheritDoc}
      * <p>
      * The g function value is the angular offset between the
-     * target center and the {@link FieldOfView#offsetFromBoundary(Vector3D)
-     * Field Of View boundary}, plus or minus the target angular radius
-     * depending on the {@link VisibilityTrigger}, minus the {@link
-     * FieldOfView#getMargin() Field Of View margin}. It is therefore negative
-     * if the target is visible within the Field Of View and positive if it is
-     * outside of the Field Of View.
+     * target center and the {@link FieldOfView#offsetFromBoundary(Vector3D,
+     * double, VisibilityTrigger) Field Of View boundary}, plus or minus the
+     * target angular radius depending on the {@link VisibilityTrigger}, minus
+     * the {@link FieldOfView#getMargin() Field Of View margin}. It is therefore
+     * negative if the target is visible within the Field Of View and positive
+     * if it is outside of the Field Of View.
      * </p>
      * <p>
      * As per the previous definition, when the target enters the Field Of
@@ -152,7 +200,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
         final Vector3D lineOfSightSC = s.toTransform().transformPosition(targetPosInert);
 
         final double angularRadius = FastMath.asin(radiusTarget / lineOfSightSC.getNorm());
-        return fov.offsetFromBoundary(lineOfSightSC) + FastMath.copySign(angularRadius, trigger.getSign());
+        return fov.offsetFromBoundary(lineOfSightSC, angularRadius, trigger);
 
     }
 

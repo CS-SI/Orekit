@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -914,7 +914,8 @@ public class FieldTransform<T extends RealFieldElement<T>>
          * @param field field for the components
          */
         FieldIdentityTransform(final Field<T> field) {
-            super(FieldAbsoluteDate.getJ2000Epoch(field), AbsoluteDate.J2000_EPOCH,
+            super(FieldAbsoluteDate.getArbitraryEpoch(field),
+                  FieldAbsoluteDate.getArbitraryEpoch(field).toAbsoluteDate(),
                   FieldPVCoordinates.getZero(field),
                   FieldAngularCoordinates.getIdentity(field));
         }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -35,6 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
@@ -931,7 +932,7 @@ public class DSSTKalmanModel implements KalmanODModel {
         // so far. We use this to be able to apply the OutlierFilter modifiers on the predicted measurement.
         predictedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            predictedSpacecraftStates);
+                                                            filterRelevant(observedMeasurement, predictedSpacecraftStates));
 
         // Normalized measurement matrix (nxm)
         final RealMatrix measurementMatrix = getMeasurementMatrix();
@@ -1008,11 +1009,26 @@ public class DSSTKalmanModel implements KalmanODModel {
         // Compute the estimated measurement using estimated spacecraft state
         correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            correctedSpacecraftStates);
+                                                            filterRelevant(observedMeasurement, correctedSpacecraftStates));
         // Update the trajectory
         // ---------------------
         updateReferenceTrajectories(estimatedPropagators);
 
+    }
+
+    /** Filter relevant states for a measurement.
+     * @param observedMeasurement measurement to consider
+     * @param allStates all states
+     * @return array containing only the states relevant to the measurement
+     * @since 10.1
+     */
+    private SpacecraftState[] filterRelevant(final ObservedMeasurement<?> observedMeasurement, final SpacecraftState[] allStates) {
+        final List<ObservableSatellite> satellites = observedMeasurement.getSatellites();
+        final SpacecraftState[] relevantStates = new SpacecraftState[satellites.size()];
+        for (int i = 0; i < relevantStates.length; ++i) {
+            relevantStates[i] = allStates[satellites.get(i).getPropagatorIndex()];
+        }
+        return relevantStates;
     }
 
     /** Set the predicted normalized state vector.

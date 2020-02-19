@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -103,7 +103,7 @@ public class SEMParserTest {
         Assert.assertEquals(0, alm.getURA());
         Assert.assertEquals(11, alm.getSatConfiguration());
         Assert.assertEquals("SEM", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(new GNSSDate(862, 319488 * 1000., SatelliteSystem.GPS).getDate()) == 0);
+        Assert.assertEquals(alm.getDate().durationFrom(new GNSSDate(862, 319488 * 1000., SatelliteSystem.GPS).getDate()), 0, 0);
         Assert.assertEquals(0., alm.getCic(), 0.);
         Assert.assertEquals(0., alm.getCis(), 0.);
         Assert.assertEquals(0., alm.getCrc(), 0.);

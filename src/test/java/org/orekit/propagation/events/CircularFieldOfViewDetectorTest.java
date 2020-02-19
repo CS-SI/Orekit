@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,18 +16,24 @@
  */
 package org.orekit.propagation.events;
 
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -41,7 +47,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
+@Deprecated
 public class CircularFieldOfViewDetectorTest {
 
     // Body mu
@@ -142,6 +150,38 @@ public class CircularFieldOfViewDetectorTest {
         propagator.propagate(initDate.shiftedBy(6000.));
 
     }
+
+
+    /** Check that the g function is the same as it was in 10.0. */
+    @Test
+    public void testG() {
+        // setup
+        Frame frame = FramesFactory.getGCRF();
+        AbsoluteDate date = AbsoluteDate.JAVA_EPOCH;
+        double gm = Constants.EIGEN5C_EARTH_MU;
+        Vector3D targetP = new Vector3D(1, 1, 1);
+        PVCoordinatesProvider target =
+                (d, f) -> new TimeStampedPVCoordinates(date, targetP, Vector3D.ZERO);
+        Attitude attitude = new Attitude(
+                date, frame, Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        Vector3D satP = new Vector3D(1, 0, 0);
+        SpacecraftState state = new SpacecraftState(
+                new CartesianOrbit(
+                        new PVCoordinates(satP, new Vector3D(0, 1, 0)),
+                        frame, date, gm),
+                attitude);
+        Vector3D center = Vector3D.PLUS_K;
+        double halfAperture = FastMath.PI / 2;
+
+        // action
+        double actual = new org.orekit.propagation.events.CircularFieldOfViewDetector(0, target, center, halfAperture).g(state);
+
+        // verify
+        MatcherAssert.assertThat(
+                actual,
+                OrekitMatchers.relativelyCloseTo(FastMath.PI / 4, 1));
+    }
+
 
     @Before
     public void setUp() {

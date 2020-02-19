@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,11 +27,14 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngle;
@@ -504,6 +507,24 @@ public class OPMParserTest {
             Assert.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
+    }
+    
+    @Test
+    public void testIssue619() {
+        // test for issue 619 - moon centered transformation
+    	// Verify that moon is at the center of the new frame
+        CelestialBody moon = CelestialBodyFactory.getMoon();
+		AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 0, 00, TimeScalesFactory.getUTC());
+		final String ex = "/ccsds/OPM-dummy-moon-EME2000.txt";
+		final InputStream inEntry = getClass().getResourceAsStream(ex);
+		final OPMParser parser = new OPMParser()
+				.withMu(CelestialBodyFactory.getEarth().getGM())
+				.withConventions(IERSConventions.IERS_2010);
+		final OPMFile file = parser.parse(inEntry);
+        final Frame actualFrame = file.getMetaData().getFrame();
+        Assert.assertThat(
+        		moon.getPVCoordinates(date, actualFrame),
+                OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));     
     }
 
 }

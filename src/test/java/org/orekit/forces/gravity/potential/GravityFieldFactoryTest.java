@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,7 +26,7 @@ import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
@@ -71,7 +71,7 @@ public class GravityFieldFactoryTest {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 3);
         Assert.assertEquals(5, provider.getMaxDegree());
         Assert.assertEquals(3, provider.getMaxOrder());
-        Set<String> loaded = DataProvidersManager.getInstance().getLoadedDataNames();
+        Set<String> loaded = DataContext.getDefault().getDataProvidersManager().getLoadedDataNames();
         Assert.assertEquals(1, loaded.size());
         Assert.assertEquals("g007_eigen_05c_coef", new File(loaded.iterator().next()).getName());
     }
@@ -84,7 +84,7 @@ public class GravityFieldFactoryTest {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 3);
         Assert.assertEquals(5, provider.getMaxDegree());
         Assert.assertEquals(3, provider.getMaxOrder());
-        Set<String> loaded = DataProvidersManager.getInstance().getLoadedDataNames();
+        Set<String> loaded = DataContext.getDefault().getDataProvidersManager().getLoadedDataNames();
         Assert.assertEquals(1, loaded.size());
         Assert.assertEquals("eigen_cg03c_coef", new File(loaded.iterator().next()).getName());
     }

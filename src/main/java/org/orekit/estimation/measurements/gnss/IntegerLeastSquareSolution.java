@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -55,6 +55,31 @@ public class IntegerLeastSquareSolution implements Comparable<IntegerLeastSquare
     @Override
     public int compareTo(final IntegerLeastSquareSolution other) {
         return Double.compare(getSquaredDistance(), other.getSquaredDistance());
+    }
+
+    /** {@inheritDoc}
+     * @since 10.1
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if ((other != null) && (other instanceof IntegerLeastSquareSolution)) {
+            return getSquaredDistance() == ((IntegerLeastSquareSolution) other).getSquaredDistance();
+        }
+
+        return false;
+    }
+
+    /** {@inheritDoc}
+     * @since 10.1
+     */
+    @Override
+    public int hashCode() {
+        int hash = solution.length;
+        for (long s : solution) {
+            hash = hash ^ Long.hashCode(s);
+        }
+        hash = hash ^ Double.hashCode(getSquaredDistance());
+        return hash;
     }
 
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,14 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.solvers.BaseUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
@@ -27,7 +34,9 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,8 +92,7 @@ public class SecularAndHarmonicTest {
         double mst = 10.5;
 
         // this test has been extracted from a more complete tutorial
-        // on Low Earth Orbit phasing, which can be found in the tutorials
-        // folder of the Orekit source distribution
+        // on Low Earth Orbit phasing, which can be found in the Orekit tutorials sister project
         CircularOrbit initialGuessedOrbit =
                 new CircularOrbit(7169867.824275421,
                                   0.0, 0.0010289683741791197,
@@ -156,8 +164,61 @@ public class SecularAndHarmonicTest {
 
     }
 
-    private double[] fitGMST(CircularOrbit orbit, int nbOrbits, double mst)
-        {
+    @Test
+    public void testPerfectOsculatingModel() {
+
+        final AbsoluteDate tRef = AbsoluteDate.J2000_EPOCH;
+        final PerfectModel osc = new PerfectModel(tRef);
+        osc.setSecular(1.0, 0.5, 0.125);
+        osc.addHarmonics(2.0, 5.0, -5.0);
+        osc.addHarmonics(3.0, 4.0, -6.0);
+        osc.addHarmonics(5.0, 3.0, -7.0);
+        osc.addHarmonics(7.0, 2.0, -8.0);
+        SecularAndHarmonic sh = osc.fittedSH(200, 1.0);
+
+        Assert.assertEquals(0.0, sh.getReferenceDate().durationFrom(tRef), 1.0e-10);
+
+        Assert.assertEquals(FastMath.hypot(5, -5) +
+                            FastMath.hypot(4, -6) +
+                            FastMath.hypot(3, -7) +
+                            FastMath.hypot(2, -8),
+                            sh.getHarmonicAmplitude(), 1.0e-10);
+
+        for (double dt = 0.0; dt < 120.0; dt += 1.0) {
+            final AbsoluteDate date = tRef.shiftedBy(dt);
+            Assert.assertEquals(osc.value(date),            sh.osculatingValue(date),            1.0e-10);
+            Assert.assertEquals(osc.firstDerivative(date),  sh.osculatingDerivative(date),       1.0e-10);
+            Assert.assertEquals(osc.secondDerivative(date), sh.osculatingSecondDerivative(date), 1.0e-10);
+        }
+
+    }
+
+    @Test
+    public void testPerfectMeanModel() {
+
+        final AbsoluteDate tRef = AbsoluteDate.J2000_EPOCH;
+        final PerfectModel osc = new PerfectModel(tRef);
+        osc.setSecular(1.0, 0.5, 0.125);
+        osc.addHarmonics(2.0, 5.0, -5.0);
+        osc.addHarmonics(3.0, 4.0, -6.0);
+        osc.addHarmonics(5.0, 3.0, -7.0);
+        osc.addHarmonics(7.0, 2.0, -8.0);
+        SecularAndHarmonic sh = osc.fittedSH(200, 1.0);
+        final PerfectModel mean = new PerfectModel(tRef);
+        mean.setSecular(1.0, 0.5);
+        mean.addHarmonics(2.0, 5.0, -5.0);
+        mean.addHarmonics(3.0, 4.0, -6.0);
+
+        for (double dt = 0.0; dt < 12.0; dt += 0.01) {
+            final AbsoluteDate date = tRef.shiftedBy(dt);
+            Assert.assertEquals(mean.value(date),            sh.meanValue(date, 1, 2),            1.0e-10);
+            Assert.assertEquals(mean.firstDerivative(date),  sh.meanDerivative(date, 1, 2),       1.0e-10);
+            Assert.assertEquals(mean.secondDerivative(date), sh.meanSecondDerivative(date, 1, 2), 1.0e-10);
+        }
+
+    }
+
+    private double[] fitGMST(CircularOrbit orbit, int nbOrbits, double mst) {
 
         double period = orbit.getKeplerianPeriod();
         double duration = nbOrbits * period;
@@ -205,8 +266,7 @@ public class SecularAndHarmonicTest {
 
     }
 
-    private NumericalPropagator createPropagator(CircularOrbit orbit)
-        {
+    private NumericalPropagator createPropagator(CircularOrbit orbit) {
         OrbitType type = OrbitType.CIRCULAR;
         double[][] tolerances = NumericalPropagator.tolerances(0.1, orbit, type);
         DormandPrince853Integrator integrator =
@@ -223,8 +283,7 @@ public class SecularAndHarmonicTest {
 
     private SpacecraftState findFirstCrossing(final double latitude, final boolean ascending,
                                               final AbsoluteDate searchStart, final AbsoluteDate end,
-                                              final double stepSize, final Propagator propagator)
-        {
+                                              final double stepSize, final Propagator propagator) {
 
         double previousLatitude = Double.NaN;
         for (AbsoluteDate date = searchStart; date.compareTo(end) < 0; date = date.shiftedBy(stepSize)) {
@@ -296,8 +355,7 @@ public class SecularAndHarmonicTest {
 
     }
 
-    private double meanSolarTime(final Orbit orbit)
-            {
+    private double meanSolarTime(final Orbit orbit) {
 
         // compute angle between Sun and spacecraft in the equatorial plane
         final Vector3D position = orbit.getPVCoordinates().getPosition();
@@ -308,6 +366,90 @@ public class SecularAndHarmonicTest {
 
         // convert the angle to solar time
         return 12.0 * (1.0 + dAlpha / FastMath.PI);
+
+    }
+
+    /** Local class with a perfect polynomial + harmonics model. */
+    private static class PerfectModel {
+
+        private static final DSFactory FACTORY = new DSFactory(1, 2);
+
+        private final AbsoluteDate tRef;
+        private PolynomialFunction secularTerms;
+        private List<Harmonics> periodicTerms;
+
+        PerfectModel(final AbsoluteDate tRef) {
+            this.tRef = tRef;
+            setSecular(0.0);
+            periodicTerms = new ArrayList<>();
+        }
+
+        public void setSecular(final double...c) {
+            secularTerms = new PolynomialFunction(c);
+        }
+
+        public void addHarmonics(final double omega, final double cosCoeff, final double sinCoeff) {
+            periodicTerms.add(new Harmonics(omega, cosCoeff, sinCoeff));
+        }
+
+        public SecularAndHarmonic fittedSH(final int n, final double step) {
+            final SecularAndHarmonic sh = new SecularAndHarmonic(secularTerms.degree(),
+                                                                 periodicTerms.stream().
+                                                                 mapToDouble(h -> h.omega).
+                                                                 toArray());
+            sh.resetFitting(tRef, new double[secularTerms.degree() + 1 + 2 * periodicTerms.size()]);
+            for (int i = 0; i < n; ++i) {
+                final AbsoluteDate date = tRef.shiftedBy(i * step);
+                sh.addPoint(date, value(date));
+            }
+            sh.fit();
+            return sh;
+        }
+
+        private DerivativeStructure valueDS(final AbsoluteDate t) {
+            final DerivativeStructure x = FACTORY.variable(0, t.durationFrom(tRef));
+            DerivativeStructure y = secularTerms.value(x);
+            for (final UnivariateDifferentiableFunction f : periodicTerms) {
+                y = y.add(f.value(x));
+            }
+            return y;
+        }
+
+        public double value(final AbsoluteDate t) {
+            return valueDS(t).getValue();
+        }
+
+        public double firstDerivative(final AbsoluteDate t) {
+            return valueDS(t).getPartialDerivative(1);
+        }
+
+        public double secondDerivative(final AbsoluteDate t) {
+            return valueDS(t).getPartialDerivative(2);
+        }
+
+        private static class Harmonics implements UnivariateDifferentiableFunction {
+
+            private final double omega;
+            private final double cosCoeff;
+            private final double sinCoeff;
+
+            Harmonics(final double omega, final double cosCoeff, final double sinCoeff) {
+                this.omega    = omega;
+                this.cosCoeff = cosCoeff;
+                this.sinCoeff = sinCoeff;
+            }
+
+            public double value(final double x) {
+                final SinCos sc = FastMath.sinCos(x * omega);
+                return sc.cos() * cosCoeff + sc.sin() * sinCoeff;
+            }
+
+            public DerivativeStructure value(final DerivativeStructure x) {
+                final FieldSinCos<DerivativeStructure> sc = FastMath.sinCos(x.multiply(omega));
+                return sc.cos().multiply(cosCoeff).add(sc.sin().multiply(sinCoeff));
+            }
+
+        }
 
     }
 

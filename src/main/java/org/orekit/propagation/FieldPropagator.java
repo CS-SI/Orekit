@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,9 +20,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
@@ -49,7 +52,15 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-    /** Default attitude provider. */
+    /**
+     * Default attitude provider.
+     *
+     * <p>This field uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see Propagator#getDefaultLaw(Frames)
+     * @see InertialProvider#InertialProvider(Frame)
+     */
+    @DefaultDataContext
     AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 
     /** Indicator for slave mode. */
@@ -175,7 +186,11 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * Additional states that are present in the {@link #getInitialState() initial state}
      * but have no evolution method registered are <em>not</em> considered as managed states.
      * These unmanaged additional states are not lost during propagation, though. Their
-     * value will simply be copied unchanged throughout propagation.
+     * value are piecewise constant between state resets that may change them if some
+     * event handler {@link
+     * org.orekit.propagation.events.handlers.FieldEventHandler#resetState(FieldEventDetector,
+     * FieldSpacecraftState) resetState} method is called at an event occurrence and happens
+     * to change the unmanaged additional state.
      * </p>
      * @param name name of the additional state
      * @return true if the additional state is managed

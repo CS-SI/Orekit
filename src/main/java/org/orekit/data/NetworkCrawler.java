@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,17 +22,12 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 
 
 /** Provider for data files directly fetched from network.
-
  * <p>
  * This class handles a list of URLs pointing to data files or zip/jar on
  * the net. Since the net is not a tree structure the list elements
@@ -59,7 +54,8 @@ import org.orekit.errors.OrekitException;
  * </pre>
  *
  * <p>
- * Gzip-compressed files are supported.
+ * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * {@link DataFilter filters} are applied.
  * </p>
  * <p>
  * Zip archives entries are supported recursively.
@@ -71,27 +67,18 @@ import org.orekit.errors.OrekitException;
  * @see DataProvidersManager
  * @author Luc Maisonobe
  */
-public class NetworkCrawler implements DataProvider {
-
-    /** URLs list. */
-    private final List<URL> urls;
+public class NetworkCrawler extends AbstractListCrawler<URL> {
 
     /** Connection timeout (milliseconds). */
     private int timeout;
 
     /** Build a data classpath crawler.
      * <p>The default timeout is set to 10 seconds.</p>
-     * @param urls list of data file URLs
+     * @param inputs list of input file URLs
      */
-    public NetworkCrawler(final URL... urls) {
-
-        this.urls = new ArrayList<URL>();
-        for (final URL url : urls) {
-            this.urls.add(url);
-        }
-
+    public NetworkCrawler(final URL... inputs) {
+        super(inputs);
         timeout = 10000;
-
     }
 
     /** Set the timeout for connection.
@@ -102,66 +89,31 @@ public class NetworkCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final Pattern supported, final DataLoader visitor) {
-
+    @Override
+    protected String getCompleteName(final URL input) {
         try {
-            OrekitException delayedException = null;
-            boolean loaded = false;
-            for (URL url : urls) {
-                try {
-
-                    if (visitor.stillAcceptsData()) {
-                        final String name     = url.toURI().toString();
-                        final String fileName = new File(url.getPath()).getName();
-                        if (ZIP_ARCHIVE_PATTERN.matcher(fileName).matches()) {
-
-                            // browse inside the zip/jar file
-                            new ZipJarCrawler(url).feed(supported, visitor);
-                            loaded = true;
-
-                        } else {
-
-                            // apply all registered filters
-                            NamedData data = new NamedData(fileName, () -> getStream(url));
-                            data = DataProvidersManager.getInstance().applyAllFilters(data);
-
-                            if (supported.matcher(data.getName()).matches()) {
-                                // visit the current file
-                                try (InputStream input = data.getStreamOpener().openStream()) {
-                                    visitor.loadData(input, name);
-                                    loaded = true;
-                                }
-                            }
-
-                        }
-                    }
-
-                } catch (OrekitException oe) {
-                    // maybe the next path component will be able to provide data
-                    // wait until all components have been tried
-                    delayedException = oe;
-                }
-            }
-
-            if (!loaded && delayedException != null) {
-                throw delayedException;
-            }
-
-            return loaded;
-
-        } catch (URISyntaxException | IOException | ParseException e) {
-            throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
+            return input.toURI().toString();
+        } catch (URISyntaxException ue) {
+            throw new OrekitException(ue, new DummyLocalizable(ue.getMessage()));
         }
-
     }
 
-    /** Get the stream to read from the remote URL.
-     * @param url url to read from
-     * @return stream to read the content of the URL
-     * @throws IOException if the URL cannot be opened for reading
-     */
-    private InputStream getStream(final URL url) throws IOException {
-        final URLConnection connection = url.openConnection();
+    /** {@inheritDoc} */
+    @Override
+    protected String getBaseName(final URL input) {
+        return new File(input.getPath()).getName();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ZipJarCrawler getZipJarCrawler(final URL input) {
+        return new ZipJarCrawler(input);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected InputStream getStream(final URL input) throws IOException {
+        final URLConnection connection = input.openConnection();
         connection.setConnectTimeout(timeout);
         return connection.getInputStream();
     }

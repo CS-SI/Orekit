@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.time.FieldAbsoluteDate;
@@ -143,9 +144,9 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         h   = orbit.getEquinoctialEy();
         q   = orbit.getHx();
         p   = orbit.getHy();
-        lm  = normalizeAngle(orbit.getLM(), pi);
-        lv  = normalizeAngle(orbit.getLv(), pi);
-        le  = normalizeAngle(orbit.getLE(), pi);
+        lm  = MathUtils.normalizeAngle(orbit.getLM(), pi);
+        lv  = MathUtils.normalizeAngle(orbit.getLv(), pi);
+        le  = MathUtils.normalizeAngle(orbit.getLE(), pi);
 
         // Retrograde factor [Eq. 2.1.2-(2)]
         I = retrogradeFactor;
@@ -191,7 +192,9 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      * @param a angle to normalize
      * @param center center of the desired 2&pi; interval for the result
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
+     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
      */
+    @Deprecated
     public T normalizeAngle(final T a, final T center) {
         return a.subtract(FastMath.floor((a.add(FastMath.PI).subtract(center)).divide(TWO_PI)).multiply(TWO_PI));
     }

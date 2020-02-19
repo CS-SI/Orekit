@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -32,6 +32,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -710,7 +711,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     public static <T extends RealFieldElement<T>> T meanToEllipticEccentric(final T M, final T e) {
         // reduce M to [-PI PI) interval
-        final T reducedM = normalizeAngle(M, M.getField().getZero());
+        final T reducedM = MathUtils.normalizeAngle(M, M.getField().getZero());
 
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
         T E;
@@ -1208,9 +1209,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             } else {
                 final T dt      = kep.getDate().durationFrom(previousDate);
                 final T keplerM = previousM.add(kep.getKeplerianMeanMotion().multiply(dt));
-                continuousPA   = normalizeAngle(kep.getPerigeeArgument(), previousPA);
-                continuousRAAN = normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
-                continuousM    = normalizeAngle(kep.getMeanAnomaly(), keplerM);
+                continuousPA   = MathUtils.normalizeAngle(kep.getPerigeeArgument(), previousPA);
+                continuousRAAN = MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
+                continuousM    = MathUtils.normalizeAngle(kep.getMeanAnomaly(), keplerM);
             }
             previousDate = kep.getDate();
             previousPA   = continuousPA;
@@ -1743,7 +1744,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param center center of the desired 2&pi; interval for the result
      * @param <T> the type of the field elements
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
+     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
      */
+    @Deprecated
     public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
     }

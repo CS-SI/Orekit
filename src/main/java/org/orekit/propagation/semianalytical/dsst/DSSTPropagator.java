@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -32,8 +32,10 @@ import org.hipparchus.ode.sampling.ODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -43,6 +45,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -136,6 +139,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private static final int I = 1;
 
+    /** Default value for epsilon. */
+    private static final double EPSILON_DEFAULT = 1.0e-13;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 200;
+
     /** Number of grid points per integration step to be used in interpolation of short periodics coefficients.*/
     private static final int INTERPOLATION_POINTS_PER_STEP = 3;
 
@@ -158,17 +167,41 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  is not called after creation, the integrated orbit will
      *  follow a Keplerian evolution only.
      *  </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      *  @param integrator numerical integrator to use for propagation.
      *  @param propagationType type of orbit to output (mean or osculating).
+     * @see #DSSTPropagator(ODEIntegrator, PropagationType, AttitudeProvider)
      */
+    @DefaultDataContext
     public DSSTPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
+        this(integrator, propagationType,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Create a new instance of DSSTPropagator.
+     *  <p>
+     *  After creation, there are no perturbing forces at all.
+     *  This means that if {@link #addForceModel addForceModel}
+     *  is not called after creation, the integrated orbit will
+     *  follow a Keplerian evolution only.
+     *  </p>
+     * @param integrator numerical integrator to use for propagation.
+     * @param propagationType type of orbit to output (mean or osculating).
+     * @param attitudeProvider the attitude law.
+     * @since 10.1
+     */
+    public DSSTPropagator(final ODEIntegrator integrator,
+                          final PropagationType propagationType,
+                          final AttitudeProvider attitudeProvider) {
         super(integrator, propagationType);
         forceModels = new ArrayList<DSSTForceModel>();
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.MEAN);
-        setAttitudeProvider(DEFAULT_LAW);
+        setAttitudeProvider(attitudeProvider);
         setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
     }
 
@@ -181,17 +214,15 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  follow a Keplerian evolution only. Only the mean orbits
      *  will be generated.
      *  </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      *  @param integrator numerical integrator to use for propagation.
+     * @see #DSSTPropagator(ODEIntegrator, PropagationType, AttitudeProvider)
      */
+    @DefaultDataContext
     public DSSTPropagator(final ODEIntegrator integrator) {
-        super(integrator, PropagationType.MEAN);
-        forceModels = new ArrayList<DSSTForceModel>();
-        initMapper();
-        // DSST uses only equinoctial orbits and mean longitude argument
-        setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.MEAN);
-        setAttitudeProvider(DEFAULT_LAW);
-        setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
+        this(integrator, PropagationType.MEAN);
     }
 
     /** Set the central attraction coefficient μ.
@@ -477,7 +508,36 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     public static SpacecraftState computeMeanState(final SpacecraftState osculating,
                                                    final AttitudeProvider attitudeProvider,
                                                    final Collection<DSSTForceModel> forceModels) {
-        final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels);
+        return computeMeanState(osculating, attitudeProvider, forceModels, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean state <b>in a DSST sense</b>, corresponding to the
+     * osculating SpacecraftState in input, and according to the Force models
+     * taken into account.
+     * </p><p>
+     * Since the osculating state is obtained with the computation of
+     * short-periodic variation of each force model, the resulting output will
+     * depend on the force models parameterized in input.
+     * </p><p>
+     * The computation is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating Osculating state to convert
+     * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
+     * like atmospheric drag, radiation pressure or specific user-defined models)
+     * @param forceModels Forces to take into account
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
+     * @return mean state in a DSST sense
+     * @since 10.1
+     */
+    public static SpacecraftState computeMeanState(final SpacecraftState osculating,
+                                                   final AttitudeProvider attitudeProvider,
+                                                   final Collection<DSSTForceModel> forceModels,
+                                                   final double epsilon,
+                                                   final int maxIterations) {
+        final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels, epsilon, maxIterations);
         return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
     }
 
@@ -587,17 +647,18 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModels force models
+     * @param epsilon convergence threshold for mean parameters conversion
+     * @param maxIterations maximum iterations for mean parameters conversion
      * @return mean state
      */
     private static Orbit computeMeanOrbit(final SpacecraftState osculating,
                                           final AttitudeProvider attitudeProvider,
-                                          final Collection<DSSTForceModel> forceModels) {
+                                          final Collection<DSSTForceModel> forceModels, final double epsilon, final int maxIterations) {
 
         // rough initialization of the mean parameters
         EquinoctialOrbit meanOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(osculating.getOrbit());
 
         // threshold for each parameter
-        final double epsilon    = 1.0e-13;
         final double thresholdA = epsilon * (1 + FastMath.abs(meanOrbit.getA()));
         final double thresholdE = epsilon * (1 + meanOrbit.getE());
         final double thresholdI = epsilon * (1 + meanOrbit.getI());
@@ -609,7 +670,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
 
         int i = 0;
-        while (i++ < 200) {
+        while (i++ < maxIterations) {
 
             final SpacecraftState meanState = new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass());
 

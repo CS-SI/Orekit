@@ -54,7 +54,8 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>composite transforms reduction and caching for efficiency</li>
       <li>extensible central body shapes models (with predefined spherical and ellipsoidic shapes)</li>
       <li>Cartesian and geodesic coordinates, kinematics</li>
-      <li>Computation of Dilution Of Precision (DOP) with respect to GNSS constellations</li>
+      <li>computation of Dilution Of Precision (DOP) with respect to GNSS constellations</li>
+      <li>projection of sensor Field Of View footprint on ground for any FoV shape</li>
     </ul>
   </li>
   <li>Spacecraft state
@@ -288,12 +289,14 @@ discrete events. Here is a short list of the features offered by the library:</p
   </li>
   <li>Customizable data loading
     <ul>
-      <li>loading from local disk</li>
+      <li>loading by exploring folders hierarchy on local disk</li>
+      <li>loading from explicit lists of files on local disk</li>
       <li>loading from classpath</li>
       <li>loading from network (even through internet proxies)</li>
       <li>support for zip archives</li>
       <li>automatic decompression of gzip compressed (.gz) files upon loading</li>
       <li>automatic decompression of Unix compressed (.Z) files upon loading</li>
+      <li>automatic decompression of Hatanaka compressed files upon loading</li>
       <li>plugin mechanism to add filtering like custom decompression algorithms, deciphering or monitoring</li>
       <li>plugin mechanism to delegate loading to user defined database or data access library</li>
     </ul>

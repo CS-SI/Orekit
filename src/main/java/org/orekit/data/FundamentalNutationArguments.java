@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.regex.Pattern;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -39,6 +41,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -120,17 +123,66 @@ public class FundamentalNutationArguments implements Serializable {
     /** Coefficients for general accumulated precession. */
     private final double[] paCoefficients;
 
+    /** Set of time scales to use in computations. */
+    private final transient TimeScales timeScales;
+
     /** Build a model of fundamental arguments from an IERS table file.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param conventions IERS conventions to use
      * @param timeScale time scale for GMST computation
      * (may be null if tide parameter γ = GMST + π is not needed)
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
+     * @see #FundamentalNutationArguments(IERSConventions, TimeScale, List, TimeScales)
+     * @see #FundamentalNutationArguments(IERSConventions, TimeScale, InputStream, String, TimeScales)
      */
+    @DefaultDataContext
     public FundamentalNutationArguments(final IERSConventions conventions,
                                         final TimeScale timeScale,
                                         final InputStream stream, final String name) {
-        this(conventions, timeScale, parseCoefficients(stream, name));
+        this(conventions, timeScale, stream, name,
+                DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Build a model of fundamental arguments from an IERS table file.
+     *
+     * @param conventions IERS conventions to use
+     * @param timeScale   time scale for GMST computation (may be null if tide parameter γ
+     *                    = GMST + π is not needed)
+     * @param stream      stream containing the IERS table
+     * @param name        name of the resource file (for error messages only)
+     * @param timeScales         TAI time scale
+     * @see #FundamentalNutationArguments(IERSConventions, TimeScale, List, TimeScales)
+     * @since 10.1
+     */
+    public FundamentalNutationArguments(final IERSConventions conventions,
+                                        final TimeScale timeScale,
+                                        final InputStream stream,
+                                        final String name,
+                                        final TimeScales timeScales) {
+        this(conventions, timeScale, parseCoefficients(stream, name), timeScales);
+    }
+
+    /** Build a model of fundamental arguments from an IERS table file.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param conventions IERS conventions to use
+     * @param timeScale time scale for GMST computation
+     * (may be null if tide parameter γ = GMST + π is not needed)
+     * @param coefficients list of coefficients arrays (all 14 arrays must be provided,
+     * the 5 Delaunay first and the 9 planetary afterwards)
+     * @since 6.1
+     * @see #FundamentalNutationArguments(IERSConventions, TimeScale, List, TimeScales)
+     */
+    @DefaultDataContext
+    public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
+                                        final List<double[]> coefficients) {
+        this(conventions, timeScale, coefficients,
+                DataContext.getDefault().getTimeScales());
     }
 
     /** Build a model of fundamental arguments from an IERS table file.
@@ -139,14 +191,20 @@ public class FundamentalNutationArguments implements Serializable {
      * (may be null if tide parameter γ = GMST + π is not needed)
      * @param coefficients list of coefficients arrays (all 14 arrays must be provided,
      * the 5 Delaunay first and the 9 planetary afterwards)
-     * @since 6.1
+     * @param timeScales used in the computation.
+     * @since 10.1
      */
-    public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
-                                        final List<double[]> coefficients) {
+    public FundamentalNutationArguments(final IERSConventions conventions,
+                                        final TimeScale timeScale,
+                                        final List<double[]> coefficients,
+                                        final TimeScales timeScales) {
         this.conventions        = conventions;
         this.timeScale          = timeScale;
-        this.gmstFunction       = (timeScale == null) ? null : conventions.getGMSTFunction(timeScale);
-        this.gmstRateFunction   = (timeScale == null) ? null : conventions.getGMSTRateFunction(timeScale);
+        this.timeScales         = timeScales;
+        this.gmstFunction       = (timeScale == null) ? null :
+                conventions.getGMSTFunction(timeScale, timeScales);
+        this.gmstRateFunction   = (timeScale == null) ? null :
+                conventions.getGMSTRateFunction(timeScale, timeScales);
         this.lCoefficients      = coefficients.get( 0);
         this.lPrimeCoefficients = coefficients.get( 1);
         this.fCoefficients      = coefficients.get( 2);
@@ -179,7 +237,7 @@ public class FundamentalNutationArguments implements Serializable {
             final DefinitionParser definitionParser = new DefinitionParser();
 
             // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
             int lineNumber = 0;
 
             // look for the reference date and the 14 polynomials
@@ -303,7 +361,7 @@ public class FundamentalNutationArguments implements Serializable {
      */
     public BodiesElements evaluateAll(final AbsoluteDate date) {
 
-        final double tc       = conventions.evaluateTC(date);
+        final double tc       = conventions.evaluateTC(date, timeScales);
         final double gamma    = gmstFunction == null ?
                                 Double.NaN : gmstFunction.value(date) + FastMath.PI;
         final double gammaDot = gmstRateFunction == null ?
@@ -348,7 +406,7 @@ public class FundamentalNutationArguments implements Serializable {
      */
     public <T extends RealFieldElement<T>> FieldBodiesElements<T> evaluateAll(final FieldAbsoluteDate<T> date) {
 
-        final T tc       = conventions.evaluateTC(date);
+        final T tc       = conventions.evaluateTC(date, timeScales);
         final T gamma    = gmstFunction == null ?
                            tc.getField().getZero().add(Double.NaN) : gmstFunction.value(date).add(FastMath.PI);
         final T gammaDot = gmstRateFunction == null ?
@@ -392,6 +450,7 @@ public class FundamentalNutationArguments implements Serializable {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(conventions, timeScale,
                                       Arrays.asList(lCoefficients, lPrimeCoefficients, fCoefficients,
@@ -402,6 +461,7 @@ public class FundamentalNutationArguments implements Serializable {
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */

@@ -1,5 +1,5 @@
 /* Copyright 2016 Applied Defense Solutions (ADS)
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * ADS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.OEMFile.CovarianceMatrix;
+import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.StreamingOemWriter.Segment;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
@@ -163,10 +165,19 @@ public class OEMWriter implements EphemerisFileWriter {
             metadata.put(Keyword.STOP_TIME, segment.getStop().toString(timeScale));
             metadata.put(Keyword.INTERPOLATION_DEGREE,
                     String.valueOf(segment.getInterpolationSamples() - 1));
+
             final Segment segmentWriter = oemWriter.newSegment(null, metadata);
             segmentWriter.writeMetadata();
             for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
                 segmentWriter.writeEphemerisLine(coordinates);
+            }
+
+            if (segment instanceof EphemeridesBlock) {
+                final EphemeridesBlock curr_ephem_block = (EphemeridesBlock) segment;
+                final List<CovarianceMatrix> covarianceMatrices = curr_ephem_block.getCovarianceMatrices();
+                if (!covarianceMatrices.isEmpty()) {
+                    segmentWriter.writeCovarianceMatrices(covarianceMatrices);
+                }
             }
         }
     }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,16 +20,23 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import org.hipparchus.util.Pair;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScales;
 
 
 /**
@@ -47,7 +54,7 @@ import org.orekit.errors.OrekitMessages;
  * @since 8.0
  *
  */
-public class YUMAParser implements DataLoader {
+public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader {
 
     // Constants
     /** The source of the almanacs. */
@@ -74,14 +81,14 @@ public class YUMAParser implements DataLoader {
     private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.alm$";
 
     // Fields
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** the list of all the almanacs read from the file. */
     private final List<GPSAlmanac> almanacs;
 
     /** the list of all the PRN numbers of all the almanacs read from the file. */
     private final List<Integer> prnList;
+
+    /** Set of time scales to use. */
+    private final TimeScales timeScales;
 
     /** Simple constructor.
     *
@@ -92,18 +99,51 @@ public class YUMAParser implements DataLoader {
      *
      * <p>The supported files names are used when getting data from the
      * {@link #loadData() loadData()} method that relies on the
-     * {@link DataProvidersManager data providers manager}. They are useless when
+     * {@link DataContext#getDefault() default data context}. They are useless when
      * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
      * method.</p>
      *
      * @param supportedNames regular expression for supported files names
      * (if null, a default pattern matching files with a ".alm" extension will be used)
      * @see #loadData()
+     * @see #YUMAParser(String, DataProvidersManager, TimeScales)
     */
+    @DefaultDataContext
     public YUMAParser(final String supportedNames) {
-        this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
-        this.almanacs =  new ArrayList<GPSAlmanac>();
-        this.prnList = new ArrayList<Integer>();
+        this(supportedNames,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Create a YUMA loader/parser with the given source for YUMA auxiliary data files.
+     *
+     * <p>This constructor does not load any data by itself. Data must be loaded
+     * later on by calling one of the {@link #loadData() loadData()} method or
+     * the {@link #loadData(InputStream, String) loadData(inputStream, fileName)}
+     * method.</p>
+     *
+     * <p>The supported files names are used when getting data from the
+     * {@link #loadData() loadData()} method that relies on the
+     * {@code dataProvidersManager}. They are useless when
+     * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
+     * method.</p>
+     *
+     * @param supportedNames regular expression for supported files names
+     * (if null, a default pattern matching files with a ".alm" extension will be used)
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @param timeScales to use when parsing the GPS dates.
+     * @see #loadData()
+     * @since 10.1
+     */
+    public YUMAParser(final String supportedNames,
+                      final DataProvidersManager dataProvidersManager,
+                      final TimeScales timeScales) {
+        super((supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames,
+                dataProvidersManager);
+        this.almanacs = new ArrayList<>();
+        this.prnList = new ArrayList<>();
+        this.timeScales = timeScales;
     }
 
     /**
@@ -117,7 +157,7 @@ public class YUMAParser implements DataLoader {
      */
     public void loadData() {
         // load the data from the configured data providers
-        DataProvidersManager.getInstance().feed(supportedNames, this);
+        feed(this);
         if (almanacs.isEmpty()) {
             throw new OrekitException(OrekitMessages.NO_YUMA_ALMANAC_AVAILABLE);
         }
@@ -132,12 +172,12 @@ public class YUMAParser implements DataLoader {
         prnList.clear();
 
         // Creates the reader
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
         try {
             // Gathers data to create one GPSAlmanac from 13 consecutive lines
             final List<Pair<String, String>> entries =
-                new ArrayList<Pair<String, String>>(KEY.length);
+                    new ArrayList<>(KEY.length);
 
             // Reads the data one line at a time
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -146,7 +186,7 @@ public class YUMAParser implements DataLoader {
                 // If the line is made of 2 tokens
                 if (token.length == 2) {
                     // Adds these tokens as an entry to the entries
-                    entries.add(new Pair<String, String>(token[0].trim(), token[1].trim()));
+                    entries.add(new Pair<>(token[0].trim(), token[1].trim()));
                 }
                 // If the number of entries equals the expected number
                 if (entries.size() == KEY.length) {
@@ -161,7 +201,7 @@ public class YUMAParser implements DataLoader {
                 }
             }
         } catch (IOException ioe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
+            throw new OrekitException(ioe, OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
                                       name);
         }
     }
@@ -171,11 +211,9 @@ public class YUMAParser implements DataLoader {
         return almanacs.isEmpty();
     }
 
-    /** Get the supported names for data files.
-     * @return regular expression for the supported names for data files
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /**
@@ -286,15 +324,18 @@ public class YUMAParser implements DataLoader {
             // If all expected fields have been read
             if (readOK(checks)) {
                 // Returns a GPSAlmanac built from the entries
+                final AbsoluteDate date =
+                        new GNSSDate(week, toa * 1000, SatelliteSystem.GPS, timeScales)
+                                .getDate();
                 return new GPSAlmanac(SOURCE, prn, -1, week, toa, sqa, ecc, inc, om0, dom,
-                                      aop, anom, af0, af1, health, -1, -1);
+                                      aop, anom, af0, af1, health, -1, -1, date);
             } else {
                 // The file is not a YUMA file
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
                                           name);
             }
         } catch (NumberFormatException nfe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
+            throw new OrekitException(nfe, OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
                                       name);
         }
     }

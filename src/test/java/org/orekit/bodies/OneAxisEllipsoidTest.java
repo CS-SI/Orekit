@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -217,8 +217,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundProjectionDerivatives()
-            {
+    public void testGroundProjectionDerivatives() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -241,8 +240,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundToGroundIssue181()
-            {
+    public void testGroundToGroundIssue181() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -265,8 +263,7 @@ public class OneAxisEllipsoidTest {
     }
 
     private double[] derivativesErrors(PVCoordinatesProvider provider, AbsoluteDate date, Frame frame,
-                                       OneAxisEllipsoid model)
-        {
+                                       OneAxisEllipsoid model) {
         List<TimeStampedPVCoordinates> pvList       = new ArrayList<TimeStampedPVCoordinates>();
         List<TimeStampedPVCoordinates> groundPVList = new ArrayList<TimeStampedPVCoordinates>();
         for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
@@ -300,8 +297,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundProjectionTaylor()
-            {
+    public void testGroundProjectionTaylor() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
@@ -724,8 +720,7 @@ public class OneAxisEllipsoidTest {
     private void checkCartesianToEllipsoidic(double ae, double f,
                                              double x, double y, double z,
                                              double longitude, double latitude,
-                                             double altitude)
-        {
+                                             double altitude) {
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -748,11 +743,30 @@ public class OneAxisEllipsoidTest {
         FieldVector3D<Decimal64> rebuiltNadir64 = FieldVector3D.crossProduct(gp64.getSouth(), gp64.getWest());
         Assert.assertEquals(0, rebuiltNadir64.subtract(gp64.getNadir()).getNorm().getReal(), 1.0e-15);
 
-    }
+        // project to ground
+        gp = model.transform(model.projectToGround(new Vector3D(x, y, z), date, frame), frame, date);
+        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
+        Assert.assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
+        Assert.assertEquals(0.0,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
+
+        // project pv to ground
+        FieldGeodeticPoint<DerivativeStructure> gpDs = model.transform(
+                model.projectToGround(
+                        new TimeStampedPVCoordinates(
+                                date,
+                                new Vector3D(x, y, z),
+                                new Vector3D(1, 2, 3)),
+                        frame),
+                frame,
+                date);
+        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gpDs.getLongitude().getReal(), longitude), 1.0e-10);
+        Assert.assertEquals(latitude,  gpDs.getLatitude().getReal(),  1.0e-10);
+        Assert.assertEquals(0.0,  gpDs.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
+
+        }
 
     @Test
-    public void testTransformVsOldIterativeSobol()
-        {
+    public void testTransformVsOldIterativeSobol() {
 
         OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -768,8 +782,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testTransformVsOldIterativePolarAxis()
-        {
+    public void testTransformVsOldIterativePolarAxis() {
         OneAxisEllipsoid model = new OneAxisEllipsoid(90, 5.0 / 9.0,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Stream<Vector3D> points = DoubleStream.iterate(0, x -> x + 1.0).limit(150).mapToObj(z -> new Vector3D(0, 0, z));
@@ -777,8 +790,7 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testTransformVsOldIterativeEquatorial()
-        {
+    public void testTransformVsOldIterativeEquatorial() {
         OneAxisEllipsoid model = new OneAxisEllipsoid(90, 5.0 / 9.0,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Stream<Vector3D> points = DoubleStream.iterate(0, x -> x + 1.0).limit(150).mapToObj(x -> new Vector3D(x, 0, 0));
@@ -797,8 +809,7 @@ public class OneAxisEllipsoidTest {
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
                                                Stream<Vector3D> points,
                                                double latitudeTolerance, double longitudeTolerance,
-                                               double altitudeTolerance)
-        {
+                                               double altitudeTolerance) {
         points.forEach(point -> {
             try {
                 GeodeticPoint reference = transformOldIterative(model, point, model.getBodyFrame(), null);
@@ -828,8 +839,7 @@ public class OneAxisEllipsoidTest {
     private GeodeticPoint transformOldIterative(final OneAxisEllipsoid model,
                                                 final Vector3D point,
                                                 final Frame frame,
-                                                final AbsoluteDate date)
-        {
+                                                final AbsoluteDate date) {
 
         // transform point to body frame
         final Vector3D pointInBodyFrame = frame.getTransformTo(model.getBodyFrame(), date).transformPosition(point);

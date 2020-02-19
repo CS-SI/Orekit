@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,11 +19,11 @@ package org.orekit.files.general;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
@@ -47,9 +47,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
-    /** Default frame to use when creating orbits. */
-    public static final Frame DEFAULT_INERTIAL_FRAME = FramesFactory.getGCRF();
-
     /**
      * Sorted cache of state vectors. A duplication of the information in {@link
      * #ephemeris} that could be avoided by duplicating the logic of {@link
@@ -66,24 +63,16 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     /**
      * Create a {@link Propagator} from an ephemeris segment.
      *
-     * <p> If the {@link EphemerisSegment#getFrame() ephemeris frame} is not {@link
-     * Frame#isPseudoInertial() inertial} then {@link #DEFAULT_INERTIAL_FRAME} is used as
-     * the frame for orbits created by this propagator.
-     *
      * @param ephemeris segment containing the data for this propagator.
      */
     EphemerisSegmentPropagator(final EphemerisSegment ephemeris) {
-        super(Propagator.DEFAULT_LAW);
+        super(new InertialProvider(ephemeris.getInertialFrame()));
         this.cache = new ImmutableTimeStampedCache<>(
                 ephemeris.getInterpolationSamples(),
                 ephemeris.getCoordinates());
         this.ephemeris = ephemeris;
         this.ephemerisFrame = ephemeris.getFrame();
-        if (ephemerisFrame.isPseudoInertial()) {
-            this.inertialFrame = ephemerisFrame;
-        } else {
-            this.inertialFrame = DEFAULT_INERTIAL_FRAME;
-        }
+        this.inertialFrame = ephemeris.getInertialFrame();
         // set the initial state so getFrame() works
         final TimeStampedPVCoordinates ic = cache.getEarliest();
         final TimeStampedPVCoordinates icInertial = ephemerisFrame
@@ -94,7 +83,7 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
                         new CartesianOrbit(
                                 icInertial, inertialFrame, ephemeris.getMu()
                         ),
-                        DEFAULT_LAW.getAttitude(
+                        getAttitudeProvider().getAttitude(
                                 icInertial.toTaylorProvider(inertialFrame),
                                 ic.getDate(),
                                 inertialFrame),

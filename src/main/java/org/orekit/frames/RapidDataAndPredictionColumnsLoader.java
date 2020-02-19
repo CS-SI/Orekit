@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,21 +20,24 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.MathUtils;
-import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 
 /** Loader for IERS rapid data and prediction files in columns format (finals file).
  * <p>Rapid data and prediction files contain {@link EOPEntry
@@ -60,7 +63,8 @@ import org.orekit.utils.IERSConventions;
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals2000A">finals2000A file format description at USNO</a>
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals">finals file format description at USNO</a>
  */
-class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
+class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
+        implements EOPHistoryLoader {
 
     /** Conversion factor. */
     private static final double  ARC_SECONDS_TO_RADIANS       = MathUtils.TWO_PI / 1296000;
@@ -131,82 +135,71 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
     /** Type of nutation corrections. */
     private final boolean isNonRotatingOrigin;
 
-    /** File supported name. */
-    private final String  supportedNames;
-
     /** Build a loader for IERS bulletins B files.
      * @param isNonRotatingOrigin if true the supported files <em>must</em>
      * contain δX/δY nutation corrections, otherwise they
      * <em>must</em> contain δΔψ/δΔε nutation
      * corrections
      * @param supportedNames regular expression for supported files names
+     * @param manager provides access to EOP data files.
+     * @param utcSupplier UTC time scale.
      */
     RapidDataAndPredictionColumnsLoader(final boolean isNonRotatingOrigin,
-                                               final String supportedNames) {
+                                        final String supportedNames,
+                                        final DataProvidersManager manager,
+                                        final Supplier<TimeScale> utcSupplier) {
+        super(supportedNames, manager, utcSupplier);
         this.isNonRotatingOrigin = isNonRotatingOrigin;
-        this.supportedNames      = supportedNames;
     }
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history) {
-        final Parser parser = new Parser(converter, isNonRotatingOrigin);
-        DataProvidersManager.getInstance().feed(supportedNames, parser);
-        history.addAll(parser.history);
+        final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
+                ITRFVersionLoader.SUPPORTED_NAMES,
+                getDataProvidersManager());
+        final Parser parser =
+                new Parser(converter, itrfVersionProvider, getUtc(), isNonRotatingOrigin);
+        final EopParserLoader loader = new EopParserLoader(parser);
+        this.feed(loader);
+        history.addAll(loader.getEop());
     }
 
     /** Internal class performing the parsing. */
-    private static class Parser implements DataLoader {
-
-        /** Converter for nutation corrections. */
-        private final IERSConventions.NutationCorrectionConverter converter;
-
-        /** Configuration for ITRF versions. */
-        private final ITRFVersionLoader itrfVersionLoader;
+    static class Parser extends AbstractEopParser {
 
         /** Indicator for Non-Rotating Origin. */
         private final boolean isNonRotatingOrigin;
 
-        /** History entries. */
-        private final List<EOPEntry> history;
-
-        /** Current line number. */
-        private int lineNumber;
-
-        /** Current line. */
-        private String line;
-
         /** Simple constructor.
          * @param converter converter to use
+         * @param itrfVersionProvider to use for determining the ITRF version of the EOP.
+         * @param utc time scale for parsing dates.
          * @param isNonRotatingOrigin type of nutation correction
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter,
+        Parser(final NutationCorrectionConverter converter,
+               final ItrfVersionProvider itrfVersionProvider,
+               final TimeScale utc,
                final boolean isNonRotatingOrigin) {
-            this.converter           = converter;
-            this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            super(converter, itrfVersionProvider, utc);
             this.isNonRotatingOrigin = isNonRotatingOrigin;
-            this.history             = new ArrayList<EOPEntry>();
-            this.lineNumber          = 0;
         }
 
         /** {@inheritDoc} */
-        public boolean stillAcceptsData() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        public void loadData(final InputStream input, final String name)
+        @Override
+        public Collection<EOPEntry> parse(final InputStream input, final String name)
             throws IOException {
 
+            final List<EOPEntry> history = new ArrayList<>();
             ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
             // set up a reader for line-oriented bulletin B files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
             // reset parse info to start new file (do not clear history!)
-            lineNumber = 0;
+            int lineNumber = 0;
 
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
                 lineNumber++;
 
@@ -288,28 +281,28 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
                 // parse the nutation part
                 final double[] nro;
                 final double[] equinox;
+                final AbsoluteDate mjdDate =
+                        new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                getUtc());
                 if (nutationPart.trim().length() == 0) {
                     // nutation part is blank
                     nro     = new double[2];
                     equinox = new double[2];
                 } else {
                     final Matcher nutationMatcher = NUTATION_PATTERN.matcher(nutationPart);
-                    final AbsoluteDate mjdDate =
-                            new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                             TimeScalesFactory.getUTC());
                     if (nutationMatcher.matches()) {
                         if (isNonRotatingOrigin) {
                             nro = new double[] {
                                 MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
                                 MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
                             };
-                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
                                 MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
                             };
-                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                     } else {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
@@ -319,13 +312,14 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
                 if (configuration == null || !configuration.isValid(mjd)) {
                     // get a configuration for current name and date range
-                    configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                    configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                 }
                 history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                         configuration.getVersion()));
+                                         configuration.getVersion(), mjdDate));
 
             }
 
+            return history;
         }
 
     }

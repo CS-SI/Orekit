@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,6 +36,7 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +83,6 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPress
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
-import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
@@ -350,7 +350,6 @@ public class FieldDSSTPropagatorTest {
                                                               initDate,
                                                               zero.add(provider.getMu()));
 
-        final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, new FieldSpacecraftState<>(orbit));
         dsstPropagator.addForceModel(new DSSTZonal(provider, 4, 3, 9));
@@ -374,7 +373,7 @@ public class FieldDSSTPropagatorTest {
         Assert.assertEquals(-0.3399607878, state.getHx().getReal(), 5.e-8);
         Assert.assertEquals(0.3971568634, state.getHy().getReal(), 2.e-6);
         Assert.assertEquals(140.6375352,
-                            FastMath.toDegrees(aux.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
                             5.e-3);
     }
 
@@ -414,7 +413,6 @@ public class FieldDSSTPropagatorTest {
                                                               initDate,
                                                               zero.add(provider.getMu()));
 
-        final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, new FieldSpacecraftState<>(orbit));
         dsstPropagator.addForceModel(zonal);
@@ -438,7 +436,7 @@ public class FieldDSSTPropagatorTest {
         Assert.assertEquals( 0.1595005111738418, state.getHx().getReal(), 2.e-7);
         Assert.assertEquals(-0.5968524904937771, state.getHy().getReal(), 5.e-8);
         Assert.assertEquals(183.9386620425922,
-                            FastMath.toDegrees(aux.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
                             3.e-2);
     }
 
@@ -498,7 +496,6 @@ public class FieldDSSTPropagatorTest {
                                                               initDate,
                                                               zero.add(provider.getMu()));
 
-        final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, new FieldSpacecraftState<>(orbit));
         dsstPropagator.addForceModel(zonal);
@@ -521,7 +518,7 @@ public class FieldDSSTPropagatorTest {
         Assert.assertEquals(0.7757573478894775, state.getHx().getReal(), 5.e-8);
         Assert.assertEquals(0.8698955648709271, state.getHy().getReal(), 5.e-8);
         Assert.assertEquals(193.0939742953394,
-                            FastMath.toDegrees(aux.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
                             2.e-3);
         //Assert.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
         //Assert.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
@@ -565,7 +562,6 @@ public class FieldDSSTPropagatorTest {
                                                               initDate,
                                                               zero.add(provider.getMu()));
 
-        final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagatorp = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(86400.)));
         dsstPropagatorp.setInitialState(new FieldSpacecraftState<>(orbit), PropagationType.MEAN);
@@ -589,7 +585,7 @@ public class FieldDSSTPropagatorTest {
         Assert.assertEquals(-0.5624363171289686e-05, state.getHx().getReal(), 4.e-9);
         Assert.assertEquals( 0.6618387121369373e-05, state.getHy().getReal(), 3.e-10);
         Assert.assertEquals(140.3496229467104,
-                            FastMath.toDegrees(aux.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
                             2.e-4);
     }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,6 +17,8 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GalileoOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
@@ -88,6 +90,47 @@ public class GalileoAlmanac implements GalileoOrbitalElements {
     /** Almanac Issue Of Data. */
     private final int iod;
 
+    /** Date of validity. */
+    private final AbsoluteDate date;
+
+    /**
+     * Build a new almanac.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param prn the PRN number
+     * @param week the Galileo week
+     * @param toa the Almanac Time of Applicability (s)
+     * @param dsqa difference between the square root of the semi-major axis
+     *        and the square root of the nominal semi-major axis
+     * @param ecc the eccentricity
+     * @param dinc the correction of orbit reference inclination at reference time (rad)
+     * @param iod the issue of data
+     * @param om0 the geographic longitude of the orbital plane at the weekly epoch (rad)
+     * @param dom the Rate of Right Ascension (rad/s)
+     * @param aop the Argument of Perigee (rad)
+     * @param anom the Mean Anomaly (rad)
+     * @param af0 the Zeroth Order Clock Correction (s)
+     * @param af1 the First Order Clock Correction (s/s)
+     * @param healthE5a the E5a signal health status
+     * @param healthE5b the E5b signal health status
+     * @param healthE1 the E1-B/C signal health status
+     * @see #GalileoAlmanac(int, int, double, double, double, double, int, double, double,
+     * double, double, double, double, int, int, int, AbsoluteDate)
+     */
+    @DefaultDataContext
+    public GalileoAlmanac(final int prn, final int week, final double toa,
+                          final double dsqa, final double ecc, final double dinc,
+                          final int iod, final double om0, final double dom,
+                          final double aop, final double anom, final double af0,
+                          final double af1, final int healthE5a, final int healthE5b,
+                          final int healthE1) {
+        this(prn, week, toa, dsqa, ecc, dinc, iod, om0, dom, aop, anom, af0, af1,
+                healthE5a, healthE5b, healthE1,
+                new GNSSDate(week, toa * 1000., SatelliteSystem.GALILEO,
+                        DataContext.getDefault().getTimeScales()).getDate());
+    }
+
     /**
      * Build a new almanac.
      *
@@ -108,13 +151,15 @@ public class GalileoAlmanac implements GalileoOrbitalElements {
      * @param healthE5a the E5a signal health status
      * @param healthE5b the E5b signal health status
      * @param healthE1 the E1-B/C signal health status
+     * @param date corresponding to {@code week} and {@code toa}.
+     * @since 10.1
      */
     public GalileoAlmanac(final int prn, final int week, final double toa,
                           final double dsqa, final double ecc, final double dinc,
                           final int iod, final double om0, final double dom,
                           final double aop, final double anom, final double af0,
                           final double af1, final int healthE5a, final int healthE5b,
-                          final int healthE1) {
+                          final int healthE1, final AbsoluteDate date) {
         this.prn = prn;
         this.week = week;
         this.toa = toa;
@@ -130,6 +175,7 @@ public class GalileoAlmanac implements GalileoOrbitalElements {
         this.healthE1 = healthE1;
         this.healthE5a = healthE5a;
         this.healthE5b = healthE5b;
+        this.date = date;
 
         // semi-major axis computation
         final double sqa = dsqa + FastMath.sqrt(A0);
@@ -138,7 +184,7 @@ public class GalileoAlmanac implements GalileoOrbitalElements {
 
     @Override
     public AbsoluteDate getDate() {
-        return new GNSSDate(week, toa * 1000., SatelliteSystem.GALILEO).getDate();
+        return date;
     }
 
     @Override

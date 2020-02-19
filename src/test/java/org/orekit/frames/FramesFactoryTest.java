@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -46,6 +46,8 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -55,6 +57,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UTCScale;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -328,7 +331,10 @@ public class FramesFactoryTest {
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> rawEquinox = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$").fillHistory(converter, rawEquinox);
+        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+        UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
+        new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc)
+                .fillHistory(converter, rawEquinox);
         Assert.assertEquals(181, rawEquinox.size());
         for (final EOPEntry entry : rawEquinox) {
             final double[] rebuiltEquinox = converter.toEquinox(entry.getDate(),
@@ -344,7 +350,10 @@ public class FramesFactoryTest {
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         final SortedSet<EOPEntry> rawNRO = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$").fillHistory(converter, rawNRO);
+        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+        UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
+        new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc)
+                .fillHistory(converter, rawNRO);
         Assert.assertEquals(181, rawNRO.size());
         for (final EOPEntry entry : rawNRO) {
             final double[] rebuiltNRO = converter.toNonRotating(entry.getDate(),

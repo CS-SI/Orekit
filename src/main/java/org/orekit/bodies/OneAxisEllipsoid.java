@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -44,6 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * axis is the rotation or polar axis.</p>
 
  * @author Luc Maisonobe
+ * @author Guylaine Prat
  */
 public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
@@ -88,6 +89,15 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * <tr><td style="background-color:#c9d5c9;">WGS84</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_EQUATORIAL_RADIUS Constants.WGS84_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_FLATTENING Constants.WGS84_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9;">IERS96</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS96_EARTH_EQUATORIAL_RADIUS Constants.IERS96_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS96_EARTH_FLATTENING Constants.IERS96_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9;">IERS2003</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2003_EARTH_EQUATORIAL_RADIUS Constants.IERS2003_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2003_EARTH_FLATTENING Constants.IERS2003_EARTH_FLATTENING}</td></tr>
+     * <tr><td style="background-color:#c9d5c9;">IERS2010</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2010_EARTH_EQUATORIAL_RADIUS Constants.IERS2010_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#IERS2010_EARTH_FLATTENING Constants.IERS2010_EARTH_FLATTENING}</td></tr>
      * </table>
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
@@ -339,7 +349,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
         // set up the 2D meridian ellipse
         final Ellipse meridian = new Ellipse(Vector3D.ZERO,
-                                             new Vector3D(p.getX() / r, p.getY() / r, 0),
+                                             r == 0 ? Vector3D.PLUS_I : new Vector3D(p.getX() / r, p.getY() / r, 0),
                                              Vector3D.PLUS_K,
                                              getA(), getC(), bodyFrame);
 
@@ -361,7 +371,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double                   r             = FastMath.hypot(p.getX(), p.getY());
 
         // set up the 2D ellipse corresponding to first principal curvature along meridian
-        final Vector3D meridian = new Vector3D(p.getX() / r, p.getY() / r, 0);
+        final Vector3D meridian = r == 0 ? Vector3D.PLUS_I : new Vector3D(p.getX() / r, p.getY() / r, 0);
         final Ellipse firstPrincipalCurvature =
                 new Ellipse(Vector3D.ZERO, meridian, Vector3D.PLUS_K, getA(), getC(), bodyFrame);
 

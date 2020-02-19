@@ -1,3 +1,19 @@
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
@@ -58,7 +74,7 @@ public class FieldDSSTTesseralTest {
     public void testGetMeanElementRate(){
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
-    
+
     private <T extends RealFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
         
         final T zero = field.getZero();
@@ -70,7 +86,7 @@ public class FieldDSSTTesseralTest {
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
         
-        // a  = 2655989.0 m
+        // a  = 26559890 m
         // ey = 0.0041543085910249414
         // ex = 2.719455286199036E-4
         // hy = 0.3960084733107685
@@ -179,7 +195,68 @@ public class FieldDSSTTesseralTest {
         Assert.assertEquals(-4.500974242661177E-8,  y[4].getReal(), 1.e-23);
         Assert.assertEquals(-2.785213556107612E-7,  y[5].getReal(), 1.e-22);
     }
-    
+
+    @Test
+    public void testIssue625() {
+        doTestIssue625(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue625(final Field<T> field) {
+
+        final T zero = field.getZero();
+        // Central Body geopotential 4x4
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        
+        final Frame frame = FramesFactory.getEME2000();
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        
+        // a  = 26559890 m
+        // ey = 0.0041543085910249414
+        // ex = 2.719455286199036E-4
+        // hy = 0.3960084733107685
+        // hx = -0.3412974060023717
+        // lM = 8.566537840341699 rad
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(2.655989E7),
+                                                                zero.add(2.719455286199036E-4),
+                                                                zero.add(0.0041543085910249414),
+                                                                zero.add(-0.3412974060023717),
+                                                                zero.add(0.3960084733107685),
+                                                                zero.add(8.566537840341699),
+                                                                PositionAngle.TRUE,
+                                                                frame,
+                                                                initDate,
+                                                                zero.add(3.986004415E14));
+        
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, zero.add(1000.0));
+
+        final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
+
+        // Tesseral force model
+        final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
+                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                         4, 4, 4, 8, 4, 4, 2);
+        tesseral.initialize(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters(field));
+
+        // Tesseral force model with default constructor
+        final DSSTForceModel tesseralDefault = new DSSTTesseral(earthFrame,
+                                                             Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        tesseralDefault.initialize(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters(field));
+
+        // Compute mean element rate for the tesseral force model
+        final T[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(field));
+
+        // Compute mean element rate for the "default" tesseral force model
+        final T[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters(field));
+
+        // Verify
+        for (int i = 0; i < 6; i++) {
+            Assert.assertEquals(elements[i].getReal(), elementsDefault[i].getReal(), Double.MIN_VALUE);
+        }
+
+    }
+
     @Test
     @SuppressWarnings("unchecked")
     public void testShortPeriodTermsStateDerivatives() {

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -51,10 +51,10 @@ public class PositionBuilder extends AbstractMeasurementBuilder<Position> {
         final ObservableSatellite satellite = getSatellites()[0];
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
 
         // create a dummy measurement
-        final Position dummy = new Position(state.getDate(), Vector3D.NaN, sigma, baseWeight, satellite);
+        final Position dummy = new Position(relevant[0].getDate(), Vector3D.NaN, sigma, baseWeight, satellite);
         for (final EstimationModifier<Position> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -69,7 +69,7 @@ public class PositionBuilder extends AbstractMeasurementBuilder<Position> {
         }
 
         // estimate the perfect value of the measurement
-        final double[] position = dummy.estimate(0, 0, states).getEstimatedValue();
+        final double[] position = dummy.estimate(0, 0, relevant).getEstimatedValue();
 
         // add the noise
         final double[] noise = getNoise();
@@ -80,7 +80,7 @@ public class PositionBuilder extends AbstractMeasurementBuilder<Position> {
         }
 
         // generate measurement
-        final Position measurement = new Position(state.getDate(), new Vector3D(position),
+        final Position measurement = new Position(relevant[0].getDate(), new Vector3D(position),
                                                   sigma, baseWeight, satellite);
         for (final EstimationModifier<Position> modifier : getModifiers()) {
             measurement.addModifier(modifier);

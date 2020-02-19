@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -83,19 +83,21 @@ public class FixedRateTest {
                                                    TimeScalesFactory.getUTC());
         final double rate = 2 * FastMath.PI / (12 * 60);
         final Frame frame = FramesFactory.getEME2000();
+        final Frame gcrf  = FramesFactory.getGCRF();
         FixedRate law = new FixedRate(new Attitude(date, frame,
                                                    new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                                    new Vector3D(rate, Vector3D.PLUS_K), Vector3D.ZERO));
+        final Rotation ref = law.getReferenceAttitude().getRotation().applyTo(gcrf.getTransformTo(frame, date).getRotation());
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
         Orbit orbit = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
-        Rotation attitude0 = law.getAttitude(orbit, date, frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude1 = law.getAttitude(orbit.shiftedBy(10.0), date.shiftedBy(10.0), frame).getRotation();
-        Assert.assertEquals(10 * rate, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Rotation attitude2 = law.getAttitude(orbit.shiftedBy(-20.0), date.shiftedBy(-20.0), frame).getRotation();
-        Assert.assertEquals(20 * rate, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Rotation attitude0 = law.getAttitude(orbit, date, gcrf).getRotation();
+        Assert.assertEquals(0, Rotation.distance(attitude0, ref), 1.0e-10);
+        Rotation attitude1 = law.getAttitude(orbit.shiftedBy(10.0), date.shiftedBy(10.0), gcrf).getRotation();
+        Assert.assertEquals(10 * rate, Rotation.distance(attitude1, ref), 1.0e-10);
+        Rotation attitude2 = law.getAttitude(orbit.shiftedBy(-20.0), date.shiftedBy(-20.0), gcrf).getRotation();
+        Assert.assertEquals(20 * rate, Rotation.distance(attitude2, ref), 1.0e-10);
         Assert.assertEquals(30 * rate, Rotation.distance(attitude2, attitude1), 1.0e-10);
         Rotation attitude3 = law.getAttitude(orbit.shiftedBy(0.0), date, frame).getRotation();
         Assert.assertEquals(0, Rotation.distance(attitude3, law.getReferenceAttitude().getRotation()), 1.0e-10);
@@ -162,20 +164,22 @@ public class FixedRateTest {
                                                             new TimeComponents(13, 17, 7.865),
                                                             TimeScalesFactory.getUTC());
         final Frame frame = FramesFactory.getEME2000();
+        final Frame gcrf  = FramesFactory.getGCRF();
         FixedRate law = new FixedRate(new Attitude(date.toAbsoluteDate(), frame,
                                                    new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                                    Vector3D.ZERO, Vector3D.ZERO));
+        final Rotation ref = law.getReferenceAttitude().getRotation().applyTo(gcrf.getTransformTo(frame, date.toAbsoluteDate()).getRotation());
         FieldPVCoordinates<T> pv =
             new FieldPVCoordinates<>(field.getOne(),
                                      new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                                                        new Vector3D(0, 0, 3680.853673522056)));
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, date, zero.add(3.986004415e14));
-        FieldRotation<T> attitude0 = law.getAttitude(orbit, date, frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude0.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
-        FieldRotation<T> attitude1 = law.getAttitude(orbit.shiftedBy(zero.add(10.0)), date.shiftedBy(10.0), frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude1.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
-        FieldRotation<T> attitude2 = law.getAttitude(orbit.shiftedBy(zero.add(20.0)), date.shiftedBy(20.0), frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude2.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
+        FieldRotation<T> attitude0 = law.getAttitude(orbit, date, gcrf).getRotation();
+        Assert.assertEquals(0, Rotation.distance(attitude0.toRotation(), ref), 1.0e-10);
+        FieldRotation<T> attitude1 = law.getAttitude(orbit.shiftedBy(zero.add(10.0)), date.shiftedBy(10.0), gcrf).getRotation();
+        Assert.assertEquals(0, Rotation.distance(attitude1.toRotation(), ref), 1.0e-10);
+        FieldRotation<T> attitude2 = law.getAttitude(orbit.shiftedBy(zero.add(20.0)), date.shiftedBy(20.0), gcrf).getRotation();
+        Assert.assertEquals(0, Rotation.distance(attitude2.toRotation(), ref), 1.0e-10);
 
     }
 

@@ -1,0 +1,98 @@
+' Copyright 2002-2020 CS Group
+' Licensed to CS Group (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package org.orekit #ECEBD8 {
+
+    package data #DDEBD8 {
+
+      interface DataProvider {
+        +boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager)
+      }
+      note left
+        knows how to retrieve data
+        from storage, not parse it
+      end note
+
+      class DataProvidersManager {
+        +String OREKIT_DATA_PATH
+        +void addDefaultProviders()
+        +void addProvider(DataProvider provider)
+        +DataProvider removeProvider(Class<? extends DataProvider> providerClass)
+        +DataProvider removeProvider(DataProvider provider)
+        +void clearProviders()
+        +addFilter(final DataFilter filter)
+        +void clearFilters()
+        +NamedData applyAllFilters(final NamedData original)
+        +boolean isSupported(Class<? extends DataProvider> providerClass)
+        +boolean isSupported(DataProvider provider)
+        +List<DataProvider> getProviders()
+        +Set<String> getLoadedDataNames()
+        +void clearLoadedDataNames()
+        +boolean feed(String supportedNames, DataLoader loader)
+      }
+      note right
+        manages providers and filters
+        (i.e. knows how to retrieve
+        data from storage)
+      end note
+
+      interface DataLoader {
+        +boolean stillAcceptsData()
+        +void loadData(InputStream input, String name)
+      }
+      note top
+        knows how to parse data,
+        not retrieve it from storage
+      end note
+
+      interface DataFilter {
+         NamedData filter(NamedData original)
+      }
+
+      DataProvider "*" <--o "1" DataProvidersManager : manages, feeds
+      DataProvidersManager "1" o--> "*" DataFilter: applies
+      DirectoryCrawler --|> DataProvider
+      ClassPathCrawler --|> DataProvider
+      NetworkCrawler   --|> DataProvider
+      ZipJarCrawler    --|> DataProvider
+      DataProvider --> DataLoader : feeds
+
+    }
+
+    package "..." as dummy #DDEBD8 {
+      class "...Loader" as DummyLoader
+      note bottom
+        all Orekit loaders are
+        implemented this way
+      end note
+      DataLoader <|-- DummyLoader
+    }
+
+  }
+
+@enduml

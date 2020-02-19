@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,9 +26,15 @@ import java.util.Locale;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 
 /**This abstract class represents a Gravitational Potential Coefficients file reader.
  *
@@ -38,7 +44,7 @@ import org.orekit.errors.OrekitMessages;
  *  which will determine which reader to use with the selected potential
  *  coefficients file.<p>
  *
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Fabien Maussion
  */
 public abstract class PotentialCoefficientsReader implements DataLoader {
@@ -54,6 +60,9 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
 
     /** Allow missing coefficients in the input data. */
     private final boolean missingCoefficientsAllowed;
+
+    /** Time scale for parsing dates. */
+    private final TimeScale timeScale;
 
     /** Indicator for complete read. */
     private boolean readComplete;
@@ -78,11 +87,30 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
 
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param supportedNames regular expression for supported files names
      * @param missingCoefficientsAllowed allow missing coefficients in the input data
+     * @see #PotentialCoefficientsReader(String, boolean, TimeScale)
      */
+    @DefaultDataContext
     protected PotentialCoefficientsReader(final String supportedNames,
                                           final boolean missingCoefficientsAllowed) {
+        this(supportedNames, missingCoefficientsAllowed,
+                DataContext.getDefault().getTimeScales().getTT());
+    }
+
+    /** Simple constructor.
+     * <p>Build an uninitialized reader.</p>
+     * @param supportedNames regular expression for supported files names
+     * @param missingCoefficientsAllowed allow missing coefficients in the input data
+     * @param timeScale to use when parsing dates.
+     * @since 10.1
+     */
+    protected PotentialCoefficientsReader(final String supportedNames,
+                                          final boolean missingCoefficientsAllowed,
+                                          final TimeScale timeScale) {
         this.supportedNames             = supportedNames;
         this.missingCoefficientsAllowed = missingCoefficientsAllowed;
         this.maxParseDegree             = Integer.MAX_VALUE;
@@ -94,6 +122,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         this.rawS                       = null;
         this.normalized                 = false;
         this.tideSystem                 = TideSystem.UNKNOWN;
+        this.timeScale = timeScale;
     }
 
     /** Get the regular expression for supported files names.
@@ -397,10 +426,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     protected void extendListOfLists(final List<List<Double>> list, final int degree, final int order,
                                      final double value) {
         for (int i = list.size(); i <= degree; ++i) {
-            list.add(new ArrayList<Double>());
+            list.add(new ArrayList<>());
         }
         final List<Double> listN = list.get(degree);
-        final Double v = Double.valueOf(value);
+        final Double v = value;
         for (int j = listN.size(); j <= order; ++j) {
             listN.add(v);
         }
@@ -531,6 +560,16 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
             }
 
         }
+    }
+
+    /**
+     * Create a date from components. Assumes the time part is noon.
+     *
+     * @param components year, month, day.
+     * @return date.
+     */
+    protected AbsoluteDate toDate(final DateComponents components) {
+        return new AbsoluteDate(components, TimeComponents.H12, timeScale);
     }
 
 }

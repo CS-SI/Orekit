@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2020 CS Group
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -97,7 +97,7 @@ The simplest way to use Orekit with Eclipse is to follow these steps:
 
   * using your operating system tools, unpack the source distribution directly
     inside your Eclipse workspace. The source distribution file name has a name
-    of the form orekit-x.y-src.zip where x.y is the version number. Unpacking
+    of the form orekit-x.y-sources.zip where x.y is the version number. Unpacking
     this zip file should create a folder of the form orekit-x.y in your workspace.
 
   * using Eclipse, import the project by selecting in the top level "File" menu
@@ -110,22 +110,12 @@ The simplest way to use Orekit with Eclipse is to follow these steps:
     automatically selected. Click finish
 
 The Orekit library should be configured automatically, including the dependency
-to the underlying mathematical library. Note however that the tutorials
-that are present in the source distribution are not automatically added by
-this process (because the tutorials correspond to extra code and as such they
-are not referenced in the pom.xml file).
+to the underlying mathematical library.
 
 Now you have an orekit-x.y project in you workspace, and you can create your
 own application projects that will depend on the Orekit project.
 
 You can also check everything works correctly by running the junit tests.
 
-If you want to go further and run the tutorials, you should update the
-project configuration to add them. In the Eclipse Package Explorer tab,
-right-click on the orekit-x.y project and select from the conext menu
-the entry "Build Path -> Configure Build Path...". Then in the wizard that
-should appear, select the "Source" tab in the right pane, click the button
-"Add Folder...", open the "tutorials" folder, select the two sub-folders
-"java" and "resource" and click "OK". Now the projects should display the
-tutorials. Note that since 9.0, you need to have an "orekit-data" folder
-in your home directory in order to run the tutorials.
+If you want to go further and run the tutorials, you need to check the
+sister project [Orekit tutorials](https://gitlab.orekit.org/orekit/orekit-tutorials).

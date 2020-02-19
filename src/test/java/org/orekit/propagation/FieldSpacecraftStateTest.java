@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -30,7 +30,10 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -54,6 +57,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -103,30 +108,40 @@ public class FieldSpacecraftStateTest {
     public void testAdditionalStates() {
         doTestAdditionalStates(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testInterpolation() throws ParseException {
         doTestInterpolation(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testFieldVSRealAbsPV() {
         doTestFieldVsRealAbsPV(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testDateConsistencyCloseAbsPV() {
         doTestDateConsistencyCloseAbsPV(Decimal64Field.getInstance());
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testFramesConsistencyAbsPV() {
         doTestFramesConsistencyAbsPV(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testAdditionalStatesAbsPV() {
         doTestAdditionalStatesAbsPV(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testResetOnEventAnalytical() {
+        doTestAdditionalTestResetOnEventAnalytical(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testResetOnEventNumerical() {
+        doTestAdditionalTestResetOnEventNumerical(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
@@ -374,9 +389,10 @@ public class FieldSpacecraftStateTest {
         new FieldSpacecraftState<>(orbit,
                             new FieldAttitude<>(orbit.getDate(),
                                                 FramesFactory.getGCRF(),
-                                                FieldRotation.getIdentity(field),
-                                                FieldVector3D.getZero(field),
-                                                FieldVector3D.getZero(field)));
+                                                Rotation.IDENTITY,
+                                                Vector3D.ZERO,
+                                                Vector3D.ZERO,
+                                                field));
     }
 
     private <T extends RealFieldElement<T>> void doTestTransform(final Field<T> field)
@@ -512,7 +528,7 @@ public class FieldSpacecraftStateTest {
         Assert.assertEquals(-6.0, sFromDouble.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
 
     }
-    
+
     private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field)
         throws ParseException, OrekitException {
         checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, field);
@@ -523,7 +539,7 @@ public class FieldSpacecraftStateTest {
     private <T extends RealFieldElement<T>> void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
                                          double expectedErrorA, double expectedErrorM, double expectedErrorQ, Field<T> field)
         {
-        
+
         T zero = field.getZero();
         T mu  = zero.add(3.9860047e14);
         double ae  = 6.378137e6;
@@ -550,7 +566,7 @@ public class FieldSpacecraftStateTest {
                         FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
-        
+
         FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(orbit, attitudeLaw, mass,
                                                                                ae, mu, c20, c30, c40, c50, c60);
         FieldAbsoluteDate<T> centerDate = orbit.getDate().shiftedBy(100.0);
@@ -584,7 +600,7 @@ public class FieldSpacecraftStateTest {
         Assert.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
         Assert.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
     }
-    
+
     private <T extends RealFieldElement<T>> void doTestFieldVsRealAbsPV(final Field<T> field) {
         T zero = field.getZero();
 
@@ -596,7 +612,7 @@ public class FieldSpacecraftStateTest {
         T vz_f    = zero.add(0.1);
 
         FieldAbsoluteDate<T> t_f = new FieldAbsoluteDate<>(field);
-       
+
         FieldPVCoordinates<T> pva_f = new FieldPVCoordinates<>(new FieldVector3D<>(x_f,y_f,z_f), new FieldVector3D<>(vx_f,vy_f,vz_f));
 
         FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), t_f, pva_f);
@@ -642,8 +658,8 @@ public class FieldSpacecraftStateTest {
 
         }
     }
-        
-    
+
+
     /**
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
@@ -666,7 +682,7 @@ public class FieldSpacecraftStateTest {
         FieldPVCoordinates<T> pva_f = new FieldPVCoordinates<>(new FieldVector3D<>(x_f,y_f,z_f), new FieldVector3D<>(vx_f,vy_f,vz_f));
 
         FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), date, pva_f);
-        
+
         FieldAbsolutePVCoordinates<T> AbsolutePVCoordinates10Shifts = absPV_f;
         for (int ii = 0; ii < 10; ii++) {
             AbsolutePVCoordinates10Shifts = AbsolutePVCoordinates10Shifts.shiftedBy(zero.add(0.1));
@@ -687,8 +703,8 @@ public class FieldSpacecraftStateTest {
         //action + verify no exception is thrown
         new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, shiftedAttitude);
     }
-    
-    
+
+
     // (expected=IllegalArgumentException.class)
     private <T extends RealFieldElement<T>> void doTestFramesConsistencyAbsPV(final Field<T> field) {
 
@@ -727,7 +743,7 @@ public class FieldSpacecraftStateTest {
         T vx_f    = zero;
         T vy_f    = zero;
         T vz_f    = zero.add(0.1);
-        
+
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 01, 01),
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
@@ -741,7 +757,7 @@ public class FieldSpacecraftStateTest {
         prop.setOrbitType(null);
 
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(absPV_f);
-        
+
         prop.resetInitialState(initialState);
 
         final FieldSpacecraftState<T> state = prop.propagate(absPV_f.getDate().shiftedBy(60));
@@ -805,6 +821,107 @@ public class FieldSpacecraftStateTest {
         Assert.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
         FieldSpacecraftState<T> sFromDouble = new FieldSpacecraftState<>(field, sOAM.toSpacecraftState());
         Assert.assertEquals(-6.0, sFromDouble.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
+
+    }
+
+    private <T extends RealFieldElement<T>> void doTestAdditionalTestResetOnEventAnalytical(final Field<T> field) {
+
+        T zero = field.getZero();
+
+        // Build orbit
+        FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
+                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         zero.add(Constants.WGS84_EARTH_MU));
+
+        // Build propagator
+        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
+
+        // Create initial state with one additional state and add it to the propagator
+        final String name = "A";
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit).
+                                       addAdditionalState(name, zero.add(-1));
+
+        propagator.resetInitialState(initialState);
+
+        // Create date detector and handler
+        FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
+                                    withHandler(new FieldEventHandler<FieldDateDetector<T>, T>() {
+
+            @Override
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+              return Action.RESET_STATE;
+            }
+
+            @Override
+            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+                return oldState.addAdditionalState(name, zero.add(+1));
+            }
+
+        });
+
+        propagator.addEventDetector(dateDetector);
+        propagator.setMasterMode(zero.add(0.125), (s, isFinal) -> {
+            if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
+                Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
+            } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
+                Assert.assertEquals(+1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
+            }
+        });
+        FieldSpacecraftState<T> finalState = propagator.propagate(date0, date0.shiftedBy(5));
+        Assert.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
+
+    }
+
+    private <T extends RealFieldElement<T>> void doTestAdditionalTestResetOnEventNumerical(final Field<T> field) {
+
+        T zero = field.getZero();
+
+        // Build orbit
+        FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
+                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         zero.add(Constants.WGS84_EARTH_MU));
+
+        // Build propagator
+        FieldODEIntegrator<T> odeIntegrator = new DormandPrince853FieldIntegrator<>(field, 1E-3, 1E3, 1E-6, 1E-6);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, odeIntegrator);
+
+        // Create initial state with one additional state and add it to the propagator
+        final String name = "A";
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit).
+                                       addAdditionalState(name, zero.add(-1));
+
+        propagator.resetInitialState(initialState);
+
+        // Create date detector and handler
+        FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
+                                    withHandler(new FieldEventHandler<FieldDateDetector<T>, T>() {
+
+            @Override
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+              return Action.RESET_STATE;
+            }
+
+            @Override
+            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+                return oldState.addAdditionalState(name, zero.add(+1));
+            }
+
+        });
+
+        propagator.addEventDetector(dateDetector);
+        propagator.setMasterMode(zero.add(0.125), (s, isFinal) -> {
+            if (s.getDate().durationFrom(changeDate).getReal() < -0.001) {
+                Assert.assertEquals(-1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
+            } else if (s.getDate().durationFrom(changeDate).getReal() > +0.001) {
+                Assert.assertEquals(+1, s.getAdditionalState(name)[0].getReal(), 1.0e-15);
+            }
+        });
+        FieldSpacecraftState<T> finalState = propagator.propagate(date0, date0.shiftedBy(5));
+        Assert.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
 
     }
 

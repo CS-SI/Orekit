@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,11 +16,11 @@
  */
 package org.orekit.files.ccsds;
 
-import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.LOFType;
 import org.orekit.utils.IERSConventions;
@@ -36,8 +36,10 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
-            return FramesFactory.getEME2000();
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return dataContext.getFrames().getEME2000();
         }
 
     },
@@ -47,8 +49,10 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
-            return FramesFactory.getGCRF();
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return dataContext.getFrames().getGCRF();
         }
 
     },
@@ -58,11 +62,13 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRFEquinox(conventions, simpleEOP);
+            return dataContext.getFrames().getITRFEquinox(conventions, simpleEOP);
         }
 
     },
@@ -72,8 +78,10 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
-            return FramesFactory.getICRF();
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return dataContext.getFrames().getICRF();
         }
 
     },
@@ -83,11 +91,14 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRF(ITRFVersion.ITRF_2014, conventions, simpleEOP);
+            return dataContext.getFrames()
+                    .getITRF(ITRFVersion.ITRF_2014, conventions, simpleEOP);
         }
 
     },
@@ -97,11 +108,14 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRF(ITRFVersion.ITRF_2008, conventions, simpleEOP);
+            return dataContext.getFrames()
+                    .getITRF(ITRFVersion.ITRF_2008, conventions, simpleEOP);
         }
 
     },
@@ -111,11 +125,14 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRF(ITRFVersion.ITRF_2005, conventions, simpleEOP);
+            return dataContext.getFrames()
+                    .getITRF(ITRFVersion.ITRF_2005, conventions, simpleEOP);
         }
 
     },
@@ -125,11 +142,14 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRF(ITRFVersion.ITRF_2000, conventions, simpleEOP);
+            return dataContext.getFrames()
+                    .getITRF(ITRFVersion.ITRF_2000, conventions, simpleEOP);
         }
 
     },
@@ -139,11 +159,14 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRF(ITRFVersion.ITRF_93, conventions, simpleEOP);
+            return dataContext.getFrames()
+                    .getITRF(ITRFVersion.ITRF_93, conventions, simpleEOP);
         }
 
     },
@@ -153,11 +176,14 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRF(ITRFVersion.ITRF_97, conventions, simpleEOP);
+            return dataContext.getFrames()
+                    .getITRF(ITRFVersion.ITRF_97, conventions, simpleEOP);
         }
 
     },
@@ -167,8 +193,11 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
-            return CelestialBodyFactory.getMars().getInertiallyOrientedFrame();
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return dataContext.getCelestialBodies().getMars()
+                    .getInertiallyOrientedFrame();
         }
 
     },
@@ -178,11 +207,13 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getGTOD(conventions, simpleEOP);
+            return dataContext.getFrames().getGTOD(conventions, simpleEOP);
         }
 
     },
@@ -196,8 +227,10 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
-            return FramesFactory.getTEME();
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return dataContext.getFrames().getTEME();
         }
 
     },
@@ -207,11 +240,13 @@ public enum CCSDSFrame {
 
         /** {@inheritDoc} */
         @Override
-        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getTOD(conventions, simpleEOP);
+            return dataContext.getFrames().getTOD(conventions, simpleEOP);
         }
 
     },
@@ -246,8 +281,8 @@ public enum CCSDSFrame {
     /** Get the type of Local Orbital frame.
      * <p>
      * If the frame is not a Local Orbital frame (i.e. if this method returns null),
-     * then the {@link #getFrame(IERSConventions, boolean) getFrame} method must be used to
-     * retrieve the absolute frame.
+     * then the {@link #getFrame(IERSConventions, boolean, DataContext) getFrame} method
+     * must be used to retrieve the absolute frame.
      * </p>
      * @return type of Local Orbital Frame, or null if the frame is not a local orbital frame
      * @see #isLof()
@@ -258,12 +293,32 @@ public enum CCSDSFrame {
 
     /**
      * Get the frame corresponding to the CCSDS constant.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param conventions IERS conventions to use
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return frame corresponding to the CCSDS constant
      * @see #isLof()
+     * @see #getFrame(IERSConventions, boolean, DataContext)
      */
+    @DefaultDataContext
     public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
+        return getFrame(conventions, simpleEOP, DataContext.getDefault());
+    }
+
+    /**
+     * Get the frame corresponding to the CCSDS constant.
+     * @param conventions IERS conventions to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param dataContext to use when creating the frame.
+     * @return frame corresponding to the CCSDS constant
+     * @see #isLof()
+     * @since 10.1
+     */
+    public Frame getFrame(final IERSConventions conventions,
+                          final boolean simpleEOP,
+                          final DataContext dataContext) {
         throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, toString());
     }
 

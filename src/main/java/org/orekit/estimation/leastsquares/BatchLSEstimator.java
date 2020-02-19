@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -72,8 +72,8 @@ public class BatchLSEstimator {
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
 
-    /** Convergence threshold on normalized parameters. */
-    private double parametersConvergenceThreshold;
+    /** Convergence checker. */
+    private ConvergenceChecker<LeastSquaresProblem.Evaluation> convergenceChecker;
 
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
@@ -121,11 +121,12 @@ public class BatchLSEstimator {
         this.builders                       = propagatorBuilder;
         this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
         this.optimizer                      = optimizer;
-        this.parametersConvergenceThreshold = Double.NaN;
         this.lsBuilder                      = new LeastSquaresBuilder();
         this.observer                       = null;
         this.estimations                    = null;
         this.orbits                         = new Orbit[builders.length];
+
+        setParametersConvergenceThreshold(Double.NaN);
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -286,13 +287,35 @@ public class BatchLSEstimator {
      * the scale is often small (typically about 1 m for orbital positions
      * for example), then the threshold should not be too small. A value
      * of 10⁻³ is often quite accurate.
+     * </p>
+     * <p>
+     * Calling this method overrides any checker that could have been set
+     * beforehand by calling {@link #setConvergenceChecker(ConvergenceChecker)}.
+     * Both methods are mutually exclusive.
+     * </p>
      *
      * @param parametersConvergenceThreshold convergence threshold on
      * normalized parameters (dimensionless, related to parameters scales)
+     * @see #setConvergenceChecker(ConvergenceChecker)
      * @see EvaluationRmsChecker
      */
     public void setParametersConvergenceThreshold(final double parametersConvergenceThreshold) {
-        this.parametersConvergenceThreshold = parametersConvergenceThreshold;
+        setConvergenceChecker((iteration, previous, current) ->
+                              current.getPoint().getLInfDistance(previous.getPoint()) <= parametersConvergenceThreshold);
+    }
+
+    /** Set a custom convergence checker.
+     * <p>
+     * Calling this method overrides any checker that could have been set
+     * beforehand by calling {@link #setParametersConvergenceThreshold(double)}.
+     * Both methods are mutually exclusive.
+     * </p>
+     * @param convergenceChecker convergence checker to set
+     * @see #setParametersConvergenceThreshold(double)
+     * @since 10.1
+     */
+    public void setConvergenceChecker(final ConvergenceChecker<LeastSquaresProblem.Evaluation> convergenceChecker) {
+        this.convergenceChecker = convergenceChecker;
     }
 
     /** Estimate the orbital, propagation and measurements parameters.
@@ -398,16 +421,7 @@ public class BatchLSEstimator {
                                                    estimatedPropagatorParameters,
                                                    estimatedMeasurementsParameters));
 
-        lsBuilder.checker(new ConvergenceChecker<LeastSquaresProblem.Evaluation>() {
-            /** {@inheritDoc} */
-            @Override
-            public boolean converged(final int iteration,
-                                     final LeastSquaresProblem.Evaluation previous,
-                                     final LeastSquaresProblem.Evaluation current) {
-                final double lInf = current.getPoint().getLInfDistance(previous.getPoint());
-                return lInf <= parametersConvergenceThreshold;
-            }
-        });
+        lsBuilder.checker(convergenceChecker);
 
         // set up the problem to solve
         final LeastSquaresProblem problem = new TappedLSProblem(lsBuilder.build(),

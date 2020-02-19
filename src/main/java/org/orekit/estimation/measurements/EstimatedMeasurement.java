@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -177,6 +177,18 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
      */
     public void setStatus(final Status status) {
         this.status = status;
+    }
+
+    /** Get state size.
+     * <p>
+     * Warning, the {@link #setStateDerivatives(int, double[][])}
+     * method must have been called before this method is called.
+     * </p>
+     * @return state size
+     * @since 10.1
+     */
+    public int getStateSize() {
+        return stateDerivatives[0][0].length;
     }
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()
