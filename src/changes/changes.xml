@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="10.2" date="TBD" description="TBD">
+    </release>
     <release version="10.1" date="2020-02-19"
              description="Version 10.1 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced
