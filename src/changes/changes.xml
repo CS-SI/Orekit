@@ -20,14 +20,25 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="10.1" date="TBD" description="TBD">
+    <release version="10.1" date="2020-02-19"
+             description="Version 10.1 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 10.1 are: wind-up effect for phase measurement, NeQuick ionospheric model,
+             support for Hatanaka compact RINEX format, methods for the combination
+             of GNSS measurements, Laplace method for initial orbit determination,
+             a new Field Of View package, comparison methods for absolute dates,
+             a new multiplexed measurement, specialized propagators for GNSS constellation,
+             default constructors for DSST force models, covariance matrices in OEM writer,
+             a new data context implementation, connection with Gitlab CI, improved documentation,
+             the migration of the tutorials to a separate sister project, as well as several other minor
+             features and bug fixes. See the list below for a full description of the changes.">
       <action dev="ward" type="fix">
         Improve performance of loading CCSDS files.
       </action>
       <action dev="ward" type="fix" issue="639" due-to="qmor">
         In Ellipsoid.pointOnLimb(...) improved numerical stability by cancelling terms.
       </action>
-      <action dev="maxime" type="fix" issue="639">
+      <action dev="maxime" type="fix" issue="639" due-to="qmor">
         Fixed pointOnLimb method in bodies.Ellipsoid class. Normalized equations should now avoid numerical issues.
       </action>
       <action dev="evan" type="fix" issue="627">
@@ -37,26 +48,26 @@
       <action dev="evan" type="fix" issue="636">
         Fix UT1 and Earth rotation during a leap second. Was off by 1 second.
       </action>
-      <action def="luc" type="fix" issue="635">
+      <action dev="luc" type="fix" issue="635">
         Fixed inconsistency in constant thrust maneuver acceleration.
       </action>
-      <action def="evan" type="add" >
+      <action dev="evan" type="add" >
         Added an annotation and a compiler plugin that generates a warning
         when default context is used without being explicitly annotated.
       </action>
-      <action def="luc" type="fix" issue="632" due-to="Evan Ward">
+      <action dev="luc" type="fix" issue="632" due-to="Evan Ward">
         Fixed projection to ellipsoid at pole.
       </action>
       <action dev="evan,luc,yannick" type="add" issue="607">
         Add DataContext, a way to load separate sets of EOP, leap seconds, etc.
       </action>
-      <action def="luc" type="fix" issue="630">
+      <action dev="luc" type="fix" issue="630">
         Improve performance of UnixCompressFilter.
       </action>
-      <action def="luc" type="fix" issue="631">
+      <action dev="luc" type="fix" issue="631">
         Improve performance of HatanakaCompressFilter.
       </action>
-      <action def="evan" type="fix" issue="629">
+      <action dev="evan" type="fix" issue="629">
         Improve performance of ZipJarCrawler.
       </action>
       <action dev="bryan" type="add" issue="625">

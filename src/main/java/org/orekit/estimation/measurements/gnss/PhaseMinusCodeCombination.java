@@ -25,14 +25,14 @@ import org.orekit.gnss.SatelliteSystem;
  * measurements that can be used for cycle-slip detection.
  * </p>
  * <pre>
- *    m<sub>f</sub> =  Φ<sub>f</sub> - R<sub>f</sub>
+ *    mf =  Φf - Rf
  * </pre>
  * With:
  * <ul>
- * <li>m<sub>f</sub> : Phase minus Code measurement.</li>
- * <li>Φ<sub>f</sub> : Phase measurement.</li>
- * <li>R<sub>f</sub> : Code measurement.</li>
- * <li>f             : Frequency.</li>
+ * <li>mf : Phase minus Code measurement.</li>
+ * <li>Φf : Phase measurement.</li>
+ * <li>Rf : Code measurement.</li>
+ * <li>f  : Frequency.</li>
  * </ul>
  * @author Bryan Cazabonne
  * @since 10.1

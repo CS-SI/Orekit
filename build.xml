@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="10.0" />
+  <property name="project.version"         value="10.1" />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="hipparchus.version"       value="1.5"                                            />
+  <property name="hipparchus.version"       value="1.6"                                            />
   <property name="hipparchus.core.jar"      value="hipparchus-core-${hipparchus.version}.jar"      />
   <property name="hipparchus.geometry.jar"  value="hipparchus-geometry-${hipparchus.version}.jar"  />
   <property name="hipparchus.ode.jar"       value="hipparchus-ode-${hipparchus.version}.jar"       />
@@ -30,7 +30,7 @@
   <property name="junit.version"            value="4.12"                                           />
   <property name="junit.jar"                value="junit-${junit.version}.jar"                     />
   <property name="junit.maven.path"         value="junit/junit"                                    />
-  <property name="mockito.version"          value="2.28.2"                                         />
+  <property name="mockito.version"          value="3.2.4"                                          />
   <property name="mockito.jar"              value="mockito-core-${mockito.version}.jar"            />
   <property name="mockito.maven.path"       value="org/mockito/mockito-core"                       />
   <property name="bytebuddy.version"        value="1.9.10"                                         />
@@ -44,7 +44,7 @@
   <property name="hamcrest.version"         value="1.3"                                            />
   <property name="hamcrest.core.jar"        value="hamcrest-core-${hamcrest.version}.jar"          />
   <property name="hamcrest.maven.path"      value="org/hamcrest"                                   />
-  <property name="maven.repository"         value="http://repo1.maven.org/maven2"                  />
+  <property name="maven.repository"         value="https://repo1.maven.org/maven2"                 />
 
   <property name="copyright"               value="2002-2020 CS Group" />
 
