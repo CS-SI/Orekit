@@ -36,7 +36,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -425,14 +424,9 @@ public class SolarBodyTest {
          */
         public BodyAttraction(final CelestialBody body) {
             this.parametersDrivers = new ParameterDriver[1];
-            try {
-                parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                           body.getGM(), 1.0e-5 * body.getGM(),
-                                                           0.0, Double.POSITIVE_INFINITY);
-            } catch (OrekitException oe) {
-                // this should never occur as valueChanged above never throws an exception
-                throw new OrekitInternalError(oe);
-            }
+            parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                                       body.getGM(), 1.0e-5 * body.getGM(),
+                                                       0.0, Double.POSITIVE_INFINITY);
             this.body = body;
         }
 
