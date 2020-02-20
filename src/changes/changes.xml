@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="maxime" type="add" issue="649">
+        Added a piece wise drag force model: TimeSpanDragForce in forces package.
+      </action>
       <action dev="yannick" type="fix" issue="654">
         Prevent divergence of Saastomoinen model pathDelay method at low elevation.
       </action>

@@ -401,15 +401,15 @@ public class TimeSpanDragForce extends AbstractForceModel {
     public double[] extractParameters(final double[] parameters, final AbsoluteDate date) {
 
         // Get the drag parameter drivers of the date
-        final ParameterDriver[] dragPD = getDragSensitive(date).getDragParametersDrivers();
+        final ParameterDriver[] dragParameterDriver = getDragSensitive(date).getDragParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
         final ParameterDriver[] allParameters = getParametersDrivers();
-        final double[] outParameters = new double[dragPD.length];
+        final double[] outParameters = new double[dragParameterDriver.length];
         int index = 0;
         for (int i = 0; i < allParameters.length; i++) {
             final String driverName = allParameters[i].getName();
-            for (ParameterDriver dragDriver : dragPD) {
+            for (ParameterDriver dragDriver : dragParameterDriver) {
                 if (dragDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];
                 }
