@@ -18,7 +18,7 @@
             <id>Nexus-Orekit</id>
             <name>Maven Repository Manager</name>
             <url>https://packages.orekit.org/repository/maven-public/</url>
-            <mirrorOf>central</mirrorOf>
+            <mirrorOf>*</mirrorOf>
         </mirror>
     </mirrors>
     <servers>
