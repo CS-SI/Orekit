@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="yannick" type="fix" issue="654">
+        Prevent divergence of Saastomoinen model pathDelay method at low elevation.
+      </action>
       <action dev="bryan" type="fix" issue="542">
         Removed duplicated BUILDING.txt file.
       </action>

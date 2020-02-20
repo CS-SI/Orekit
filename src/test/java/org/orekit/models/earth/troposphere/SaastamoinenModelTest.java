@@ -176,9 +176,16 @@ public class SaastamoinenModelTest {
     }
 
     @Test
-    public void testLowElevation() {
+    public void testIssue654LowElevation() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        
+        // Test model new setter/getter
+        model.setLowElevationThreshold(1e-3);
+        Assert.assertEquals(1.e-3, model.getLowElevationThreshold(), 0.);
+        
+        // Reset to default value
+        model.setLowElevationThreshold(SaastamoinenModel.DEFAULT_LOW_ELEVATION_THRESHOLD);
         double lowElevationPathDelay = model.pathDelay(0.001, 0.0, null, AbsoluteDate.J2000_EPOCH);
         Assert.assertTrue(lowElevationPathDelay > 0.);
         Assert.assertEquals(model.pathDelay(model.getLowElevationThreshold(), 0.0, null, AbsoluteDate.J2000_EPOCH),
@@ -186,7 +193,7 @@ public class SaastamoinenModelTest {
     }
 
     @Test
-    public void testFieldLowElevation() { doTestFieldLowElevation(Decimal64Field.getInstance()); }
+    public void testIssue654FieldLowElevation() { doTestFieldLowElevation(Decimal64Field.getInstance()); }
 
     private <T extends RealFieldElement<T>> void doTestFieldLowElevation(final Field<T> field) {
         final T zero = field.getZero();
