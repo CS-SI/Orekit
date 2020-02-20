@@ -21,6 +21,18 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="542">
+        Removed duplicated BUILDING.txt file.
+      </action>
+      <action dev="bryan" type="add" issue="504">
+        Allowed Eckstein Hechler propagator to be initialized with a mean orbit.
+      </action>
+      <action dev="bryan" type="update" issue="644">
+        Removed try and catch statements for ParameterDriver initialization.
+      </action>
+      <action dev="bryan" type="fix" issue="613">
+        Allowed DSST propagation in osculating type with event detectors.
+      </action>
     </release>
     <release version="10.1" date="2020-02-19"
              description="Version 10.1 is a minor release of Orekit.
