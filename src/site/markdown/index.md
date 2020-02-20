@@ -34,8 +34,8 @@
     * frames hierarchy supporting fixed and time-dependent
       (or telemetry-dependent) frames
     * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014
-      and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, tnw and qsw
-      local orbital frames, Moon, Sun, planets, solar system barycenter,
+      and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, TEME and PZ-90.11 frames,
+      tnw and qsw local orbital frames, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter, ecliptic)
     * user extensible (used operationally in real time with a set of about 60 frames on
       several spacecraft)
@@ -74,7 +74,7 @@
         * Kepler
         * Eckstein-Heschler
         * SDP4/SGP4 with 2006 corrections
-        * GNSS: GPS, QZSS, Galileo, GLONASS, and Beidou
+        * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
     * numerical propagators
         * central attraction
         * gravity models including time-dependent like trends and pulsations
@@ -99,7 +99,6 @@
         * file based
         * memory based
         * integration based
-    * specialized GPS propagation, using SEM or YUMA files
     * Taylor-algebra (or any other real field) version of most of the above propagators,
         with all force models, events detection, orbits types, coordinates types and frames
         allowing high order uncertainties and derivatives computation or very fast Monte-Carlo
@@ -119,8 +118,6 @@
     * predefined discrete events
         * eclipse (both umbra and penumbra)
         * ascending and descending node crossing
-        * anomaly, latitude argument or longitude argument crossings,
-          with either true, eccentric or mean angles
         * apogee and perigee crossing
         * alignment with some body in the orbital plane
           (with customizable threshold angle)
@@ -180,6 +177,7 @@
           delay in tropospheric correction)
     * Use numerical propagator or DSST propagator
     * multi-satellites orbit determination
+    * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
     * several predefined measurements
@@ -192,7 +190,8 @@
         * position
         * inter-satellites range (one way and two way)
         * GNSS code
-        * GNSS phase with integer ambiguity resolution (not complete yet and experimental)
+        * GNSS phase with integer ambiguity resolution and wind-up effect
+        * multiplexed
     * possibility to add custom measurements
     * several predefined modifiers
         * tropospheric effects
@@ -203,6 +202,11 @@
         * Antenna Phase Center
         * Shapiro relativistic effect
     * possibility to add custom measurement modifiers (even for predefined events)
+    * combination of GNSS measurements
+        * dual frequency combination of measurements
+          (Geometry-free, Ionosphere-free, Narrow-lane, Wide-lane and Melbourne-Wübbena)
+        * single frequency combination of measurements
+          (Phase minus code and GRAPHIC)
     * possibility to parse CCSDS Tracking Data Message files
     * measurements generation
         * with measurements feasibility triggered by regular event detectors
@@ -217,6 +221,7 @@
     * computation of Dilution Of Precision
     * loading of ANTEX antenna models file
     * loading of RINEX observation files (version 2 and version 3)
+    * support for Hatanaka compact RINEX format
 
   * Orbit file handling
   
@@ -233,6 +238,7 @@
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * Global Ionospheric Map model
+    * NeQuick ionospheric model
     * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
@@ -252,6 +258,7 @@
     * automatic decompression of Hatanaka compressed files upon loading
     * plugin mechanism to add filtering like custom decompression algorithms, deciphering or monitoring
     * plugin mechanism to delegate loading to user defined database or data access library
+    * possibility to have different data context (a way to separate sets of EOP, leap seconds, etc)
 
   * Localized in several languages
 

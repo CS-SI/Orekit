@@ -97,6 +97,9 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** The humidity [percent]. */
     private double r0;
 
+    /** Lowest acceptable elevation angle [rad]. */
+    private double lowElevationThreshold = 0.05;
+
     /**
      * Create a new Saastamoinen model for the troposphere using the given environmental
      * conditions and table from the reference book.
@@ -192,6 +195,13 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
      * reasons, we use the value for h = 0 when altitude is negative.
      * </p>
+     * <p>
+     * There are also numerical issues for elevation angles close to zero. For continuity reasons,
+     * elevations lower than a threshold will use the value obtained
+     * for the threshold itself.
+     * </p>
+     * @see #getLowElevationThreshold()
+     * @see #setLowElevationThreshold(double)
      */
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
@@ -213,7 +223,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         final double e = R * FastMath.exp(eFunction.value(T));
 
         // calculate the zenith angle from the elevation
-        final double z = FastMath.abs(0.5 * FastMath.PI - elevation);
+        final double z = FastMath.abs(0.5 * FastMath.PI - FastMath.max(elevation, lowElevationThreshold));
 
         // get correction factor
         final double deltaR = getDeltaR(fixedHeight, z);
@@ -231,6 +241,13 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
      * reasons, we use the value for h = 0 when altitude is negative.
      * </p>
+     * <p>
+     * There are also numerical issues for elevation angles close to zero. For continuity reasons,
+     * elevations lower than a threshold will use the value obtained
+     * for the threshold itself.
+     * </p>
+     * @see #getLowElevationThreshold()
+     * @see #setLowElevationThreshold(double)
      */
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
@@ -254,7 +271,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         final T e = R.multiply(FastMath.exp(eFunction.value(T)));
 
         // calculate the zenith angle from the elevation
-        final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
+        final T z = FastMath.abs(FastMath.max(elevation, zero.add(lowElevationThreshold)).negate().add(0.5 * FastMath.PI));
 
         // get correction factor
         final T deltaR = getDeltaR(fixedHeight, z, field);
@@ -416,5 +433,24 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         return Collections.emptyList();
     }
 
+    /** Get the low elevation threshold value for path delay computation.
+     * @return low elevation threshold, in rad.
+     * @see #pathDelay(double, double, double[], AbsoluteDate)
+     * @see #pathDelay(RealFieldElement, RealFieldElement, RealFieldElement[], FieldAbsoluteDate)
+     * @since 10.2
+     */
+    public double getLowElevationThreshold() {
+        return lowElevationThreshold;
+    }
+
+    /** Set the low elevation threshold value for path delay computation.
+     * @param lowElevationThreshold The new value for the threshold [rad]
+     * @see #pathDelay(double, double, double[], AbsoluteDate)
+     * @see #pathDelay(RealFieldElement, RealFieldElement, RealFieldElement[], FieldAbsoluteDate)
+     * @since 10.2
+     */
+    public void setLowElevationThreshold(final double lowElevationThreshold) {
+        this.lowElevationThreshold = lowElevationThreshold;
+    }
 }
 

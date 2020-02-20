@@ -22,8 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -71,17 +69,12 @@ public class IsotropicDrag implements DragSensitive {
      */
     public IsotropicDrag(final double crossSection, final double dragCoeff,
                          final double dragCoeffMin, final double dragCoeffMax) {
-        this.dragParametersDrivers     = new ParameterDriver[1];
-        try {
-            // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
-            // the single coefficient may be arbitrary, and even negative
-            dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                           dragCoeff, SCALE,
-                                                           dragCoeffMin, dragCoeffMax);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        this.dragParametersDrivers = new ParameterDriver[1];
+        // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
+        // the single coefficient may be arbitrary, and even negative
+        dragParametersDrivers[0]   = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
+                                                         dragCoeff, SCALE,
+                                                         dragCoeffMin, dragCoeffMax);
         this.crossSection = crossSection;
     }
 

@@ -99,6 +99,7 @@ public class FieldOfViewTest {
                         new UnitSphereRandomVectorGenerator(3, new Well1024a(0x17df21c7598b114bl));
         for (int i = 0; i < 1000; ++i) {
             Vector3D v = new Vector3D(random.nextVector()).scalarMultiply(1.0e6);
+            Assert.assertEquals(square1.offsetFromBoundary(v), square2.offsetFromBoundary(v), 2.2e-15);
             Assert.assertEquals(square1.offsetFromBoundary(v, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                 square2.offsetFromBoundary(v, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                 2.6e-15);
@@ -121,6 +122,39 @@ public class FieldOfViewTest {
                 Vector3D v = new Vector3D(0.0, lambda).scalarMultiply(1.0e6);
                 double theoreticalOffset = 0.5 * FastMath.PI - lambda - delta - margin;
                 double offset = fov.offsetFromBoundary(v, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
+                if (theoreticalOffset > 0.01) {
+                    // the offsetFromBoundary method may use the fast approximate
+                    // method, so we cannot check the error accurately
+                    // we know however that the fast method will underestimate the offset
+
+                    Assert.assertTrue(offset > 0);
+                    Assert.assertTrue(offset <= theoreticalOffset + 5e-16);
+                } else {
+                    double offsetError = theoreticalOffset - offset;
+                    maxOffsetError = FastMath.max(FastMath.abs(offsetError), maxOffsetError);
+                }
+            }
+        }
+        Assert.assertEquals(0.0, maxAreaError,   5.0e-14);
+        Assert.assertEquals(0.0, maxOffsetError, 2.0e-15);
+    }
+
+    @Test
+    public void testRegularPolygonOld() {
+        double delta          = 0.25;
+        double margin         = 0.01;
+        double maxAreaError   = 0;
+        double maxOffsetError = 0;
+        for (int n = 3; n < 32; ++n) {
+            FieldOfView fov = new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I, delta, n, margin);
+            double eta = FastMath.acos(FastMath.sin(FastMath.PI / n) * FastMath.cos(delta));
+            double theoreticalArea = 2 * n * eta - (n - 2) * FastMath.PI;
+            double areaError = theoreticalArea - fov.getZone().getSize();
+            maxAreaError = FastMath.max(FastMath.abs(areaError), maxAreaError);
+            for (double lambda = -0.5 * FastMath.PI; lambda < 0.5 * FastMath.PI; lambda += 0.1) {
+                Vector3D v = new Vector3D(0.0, lambda).scalarMultiply(1.0e6);
+                double theoreticalOffset = 0.5 * FastMath.PI - lambda - delta - margin;
+                double offset = fov.offsetFromBoundary(v);
                 if (theoreticalOffset > 0.01) {
                     // the offsetFromBoundary method may use the fast approximate
                     // method, so we cannot check the error accurately

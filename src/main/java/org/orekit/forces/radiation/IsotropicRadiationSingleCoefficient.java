@@ -22,8 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -72,16 +70,11 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     */
     public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr,
                                                final double crMin, final double crMax) {
-        try {
-            // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
-            // the single coefficient may be arbitrary, and even negative
-            reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                            cr, SCALE,
-                                                            crMin, crMax);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
+        // the single coefficient may be arbitrary, and even negative
+        reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                        cr, SCALE,
+                                                        crMin, crMax);
 
         this.crossSection = crossSection;
 

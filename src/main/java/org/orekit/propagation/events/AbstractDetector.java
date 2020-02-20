@@ -33,7 +33,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     /** Default convergence threshold (s). */
     public static final double DEFAULT_THRESHOLD = 1.e-6;
 
-    /** Default cmaximum number of iterations in the event time search. */
+    /** Default maximum number of iterations in the event time search. */
     public static final int DEFAULT_MAX_ITER = 100;
 
     /** Max check interval. */
