@@ -48,6 +48,9 @@ develop branch:
 
 If not, fix the warnings and errors first!
 
+It is also necessary to check on the [Gitlab CI/CD](https://gitlab.orekit.org/orekit/orekit/pipelines)
+that everything is fine on develop branch (i.e. all stages are passed).
+
 ## Prepare Git branch for release
 
 Release will be performed on a dedicated branch, not directly on master or
@@ -147,6 +150,15 @@ Commit the change:
     git add pom.xml
     git commit -m "Dropped -SNAPSHOT in version number for official release."
 
+## Check the JavaDoc
+
+Depending the JDK version (Oracle, OpenJDK, etc), some JavaDoc warnings can be present.
+Make sure there is no JavaDoc warnings by running the following command:
+
+    mvn javadoc:javadoc
+
+If possible, run the above command with different JDK versions.
+
 ## Tag and sign the git repository
 
 When all previous steps have been performed, the local git repository holds the
@@ -170,12 +182,21 @@ everyone can review it:
 
     git push --tags origin release-X.Y
 
+## Site
+
+The site is generated locally using:
+
+    mvn clean
+    LANG=C mvn site
+
+The official site is automatically updated on the hosting platform when work is 
+merged into branches `develop`, `release-*` or `master`.
+
 ## Generating signed artifacts
 
 When these settings have been set up, generating the artifacts is done by
 running the following commands:
 
-    mvn clean
     mvn deploy -DskipStagingRepositoryClose=true -Prelease
 
 During the generation, maven will trigger gpg which will ask the user for the
@@ -202,16 +223,6 @@ and serve no purpose and can be deleted.
 Remove `orekit-X.Y.source-jar*` since they are duplicates of the
 `orekit-X.Y-sources.jar*` artifacts. (We can’t figure out how to make maven
 stop producing these duplicate artifacts). Then click the “Close” button.
-
-
-## Site
-
-The site is generated locally using:
-
-    LANG=C mvn site
-
-The official site is automatically updated on the hosting platform when work is 
-merged into branches `develop`, `release-*` or `master`.
 
 ## Calling for the vote
 
@@ -271,50 +282,42 @@ candidate, verified and pushed:
     git tag -v X.Y
     git push --tags
 
-## Merge release branch
+## Merge release branch into master
 
-Merge the release branch into the `develop` branch to include any changes made.
-Then updated the version numbers to prepare for the next development cycle.
+Merge the release branch into the `master` branch to include any changes made.
 
-    git checkout develop
+    git checkout master
     git merge --no-ff release-X.Y
 
-Edit pom.xml version to SNAPSHOT and make space in the changelog for new
-changes. Then commit and push.
+Then commit and push.
+
+## Merge master branch into develop
+
+Merge the `master` branch into the `develop` branch to include any changes made.
+
+    git checkout develop
+    git merge --no-ff master
+
+Then updated the version numbers to prepare for the next development cycle.
+Edit pom.xml version to SNAPSHOT and make space in the `/src/changes/changes.xml`
+file for new changes. Then commit and push.
 
 ## Publish maven artifacts
 
 The maven artifacts must be published using OSS site to release the repository.
-Select the Orekit repository and click the “Release” button in Nexus Repository
-Manager.
+Select the Orekit repository in "Staging Repositories" and click the “Release”
+button in [Nexus Repository Manager](https://oss.sonatype.org/).
 
-## Publish maven site
+## Upload to Gitlab
 
-The maven generated site should then be moved out of the staging directory.
-Beware to create a new `site-orekit-X.Y` directory for the site and link the
-latest version to it. This allows older versions to be kept available if
-needed.
+Navigate to Projects > Orekit > Repository > Tags. Find the X.Y tag and
+click the edit button to enter release notes. Use the **path** in the [Nexus 
+repository](https://packages.orekit.org/#browse/browse:maven-releases) to
+set the artifacts in the release notes.
 
-    mv staging/site-orekit-X.Y ./
-    ln -snf site-orekit-X.Y site-orekit-latest
-    ln -snf site-orekit-X.Y site-orekit-development
-
-## Upload to gitlab
-
-Navigate to Self > Settings > Access Tokens. Enter a name, date, and check the
-“api” box, then click “Create personal access token”. Copy the token into the
-following command:
-
-    for f in $( ls target/orekit-X.Y*.jar{,.asc} ) ; do
-        curl --request POST --header "PRIVATE-TOKEN: <token>" --form "file=@$f" \
-            https://gitlab.orekit.org/api/v4/projects/1/uploads
-    done
-
-Copy the URLs that are printed.
-
-Next, navigate to Projects > Orekit > Repository > Tags. Find the X.Y tag and
-click the edit button to enter release notes. Paste the URLs copied from the
-step above.
+- orekit-X.Y.jar
+- orekit-X.Y-sources.jar
+- orekit-X.Y-javadoc.jar
 
 Navigate to Projects > Orekit > Releases and make sure it looks nice.
 
@@ -324,14 +327,17 @@ Several edits need to be made to the Orekit website. Fetch the current code:
 
     git clone https://gitlab.orekit.org/orekit/website-2015
 
-Edit `download/.htaccess` and replace the URLs of of the 3 Orekit artifacts
-with the ones created by gitlab in the previous step.
+Edit `_data/orekit/versions.yml` by adding the new version X.Y to the list.
 
-Edit `download.html` and update the URLs to point to the new Orekit artifacts.
+Edit `download/.htaccess` and replace the URLs of the 3 Orekit artifacts
+with the ones used to create the release notes.
 
-Edit `_layouts/home.html` and edit the text of the bug button to use the new version.
+Edit `_layouts/home_orekit.html` and edit the text of the bug button to use the new version.
 
-Edit `_config.yml` and add the new version to the list of versions.
+Edit `overview.html` with the new Hipparchus version. Don't forget to update the
+overview.png image with the new dependencies.
+
+Create a new post for the release in `_post/`.
 
 Run:
 
@@ -339,18 +345,32 @@ Run:
 
 and make sure the website looks nice. View it on http://localhost:4000/
 
-If everything looks good publish the changes by running:
+## Close X.Y milestone
 
-    ./bin/build_and_publish.sh
-
-## Mark resolved issues as closed
-
-In gitlab select all the issues included in the release and close them.
-Navigate to Projects > Orekit > Issues. Search for `label:Resolved`. Make sure
-they were all fixed in this release. Click “Edit Issues”, check all the boxes,
-set milestone to X.Y and status to closed.
+In Gitlab, navigate to Projects > Orekit > Issues > Milestones.
+Click “Close Milestone” for the line corresponding to the release X.Y.
 
 ## Announce release
 
-The last step is to announce the release by sending a mail to the announce
-list.
+The last step is to announce the release by creating a post in the Orekit
+announcements category of the forum with a subject line of the form:
+
+    Orekit X.Y released
+
+and content of the form:
+
+    The Orekit team is pleased to announce the release of Orekit version X.Y. This is a minor/major 
+    version, including both new features and bug fixes. The main changes are:
+
+      - feature 1 description
+      ...
+      - feature n description
+
+    This version depends on Hipparchus X'.Y'
+
+    For complete release notes please see:
+    https://orekit.org/site-orekit-X.Y/changes-report.html
+
+    The maven artifacts are available in maven central. 
+    The source and binaries can be retrieved from the forge releases page:
+    https://gitlab.orekit.org/orekit/orekit/releases
