@@ -64,6 +64,9 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
 
+    /** Default lowest acceptable elevation angle [rad]. */
+    public static final double DEFAULT_LOW_ELEVATION_THRESHOLD = 0.05;
+
     /** X values for the B function. */
     private static final double[] X_VALUES_FOR_B = {
         0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0
@@ -98,7 +101,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     private double r0;
 
     /** Lowest acceptable elevation angle [rad]. */
-    private double lowElevationThreshold = 0.05;
+    private double lowElevationThreshold;
 
     /**
      * Create a new Saastamoinen model for the troposphere using the given environmental
@@ -174,6 +177,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         this.bFunction      = new LinearInterpolator().interpolate(X_VALUES_FOR_B, Y_VALUES_FOR_B);
         this.eFunction      = new PolynomialFunction(E_COEFFICIENTS);
         this.deltaRFunction = deltaR;
+        this.lowElevationThreshold = DEFAULT_LOW_ELEVATION_THRESHOLD;
     }
 
     /** Create a new Saastamoinen model using a standard atmosphere model.
