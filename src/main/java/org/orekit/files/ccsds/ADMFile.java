@@ -53,11 +53,33 @@ public abstract class ADMFile {
     /** IERS conventions used. */
     private IERSConventions conventions;
 
+    /** Gravitational coefficient. */
+    private double mu;
+
+    /** Initial Date for MET or MRT time systems. */
+    private AbsoluteDate missionReferenceDate;
+
     /**
      * Constructor.
      */
     public ADMFile() {
-        // Do nothing
+        mu = Double.NaN;
+    }
+
+    /**
+     * Get the used gravitational coefficient.
+     * @return the coefficient
+     */
+    public double getMu() {
+        return mu;
+    }
+
+    /**
+     * Set the used gravitational coefficient.
+     * @param mu the coefficient to set
+     */
+    void setMu(final double mu) {
+        this.mu = mu;
     }
 
     /** Get the CCSDS ADM (APM or AEM) format version.
@@ -132,6 +154,20 @@ public abstract class ADMFile {
      */
     void setConventions(final IERSConventions conventions) {
         this.conventions = conventions;
+    }
+
+    /** Get reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     * @return the reference date
+     */
+    public AbsoluteDate getMissionReferenceDate() {
+        return missionReferenceDate;
+    }
+
+    /** Set reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     */
+    void setMissionReferenceDate(final AbsoluteDate missionReferenceDate) {
+        this.missionReferenceDate = missionReferenceDate;
     }
 
     /** Get the data context.

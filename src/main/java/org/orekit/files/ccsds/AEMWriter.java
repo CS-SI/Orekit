@@ -21,9 +21,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.AEMFile.AemSatelliteEphemeris;
+import org.orekit.files.ccsds.AEMFile.AttitudeEphemeridesBlock;
+import org.orekit.files.ccsds.StreamingAemWriter.AEMSegment;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * A writer for Attitude Ephemeris Messsage (AEM) files.
@@ -32,19 +40,10 @@ import org.orekit.errors.OrekitMessages;
  */
 public class AEMWriter {
 
-    /** Default interpolation method if the user specifies none. **/
-    public static final AEMInterpolationMethod DEFAULT_INTERPOLATION_METHOD = AEMInterpolationMethod.LAGRANGE;
-
-    /** The interpolation method for ephemeris data. */
-    private final AEMInterpolationMethod interpolationMethod;
-
     /** Originator name, usually the organization and/or country. **/
     private final String originator;
 
-    /**
-     * Space object ID, usually an official international designator such as
-     * "1998-067A".
-     **/
+    /** Space object ID, usually an official international designator such as "1998-067A". */
     private final String spaceObjectId;
 
     /** Space object name, usually a common name for an object like "ISS". **/
@@ -55,7 +54,7 @@ public class AEMWriter {
      * configurations.
      */
     public AEMWriter() {
-        this(DEFAULT_INTERPOLATION_METHOD, StreamingAemWriter.DEFAULT_ORIGINATOR, null, null);
+        this(StreamingAemWriter.DEFAULT_ORIGINATOR, null, null);
     }
 
     /**
@@ -63,14 +62,12 @@ public class AEMWriter {
      * parameters to successfully fill in all required fields that aren't part
      * of a standard object.
      *
-     * @param interpolationMethod the interpolation method to specify in the AEM file
      * @param originator the originator field string
      * @param spaceObjectId the spacecraft ID
      * @param spaceObjectName the space object common name
      */
-    public AEMWriter(final AEMInterpolationMethod interpolationMethod,
-                     final String originator, final String spaceObjectId, final String spaceObjectName) {
-        this.interpolationMethod = interpolationMethod;
+    public AEMWriter(final String originator, final String spaceObjectId,
+                     final String spaceObjectName) {
         this.originator          = originator;
         this.spaceObjectId       = spaceObjectId;
         this.spaceObjectName     = spaceObjectName;
@@ -96,6 +93,69 @@ public class AEMWriter {
             return;
         }
 
+        final String idToProcess;
+        if (spaceObjectId != null) {
+            if (aemFile.getSatellites().containsKey(spaceObjectId)) {
+                idToProcess = spaceObjectId;
+            } else {
+                throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND, spaceObjectId, "ephemerisFile");
+            }
+        } else if (aemFile.getSatellites().keySet().size() == 1) {
+            idToProcess = aemFile.getSatellites().keySet().iterator().next();
+        } else {
+            throw new OrekitIllegalArgumentException(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT);
+        }
+
+        // Get satellite and attitude ephemeris segments to output.
+        final AemSatelliteEphemeris          satEphem = aemFile.getSatellites().get(idToProcess);
+        final List<AttitudeEphemeridesBlock> segments = satEphem.getSegments();
+        if (segments.isEmpty()) {
+            // No data -> No output
+            return;
+        }
+        // First segment
+        final AttitudeEphemeridesBlock firstSegment = segments.get(0);
+
+        final String objectName = this.spaceObjectName == null ? idToProcess : this.spaceObjectName;
+        // Only one time scale per AEM file, see Section 4.2.5.4.2
+        final TimeScale timeScale = firstSegment.getTimeScale();
+        // Metadata that is constant for the whole OEM file
+        final Map<Keyword, String> metadata = new LinkedHashMap<>();
+        metadata.put(Keyword.TIME_SYSTEM, firstSegment.getTimeScaleString());
+        metadata.put(Keyword.ORIGINATOR,  this.originator);
+        // Only one object in an AEM file, see Section 2.3.1
+        metadata.put(Keyword.OBJECT_NAME,   objectName);
+        metadata.put(Keyword.OBJECT_ID,     idToProcess);
+        // Writer for AEM files
+        final StreamingAemWriter aemWriter =
+                        new StreamingAemWriter(writer, timeScale, metadata);
+        aemWriter.writeHeader();
+
+        // Loop on segments
+        for (final AttitudeEphemeridesBlock segment : segments) {
+            // Segment specific metadata
+            metadata.clear();
+            metadata.put(Keyword.CENTER_NAME,          segment.getFrameCenterString());
+            metadata.put(Keyword.REF_FRAME_A,          segment.getRefFrameAString());
+            metadata.put(Keyword.REF_FRAME_B,          segment.getRefFrameBString());
+            metadata.put(Keyword.ATTITUDE_DIR,         segment.getAttitudeDirection());
+            metadata.put(Keyword.START_TIME,           segment.getStart().toString(timeScale));
+            metadata.put(Keyword.STOP_TIME,            segment.getStop().toString(timeScale));
+            metadata.put(Keyword.ATTITUDE_TYPE,        segment.getAttitudeType());
+            metadata.put(Keyword.INTERPOLATION_METHOD, segment.getInterpolationMethod());
+            metadata.put(Keyword.INTERPOLATION_DEGREE, String.valueOf(segment.getInterpolationDegree()));
+
+            final AEMSegment segmentWriter = aemWriter.newSegment(metadata);
+            segmentWriter.writeMetadata();
+            segmentWriter.startAttitudeBlock();
+            // Loop on attitude data
+            for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
+                segmentWriter.writeAttitudeEphemerisLine(coordinates, segment.isFirst(),
+                                                         segment.getAttitudeType(), segment.getRotationOrder());
+            }
+            segmentWriter.endAttitudeBlock();
+        }
+
     }
 
     /**
@@ -112,45 +172,6 @@ public class AEMWriter {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
             write(writer, aemFile);
         }
-    }
-
-    /** AEM interpolation method. See Table 4-3. */
-    public enum AEMInterpolationMethod {
-
-        /** Hermite interpolation. */
-        HERMITE,
-
-        /** Lagrange interpolation. */
-        LAGRANGE,
-
-        /** Linear interpolation. */
-        LINEAR
-
-    }
-
-    /** AEM interpolation method. See Table 4-3. */
-    public enum AEMAttitudeType {
-
-        /** Quaternion. */
-        QUATERNION,
-
-        /** Quaternion and derivatives. */
-        QUATERNION_DERIVATIVE,
-
-        /** Quaternion and rotation rate. */
-        QUATERNION_RATE,
-
-        /** Euler angles. */
-        EULER_ANGLE,
-
-        /** Euler angles and rotation rate. */
-        EULER_ANGLE_RATE,
-
-        /** Spin. */
-        SPIN,
-
-        /** Spin and nutation. */
-        SPIN_NUTATION
     }
 
 }

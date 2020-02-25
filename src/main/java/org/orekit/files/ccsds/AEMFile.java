@@ -18,14 +18,17 @@ package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import org.orekit.attitudes.Attitude;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * This class stocks all the information of the Attitude Ephemeris Message (AEM) File parsed
@@ -74,6 +77,27 @@ public class AEMFile extends ADMFile {
         }
     }
 
+
+    /**
+     * Get the attitude loaded ephemeris for each satellite in the file.
+     * @return a map from the satellite's ID to the information about that satellite
+     * contained in the file.
+     */
+    public Map<String, AemSatelliteEphemeris> getSatellites() {
+        final Map<String, List<AttitudeEphemeridesBlock>> satellites = new HashMap<>();
+        for (final AttitudeEphemeridesBlock ephemeridesBlock : attitudeBlocks) {
+            final String id = ephemeridesBlock.getMetaData().getObjectID();
+            satellites.putIfAbsent(id, new ArrayList<>());
+            satellites.get(id).add(ephemeridesBlock);
+        }
+        final Map<String, AemSatelliteEphemeris> ret = new HashMap<>();
+        for (final Entry<String, List<AttitudeEphemeridesBlock>> entry : satellites.entrySet()) {
+            final String id = entry.getKey();
+            ret.put(id, new AemSatelliteEphemeris(entry.getValue()));
+        }
+        return ret;
+    }
+
     /**
      * The Attitude Ephemerides Blocks class contain metadata
      * and the list of attitude data lines.
@@ -83,11 +107,11 @@ public class AEMFile extends ADMFile {
         /** Meta-data for the block. */
         private ADMMetaData metaData;
 
-        /** The reference frame specifying one frame of the transformation. */
-        private Frame refFrameA;
+        /** The reference frame A specifier, as it appeared in the file. */
+        private String refFrameAString;
 
-        /** The reference frame specifying the second portion of the transformation. */
-        private Frame refFrameB;
+        /** The reference frame B specifier, as it appeared in the file. */
+        private String refFrameBString;
 
         /** Rotation direction of the attitude. */
         private String attitudeDir;
@@ -114,10 +138,10 @@ public class AEMFile extends ADMFile {
          * The rotation sequence of the Euler angles.
          * (e.g., 312, where X=1, Y=2, Z=3)
          */
-        private int eulerRotSeq;
+        private String eulerRotSeq;
 
-        /** The frame of reference in which Euler rates are specified. */
-        private Frame rateFrame;
+        /** The rate frame specifier, as it appeared in the file. */
+        private String rateFrameString;
 
         /** The interpolation method to be used. */
         private String interpolationMethod;
@@ -125,8 +149,11 @@ public class AEMFile extends ADMFile {
         /** The interpolation degree. */
         private int interpolationDegree;
 
+        /** The rotation order. */
+        private RotationOrder rotationOrder;
+
         /** List of data lines. */
-        private List<Attitude> attitudeDataLines;
+        private List<TimeStampedAngularCoordinates> attitudeDataLines;
 
         /** Data Lines comments. The list contains a string for each line of comment. */
         private List<String> attitudeDataLinesComment;
@@ -143,8 +170,16 @@ public class AEMFile extends ADMFile {
          * Get the list of attitude data lines.
          * @return a list of data
          */
-        public List<Attitude> getAttitudeDataLines() {
+        public List<TimeStampedAngularCoordinates> getAttitudeDataLines() {
             return attitudeDataLines;
+        }
+
+        /**
+         * Get an unmodifiable list of attitude data lines.
+         * @return a list of attitude data
+         */
+        public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
+            return Collections.unmodifiableList(this.attitudeDataLines);
         }
 
         /**
@@ -156,35 +191,61 @@ public class AEMFile extends ADMFile {
         }
 
         /**
-         * Get the reference frame specifying one frame of the transformation.
-         * @return the reference frame A
+         * Get the name of the center of the coordinate system the ephemeris is provided in.
+         * This may be a natural origin, such as the center of the Earth, another satellite, etc.
+         * @return the name of the frame center
          */
-        public Frame getRefFrameA() {
-            return refFrameA;
+        public String getFrameCenterString() {
+            return this.getMetaData().getCenterName();
+        }
+
+
+        /**
+         * Get the reference frame A specifier as it appeared in the file.
+         * @return the frame name as it appeared in the file (A).
+         */
+        public String getRefFrameAString() {
+            return refFrameAString;
         }
 
         /**
-         * Set the reference frame specifying one frame of the transformation.
-         * @param refFrameA the frame to be set
+         * Set the reference frame A name.
+         * @param frame specifier as it appeared in the file.
          */
-        void setRefFrameA(final Frame refFrameA) {
-            this.refFrameA = refFrameA;
+        void setRefFrameAString(final String frame) {
+            this.refFrameAString = frame;
         }
 
         /**
-         * Get the reference frame specifying the second portion of the transformation.
-         * @return the reference frame B
+         * Get the reference frame B specifier as it appeared in the file.
+         * @return the frame name as it appeared in the file (B).
          */
-        public Frame getRefFrameB() {
-            return refFrameB;
+        public String getRefFrameBString() {
+            return this.refFrameBString;
         }
 
         /**
-         * Set the reference frame specifying the second portion of the transformation.
-         * @param refFrameB the frame to be set
+         * Set the reference frame B name.
+         * @param frame specifier as it appeared in the file.
          */
-        void setRefFrameB(final Frame refFrameB) {
-            this.refFrameB = refFrameB;
+        void setRefFrameBString(final String frame) {
+            this.refFrameBString = frame;
+        }
+
+        /**
+         * Get the rate frame specifier as it appeared in the file.
+         * @return the rate frame name.
+         */
+        public String getRateFrameString() {
+            return rateFrameString;
+        }
+
+        /**
+         * Set the rate frame name.
+         * @param frame specifier as it appeared in the file.
+         */
+        void setRateFrameString(final String frame) {
+            this.rateFrameString = frame;
         }
 
         /**
@@ -239,7 +300,7 @@ public class AEMFile extends ADMFile {
          * Get the rotation sequence of the Euler angles (e.g., 312, where X=1, Y=2, Z=3).
          * @return the rotation sequence of the Euler angles
          */
-        public int getEulerRotSeq() {
+        public String getEulerRotSeq() {
             return eulerRotSeq;
         }
 
@@ -247,24 +308,8 @@ public class AEMFile extends ADMFile {
          * Set the rotation sequence of the Euler angles (e.g., 312, where X=1, Y=2, Z=3).
          * @param eulerRotSeq rotation sequence to be set
          */
-        void setEulerRotSeq(final int eulerRotSeq) {
+        void setEulerRotSeq(final String eulerRotSeq) {
             this.eulerRotSeq = eulerRotSeq;
-        }
-
-        /**
-         * Get the frame of reference in which Euler rates are specified.
-         * @return reference frame in which Euler rates are specified
-         */
-        public Frame getRateFrame() {
-            return rateFrame;
-        }
-
-        /**
-         * Set the frame of reference in which Euler rates are specified.
-         * @param rateFrame frame to be set
-         */
-        void setRateFrame(final Frame rateFrame) {
-            this.rateFrame = rateFrame;
         }
 
         /**
@@ -422,5 +467,65 @@ public class AEMFile extends ADMFile {
             this.attitudeDataLinesComment = new ArrayList<String>(ephemeridesDataLinesComment);
         }
 
+        /**
+         * Get the rotation order for Euler angles.
+         * @return rotation order
+         */
+        public RotationOrder getRotationOrder() {
+            return rotationOrder;
+        }
+
+        /**
+         * Set the rotation order for Euler angles.
+         * @param order the rotation order to be set
+         */
+        void setRotationOrder(final RotationOrder order) {
+            this.rotationOrder = order;
+        }
+
     }
+
+    /** AEM ephemeris blocks for a single satellite. */
+    public static class AemSatelliteEphemeris {
+
+        /** The attitude ephemeris data for the satellite. */
+        private final List<AttitudeEphemeridesBlock> blocks;
+
+        /**
+         * Create a container for the set of ephemeris blocks in the file that pertain to
+         * a single satellite.
+         * @param blocks containing ephemeris data for the satellite.
+         */
+        AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {
+            this.blocks = blocks;
+        }
+
+        /**
+         * Get the segments of the attitude ephemeris.
+         * <p> Ephemeris segments are typically used to split an attitude ephemeris around
+         * discontinuous events, such as maneuvers.
+         * @return the segments contained in the attitude ephemeris file for this satellite.
+         */
+        public List<AttitudeEphemeridesBlock> getSegments() {
+            return Collections.unmodifiableList(blocks);
+        }
+
+        /**
+         * Get the start date of the attitude ephemeris.
+         * @return attitude ephemeris start date.
+         */
+        public AbsoluteDate getStart() {
+            return blocks.get(0).getStart();
+        }
+
+        /**
+         * Get the end date of the attitude ephemeris.
+         * @return attitude ephemeris end date.
+         */
+        public AbsoluteDate getStop() {
+            return blocks.get(blocks.size() - 1).getStop();
+        }
+
+    }
+
 }

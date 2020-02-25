@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.bodies.CelestialBodies;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.time.TimeScale;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -40,8 +42,25 @@ public class ADMMetaData {
     /** Object identifier of the object for which the orbit state is provided. */
     private String objectID;
 
+    /** Launch Year. */
+    private int launchYear;
+
+    /** Launch number. */
+    private int launchNumber;
+
+    /** Piece of launch (from "A" to "ZZZ"). */
+    private String launchPiece;
+
     /** Origin of reference frame. */
     private String centerName;
+
+    /** Celestial body corresponding to the center name. */
+    private CelestialBody centerBody;
+
+    /** Tests whether the body corresponding to the center name can be
+     * created through {@link CelestialBodies} in order to obtain the
+     * corresponding gravitational coefficient. */
+    private boolean hasCreatableBody;
 
     /** Metadata comments. The list contains a string for each line of comment. */
     private List<String> comment;
@@ -57,7 +76,7 @@ public class ADMMetaData {
     /** Get the ADM file to which these meta-data belong.
      * @return ADM file to which these meta-data belong
      */
-    public ADMFile getODMFile() {
+    public ADMFile getADMFile() {
         return admFile;
     }
 
@@ -113,6 +132,54 @@ public class ADMMetaData {
         this.objectID = objectID;
     }
 
+    /**
+     * Get the launch year.
+     * @return launch year
+     */
+    public int getLaunchYear() {
+        return launchYear;
+    }
+
+    /**
+     * Set the launch year.
+     * @param launchYear launch year
+     */
+    void setLaunchYear(final int launchYear) {
+        this.launchYear = launchYear;
+    }
+
+    /**
+     * Get the launch number.
+     * @return launch number
+     */
+    public int getLaunchNumber() {
+        return launchNumber;
+    }
+
+    /**
+     * Set the launch number.
+     * @param launchNumber launch number
+     */
+    void setLaunchNumber(final int launchNumber) {
+        this.launchNumber = launchNumber;
+    }
+
+    /**
+     * Get the piece of launch.
+     * @return piece of launch
+     */
+    public String getLaunchPiece() {
+        return launchPiece;
+    }
+
+    /**
+     * Set the piece of launch.
+     * @param launchPiece piece of launch
+     */
+    void setLaunchPiece(final String launchPiece) {
+        this.launchPiece = launchPiece;
+    }
+
     /** Get the origin of reference frame.
      * @return the origin of reference frame.
      */
@@ -125,6 +192,41 @@ public class ADMMetaData {
      */
     void setCenterName(final String centerName) {
         this.centerName = centerName;
+    }
+
+    /**
+     * Get the {@link CelestialBody} corresponding to the center name.
+     * @return the center body
+     */
+    public CelestialBody getCenterBody() {
+        return centerBody;
+    }
+
+    /**
+     * Set the {@link CelestialBody} corresponding to the center name.
+     * @param centerBody the {@link CelestialBody} to be set
+     */
+    void setCenterBody(final CelestialBody centerBody) {
+        this.centerBody = centerBody;
+    }
+
+    /**
+     * Get boolean testing whether the body corresponding to the centerName
+     * attribute can be created through the {@link CelestialBodies}.
+     * @return true if {@link CelestialBody} can be created from centerName
+     *         false otherwise
+     */
+    public boolean getHasCreatableBody() {
+        return hasCreatableBody;
+    }
+
+    /**
+     * Set boolean testing whether the body corresponding to the centerName
+     * attribute can be created through the {@link CelestialBodies}.
+     * @param hasCreatableBody the boolean to be set.
+     */
+    void setHasCreatableBody(final boolean hasCreatableBody) {
+        this.hasCreatableBody = hasCreatableBody;
     }
 
     /** Get the meta-data comment.

@@ -28,18 +28,19 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.orekit.attitudes.Attitude;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.AEMParser.AEMRotationOrder;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
- * A writer for OEM files.
+ * A writer for AEM files.
  *
  * <p> Each instance corresponds to a single AEM file.
  *
@@ -237,7 +238,7 @@ public class StreamingAemWriter {
     private final TimeScale timeScale;
 
     /**
-     * Create an AEM writer than streams data to the given output stream.
+     * Create an AEM writer that streams data to the given output stream.
      *
      * @param writer    The output stream for the AEM file. Most methods will append data
      *                  to this {@code writer}.
@@ -337,43 +338,9 @@ public class StreamingAemWriter {
         }
 
         /**
-         * {@inheritDoc}
-         *
-         * <p> Sets the {@link Keyword#START_TIME} and {@link Keyword#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link
-         * #writeMetadata()} to start the segment.
-         */
-        @Override
-        public void init(final SpacecraftState s0,
-                         final AbsoluteDate t,
-                         final double step) {
-            try {
-                final String start = dateToString(s0.getDate().getComponents(timeScale));
-                final String stop = dateToString(t.getComponents(timeScale));
-                this.metadata.putIfAbsent(Keyword.START_TIME, start);
-                this.metadata.putIfAbsent(Keyword.STOP_TIME, stop);
-                this.writeMetadata();
-            } catch (IOException e) {
-                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        e.getLocalizedMessage());
-            }
-        }
-
-        /** {@inheritDoc}. */
-        @Override
-        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
-            try {
-                writeAttitudeEphemerisLine(currentState.getAttitude());
-            } catch (IOException e) {
-                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        e.getLocalizedMessage());
-            }
-        }
-
-        /**
          * Write the ephemeris segment metadata.
          *
-         * <p> See {@link StreamingOemWriter} for a description of how the metadata is
+         * <p> See {@link StreamingAemWriter} for a description of how the metadata is
          * set.
          *
          * @throws IOException if the output stream throws one while writing.
@@ -421,7 +388,7 @@ public class StreamingAemWriter {
             }
             final String interpolationMethod = this.metadata.get(Keyword.INTERPOLATION_METHOD);
             if (interpolationMethod != null) {
-                writeKeyValue(Keyword.INTERPOLATION, interpolationMethod);
+                writeKeyValue(Keyword.INTERPOLATION_METHOD, interpolationMethod);
             }
             final String interpolationDegree = this.metadata.get(Keyword.INTERPOLATION_DEGREE);
             if (interpolationDegree != null) {
@@ -435,26 +402,103 @@ public class StreamingAemWriter {
         /**
          * Write a single attitude ephemeris line according to section 4.2.4 and Table 4-4.
          * @param attitude the attitude information for a given date.
+         * @param isFirst true if QC is the first element in the attitude data
+         * @param attitudeName name of the attitude type
+         * @param rotationOrder rotation order
          * @throws IOException if the output stream throws one while writing.
          */
-        public void writeAttitudeEphemerisLine(final Attitude attitude)
-                throws IOException {
-
+        public void writeAttitudeEphemerisLine(final TimeStampedAngularCoordinates attitude,
+                                               final boolean isFirst,
+                                               final String attitudeName,
+                                               final RotationOrder rotationOrder)
+            throws IOException {
             // Epoch
             final String epoch = dateToString(attitude.getDate().getComponents(timeScale));
             writer.append(epoch).append(" ");
+            // Attitude data in degrees
+            final AEMAttitudeType type = AEMAttitudeType.getAttitudeType(attitudeName);
+            final double[]        data = type.getAttitudeData(attitude, isFirst, rotationOrder);
+            final int             size = data.length;
+            for (int index = 0; index < size; index++) {
+                writer.append(Double.toString(data[index]));
+                final String space = (index == size - 1) ? "" : " ";
+                writer.append(space);
+            }
+            // end the line
+            writer.append(NEW_LINE);
+        }
 
-            // Attitude type
-            final String attitudeType = this.metadata.get(Keyword.ATTITUDE_TYPE);
-            if (attitudeType == null) {
-                // If the attitude type is null, an exception is thrown
-                throw new OrekitException(OrekitMessages.CCSDS_NULL_ATTITUDE_TYPE, attitudeType);
+        /**
+         * {@inheritDoc}
+         *
+         * <p> Sets the {@link Keyword#START_TIME} and {@link Keyword#STOP_TIME} in this
+         * segment's metadata if not already set by the user. Then calls {@link
+         * #writeMetadata()} to start the segment.
+         */
+        @Override
+        public void init(final SpacecraftState s0,
+                         final AbsoluteDate t,
+                         final double step) {
+            try {
+                final String start = dateToString(s0.getDate().getComponents(timeScale));
+                final String stop = dateToString(t.getComponents(timeScale));
+                this.metadata.putIfAbsent(Keyword.START_TIME, start);
+                this.metadata.putIfAbsent(Keyword.STOP_TIME, stop);
+                this.writeMetadata();
+            } catch (IOException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        e.getLocalizedMessage());
+            }
+        }
+
+        /** {@inheritDoc}. */
+        @Override
+        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+            try {
+
+                // Quaternion type
+                final String quaternionType = this.metadata.get(Keyword.QUATERNION_TYPE);
+                // If the QUATERNION_TYPE keyword is not present in the file, this means that
+                // the attitude data are not given using quaternion. Therefore, the computation
+                // of the attitude data will not be sensitive to this parameter. A default value
+                // can be set
+                boolean isFirst = false;
+                if (quaternionType != null) {
+                    isFirst = (quaternionType.equals("FIRST")) ? true : false;
+                }
+
+                // Attitude type
+                final String attitudeType = this.metadata.get(Keyword.ATTITUDE_TYPE);
+
+                // Rotation order
+                final String eulerRotSeq = this.metadata.get(Keyword.EULER_ROT_SEQ);
+                final RotationOrder order = (eulerRotSeq == null) ? null : AEMRotationOrder.getRotationOrder(eulerRotSeq);
+
+                // Write attitude ephemeris data
+                writeAttitudeEphemerisLine(currentState.getAttitude().getOrientation(), isFirst,
+                                           attitudeType, order);
+
+            } catch (IOException e) {
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        e.getLocalizedMessage());
             }
 
-            // Fill attitude data
-            // TODO
+        }
 
-            writer.append(NEW_LINE);
+        /**
+         * Start of an attitude block.
+         * @throws IOException if the output stream throws one while writing.
+         */
+        void startAttitudeBlock() throws IOException {
+            writer.append("DATA_START").append(NEW_LINE);
+        }
+
+        /**
+         * End of an attitude block.
+         * @throws IOException if the output stream throws one while writing.
+         */
+        void endAttitudeBlock() throws IOException {
+            writer.append("DATA_STOP").append(NEW_LINE);
         }
 
     }
