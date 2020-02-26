@@ -364,7 +364,7 @@ public enum AEMAttitudeType {
         final AEMAttitudeType type = CODES_MAP.get(name);
         if (type == null) {
             // An exception is thrown if the attitude type is null
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_NULL_ATTITUDE_TYPE, type);
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_NULL_ATTITUDE_TYPE, name);
         }
         return type;
     }

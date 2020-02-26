@@ -582,7 +582,7 @@ EXCEPTIONAL_DATA_CONTEXT = Momentan wird noch die ExceptionalDataContext Klasse 
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
 
-# attitude type {0} cannot be null
+# invalid attitude type {0}
 CCSDS_AEM_NULL_ATTITUDE_TYPE = <MISSING TRANSLATION>
 
 # attitude type {0} in CCSDS AEM files is not implemented in Orekit

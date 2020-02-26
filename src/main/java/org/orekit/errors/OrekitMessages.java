@@ -168,7 +168,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_TIME_SYSTEM_NOT_READ_YET("Parameter {0} needs a time system to be interpreted"),
     CCSDS_TDM_UNKNOWN_FORMAT("TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML"),
     CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the attitude blocks: {0} ≠ {1}"),
-    CCSDS_AEM_NULL_ATTITUDE_TYPE("attitude type {0} cannot be null"),
+    CCSDS_AEM_NULL_ATTITUDE_TYPE("invalid attitude type {0}"),
     CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
     CCSDS_AEM_INVALID_ROTATION_SEQUENCE("the rotation sequence of the Euler angles {0} is invalid"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),

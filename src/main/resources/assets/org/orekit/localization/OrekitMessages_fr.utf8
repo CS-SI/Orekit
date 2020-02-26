@@ -582,8 +582,8 @@ EXCEPTIONAL_DATA_CONTEXT = une utilisation de ExceptionalDataContext a été dé
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents dans des blocs d''attitude : {0} ≠ {1}
 
-# attitude type {0} cannot be null
-CCSDS_AEM_NULL_ATTITUDE_TYPE = le mode d''attitude {0} ne peut pas être null
+# invalid attitude type {0}
+CCSDS_AEM_NULL_ATTITUDE_TYPE = le mode d''attitude {0} n''est pas valide
 
 # attitude type {0} in CCSDS AEM files is not implemented in Orekit
 CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = le mode d''attitude {0} des fichiers CCSDS AEM n''est pas encore implémenté dans Orekit
