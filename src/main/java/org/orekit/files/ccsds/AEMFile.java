@@ -33,7 +33,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 /**
  * This class stocks all the information of the Attitude Ephemeris Message (AEM) File parsed
  * by AEMParser. It contains the header and a list of Attitude Ephemerides Blocks each
- * containing metadata and a list of ephemerides data lines.
+ * containing metadata and a list of attitude ephemerides data lines.
  * @author Bryan Cazabonne
  * @since 10.2
  */
@@ -58,7 +58,7 @@ public class AEMFile extends ADMFile {
 
     /**
      * Get the list of attitude ephemerides blocks as an unmodifiable list.
-     * @return the list of ephemerides blocks
+     * @return the list of attitude ephemerides blocks
      */
     public List<AttitudeEphemeridesBlock> getAttitudeBlocks() {
         return Collections.unmodifiableList(attitudeBlocks);

@@ -201,7 +201,6 @@ public class AEMParser extends ADMParser {
      * @param reader   containing the ephemeris file.
      * @param fileName to use in error messages.
      * @return a parsed attitude ephemeris file.
-     * @throws IOException if {@code reader} throws one.
      */
     public AEMFile parse(final BufferedReader reader, final String fileName) {
 
@@ -394,9 +393,7 @@ public class AEMParser extends ADMParser {
         }
     }
 
-    /** Private class used to stock OEM parsing info.
-     * @author sports
-     */
+    /** Private class used to stock AEM parsing info. */
     private static class ParseInfo {
 
         /** Ephemerides block being parsed. */

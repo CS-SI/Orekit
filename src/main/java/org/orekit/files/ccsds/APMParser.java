@@ -59,11 +59,6 @@ public class APMParser extends ADMParser {
      * If such time systems are used, it must be initialized before parsing by calling {@link
      * #withMissionReferenceDate(AbsoluteDate)}.
      * </p>
-     * <p>
-     * The gravitational coefficient is not set here. If it is needed in order
-     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
-     * be initialized before parsing by calling {@link #withMu(double)}.
-     * </p>
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}. See
      * {@link #withDataContext(DataContext)}.
@@ -91,15 +86,10 @@ public class APMParser extends ADMParser {
      * If such time systems are used, it must be initialized before parsing by calling {@link
      * #withMissionReferenceDate(AbsoluteDate)}.
      * </p>
-     * <p>
-     * The gravitational coefficient is not set here. If it is needed in order
-     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
-     * be initialized before parsing by calling {@link #withMu(double)}.
-     * </p>
      *
      * @param dataContext used by the parser.
      *
-     * @see #OPMParser()
+     * @see #APMParser()
      * @see #withDataContext(DataContext)
      */
     public APMParser(final DataContext dataContext) {
@@ -309,9 +299,7 @@ public class APMParser extends ADMParser {
         }
     }
 
-    /** Private class used to stock OPM parsing info.
-     * @author sports
-     */
+    /** Private class used to stock APM parsing info. */
     private static class ParseInfo {
 
         /** APM file being read. */

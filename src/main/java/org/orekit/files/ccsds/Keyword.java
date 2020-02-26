@@ -300,11 +300,11 @@ public enum Keyword {
     I22,
     /** Moment of Inertia about the 3-axis. */
     I33,
-    /** Inertia Cross Product of the 1 & 2 axes. */
+    /** Inertia Cross Product of the 1 and 2 axes. */
     I12,
-    /** Inertia Cross Product of the 1 & 3 axes. */
+    /** Inertia Cross Product of the 1 and 3 axes. */
     I13,
-    /** Inertia Cross Product of the 2 & 3 axes. */
+    /** Inertia Cross Product of the 2 and 3 axes. */
     I23,
     /** Epoch of start of maneuver. */
     MAN_EPOCH_START,

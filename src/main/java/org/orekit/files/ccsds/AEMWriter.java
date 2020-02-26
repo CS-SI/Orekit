@@ -119,7 +119,7 @@ public class AEMWriter {
         final String objectName = this.spaceObjectName == null ? idToProcess : this.spaceObjectName;
         // Only one time scale per AEM file, see Section 4.2.5.4.2
         final TimeScale timeScale = firstSegment.getTimeScale();
-        // Metadata that is constant for the whole OEM file
+        // Metadata that is constant for the whole AEM file
         final Map<Keyword, String> metadata = new LinkedHashMap<>();
         metadata.put(Keyword.TIME_SYSTEM, firstSegment.getTimeScaleString());
         metadata.put(Keyword.ORIGINATOR,  this.originator);

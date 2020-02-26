@@ -119,13 +119,13 @@ public class APMFile extends ADMFile {
     /** Moment of Inertia about the 3-axis (kg.m²). */
     private double i33;
 
-    /** Inertia Cross Product of the 1 & 2 axes (kg.m²). */
+    /** Inertia Cross Product of the 1 and 2 axes (kg.m²). */
     private double i12;
 
-    /** Inertia Cross Product of the 1 & 3 axes (kg.m²). */
+    /** Inertia Cross Product of the 1 and 3 axes (kg.m²). */
     private double i13;
 
-    /** Inertia Cross Product of the 2 & 3 axes (kg.m²). */
+    /** Inertia Cross Product of the 2 and 3 axes (kg.m²). */
     private double i23;
 
     /** Epoch comments. The list contains a string for each line of comment. */
@@ -144,7 +144,7 @@ public class APMFile extends ADMFile {
     private List<APMManeuver> maneuvers;
 
     /**
-     * AEMFile constructor.
+     * APMFile constructor.
      */
     public APMFile() {
         this.metaData          = new ADMMetaData(this);
@@ -601,48 +601,48 @@ public class APMFile extends ADMFile {
     }
 
     /**
-     * Get the moment of Inertia about the 1 & 2 axes (N.m²).
-     * @return the moment of Inertia about the 1 & 2 axes.
+     * Get the moment of Inertia about the 1 and 2 axes (N.m²).
+     * @return the moment of Inertia about the 1 and 2 axes.
      */
     public double getI12() {
         return i12;
     }
 
     /**
-     * Set the moment of Inertia about the 1 & 2 axes (N.m²).
-     * @param i12 moment of Inertia about the 1 & 2 axes
+     * Set the moment of Inertia about the 1 and 2 axes (N.m²).
+     * @param i12 moment of Inertia about the 1 and 2 axes
      */
     void setI12(final double i12) {
         this.i12 = i12;
     }
 
     /**
-     * Get the moment of Inertia about the 1 & 3 axes (N.m²).
-     * @return the moment of Inertia about the 1 & 3 axes.
+     * Get the moment of Inertia about the 1 and 3 axes (N.m²).
+     * @return the moment of Inertia about the 1 and 3 axes.
      */
     public double getI13() {
         return i13;
     }
 
     /**
-     * Set the moment of Inertia about the 1 & 3 axes (N.m²).
-     * @param i13 moment of Inertia about the 1 & 3 axes
+     * Set the moment of Inertia about the 1 and 3 axes (N.m²).
+     * @param i13 moment of Inertia about the 1 and 3 axes
      */
     void setI13(final double i13) {
         this.i13 = i13;
     }
 
     /**
-     * Get the moment of Inertia about the 2 & 3 axes (N.m²).
-     * @return the moment of Inertia about the 2 & 3 axes.
+     * Get the moment of Inertia about the 2 and 3 axes (N.m²).
+     * @return the moment of Inertia about the 2 and 3 axes.
      */
     public double getI23() {
         return i23;
     }
 
     /**
-     * Set the moment of Inertia about the 2 & 3 axes (N.m²).
-     * @param i23 moment of Inertia about the 2 & 3 axes
+     * Set the moment of Inertia about the 2 and 3 axes (N.m²).
+     * @param i23 moment of Inertia about the 2 and 3 axes
      */
     void setI23(final double i23) {
         this.i23 = i23;

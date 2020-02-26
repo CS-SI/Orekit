@@ -30,16 +30,16 @@ import org.orekit.time.TimeScale;
  */
 public class ADMMetaData {
 
-    /** ODM file to which these meta-data belong. */
+    /** ADM file to which these meta-data belong. */
     private final ADMFile admFile;
 
-    /** Time System: used for metadata, orbit state and covariance data. */
+    /** Time System: used for metadata and attitude data data. */
     private CcsdsTimeScale timeSystem;
 
-    /** Spacecraft name for which the orbit state is provided. */
+    /** Spacecraft name for which the attitude data are provided. */
     private String objectName;
 
-    /** Object identifier of the object for which the orbit state is provided. */
+    /** Object identifier of the object for which the attitude data are provided. */
     private String objectID;
 
     /** Launch Year. */
@@ -65,7 +65,8 @@ public class ADMMetaData {
     /** Metadata comments. The list contains a string for each line of comment. */
     private List<String> comment;
 
-    /** Create a new meta-data.
+    /**
+     * Create a new meta-data.
      * @param admFile ADM file to which these meta-data belong
      */
     public ADMMetaData(final ADMFile admFile) {
@@ -73,28 +74,32 @@ public class ADMMetaData {
         comment = new ArrayList<String>();
     }
 
-    /** Get the ADM file to which these meta-data belong.
+    /**
+     * Get the ADM file to which these meta-data belong.
      * @return ADM file to which these meta-data belong
      */
     public ADMFile getADMFile() {
         return admFile;
     }
 
-    /** Get the Time System.
+    /**
+     * Get the Time System.
      * @return the time system
      */
     public CcsdsTimeScale getTimeSystem() {
         return timeSystem;
     }
 
-    /** Set the Time System.
+    /**
+     * Set the Time System.
      * @param timeSystem the time system to be set
      */
     void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
     }
 
-    /** Get the time scale.
+    /**
+     * Get the time scale.
      * @return the time scale.
      * @see #getTimeSystem()
      */
@@ -104,28 +109,32 @@ public class ADMMetaData {
                 admFile.getDataContext().getTimeScales());
     }
 
-    /** Get the spacecraft name for which the orbit state is provided.
+    /**
+     * Get the spacecraft name for which the attitude data are provided.
      * @return the spacecraft name
      */
     public String getObjectName() {
         return objectName;
     }
 
-    /** Set the spacecraft name for which the orbit state is provided.
+    /**
+     * Set the spacecraft name for which the attitude data are provided.
      * @param objectName the spacecraft name to be set
      */
     void setObjectName(final String objectName) {
         this.objectName = objectName;
     }
 
-    /** Get the spacecraft ID for which the orbit state is provided.
+    /**
+     * Get the spacecraft ID for which the attitude data are provided.
      * @return the spacecraft ID
      */
     public String getObjectID() {
         return objectID;
     }
 
-    /** Set the spacecraft ID for which the orbit state is provided.
+    /**
+     * Set the spacecraft ID for which the attitude data are provided.
      * @param objectID the spacecraft ID to be set
      */
     void setObjectID(final String objectID) {

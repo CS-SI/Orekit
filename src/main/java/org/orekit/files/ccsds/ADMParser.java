@@ -230,7 +230,7 @@ public abstract class ADMParser {
     /**
      * Parse a CCSDS Attitude Data Message.
      * @param fileName name of the file containing the message
-     * @return parsed orbit
+     * @return parsed ADM file
      */
     public ADMFile parse(final String fileName) {
         try (InputStream stream = new FileInputStream(fileName)) {
@@ -243,7 +243,7 @@ public abstract class ADMParser {
     /**
      * Parse a CCSDS Attitude Data Message.
      * @param stream stream containing message
-     * @return parsed orbit
+     * @return parsed ADM file
      */
     public ADMFile parse(final InputStream stream) {
         return parse(stream, "<unknown>");
@@ -253,7 +253,7 @@ public abstract class ADMParser {
      * Parse a CCSDS Attitude Data Message.
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
-     * @return parsed orbit
+     * @return parsed ADM file
      */
     public abstract ADMFile parse(InputStream stream, String fileName);
 
