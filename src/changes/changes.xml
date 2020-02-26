@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="655">
+        Added support for CCSDS ADM files.
+      </action>
       <action dev="maxime" type="add" issue="649">
         Added a piece wise drag force model: TimeSpanDragForce in forces package.
       </action>
