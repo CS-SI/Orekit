@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.complex.Quaternion;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -39,43 +39,25 @@ public class APMFile extends ADMFile {
     private AbsoluteDate epoch;
 
     /** Reference frame specifying one frame of the transformation. */
-    private Frame qFrameA;
+    private String qFrameA;
 
     /** Reference frame specifying the second portion of the transformation. */
-    private Frame qFrameB;
+    private String qFrameB;
 
     /** Rotation direction of the attitude quaternion. */
     private String qDir;
 
-    /** First coordinate of the vectorial part of the quaternion. */
-    private double q1;
+    /** Quaternion. */
+    private Quaternion quaternion;
 
-    /** Second coordinate of the vectorial part of the quaternion. */
-    private double q2;
-
-    /** Third coordinate of the vectorial part of the quaternion. */
-    private double q3;
-
-    /** Scalar coordinate of the quaternion. */
-    private double qc;
-
-    /** Derivative of {@link #q1} (s-1). */
-    private double q1Dot;
-
-    /** Derivative of {@link #q2} (s-1). */
-    private double q2Dot;
-
-    /** Derivative of {@link #q3} (s-1). */
-    private double q3Dot;
-
-    /** Derivative of {@link #qc} (s-1). */
-    private double qcDot;
+    /** Derivative of the Quaternion. */
+    private Quaternion quaternionDot;
 
     /** Name of the reference frame specifying one frame of the transformation. */
-    private Frame eulerFrameA;
+    private String eulerFrameA;
 
     /** Name of the reference frame specifying the second portion of the transformation. */
-    private Frame eulerFrameB;
+    private String eulerFrameB;
 
     /** Rotation direction of the attitude Euler angles. */
     private String eulerDir;
@@ -84,10 +66,10 @@ public class APMFile extends ADMFile {
      * Rotation order of the {@link #eulerFrameA} to {@link #eulerFrameB} or vice versa.
      * (e.g., 312, where X=1, Y=2, Z=3)
      */
-    private int eulerRotSeq;
+    private String eulerRotSeq;
 
     /** Frame of reference in which the {@link #rotationAngles} are expressed. */
-    private Frame rateFrame;
+    private String rateFrame;
 
     /** Euler angles [rad]. */
     private Vector3D rotationAngles;
@@ -96,10 +78,10 @@ public class APMFile extends ADMFile {
     private Vector3D rotationRates;
 
     /** Name of the reference frame specifying one frame of the transformation. */
-    private Frame spinFrameA;
+    private String spinFrameA;
 
     /** Name of the reference frame specifying the second portion of the transformation. */
-    private Frame spinFrameB;
+    private String spinFrameB;
 
     /** Rotation direction of the Spin angles. */
     private String spinDir;
@@ -126,7 +108,7 @@ public class APMFile extends ADMFile {
     private double nutationPhase;
 
     /** Coordinate system for the inertia tensor. */
-    private Frame inertiaRefFrame;
+    private String inertiaRefFrame;
 
     /** Moment of Inertia about the 1-axis (kg.m²). */
     private double i11;
@@ -171,6 +153,10 @@ public class APMFile extends ADMFile {
         this.spinComment       = Collections.emptyList();
         this.spacecraftComment = Collections.emptyList();
         this.maneuvers         = new ArrayList<APMManeuver>();
+        this.rotationAngles    = Vector3D.ZERO;
+        this.rotationRates     = Vector3D.ZERO;
+        this.quaternion        = new Quaternion(0.0, 0.0, 0.0, 0.0);
+        this.quaternionDot     = new Quaternion(0.0, 0.0, 0.0, 0.0);
     }
 
     /**
@@ -201,7 +187,7 @@ public class APMFile extends ADMFile {
      * Get the reference frame specifying one frame of the transformation.
      * @return the reference frame A
      */
-    public Frame getQuaternionFrameA() {
+    public String getQuaternionFrameAString() {
         return qFrameA;
     }
 
@@ -209,7 +195,7 @@ public class APMFile extends ADMFile {
      * Set the reference frame specifying one frame of the transformation.
      * @param frameA the frame to be set
      */
-    void setQuaternionFrameA(final Frame frameA) {
+    void setQuaternionFrameAString(final String frameA) {
         this.qFrameA = frameA;
     }
 
@@ -217,7 +203,7 @@ public class APMFile extends ADMFile {
      * Get the reference frame specifying the second portion of the transformation.
      * @return the reference frame B
      */
-    public Frame getQuaternionFrameB() {
+    public String getQuaternionFrameBString() {
         return qFrameB;
     }
 
@@ -225,7 +211,7 @@ public class APMFile extends ADMFile {
      * Set the reference frame specifying the second portion of the transformation.
      * @param frameB the frame to be set
      */
-    void setQuaternionFrameB(final Frame frameB) {
+    void setQuaternionFrameBString(final String frameB) {
         this.qFrameB = frameB;
     }
 
@@ -246,163 +232,67 @@ public class APMFile extends ADMFile {
     }
 
     /**
-     * Get the first coordinate of the vectorial part of the quaternion.
-     * @return q1
+     * Get the quaternion.
+     * @return quaternion
      */
-    public double getQ1() {
-        return q1;
+    public Quaternion getQuaternion() {
+        return quaternion;
     }
 
     /**
-     * Set the first coordinate of the vectorial part of the quaternion.
-     * @param q1 value to set
+     * Set the quaternion.
+     * @param q quaternion to set
      */
-    void setQ1(final double q1) {
-        this.q1 = q1;
+    void setQuaternion(final Quaternion q) {
+        this.quaternion = q;
     }
 
     /**
-     * Get the second coordinate of the vectorial part of the quaternion.
-     * @return q2
+     * Get the derivative of the quaternion.
+     * @return the derivative of the quaternion
      */
-    public double getQ2() {
-        return q2;
+    public Quaternion getQuaternionDot() {
+        return quaternionDot;
     }
 
     /**
-     * Set the second coordinate of the vectorial part of the quaternion.
-     * @param q2 value to set
+     * Set the derivative of the quaternion.
+     * @param qDot quaternion to set
      */
-    void setQ2(final double q2) {
-        this.q2 = q2;
-    }
-
-    /**
-     * Get the third coordinate of the vectorial part of the quaternion.
-     * @return q3
-     */
-    public double getQ3() {
-        return q3;
-    }
-
-    /**
-     * Set the third coordinate of the vectorial part of the quaternion.
-     * @param q3 value to set
-     */
-    void setQ3(final double q3) {
-        this.q3 = q3;
-    }
-
-    /**
-     * Get the scalar coordinate of the quaternion.
-     * @return qc
-     */
-    public double getQC() {
-        return qc;
-    }
-
-    /**
-     * Set the scalar coordinate of the quaternion.
-     * @param q value to set
-     */
-    void setQC(final double q) {
-        this.qc = q;
-    }
-
-    /**
-     * Get the derivative of {@link #q1}.
-     * @return q1Dot
-     */
-    public double getQ1Dot() {
-        return q1Dot;
-    }
-
-    /**
-     * Set the derivative of {@link #q1}.
-     * @param q1Dot value to set
-     */
-    void setQ1Dot(final double q1Dot) {
-        this.q1Dot = q1Dot;
-    }
-
-    /**
-     * Get the derivative of {@link #q2}.
-     * @return q2Dot
-     */
-    public double getQ2Dot() {
-        return q2Dot;
-    }
-
-    /**
-     * Set the derivative of {@link #q2}.
-     * @param q2Dot value to set
-     */
-    void setQ2Dot(final double q2Dot) {
-        this.q2Dot = q2Dot;
-    }
-
-    /**
-     * Get the derivative of {@link #q3}.
-     * @return q3Dot
-     */
-    public double getQ3Dot() {
-        return q3Dot;
-    }
-
-    /**
-     * Set the derivative of {@link #q3}.
-     * @param q3Dot value to set
-     */
-    void setQ3Dot(final double q3Dot) {
-        this.q3Dot = q3Dot;
-    }
-
-    /**
-     * Get the derivative of {@link #qc}.
-     * @return qcDot
-     */
-    public double getQCDot() {
-        return qcDot;
-    }
-
-    /**
-     * Set the scalar coordinate of the quaternion.
-     * @param qDot value to set
-     */
-    void setQCDot(final double qDot) {
-        this.qcDot = qDot;
+    void setQuaternionDot(final Quaternion qDot) {
+        this.quaternionDot = qDot;
     }
 
     /**
      * Get the reference frame specifying one frame of the transformation.
      * @return reference frame A
      */
-    public Frame getEulerFrameA() {
+    public String getEulerFrameAString() {
         return eulerFrameA;
     }
 
     /**
      * Set the reference frame specifying one frame of the transformation.
-     * @param eulerFrameA the frame to be set
+     * @param frame the frame to be set
      */
-    void setEulerFrameA(final Frame eulerFrameA) {
-        this.eulerFrameA = eulerFrameA;
+    void setEulerFrameAString(final String frame) {
+        this.eulerFrameA = frame;
     }
 
     /**
      * Get the reference frame specifying the second portion of the transformation.
      * @return reference frame B
      */
-    public Frame getEulerFrameB() {
+    public String getEulerFrameBString() {
         return eulerFrameB;
     }
 
     /**
      * Set the reference frame specifying the second portion of the transformation.
-     * @param eulerFrameB the frame to be set
+     * @param frame the frame to be set
      */
-    void setEulerFrameB(final Frame eulerFrameB) {
-        this.eulerFrameB = eulerFrameB;
+    void setEulerFrameBString(final String frame) {
+        this.eulerFrameB = frame;
     }
 
     /**
@@ -425,7 +315,7 @@ public class APMFile extends ADMFile {
      * Get the rotation order of Euler angles (X=1, Y=2, Z=3).
      * @return rotation order
      */
-    public int getEulerRotSeq() {
+    public String getEulerRotSeq() {
         return eulerRotSeq;
     }
 
@@ -433,7 +323,7 @@ public class APMFile extends ADMFile {
      * Set the rotation order for Euler angles (X=1, Y=2, Z=3).
      * @param eulerRotSeq order to be setS
      */
-    void setEulerRotSeq(final int eulerRotSeq) {
+    void setEulerRotSeq(final String eulerRotSeq) {
         this.eulerRotSeq = eulerRotSeq;
     }
 
@@ -441,16 +331,16 @@ public class APMFile extends ADMFile {
      * Get the frame of reference in which the Euler angles are expressed.
      * @return the frame of reference
      */
-    public Frame getRateFrame() {
+    public String getRateFrameString() {
         return rateFrame;
     }
 
     /**
      * Set the frame of reference in which the Euler angles are expressed.
-     * @param rateFrame frame to be set
+     * @param frame frame to be set
      */
-    void setRateFrame(final Frame rateFrame) {
-        this.rateFrame = rateFrame;
+    void setRateFrameString(final String frame) {
+        this.rateFrame = frame;
     }
 
     /**
@@ -470,7 +360,7 @@ public class APMFile extends ADMFile {
     }
 
     /**
-     * Get the rates of the Euler angles.
+     * Get the rates of the Euler angles (rad/s).
      * @return rotation rates
      */
     public Vector3D getRotationRates() {
@@ -478,7 +368,7 @@ public class APMFile extends ADMFile {
     }
 
     /**
-     * Set the rates of the Euler angles.
+     * Set the rates of the Euler angles (rad/s).
      * @param rotationRates coordinates to be set
      */
     void setRotationRates(final Vector3D rotationRates) {
@@ -489,32 +379,32 @@ public class APMFile extends ADMFile {
      * Get the reference frame specifying one frame of the transformation (spin).
      * @return reference frame
      */
-    public Frame getSpinFrameA() {
+    public String getSpinFrameAString() {
         return spinFrameA;
     }
 
     /**
      * Set the reference frame specifying one frame of the transformation (spin).
-     * @param spinFrameA frame to be set
+     * @param frame frame to be set
      */
-    void setSpinFrameA(final Frame spinFrameA) {
-        this.spinFrameA = spinFrameA;
+    void setSpinFrameAString(final String frame) {
+        this.spinFrameA = frame;
     }
 
     /**
      * Get the reference frame specifying the second portion of the transformation (spin).
      * @return reference frame
      */
-    public Frame getSpinFrameB() {
+    public String getSpinFrameBString() {
         return spinFrameB;
     }
 
     /**
      * Set the reference frame specifying the second portion of the transformation (spin).
-     * @param spinFrameB frame to be set
+     * @param frame frame to be set
      */
-    void setSpinFrameB(final Frame spinFrameB) {
-        this.spinFrameB = spinFrameB;
+    void setSpinFrameBString(final String frame) {
+        this.spinFrameB = frame;
     }
 
     /**
@@ -650,16 +540,16 @@ public class APMFile extends ADMFile {
      * Get the coordinate system for the inertia tensor.
      * @return the coordinate system for the inertia tensor
      */
-    public Frame getInertiaRefFrame() {
+    public String getInertiaRefFrameString() {
         return inertiaRefFrame;
     }
 
     /**
      * Set the coordinate system for the inertia tensor.
-     * @param inertiaRefFrame frame to be set
+     * @param frame frame to be set
      */
-    void setInertiaRefFrame(final Frame inertiaRefFrame) {
-        this.inertiaRefFrame = inertiaRefFrame;
+    void setInertiaRefFrameString(final String frame) {
+        this.inertiaRefFrame = frame;
     }
 
     /**
@@ -881,7 +771,7 @@ public class APMFile extends ADMFile {
         private AbsoluteDate epochStart;
 
         /** Coordinate system for the torque vector, for absolute frames. */
-        private Frame refFrame;
+        private String refFrame;
 
         /** Duration (value is 0 for impulsive maneuver). */
         private double duration;
@@ -916,21 +806,20 @@ public class APMFile extends ADMFile {
             this.epochStart = epochStart;
         }
 
-
         /**
          * Get Coordinate system for the torque vector, for absolute frames.
          * @return coordinate system for the torque vector, for absolute frames
          */
-        public Frame getRefFrame() {
+        public String getRefFrameString() {
             return refFrame;
         }
 
         /**
          * Set Coordinate system for the torque vector, for absolute frames.
-         * @param refFrame coordinate system for the torque vector, for absolute frames
+         * @param frame coordinate system for the torque vector, for absolute frames
          */
-        void setRefFrame(final Frame refFrame) {
-            this.refFrame = refFrame;
+        void setRefFrameString(final String frame) {
+            this.refFrame = frame;
         }
 
         /**

@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.hipparchus.complex.Quaternion;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -369,12 +372,185 @@ public abstract class ADMParser {
     }
 
     /**
-     * Parse a CCSDS frame.
-     * @param frameName name of the frame, as the value of a CCSDS key=value line
-     * @return CCSDS frame corresponding to the name
+     * Parse a general state data key = value entry.
+     * @param keyValue key = value pair
+     * @param general instance to update with parsed entry
+     * @param comment previous comment lines, will be emptied if used by the keyword
+     * @return true if the keyword was a meta-data keyword and has been parsed
      */
-    protected CCSDSFrame parseCCSDSFrame(final String frameName) {
-        return CCSDSFrame.valueOf(frameName.replaceAll("-", ""));
+    protected boolean parseGeneralStateDataEntry(final KeyValue keyValue,
+                                                 final APMFile general, final List<String> comment) {
+        switch (keyValue.getKeyword()) {
+
+            case EPOCH:
+                general.setEpochComment(comment);
+                comment.clear();
+                general.setEpoch(parseDate(keyValue.getValue(), general.getMetaData().getTimeSystem()));
+                return true;
+
+            case QC_DOT:
+                general.setQuaternionDot(new Quaternion(keyValue.getDoubleValue(),
+                                                        general.getQuaternionDot().getQ1(),
+                                                        general.getQuaternionDot().getQ2(),
+                                                        general.getQuaternionDot().getQ3()));
+                return true;
+
+            case Q1_DOT:
+                general.setQuaternionDot(new Quaternion(general.getQuaternionDot().getQ0(),
+                                                        keyValue.getDoubleValue(),
+                                                        general.getQuaternionDot().getQ2(),
+                                                        general.getQuaternionDot().getQ3()));
+                return true;
+
+            case Q2_DOT:
+                general.setQuaternionDot(new Quaternion(general.getQuaternionDot().getQ0(),
+                                                        general.getQuaternionDot().getQ1(),
+                                                        keyValue.getDoubleValue(),
+                                                        general.getQuaternionDot().getQ3()));
+                return true;
+
+            case Q3_DOT:
+                general.setQuaternionDot(new Quaternion(general.getQuaternionDot().getQ0(),
+                                                        general.getQuaternionDot().getQ1(),
+                                                        general.getQuaternionDot().getQ2(),
+                                                        keyValue.getDoubleValue()));
+                return true;
+
+            case EULER_FRAME_A:
+                general.setEulerComment(comment);
+                comment.clear();
+                general.setEulerFrameAString(keyValue.getValue());
+                return true;
+
+            case EULER_FRAME_B:
+                general.setEulerFrameBString(keyValue.getValue());
+                return true;
+
+            case EULER_DIR:
+                general.setEulerDirection(keyValue.getValue());
+                return true;
+
+            case EULER_ROT_SEQ:
+                general.setEulerRotSeq(keyValue.getValue());
+                return true;
+
+            case RATE_FRAME:
+                general.setRateFrameString(keyValue.getValue());
+                return true;
+
+            case X_ANGLE:
+                general.setRotationAngles(new Vector3D(toRadians(keyValue),
+                                                       general.getRotationAngles().getY(),
+                                                       general.getRotationAngles().getZ()));
+                return true;
+
+            case Y_ANGLE:
+                general.setRotationAngles(new Vector3D(general.getRotationAngles().getX(),
+                                                       toRadians(keyValue),
+                                                       general.getRotationAngles().getZ()));
+                return true;
+
+            case Z_ANGLE:
+                general.setRotationAngles(new Vector3D(general.getRotationAngles().getX(),
+                                                       general.getRotationAngles().getY(),
+                                                       toRadians(keyValue)));
+                return true;
+
+            case X_RATE:
+                general.setRotationRates(new Vector3D(toRadians(keyValue),
+                                                      general.getRotationRates().getY(),
+                                                      general.getRotationRates().getZ()));
+                return true;
+
+            case Y_RATE:
+                general.setRotationRates(new Vector3D(general.getRotationRates().getX(),
+                                                      toRadians(keyValue),
+                                                      general.getRotationRates().getZ()));
+                return true;
+
+            case Z_RATE:
+                general.setRotationRates(new Vector3D(general.getRotationRates().getX(),
+                                                      general.getRotationRates().getY(),
+                                                      toRadians(keyValue)));
+                return true;
+
+            case SPIN_FRAME_A:
+                general.setSpinComment(comment);
+                comment.clear();
+                general.setSpinFrameAString(keyValue.getValue());
+                return true;
+
+            case SPIN_FRAME_B:
+                general.setSpinFrameBString(keyValue.getValue());
+                return true;
+
+            case SPIN_DIR:
+                general.setSpinDirection(keyValue.getValue());
+                return true;
+
+            case SPIN_ALPHA:
+                general.setSpinAlpha(toRadians(keyValue));
+                return true;
+
+            case SPIN_DELTA:
+                general.setSpinDelta(toRadians(keyValue));
+                return true;
+
+            case SPIN_ANGLE:
+                general.setSpinAngle(toRadians(keyValue));
+                return true;
+
+            case SPIN_ANGLE_VEL:
+                general.setSpinAngleVel(toRadians(keyValue));
+                return true;
+
+            case NUTATION:
+                general.setNutation(toRadians(keyValue));
+                return true;
+
+            case NUTATION_PER:
+                general.setNutationPeriod(keyValue.getDoubleValue());
+                return true;
+
+            case NUTATION_PHASE:
+                general.setNutationPhase(toRadians(keyValue));
+                return true;
+
+            case INERTIA_REF_FRAME:
+                general.setSpacecraftComment(comment);
+                comment.clear();
+                general.setInertiaRefFrameString(keyValue.getValue());
+                return true;
+
+            case I11:
+                general.setI11(keyValue.getDoubleValue());
+                return true;
+
+            case I22:
+                general.setI22(keyValue.getDoubleValue());
+                return true;
+
+            case I33:
+                general.setI33(keyValue.getDoubleValue());
+                return true;
+
+            case I12:
+                general.setI12(keyValue.getDoubleValue());
+                return true;
+
+            case I13:
+                general.setI13(keyValue.getDoubleValue());
+                return true;
+
+            case I23:
+                general.setI23(keyValue.getDoubleValue());
+                return true;
+
+            default:
+                return false;
+
+        }
+
     }
 
     /**
@@ -386,6 +562,15 @@ public abstract class ADMParser {
     protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
         return timeSystem.parseDate(date, conventions, missionReferenceDate,
                 getDataContext().getTimeScales());
+    }
+
+    /**
+     * Convert a {@link KeyValue} in degrees to a real value in randians.
+     * @param keyValue key value
+     * @return the value in radians
+     */
+    protected double toRadians(final KeyValue keyValue) {
+        return FastMath.toRadians(keyValue.getDoubleValue());
     }
 
 }
