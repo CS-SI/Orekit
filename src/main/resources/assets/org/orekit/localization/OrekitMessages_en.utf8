@@ -579,3 +579,14 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observations {0} and {1} are not in c
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 
+# inconsistent time systems in the attitude blocks: {0} ≠ {1}
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = inconsistent time systems in the attitude blocks: {0} ≠ {1}
+
+# attitude type {0} cannot be null
+CCSDS_AEM_NULL_ATTITUDE_TYPE = attitude type {0} cannot be null
+
+# attitude type {0} in CCSDS AEM files is not implemented in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = attitude type {0} in CCSDS AEM files is not implemented in Orekit
+
+# the rotation sequence of the Euler angles {0} is invalid
+CCSDS_AEM_INVALID_ROTATION_SEQUENCE = the rotation sequence of the Euler angles {0} is invalid
