@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
-                        sh 'mvn verify assembly:single'
+                        sh 'mvn verify site'
                     }
                     else if ( env.BRANCH_NAME ==~ /^develop$/ ) {
                         sh 'mvn install site'
@@ -57,11 +57,6 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            script {
-                if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
-                    archiveArtifacts artifacts: 'target/*.zip', fingerprint: true
-                }
-            }
             junit testResults: '**/target/surefire-reports/*.xml'
             jacoco execPattern: 'target/**.exec',
                    classPattern: '**/classes',

@@ -578,4 +578,3 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = Die Beobachtungen {0} und {1} besitze
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = Momentan wird noch die ExceptionalDataContext Klasse benutzt. Diese wird typischerweise ausschließlich für das Erkennen von Entwicklerfehler benutzt.
-

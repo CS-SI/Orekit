@@ -29,8 +29,6 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
@@ -119,13 +117,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     public HolmesFeatherstoneAttractionModel(final Frame centralBodyFrame,
                                              final NormalizedSphericalHarmonicsProvider provider) {
 
-        try {
-            gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
 
         this.provider  = provider;
         this.bodyFrame = centralBodyFrame;

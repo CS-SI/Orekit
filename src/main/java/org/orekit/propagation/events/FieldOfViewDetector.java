@@ -58,6 +58,20 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * otherwise some short passes could be missed.</p>
      * @param pvTarget Position/velocity provider of the considered target
      * @param fov Field Of View
+     * @deprecated as of 10.1, replaced by {@link #FieldOfViewDetector(PVCoordinatesProvider, FieldOfView)}
+     */
+    @Deprecated
+    public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final org.orekit.propagation.events.FieldOfView fov) {
+        this(pvTarget, 0.0, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV, fov);
+    }
+
+    /** Build a new instance.
+     * <p>The maximal interval between distance to FOV boundary checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param pvTarget Position/velocity provider of the considered target
+     * @param fov Field Of View
+     * @since 10.1
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final FieldOfView fov) {
         this(pvTarget, 0.0, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV, fov);
@@ -71,10 +85,29 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
      * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
-     * @since 10.0
+     * @since 10.1
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                final VisibilityTrigger trigger, final FieldOfView fov) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing<FieldOfViewDetector>(),
+             pvTarget, radiusTarget, trigger, fov);
+    }
+
+    /** Build a new instance.
+     * <p>The maximal interval between distance to FOV boundary checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param pvTarget Position/velocity provider of the considered target
+     * @param radiusTarget radius of the target, considered to be a spherical body (m)
+     * @param trigger visibility trigger for spherical bodies
+     * @param fov Field Of View
+     * @since 10.0
+     * @deprecated as of 10.1, replaced by {@link #FieldOfViewDetector(PVCoordinatesProvider, double, VisibilityTrigger, FieldOfView)}
+     */
+    @Deprecated
+    public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
+                               final VisibilityTrigger trigger, final org.orekit.propagation.events.FieldOfView fov) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing<FieldOfViewDetector>(),
              pvTarget, radiusTarget, trigger, fov);

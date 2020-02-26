@@ -83,13 +83,14 @@ public class GalileoPropagator extends AbstractGNSSPropagator {
          * </p>
          *
          * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+         * Another data context can be set using
+         * {@code Builder(final GalileoOrbitalElements gpsOrbElt, final Frames frames)}</p>
          *
          * @param galileoOrbElt the Galileo orbital elements to be used by the Galileo propagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #GalileoPropagator.Builder(GalileoOrbitalElements galileoOrbElt, Frames frames)
          */
         @DefaultDataContext
         public Builder(final GalileoOrbitalElements galileoOrbElt) {

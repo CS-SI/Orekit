@@ -22,8 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -71,15 +69,10 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
      * @param cs specular reflection coefficient Cs between 0.0 an 1.0
      */
     public IsotropicRadiationClassicalConvention(final double crossSection, final double ca, final double cs) {
-        try {
-            absorptionParameterDriver = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                            ca, SCALE, 0.0, 1.0);
-            reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                            cs, SCALE, 0.0, 1.0);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        absorptionParameterDriver = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
+                                                        ca, SCALE, 0.0, 1.0);
+        reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                        cs, SCALE, 0.0, 1.0);
         this.crossSection = crossSection;
     }
 

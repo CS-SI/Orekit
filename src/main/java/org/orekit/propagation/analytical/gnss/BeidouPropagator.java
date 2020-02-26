@@ -84,13 +84,14 @@ public class BeidouPropagator extends AbstractGNSSPropagator {
          * </p>
          *
          * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+         * Another data context can be set using
+         * {@code Builder(final BeidouOrbitalElements gpsOrbElt, final Frames frames)}</p>
          *
          * @param bdsOrbElt the Beidou orbital elements to be used by the Beidou propagator.
          * @see #attitudeProvider(AttitudeProvider provider)
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
-         * @see #BeidouPropagator.Builder(BeidouOrbitalElements bdsOrbElt, Frames frames)
          */
         @DefaultDataContext
         public Builder(final BeidouOrbitalElements bdsOrbElt) {

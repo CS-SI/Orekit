@@ -18,7 +18,7 @@
             <id>Nexus-Orekit</id>
             <name>Maven Repository Manager</name>
             <url>https://packages.orekit.org/repository/maven-public/</url>
-            <mirrorOf>central</mirrorOf>
+            <mirrorOf>*</mirrorOf>
         </mirror>
     </mirrors>
     <servers>
@@ -37,4 +37,25 @@
             <privateKey>${user.home}/.ssh/id_website</privateKey>
         </server>
     </servers>
+    <profiles>
+        <profile>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>Nexus-Orekit</id>
+                    <name>Nexus Public Repository</name>
+                    <url>https://packages.orekit.org/repository/maven-public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
 </settings>
