@@ -28,10 +28,12 @@ import org.orekit.utils.IERSConventions;
 /**
  * The NDMFile (Navigation Data Message) class represents the navigation
  * messages used by the CCSDS format, (i.e. the Attitude Data Message (ADM),
- * and the Orbit Data Message (ODM). It contains the information of the message's
- * header and configuration data (set in the parser).
+ * the Orbit Data Message (ODM) and the Tracking Data Message (TDM)).
+ * It contains the information of the message's header and configuration data
+ * (set in the parser).
  * @see ADMFile
  * @see ODMFile
+ * @see TDMFile
  * @author Bryan Cazabonne
  * @since 10.2
  */
