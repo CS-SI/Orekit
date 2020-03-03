@@ -329,7 +329,7 @@ public class StreamingAemWriter {
         /** Metadata for this AEM Segment. */
         private final Map<Keyword, String> metadata;
 
-        /**e(f
+        /**
          * Create a new segment writer.
          * @param metadata to use when writing this segment.
          */
