@@ -578,3 +578,15 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = les observations aux dates {0} et {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = une utilisation de ExceptionalDataContext a été détectée. Ce mécanisme est généralement activé explicitement pour détecter des erreur de développement
+
+# inconsistent time systems in the attitude blocks: {0} ≠ {1}
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents dans des blocs d''attitude : {0} ≠ {1}
+
+# invalid attitude type {0}
+CCSDS_AEM_NULL_ATTITUDE_TYPE = le mode d''attitude {0} n''est pas valide
+
+# attitude type {0} in CCSDS AEM files is not implemented in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = le mode d''attitude {0} des fichiers CCSDS AEM n''est pas encore implémenté dans Orekit
+
+# the rotation sequence of the Euler angles {0} is invalid
+CCSDS_AEM_INVALID_ROTATION_SEQUENCE = la séquence de rotation {0} est invalide pour les angles d''Euler

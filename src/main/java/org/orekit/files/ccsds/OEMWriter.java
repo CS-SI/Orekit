@@ -56,11 +56,7 @@ public class OEMWriter implements EphemerisFileWriter {
     /** Default originator field value if user specifies none. **/
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
-    /**
-     * The space object ID we want to export, or null if we will process
-     * whichever space object is in an {@link EphemerisFile} with only one space
-     * object in it.
-     */
+    /** The interpolation method for ephemeris data. */
     private final InterpolationMethod interpolationMethod;
 
     /** Originator name, usually the organization and/or country. **/
