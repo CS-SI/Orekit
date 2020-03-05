@@ -32,6 +32,9 @@
              a new data context implementation, connection with Gitlab CI, improved documentation,
              the migration of the tutorials to a separate sister project, as well as several other minor
              features and bug fixes. See the list below for a full description of the changes.">
+      <action dev="nick" type="update" >
+        upgrade maven-checkstyle-plugin to 3.1.1.
+      </action>
       <action dev="ward" type="fix">
         Improve performance of loading CCSDS files.
       </action>
