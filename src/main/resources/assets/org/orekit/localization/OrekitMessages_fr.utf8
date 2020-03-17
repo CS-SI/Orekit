@@ -590,3 +590,9 @@ CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = le mode d''attitude {0} des fichiers C
 
 # the rotation sequence of the Euler angles {0} is invalid
 CCSDS_AEM_INVALID_ROTATION_SEQUENCE = la séquence de rotation {0} est invalide pour les angles d''Euler
+
+# observations {0}, {1} and {2} must have different dates
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = les observations {0}, {1} et {2} doivent avoir des dates différentes
+
+# observations are not in the same plane
+NON_COPLANAR_POINTS = les observations ne sont pas dans le même plan
