@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -47,7 +47,7 @@ public class TimeSpanMap<T> {
      */
     public TimeSpanMap(final T entry) {
         data = new TreeSet<Transition<T>>(new ChronologicalComparator());
-        data.add(new Transition<T>(AbsoluteDate.J2000_EPOCH, entry, entry));
+        data.add(new Transition<T>(AbsoluteDate.ARBITRARY_EPOCH, entry, entry));
     }
 
     /** Add an entry valid before a limit date.
@@ -60,6 +60,9 @@ public class TimeSpanMap<T> {
      * by a call to this method or by a call to {@link #addValidAfter(Object,
      * AbsoluteDate)}. Repeating a transition date will lead to unexpected
      * result and is not supported.
+     * </p>
+     * <p>
+     * Using addValidBefore(entry, t) will make 'entry' valid in ]-∞, t[ (note the open bracket).
      * </p>
      * @param entry entry to add
      * @param latestValidityDate date before which the entry is valid
@@ -102,6 +105,9 @@ public class TimeSpanMap<T> {
      * by a call to this method or by a call to {@link #addValidBefore(Object,
      * AbsoluteDate)}. Repeating a transition date will lead to unexpected
      * result and is not supported.
+     * </p>
+     * <p>
+     * Using addValidAfter(entry, t) will make 'entry' valid [t, +∞[ (note the closed bracket).
      * </p>
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid

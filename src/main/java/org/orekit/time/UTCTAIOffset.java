@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -67,17 +67,6 @@ class UTCTAIOffset implements TimeStamped, Serializable {
     /** Offset slope in seconds per TAI second (TAI minus UTC / dTAI). */
     private final double slopeTAI;
 
-    /** Simple constructor for a constant model.
-     * @param leapDate leap date
-     * @param leapDateMJD leap date in Modified Julian Day
-     * @param leap value of the leap at offset validity start (in seconds)
-     * @param offset offset in seconds (TAI minus UTC)
-     */
-    UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
-                        final double leap, final double offset) {
-        this(leapDate, leapDateMJD, leap, offset, 0, 0);
-    }
-
     /** Simple constructor for a linear model.
      * @param leapDate leap date
      * @param leapDateMJD leap date in Modified Julian Day
@@ -85,16 +74,16 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @param offset offset in seconds (TAI minus UTC)
      * @param mjdRef reference date for the slope multiplication as Modified Julian Day
      * @param slope offset slope in seconds per UTC second (TAI minus UTC / dUTC)
+     * @param reference date for slope computations.
      */
     UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
-                        final double leap, final double offset,
-                        final int mjdRef, final double slope) {
+                 final double leap, final double offset,
+                 final int mjdRef, final double slope, final AbsoluteDate reference) {
         this.leapDate      = leapDate;
         this.leapDateMJD   = leapDateMJD;
         this.validityStart = leapDate.shiftedBy(leap);
         this.mjdRef        = mjdRef;
-        this.reference     = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjdRef),
-                                              TimeScalesFactory.getTAI()).shiftedBy(offset);
+        this.reference     = reference;
         this.leap          = leap;
         this.offset        = offset;
         this.slopeUTC      = slope;

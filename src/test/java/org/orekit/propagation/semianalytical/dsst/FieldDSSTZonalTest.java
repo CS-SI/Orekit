@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
@@ -81,7 +82,7 @@ public class FieldDSSTZonalTest {
         final Frame earthFrame = FramesFactory.getEME2000();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
         
-        // a  = 2655989.0 m
+        // a  = 26559890 m
         // ey = 0.0041543085910249414
         // ex = 2.719455286199036E-4
         // hy = 0.3960084733107685
@@ -167,6 +168,67 @@ public class FieldDSSTZonalTest {
         Assert.assertEquals(-1.1781951949124315E-8, y[3].getReal(), 1.e-24);
         Assert.assertEquals(-3.2134924513679615E-8, y[4].getReal(), 1.e-24);
         Assert.assertEquals(-1.1607392915997098E-6, y[5].getReal(), 1.e-21);
+    }
+
+    @Test
+    public void testIssue625() {
+        doTestIssue625(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue625(final Field<T> field) {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        final T zero = field.getZero();
+
+        final Frame earthFrame = FramesFactory.getEME2000();
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        
+        // a  = 2.655989E6 m
+        // ex = 2.719455286199036E-4
+        // ey = 0.0041543085910249414
+        // hx = -0.3412974060023717
+        // hy = 0.3960084733107685
+        // lM = 8.566537840341699 rad
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(2.655989E6),
+                                                                zero.add(2.719455286199036E-4),
+                                                                zero.add(0.0041543085910249414),
+                                                                zero.add(-0.3412974060023717),
+                                                                zero.add(0.3960084733107685),
+                                                                zero.add(8.566537840341699),
+                                                                PositionAngle.TRUE,
+                                                                earthFrame,
+                                                                initDate,
+                                                                zero.add(3.986004415E14));
+        
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, zero.add(1000.0));
+
+        final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
+
+        // Central Body geopotential 32x32
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(32, 32);
+
+        // Zonal force model
+        final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
+        zonal.initialize(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(field));
+
+        // Zonal force model with default constructor
+        final DSSTZonal zonalDefault = new DSSTZonal(provider);
+        zonalDefault.initialize(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(field));
+
+        // Compute mean element rate for the zonal force model
+        final T[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field));
+
+        // Compute mean element rate for the "default" zonal force model
+        final T[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(field));
+
+        // Verify
+        for (int i = 0; i < 6; i++) {
+            Assert.assertEquals(elements[i].getReal(), elementsDefault[i].getReal(), Double.MIN_VALUE);
+        }
+
     }
 
     @Test

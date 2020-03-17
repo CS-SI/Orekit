@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -39,7 +39,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testStartDate() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt").fillHistory(null, history);
+        new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt", manager, () -> utc).fillHistory(null, history);
         Assert.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56475),
                                              TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, history, true).getStartDate());
@@ -49,7 +49,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testEndDate() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt").fillHistory(null, history);
+        new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt", manager, () -> utc).fillHistory(null, history);
         Assert.assertTrue(getMaxGap(history) < 2);
         Assert.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56968),
                                              TimeScalesFactory.getUTC()),
@@ -60,7 +60,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testSingleFile() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new BulletinAFilesLoader("bulletina-xxvi-039.txt").fillHistory(null, data);
+        new BulletinAFilesLoader("bulletina-xxvi-039.txt", manager, () -> utc).fillHistory(null, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
 
         // earliest date is for pole position, provided days 56546, 56547, 56548
@@ -81,7 +81,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testRapidDataContent() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME).fillHistory(null, data);
+        new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME, manager, () -> utc).fillHistory(null, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
         AbsoluteDate date = new AbsoluteDate(2013, 10, 14, 12, 0, 0, TimeScalesFactory.getUTC());
         // the following values are from bulletina-xxvi-042.txt, rapid service section, lines 53-56
@@ -94,7 +94,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testFinalValuesContent() {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME).fillHistory(null, data);
+        new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME, manager, () -> utc).fillHistory(null, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
         AbsoluteDate date = new AbsoluteDate(2013, 8, 26, 12, 0, 0, TimeScalesFactory.getUTC());
         // the following values are from bulletina-xxvi-040.txt, final values section, lines 79-82
@@ -128,7 +128,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     private void checkTruncated(String name, OrekitMessages expected) {
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         try {
-            new BulletinAFilesLoader(name).fillHistory(null, history);
+            new BulletinAFilesLoader(name, manager, () -> utc).fillHistory(null, history);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(expected, oe.getSpecifier());
@@ -147,7 +147,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     private void checkInconsistent(String name) {
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         try {
-            new BulletinAFilesLoader(name).fillHistory(null, history);
+            new BulletinAFilesLoader(name, manager, () -> utc).fillHistory(null, history);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());

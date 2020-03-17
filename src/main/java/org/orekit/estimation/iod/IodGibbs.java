@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,8 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
@@ -86,15 +88,14 @@ public class IodGibbs {
                                    final Vector3D r3, final AbsoluteDate date3) {
         // Checks measures are not at the same date
         if (date1.equals(date2) || date1.equals(date3) || date2.equals(date3)) {
-            //throw new OrekitException("The measures are not different!");
+            throw new OrekitException(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, date1, date2, date3);
         }
 
         // Checks measures are in the same plane
         final double num = r1.normalize().dotProduct(r2.normalize().crossProduct(r3.normalize()));
         final double alpha = FastMath.PI / 2.0 - FastMath.acos(num);
         if (FastMath.abs(alpha) > COPLANAR_THRESHOLD) {
-            // throw something
-            //throw new OrekitException("Non coplanar points!");
+            throw new OrekitException(OrekitMessages.NON_COPLANAR_POINTS);
         }
 
         final Vector3D D = r1.crossProduct(r2).add(r2.crossProduct(r3).add(r3.crossProduct(r1)));
@@ -118,6 +119,24 @@ public class IodGibbs {
         final AbsoluteDate date = date2;
 
         // compute the equivalent Keplerian orbit
-        return new KeplerianOrbit(pv, frame, date, mu);
+        final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, date, mu);
+
+        //define the reverse orbit
+        final PVCoordinates pv2 = new PVCoordinates(r2, vlEci.scalarMultiply(-1));
+        final KeplerianOrbit orbit2 = new KeplerianOrbit(pv2, frame, date, mu);
+
+        //check which orbit is correct
+        final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
+                getPVCoordinates().getPosition();
+        final double dist = estP3.subtract(r3).getNorm();
+        final Vector3D estP3_2 = orbit2.shiftedBy(date3.durationFrom(date2)).
+                getPVCoordinates().getPosition();
+        final double dist2 = estP3_2.subtract(r3).getNorm();
+
+        if (dist <= dist2) {
+            return orbit;
+        } else {
+            return orbit2;
+        }
     }
 }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,6 +17,8 @@
 package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
@@ -70,6 +72,46 @@ public class GPSAlmanac implements GPSOrbitalElements {
     private final double af0;
     /** First order clock correction. */
     private final double af1;
+    /** Date of validity. */
+    private final AbsoluteDate date;
+
+    /**
+     * Constructor.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param source the source of the almanac (SEM, YUMA, user defined)
+     * @param prn the PRN number
+     * @param svn the SVN number
+     * @param week the GPS week
+     * @param toa the Time of Applicability
+     * @param sqa the Square Root of Semi-Major Axis (m^1/2)
+     * @param ecc the eccentricity
+     * @param inc the inclination (rad)
+     * @param om0 the geographic longitude of the orbital plane at the weekly epoch (rad)
+     * @param dom the Rate of Right Ascension (rad/s)
+     * @param aop the Argument of Perigee (rad)
+     * @param anom the Mean Anomaly (rad)
+     * @param af0 the Zeroth Order Clock Correction (s)
+     * @param af1 the First Order Clock Correction (s/s)
+     * @param health the Health status
+     * @param ura the average URA
+     * @param config the satellite configuration
+     * @see #GPSAlmanac(String, int, int, int, double, double, double, double, double,
+     * double, double, double, double, double, int, int, int, AbsoluteDate)
+     */
+    @DefaultDataContext
+    public GPSAlmanac(final String source, final int prn, final int svn,
+                      final int week, final double toa,
+                      final double sqa, final double ecc, final double inc,
+                      final double om0, final double dom, final double aop,
+                      final double anom, final double af0, final double af1,
+                      final int health, final int ura, final int config) {
+        this(source, prn, svn, week, toa, sqa, ecc, inc, om0, dom, aop, anom, af0, af1,
+                health, ura, config,
+                new GNSSDate(week, toa * 1000., SatelliteSystem.GPS,
+                        DataContext.getDefault().getTimeScales()).getDate());
+    }
 
     /**
      * Constructor.
@@ -91,13 +133,17 @@ public class GPSAlmanac implements GPSOrbitalElements {
      * @param health the Health status
      * @param ura the average URA
      * @param config the satellite configuration
+     * @param date built from the {@code week} and {@code toa}: {@code new GNSSDate(week,
+     *             toa * 1000., SatelliteSystem.GPS, timeScales).getDate()}
+     * @since 10.1
      */
     public GPSAlmanac(final String source, final int prn, final int svn,
                       final int week, final double toa,
                       final double sqa, final double ecc, final double inc,
                       final double om0, final double dom, final double aop,
                       final double anom, final double af0, final double af1,
-                      final int health, final int ura, final int config) {
+                      final int health, final int ura, final int config,
+                      final AbsoluteDate date) {
         this.src = source;
         this.prn = prn;
         this.svn = svn;
@@ -115,11 +161,12 @@ public class GPSAlmanac implements GPSOrbitalElements {
         this.health = health;
         this.ura = ura;
         this.config = config;
+        this.date = date;
     }
 
     @Override
     public AbsoluteDate getDate() {
-        return new GNSSDate(week, toa * 1000., SatelliteSystem.GPS).getDate();
+        return date;
     }
 
     /**

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,15 +25,17 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
@@ -72,17 +74,42 @@ public class KlobucharIonoModel implements IonosphericModel {
     /** The 4 coefficients of a cubic equation representing the period of the model. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] beta;
 
+    /** GPS time scale. */
+    private final TimeScale gps;
+
     /** Create a new Klobuchar ionospheric delay model, when a single frequency system is used.
      * This model accounts for at least 50 percent of RMS error due to ionospheric propagation effect (ICD-GPS-200)
      *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param alpha coefficients of a cubic equation representing the amplitude of the vertical delay.
      * @param beta coefficients of a cubic equation representing the period of the model.
+     * @see #KlobucharIonoModel(double[], double[], TimeScale)
      */
+    @DefaultDataContext
     public KlobucharIonoModel(final double[] alpha, final double[] beta) {
-        this.alpha = alpha.clone();
-        this.beta  = beta.clone();
+        this(alpha, beta, DataContext.getDefault().getTimeScales().getGPS());
     }
 
+    /**
+     * Create a new Klobuchar ionospheric delay model, when a single frequency system is
+     * used. This model accounts for at least 50 percent of RMS error due to ionospheric
+     * propagation effect (ICD-GPS-200)
+     *
+     * @param alpha coefficients of a cubic equation representing the amplitude of the
+     *              vertical delay.
+     * @param beta  coefficients of a cubic equation representing the period of the
+     *              model.
+     * @param gps   GPS time scale.
+     * @since 10.1
+     */
+    public KlobucharIonoModel(final double[] alpha,
+                              final double[] beta,
+                              final TimeScale gps) {
+        this.alpha = alpha.clone();
+        this.beta  = beta.clone();
+        this.gps = gps;
+    }
 
     /**
      * Calculates the ionospheric path delay for the signal path from a ground
@@ -123,7 +150,7 @@ public class KlobucharIonoModel implements IonosphericModel {
 
         // day of week and tow (sec)
         // Note: Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getGPS());
+        final DateTimeComponents dtc = date.getComponents(gps);
         final int dofweek = dtc.getDate().getDayOfWeek();
         final double secday = dtc.getTime().getSecondsInLocalDay();
         final double tow = dofweek * 86400. + secday;
@@ -227,7 +254,7 @@ public class KlobucharIonoModel implements IonosphericModel {
 
         // day of week and tow (sec)
         // Note: Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getGPS());
+        final DateTimeComponents dtc = date.getComponents(gps);
         final int dofweek = dtc.getDate().getDayOfWeek();
         final double secday = dtc.getTime().getSecondsInLocalDay();
         final double tow = dofweek * 86400. + secday;

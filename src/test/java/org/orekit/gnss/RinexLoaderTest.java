@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,8 +17,10 @@
 package org.orekit.gnss;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,12 +38,141 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
 public class RinexLoaderTest {
-    
-    
+
     @Before
     public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss");
+    }
+
+    @Test
+    public void testDefaultLoadRinex2() {
+        Utils.setDataRoot("rinex");
+        Assert.assertEquals(51, new RinexLoader("^aaaa0000\\.00o$").getObservationDataSets().size());
+    }
+
+    @Test
+    public void testDefaultLoadRinex3() {
+        Utils.setDataRoot("rinex");
+        Assert.assertEquals(5, new RinexLoader("^brca083\\.06o$").getObservationDataSets().size());
+    }
+
+    @Test
+    public void testReadError() {
+        try {
+            final InputStream failingStream = new InputStream() {
+                public int read() throws IOException {
+                    throw new IOException("boo!");
+                }
+            };
+            new RinexLoader(failingStream, "read-error");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals("boo!", oe.getSpecifier().getSourceString());
+        }
+    }
+
+    @Test
+    public void testWrongVersion() {
+        try {
+            load("rinex/unknown-version.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testWrongFileType() {
+        try {
+            load("rinex/unknown-type.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testShortFirstLine() {
+        try {
+            load("rinex/short-first-line.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testWrongFirstLabel() {
+        try {
+            load("rinex/unknown-first-label.06o");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testRinex2OptionalRecords() {
+        final RinexLoader  loader = load("rinex/cccc0000.07o");
+        final RinexHeader  header = loader.getObservationDataSets().get(0).getHeader();
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(new Vector3D(1.1111, 2.2222,  3.3333),
+                                              header.getAntennaReferencePoint()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(new Vector3D(9.9999, 8.8888, 7.7777),
+                                              header.getAntennaBSight()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(new Vector3D(0.1455, -0.3421, 0.0024),
+                                              header.getCenterMass()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            new AbsoluteDate(2007, 9, 29, 0, 0,  0.0, TimeScalesFactory.getGPS()).
+                            durationFrom(header.getTFirstObs()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            new AbsoluteDate(2007, 9, 29, 0, 0, 30.0, TimeScalesFactory.getGPS()).
+                            durationFrom(header.getTLastObs()),
+                            1.0e-15);
+    }
+
+    @Test
+    public void testRinex3OptionalRecords() {
+        final RinexLoader  loader = load("rinex/dddd0000.01o");
+        final RinexHeader  header = loader.getObservationDataSets().get(0).getHeader();
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(new Vector3D(1.1111, 2.2222,  3.3333),
+                                              header.getAntennaReferencePoint()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(new Vector3D(0.1111, 0.2222, 0.3333),
+                                              header.getAntennaPhaseCenter()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(new Vector3D(9.9999, 8.8888, 7.7777),
+                                              header.getAntennaBSight()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(new Vector3D(6.6666, 5.5555, 4.4444),
+                                              header.getAntennaZeroDirection()),
+                            1.0e-15);
+        Assert.assertEquals(0.1010,
+                            header.getAntennaAzimuth(),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(new Vector3D(0.1455, -0.3421, 0.0024),
+                                              header.getCenterMass()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            new AbsoluteDate(2018, 1, 29,  0,  0,  0.0, TimeScalesFactory.getGPS()).
+                            durationFrom(header.getTFirstObs()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            new AbsoluteDate(2018, 1, 29, 23, 59, 45.0, TimeScalesFactory.getGPS()).
+                            durationFrom(header.getTLastObs()),
+                            1.0e-15);
     }
 
     @Test
@@ -119,6 +250,7 @@ public class RinexLoaderTest {
             Assert.assertEquals(3,                       header.getPhaseShiftCorrections().size());
             Assert.assertEquals(SatelliteSystem.GPS,     header.getPhaseShiftCorrections().get(0).getSatelliteSystem());
             Assert.assertEquals(ObservationType.L2X,      header.getPhaseShiftCorrections().get(0).getTypeObs());
+            Assert.assertNull(header.getPhaseShiftCorrections().get(0).getSatsCorrected());
             Assert.assertEquals(-0.25000,                header.getPhaseShiftCorrections().get(0).getCorrection(), 1.0e-5);
             Assert.assertEquals(SatelliteSystem.GLONASS, header.getPhaseShiftCorrections().get(1).getSatelliteSystem());
             Assert.assertEquals(ObservationType.L1P,      header.getPhaseShiftCorrections().get(1).getTypeObs());
@@ -555,6 +687,32 @@ public class RinexLoaderTest {
                 Assert.assertEquals(rawData.getValue(), scaledData.getValue(), FastMath.ulp(rawData.getValue()));
             }
         }
+    }
+
+    @Test
+    public void testIssue608() {
+        //Tests Rinex 3.04 with GPS, GLONASS, Galileo and SBAS Constellations
+        RinexLoader  loader = load("rinex/brca083.06o");
+        AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(5, ods.size());
+
+        Assert.assertEquals("A 9080",                     ods.get(2).getHeader().getMarkerName());
+
+        // Test GPS
+        Assert.assertEquals(SatelliteSystem.GPS,    ods.get(1).getSatelliteSystem());
+        Assert.assertEquals(9,                      ods.get(1).getPrnNumber());
+        Assert.assertEquals(0.0,                    ods.get(1).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(ObservationType.C1C,    ods.get(1).getObservationData().get(0).getObservationType());
+        Assert.assertEquals(20891534.648,           ods.get(1).getObservationData().get(0).getValue(), 1.0e-15);
+
+        // Test SBAS
+        Assert.assertEquals(SatelliteSystem.SBAS,   ods.get(4).getSatelliteSystem());
+        Assert.assertEquals(120,                    ods.get(4).getPrnNumber());
+        Assert.assertEquals(0.0,                    ods.get(4).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(ObservationType.L1C,    ods.get(4).getObservationData().get(1).getObservationType());
+        Assert.assertEquals(335849.135,           ods.get(4).getObservationData().get(1).getValue(), 1.0e-15);
+        
     }
 
     private void checkObservation(final ObservationDataSet obser,

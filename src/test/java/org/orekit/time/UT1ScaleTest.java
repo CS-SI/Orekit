@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.frames.EOPHistory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -60,6 +61,31 @@ public class UT1ScaleTest {
         // UT1 is continuous, so change should be very small in two days
         Assert.assertEquals(deltaAUT1, deltaBUT1, 3.0e-4);
 
+    }
+
+    /** Issue #636 */
+    @Test
+    public void testContinuousDuringLeap() {
+        // setup
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate dateA = new AbsoluteDate(2005, 12, 31, 23, 59, 0.0, utc);
+        AbsoluteDate dateB = new AbsoluteDate(2006, 1, 1, 0, 1, 0.0, utc);
+        EOPHistory eopHistory = ut1.getEOPHistory();
+
+        // verify
+        // there is a leap second and jump in UT1-UTC
+        Assert.assertEquals(eopHistory.getUT1MinusUTC(new AbsoluteDate(2005, 12, 31, utc)), -0.6611333, 0);
+        Assert.assertEquals(eopHistory.getUT1MinusUTC(new AbsoluteDate(2006, 1, 1, utc)), 0.338829, 1e-16);
+
+        // check UT1-TAI is still smooth
+        double dt = 0.5;
+        double tol = 0.001 * dt / Constants.JULIAN_DAY;
+        double previous = ut1.offsetFromTAI(dateA.shiftedBy(-dt));
+        for (AbsoluteDate d = dateA; d.compareTo(dateB) < 0; d = d.shiftedBy(dt)) {
+            double actual = ut1.offsetFromTAI(d);
+            Assert.assertEquals("at " + d.toString(utc), 0, actual - previous, tol);
+            previous = actual;
+        }
     }
 
     @Test
@@ -186,6 +212,6 @@ public class UT1ScaleTest {
         ut1 = null;
     }
 
-    private TimeScale ut1;
+    private UT1Scale ut1;
 
 }

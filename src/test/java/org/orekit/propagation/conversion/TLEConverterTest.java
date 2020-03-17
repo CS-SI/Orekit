@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +101,9 @@ public class TLEConverterTest {
         TLEPropagator prop = (TLEPropagator)fitter.getAdaptedPropagator();
         TLE fitted = prop.getTLE();
 
-        Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.001 * expectedRMS);
+        // changes to the RMS less than the threshold are not significant
+        double tolerance = FastMath.max(threshold, 0.001 * expectedRMS);
+        Assert.assertEquals(expectedRMS, fitter.getRMS(), tolerance);
 
         Assert.assertEquals(tle.getSatelliteNumber(),         fitted.getSatelliteNumber());
         Assert.assertEquals(tle.getClassification(),          fitted.getClassification());

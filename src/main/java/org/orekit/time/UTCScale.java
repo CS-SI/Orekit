@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,9 +17,14 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.Constants;
@@ -36,7 +41,7 @@ import org.orekit.utils.Constants;
  * one second leap was introduced at the end of 2005, the UTC time sequence was
  * 2005-12-31T23:59:59 UTC, followed by 2005-12-31T23:59:60 UTC, followed by
  * 2006-01-01T00:00:00 UTC.</p>
- * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
@@ -53,10 +58,13 @@ public class UTCScale implements TimeScale {
      * Used to create the prototype instance of this class that is used to
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
-     * @param offsetModels UTC-TAI offsets
+     * @param tai TAI time scale this UTC time scale references.
+     * @param offsets UTC-TAI offsets
      */
-    UTCScale(final List<OffsetModel> offsetModels) {
-
+    UTCScale(final TimeScale tai, final Collection<? extends OffsetModel> offsets) {
+        // copy input so the original list is unmodified
+        final List<OffsetModel> offsetModels = new ArrayList<>(offsets);
+        offsetModels.sort(Comparator.comparing(OffsetModel::getStart));
         if (offsetModels.get(0).getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually
             // excerpt from UTC-TAI.history file:
@@ -89,12 +97,11 @@ public class UTCScale implements TimeScale {
         }
 
         // create cache
-        offsets = new UTCTAIOffset[offsetModels.size()];
+        this.offsets = new UTCTAIOffset[offsetModels.size()];
 
         UTCTAIOffset previous = null;
 
         // link the offsets together
-        final TimeScale tai = TimeScalesFactory.getTAI();
         for (int i = 0; i < offsetModels.size(); ++i) {
 
             final OffsetModel    o      = offsetModels.get(i);
@@ -115,8 +122,11 @@ public class UTCScale implements TimeScale {
             final double normalizedSlope   = slope / Constants.JULIAN_DAY;
             final double leap              = leapEnd.durationFrom(leapStart) / (1 + normalizedSlope);
 
-            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, normalizedSlope);
-            offsets[i] = previous;
+            final AbsoluteDate reference = AbsoluteDate.createMJDDate(mjdRef, 0, tai)
+                    .shiftedBy(offset);
+            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef,
+                    normalizedSlope, reference);
+            this.offsets[i] = previous;
 
         }
 
@@ -315,11 +325,13 @@ public class UTCScale implements TimeScale {
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject();
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -330,7 +342,7 @@ public class UTCScale implements TimeScale {
          */
         private Object readResolve() {
             try {
-                return TimeScalesFactory.getUTC();
+                return DataContext.getDefault().getTimeScales().getUTC();
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

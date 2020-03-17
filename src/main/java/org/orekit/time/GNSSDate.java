@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPEntry;
@@ -82,12 +84,47 @@ public class GNSSDate implements Serializable, TimeStamped {
      * handling rollover (see {@link #setRolloverReference(DateComponents) setRolloverReference(reference)}).
      * If the week number is equal to the week cycle or larger, it will be used without any correction.
      * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param weekNumber week number
      * @param milliInWeek number of milliseconds since week start
      * @param system satellite system to consider
+     * @see #GNSSDate(int, double, SatelliteSystem, TimeScales)
      */
+    @DefaultDataContext
     public GNSSDate(final int weekNumber, final double milliInWeek,
                     final SatelliteSystem system) {
+        this(weekNumber, milliInWeek, system, DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Build an instance corresponding to a GNSS date.
+     * <p>
+     * GNSS dates are provided as a week number starting at the GNSS reference epoch and
+     * as a number of milliseconds since week start.
+     * </p>
+     * <p>
+     * Many interfaces provide week number modulo the constellation week cycle. In order
+     * to cope with this, when the week number is smaller than the week cycle, this
+     * constructor assumes a modulo operation has been performed and it will fix the week
+     * number according to the reference date set up for handling rollover (see {@link
+     * #setRolloverReference(DateComponents) setRolloverReference(reference)}). If the
+     * week number is equal to the week cycle or larger, it will be used without any
+     * correction.
+     * </p>
+     *
+     * @param weekNumber  week number
+     * @param milliInWeek number of milliseconds since week start
+     * @param system      satellite system to consider
+     * @param timeScales  the set of time scales. Used to retrieve the appropriate time
+     *                    scale for the given {@code system}.
+     * @since 10.1
+     */
+    public GNSSDate(final int weekNumber,
+                    final double milliInWeek,
+                    final SatelliteSystem system,
+                    final TimeScales timeScales) {
 
         final int day = (int) FastMath.floor(milliInWeek / (Constants.JULIAN_DAY * S_TO_MS));
         final double secondsInDay = milliInWeek / S_TO_MS - day * Constants.JULIAN_DAY;
@@ -100,7 +137,7 @@ public class GNSSDate implements Serializable, TimeStamped {
             DateComponents reference = rolloverReference.get();
             if (reference == null) {
                 // lazy setting of a default reference, using end of EOP entries
-                final UT1Scale       ut1       = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+                final UT1Scale       ut1       = timeScales.getUT1(IERSConventions.IERS_2010, true);
                 final List<EOPEntry> eop       = ut1.getEOPHistory().getEntries();
                 final int            lastMJD   = eop.get(eop.size() - 1).getMjd();
                 reference = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, lastMJD);
@@ -120,18 +157,38 @@ public class GNSSDate implements Serializable, TimeStamped {
         this.milliInWeek = milliInWeek;
         this.system      = system;
 
-        date = new AbsoluteDate(dc, new TimeComponents(secondsInDay), getTimeScale(system));
+        date = new AbsoluteDate(dc, new TimeComponents(secondsInDay), getTimeScale(system, timeScales));
 
     }
 
     /** Build an instance from an absolute date.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param date absolute date to consider
      * @param system satellite system to consider
+     * @see #GNSSDate(AbsoluteDate, SatelliteSystem, TimeScales)
      */
+    @DefaultDataContext
     public GNSSDate(final AbsoluteDate date, final SatelliteSystem system) {
+        this(date, system, DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Build an instance from an absolute date.
+     *
+     * @param date       absolute date to consider
+     * @param system     satellite system to consider
+     * @param timeScales the set of time scales. Used to retrieve the appropriate time
+     *                   scale for the given {@code system}.
+     * @since 10.1
+     */
+    public GNSSDate(final AbsoluteDate date,
+                    final SatelliteSystem system,
+                    final TimeScales timeScales) {
 
         this.system = system;
-        final AbsoluteDate epoch = getWeekReferenceAbsoluteDate(system);
+        final AbsoluteDate epoch = getWeekReferenceAbsoluteDate(system, timeScales);
         this.weekNumber  = (int) FastMath.floor(date.durationFrom(epoch) / WEEK_S);
         final AbsoluteDate weekStart = new AbsoluteDate(epoch, WEEK_S * weekNumber);
         this.milliInWeek = date.durationFrom(weekStart) * S_TO_MS;
@@ -196,14 +253,18 @@ public class GNSSDate implements Serializable, TimeStamped {
 
     /** Get the time scale related to the given satellite system.
      * @param satellite satellite system
+     * @param timeScales set of time scales.
      * @return the time scale
      */
-    private TimeScale getTimeScale(final SatelliteSystem satellite) {
+    private TimeScale getTimeScale(final SatelliteSystem satellite,
+                                   final TimeScales timeScales) {
         switch (satellite) {
-            case GPS     : return TimeScalesFactory.getGPS();
-            case GALILEO : return TimeScalesFactory.getGST();
-            case QZSS    : return TimeScalesFactory.getQZSS();
-            case BEIDOU  : return TimeScalesFactory.getBDT();
+            case GPS     : return timeScales.getGPS();
+            case GALILEO : return timeScales.getGST();
+            case QZSS    : return timeScales.getQZSS();
+            case BEIDOU  : return timeScales.getBDT();
+            case IRNSS   : return timeScales.getIRNSS();
+            case SBAS    : return timeScales.getGPS();
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -211,14 +272,18 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Get the reference epoch of the week number for the given satellite system.
      * <p> Returned parameter is an AbsoluteDate. </p>
      * @param satellite satellite system
+     * @param timeScales set of time scales.
      * @return the reference epoch
      */
-    private AbsoluteDate getWeekReferenceAbsoluteDate(final SatelliteSystem satellite) {
+    private AbsoluteDate getWeekReferenceAbsoluteDate(final SatelliteSystem satellite,
+                                                      final TimeScales timeScales) {
         switch (satellite) {
-            case GPS     : return AbsoluteDate.GPS_EPOCH;
-            case GALILEO : return AbsoluteDate.GALILEO_EPOCH;
-            case QZSS    : return AbsoluteDate.QZSS_EPOCH;
-            case BEIDOU  : return AbsoluteDate.BEIDOU_EPOCH;
+            case GPS     : return timeScales.getGpsEpoch();
+            case GALILEO : return timeScales.getGalileoEpoch();
+            case QZSS    : return timeScales.getQzssEpoch();
+            case BEIDOU  : return timeScales.getBeidouEpoch();
+            case IRNSS   : return timeScales.getIrnssEpoch();
+            case SBAS    : return timeScales.getGpsEpoch();
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -234,6 +299,8 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return DateComponents.GALILEO_EPOCH;
             case QZSS    : return DateComponents.QZSS_EPOCH;
             case BEIDOU  : return DateComponents.BEIDOU_EPOCH;
+            case IRNSS   : return DateComponents.IRNSS_EPOCH;
+            case SBAS    : return DateComponents.GPS_EPOCH;
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
     }
@@ -241,11 +308,13 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(weekNumber, milliInWeek, system);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -294,7 +363,13 @@ public class GNSSDate implements Serializable, TimeStamped {
         QZSS(SatelliteSystem.QZSS, 1024),
 
         /** BeiDou. */
-        BEIDOU(SatelliteSystem.BEIDOU, 8192);
+        BEIDOU(SatelliteSystem.BEIDOU, 8192),
+
+        /** IRNSS. */
+        IRNSS(SatelliteSystem.IRNSS, 1024),
+
+        /** SBAS. */
+        SBAS(SatelliteSystem.SBAS, 1024);
 
         /** Map for the number of week in one GNSS rollover cycle. */
         private static final Map<SatelliteSystem, Integer> CYCLE_MAP = new HashMap<SatelliteSystem, Integer>();

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,9 +36,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.IERSConventions;
@@ -146,9 +148,37 @@ public class TIRFProviderTest {
 
     }
 
+    /** Issue #636 */
+    @Test
+    public void testContinuousDuringLeap() {
+        // setup
+        Utils.setDataRoot("regular-data");
+        Frame tirf = FramesFactory.getTIRF(IERSConventions.IERS_2010, true);
+        Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate dateA = new AbsoluteDate(2005, 12, 31, 23, 59, 0.0, utc);
+        AbsoluteDate dateB = new AbsoluteDate(2006, 1, 1, 0, 1, 0.0, utc);
+        double dt = 0.5;
+        double expected = dt * 2 * FastMath.PI / (23 * 3600 + 56 * 60 + 4.1);
+        double tol = expected * 1e-6;
+        Rotation previous = cirf.getTransformTo(tirf, dateA.shiftedBy(-dt)).getRotation();
+
+        // action + verify
+        for (AbsoluteDate d = dateA; d.compareTo(dateB) < 0; d = d.shiftedBy(dt)) {
+            Rotation actual = cirf.getTransformTo(tirf, d).getRotation();
+            Assert.assertEquals("At " + d.toString(utc),
+                    expected,
+                    Rotation.distance(previous, actual),
+                    tol);
+            previous = actual;
+        }
+    }
+
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        TIRFProvider provider = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+        TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
@@ -179,7 +209,9 @@ public class TIRFProviderTest {
         throws InterruptedException, ExecutionException {
 
         // subject under test
-        final TIRFProvider tirf = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false));
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider tirf = new TIRFProvider(eopHistory, ut1);
         // arbitrary date
         final AbsoluteDate start = new AbsoluteDate("2009-09-19T23:59:45.000", TimeScalesFactory.getUTC());
         // in seconds = 15min

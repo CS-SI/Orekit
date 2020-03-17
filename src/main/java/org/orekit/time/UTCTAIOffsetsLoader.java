@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /** Interface for loading UTC-TAI offsets data files.
@@ -29,5 +31,25 @@ public interface UTCTAIOffsetsLoader {
      * prior to 1972 are missing, they will be inserted automatically)
      */
     List<OffsetModel> loadOffsets();
+
+    /**
+     * Interface for parsing UTC-TAI offsets from a stream.
+     *
+     * @author Evan Ward
+     * @since 10.1
+     */
+    interface Parser {
+
+        /**
+         * Parse leap seconds from the input stream.
+         *
+         * @param input stream to parse.
+         * @param name  of the input stream to use in error messages.
+         * @return parsed UTC-TAI offsets.
+         * @throws IOException if {@code input} throws one during parsing.
+         */
+        List<OffsetModel> parse(InputStream input, String name) throws IOException;
+
+    }
 
 }

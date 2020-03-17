@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,6 +27,8 @@ import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -1278,11 +1280,13 @@ public class CircularOrbit
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
@@ -1302,8 +1306,10 @@ public class CircularOrbit
             final AbsoluteDate date = orbit.getDate();
 
             // decompose date
-            final double epoch  = FastMath.floor(date.durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = date.durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(date.durationFrom(j2000Epoch));
+            final double offset = date.durationFrom(j2000Epoch.shiftedBy(epoch));
 
             if (orbit.serializePV) {
                 final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
@@ -1358,11 +1364,13 @@ public class CircularOrbit
          * @return replacement {@link CircularOrbit}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             switch (d.length) {
                 case 24 : // date + mu + orbit + derivatives + Cartesian
                     return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                              d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                                                           new Vector3D(d[15], d[16], d[17]),
                                                                           new Vector3D(d[18], d[19], d[20]),
                                                                           new Vector3D(d[21], d[22], d[23])),
@@ -1371,7 +1379,7 @@ public class CircularOrbit
                 case 18 : // date + mu + orbit + Cartesian
                     return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8],
                                              Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-                                             new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                                                           new Vector3D(d[ 9], d[10], d[11]),
                                                                           new Vector3D(d[12], d[13], d[14]),
                                                                           new Vector3D(d[15], d[16], d[17])),
@@ -1381,11 +1389,11 @@ public class CircularOrbit
                     return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                              d[ 9], d[10], d[11], d[12], d[13], d[14],
                                              PositionAngle.TRUE,
-                                             frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
                 default : // date + mu + orbit
                     return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
-                                             frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
 
             }

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -57,10 +57,10 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
         final ObservableSatellite satellite = getSatellites()[0];
         final double[] sigma                = getTheoreticalStandardDeviation();
         final double[] baseWeight           = getBaseWeight();
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
 
         // create a dummy measurement
-        final AngularAzEl dummy = new AngularAzEl(station, state.getDate(),
+        final AngularAzEl dummy = new AngularAzEl(station, relevant[0].getDate(),
                                                   new double[] {
                                                       0.0, 0.0
                                                   }, sigma, baseWeight, satellite);
@@ -78,7 +78,7 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
         }
 
         // estimate the perfect value of the measurement
-        final double[] angular = dummy.estimate(0, 0, states).getEstimatedValue();
+        final double[] angular = dummy.estimate(0, 0, relevant).getEstimatedValue();
 
         // add the noise
         final double[] noise = getNoise();
@@ -88,7 +88,7 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
         }
 
         // generate measurement
-        final AngularAzEl measurement = new AngularAzEl(station, state.getDate(), angular,
+        final AngularAzEl measurement = new AngularAzEl(station, relevant[0].getDate(), angular,
                                                         sigma, baseWeight, satellite);
         for (final EstimationModifier<AngularAzEl> modifier : getModifiers()) {
             measurement.addModifier(modifier);

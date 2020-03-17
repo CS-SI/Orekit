@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -85,7 +85,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private final BufferedReader reader;
 
         /** Pending uncompressed output lines. */
-        private String pending;
+        private byte[] pending;
 
         /** Number of characters already output in pending lines. */
         private int countOut;
@@ -110,6 +110,13 @@ public class HatanakaCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         @Override
         public int read() throws IOException {
+            final byte[] b = new byte[1];
+            return read(b, 0, 1) < 0 ? -1 : b[0];
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int read(final byte[] b, final int offset, final int len) throws IOException {
 
             if (pending == null) {
                 // we need to read another section from the underlying stream and uncompress it
@@ -119,18 +126,25 @@ public class HatanakaCompressFilter implements DataFilter {
                     // there are no lines left
                     return -1;
                 } else {
-                    pending = format.uncompressSection(firstLine);
+                    pending = format.uncompressSection(firstLine).getBytes(StandardCharsets.UTF_8);
                 }
             }
 
-            if (countOut == pending.length()) {
-                // output an end of line
-                pending = null;
-                return '\n';
+            // copy as many characters as possible from current line
+            int n = FastMath.min(len, pending.length - countOut);
+            System.arraycopy(pending, countOut, b, offset, n);
+
+            if (n < len) {
+                // line has been completed and we can still output end of line
+                b[offset + n] = '\n';
+                pending       = null;
+                ++n;
             } else {
-                // output a character from the uncompressed line
-                return pending.charAt(countOut++);
+                // there are still some pending characters
+                countOut += n;
             }
+
+            return n;
 
         }
 
@@ -671,6 +685,9 @@ public class HatanakaCompressFilter implements DataFilter {
             // read the first two lines of the file
             final String line1 = reader.readLine();
             final String line2 = reader.readLine();
+            if (line1 == null || line2 == null) {
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
+            }
 
             // extract format version
             final int cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
@@ -954,8 +971,12 @@ public class HatanakaCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         public String parseHeaderLine(final String line) {
             if (isHeaderLine(SYS_NB_OBS_TYPES, line)) {
-                updateMaxObs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
-                             parseInt(line, 1, 5));
+                if (line.charAt(0) != ' ') {
+                    // it is the first line of an observation types description
+                    // (continuation lines are ignored here)
+                    updateMaxObs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
+                                 parseInt(line, 1, 5));
+                }
                 return line;
             } else {
                 return super.parseHeaderLine(line);

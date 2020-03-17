@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -221,31 +221,42 @@ public class Ellipse implements Serializable {
                                 FastMath.copySign(g * FastMath.sqrt(a2 - rEllipse * rEllipse), y));
 
         } else {
-            final double k = FastMath.hypot(x / a, y / b);
-            double projectedX = x / k;
-            double projectedY = y / k;
-            double deltaX = Double.POSITIVE_INFINITY;
-            double deltaY = Double.POSITIVE_INFINITY;
+
+            // initial point at evolute cusp along major axis
+            double omegaX = a * e2;
+            double omegaY = 0.0;
+
+            double projectedX = x;
+            double projectedY = y;
+            double deltaX     = Double.POSITIVE_INFINITY;
+            double deltaY     = Double.POSITIVE_INFINITY;
             int count = 0;
             final double threshold = ANGULAR_THRESHOLD * ANGULAR_THRESHOLD * a2;
             while ((deltaX * deltaX + deltaY * deltaY) > threshold && count++ < 100) { // this loop usually converges in 3 iterations
-                final double omegaX     = evoluteFactorX * projectedX * projectedX * projectedX;
-                final double omegaY     = evoluteFactorY * projectedY * projectedY * projectedY;
+
+                // find point at the intersection of ellipse and line going from query point to evolute point
                 final double dx         = x - omegaX;
                 final double dy         = y - omegaY;
                 final double alpha      = b2 * dx * dx + a2 * dy * dy;
-                final double beta       = b2 * omegaX * dx + a2 * omegaY * dy;
+                final double betaPrime  = b2 * omegaX * dx + a2 * omegaY * dy;
                 final double gamma      = b2 * omegaX * omegaX + a2 * omegaY * omegaY - a2 * b2;
-                final double deltaPrime = MathArrays.linearCombination(beta, beta, -alpha, gamma);
-                final double ratio      = (beta <= 0) ?
-                                          (FastMath.sqrt(deltaPrime) - beta) / alpha :
-                                          -gamma / (FastMath.sqrt(deltaPrime) + beta);
+                final double deltaPrime = MathArrays.linearCombination(betaPrime, betaPrime, -alpha, gamma);
+                final double ratio      = (betaPrime <= 0) ?
+                                          (FastMath.sqrt(deltaPrime) - betaPrime) / alpha :
+                                          -gamma / (FastMath.sqrt(deltaPrime) + betaPrime);
                 final double previousX  = projectedX;
                 final double previousY  = projectedY;
                 projectedX = omegaX + ratio * dx;
                 projectedY = omegaY + ratio * dy;
+
+                // find new evolute point
+                omegaX     = evoluteFactorX * projectedX * projectedX * projectedX;
+                omegaY     = evoluteFactorY * projectedY * projectedY * projectedY;
+
+                // compute convergence parameters
                 deltaX     = projectedX - previousX;
                 deltaY     = projectedY - previousY;
+
             }
             return new Vector2D(FastMath.copySign(projectedX, p.getX()), projectedY);
         }

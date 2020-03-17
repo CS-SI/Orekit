@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -37,7 +37,7 @@ import org.orekit.utils.Constants;
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected gravity field file.</p>
  *
- * @see GravityFieldFactory
+ * @see GravityFields
  * @author Fabien Maussion
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
@@ -64,7 +64,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      */
     public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed,
                            final boolean useWgs84Coefficients) {
-        super(supportedNames, missingCoefficientsAllowed);
+        super(supportedNames, missingCoefficientsAllowed, null);
         this.useWgs84Coefficients = useWgs84Coefficients;
     }
 
@@ -96,8 +96,8 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         }
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        final List<List<Double>> c = new ArrayList<List<Double>>();
-        final List<List<Double>> s = new ArrayList<List<Double>>();
+        final List<List<Double>> c = new ArrayList<>();
+        final List<List<Double>> s = new ArrayList<>();
         boolean okFields = true;
         for (String line = r.readLine(); okFields && line != null; line = r.readLine()) {
             if (line.length() >= 15) {

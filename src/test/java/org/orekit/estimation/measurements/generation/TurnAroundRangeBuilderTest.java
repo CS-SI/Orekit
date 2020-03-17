@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -91,7 +91,10 @@ public class TurnAroundRangeBuilderTest {
         final Map.Entry<GroundStation, GroundStation> entry = context.TARstations.entrySet().iterator().next();
         final GroundStation master = entry.getKey();
         final GroundStation slave  = entry.getValue();
-        final ObservableSatellite satellite = generator.addPropagator(buildPropagator());
+        generator.addPropagator(buildPropagator()); // dummy first propagator
+        generator.addPropagator(buildPropagator()); // dummy second propagator
+        ObservableSatellite satellite = generator.addPropagator(buildPropagator()); // useful third propagator
+        generator.addPropagator(buildPropagator()); // dummy fourth propagator
         generator.addScheduler(new EventBasedScheduler<>(getBuilder(new Well19937a(seed), master, slave, satellite),
                                                          new FixedStepSelector(step, TimeScalesFactory.getUTC()),
                                                          generator.getPropagator(satellite),

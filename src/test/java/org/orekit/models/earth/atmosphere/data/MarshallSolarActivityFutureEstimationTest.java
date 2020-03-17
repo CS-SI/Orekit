@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -31,6 +37,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
@@ -42,7 +49,6 @@ import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
-import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation.StrengthLevel;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -240,7 +246,7 @@ public class MarshallSolarActivityFutureEstimationTest {
                 new MarshallSolarActivityFutureEstimation(
                         "Jan2000F10-edited-data.txt$",
                         StrengthLevel.AVERAGE);
-        DataProvidersManager.getInstance().feed(flux.getSupportedNames(), flux);
+        DataContext.getDefault().getDataProvidersManager().feed(flux.getSupportedNames(), flux);
         return flux;
     }
 
@@ -367,7 +373,7 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         MarshallSolarActivityFutureEstimation msafe =
             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES, strength);
-        DataProvidersManager manager = DataProvidersManager.getInstance();
+        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         manager.feed(msafe.getSupportedNames(), msafe);
         return msafe;
     }
@@ -525,7 +531,7 @@ public class MarshallSolarActivityFutureEstimationTest {
         MarshallSolarActivityFutureEstimation msafe =
             new MarshallSolarActivityFutureEstimation("Jan2011F10-extra-data\\.txt",
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
-        DataProvidersManager manager = DataProvidersManager.getInstance();
+        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         manager.feed(msafe.getSupportedNames(), msafe);
     }
 
@@ -534,8 +540,35 @@ public class MarshallSolarActivityFutureEstimationTest {
         MarshallSolarActivityFutureEstimation msafe =
             new MarshallSolarActivityFutureEstimation("Jan2011F10-no-data\\.txt",
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
-        DataProvidersManager manager = DataProvidersManager.getInstance();
+        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         manager.feed(msafe.getSupportedNames(), msafe);
+    }
+
+    @Test
+    public void testSerialization() throws IOException, ClassNotFoundException {
+        MarshallSolarActivityFutureEstimation original =
+                        new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data.txt$",
+                                                                  StrengthLevel.AVERAGE);
+
+        DataProvidersManager managerOriginal = DataContext.getDefault().getDataProvidersManager();
+        managerOriginal.feed(original.getSupportedNames(), original);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(original);
+
+        Assert.assertTrue(bos.size() > 400);
+        Assert.assertTrue(bos.size() < 450);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        AbsoluteDate date = new AbsoluteDate(2004, 1, 1, utc);
+        MarshallSolarActivityFutureEstimation deserialized = (MarshallSolarActivityFutureEstimation) ois.readObject();
+        DataProvidersManager managerDeserialized = DataContext.getDefault().getDataProvidersManager();
+        managerDeserialized.feed(deserialized.getSupportedNames(), deserialized);
+        Assert.assertEquals(original.getMeanFlux(date),    deserialized.getMeanFlux(date),    1.0e-12);
+        Assert.assertEquals(original.getDailyFlux(date),   deserialized.getDailyFlux(date),   1.0e-12);
+        Assert.assertEquals(original.getInstantFlux(date), deserialized.getInstantFlux(date), 1.0e-12);
     }
 
     @Before

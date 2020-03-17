@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -150,6 +150,19 @@ public class ParameterDriver {
             if (iterator.next() == observer) {
                 iterator.remove();
                 return;
+            }
+        }
+    }
+
+    /** Replace an observer.
+     * @param oldObserver observer to replace
+     * @param newObserver new observer to use
+     * @since 10.1
+     */
+    public void replaceObserver(final ParameterObserver oldObserver, final ParameterObserver newObserver) {
+        for (int i = 0; i < observers.size(); ++i) {
+            if (observers.get(i) == oldObserver) {
+                observers.set(i, newObserver);
             }
         }
     }

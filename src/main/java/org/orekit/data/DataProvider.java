@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,8 @@ package org.orekit.data;
 
 import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
+
 /** Interface for providing data files to {@link DataLoader file loaders}.
  * <p>
  * This interface defines a generic way to explore some collection holding
@@ -31,7 +33,7 @@ import java.util.regex.Pattern;
  * providers manager singleton}, or to let this manager use its default
  * configuration. Once registered, they will be used automatically whenever
  * some data needs to be loaded. This allow high level applications developers
- * to customize Orekit data loading mechanism and get a tighter intergation of
+ * to customize Orekit data loading mechanism and get a tighter integration of
  * the library within their application.
  * </p>
  * @see DataLoader
@@ -64,7 +66,46 @@ public interface DataProvider {
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @return true if some data has been loaded
+     * @deprecated Use {@link #feed(Pattern, DataLoader, DataProvidersManager)} instead
+     * which allows specifying the {@link DataProvidersManager} to use for filtering
+     * resources. This method uses the default instance:
+     * {@link DataProvidersManager#getInstance()}.
      */
+    @Deprecated
+    @DefaultDataContext
     boolean feed(Pattern supported, DataLoader visitor);
+
+    /** Feed a data file loader by browsing the data collection.
+     * <p>
+     * The method crawls all files referenced in the instance (for example
+     * all files in a directories tree) and for each file supported by the
+     * file loader it asks the file loader to load it.
+     * </p>
+     * <p>
+     * If the method completes without exception, then the data loader
+     * is considered to have been fed successfully and the top level
+     * {@link DataProvidersManager data providers manager} will return
+     * immediately without attempting to use the next configured providers.
+     * </p>
+     * <p>
+     * If the method completes abruptly with an exception, then the top level
+     * {@link DataProvidersManager data providers manager} will try to use
+     * the next configured providers, in case another one can feed the
+     * {@link DataLoader data loader}.
+     * </p>
+     *
+     * <p> The default implementation will be removed in 11.0. It calls {@link
+     * #feed(Pattern, DataLoader)}.
+     *
+     * @param supported pattern for file names supported by the visitor
+     * @param visitor data file visitor to use
+     * @param manager with the filters to apply to the resources.
+     * @return true if some data has been loaded
+     */
+    default boolean feed(final Pattern supported,
+                         final DataLoader visitor,
+                         final DataProvidersManager manager) {
+        return feed(supported, visitor);
+    }
 
 }

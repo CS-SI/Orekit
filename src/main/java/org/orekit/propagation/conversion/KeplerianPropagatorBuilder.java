@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -36,21 +39,50 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
      * </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param templateOrbit reference orbit from which real orbits will be built
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-          * @since 8.0
+     * @since 8.0
+     * @see #KeplerianPropagatorBuilder(Orbit, PositionAngle, double, AttitudeProvider)
      */
+    @DefaultDataContext
     public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
                                       final double positionScale) {
-        super(templateOrbit, positionAngle, positionScale, true);
+        this(templateOrbit, positionAngle, positionScale,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Build a new instance.
+     * <p>
+     * The template orbit is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, the orbit type, and is also
+     * used together with the {@code positionScale} to convert from the {@link
+     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters.
+     * </p>
+     * @param templateOrbit reference orbit from which real orbits will be built
+     * @param positionAngle position angle type to use
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param attitudeProvider attitude law to use.
+     * @since 10.1
+     */
+    public KeplerianPropagatorBuilder(final Orbit templateOrbit,
+                                      final PositionAngle positionAngle,
+                                      final double positionScale,
+                                      final AttitudeProvider attitudeProvider) {
+        super(templateOrbit, positionAngle, positionScale, true, attitudeProvider);
     }
 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
-        return new KeplerianPropagator(createInitialOrbit());
+        return new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider());
     }
 
 }

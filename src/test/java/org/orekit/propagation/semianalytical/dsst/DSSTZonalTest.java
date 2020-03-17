@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,11 +22,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
@@ -57,7 +60,7 @@ public class DSSTZonalTest {
         final Frame earthFrame = FramesFactory.getEME2000();
         final AbsoluteDate initDate = new AbsoluteDate(2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
         
-        // a  = 2655989.0 m
+        // a  = 26559890 m
         // ex = 2.719455286199036E-4
         // ey = 0.0041543085910249414
         // hx = -0.3412974060023717
@@ -134,6 +137,72 @@ public class DSSTZonalTest {
         Assert.assertEquals(-1.1781951949124315E-8, y[3], 1.e-24);
         Assert.assertEquals(-3.2134924513679615E-8, y[4], 1.e-24);
         Assert.assertEquals(-1.1607392915997098E-6, y[5], 1.e-21);
+    }
+
+    @Test
+    public void testIssue625() {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        final Frame earthFrame = FramesFactory.getEME2000();
+        final AbsoluteDate initDate = new AbsoluteDate(2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        
+        // a  = 2.655989E6 m
+        // ex = 2.719455286199036E-4
+        // ey = 0.0041543085910249414
+        // hx = -0.3412974060023717
+        // hy = 0.3960084733107685
+        // lM = 8.566537840341699 rad
+        final Orbit orbit = new EquinoctialOrbit(2.655989E6,
+                                                 2.719455286199036E-4,
+                                                 0.0041543085910249414,
+                                                 -0.3412974060023717,
+                                                 0.3960084733107685,
+                                                 8.566537840341699,
+                                                 PositionAngle.TRUE,
+                                                 earthFrame,
+                                                 initDate,
+                                                 3.986004415E14);
+        
+        final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
+
+        final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
+
+        // Central Body geopotential 32x32
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(32, 32);
+
+        // Zonal force model
+        final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
+        zonal.initialize(auxiliaryElements, PropagationType.MEAN, zonal.getParameters());
+
+        // Zonal force model with default constructor
+        final DSSTZonal zonalDefault = new DSSTZonal(provider);
+        zonalDefault.initialize(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters());
+
+        // Compute mean element rate for the zonal force model
+        final double[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters());
+
+        // Compute mean element rate for the "default" zonal force model
+        final double[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters());
+
+        // Verify
+        for (int i = 0; i < 6; i++) {
+            Assert.assertEquals(elements[i], elementsDefault[i], Double.MIN_VALUE);
+        }
+
+    }
+
+    @Test
+    public void testOutOfRangeException() {
+        try {
+            @SuppressWarnings("unused")
+            final DSSTZonal zonal = new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(1, 0));
+            Assert.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+        }
     }
 
     private SpacecraftState getGEOState() {

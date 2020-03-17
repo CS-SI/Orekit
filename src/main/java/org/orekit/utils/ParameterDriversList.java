@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -53,7 +53,7 @@ public class ParameterDriversList {
     /** Creates an empty list.
      */
     public ParameterDriversList() {
-        this.delegating = new ArrayList<DelegatingDriver>();
+        this.delegating = new ArrayList<>();
     }
 
     /** Add a driver.
@@ -73,8 +73,8 @@ public class ParameterDriversList {
 
         if (existingHere != null) {
             if (alreadyBound != null) {
-                // ensure we don't get intermixed change forwarders that call each other recursively
-                existingHere.setForwarder(alreadyBound.getForwarder());
+                // merge the two delegating drivers
+                existingHere.merge(alreadyBound);
             } else {
                 // this is a new driver for an already managed parameter
                 existingHere.add(driver);
@@ -83,12 +83,10 @@ public class ParameterDriversList {
             if (alreadyBound != null) {
                 // the driver is new here, but already bound to other drivers in other lists
                 delegating.add(alreadyBound);
+                alreadyBound.addOwner(this);
             } else {
                 // this is the first driver we have for this parameter name
-                final DelegatingDriver created   = new DelegatingDriver(driver);
-                final ChangesForwarder forwarder = new ChangesForwarder(created);
-                created.setForwarder(forwarder);
-                delegating.add(created);
+                delegating.add(new DelegatingDriver(this, driver));
             }
         }
 
@@ -107,6 +105,19 @@ public class ParameterDriversList {
             }
         }
         return null;
+    }
+
+    /** Replace a {@link DelegatingDriver delegating driver}.
+     * @param oldDelegating delegating driver to replace
+     * @param newDelegating new delegating driver to use
+     * @since 10.1
+     */
+    private void replaceDelegating(final DelegatingDriver oldDelegating, final DelegatingDriver newDelegating) {
+        for (int i = 0; i < delegating.size(); ++i) {
+            if (delegating.get(i) == oldDelegating) {
+                delegating.set(i, newDelegating);
+            }
+        }
     }
 
     /** Find  a {@link DelegatingDriver delegating driver} by name.
@@ -141,8 +152,10 @@ public class ParameterDriversList {
      */
     public void filter(final boolean selected) {
         for (final Iterator<DelegatingDriver> iterator = delegating.iterator(); iterator.hasNext();) {
-            if (iterator.next().isSelected() != selected) {
+            final DelegatingDriver delegatingDriver = iterator.next();
+            if (delegatingDriver.isSelected() != selected) {
                 iterator.remove();
+                delegatingDriver.removeOwner(this);
             }
         }
     }
@@ -173,68 +186,57 @@ public class ParameterDriversList {
      */
     public static class DelegatingDriver extends ParameterDriver {
 
-        /** Drivers managing the same parameter. */
-        private final List<ParameterDriver> drivers;
+        /** Lists owning this delegating driver. */
+        private final List<ParameterDriversList> owners;
 
         /** Observer for propagating changes between all drivers. */
         private ChangesForwarder forwarder;
 
         /** Simple constructor.
+         * @param owner list owning this delegating driver
          * @param driver first driver in the series
          */
-        DelegatingDriver(final ParameterDriver driver) {
+        DelegatingDriver(final ParameterDriversList owner, final ParameterDriver driver) {
             super(driver.getName(), driver.getReferenceValue(),
                   driver.getScale(), driver.getMinValue(), driver.getMaxValue());
-            drivers = new ArrayList<ParameterDriver>();
-            drivers.add(driver);
+
+            owners = new ArrayList<>();
+            addOwner(owner);
 
             setValue(driver.getValue());
             setReferenceDate(driver.getReferenceDate());
             setSelected(driver.isSelected());
 
+            // set up a change forwarder observing both the raw driver and the delegating driver
+            this.forwarder = new ChangesForwarder(this, driver);
+            addObserver(forwarder);
+            driver.addObserver(forwarder);
+
         }
 
-        /** Set the changes forwarder.
-         * @param forwarder new changes forwarder
-                  * @since 9.1
+        /** Add an owner for this delegating driver.
+         * @param owner owner to add
          */
-        void setForwarder(final ChangesForwarder forwarder) {
+        void addOwner(final ParameterDriversList owner) {
+            owners.add(owner);
+        }
 
-            // remove the previous observer if any
-            if (this.forwarder != null) {
-                removeObserver(this.forwarder);
-                for (final ParameterDriver driver : drivers) {
-                    driver.removeObserver(this.forwarder);
+        /** Remove one owner of this driver.
+         * @param owner owner to remove delegating driver from
+         * @since 10.1
+         */
+        private void removeOwner(final ParameterDriversList owner) {
+            for (final Iterator<ParameterDriversList> iterator = owners.iterator(); iterator.hasNext();) {
+                if (iterator.next() == owner) {
+                    iterator.remove();
                 }
             }
-
-            // add the new observer
-            this.forwarder = forwarder;
-            addObserver(forwarder);
-            for (final ParameterDriver driver : drivers) {
-                driver.addObserver(forwarder);
-            }
-
-        }
-
-        /** Get the changes forwarder.
-         * @return changes forwarder
-         */
-        ChangesForwarder getForwarder() {
-            return forwarder;
         }
 
         /** Add a driver.
          * @param driver driver to add
          */
         private void add(final ParameterDriver driver) {
-
-            for (final ParameterDriver d : drivers) {
-                if (d == driver) {
-                    // the driver is already known, don't add it again
-                    return;
-                }
-            }
 
             setValue(driver.getValue());
             setReferenceDate(driver.getReferenceDate());
@@ -247,7 +249,55 @@ public class ParameterDriversList {
             }
 
             driver.addObserver(forwarder);
-            drivers.add(driver);
+            forwarder.add(driver);
+
+        }
+
+        /** Merge another instance.
+         * <p>
+         * After merging, the other instance is merely empty and preserved
+         * only as a child of the current instance. Changes are therefore
+         * still forwarded to it, but it is itself not responsible anymore
+         * for forwarding change.
+         * </p>
+         * @param other instance to merge
+         */
+        private void merge(final DelegatingDriver other) {
+
+            if (other.forwarder == forwarder) {
+                // we are attempting to merge an instance with either itself
+                // or an already embedded one, just ignore the request
+                return;
+            }
+
+            // synchronize parameter
+            setValue(other.getValue());
+            setReferenceDate(other.getReferenceDate());
+            if (isSelected()) {
+                other.setSelected(true);
+            } else {
+                setSelected(other.isSelected());
+            }
+
+            // move around drivers
+            for (final ParameterDriver otherDriver : other.forwarder.getDrivers()) {
+                // as drivers are added one at a time and always refer back to a single
+                // DelegatingDriver (through the ChangesForwarder), they cannot be
+                // referenced by two different DelegatingDriver. We can blindly move
+                // around all drivers, there cannot be any duplicates
+                forwarder.add(otherDriver);
+                otherDriver.replaceObserver(other.forwarder, forwarder);
+            }
+
+            // forwarding is now delegated to current instance
+            other.replaceObserver(other.forwarder, forwarder);
+            other.forwarder = forwarder;
+
+            // replace merged instance with current instance in former owners
+            for (final ParameterDriversList otherOwner : other.owners) {
+                owners.add(otherOwner);
+                otherOwner.replaceDelegating(other, this);
+            }
 
         }
 
@@ -258,7 +308,7 @@ public class ParameterDriversList {
          * @return raw drivers to which this one delegates
          */
         public List<ParameterDriver> getRawDrivers() {
-            return Collections.unmodifiableList(drivers);
+            return Collections.unmodifiableList(forwarder.getDrivers());
         }
 
     }
@@ -269,6 +319,9 @@ public class ParameterDriversList {
         /** DelegatingDriver we are associated with. */
         private final DelegatingDriver delegating;
 
+        /** Drivers synchronized together by the instance. */
+        private final List<ParameterDriver> drivers;
+
         /** Root of the current update chain. */
         private ParameterDriver root;
 
@@ -277,9 +330,12 @@ public class ParameterDriversList {
 
         /** Simple constructor.
          * @param delegating delegatingDriver we are associated with
+         * @param driver first driver in the series
          */
-        ChangesForwarder(final DelegatingDriver delegating) {
+        ChangesForwarder(final DelegatingDriver delegating, final ParameterDriver driver) {
             this.delegating = delegating;
+            this.drivers    = new ArrayList<>();
+            drivers.add(driver);
         }
 
         /** Get the {@link DelegatingDriver} associated with this instance.
@@ -290,12 +346,26 @@ public class ParameterDriversList {
             return delegating;
         }
 
+        /** Add a driver to the list synchronized together by the instance.
+         * @param driver driver to add
+         * @since 10.1
+         */
+        void add(final ParameterDriver driver) {
+            drivers.add(driver);
+        }
+
+        /** Get the drivers synchronized together by the instance.
+         * @return drivers synchronized together by the instance.
+         * @since 10.1
+         */
+        public List<ParameterDriver> getDrivers() {
+            return drivers;
+        }
+
         /** {@inheritDoc} */
         @Override
         public void valueChanged(final double previousValue, final ParameterDriver driver) {
-            updateAll(driver, d -> {
-                d.setValue(driver.getValue());
-            });
+            updateAll(driver, d -> d.setValue(driver.getValue()));
         }
 
         /** {@inheritDoc} */
@@ -353,7 +423,7 @@ public class ParameterDriversList {
 
             if (driver == getDelegatingDriver()) {
                 // propagate change downwards, which will trigger recursive calls
-                for (final ParameterDriver d : delegating.drivers) {
+                for (final ParameterDriver d : drivers) {
                     if (d != root) {
                         updater.update(d);
                     }

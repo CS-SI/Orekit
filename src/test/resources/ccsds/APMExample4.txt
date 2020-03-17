@@ -1,0 +1,29 @@
+CCSDS_APM_VERS = 1.0
+CREATION_DATE  = 2003-09-30T19:23:57
+ORIGINATOR     = GSFC
+
+COMMENT          GEOCENTRIC, CARTESIAN, EARTH FIXED
+COMMENT          OBJECT_ID:  1997-009A
+COMMENT $ITIM  = 1997 NOV 21 22:26:18.40000000, $ original launch time
+OBJECT_NAME    = TRMM 
+OBJECT_ID      = 1997-009A
+CENTER_NAME    = EARTH
+TIME_SYSTEM    = UTC
+
+COMMENT          Current attitude for orbit 335
+COMMENT          Attitude state quaternion
+COMMENT          Accuracy of this attitude is 0.02 deg RSS.
+
+EPOCH          = 2003-09-30T14:28:15.1172
+Q_FRAME_A      = SC_BODY_1
+Q_FRAME_B      = ITRF-97
+Q_DIR          = A2B
+
+Q1                 = 0.00005
+Q2                 = 0.87543
+Q3                 = 0.40949
+QC                 = 0.25678
+Q1_DOT             = 0.00001
+Q2_DOT             = 0.07543
+Q3_DOT             = 0.00949
+QC_DOT             = 0.05678

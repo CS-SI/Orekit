@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,13 +18,13 @@ package org.orekit.models.earth.weather;
 
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScalesFactory;
 
 /** The Global Pressure and Temperature model.
  * This model is an empirical model that provides the temperature and the pressure depending
@@ -63,6 +63,29 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
     /** Body frame related to body shape. */
     private final Frame bodyFrame;
 
+    /** Data context for time and gravity. */
+    private final DataContext dataContext;
+
+    /** Build a new instance.
+     * <p>
+     * At the initialization the values of the pressure and the temperature are set to NaN.
+     * The user has to call {@link #weatherParameters(double, AbsoluteDate)} method before using
+     * the values of the pressure and the temperature.
+     * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param latitude geodetic latitude, in radians
+     * @param longitude geodetic longitude, in radians
+     * @param bodyFrame the frame to attach to the ellipsoid. The origin is at
+     *                  the center of mass, the z axis is the minor axis.
+     * @see #GlobalPressureTemperatureModel(double, double, Frame, DataContext)
+     */
+    @DefaultDataContext
+    public GlobalPressureTemperatureModel(final double latitude, final double longitude, final Frame bodyFrame) {
+        this(latitude, longitude, bodyFrame, DataContext.getDefault());
+    }
+
     /** Build a new instance.
      * <p>
      * At the initialization the values of the pressure and the temperature are set to NaN.
@@ -72,14 +95,19 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
      * @param latitude geodetic latitude, in radians
      * @param longitude geodetic longitude, in radians
      * @param bodyFrame the frame to attach to the ellipsoid. The origin is at
-     *                  the center of mass, the z axis is the minor axis.
+     * @param dataContext to use for time and gravity.
+     * @since 10.1
      */
-    public GlobalPressureTemperatureModel(final double latitude, final double longitude, final Frame bodyFrame) {
+    public GlobalPressureTemperatureModel(final double latitude,
+                                          final double longitude,
+                                          final Frame bodyFrame,
+                                          final DataContext dataContext) {
         this.bodyFrame   = bodyFrame;
         this.latitude    = latitude;
         this.longitude   = longitude;
         this.temperature = Double.NaN;
         this.pressure    = Double.NaN;
+        this.dataContext = dataContext;
     }
 
     /** Get the atmospheric temperature of the station depending its position.
@@ -100,7 +128,8 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
     public void weatherParameters(final double height, final AbsoluteDate date) {
 
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc =
+                date.getComponents(dataContext.getTimeScales().getUTC());
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // Reference day: 28 January 1980 (Niell, 1996)
@@ -114,8 +143,9 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
         final LegendrePolynomials p = new LegendrePolynomials(degree, order);
 
         // Geoid for height computation
-        final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(degree, order),
-                                      ReferenceEllipsoid.getWgs84(bodyFrame));
+        final Geoid geoid = new Geoid(
+                dataContext.getGravityFields().getNormalizedProvider(degree, order),
+                ReferenceEllipsoid.getWgs84(bodyFrame));
 
         // Corrected height
         final double correctedheight = FastMath.max(0.0, height - geoid.getUndulation(latitude, longitude, date));

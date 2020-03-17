@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,9 +23,12 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link FieldPVCoordinates}.
@@ -733,21 +736,26 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                             getAcceleration().toVector3D());
     }
 
-    /** Return a string representation of this position/velocity pair.
-     * @return string representation of this position/velocity pair
+    /** Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @return string representation of this.
      */
+    @Override
+    @DefaultDataContext
     public String toString() {
-        final String comma = ", ";
-        return new StringBuffer().append('{').append(date).append(", P(").
-                                  append(getPosition().getX().getReal()).append(comma).
-                                  append(getPosition().getY().getReal()).append(comma).
-                                  append(getPosition().getZ().getReal()).append("), V(").
-                                  append(getVelocity().getX().getReal()).append(comma).
-                                  append(getVelocity().getY().getReal()).append(comma).
-                                  append(getVelocity().getZ().getReal()).append("), A(").
-                                  append(getAcceleration().getX().getReal()).append(comma).
-                                  append(getAcceleration().getY().getReal()).append(comma).
-                                  append(getAcceleration().getZ().getReal()).append(")}").toString();
+        return toTimeStampedPVCoordinates().toString();
+    }
+
+    /**
+     * Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * @param utc time scale used to print the date.
+     * @return string representation of this.
+     */
+    public String toString(final TimeScale utc) {
+        return toTimeStampedPVCoordinates().toString(utc);
     }
 
 }

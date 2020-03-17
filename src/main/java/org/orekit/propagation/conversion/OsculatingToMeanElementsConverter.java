@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -81,7 +81,8 @@ public class OsculatingToMeanElementsConverter {
         final FiniteDifferencePropagatorConverter converter =
                 new FiniteDifferencePropagatorConverter(new KeplerianPropagatorBuilder(state.getOrbit(),
                                                                                        PositionAngle.MEAN,
-                                                                                       positionScale),
+                                                                                       positionScale,
+                                                                                       propagator.getAttitudeProvider()),
                                                         1.e-6, MAX_EVALUATION);
         final Propagator prop = converter.convert(propagator, timeSpan, satelliteRevolution * 36);
         return prop.getInitialState();

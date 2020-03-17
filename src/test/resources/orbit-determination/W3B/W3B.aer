@@ -1,5 +1,5 @@
 # Copyright 2011 Telespazio
-# Licensed to CS Systèmes d'Information (CS) under one or more
+# Licensed to CS Group (CS) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
 # CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 # This file holds the same information as the SEQ.dat file contributed
 # by Telespazio in the Orekit-labs orbit determination project.
 # It corresponds to real flight data.
-# It has been edited by CS Systèmes d'Information only to match
+# It has been edited by CS Group only to match
 # our tutorial file format.
 
 2010-11-02T03:00:13.3851   RANGE       Uralla         38014.9488

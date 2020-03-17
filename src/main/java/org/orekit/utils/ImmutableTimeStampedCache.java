@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -155,14 +155,17 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         return i;
     }
 
+    /** {@inheritDoc} */
     public int getNeighborsSize() {
         return this.neighborsSize;
     }
 
+    /** {@inheritDoc} */
     public T getEarliest() {
         return this.data.get(0);
     }
 
+    /** {@inheritDoc} */
     public T getLatest() {
         return this.data.get(this.data.size() - 1);
     }

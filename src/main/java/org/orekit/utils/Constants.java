@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,7 @@ import org.hipparchus.util.MathUtils;
 /** Set of useful physical constants.
 
  * @author Luc Maisonobe
+ * @author Guylaine Prat
  */
 public interface Constants {
 
@@ -191,6 +192,50 @@ public interface Constants {
     /** Earth un-normalized sixth zonal coefficient from EIGEN5C model: -5.406653715879098e-7. */
     double EIGEN5C_EARTH_C60 = -5.406653715879098e-7;
 
+    /** Earth equatorial radius from IERS96 model: 6378136.49 m. */
+    double IERS96_EARTH_EQUATORIAL_RADIUS = 6378136.49;
+
+    /** Earth flattening from IERS96 model: 1.0 / 298.25642. */
+    double IERS96_EARTH_FLATTENING = 1.0 / 298.25642;
+
+    /** Earth angular velocity from IERS96 model: 7.292115e-5 rad/s. */
+    double IERS96_EARTH_ANGULAR_VELOCITY = 7.292115e-5;
+
+    /** Earth gravitational constant from IERS96 model: 3.986004418e14 m³/s². */
+    double IERS96_EARTH_MU = 3.986004418e14;
+
+    /** Earth un-normalized second zonal coefficient from IERS96 model: -1.0826359e-3. */
+    double IERS96_EARTH_C20 = -1.0826359e-3;
+
+    /** Earth equatorial radius from IERS2003 model: 6378136.6 m. */
+    double IERS2003_EARTH_EQUATORIAL_RADIUS = 6378136.6;
+
+    /** Earth flattening from IERS2003 model: 1.0 / 298.25642. */
+    double IERS2003_EARTH_FLATTENING = 1.0 / 298.25642;
+
+    /** Earth angular velocity from IERS2003 model: 7.292115e-5 rad/s. */
+    double IERS2003_EARTH_ANGULAR_VELOCITY = 7.292115e-5;
+
+    /** Earth gravitational constant from IERS2003 model: 3.986004418e14 m³/s². */
+    double IERS2003_EARTH_MU = 3.986004418e14;
+
+    /** Earth un-normalized second zonal coefficient from IERS2003 model: -1.0826359e-3. */
+    double IERS2003_EARTH_C20 = -1.0826359e-3;
+
+    /** Earth equatorial radius from IERS2010 model: 6378136.6 m. */
+    double IERS2010_EARTH_EQUATORIAL_RADIUS = 6378136.6;
+
+    /** Earth flattening from IERS2010 model: 1.0 / 298.25642. */
+    double IERS2010_EARTH_FLATTENING = 1.0 / 298.25642;
+
+    /** Earth angular velocity from IERS2010 model: 7.292115e-5 rad/s. */
+    double IERS2010_EARTH_ANGULAR_VELOCITY = 7.292115e-5;
+
+    /** Earth gravitational constant from IERS2010 model: 3.986004418e14 m³/s². */
+    double IERS2010_EARTH_MU = 3.986004418e14;
+
+    /** Earth un-normalized second zonal coefficient from IERS2010 model: -1.0826359e-3. */
+    double IERS2010_EARTH_C20 = -1.0826359e-3;
 
     /** Gaussian gravitational constant: 0.01720209895 √(AU³/d²). */
     double JPL_SSD_GAUSSIAN_GRAVITATIONAL_CONSTANT = 0.01720209895;

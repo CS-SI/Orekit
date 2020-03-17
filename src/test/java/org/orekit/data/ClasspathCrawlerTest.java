@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -31,7 +31,8 @@ public class ClasspathCrawlerTest {
     @Test(expected=OrekitException.class)
     public void testNoElement() {
         new ClasspathCrawler("inexistant-element").feed(Pattern.compile(".*"),
-                                                        new CountingLoader());
+                                                        new CountingLoader(),
+                                                        DataContext.getDefault().getDataProvidersManager());
     }
 
     @Test
@@ -42,7 +43,8 @@ public class ClasspathCrawlerTest {
                              "regular-data/de405-ephemerides/unxp0001.405",
                              "regular-data/de406-ephemerides/unxp0000.406",
                              "regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt",
-                             "no-data/dummy.txt").feed(Pattern.compile(".*"), crawler);
+                             "no-data/dummy.txt").feed(Pattern.compile(".*"), crawler,
+                                                       DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(6, crawler.getCount());
     }
 
@@ -52,7 +54,8 @@ public class ClasspathCrawlerTest {
         new ClasspathCrawler("compressed-data/UTC-TAI.history.gz",
                              "compressed-data/eopc04_08_IAU2000.00.gz",
                              "compressed-data/eopc04_08_IAU2000.02.gz").feed(Pattern.compile(".*/eopc04.*"),
-                                                                             crawler);
+                                                                             crawler,
+                                                                             DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(2, crawler.getCount());
     }
 
@@ -60,14 +63,16 @@ public class ClasspathCrawlerTest {
     public void testMultiZip() {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"),
-                                                              crawler);
+                                                              crawler,
+                                                              DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(6, crawler.getCount());
     }
 
     @Test(expected=OrekitException.class)
     public void testIOException() {
         try {
-            new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new IOExceptionLoader());
+            new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new IOExceptionLoader(),
+                                                                      DataContext.getDefault().getDataProvidersManager());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());
@@ -80,7 +85,8 @@ public class ClasspathCrawlerTest {
     @Test(expected=OrekitException.class)
     public void testParseException() {
         try {
-            new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new ParseExceptionLoader());
+            new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new ParseExceptionLoader(),
+                                                                      DataContext.getDefault().getDataProvidersManager());
         } catch (OrekitException oe) {
             // expected behavior
             Assert.assertNotNull(oe.getCause());

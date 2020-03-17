@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -110,7 +110,7 @@ public class CcsdsModifiedFrame extends Frame {
 
         @Override
         public Transform getTransform(final AbsoluteDate date) {
-            return new Transform(date, body.getPVCoordinates(date, frame));
+            return new Transform(date, body.getPVCoordinates(date, frame).negate());
         }
 
         @Override
@@ -118,7 +118,7 @@ public class CcsdsModifiedFrame extends Frame {
                 final FieldAbsoluteDate<T> date) {
             return new FieldTransform<>(
                     date,
-                    body.getPVCoordinates(date, frame));
+                    body.getPVCoordinates(date, frame).negate());
         }
 
     }

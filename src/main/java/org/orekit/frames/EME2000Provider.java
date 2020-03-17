@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -52,7 +52,7 @@ class EME2000Provider extends FixedTransformProvider {
     protected EME2000Provider() {
 
         // build the bias transform
-        super(new Transform(AbsoluteDate.J2000_EPOCH,
+        super(new Transform(AbsoluteDate.ARBITRARY_EPOCH,
                             new Rotation(Vector3D.PLUS_I, D_EPSILON_B, RotationConvention.VECTOR_OPERATOR).
                             compose(new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0), RotationConvention.VECTOR_OPERATOR).
                                     compose(new Rotation(Vector3D.PLUS_K, -ALPHA_0, RotationConvention.VECTOR_OPERATOR), RotationConvention.VECTOR_OPERATOR),

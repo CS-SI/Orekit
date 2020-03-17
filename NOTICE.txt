@@ -1,8 +1,8 @@
 OREKIT
-Copyright 2002-2019 CS Systèmes d'Information
+Copyright 2002-2020 CS Group
 
 This product includes software developed by
-CS Systèmes d'Information (http://www.c-s.fr/)
+CS Group (http://www.c-s.fr/)
 
 This product includes software developed by
 Bruce R. Bowman (HQ AFSPC, Space Analysis Division)

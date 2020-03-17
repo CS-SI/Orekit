@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,11 +27,14 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
+import org.orekit.time.TimeScales;
 import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 
@@ -60,12 +63,14 @@ class MODProvider implements TransformProvider {
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
+     * @param timeScales used to define this frame.
      */
-    MODProvider(final IERSConventions conventions) {
+    MODProvider(final IERSConventions conventions, final TimeScales timeScales) {
         this.conventions        = conventions;
-        this.precessionFunction = conventions.getPrecessionFunction();
-        final TimeScalarFunction epsilonAFunction = conventions.getMeanObliquityFunction();
-        final AbsoluteDate date0 = conventions.getNutationReferenceEpoch();
+        this.precessionFunction = conventions.getPrecessionFunction(timeScales);
+        final TimeScalarFunction epsilonAFunction =
+                conventions.getMeanObliquityFunction(timeScales);
+        final AbsoluteDate date0 = conventions.getNutationReferenceEpoch(timeScales);
         final double epsilon0 = epsilonAFunction.value(date0);
         r4 = new Rotation(Vector3D.PLUS_I, epsilon0, RotationConvention.FRAME_TRANSFORM);
         fieldR4 = new HashMap<>();
@@ -120,11 +125,13 @@ class MODProvider implements TransformProvider {
      * </p>
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DataTransferObject(conventions);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
@@ -146,7 +153,8 @@ class MODProvider implements TransformProvider {
         private Object readResolve() {
             try {
                 // retrieve a managed frame
-                return new MODProvider(conventions);
+                return new MODProvider(conventions,
+                        DataContext.getDefault().getTimeScales());
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

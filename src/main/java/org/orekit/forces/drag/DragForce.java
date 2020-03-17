@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -268,5 +268,19 @@ public class DragForce extends AbstractForceModel {
         final T rho = (T) (factory.build(rhoAll));
 
         return rho;
+    }
+
+    /** Get the atmospheric model.
+     * @return atmosphere model
+     */
+    public Atmosphere getAtmosphere() {
+        return atmosphere;
+    }
+
+    /** Get spacecraft that are sensitive to atmospheric drag forces.
+     * @return drag sensitive spacecraft model
+     */
+    public DragSensitive getSpacecraft() {
+        return spacecraft;
     }
 }

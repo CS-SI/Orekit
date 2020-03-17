@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -52,6 +52,7 @@ public class AbsoluteDateTest {
         Assert.assertEquals(315964819000l,     AbsoluteDate.QZSS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(1136073633000l,    AbsoluteDate.BEIDOU_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(820443629000l,     AbsoluteDate.GLONASS_EPOCH.toDate(tai).getTime());
+        Assert.assertEquals(935280019000l,     AbsoluteDate.IRNSS_EPOCH.toDate(tai).getTime());
         Assert.assertEquals(946728000000l,     AbsoluteDate.J2000_EPOCH.toDate(tt).getTime());
     }
 
@@ -75,6 +76,8 @@ public class AbsoluteDateTest {
                             AbsoluteDate.BEIDOU_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("1995-12-31T21:00:00.000",
                             AbsoluteDate.GLONASS_EPOCH.toString(TimeScalesFactory.getUTC()));
+        Assert.assertEquals("1999-08-21T23:59:47.000",
+                AbsoluteDate.IRNSS_EPOCH.toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1970-01-01T00:00:00.000",
@@ -628,17 +631,139 @@ public class AbsoluteDateTest {
         Assert.assertTrue(AbsoluteDate.JULIAN_EPOCH.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
         Assert.assertTrue(AbsoluteDate.J2000_EPOCH.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
         Assert.assertTrue(AbsoluteDate.J2000_EPOCH.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
+        Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY) == 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) < 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) < 0);
         Assert.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) > 0);
         Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
+        Assert.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) == 0);
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
+        Assert.assertTrue(Double.isNaN(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.FUTURE_INFINITY)));
+        Assert.assertTrue(Double.isNaN(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assert.assertEquals("5881610-07-11T23:59:59.999",  AbsoluteDate.FUTURE_INFINITY.toString());
         Assert.assertEquals("-5877490-03-03T00:00:00.000", AbsoluteDate.PAST_INFINITY.toString());
+        Assert.assertEquals(true, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
+        Assert.assertEquals(true, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+        Assert.assertEquals(false, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
+        Assert.assertEquals(false, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+    }
+
+    @Test
+    public void testCompareTo() {
+        // check long time spans
+        AbsoluteDate epoch =
+                new AbsoluteDate(2000, 1, 1, 12, 0, 0, TimeScalesFactory.getTAI());
+        Assert.assertTrue(AbsoluteDate.JULIAN_EPOCH.compareTo(epoch) < 0);
+        Assert.assertTrue(epoch.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
+        // check short time spans
+        AbsoluteDate d = epoch;
+        double epsilon = 1.0 - FastMath.nextDown(1.0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(epsilon)) < 0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(0)) == 0);
+        Assert.assertTrue(d.compareTo(d.shiftedBy(-epsilon)) > 0);
+        // check date with negative offset
+        d = epoch.shiftedBy(496891466)
+                .shiftedBy(0.7320114066633323)
+                .shiftedBy(-19730.732011406664);
+        // offset is 0 in d1
+        AbsoluteDate d1 = epoch.shiftedBy(496891466 - 19730);
+        Assert.assertTrue(d.compareTo(d1) < 0);
+        // decrement epoch, now offset is 0.999... in d1
+        d1 = d1.shiftedBy(-1e-16);
+        Assert.assertTrue("" + d.durationFrom(d1), d.compareTo(d1) < 0);
+        // check large dates
+        // these tests fail due to long overflow in durationFrom() Bug #584
+        // d = new AbsoluteDate(epoch, Long.MAX_VALUE);
+        // Assert.assertEquals(-1, epoch.compareTo(d));
+        // Assert.assertTrue(d.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
+        // d = new AbsoluteDate(epoch, Long.MIN_VALUE);
+        // Assert.assertTrue(epoch.compareTo(d) > 0);
+        // Assert.assertTrue(d.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
+    }
+
+    @Test
+    public void testIsEqualTo() {
+        Assert.assertTrue(present.isEqualTo(present));
+        Assert.assertTrue(present.isEqualTo(presentToo));
+        Assert.assertFalse(present.isEqualTo(past));
+        Assert.assertFalse(present.isEqualTo(future));
+    }
+
+    @Test
+    public void testIsCloseTo() {
+        double tolerance = 10;
+        TimeStamped closeToPresent = new AnyTimeStamped(present.shiftedBy(5));
+        Assert.assertTrue(present.isCloseTo(present, tolerance));
+        Assert.assertTrue(present.isCloseTo(presentToo, tolerance));
+        Assert.assertTrue(present.isCloseTo(closeToPresent, tolerance));
+        Assert.assertFalse(present.isCloseTo(past, tolerance));
+        Assert.assertFalse(present.isCloseTo(future, tolerance));
+    }
+
+    @Test
+    public void testIsBefore() {
+        Assert.assertFalse(present.isBefore(past));
+        Assert.assertFalse(present.isBefore(present));
+        Assert.assertFalse(present.isBefore(presentToo));
+        Assert.assertTrue(present.isBefore(future));
+    }
+
+    @Test
+    public void testIsAfter() {
+        Assert.assertTrue(present.isAfter(past));
+        Assert.assertFalse(present.isAfter(present));
+        Assert.assertFalse(present.isAfter(presentToo));
+        Assert.assertFalse(present.isAfter(future));
+    }
+
+    @Test
+    public void testIsBeforeOrEqualTo() {
+        Assert.assertFalse(present.isBeforeOrEqualTo(past));
+        Assert.assertTrue(present.isBeforeOrEqualTo(present));
+        Assert.assertTrue(present.isBeforeOrEqualTo(presentToo));
+        Assert.assertTrue(present.isBeforeOrEqualTo(future));
+    }
+
+    @Test
+    public void testIsAfterOrEqualTo() {
+        Assert.assertTrue(present.isAfterOrEqualTo(past));
+        Assert.assertTrue(present.isAfterOrEqualTo(present));
+        Assert.assertTrue(present.isAfterOrEqualTo(presentToo));
+        Assert.assertFalse(present.isAfterOrEqualTo(future));
+    }
+
+    @Test
+    public void testIsBetween() {
+        Assert.assertTrue(present.isBetween(past, future));
+        Assert.assertTrue(present.isBetween(future, past));
+        Assert.assertFalse(past.getDate().isBetween(present, future));
+        Assert.assertFalse(past.getDate().isBetween(future, present));
+        Assert.assertFalse(future.getDate().isBetween(past, present));
+        Assert.assertFalse(future.getDate().isBetween(present, past));
+        Assert.assertFalse(present.isBetween(present, future));
+        Assert.assertFalse(present.isBetween(past, present));
+        Assert.assertFalse(present.isBetween(past, past));
+        Assert.assertFalse(present.isBetween(present, present));
+        Assert.assertFalse(present.isBetween(present, presentToo));
+    }
+
+    @Test
+    public void testIsBetweenOrEqualTo() {
+        Assert.assertTrue(present.isBetweenOrEqualTo(past, future));
+        Assert.assertTrue(present.isBetweenOrEqualTo(future, past));
+        Assert.assertFalse(past.getDate().isBetweenOrEqualTo(present, future));
+        Assert.assertFalse(past.getDate().isBetweenOrEqualTo(future, present));
+        Assert.assertFalse(future.getDate().isBetweenOrEqualTo(past, present));
+        Assert.assertFalse(future.getDate().isBetweenOrEqualTo(present, past));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, future));
+        Assert.assertTrue(present.isBetweenOrEqualTo(past, present));
+        Assert.assertFalse(present.isBetweenOrEqualTo(past, past));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, present));
+        Assert.assertTrue(present.isBetweenOrEqualTo(present, presentToo));
     }
 
     @Test
@@ -822,8 +947,29 @@ public class AbsoluteDateTest {
     public void setUp() {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
+        present = new AbsoluteDate(new DateComponents(2000, 1, 1),
+                                    new TimeComponents(12, 00, 00), utc);
+        presentToo = new AnyTimeStamped(present.shiftedBy(0));
+        past = new AnyTimeStamped(present.shiftedBy(-1000));
+        future = new AnyTimeStamped(present.shiftedBy(1000));
     }
 
     private TimeScale utc;
+    private AbsoluteDate present;
+    private AnyTimeStamped past;
+    private AnyTimeStamped presentToo;
+    private AnyTimeStamped future;
+
+    static class AnyTimeStamped implements TimeStamped {
+        AbsoluteDate date;
+        public AnyTimeStamped(AbsoluteDate date) {
+            this.date = date;
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+    }
 
 }

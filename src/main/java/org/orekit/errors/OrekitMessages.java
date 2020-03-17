@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -167,6 +167,10 @@ public enum OrekitMessages implements Localizable {
     CCSDS_TDM_KEYWORD_NOT_FOUND("No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}"),
     CCSDS_TIME_SYSTEM_NOT_READ_YET("Parameter {0} needs a time system to be interpreted"),
     CCSDS_TDM_UNKNOWN_FORMAT("TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML"),
+    CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the attitude blocks: {0} ≠ {1}"),
+    CCSDS_AEM_NULL_ATTITUDE_TYPE("invalid attitude type {0}"),
+    CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
+    CCSDS_AEM_INVALID_ROTATION_SEQUENCE("the rotation sequence of the Euler angles {0} is invalid"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
@@ -233,6 +237,8 @@ public enum OrekitMessages implements Localizable {
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
     NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
     INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
+    NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER("file {0} does not contain latitude or longitude bondaries in its header section"),
+    NO_EPOCH_IN_IONEX_HEADER("file {0} does not contain epoch of first or last map in its header section"),
     ITRF_VERSIONS_PREFIX_ONLY("The first column of itrf-versions.conf is a plain " +
             "prefix that is matched against the name of each loaded file. It should " +
             "not contain any regular expression syntax or directory components, i.e. " +
@@ -245,7 +251,13 @@ public enum OrekitMessages implements Localizable {
     CANNOT_COMPUTE_LAGRANGIAN("Cannot compute around {0}"),
     TRAJECTORY_NOT_CROSSING_XZPLANE("The trajectory does not cross XZ Plane, it will not result in a Halo Orbit"),
     NO_STM_EQUATIONS("SpacecraftState number {0} has no STM equations linked to it, its manifold cannot be computed"),
-    MULTIPLE_SHOOTING_UNDERCONSTRAINED("The multiple shooting problem is underconstrained : {0} free variables, {1} constraints");
+    MULTIPLE_SHOOTING_UNDERCONSTRAINED("The multiple shooting problem is underconstrained : {0} free variables, {1} constraints"),
+    INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS("invalid measurement types {0} and {1} for the combination of measurements {2}"),
+    INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS("frequencies {0} and {1} are incompatibles for the {2} combination"),
+    NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates"),
+    EXCEPTIONAL_DATA_CONTEXT("Use of the ExceptionalDataContext detected. This is typically used to detect developer errors."),
+    NON_DIFFERENT_DATES_FOR_OBSERVATIONS("observations {0}, {1} and {2} must have different dates"),
+    NON_COPLANAR_POINTS("observations are not in the same plane");
 
     // CHECKSTYLE: resume JavadocVariable check
 

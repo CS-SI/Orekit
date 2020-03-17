@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +30,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -61,7 +63,7 @@ public class DSSTTesseralTest {
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
         
-        // a  = 2655989.0 m
+        // a  = 26559890 m
         // ex = 2.719455286199036E-4
         // ey = 0.0041543085910249414
         // hx = -0.3412974060023717
@@ -154,6 +156,83 @@ public class DSSTTesseralTest {
         Assert.assertEquals(-4.9944146013126755E-8, y[3], 1.e-23);
         Assert.assertEquals(-4.500974242661177E-8,  y[4], 1.e-23);
         Assert.assertEquals(-2.785213556107612E-7,  y[5], 1.e-22);
+    }
+
+    @Test
+    public void testIssue625() {
+
+        // Central Body geopotential 4x4
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        
+        final Frame frame = FramesFactory.getEME2000();
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        
+        // a  = 26559890 m
+        // ex = 2.719455286199036E-4
+        // ey = 0.0041543085910249414
+        // hx = -0.3412974060023717
+        // hy = 0.3960084733107685
+        // lM = 8.566537840341699 rad
+        final Orbit orbit = new EquinoctialOrbit(2.655989E7,
+                                                 2.719455286199036E-4,
+                                                 0.0041543085910249414,
+                                                 -0.3412974060023717,
+                                                 0.3960084733107685,
+                                                 8.566537840341699,
+                                                 PositionAngle.TRUE,
+                                                 frame,
+                                                 initDate,
+                                                 provider.getMu());
+        
+        final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
+        
+        final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
+
+        // Tesseral force model
+        final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
+                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                         4, 4, 4, 8, 4, 4, 2);
+        tesseral.initialize(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters());
+
+        // Tesseral force model with default constructor
+        final DSSTForceModel tesseralDefault = new DSSTTesseral(earthFrame,
+                                                                Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                                provider);
+        tesseralDefault.initialize(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters());
+
+        // Compute mean element rate for the tesseral force model
+        final double[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters());
+
+        // Compute mean element rate for the "default" tesseral force model
+        final double[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters());
+
+        // Verify
+        for (int i = 0; i < 6; i++) {
+            Assert.assertEquals(elements[i], elementsDefault[i], Double.MIN_VALUE);
+        }
+
+    }
+
+    @Test
+    public void testOutOfRangeException() {
+        // Central Body geopotential 1x0
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(1, 0);
+        // Earth
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getGTOD(false));
+        try {
+            @SuppressWarnings("unused")
+            final DSSTForceModel tesseral = new DSSTTesseral(earth.getBodyFrame(),
+                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                          provider);
+            Assert.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+        }
     }
 
     @Before

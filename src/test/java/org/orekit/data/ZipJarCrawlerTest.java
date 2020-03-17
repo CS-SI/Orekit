@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,9 +18,11 @@ package org.orekit.data;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import org.hamcrest.CoreMatchers;
@@ -32,7 +34,8 @@ public class ZipJarCrawlerTest {
     @Test
     public void testMultiZipClasspath() {
         CountingLoader crawler = new CountingLoader();
-        new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler);
+        new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler,
+                                                           DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(6, crawler.getCount());
     }
 
@@ -41,8 +44,18 @@ public class ZipJarCrawlerTest {
         URL url =
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader();
-        new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler);
+        new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler,
+                                                                DataContext.getDefault().getDataProvidersManager());
         Assert.assertEquals(6, crawler.getCount());
+    }
+
+    @Deprecated
+    @Test
+    public void testExtraMethods() throws URISyntaxException {
+        URL url =
+            ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/orekit.zip");
+        new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"),
+                                                                new MarkingLoader());
     }
 
     private static class CountingLoader implements DataLoader {
@@ -56,6 +69,31 @@ public class ZipJarCrawlerTest {
         }
         public int getCount() {
             return count;
+        }
+    }
+
+    private static class MarkingLoader implements DataLoader {
+        public boolean stillAcceptsData() {
+            return true;
+        }
+        public void loadData(InputStream input, String name) throws IOException {
+            Assert.assertFalse(input.markSupported());
+            input.mark(1); // does nothing
+            try {
+                input.reset();
+                Assert.fail("an exception should have been thrown");
+            } catch (IOException ioe) {
+                // expected
+            }
+            input.skip(1);
+            byte[] content = new byte[3];
+            content[0] = 'O';
+            input.read(content, 1, 2);
+            Assert.assertEquals("Ore", new String(content, StandardCharsets.UTF_8));
+            Assert.assertTrue(input.available() > 0);
+            byte[] remaining = new byte[4];
+            input.read(remaining);
+            Assert.assertEquals("kit\n", new String(remaining, StandardCharsets.UTF_8));
         }
     }
 

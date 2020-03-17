@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -62,10 +62,10 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         final ObservableSatellite satellite = getSatellites()[0];
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState state         = states[satellite.getPropagatorIndex()];
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
 
         // create a dummy measurement
-        final Phase dummy = new Phase(station, state.getDate(), Double.NaN, wavelength, sigma, baseWeight, satellite);
+        final Phase dummy = new Phase(station, relevant[0].getDate(), Double.NaN, wavelength, sigma, baseWeight, satellite);
         for (final EstimationModifier<Phase> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
@@ -80,7 +80,7 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         }
 
         // estimate the perfect value of the measurement
-        double phase = dummy.estimate(0, 0, states).getEstimatedValue()[0];
+        double phase = dummy.estimate(0, 0, relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();
@@ -89,7 +89,7 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         }
 
         // generate measurement
-        final Phase measurement = new Phase(station, state.getDate(), phase, wavelength, sigma, baseWeight, satellite);
+        final Phase measurement = new Phase(station, relevant[0].getDate(), phase, wavelength, sigma, baseWeight, satellite);
         for (final EstimationModifier<Phase> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }

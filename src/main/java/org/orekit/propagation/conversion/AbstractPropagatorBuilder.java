@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,16 +16,20 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -70,6 +74,46 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Position scale to use for the orbital drivers. */
     private final double positionScale;
 
+    /** Attitude provider for the propagator. */
+    private AttitudeProvider attitudeProvider;
+
+    /** Additional equations. */
+    private List<AdditionalEquations> additionalEquations;
+
+    /** Build a new instance.
+     * <p>
+     * The template orbit is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, the orbit type, and is also
+     * used together with the {@code positionScale} to convert from the {@link
+     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters. The initial attitude
+     * provider is aligned with the inertial frame.
+     * </p>
+     * <p>
+     * By default, all the {@link #getOrbitalParametersDrivers() orbital parameters drivers}
+     * are selected, which means that if the builder is used for orbit determination or
+     * propagator conversion, all orbital parameters will be estimated. If only a subset
+     * of the orbital parameters must be estimated, caller must retrieve the orbital
+     * parameters by calling {@link #getOrbitalParametersDrivers()} and then call
+     * {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
+     * </p>
+     * @param templateOrbit reference orbit from which real orbits will be built
+     * @param positionAngle position angle type to use
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
+     * be set up for central attraction coefficient
+     * @since 8.0
+     * @see #AbstractPropagatorBuilder(Orbit, PositionAngle, double, boolean,
+     * AttitudeProvider)
+     */
+    protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
+                                        final double positionScale, final boolean addDriverForCentralAttraction) {
+        this(templateOrbit, positionAngle, positionScale, addDriverForCentralAttraction,
+                new InertialProvider(templateOrbit.getFrame()));
+    }
+
     /** Build a new instance.
      * <p>
      * The template orbit is used as a model to {@link
@@ -93,10 +137,15 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * (typically set to the expected standard deviation of the position)
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
-          * @since 8.0
+     * @param attitudeProvider for the propagator.
+     * @since 10.1
+     * @see #AbstractPropagatorBuilder(Orbit, PositionAngle, double, boolean)
      */
-    protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
-                                        final double positionScale, final boolean addDriverForCentralAttraction) {
+    protected AbstractPropagatorBuilder(final Orbit templateOrbit,
+                                        final PositionAngle positionAngle,
+                                        final double positionScale,
+                                        final boolean addDriverForCentralAttraction,
+                                        final AttitudeProvider attitudeProvider) {
 
         this.initialOrbitDate    = templateOrbit.getDate();
         this.frame               = templateOrbit.getFrame();
@@ -106,9 +155,12 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.positionAngle       = positionAngle;
         this.positionScale       = positionScale;
         this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngle);
+        this.attitudeProvider = attitudeProvider;
         for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
             driver.setSelected(true);
         }
+
+        this.additionalEquations  = new ArrayList<AdditionalEquations>();
 
         if (addDriverForCentralAttraction) {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
@@ -153,6 +205,26 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** {@inheritDoc} */
     public ParameterDriversList getPropagationParametersDrivers() {
         return propagationDrivers;
+    }
+
+    /**
+     * Get the attitude provider.
+     *
+     * @return the attitude provider
+     * @since 10.1
+     */
+    public AttitudeProvider getAttitudeProvider() {
+        return attitudeProvider;
+    }
+
+    /**
+     * Set the attitude provider.
+     *
+     * @param attitudeProvider attitude provider
+     * @since 10.1
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** Get the position scale.
@@ -293,4 +365,23 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         // Change the initial orbit date in the builder
         this.initialOrbitDate = newOrbit.getDate();
     }
+
+    /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
+     * @param additional additional equations
+     * @since 10.1
+     */
+    public void addAdditionalEquations(final AdditionalEquations additional) {
+
+        additionalEquations.add(additional);
+
+    }
+
+    /** Get the list of additional equations.
+     * @return the list of additional equations
+     * @since 10.1
+     */
+    protected List<AdditionalEquations> getAdditionalEquations() {
+        return additionalEquations;
+    }
+
 }

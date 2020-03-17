@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,9 +17,10 @@
 package org.orekit.utils;
 
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 public class ParameterDriversListTest {
 
@@ -43,10 +44,10 @@ public class ParameterDriversListTest {
         list2.add(p2A);
         list2.add(p2B);
 
-        DelegatingDriver delegating11 = list1.findByName("p1");
-        DelegatingDriver delegating21 = list1.findByName("p2");
-        DelegatingDriver delegating12 = list2.findByName("p1");
-        DelegatingDriver delegating22 = list2.findByName("p2");
+        ParameterDriversList.DelegatingDriver delegating11 = list1.findByName("p1");
+        ParameterDriversList.DelegatingDriver delegating21 = list1.findByName("p2");
+        ParameterDriversList.DelegatingDriver delegating12 = list2.findByName("p1");
+        ParameterDriversList.DelegatingDriver delegating22 = list2.findByName("p2");
 
         // Value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setValue(0.5);
@@ -128,4 +129,140 @@ public class ParameterDriversListTest {
         Assert.assertEquals(2., delegating21.getMaxValue(), 1.0e-15);
         Assert.assertEquals(2., delegating22.getMaxValue(), 1.0e-15);
     }
+
+    @Test
+    public void testEmbeddedList() {
+        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriversList listA = new ParameterDriversList();
+        listA.add(pA1);
+        pA1.setSelected(true);
+        listA.add(pA2);
+        listA.add(pA3);
+        ParameterDriversList listB = new ParameterDriversList();
+        listB.add(pB1);
+        listB.add(pB2);
+
+        listA.add(listB.getDrivers().get(0));
+
+        pA1.setValue(0.5);
+        for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
+            Assert.assertEquals(0.5, pd.getValue(), 1.0e-15);
+            Assert.assertTrue(pd.isSelected());
+        }
+
+        pB2.setValue(-0.5);
+        for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
+            Assert.assertEquals(-0.5, pd.getValue(), 1.0e-15);
+        }
+
+        for (final ParameterDriversList list : new ParameterDriversList[] { listA, listB }) {
+            Assert.assertEquals(1, list.getNbParams());
+            Assert.assertEquals(5, list.getDrivers().get(0).getRawDrivers().size());
+            Assert.assertSame(pA1, list.getDrivers().get(0).getRawDrivers().get(0));
+            Assert.assertSame(pA2, list.getDrivers().get(0).getRawDrivers().get(1));
+            Assert.assertSame(pA3, list.getDrivers().get(0).getRawDrivers().get(2));
+            Assert.assertSame(pB1, list.getDrivers().get(0).getRawDrivers().get(3));
+            Assert.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
+        }
+
+        // this should be a no-op
+        listB.add(listA.getDrivers().get(0));
+
+        for (final ParameterDriversList list : new ParameterDriversList[] { listA, listB }) {
+            Assert.assertEquals(1, list.getNbParams());
+            Assert.assertEquals(5, list.getDrivers().get(0).getRawDrivers().size());
+            Assert.assertSame(pA1, list.getDrivers().get(0).getRawDrivers().get(0));
+            Assert.assertSame(pA2, list.getDrivers().get(0).getRawDrivers().get(1));
+            Assert.assertSame(pA3, list.getDrivers().get(0).getRawDrivers().get(2));
+            Assert.assertSame(pB1, list.getDrivers().get(0).getRawDrivers().get(3));
+            Assert.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
+        }
+
+        listB.findByName("p").setValue(0.0);
+        for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
+            Assert.assertEquals(0.0, pd.getValue(), 1.0e-15);
+        }
+
+    }
+
+    @Test
+    public void testMerge() {
+        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pC1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver qA1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver qA2 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver qB1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
+        final AtomicBoolean called = new AtomicBoolean(false);
+        qB1.addObserver((previous, driver) -> called.set(true));
+        ParameterDriversList listA = new ParameterDriversList();
+        listA.add(pA1);
+        listA.add(pA2);
+        listA.add(pA3);
+        listA.add(qA1);
+        listA.add(qA2);
+        ParameterDriversList listB = new ParameterDriversList();
+        listB.add(pB1);
+        for (int i = 0; i < 3; ++i) {
+            pB2.setSelected(true);
+            listB.add(pB2);
+        }
+        listB.add(qB1);
+
+        ParameterDriversList.DelegatingDriver oldDelegating = listB.getDrivers().get(0);
+        listA.add(oldDelegating);
+        listA.add(qB1);
+        new ParameterDriversList().add(pC1);
+        listB.add(pC1);
+        listA.sort();
+
+        pA1.setValue(0.5);
+        for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2, pC1 }) {
+            Assert.assertEquals(0.5, pd.getValue(), 1.0e-15);
+            Assert.assertTrue(pd.isSelected());
+        }
+        qA2.setValue(0.25);
+        for (ParameterDriver pd : new ParameterDriver[] { qA1, qA2, qB1 }) {
+            Assert.assertEquals(0.25, pd.getValue(), 1.0e-15);
+            Assert.assertFalse(pd.isSelected());
+        }
+        Assert.assertTrue(called.get());
+
+        listB.filter(false);
+        Assert.assertEquals(2, listA.getNbParams());
+        Assert.assertEquals(6, listA.getDrivers().get(0).getRawDrivers().size());
+        Assert.assertSame(pA1, listA.getDrivers().get(0).getRawDrivers().get(0));
+        Assert.assertSame(pA2, listA.getDrivers().get(0).getRawDrivers().get(1));
+        Assert.assertSame(pA3, listA.getDrivers().get(0).getRawDrivers().get(2));
+        Assert.assertSame(pB1, listA.getDrivers().get(0).getRawDrivers().get(3));
+        Assert.assertSame(pB2, listA.getDrivers().get(0).getRawDrivers().get(4));
+        Assert.assertSame(pC1, listA.getDrivers().get(0).getRawDrivers().get(5));
+        Assert.assertEquals(3, listA.getDrivers().get(1).getRawDrivers().size());
+        Assert.assertSame(qA1, listA.getDrivers().get(1).getRawDrivers().get(0));
+        Assert.assertSame(qA2, listA.getDrivers().get(1).getRawDrivers().get(1));
+        Assert.assertSame(qB1, listA.getDrivers().get(1).getRawDrivers().get(2));
+        Assert.assertEquals(1, listB.getNbParams());
+        Assert.assertEquals(3, listB.getDrivers().get(0).getRawDrivers().size());
+        Assert.assertSame(qA1, listB.getDrivers().get(0).getRawDrivers().get(0));
+        Assert.assertSame(qA2, listB.getDrivers().get(0).getRawDrivers().get(1));
+        Assert.assertSame(qB1, listB.getDrivers().get(0).getRawDrivers().get(2));
+
+        Assert.assertNotSame(oldDelegating, listB.getDrivers().get(0));
+        Assert.assertEquals(6, oldDelegating.getRawDrivers().size());
+        Assert.assertSame(pA1, oldDelegating.getRawDrivers().get(0));
+        Assert.assertSame(pA2, oldDelegating.getRawDrivers().get(1));
+        Assert.assertSame(pA3, oldDelegating.getRawDrivers().get(2));
+        Assert.assertSame(pB1, oldDelegating.getRawDrivers().get(3));
+        Assert.assertSame(pB2, oldDelegating.getRawDrivers().get(4));
+        Assert.assertSame(pC1, listA.getDrivers().get(0).getRawDrivers().get(5));
+
+    }
+
 }

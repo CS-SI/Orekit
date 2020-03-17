@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,13 +20,21 @@ import java.util.SortedSet;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.Utils;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
 public abstract class AbstractFilesLoaderTest {
 
+    protected DataProvidersManager manager =
+            DataContext.getDefault().getDataProvidersManager();
+
+    protected TimeScale utc;
+
     protected void setRoot(String directoryName) {
         Utils.setDataRoot(directoryName);
+        manager = DataContext.getDefault().getDataProvidersManager();
+        utc = DataContext.getDefault().getTimeScales().getUTC();
     }
 
     protected int getMaxGap(SortedSet<? extends TimeStamped> history) {
