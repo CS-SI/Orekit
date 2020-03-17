@@ -2,11 +2,11 @@
  * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,10 +15,21 @@
  * limitations under the License.
  */
 /**
+ * This package provides measurement modifier.
  *
- *This package provides a parser for elements data stored in CCSDS Navigation Data Message format.
- *
- * @author sports
- * @since 6.1
+ * <p>
+ * Measurement modifiers are used to take into account
+ * some effects during the modeling (i.e. the estimation)
+ * of a measurement. Modifiers currently implemented in
+ * Orekit are:
+ * <ul>
+ *     <li>Tropospheric path delay</li>
+ *     <li>Ionospheric path delay</li>
+ *     <li>Satellite bias</li>
+ *     <li>Satellite phase ambiguity</li>
+ *     <li>Shapiro effect</li>
+ *     <li>...</li>
+ * </ul>
+ * </p>
  */
-package org.orekit.files.ccsds;
+package org.orekit.estimation.measurements.modifiers;

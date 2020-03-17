@@ -16,9 +16,11 @@
  */
 /**
  *
- *This package provides a parser for elements data stored in CCSDS Navigation Data Message format.
- *
- * @author sports
- * @since 6.1
+ * This package provides inertial force model.
+ * <p>
+ * This force model adds the pseudo-forces due to inertia between the
+ * integrating frame and a reference inertial frame from which
+ * this force model is built.
+ * </p>
  */
-package org.orekit.files.ccsds;
+package org.orekit.forces.inertia;

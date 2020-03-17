@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 /**
- *
- *This package provides a parser for elements data stored in CCSDS Navigation Data Message format.
- *
- * @author sports
- * @since 6.1
+ * This package provides classes for representing a spacecraft sensor Field Of View.
+ * <p>
+ * Fields Of View are zones defined on the unit sphere
+ * centered on the spacecraft.
+ * </p>
  */
-package org.orekit.files.ccsds;
+package org.orekit.geometry.fov;

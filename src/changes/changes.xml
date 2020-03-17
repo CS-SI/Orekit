@@ -21,8 +21,11 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="647">
+        Improved package-info documentation.
+      </action>
       <action dev="nick" type="update" >
-            upgrade maven-checkstyle-plugin to 3.1.1.
+        Upgrade maven-checkstyle-plugin to 3.1.1.
       </action>
       <action dev="bryan" type="add" issue="657">
         Added multiplexed Orekit fixed step handler.
