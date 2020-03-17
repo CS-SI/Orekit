@@ -19,4 +19,4 @@
  * @since 10.1
  *
  */
-package org.orekit.annotation;
+package org.orekit.compiler.plugin;
