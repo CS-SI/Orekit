@@ -18,7 +18,6 @@
 package org.orekit.orbits;
 
 import org.orekit.bodies.CR3BPSystem;
-import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
 /** Class calculating different parameters of a Halo Orbit.
@@ -51,23 +50,20 @@ public class HaloOrbit extends LibrationOrbit {
      * Standard constructor, the first guess will be computed with both start
      * time and phase equal to zero.
      * </p>
-     * @param syst CR3BP System considered
-     * @param point Lagrangian Point considered
+     * @param richardson third-Order Richardson Expansion
      * @param az z-axis Amplitude of the required Halo Orbit, meters
      * @param type type of the Halo Orbit (Northern or Southern)
      */
-    public HaloOrbit(final CR3BPSystem syst, final LagrangianPoints point,
+    public HaloOrbit(final RichardsonExpansion richardson,
                      final double az, final LibrationOrbitType type) {
-        super(syst,
-              new RichardsonExpansion(syst, point)
-                  .computeHaloFirstGuess(az, type, 0.0, 0.0),
-              new RichardsonExpansion(syst, point).getHaloOrbitalPeriod(az));
+        super(richardson.getCr3bpSystem(),
+              richardson.computeHaloFirstGuess(az, type, 0.0, 0.0),
+              richardson.getHaloOrbitalPeriod(az));
     }
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinates
-        applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
+    protected PVCoordinates applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
         return diff.computeHalo();
     }
 

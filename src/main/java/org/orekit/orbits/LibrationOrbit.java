@@ -31,11 +31,13 @@ import org.orekit.utils.PVCoordinates;
  * Base class for libration orbits.
  * @see HaloOrbit
  * @see LyapunovOrbit
+ * @author Vincent Mouraux
+ * @author Bryan Cazabonne
  */
 public abstract class LibrationOrbit {
 
     /** Name of the needed additional state. */
-    private final String stm = "stmEquations";
+    private static final String STM = "stmEquations";
 
     /** CR3BP System of the libration Orbit. */
     private final CR3BPSystem syst;
@@ -60,134 +62,6 @@ public abstract class LibrationOrbit {
         this.orbitalPeriod = orbitalPeriod;
     }
 
-    /** Return a manifold direction from one position on a libration Orbit.
-     * @param s SpacecraftState with additional equations
-     * @param isStable true if the manifold is stable
-     * @return manifold first guess Position-Velocity of a point on the libration Orbit
-     */
-    public PVCoordinates getManifolds(final SpacecraftState s,
-                                      final boolean isStable) {
-
-        final PVCoordinates pv;
-        final SpacecraftState[] state = new SpacecraftState[1];
-        state[0] = s;
-
-        if (isStable) {
-            // Stable
-            pv = getStableManifolds(state)[0];
-        } else {
-            // Unstable
-            pv = getUnstableManifolds(state)[0];;
-        }
-
-        return pv;
-
-    }
-
-    /** Return the stable manifold direction for several positions on a libration Orbit.
-     * @param s SpacecraftStates (with STM equations) to compute from
-     * @return Stable manifold first direction from a point on the libration Orbit
-     */
-    public PVCoordinates[] getStableManifolds(final SpacecraftState[] s) {
-
-        final PVCoordinates[] pv = new PVCoordinates[s.length];
-
-        RealVector eigenVector;
-
-        // Small delta, linked to the characteristic velocity of the CR3BP system
-        final double epsilon =
-            syst.getVdim() * 1E2 / syst.getDdim();
-
-
-        int i = 0;
-        while (i < s.length) {
-
-            if (s[i].getAdditionalState(stm) == null) {
-                throw new OrekitException(OrekitMessages.NO_STM_EQUATIONS, i);
-            }
-
-            // Get Normalize eigen vector linked to the stability of the manifold
-            final RealMatrix phi =
-                new STMEquations(syst).getStateTransitionMatrix(s[i]);
-
-            eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
-
-            // New PVCoordinates following the manifold
-            pv[i] =
-                new PVCoordinates(s[i].getPVCoordinates().getPosition()
-                    .add(new Vector3D(eigenVector.getEntry(0), eigenVector
-                        .getEntry(1), eigenVector.getEntry(2))
-                            .scalarMultiply(epsilon)), s[i].getPVCoordinates()
-                                .getVelocity()
-                                .add(new Vector3D(eigenVector.getEntry(3),
-                                                  eigenVector.getEntry(4),
-                                                  eigenVector.getEntry(5))
-                                                      .scalarMultiply(epsilon)));
-            i++;
-        }
-        return pv;
-    }
-
-    /** Return the Unstable manifold direction for several positions on a libration Orbit.
-     * @param s SpacecraftStates (with STM equations) to compute from
-     * @return Unstable manifold first direction from a point on the libration Orbit
-     */
-    public PVCoordinates[] getUnstableManifolds(final SpacecraftState[] s) {
-
-        final PVCoordinates[] pv = new PVCoordinates[s.length];
-
-        RealVector eigenVector;
-
-        final double epsilon =
-            syst.getVdim() * 1E2 / syst.getDdim();
-
-        int i = 0;
-        while (i < s.length) {
-
-            if (s[i].getAdditionalState(stm) == null ) {
-                throw new OrekitException(OrekitMessages.NO_STM_EQUATIONS, i);
-            }
-
-            final RealMatrix phi =
-                new STMEquations(syst).getStateTransitionMatrix(s[i]);
-
-            eigenVector =
-                new EigenDecomposition(phi).getEigenvector(0).unitVector();
-
-            pv[i] =
-                new PVCoordinates(s[i].getPVCoordinates().getPosition()
-                    .add(new Vector3D(eigenVector.getEntry(0), eigenVector
-                        .getEntry(1), eigenVector.getEntry(2))
-                            .scalarMultiply(epsilon)), s[i].getPVCoordinates()
-                                .getVelocity()
-                                .add(new Vector3D(eigenVector.getEntry(3),
-                                                  eigenVector.getEntry(4),
-                                                  eigenVector.getEntry(5))
-                                                      .scalarMultiply(epsilon)));
-            i++;
-        }
-        return pv;
-    }
-
-    /** Apply differential correction.
-     * <p>
-     * This will update initialPV and orbital Period
-     * <p>
-     */
-    public void applyDifferentialCorrection() {
-        final CR3BPDifferentialCorrection diff =
-            new CR3BPDifferentialCorrection(initialPV, syst, orbitalPeriod);
-        initialPV = applyCorrectionOnPV(diff);
-        orbitalPeriod = diff.getOrbitalPeriod();
-    }
-
-    /**.
-     * Apply the differential correction to compute more accurate initial PV
-     * @param diff cr3bp differential correction
-     * @return corrected PV coordinates
-     */
-    protected abstract PVCoordinates applyCorrectionOnPV(CR3BPDifferentialCorrection diff);
-
     /** Return the orbital period of the libration orbit.
      * @return orbitalPeriod  orbital period of the libration orbit
      */
@@ -206,5 +80,97 @@ public abstract class LibrationOrbit {
     public PVCoordinates getInitialPV() {
         return initialPV;
     }
+
+    /** Apply differential correction.
+     * <p>
+     * This will update {@link #initialPV} and
+     * {@link #orbitalPeriod} parameters.
+     * <p>
+     */
+    public void applyDifferentialCorrection() {
+        final CR3BPDifferentialCorrection diff = new CR3BPDifferentialCorrection(initialPV, syst, orbitalPeriod);
+        initialPV = applyCorrectionOnPV(diff);
+        orbitalPeriod = diff.getOrbitalPeriod();
+    }
+
+    /** Return a manifold direction from one position on a libration Orbit.
+     * @param s SpacecraftState with additional equations
+     * @param isStable true if the manifold is stable
+     * @return manifold first guess Position-Velocity of a point on the libration Orbit
+     */
+    public PVCoordinates getManifolds(final SpacecraftState s,
+                                      final boolean isStable) {
+        return isStable ?
+        		getStableManifolds(s) : getUnstableManifolds(s);
+    }
+
+    /** Return the stable manifold direction for several positions on a libration Orbit.
+     * @param s SpacecraftStates (with STM equations) to compute from
+     * @return Stable manifold first direction from a point on the libration Orbit
+     */
+    private PVCoordinates getStableManifolds(final SpacecraftState s) {
+
+        // Small delta, linked to the characteristic velocity of the CR3BP system
+        final double epsilon = syst.getVdim() * 1E2 / syst.getDdim();
+
+        // Check if spacecraft state has STM equations linked to it
+        if (s.getAdditionalState(STM) == null) {
+            throw new OrekitException(OrekitMessages.NO_STM_EQUATIONS, 1);
+        }
+
+        // Get Normalize eigen vector linked to the stability of the manifold
+        final RealMatrix phi         = new STMEquations(syst).getStateTransitionMatrix(s);
+        final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
+
+        // New PVCoordinates following the manifold
+        return new PVCoordinates(s.getPVCoordinates().getPosition()
+                .add(new Vector3D(eigenVector.getEntry(0), eigenVector
+                        .getEntry(1), eigenVector.getEntry(2))
+                            .scalarMultiply(epsilon)), s.getPVCoordinates()
+                                .getVelocity()
+                                .add(new Vector3D(eigenVector.getEntry(3),
+                                                  eigenVector.getEntry(4),
+                                                  eigenVector.getEntry(5))
+                                                      .scalarMultiply(epsilon)));
+    }
+
+    /** Get the Unstable manifold direction for several positions on a libration Orbit.
+     * @param s spacecraft state (with STM equations) to compute from
+     * @return pv coordinates representing the unstable manifold first direction
+     *         from a point on the libration Orbit
+     */
+    private PVCoordinates getUnstableManifolds(final SpacecraftState s) {
+
+        // Small delta, linked to the characteristic velocity of the CR3BP system
+        final double epsilon =
+            syst.getVdim() * 1E2 / syst.getDdim();
+
+        // Check if spacecraft state has STM equations linked to it
+        if (s.getAdditionalState(STM) == null ) {
+            throw new OrekitException(OrekitMessages.NO_STM_EQUATIONS, 1);
+        }
+
+        // Get Normalize eigen vector linked to the stability of the manifold
+        final RealMatrix phi         = new STMEquations(syst).getStateTransitionMatrix(s);
+        final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(0).unitVector();
+
+        // New PVCoordinates following the manifold
+        return new PVCoordinates(s.getPVCoordinates().getPosition()
+                    .add(new Vector3D(eigenVector.getEntry(0), eigenVector
+                        .getEntry(1), eigenVector.getEntry(2))
+                            .scalarMultiply(epsilon)), s.getPVCoordinates()
+                                .getVelocity()
+                                .add(new Vector3D(eigenVector.getEntry(3),
+                                                  eigenVector.getEntry(4),
+                                                  eigenVector.getEntry(5))
+                                                      .scalarMultiply(epsilon)));
+    }
+
+    /**
+     * Apply the differential correction to compute more accurate initial PV.
+     * @param diff cr3bp differential correction
+     * @return corrected PV coordinates
+     */
+    protected abstract PVCoordinates applyCorrectionOnPV(CR3BPDifferentialCorrection diff);
 
 }

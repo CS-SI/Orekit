@@ -46,9 +46,9 @@ public class LyapunovOrbitTest {
     CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
     
     final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
-    final LyapunovOrbit h1 = new LyapunovOrbit(syst, LagrangianPoints.L1, 8E6);
+    final LyapunovOrbit h1 = new LyapunovOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6);
     final LyapunovOrbit h2 = new LyapunovOrbit(syst, firstGuess, 2.0);
-    final LyapunovOrbit h3 = new LyapunovOrbit(syst, LagrangianPoints.L2, 8E6);
+    final LyapunovOrbit h3 = new LyapunovOrbit(new RichardsonExpansion(syst, LagrangianPoints.L2), 8E6);
     
     final double orbitalPeriod1 = h1.getOrbitalPeriod();
     final double orbitalPeriod2 = h2.getOrbitalPeriod();
@@ -85,7 +85,7 @@ public class LyapunovOrbitTest {
     @Test(expected=OrekitException.class)
     public void testLagrangianError() {
     CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
-    final HaloOrbit h = new HaloOrbit(syst, LagrangianPoints.L3, 8E6, LibrationOrbitType.NORTHERN);
+    final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitType.NORTHERN);
     h.getClass();
     }
     
@@ -100,7 +100,7 @@ public class LyapunovOrbitTest {
 
         final Frame Frame = syst.getRotatingFrame();
 
-        LyapunovOrbit h = new LyapunovOrbit(syst, LagrangianPoints.L1, 8E6);
+        LyapunovOrbit h = new LyapunovOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6);
         h.applyDifferentialCorrection();
         final double orbitalPeriod = h.getOrbitalPeriod();
         double integrationTime = orbitalPeriod * 0.1;
@@ -183,7 +183,7 @@ public class LyapunovOrbitTest {
 
         // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
         // of 8 000 km
-        LyapunovOrbit h = new LyapunovOrbit(syst, LagrangianPoints.L1, 8E6);
+        LyapunovOrbit h = new LyapunovOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6);
 
         final PVCoordinates pv = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 

@@ -106,6 +106,9 @@ public class RichardsonExpansion {
     /** Lagrangian Point considered. */
     private LagrangianPoints point;
 
+    /** CR3BP System considered. */
+    private CR3BPSystem cr3bpSystem;
+
     /** Simple Constructor.
      * @param cr3bpSystem CR3BP System considered
      * @param point Lagrangian Point considered
@@ -113,30 +116,23 @@ public class RichardsonExpansion {
     public RichardsonExpansion(final CR3BPSystem cr3bpSystem,
                                       final LagrangianPoints point) {
 
-        this.point = point;
-
-        this.mu = cr3bpSystem.getMassRatio();
-
-        this.dDim = cr3bpSystem.getDdim();
-
-        this.gamma = cr3bpSystem.getGamma(point);
+        this.point       = point;
+        this.cr3bpSystem = cr3bpSystem;
+        this.mu          = cr3bpSystem.getMassRatio();
+        this.dDim        = cr3bpSystem.getDdim();
+        this.gamma       = cr3bpSystem.getGamma(point);
 
         final double c2 = getCn(2.0);
-
         final double c3 = getCn(3.0);
-
         final double c4 = getCn(4.0);
 
-        this.wp = FastMath.sqrt(0.5 * (2.0 - c2 + FastMath.sqrt(9.0 * c2 * c2 - 8.0 * c2)));
+        wp = FastMath.sqrt(0.5 * (2.0 - c2 + FastMath.sqrt(9.0 * c2 * c2 - 8.0 * c2)));
 
         final double ld = FastMath.sqrt(0.5 * (2.0 - c2 + FastMath.sqrt(9.0 * c2 * c2 - 8.0 * c2)));
-
-        //  final double wv = FastMath.sqrt(c2);
 
         k = (wp * wp + 1.0 + 2.0 * c2) / (2.0 * wp);
 
         final double d1 = 3.0 * ld * ld * (k * (6.0 * ld * ld - 1.0) - 2.0 * ld) / k;
-
         final double d2 = 8.0 * ld * ld * (k * (11.0 * ld * ld - 1.0) - 2.0 * ld) / k;
 
         a21 = 3.0 * c3 * (k * k - 2.0) / (4.0 * (1.0 + 2.0 * c2));
@@ -154,67 +150,32 @@ public class RichardsonExpansion {
         d21 = -c3 / (2.0 * ld * ld);
 
         a31 =
-            -9.0 *
-              ld * (4.0 * c3 * (k * a23 - b21) + k * c4 * (4.0 + k * k)) /
-              (4.0 * d2) +
-              (9.0 * ld * ld + 1.0 - c2) /
-                         (2.0 * d2) *
-                         (2.0 * c3 * (2.0 * a23 - k * b21) + c4 * (2.0 + 3.0 * k * k));
+        	-9.0 * ld * (4.0 * c3 * (k * a23 - b21) + k * c4 * (4.0 + k * k)) / (4.0 * d2) +
+            (9.0 * ld * ld + 1.0 - c2) / (2.0 * d2) * (2.0 * c3 * (2.0 * a23 - k * b21) + c4 * (2.0 + 3.0 * k * k));
 
         a32 =
-            -9.0 *
-              ld * (4.0 * c3 * (k * a24 - b22) + k * c4) / (4.0 * d2) -
-              3 *
-                                                                    (9.0 *
-                                                                     ld * ld +
-                                                                     1.0 - c2) *
-                                                                    (c3 *
-                                                                     (k * b22 +
-                                                                      d21 -
-                                                                      2.0 * a24) -
-                                                                     c4) /
-                                                                    (2.0 * d2);
+            -9.0 * ld * (4.0 * c3 * (k * a24 - b22) + k * c4) / (4.0 * d2) -
+            3 * (9.0 * ld * ld + 1.0 - c2) * (c3 * (k * b22 + d21 - 2.0 * a24) - c4) / (2.0 * d2);
 
         b31 =
-            3.0 *
-              8.0 * ld * (3.0 * c3 * (k * b21 - 2.0 * a23) - c4 * (2.0 + 3.0 * k * k)) /
-              (8.0 * d2) +
-              3.0 *
-                         ((9.0 * ld * ld + 1.0 + 2.0 * c2) *
-                          (4.0 * c3 * (k * a23 - b21) + k * c4 * (4.0 + k * k))) /
-                         (8.0 * d2);
+        	3.0 * 8.0 * ld * (3.0 * c3 * (k * b21 - 2.0 * a23) - c4 * (2.0 + 3.0 * k * k)) / (8.0 * d2) +
+            3.0 * ((9.0 * ld * ld + 1.0 + 2.0 * c2) * (4.0 * c3 * (k * a23 - b21) + k * c4 * (4.0 + k * k))) / (8.0 * d2);
 
         b32 =
-            9.0 *
-              ld * (c3 * (k * b22 + d21 - 2.0 * a24) - c4) / d2 +
-              3.0 *
-                                                                ((9.0 * ld * ld +
-                                                                  1.0 + 2.0 * c2) *
-                                                                 (4.0 *
-                                                                  c3 *
-                                                                  (k * a24 -
-                                                                   b22) +
-                                                                  k * c4)) /
-                                                                (8.0 * d2);
+        	9.0 * ld * (c3 * (k * b22 + d21 - 2.0 * a24) - c4) / d2 +
+            3.0 * ((9.0 * ld * ld + 1.0 + 2.0 * c2) * (4.0 * c3 * (k * a24 - b22) +  k * c4)) / (8.0 * d2);
 
         d31 = 3.0 / (64.0 * ld * ld) * (4.0 * c3 * a24 + c4);
 
         d32 = 3.0 / (64.0 * ld * ld) * (4.0 * c3 * (a23 - d21) + c4 * (4.0 + k * k));
 
         s1 =
-            (3.0 *
-             c3 * (2.0 * a21 * (k * k - 2.0) - a23 * (k * k + 2.0) - 2.0 * k * b21) /
-             2.0 -
-             3.0 * c4 * (3.0 * k * k * k * k - 8.0 * k * k + 8.0) / 8.0) /
-             (2.0 * ld * (ld * (1.0 + k * k) - 2.0 * k));
+           (3.0 * c3 * (2.0 * a21 * (k * k - 2.0) - a23 * (k * k + 2.0) - 2.0 * k * b21) / 2.0 -
+            3.0 * c4 * (3.0 * k * k * k * k - 8.0 * k * k + 8.0) / 8.0) / (2.0 * ld * (ld * (1.0 + k * k) - 2.0 * k));
 
         s2 =
-            (3.0 *
-             c3 *
-             (2.0 * a22 * (k * k - 2.0) +
-              a24 * (k * k + 2.0) + 2.0 * k * b22 + 5.0 * d21) /
-             2.0 +
-             3.0 * c4 * (12.0 - k * k) / 8.0) / (2.0 * ld * (ld * (1.0 + k * k) - 2.0 * k));
+           (3.0 * c3 * (2.0 * a22 * (k * k - 2.0) + a24 * (k * k + 2.0) + 2.0 * k * b22 + 5.0 * d21) / 2.0 +
+            3.0 * c4 * (12.0 - k * k) / 8.0) / (2.0 * ld * (ld * (1.0 + k * k) - 2.0 * k));
 
         l1 = -3.0 * c3 * (2.0 * a21 + a23 + 5.0 * d21) / 2.0 - 3.0 * c4 * (12.0 - k * k) / 8.0 + 2.0 * ld * ld * s1;
 
@@ -229,8 +190,8 @@ public class RichardsonExpansion {
      * @return cn Cn Richardson Coefficient
     */
     private double getCn(final double order) {
-        final double cn;
         final double gamma3 = gamma * gamma * gamma;
+        final double cn;
         switch (point) {
             case L1:
                 cn = (1.0 / gamma3) * (mu + FastMath.pow(-1, order) * (1 - mu) * FastMath.pow(gamma, order + 1) / FastMath.pow(1 - gamma, order + 1));
@@ -238,9 +199,6 @@ public class RichardsonExpansion {
             case L2:
                 cn = (1.0 / gamma3) * (FastMath.pow(-1, order) * mu + FastMath.pow(-1, order) * (1 - mu) * FastMath.pow(gamma, order + 1) / FastMath.pow(1 + gamma, order + 1));
                 break;
-            // case L3:
-            //    cn = (1.0 / gamma3) * (1 - mu + mu * FastMath.pow(gamma, order + 1) / FastMath.pow(1 + gamma, order + 1));
-            //    break;
             default:
                 throw new OrekitException(OrekitMessages.CANNOT_COMPUTE_LAGRANGIAN, point);
         }
@@ -261,62 +219,29 @@ public class RichardsonExpansion {
         final double az = azr / (gamma * dDim);
 
         // X-Axis Halo Orbit Amplitude
-        final double ax = FastMath.sqrt((delta + l2 * az * az) / -l1);
-
-        final double nu = 1.0 + s1 * ax * ax + s2 * az * az;
-
-        final double tau = nu * t;
-
+        final double ax   = FastMath.sqrt((delta + l2 * az * az) / -l1);
+        final double nu   = 1.0 + s1 * ax * ax + s2 * az * az;
+        final double tau  = nu * t;
         final double tau1 = wp * tau + phi;
-
-        final double m;
-
-        final PVCoordinates pvf;
-
-        switch (type) {
-            case NORTHERN:
-                m = 1;
-                break;
-            default:
-                m = 3;
-                break;
-        }
-
-        final double dm = 2 - m;
+        final double m    = (type == LibrationOrbitType.NORTHERN) ? 1 : 3;
+        final double dm   = 2 - m;
 
         // First guess position relative to its Lagrangian point
         final double firstx =
                         a21 * ax * ax +
-                        a22 *
-                        az * az - ax * FastMath.cos(tau1) +
-                        (a23 * ax * ax -
-                                        a24 * az * az) * FastMath.cos(2.0 * tau1) +
-                        (a31 * ax * ax * ax -
-                                        a32 * ax * az * az) * FastMath.cos(3.0 * tau1);
+                        a22 * az * az - ax * FastMath.cos(tau1) +
+                        (a23 * ax * ax - a24 * az * az) * FastMath.cos(2.0 * tau1) +
+                        (a31 * ax * ax * ax - a32 * ax * az * az) * FastMath.cos(3.0 * tau1);
 
         final double firsty =
                         k * ax * FastMath.sin(tau1) +
-                        (b21 * ax * ax - b22 * az * az) *
-                        FastMath.sin(2.0 * tau1) +
-                        (b31 * ax * ax * ax -
-                                        b32 * ax * az * az) * FastMath.sin(3.0 * tau1);
+                        (b21 * ax * ax - b22 * az * az) * FastMath.sin(2.0 * tau1) +
+                        (b31 * ax * ax * ax - b32 * ax * az * az) * FastMath.sin(3.0 * tau1);
 
         final double firstz =
                         dm * az * FastMath.cos(tau1) +
-                        dm *
-                        d21 * ax * az * (FastMath
-                                        .cos(2.0 * tau1) - 3.0) +
-                        dm *
-                        (d32 *
-                                        az * ax *
-                                        ax -
-                                        d31 *
-                                        az *
-                                        az *
-                                        az) *
-                        FastMath
-                        .cos(3.0 *
-                             tau1);
+                        dm * d21 * ax * az * (FastMath.cos(2.0 * tau1) - 3.0) +
+                        dm * (d32 * az * ax * ax - d31 * az * az * az) * FastMath .cos(3.0 * tau1);
 
         // First guess Velocity relative to its Lagrangian point
         final double vx =
@@ -334,15 +259,10 @@ public class RichardsonExpansion {
                         2.0 * dm * d21 * ax * az * wp * nu * FastMath.sin(2.0 * tau1) -
                         3.0 * dm * (d32 * az * ax * ax - d31 * az * az * az) * wp * nu * FastMath.sin(3.0 * tau1);
 
-        switch (point) {
-            case L1:
-                pvf = new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu - gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
-                break;
-            default:
-                pvf = new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu + gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
-                break;
-        };
-        return pvf;
+        // Return PV Coordinates
+        return point == LagrangianPoints.L1 ?
+        		new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu - gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma)) :
+        	    new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu + gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
     }
 
     /** Calculate first Guess.
@@ -351,61 +271,34 @@ public class RichardsonExpansion {
      * @param phi Orbit phase, rad
      * @return firstGuess PVCoordinates of the first guess
     */
-    public PVCoordinates
-        computeLyapunovFirstGuess(final double ayr, final double t, final double phi) {
+    public PVCoordinates computeLyapunovFirstGuess(final double ayr, final double t, final double phi) {
 
         // Z-Axis Lyapunov Orbit Amplitude
         final double az = 0;
 
         // y-Axis Lyapunov Orbit Amplitude
-        final double ay = ayr / (gamma * dDim);
-
-        final double ax = ay / k;
-
-        final double nu = 1.0 + s1 * ax * ax + s2 * az * az;
-
-        final double tau = nu * t;
-
+        final double ay   = ayr / (gamma * dDim);
+        final double ax   = ay / k;
+        final double nu   = 1.0 + s1 * ax * ax + s2 * az * az;
+        final double tau  = nu * t;
         final double tau1 = wp * tau + phi;
-
-        final PVCoordinates pvf;
 
         // First guess position relative to its Lagrangian point
         final double firstx = -ax * FastMath.cos(tau1);
-
-        final double firsty = 0;
-
-        final double firstz = 0;
+        final double firsty = 0.0;
+        final double firstz = 0.0;
 
         // First guess Velocity relative to its Lagrangian point
-        final double vx = 0;
-
+        final double vx = 0.0;
         final double vy = k * ax * wp * nu * FastMath.cos(tau1);
-
         final double vz = 0.0;
 
-        switch (point) {
-            case L1:
-                pvf =
-                    new PVCoordinates(new Vector3D(firstx * gamma +
-                                                   1.0 - mu - gamma,
-                                                   firsty * gamma,
-                                                   firstz * gamma),
-                                      new Vector3D(vx * gamma, vy * gamma,
-                                                   vz * gamma));
-                break;
-            default:
-                pvf =
-                    new PVCoordinates(new Vector3D(firstx * gamma +
-                                                   1.0 - mu + gamma,
-                                                   firsty * gamma,
-                                                   firstz * gamma),
-                                      new Vector3D(vx * gamma, vy * gamma,
-                                                   vz * gamma));
-                break;
-        }
-        ;
-        return pvf;
+        // Return PV Coordinates
+        return point == LagrangianPoints.L1 ?
+        		 new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu - gamma, firsty * gamma, firstz * gamma),
+                                   new Vector3D(vx * gamma, vy * gamma, vz * gamma)) :
+                 new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu + gamma, firsty * gamma, firstz * gamma),
+                                   new Vector3D(vx * gamma, vy * gamma, vz * gamma));	 
     }
 
     /** Return the orbital period of the Halo Orbit.
@@ -413,15 +306,10 @@ public class RichardsonExpansion {
      * @return the orbitalPeriod
      */
     public double getHaloOrbitalPeriod(final double azr) {
-
         final double az = azr / (gamma * dDim);
-
         final double ax = FastMath.sqrt((delta + l2 * az * az) / -l1);
-
         final double nu = 1.0 + s1 * ax * ax + s2 * az * az;
-
-        orbitalPeriod = FastMath.abs(2.0 * FastMath.PI / (wp * nu));
-
+        orbitalPeriod   = FastMath.abs(2.0 * FastMath.PI / (wp * nu));
         return orbitalPeriod;
     }
 
@@ -430,15 +318,25 @@ public class RichardsonExpansion {
      * @return the orbitalPeriod
      */
     public double getLyapunovOrbitalPeriod(final double axr) {
-
         final double az = 0;
-
         final double ax = axr / (gamma * dDim);
-
         final double nu = 1.0 + s1 * ax * ax + s2 * az * az;
-
-        orbitalPeriod = FastMath.abs(2.0 * FastMath.PI / (wp * nu));
-
+        orbitalPeriod   = FastMath.abs(2.0 * FastMath.PI / (wp * nu));
         return orbitalPeriod;
     }
+
+    /** Get the considered CR3BP system.
+     * @return CRR3BP system
+     */
+    public CR3BPSystem getCr3bpSystem() {
+    	return cr3bpSystem;
+    }
+
+    /** Get the considered lagrangian point
+     * @return lagrangian point
+     */
+    public LagrangianPoints getLagrangianPoint() {
+    	return point;
+    }
+
 }

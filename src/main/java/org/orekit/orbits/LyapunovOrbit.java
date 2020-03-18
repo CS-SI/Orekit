@@ -18,7 +18,6 @@
 package org.orekit.orbits;
 
 import org.orekit.bodies.CR3BPSystem;
-import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
 /** Class calculating different parameters of a Lyapunov Orbit.
@@ -51,23 +50,19 @@ public class LyapunovOrbit extends LibrationOrbit {
      * Standard constructor, the first guess will be computed with both start
      * time and phase equal to zero.
      * </p>
-     * @param syst CR3BP System considered
-     * @param point Lagrangian Point considered
+     * @param richardson third-Order Richardson Expansion
      * @param ay y-axis amplitude of the required Lyapunov Orbit, meters
      */
-    public LyapunovOrbit(final CR3BPSystem syst, final LagrangianPoints point,
+    public LyapunovOrbit(final RichardsonExpansion richardson,
                          final double ay) {
-        super(syst,
-              new RichardsonExpansion(syst, point)
-                  .computeLyapunovFirstGuess(ay, 0.0, 0.0),
-              new RichardsonExpansion(syst, point)
-                  .getLyapunovOrbitalPeriod(ay));
+        super(richardson.getCr3bpSystem(),
+        	  richardson.computeLyapunovFirstGuess(ay, 0.0, 0.0),
+        	  richardson.getLyapunovOrbitalPeriod(ay));
     }
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinates
-        applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
+    protected PVCoordinates applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
         return diff.computeLyapunov();
     }
 
