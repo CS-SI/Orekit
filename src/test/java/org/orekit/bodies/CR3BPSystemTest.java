@@ -118,7 +118,7 @@ public class CR3BPSystemTest {
 
     
     final double l3Gamma = syst.getGamma(LagrangianPoints.L3);
-    Assert.assertEquals(1.495981555E11, l3Gamma * syst.getDdim(),1E3);
+    Assert.assertEquals(1.495981555E11, l3Gamma * syst.getDdim(),9E3);
 
     }
     
