@@ -28,7 +28,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CR3BPSystem;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -69,8 +68,7 @@ public class CR3BPForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     public Vector3D acceleration(final SpacecraftState s,
-                                 final double[] parameters)
-        throws OrekitException {
+    		                     final double[] parameters) {
 
         // Spacecraft Velocity
         final double vx = s.getPVCoordinates().getVelocity().getX();
@@ -106,9 +104,8 @@ public class CR3BPForceModel extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
-        acceleration(final FieldSpacecraftState<T> s, final T[] parameters)
-            throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+    		                                                             final T[] parameters) {
 
         // Spacecraft Velocity
         final T vx = s.getPVCoordinates().getVelocity().getX();
