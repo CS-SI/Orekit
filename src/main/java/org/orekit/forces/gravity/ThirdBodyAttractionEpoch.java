@@ -130,7 +130,7 @@ public class ThirdBodyAttractionEpoch extends AbstractForceModel {
      * @return acceleration in same frame as state
      * @since 9.0
      */
-    public FieldVector3D<DerivativeStructure> acceleration2(final SpacecraftState s, final double[] parameters) {
+    private FieldVector3D<DerivativeStructure> accelerationToEpoch(final SpacecraftState s, final double[] parameters) {
 
         final double gm = parameters[0];
 
@@ -150,14 +150,12 @@ public class ThirdBodyAttractionEpoch extends AbstractForceModel {
         final FieldVector3D<DerivativeStructure> centralToBodyFV = new FieldVector3D<>(new DerivativeStructure[] {fpx, fpy, fpz});
 
 
-        final DerivativeStructure r2Central       = centralToBodyFV.getNormSq();
-        final FieldVector3D<DerivativeStructure> satToBody     = centralToBodyFV.subtract(s.getPVCoordinates().getPosition());
-        final DerivativeStructure r2Sat           = satToBody.getNormSq();
+        final DerivativeStructure                r2Central = centralToBodyFV.getNormSq();
+        final FieldVector3D<DerivativeStructure> satToBody = centralToBodyFV.subtract(s.getPVCoordinates().getPosition());
+        final DerivativeStructure                r2Sat     = satToBody.getNormSq();
 
-        final FieldVector3D<DerivativeStructure> acc = new FieldVector3D<DerivativeStructure>(gm, satToBody.scalarMultiply(r2Sat.multiply(r2Sat.sqrt()).reciprocal()),
-                        -gm, centralToBodyFV.scalarMultiply(r2Central.multiply(r2Central.sqrt()).reciprocal()));
-
-        return acc;
+        return new FieldVector3D<>(gm, satToBody.scalarMultiply(r2Sat.multiply(r2Sat.sqrt()).reciprocal()),
+                                  -gm, centralToBodyFV.scalarMultiply(r2Central.multiply(r2Central.sqrt()).reciprocal()));
     }
 
     /** Compute derivatives of the state w.r.t epoch.
@@ -168,7 +166,7 @@ public class ThirdBodyAttractionEpoch extends AbstractForceModel {
      */
     public double[] getDerivativesToEpoch(final SpacecraftState s, final double[] parameters) {
 
-        final FieldVector3D<DerivativeStructure> acc = acceleration2(s, parameters);
+        final FieldVector3D<DerivativeStructure> acc = accelerationToEpoch(s, parameters);
         final Vector3D centralToBodyVelocity = body.getPVCoordinates(s.getDate(), s.getFrame()).getVelocity();
 
         final double[] dAccxdR1i = acc.getX().getAllDerivatives();
