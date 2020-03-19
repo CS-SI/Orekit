@@ -189,7 +189,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             iter++;
 
-        } while (fxNorm > tolerance & iter < 1); // Converge within tolerance and under 10 iterations
+        } while (fxNorm > tolerance && iter < 1); // Converge within tolerance and under 10 iterations
 
         return patchedSpacecraftStates;
     }
