@@ -99,7 +99,12 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
 
     /** {@inheritDoc} */
     public double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
-        return null;
+        final int nFreeEpoch = getNumberOfFreeEpoch();
+        // Rows and columns dimensions
+        final int ncolumns   = 1 + nFreeEpoch;
+        final int nrows      = npoints - 1;
+        // Return an empty array
+    	return new double[nrows][ncolumns];
     }
 
     /** {@inheritDoc} */
