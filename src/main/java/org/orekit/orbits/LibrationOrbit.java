@@ -86,7 +86,7 @@ public abstract class LibrationOrbit {
      * <p>
      * This will update {@link #initialPV} and
      * {@link #orbitalPeriod} parameters.
-     * <p>
+     * </p>
      */
     public void applyDifferentialCorrection() {
         final CR3BPDifferentialCorrection diff = new CR3BPDifferentialCorrection(initialPV, syst, orbitalPeriod);

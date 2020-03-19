@@ -94,6 +94,7 @@ public class CR3BPDifferentialCorrection {
      * @param syst CR3BP System considered
      * @param orbitalPeriod Orbital Period of the required orbit
      * @param attitudeProvider the attitude law for the numerocal propagator
+     * @param utc UTC time scale
      */
     public CR3BPDifferentialCorrection(final PVCoordinates firstguess,
     		                           final CR3BPSystem syst,

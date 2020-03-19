@@ -21,7 +21,7 @@
  * Measurement modifiers are used to take into account
  * some effects during the modeling (i.e. the estimation)
  * of a measurement. Modifiers currently implemented in
- * Orekit are:
+ * Orekit are: </p>
  * <ul>
  *     <li>Tropospheric path delay</li>
  *     <li>Ionospheric path delay</li>
@@ -30,6 +30,5 @@
  *     <li>Shapiro effect</li>
  *     <li>...</li>
  * </ul>
- * </p>
  */
 package org.orekit.estimation.measurements.modifiers;

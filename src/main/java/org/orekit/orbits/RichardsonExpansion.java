@@ -208,7 +208,7 @@ public class RichardsonExpansion {
     /** Calculate first Guess.
      * @param azr z-axis Amplitude of the required Halo Orbit, meters
      * @param type type of the Halo Orbit ("Northern" or "Southern")
-     * @param t Orbit time, seconds (>0)
+     * @param t Orbit time, seconds (must be greater than 0)
      * @param phi Orbit phase, rad
      * @return firstGuess PVCoordinates of the first guess
     */
