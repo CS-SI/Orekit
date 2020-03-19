@@ -124,7 +124,7 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
                                     .getPartialDerivative(2),
                                 pv21f.getPosition().getZ()
                                     .getPartialDerivative(2));
-        return new FieldTransform<T>(date,
+        return new FieldTransform<>(date,
                         new FieldTransform<>(date, translation, velocity, acceleration),
                         new FieldTransform<>(date, rotation, rotationRate, rotationAcc));
     }

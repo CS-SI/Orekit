@@ -475,7 +475,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
         final int n = patchedSpacecraftStates.size() - 1;
 
-        final ArrayList<SpacecraftState> propagatedSP = new ArrayList<SpacecraftState>(n);
+        final ArrayList<SpacecraftState> propagatedSP = new ArrayList<>(n);
 
         for (int i = 0; i < n; i++) {
 

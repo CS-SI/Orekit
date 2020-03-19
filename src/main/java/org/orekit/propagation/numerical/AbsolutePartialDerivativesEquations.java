@@ -124,7 +124,7 @@ public class AbsolutePartialDerivativesEquations implements AdditionalEquations 
             selected.sort();
 
             // fourth pass: set up a map between parameters drivers and matrices columns
-            map = new IdentityHashMap<ParameterDriver, Integer>();
+            map = new IdentityHashMap<>();
             int parameterIndex = 0;
             for (final ParameterDriver selectedDriver : selected.getDrivers()) {
                 for (final ForceModel provider : propagator.getAllForceModels()) {

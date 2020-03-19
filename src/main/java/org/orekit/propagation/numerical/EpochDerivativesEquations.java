@@ -129,7 +129,7 @@ public class EpochDerivativesEquations implements AdditionalEquations {
             selected.sort();
 
             // fourth pass: set up a map between parameters drivers and matrices columns
-            map = new IdentityHashMap<ParameterDriver, Integer>();
+            map = new IdentityHashMap<>();
             int parameterIndex = 0;
             for (final ParameterDriver selectedDriver : selected.getDrivers()) {
                 for (final ForceModel provider : propagator.getAllForceModels()) {
@@ -220,16 +220,10 @@ public class EpochDerivativesEquations implements AdditionalEquations {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
                                       stateDim, dY1dP.length);
         }
-//        if ((dY1dP == null && selected.getNbParams() != 0) ||
-//            (dY1dP != null && selected.getNbParams() != dY1dP[0].length)) {
-//            throw new OrekitException(new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
-//                                                          dY1dP == null ? 0 : dY1dP[0].length, selected.getNbParams()));
-//        }
 
         // store the matrices as a single dimension array
         initialized = true;
         final AbsoluteJacobiansMapper mapper = getMapper();
-//        final double[] p = new double[mapper.getAdditionalStateDimension()];
         final double[] p = new double[mapper.getAdditionalStateDimension() + 6];
         mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
