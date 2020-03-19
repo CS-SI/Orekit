@@ -16,6 +16,7 @@
  */
 package org.orekit.bodies;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.propagation.numerical.cr3bp.CR3BPConstants;
 
 /**
@@ -38,6 +39,7 @@ public class CR3BPFactory {
     /** Get the Sun-Jupiter CR3BP singleton bodies pair.
      * @return Sun-Jupiter CR3BP system
      */
+    @DefaultDataContext
     public static CR3BPSystem getSunJupiterCR3BP() {
         return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getJupiter(), CR3BPConstants.JUPITER_SEMI_MAJOR_AXIS);
     }
@@ -45,6 +47,7 @@ public class CR3BPFactory {
     /** Get the Sun-Earth CR3BP singleton bodies pair.
      * @return Sun-Earth CR3BP system
      */
+    @DefaultDataContext
     public static CR3BPSystem getSunEarthCR3BP() {
         return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarthMoonBarycenter(), CR3BPConstants.EARTH_MOON_BARYCENTER_SEMI_MAJOR_AXIS);
     }
@@ -52,6 +55,7 @@ public class CR3BPFactory {
     /** Get the Earth-Moon CR3BP singleton bodies pair.
      * @return Earth-Moon CR3BP system
      */
+    @DefaultDataContext
     public static CR3BPSystem getEarthMoonCR3BP() {
         return getSystem(CelestialBodyFactory.getEarth(), CelestialBodyFactory.getMoon(), CR3BPConstants.MOON_SEMI_MAJOR_AXIS);
     }

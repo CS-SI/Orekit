@@ -22,10 +22,14 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CR3BPSystem;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.HaloXZPlaneCrossingDetector;
@@ -34,7 +38,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
@@ -67,17 +71,39 @@ public class CR3BPDifferentialCorrection {
     /** Propagator. */
     private final NumericalPropagator propagator;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /** Simple Constructor.
      * <p> Standard constructor using DormandPrince853 integrator for the differential correction </p>
      * @param firstguess first guess PVCoordinates of the point to start differential correction
      * @param syst CR3BP System considered
      * @param orbitalPeriod Orbital Period of the required orbit
      */
+    @DefaultDataContext
     public CR3BPDifferentialCorrection(final PVCoordinates firstguess,
                                        final CR3BPSystem syst, final double orbitalPeriod) {
+        this(firstguess, syst, orbitalPeriod,
+        		Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+        		DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /** Simple Constructor.
+     * <p> Standard constructor using DormandPrince853 integrator for the differential correction </p>
+     * @param firstguess first guess PVCoordinates of the point to start differential correction
+     * @param syst CR3BP System considered
+     * @param orbitalPeriod Orbital Period of the required orbit
+     * @param attitudeProvider the attitude law for the numerocal propagator
+     */
+    public CR3BPDifferentialCorrection(final PVCoordinates firstguess,
+    		                           final CR3BPSystem syst,
+    		                           final double orbitalPeriod,
+    		                           final AttitudeProvider attitudeProvider,
+    		                           final TimeScale utc) {
         this.firstGuess = firstguess;
         this.syst = syst;
         this.orbitalPeriodApprox = orbitalPeriod;
+        this.utc = utc;
 
         // Adaptive stepsize boundaries
         final double minStep = 1E-12;
@@ -96,7 +122,7 @@ public class CR3BPDifferentialCorrection {
                                                                                      vecRelativeTolerances);
 
         // Propagator definition
-        this.propagator = new NumericalPropagator(integrator);
+        this.propagator = new NumericalPropagator(integrator, attitudeProvider);
 
     }
 
@@ -109,8 +135,7 @@ public class CR3BPDifferentialCorrection {
         double iter = 0;
 
         // Time settings (this date has no effect on the result, this is only for code structure purpose)
-        final AbsoluteDate initialDate = new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
-                                                          TimeScalesFactory.getUTC());
+        final AbsoluteDate initialDate = new AbsoluteDate(1996, 06, 25, 0, 0, 00.000, utc);
 
         final Frame rotatingFrame = syst.getRotatingFrame();
 
@@ -233,8 +258,7 @@ public class CR3BPDifferentialCorrection {
         double iter = 0;
 
         // Time settings (this date has no effect on the result, this is only for code structure purpose)
-        final AbsoluteDate initialDate = new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
-                                                          TimeScalesFactory.getUTC());
+        final AbsoluteDate initialDate = new AbsoluteDate(1996, 06, 25, 0, 0, 00.000, utc);
 
         final Frame rotatingFrame = syst.getRotatingFrame();
 
