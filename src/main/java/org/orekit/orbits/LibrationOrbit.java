@@ -21,8 +21,6 @@ import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.bodies.CR3BPSystem;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.utils.PVCoordinates;
@@ -36,9 +34,6 @@ import org.orekit.utils.PVCoordinates;
  * @since 10.2
  */
 public abstract class LibrationOrbit {
-
-    /** Name of the needed additional state. */
-    private static final String STM = "stmEquations";
 
     /** CR3BP System of the libration Orbit. */
     private final CR3BPSystem syst;
@@ -113,11 +108,6 @@ public abstract class LibrationOrbit {
         // Small delta, linked to the characteristic velocity of the CR3BP system
         final double epsilon = syst.getVdim() * 1E2 / syst.getDdim();
 
-        // Check if spacecraft state has STM equations linked to it
-        if (s.getAdditionalState(STM) == null) {
-            throw new OrekitException(OrekitMessages.NO_STM_EQUATIONS, 1);
-        }
-
         // Get Normalize eigen vector linked to the stability of the manifold
         final RealMatrix phi         = new STMEquations(syst).getStateTransitionMatrix(s);
         final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
@@ -144,11 +134,6 @@ public abstract class LibrationOrbit {
         // Small delta, linked to the characteristic velocity of the CR3BP system
         final double epsilon =
             syst.getVdim() * 1E2 / syst.getDdim();
-
-        // Check if spacecraft state has STM equations linked to it
-        if (s.getAdditionalState(STM) == null ) {
-            throw new OrekitException(OrekitMessages.NO_STM_EQUATIONS, 1);
-        }
 
         // Get Normalize eigen vector linked to the stability of the manifold
         final RealMatrix phi         = new STMEquations(syst).getStateTransitionMatrix(s);
