@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
@@ -276,13 +275,13 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             final PVCoordinates pvf = finalState.getPVCoordinates();
 
             // Get State Transition Matrix phi
-            final RealMatrix phi = getStateTransitionMatrix(finalState);
+            final double[][] phi = getStateTransitionMatrix(finalState);
 
             // Matrix A
             for (int j = 0; j < 6; j++) { // Loop on 6 component of the patch point
                 if (freePatchPointMap[6 * i + j]) { // If this component is free
                     for (int k = 0; k < 6; k++) { // Loop on the 6 component of the patch point constraint
-                        M.setEntry(6 * i + k, index, phi.getEntry(k, j));
+                        M.setEntry(6 * i + k, index, phi[k][j]);
                     }
                     if (i > 0) {
                         M.setEntry(6 * (i - 1) + j, index, -1);
@@ -497,26 +496,28 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param s current spacecraft state
      * @return the state transition matrix
      */
-    private RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
+    private double[][] getStateTransitionMatrix(final SpacecraftState s) {
+        // Additional states
         final Map<String, double[]> map = s.getAdditionalStates();
-        RealMatrix phiM = null;
+        // Initialize state transition matrix
+        final int        dim  = 6;
+        final double[][] phiM = new double[dim][dim];
 
+        // Loop on entry set
         for (final Map.Entry<String, double[]> entry : map.entrySet()) {
-            // Extract entry values
+            // Extract entry name
             final String name = entry.getKey();
             if (additionalName.equals(name)) {
-                final int dim = 6;
-                final double[][] phi2dA = new double[dim][dim];
                 final double[] stm = entry.getValue();
                 for (int i = 0; i < dim; i++) {
                     for (int j = 0; j < 6; j++) {
-                        phi2dA[i][j] = stm[dim * i + j];
+                        phiM[i][j] = stm[dim * i + j];
                     }
                 }
-                phiM = new Array2DRowRealMatrix(phi2dA, false);
             }
         }
 
+        // Return state transition matrix
         return phiM;
     }
 
