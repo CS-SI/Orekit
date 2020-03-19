@@ -493,7 +493,10 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         return propagatedSP;
     }
 
-    /** {@inheritDoc} */
+    /** Get the state transition matrix.
+     * @param s current spacecraft state
+     * @return the state transition matrix
+     */
     private RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
         final Map<String, double[]> map = s.getAdditionalStates();
         RealMatrix phiM = null;

@@ -101,8 +101,7 @@ public abstract class LibrationOrbit {
      */
     public PVCoordinates getManifolds(final SpacecraftState s,
                                       final boolean isStable) {
-        return isStable ?
-        		getStableManifolds(s) : getUnstableManifolds(s);
+        return isStable ? getStableManifolds(s) : getUnstableManifolds(s);
     }
 
     /** Return the stable manifold direction for several positions on a libration Orbit.

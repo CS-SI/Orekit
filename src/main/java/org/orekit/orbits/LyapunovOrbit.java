@@ -56,8 +56,8 @@ public class LyapunovOrbit extends LibrationOrbit {
     public LyapunovOrbit(final RichardsonExpansion richardson,
                          final double ay) {
         super(richardson.getCr3bpSystem(),
-        	  richardson.computeLyapunovFirstGuess(ay, 0.0, 0.0),
-        	  richardson.getLyapunovOrbitalPeriod(ay));
+              richardson.computeLyapunovFirstGuess(ay, 0.0, 0.0),
+              richardson.getLyapunovOrbitalPeriod(ay));
     }
 
     /** {@inheritDoc} */

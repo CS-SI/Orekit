@@ -101,7 +101,7 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
         final int ncolumns   = 1 + nFreeEpoch;
         final int nrows      = npoints - 1;
         // Return an empty array
-    	return new double[nrows][ncolumns];
+        return new double[nrows][ncolumns];
     }
 
     /** {@inheritDoc} */

@@ -68,7 +68,7 @@ public class CR3BPForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     public Vector3D acceleration(final SpacecraftState s,
-    		                     final double[] parameters) {
+                                 final double[] parameters) {
 
         // Spacecraft Velocity
         final double vx = s.getPVCoordinates().getVelocity().getX();
@@ -97,7 +97,7 @@ public class CR3BPForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-    		                                                             final T[] parameters) {
+                                                                         final T[] parameters) {
 
         // Spacecraft Velocity
         final T vx = s.getPVCoordinates().getVelocity().getX();

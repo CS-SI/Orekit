@@ -52,7 +52,7 @@ public class MultipleShooter extends AbstractMultipleShooting {
 
     /** {@inheritDoc} */
     protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
-                                                       final AdditionalEquations additionalEquation) {          
+                                                       final AdditionalEquations additionalEquation) {
         return ((EpochDerivativesEquations) additionalEquation).setInitialJacobians(initialState);
     }
 

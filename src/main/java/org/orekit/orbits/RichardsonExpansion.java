@@ -150,7 +150,7 @@ public class RichardsonExpansion {
         d21 = -c3 / (2.0 * ld * ld);
 
         a31 =
-        	-9.0 * ld * (4.0 * c3 * (k * a23 - b21) + k * c4 * (4.0 + k * k)) / (4.0 * d2) +
+            -9.0 * ld * (4.0 * c3 * (k * a23 - b21) + k * c4 * (4.0 + k * k)) / (4.0 * d2) +
             (9.0 * ld * ld + 1.0 - c2) / (2.0 * d2) * (2.0 * c3 * (2.0 * a23 - k * b21) + c4 * (2.0 + 3.0 * k * k));
 
         a32 =
@@ -158,11 +158,11 @@ public class RichardsonExpansion {
             3 * (9.0 * ld * ld + 1.0 - c2) * (c3 * (k * b22 + d21 - 2.0 * a24) - c4) / (2.0 * d2);
 
         b31 =
-        	3.0 * 8.0 * ld * (3.0 * c3 * (k * b21 - 2.0 * a23) - c4 * (2.0 + 3.0 * k * k)) / (8.0 * d2) +
+            3.0 * 8.0 * ld * (3.0 * c3 * (k * b21 - 2.0 * a23) - c4 * (2.0 + 3.0 * k * k)) / (8.0 * d2) +
             3.0 * ((9.0 * ld * ld + 1.0 + 2.0 * c2) * (4.0 * c3 * (k * a23 - b21) + k * c4 * (4.0 + k * k))) / (8.0 * d2);
 
         b32 =
-        	9.0 * ld * (c3 * (k * b22 + d21 - 2.0 * a24) - c4) / d2 +
+            9.0 * ld * (c3 * (k * b22 + d21 - 2.0 * a24) - c4) / d2 +
             3.0 * ((9.0 * ld * ld + 1.0 + 2.0 * c2) * (4.0 * c3 * (k * a24 - b22) +  k * c4)) / (8.0 * d2);
 
         d31 = 3.0 / (64.0 * ld * ld) * (4.0 * c3 * a24 + c4);
@@ -170,11 +170,11 @@ public class RichardsonExpansion {
         d32 = 3.0 / (64.0 * ld * ld) * (4.0 * c3 * (a23 - d21) + c4 * (4.0 + k * k));
 
         s1 =
-           (3.0 * c3 * (2.0 * a21 * (k * k - 2.0) - a23 * (k * k + 2.0) - 2.0 * k * b21) / 2.0 -
+            (3.0 * c3 * (2.0 * a21 * (k * k - 2.0) - a23 * (k * k + 2.0) - 2.0 * k * b21) / 2.0 -
             3.0 * c4 * (3.0 * k * k * k * k - 8.0 * k * k + 8.0) / 8.0) / (2.0 * ld * (ld * (1.0 + k * k) - 2.0 * k));
 
         s2 =
-           (3.0 * c3 * (2.0 * a22 * (k * k - 2.0) + a24 * (k * k + 2.0) + 2.0 * k * b22 + 5.0 * d21) / 2.0 +
+            (3.0 * c3 * (2.0 * a22 * (k * k - 2.0) + a24 * (k * k + 2.0) + 2.0 * k * b22 + 5.0 * d21) / 2.0 +
             3.0 * c4 * (12.0 - k * k) / 8.0) / (2.0 * ld * (ld * (1.0 + k * k) - 2.0 * k));
 
         l1 = -3.0 * c3 * (2.0 * a21 + a23 + 5.0 * d21) / 2.0 - 3.0 * c4 * (12.0 - k * k) / 8.0 + 2.0 * ld * ld * s1;
@@ -261,8 +261,8 @@ public class RichardsonExpansion {
 
         // Return PV Coordinates
         return point == LagrangianPoints.L1 ?
-        		new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu - gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma)) :
-        	    new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu + gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
+                new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu - gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma)) :
+                new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu + gamma, firsty * gamma, firstz * gamma), new Vector3D(vx * gamma, vy * gamma, vz * gamma));
     }
 
     /** Calculate first Guess.
@@ -295,10 +295,10 @@ public class RichardsonExpansion {
 
         // Return PV Coordinates
         return point == LagrangianPoints.L1 ?
-        		 new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu - gamma, firsty * gamma, firstz * gamma),
+                 new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu - gamma, firsty * gamma, firstz * gamma),
                                    new Vector3D(vx * gamma, vy * gamma, vz * gamma)) :
                  new PVCoordinates(new Vector3D(firstx * gamma + 1.0 - mu + gamma, firsty * gamma, firstz * gamma),
-                                   new Vector3D(vx * gamma, vy * gamma, vz * gamma));	 
+                                   new Vector3D(vx * gamma, vy * gamma, vz * gamma));
     }
 
     /** Return the orbital period of the Halo Orbit.
@@ -329,14 +329,14 @@ public class RichardsonExpansion {
      * @return CRR3BP system
      */
     public CR3BPSystem getCr3bpSystem() {
-    	return cr3bpSystem;
+        return cr3bpSystem;
     }
 
-    /** Get the considered lagrangian point
+    /** Get the considered lagrangian point.
      * @return lagrangian point
      */
     public LagrangianPoints getLagrangianPoint() {
-    	return point;
+        return point;
     }
 
 }

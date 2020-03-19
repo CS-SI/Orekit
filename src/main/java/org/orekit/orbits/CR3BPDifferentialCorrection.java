@@ -84,8 +84,8 @@ public class CR3BPDifferentialCorrection {
     public CR3BPDifferentialCorrection(final PVCoordinates firstguess,
                                        final CR3BPSystem syst, final double orbitalPeriod) {
         this(firstguess, syst, orbitalPeriod,
-        		Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
-        		DataContext.getDefault().getTimeScales().getUTC());
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Simple Constructor.
@@ -97,10 +97,10 @@ public class CR3BPDifferentialCorrection {
      * @param utc UTC time scale
      */
     public CR3BPDifferentialCorrection(final PVCoordinates firstguess,
-    		                           final CR3BPSystem syst,
-    		                           final double orbitalPeriod,
-    		                           final AttitudeProvider attitudeProvider,
-    		                           final TimeScale utc) {
+                                       final CR3BPSystem syst,
+                                       final double orbitalPeriod,
+                                       final AttitudeProvider attitudeProvider,
+                                       final TimeScale utc) {
         this.firstGuess = firstguess;
         this.syst = syst;
         this.orbitalPeriodApprox = orbitalPeriod;
