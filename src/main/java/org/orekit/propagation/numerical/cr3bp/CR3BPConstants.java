@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.Calendar;
+
+import org.orekit.utils.Constants;
 
 /**
  * Set of useful physical CR3BP constants using JPL data.

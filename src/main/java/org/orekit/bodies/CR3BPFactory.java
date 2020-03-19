@@ -16,7 +16,7 @@
  */
 package org.orekit.bodies;
 
-import org.orekit.utils.CR3BPConstants;
+import org.orekit.propagation.numerical.cr3bp.CR3BPConstants;
 
 /**
  * Factory class creating predefined CR3BP system using CR3BPSystem class. For example, Earth-Moon CR3BP

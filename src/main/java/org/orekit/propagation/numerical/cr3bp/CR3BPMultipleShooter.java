@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.orekit.utils;
+package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,8 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.cr3bp.STMEquations;
+import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.AbstractMultipleShooting;
 
 /**
  * Multiple shooting method applicable for orbits, either propagation in CR3BP, or in an ephemeris model.
