@@ -68,7 +68,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Number of constraints. */
     private int nConstraints;
 
-    /** Pacth points components which are constrained. */
+    /** Patch points components which are constrained. */
     private Map<Integer, Double> mapConstraints;
 
     /** True if orbit is closed. */
@@ -531,43 +531,68 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     protected abstract SpacecraftState getAugmentedInitialState(SpacecraftState initialState,
                                                                 AdditionalEquations additionalEquations2);
 
+
+    /** Get the number of free variables.
+     * @return the number of free variables
+     */
     protected int getNumberOfFreeVariables() {
         return nFree;
     }
 
+    /** Get the number of free epoch.
+     * @return the number of free epoch
+     */
     protected int getNumberOfFreeEpoch() {
         return nEpoch;
     }
 
+    /** Get the number of constraints.
+     * @return the number of constraints
+     */
     protected int getNumberOfConstraints() {
         return nConstraints;
     }
 
+    /** Get the flags representing the free components of patch points.
+     * @return an array of flags representing the free components of patch points
+     */
     protected boolean[] getFreePatchPointMap() {
         return freePatchPointMap;
     }
 
+    /** Get the flags representing the free epoch of patch points.
+     * @return an array of flags representing the free epoch of patch points
+     */
     protected boolean[] getFreeEpochMap() {
         return freeEpochMap;
     }
 
+    /** Get the map of patch points components which are constrained.
+     * @return a map of patch points components which are constrained
+     */
     protected Map<Integer, Double> getConstraintsMap() {
         return mapConstraints;
     }
 
+    /** Get the list of patched spacecraft states.
+     * @return a list of patched spacecraft states
+     */
     protected List<SpacecraftState> getPatchedSpacecraftState() {
         return patchedSpacecraftStates;
     }
 
+    /** Get the list of propagators.
+     * @return a list of propagators
+     */
     protected List<NumericalPropagator> getPropagatorList() {
         return propagatorList;
     }
 
-    protected double[] getPropagationTime() {
-        return propagationTime;
-    }
-
-    public boolean isClosedOrbit() {
+    /** Get he flag representing if the orbit is closed.
+     * @return true if orbit is closed
+     */
+    protected boolean isClosedOrbit() {
         return isClosedOrbit;
     }
+
 }
