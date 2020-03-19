@@ -134,7 +134,6 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
         for (int i = 0; i < 6; i++) {
             if (freePoints[i]) {
                 final PVCoordinates pv1i = t1.transformPVCoordinates(pvs[i]);
-                //                        final PVCoordinates pv1i = getPVLframe(new AbsolutePVCoordinates(apv1.getFrame(), apv1.getDate(), pvs[i]), syst, LagrangianPoints.L1);
                 for (int j = 0; j < 3; j++) {
                     M[  j  ][index] = -pv1i.getPosition().toArray()[j];
                     M[j + 3][index] = -pv1i.getVelocity().toArray()[j];
@@ -147,7 +146,6 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
         for (int i = 0; i < 6; i++) { // filling from the end
             if (freePoints[freePoints.length - 1 - i]) {
                 final PVCoordinates pvni = t2.transformPVCoordinates(pvs[5 - i]);
-                //                        final PVCoordinates pvni = getPVLframe(new AbsolutePVCoordinates(apvn.getFrame(), apvn.getDate(), pvs[5-i]), syst, LagrangianPoints.L1);
                 for (int j = 0; j < 3; j++) {
                     M[  j  ][index] = pvni.getPosition().toArray()[j];
                     M[j + 3][index] = pvni.getVelocity().toArray()[j];
@@ -162,7 +160,6 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
             M[k][indexC] = 1;
             k++;
         }
-        // System.out.println(Arrays.deepToString(M).replace("], ", "]\n").replace("[[", "[").replace("]]", "]"));
 
         return M;
     }

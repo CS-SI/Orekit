@@ -125,38 +125,6 @@ public class STMEquations
         jacobian[4][2] = dU[idYZ];
         jacobian[5][1] = jacobian[4][2];
 
-/** Analytical expressions
-
-        u[0][0] = 1 - (1 - mu) * (1 / (r1 * r1 * r1) -
-            3 * (x + mu) * (x + mu) / (r1 * r1 * r1 * r1 * r1)) -
-            mu * (1 / (r2 * r2 * r2) -
-            3 * (x - (1 - mu)) * (x - (1 - mu)) / (r2 * r2 * r2 * r2 * r2));
-
-        u[1][1] = 1 - (1 - mu) * (1 / (r1 * r1 * r1) - 3 * y * y / (r1 * r1 * r1 * r1 * r1)) -
-            mu * (1 / (r2 * r2 * r2) - 3 * y * y / (r2 * r2 * r2 * r2 * r2));
-
-        u[2][2] = -(1 - mu) * (1 / (r1 * r1 * r1) - 3 * z * z / (r1 * r1 * r1 * r1 * r1)) -
-            mu * (1 / (r2 * r2 * r2) - 3 * z * z / (r2 * r2 * r2 * r2 * r2));
-
-        u[0][1] =
-            3 * (1 - mu) * y * (x + mu) / (r1 * r1 * r1 * r1 * r1) +
-                  3 * mu * y * (x - (1 - mu)) / (r2 * r2 * r2 * r2 * r2);
-
-        u[1][0] = u[0][1];
-
-        u[0][2] =
-            3 * (1 - mu) * z * (x + mu) / (r1 * r1 * r1 * r1 * r1) +
-                  3 * mu * z * (x - (1 - mu)) / (r2 * r2 * r2 * r2 * r2);
-
-        u[2][0] = u[0][2];
-
-        u[1][2] =
-            3 * (1 - mu) * y * z / (r1 * r1 * r1 * r1 * r1) +
-                  3 * mu * y * z / (r2 * r2 * r2 * r2 * r2);
-
-        u[2][1] = u[1][2];
-*/
-
         // STM derivatives computation : dPhi = Jacobian * Phi if both dPhi and Phi are defined as Matrix
         for (int k = 0; k < DIM; k++) {
             for (int l = 0; l < DIM; l++) {
@@ -167,7 +135,7 @@ public class STMEquations
             }
         }
 
-     // these equations have no effect on the main state itself
+        // these equations have no effect on the main state itself
         return null;
     }
 

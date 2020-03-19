@@ -41,7 +41,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public abstract class AbstractMultipleShooting implements MultipleShooting {
 
-
     /** Patch points along the trajectory. */
     private List<SpacecraftState> patchedSpacecraftStates;
 
@@ -95,7 +94,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         final int propagationNumber = initialGuessList.size() - 1;
         this.propagationTime = new double[propagationNumber];
         for (int i = 0; i < propagationNumber; i++ ) {
-//            this.propagationTime[i] = patchedSpacecraftStates.get(i + 1).getDate().durationFrom(initialGuessList.get(i).getDate());
             this.propagationTime[i] = arcDuration;
         }
 
@@ -114,13 +112,12 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         this.nEpoch = initialGuessList.size() - 1;
 
         this.nConstraints = 6 * propagationNumber;
-        this.nFree = 6 * initialGuessList.size() + 1; // T (common propagation time) is a free variable
+        this.nFree = 6 * initialGuessList.size() + 1;
 
         this.tolerance = tolerance;
 
         // All the additional constraints must be set afterward
         this.mapConstraints = new HashMap<>();
-        //        this.isClosedOrbit = false;
     }
 
     /** Set a component of a patch point to free or not.
@@ -176,39 +173,19 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         double fxNorm = 0;
 
         do {
-//            System.out.println("Itération " + (iter + 1));
-//            System.out.println(Arrays.toString(propagationTime));
 
             final List<SpacecraftState> propagatedSP = propagatePatchedSpacecraftState(); // multi threading see PropagatorsParallelizer
             final RealMatrix M = computeJacobianMatrix(propagatedSP);
             final RealVector fx = MatrixUtils.createRealVector(computeConstraint(propagatedSP));
 
-//            System.out.println("DF(X)");
-//            for (int i = 0; i < M.getRowDimension(); i++) {
-//                System.out.println(Arrays.toString(M.getRow(i)));
-//            }
-//            System.out.println("F(X)");
-//            System.out.println(Arrays.toString(fx.toArray()));
-
             // Solve linear system
             final RealMatrix MMt = M.multiply(M.transpose());
-
-            // Numerical trouble with Cholesky for matrix decomposition
-            //            final MatrixDecomposer decomposer = new CholeskyDecomposer(1.0e-12, 1.0e-12);
-            //            final RealVector sol = decomposer.decompose(MMt).solve(fx);
-            //            final RealVector dx = M.transpose().operate(sol);
-
-            final RealVector dx = M.transpose().multiply(MatrixUtils.inverse(MMt)).operate(fx);
+            final RealVector dx  = M.transpose().multiply(MatrixUtils.inverse(MMt)).operate(fx);
 
             // Apply correction from the free variable vector to all the variables (propagation time, pacthSpaceraftState)
             updateTrajectory(dx);
 
             fxNorm = fx.getNorm() / fx.getDimension();
-
-//            System.out.println("DeltaX");
-//            System.out.println(Arrays.toString(dx.toArray()));
-//
-//            System.out.println("||F(X)|| = " + fxNorm);
 
             iter++;
 
@@ -223,20 +200,11 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      */
     public RealMatrix computeJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
-//        final int nFreeEpoch = nEpoch;
-        final int npoints = patchedSpacecraftStates.size();
-
+        final int npoints         = patchedSpacecraftStates.size();
         final int epochConstraint = nEpoch == 0 ? 0 : npoints - 1;
-//        final int epochConstraint = nFreeEpoch;
-
-        final int nrows = getNumberOfConstraints() + epochConstraint;
+        final int nrows    = getNumberOfConstraints() + epochConstraint;
         final int ncolumns = getNumberOfFreeVariables() + nEpoch;
 
-
-        // Exception should be covered in higher abstract method
-        //        if (ncolumns > nrows) {
-        //            throw new OrekitException(OrekitMessages.MULTIPLE_SHOOTING_UNDERCONSTRAINED, ncolumns, nrows);
-        //        }
         final RealMatrix M = MatrixUtils.createRealMatrix(nrows, ncolumns);
 
         int index = 0;
@@ -353,8 +321,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             final double[][] subDE = computeEpochJacobianMatrix(propagatedSP);
             M.setSubMatrix(subDE, 6 * (npoints - 1), nFree - 1);
         }
-//        final int nEpoch = nFreeEpoch > 0 ? npoints - 1 : 0;
-
 
         // Matrices F.
         final double[][] subF = computeAdditionalJacobianMatrix(propagatedSP);
@@ -403,7 +369,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             }
         }
 
-        //        int index = getNumberOfConstraints();
         int index = 6 * (npoints - 1);
 
         if (epoch) {
@@ -415,7 +380,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         }
 
         for (int i = 0; i < additionalConstraints.length; i++) {
-            //            fx[6 * npoints - 6 + i] = additionalConstraints[i];
             fx[index] = additionalConstraints[i];
             index++;
         }
@@ -460,9 +424,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             final Vector3D deltaP = new Vector3D(deltaPV[0], deltaPV[1], deltaPV[2]);
             final Vector3D deltaV = new Vector3D(deltaPV[3], deltaPV[4], deltaPV[5]);
 
-//            System.out.println(deltaP);
-//            System.out.println(deltaV);
-
             // Update the PVCoordinates of the patch point
             final AbsolutePVCoordinates currentAPV = patchedSpacecraftStates.get(i).getAbsPVA();
             final Vector3D position = currentAPV.getPosition().subtract(deltaP);
@@ -475,7 +436,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
                 if (freeEpochMap[i]) {
                     final double deltaEpoch = dx.getEntry(n + indexEpoch);
                     epoch = epoch.shiftedBy(-deltaEpoch);
-//                     epoch = patchedSpacecraftStates.get(i - 1).getDate().shiftedBy(propagationTime[i - 1]);
                     indexEpoch++;
                 }
             } else {
@@ -494,10 +454,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             //Update the SpacecraftState using previously updated attitude and AbsolutePVCoordinates
             patchedSpacecraftStates.set(i, new SpacecraftState(updatedAPV, attitude));
         }
-//        System.out.println(dx.getEntry(n - 1));
-//        if (epochFree) {
-//            System.out.println(dx.getSubVector(n, indexEpoch));
-//        }
+
     }
 
 
@@ -505,7 +462,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      *  @param isClosed true if orbit should be closed
      */
     public void setClosedOrbitConstraint(final boolean isClosed) {
-//        int nConstraints = getNumberOfConstraints(); // Check if modifcation is applied in abstract method
         if (this.isClosedOrbit != isClosed) {
             nConstraints = nConstraints + (isClosed ? 6 : -6);
             this.isClosedOrbit = isClosed;
@@ -532,12 +488,9 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             propagatorList.get(i).setInitialState(augmentedInitialState);
 
             final double integrationTime = propagationTime[i];
-            //            final long startTime = System.currentTimeMillis(); // Useful to plot computation duration
 
             // Propagate trajectory
-            final SpacecraftState finalState =
-                            propagatorList.get(i).propagate(initialState.getDate().shiftedBy(integrationTime));
-            // System.out.println(System.currentTimeMillis()-startTime);
+            final SpacecraftState finalState = propagatorList.get(i).propagate(initialState.getDate().shiftedBy(integrationTime));
 
             propagatedSP.add(finalState);
         }

@@ -37,9 +37,6 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
     /** Number of patch points. */
     private int npoints;
 
-//    /** True if orbit is closed. */
-//    private boolean isClosedOrbit;
-
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
      * @param initialGuessList initial patch points to be corrected.
