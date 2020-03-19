@@ -80,21 +80,13 @@ public class CR3BPForceModel extends AbstractForceModel {
         final double[] dU = potential.getAllDerivatives();
 
         // first order derivatives index
-        final int idX =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 0,
-                                                                           0);
-        final int idY =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 1,
-                                                                           0);
-        final int idZ =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 0,
-                                                                           1);
+        final int idX = potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 0, 0);
+        final int idY = potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 1, 0);
+        final int idZ = potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 0, 1);
 
         // Acceleration calculation according to CR3BP Analytical Model
         final double accx = dU[idX] + 2.0 * vy;
-
         final double accy = dU[idY] - 2.0 * vx;
-
         final double accz = dU[idZ];
 
         // compute absolute acceleration
@@ -116,21 +108,13 @@ public class CR3BPForceModel extends AbstractForceModel {
         final T[] dU = fieldPotential.getAllDerivatives();
 
         // first order derivatives index
-        final int idX =
-            fieldPotential.getFactory().getCompiler()
-                .getPartialDerivativeIndex(1, 0, 0);
-        final int idY =
-            fieldPotential.getFactory().getCompiler()
-                .getPartialDerivativeIndex(0, 1, 0);
-        final int idZ =
-            fieldPotential.getFactory().getCompiler()
-                .getPartialDerivativeIndex(0, 0, 1);
+        final int idX = fieldPotential.getFactory().getCompiler().getPartialDerivativeIndex(1, 0, 0);
+        final int idY = fieldPotential.getFactory().getCompiler().getPartialDerivativeIndex(0, 1, 0);
+        final int idZ = fieldPotential.getFactory().getCompiler().getPartialDerivativeIndex(0, 0, 1);
 
         // Acceleration calculation according to CR3BP Analytical Model
         final T accx = dU[idX].add(vy.multiply(2.0));
-
         final T accy = dU[idY].subtract(vx.multiply(2.0));
-
         final T accz = dU[idZ];
 
         // compute absolute acceleration

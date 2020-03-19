@@ -29,9 +29,7 @@ import org.orekit.propagation.integration.AdditionalEquations;
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
  */
-public class STMEquations
-    implements
-    AdditionalEquations {
+public class STMEquations implements AdditionalEquations {
 
     /** Matrix Dimension. */
     private static final int DIM = 6;
@@ -95,24 +93,12 @@ public class STMEquations
         final double[] dU = potential.getAllDerivatives();
 
         // second order derivatives index
-        final int idXX =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(2, 0,
-                                                                           0);
-        final int idXY =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 1,
-                                                                           0);
-        final int idXZ =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 0,
-                                                                           1);
-        final int idYY =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 2,
-                                                                           0);
-        final int idYZ =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 1,
-                                                                           1);
-        final int idZZ =
-            potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 0,
-                                                                           2);
+        final int idXX = potential.getFactory().getCompiler().getPartialDerivativeIndex(2, 0, 0);
+        final int idXY = potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 1, 0);
+        final int idXZ = potential.getFactory().getCompiler().getPartialDerivativeIndex(1, 0, 1);
+        final int idYY = potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 2, 0);
+        final int idYZ = potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 1, 1);
+        final int idZZ = potential.getFactory().getCompiler().getPartialDerivativeIndex(0, 0, 2);
 
         // New Jacobian values
         jacobian[3][0] = dU[idXX];
