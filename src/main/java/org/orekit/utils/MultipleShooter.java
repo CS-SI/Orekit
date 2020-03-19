@@ -20,8 +20,6 @@ package org.orekit.utils;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.EpochDerivativesEquations;
@@ -48,7 +46,7 @@ public class MultipleShooter extends AbstractMultipleShooting {
      */
     public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
                            final List<AdditionalEquations> additionalEquations, final double arcDuration, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance);
+        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, "derivatives");
         this.npoints = initialGuessList.size();
     }
 
@@ -59,7 +57,7 @@ public class MultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
-    public double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+    protected double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
 
         final int n = mapConstraints.size();
@@ -76,7 +74,7 @@ public class MultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
-    public double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+    protected double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final boolean[] freeEpochMap = getFreeEpochMap();
 
@@ -110,7 +108,7 @@ public class MultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
-    public double[] computeAdditionalConstraints(final List<SpacecraftState> propagatedSP) {
+    protected double[] computeAdditionalConstraints(final List<SpacecraftState> propagatedSP) {
 
         // The additional constraint vector has the following form :
 
@@ -141,23 +139,4 @@ public class MultipleShooter extends AbstractMultipleShooting {
         return fxAdditionnal;
     }
 
-    /** {@inheritDoc} */
-    protected RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
-        final Map<String, double[]> map = s.getAdditionalStates();
-        RealMatrix phiM = null;
-        for (String name : map.keySet()) {
-            if ("derivatives".equals(name)) {
-                final int dim = 6;
-                final double[][] phi2dA = new double[dim][dim];
-                final double[] stm = map.get(name);
-                for (int i = 0; i < dim; i++) {
-                    for (int j = 0; j < 6; j++) {
-                        phi2dA[i][j] = stm[dim * i + j];
-                    }
-                }
-                phiM = new Array2DRowRealMatrix(phi2dA, false);
-            }
-        }
-        return phiM;
-    }
 }

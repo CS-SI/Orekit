@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
@@ -77,6 +78,9 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Tolerance on the constraint vector. */
     private double tolerance;
 
+    /** Expected name of the additional equations. */
+    private final String additionalName;
+
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting </p>
      * @param initialGuessList initial patch points to be corrected.
@@ -86,10 +90,12 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      * @param tolerance convergence tolerance on the constraint vector.
      */
     protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                       final List<AdditionalEquations> additionalEquations, final double arcDuration, final double tolerance) {
+                                       final List<AdditionalEquations> additionalEquations, final double arcDuration,
+                                       final double tolerance, final String additionalName) {
         this.patchedSpacecraftStates = initialGuessList;
         this.propagatorList = propagatorList;
         this.additionalEquations = additionalEquations;
+        this.additionalName = additionalName;
         // Should check if propagatorList.size() = initialGuessList.size() - 1
         final int propagationNumber = initialGuessList.size() - 1;
         this.propagationTime = new double[propagationNumber];
@@ -158,10 +164,8 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         }
     }
 
-    /** Return the list of corrected patch points.
-     *  An optimizer is better suited for this problem
-     * @return patchedSpacecraftStates corrected trajectory
-     */
+    /** {@inheritDoc} */
+    @Override
     public List<SpacecraftState> compute() {
 
         if (nFree > nConstraints) {
@@ -198,7 +202,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      *  @param propagatedSP List of propagated SpacecraftStates (patch points)
      *  @return jacobianMatrix Jacobian matrix
      */
-    public RealMatrix computeJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+    private RealMatrix computeJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final int npoints         = patchedSpacecraftStates.size();
         final int epochConstraint = nEpoch == 0 ? 0 : npoints - 1;
@@ -333,9 +337,9 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
     /** Compute the constraint vector of the problem.
      *  @param propagatedSP propagated SpacecraftState
-     *  @return fx constraint
+     *  @return constraint vector
      */
-    public double[] computeConstraint(final List<SpacecraftState> propagatedSP) {
+    private double[] computeConstraint(final List<SpacecraftState> propagatedSP) {
 
         // The Constraint vector has the following form :
 
@@ -391,7 +395,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Update the trajectory, and the propagation time.
      *  @param dx correction on the initial vector
      */
-    public void updateTrajectory(final RealVector dx) {
+    private void updateTrajectory(final RealVector dx) {
         // X = [x1, ..., xn, T1, ..., Tn, d1, ..., dn]
         // X = [x1, ..., xn, T, d2, ..., dn]
 
@@ -457,21 +461,10 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
     }
 
-
-    /** Set the constraint of a closed orbit or not.
-     *  @param isClosed true if orbit should be closed
-     */
-    public void setClosedOrbitConstraint(final boolean isClosed) {
-        if (this.isClosedOrbit != isClosed) {
-            nConstraints = nConstraints + (isClosed ? 6 : -6);
-            this.isClosedOrbit = isClosed;
-        }
-    }
-
     /** Compute the Jacobian matrix of the problem.
      *  @return propagatedSP propagated SpacecraftStates
      */
-    public List<SpacecraftState> propagatePatchedSpacecraftState() {
+    private List<SpacecraftState> propagatePatchedSpacecraftState() {
 
         final int n = patchedSpacecraftStates.size() - 1;
 
@@ -497,17 +490,32 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
         return propagatedSP;
     }
+
+    /** {@inheritDoc} */
+    private RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
+        final Map<String, double[]> map = s.getAdditionalStates();
+        RealMatrix phiM = null;
+        for (String name : map.keySet()) {
+            if (additionalName.equals(name)) {
+                final int dim = 6;
+                final double[][] phi2dA = new double[dim][dim];
+                final double[] stm = map.get(name);
+                for (int i = 0; i < dim; i++) {
+                    for (int j = 0; j < 6; j++) {
+                        phi2dA[i][j] = stm[dim * i + j];
+                    }
+                }
+                phiM = new Array2DRowRealMatrix(phi2dA, false);
+            }
+        }
+        return phiM;
+    }
+
     /** Compute the additional constraints.
      *  @param propagatedSP propagated SpacecraftState
      *  @return fxAdditionnal additional constraints
      */
     protected abstract double[] computeAdditionalConstraints(List<SpacecraftState> propagatedSP);
-
-    /** Compute the STM (State Transition Matrix) of a SpacecraftState.
-     *  @param finalState SpacecraftState
-     *  @return phiM phiM
-     */
-    protected abstract RealMatrix getStateTransitionMatrix(SpacecraftState finalState);
 
     /** Compute a part of the Jacobian matrix with derivatives from epoch.
      * The CR3BP is a time invariant problem. The derivatives w.r.t. epoch are zero.
@@ -531,6 +539,17 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     protected abstract SpacecraftState getAugmentedInitialState(SpacecraftState initialState,
                                                                 AdditionalEquations additionalEquations2);
 
+
+
+    /** Set the constraint of a closed orbit or not.
+     *  @param isClosed true if orbit should be closed
+     */
+    protected void setClosedOrbitConstraint(final boolean isClosed) {
+        if (this.isClosedOrbit != isClosed) {
+            nConstraints = nConstraints + (isClosed ? 6 : -6);
+            this.isClosedOrbit = isClosed;
+        }
+    }
 
     /** Get the number of free variables.
      * @return the number of free variables

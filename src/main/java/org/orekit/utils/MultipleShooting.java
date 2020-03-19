@@ -18,8 +18,6 @@ package org.orekit.utils;
 
 import java.util.List;
 
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.orekit.propagation.SpacecraftState;
 
 /**
@@ -28,32 +26,10 @@ import org.orekit.propagation.SpacecraftState;
  */
 public interface MultipleShooting {
 
-
     /** Return the list of corrected patch points.
      *  An optimizer is better suited for this problem
      * @return patchedSpacecraftStates patchedSpacecraftStates
      */
     List<SpacecraftState> compute();
 
-    /** Compute the Jacobian matrix of the problem.
-     *  @param propagatedSP List of propagated SpacecraftStates
-     *  @return jacobianMatrix Jacobian matrix
-     */
-    RealMatrix computeJacobianMatrix(List<SpacecraftState> propagatedSP);
-
-    /** Propagate a list of SpacecraftStates.
-     *  @return propagatedSP propagated SpacecraftStates
-     */
-    List<SpacecraftState> propagatePatchedSpacecraftState();
-
-    /** Compute the constraint of the problem.
-     *  @param propagatedSP List of propagated SpacecraftStates
-     *  @return fx constraint vector
-     */
-    double[] computeConstraint(List<SpacecraftState> propagatedSP);
-
-    /** Update the trajectory.
-     *  @param dx correction on the initial vector
-     */
-    void updateTrajectory(RealVector dx);
 }

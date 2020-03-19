@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.RealMatrix;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -65,7 +63,7 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
     public LibrationOrbitMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
                                           final List<AdditionalEquations> additionalEquations, final double arcDuration,
                                           final CR3BPSystem cr3bp, final LagrangianPoints lPoint, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance);
+        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, "derivatives");
         this.cr3bp = cr3bp;
         this.lPoint = lPoint;
         this.npoints = initialGuessList.size();
@@ -79,7 +77,7 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
-    public double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+    protected double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
 
@@ -165,7 +163,7 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
-    public double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+    protected double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final boolean[] freeEpochMap = getFreeEpochMap();
 
@@ -199,7 +197,7 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
-    public double[] computeAdditionalConstraints(final List<SpacecraftState> propagatedSP) {
+    protected double[] computeAdditionalConstraints(final List<SpacecraftState> propagatedSP) {
 
         // The additional constraint vector has the following form :
 
@@ -254,7 +252,7 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
      *  @param apv AbsolutePVCoordinates
      *  @return pv PVCoordinates
      */
-    public PVCoordinates getPVLframe(final AbsolutePVCoordinates apv) {
+    private PVCoordinates getPVLframe(final AbsolutePVCoordinates apv) {
         final Frame rotatingFrame = cr3bp.getRotatingFrame();
         final AbsoluteDate date = apv.getDate();
         final Transform t = apv.getFrame().getTransformTo(rotatingFrame, date);
@@ -269,23 +267,4 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
         return t.transformPVCoordinates(new PVCoordinates(p, v));
     }
 
-    /** {@inheritDoc} */
-    protected RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
-        final Map<String, double[]> map = s.getAdditionalStates();
-        RealMatrix phiM = null;
-        for (String name : map.keySet()) {
-            if ("derivatives".equals(name)) {
-                final int dim = 6;
-                final double[][] phi2dA = new double[dim][dim];
-                final double[] stm = map.get(name);
-                for (int i = 0; i < dim; i++) {
-                    for (int j = 0; j < 6; j++) {
-                        phi2dA[i][j] = stm[dim * i + j];
-                    }
-                }
-                phiM = new Array2DRowRealMatrix(phi2dA, false);
-            }
-        }
-        return phiM;
-    }
 }
