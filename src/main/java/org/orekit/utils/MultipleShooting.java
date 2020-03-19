@@ -23,6 +23,7 @@ import org.orekit.propagation.SpacecraftState;
 /**
  * Interface for Multiple shooting methods.
  * @author William Desprats
+ * @since 10.2
  */
 public interface MultipleShooting {
 

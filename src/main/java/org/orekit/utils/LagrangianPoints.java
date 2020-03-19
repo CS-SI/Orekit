@@ -19,6 +19,7 @@ package org.orekit.utils;
 
 /** Enumerate for selecting which Lagrangian Point to consider in different classes.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public enum LagrangianPoints {
 

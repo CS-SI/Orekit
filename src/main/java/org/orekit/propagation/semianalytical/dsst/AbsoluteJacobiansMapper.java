@@ -35,12 +35,11 @@ import org.orekit.utils.ParameterDriversList;
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
+ * @since 10.2
  */
 public class AbsoluteJacobiansMapper extends AbstractJacobiansMapper {
 
-    /** State dimension, fixed to 6.
-     * @since 9.0
-     */
+    /** State dimension, fixed to 6. */
     public static final int STATE_DIMENSION = 6;
 
     /** Selected parameters for Jacobian computation. */

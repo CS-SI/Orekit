@@ -22,6 +22,7 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Detector for YZ Planes crossing.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class YZPlaneCrossingDetector extends AbstractDetector<YZPlaneCrossingDetector> {
 
@@ -73,6 +74,6 @@ public class YZPlaneCrossingDetector extends AbstractDetector<YZPlaneCrossingDet
      */
     public double g(final SpacecraftState s) {
         return s.getPVCoordinates().getPosition().getX() - delta;
-
     }
+
 }

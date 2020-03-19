@@ -33,6 +33,7 @@ import org.orekit.utils.PVCoordinates;
  * @see LyapunovOrbit
  * @author Vincent Mouraux
  * @author Bryan Cazabonne
+ * @since 10.2
  */
 public abstract class LibrationOrbit {
 

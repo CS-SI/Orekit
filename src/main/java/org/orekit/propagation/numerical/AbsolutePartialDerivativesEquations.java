@@ -61,6 +61,7 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
+ * @since 10.2
  */
 public class AbsolutePartialDerivativesEquations implements AdditionalEquations {
 

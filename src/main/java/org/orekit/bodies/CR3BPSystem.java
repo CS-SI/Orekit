@@ -37,6 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
  * @author William Desprats
+ * @since 10.2
  */
 public class CR3BPSystem {
 

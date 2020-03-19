@@ -22,6 +22,7 @@ import org.orekit.utils.PVCoordinates;
 
 /** Class calculating different parameters of a Lyapunov Orbit.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class LyapunovOrbit extends LibrationOrbit {
 

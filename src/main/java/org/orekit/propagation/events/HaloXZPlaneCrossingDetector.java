@@ -22,6 +22,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
 
 /** Detector for XZ Plane crossing.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCrossingDetector> {
 
@@ -67,6 +68,6 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
      */
     public double g(final SpacecraftState s) {
         return s.getPVCoordinates().getPosition().getY();
-
     }
+
 }

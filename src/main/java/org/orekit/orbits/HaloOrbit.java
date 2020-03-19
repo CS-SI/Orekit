@@ -22,6 +22,7 @@ import org.orekit.utils.PVCoordinates;
 
 /** Class calculating different parameters of a Halo Orbit.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class HaloOrbit extends LibrationOrbit {
 

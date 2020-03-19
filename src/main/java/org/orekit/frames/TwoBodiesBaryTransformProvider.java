@@ -27,6 +27,7 @@ import org.orekit.utils.PVCoordinates;
 
 /** Transform provider for the inertial Barycentered frame.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 class TwoBodiesBaryTransformProvider implements TransformProvider {
 

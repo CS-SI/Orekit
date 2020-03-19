@@ -16,6 +16,8 @@
  */
 /**
  * Top level package for CR3BP Models used with a numerical propagator.
+ * @author Vincent Mouraux
+ * @author William Desprats
+ * @since 10.2
  */
-
 package org.orekit.propagation.numerical.cr3bp;

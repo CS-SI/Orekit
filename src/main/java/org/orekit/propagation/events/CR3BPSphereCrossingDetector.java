@@ -25,6 +25,7 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Detector for YZ Planes crossing.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class CR3BPSphereCrossingDetector extends AbstractDetector<CR3BPSphereCrossingDetector> {
 
@@ -97,6 +98,5 @@ public class CR3BPSphereCrossingDetector extends AbstractDetector<CR3BPSphereCro
         final double r1 = FastMath.sqrt((x + mu) * (x + mu) + y * y + z * z) * dDim;
         final double r2 = FastMath.sqrt((x - 1 + mu) * (x - 1 + mu) + y * y + z * z) * dDim;
         return (r1 - primaryR) * (r2 - secondaryR);
-
     }
 }

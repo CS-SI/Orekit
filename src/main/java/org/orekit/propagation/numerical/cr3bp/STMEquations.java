@@ -28,6 +28,7 @@ import org.orekit.propagation.integration.AdditionalEquations;
 /** Class calculating the state transition matrix coefficient for CR3BP Computation.
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class STMEquations implements AdditionalEquations {
 

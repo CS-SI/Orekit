@@ -32,6 +32,7 @@ import org.orekit.utils.FieldPVCoordinates;
 
 /** Transform provider for the rotating frame of the CR3BP System.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 class CR3BPRotatingTransformProvider implements TransformProvider {
 

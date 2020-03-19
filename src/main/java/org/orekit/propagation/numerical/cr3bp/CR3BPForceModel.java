@@ -38,6 +38,7 @@ import org.orekit.utils.ParameterDriver;
 /** Class calculating the acceleration induced by CR3BP model.
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class CR3BPForceModel extends AbstractForceModel {
 
@@ -211,8 +212,7 @@ public class CR3BPForceModel extends AbstractForceModel {
 
     @Override
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>>
-        getFieldEventsDetectors(final Field<T> field) {
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 

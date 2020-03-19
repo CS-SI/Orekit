@@ -46,6 +46,7 @@ import org.orekit.utils.PVCoordinates;
  * terms to be more accurate and meet orbits requirements.
  * @see "Three-dimensional, periodic, Halo Orbits by Kathleen Connor Howell, Stanford University"
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class CR3BPDifferentialCorrection {
 

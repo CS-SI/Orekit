@@ -19,9 +19,9 @@ package org.orekit.frames;
 import org.orekit.bodies.CelestialBody;
 
 /**
- * Class creating the rotating frame centered on the barycenter of the CR3BP
- * System.
+ * Class creating the rotating frame centered on the barycenter of the CR3BP System.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class CR3BPRotatingFrame extends Frame {
 

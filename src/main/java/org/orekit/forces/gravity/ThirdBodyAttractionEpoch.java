@@ -40,6 +40,7 @@ import org.orekit.utils.ParameterDriver;
  *
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @since 10.2
  */
 public class ThirdBodyAttractionEpoch extends AbstractForceModel {
 
@@ -115,12 +116,10 @@ public class ThirdBodyAttractionEpoch extends AbstractForceModel {
                                    r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(gm).negate(), centralToBody);
     }
 
-
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
      * @param parameters values of the force model parameters
      * @return acceleration in same frame as state
-     * @since 9.0
      */
     private FieldVector3D<DerivativeStructure> accelerationToEpoch(final SpacecraftState s, final double[] parameters) {
 
@@ -154,7 +153,6 @@ public class ThirdBodyAttractionEpoch extends AbstractForceModel {
      * @param s current state information: date, kinematics, attitude
      * @param parameters values of the force model parameters
      * @return derivatives
-     * @since 9.0
      */
     public double[] getDerivativesToEpoch(final SpacecraftState s, final double[] parameters) {
 

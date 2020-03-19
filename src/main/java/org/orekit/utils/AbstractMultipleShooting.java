@@ -39,6 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * Multiple shooting method using only constraints on state vectors of patch points (and possibly on epoch and integration time).
  * @see "TRAJECTORY DESIGN AND ORBIT MAINTENANCE STRATEGIES IN MULTI-BODY DYNAMICAL REGIMES by Thomas A. Pavlak, Purdue University"
  * @author William Desprats
+ * @since 10.2
  */
 public abstract class AbstractMultipleShooting implements MultipleShooting {
 

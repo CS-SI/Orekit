@@ -25,6 +25,7 @@ import org.orekit.utils.OrekitConfiguration;
 /**
  * Class creating the inertial barycenter frame from two bodies.
  * @author Vincent Mouraux
+ * @since 10.2
  */
 public class TwoBodiesBaryFrame extends Frame {
 

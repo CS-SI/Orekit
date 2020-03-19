@@ -30,6 +30,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * Not suited for closed orbits.
  * @see "TRAJECTORY DESIGN AND ORBIT MAINTENANCE STRATEGIES IN MULTI-BODY DYNAMICAL REGIMES by Thomas A. Pavlak, Purdue University"
  * @author William Desprats
+ * @since 10.2
  */
 public class MultipleShooter extends AbstractMultipleShooting {
 

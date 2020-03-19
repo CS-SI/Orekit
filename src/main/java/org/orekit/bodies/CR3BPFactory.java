@@ -23,6 +23,7 @@ import org.orekit.propagation.numerical.cr3bp.CR3BPConstants;
  * System.
  * @author Vincent Mouraux
  * @see CR3BPSystem
+ * @since 10.2
  */
 public class CR3BPFactory {
 
