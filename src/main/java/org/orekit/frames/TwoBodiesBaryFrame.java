@@ -26,9 +26,7 @@ import org.orekit.utils.OrekitConfiguration;
  * Class creating the inertial barycenter frame from two bodies.
  * @author Vincent Mouraux
  */
-public class TwoBodiesBaryFrame
-    extends
-    Frame {
+public class TwoBodiesBaryFrame extends Frame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20190725L;
@@ -41,18 +39,14 @@ public class TwoBodiesBaryFrame
     public TwoBodiesBaryFrame(final CelestialBody primaryBody,
                               final CelestialBody secondaryBody) {
         super(primaryBody.getInertiallyOrientedFrame(),
-              new ShiftingTransformProvider(new TwoBodiesBaryTransformProvider(primaryBody,
-                                                                               secondaryBody),
+              new ShiftingTransformProvider(new TwoBodiesBaryTransformProvider(primaryBody, secondaryBody),
                                             CartesianDerivativesFilter.USE_P,
                                             AngularDerivativesFilter.USE_R, 5,
                                             Constants.JULIAN_DAY / 24,
-                                            OrekitConfiguration
-                                                .getCacheSlotsNumber(),
+                                            OrekitConfiguration.getCacheSlotsNumber(),
                                             Constants.JULIAN_YEAR,
                                             30 * Constants.JULIAN_DAY),
-              primaryBody
-                  .getName() + "-" + secondaryBody.getName() + "-Barycenter",
-              true);
+              primaryBody .getName() + "-" + secondaryBody.getName() + "-Barycenter", true);
     }
 
 }

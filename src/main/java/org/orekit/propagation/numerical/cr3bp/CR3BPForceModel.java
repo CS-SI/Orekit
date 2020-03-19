@@ -60,10 +60,9 @@ public class CR3BPForceModel extends AbstractForceModel {
      * @param cr3bp Name of the CR3BP System
      */
     public CR3BPForceModel(final CR3BPSystem cr3bp) {
-        muParameterDriver =
-            new ParameterDriver(cr3bp.getName() + MASS_RATIO_SUFFIX,
-                                cr3bp.getMassRatio(), MU_SCALE, 0.0,
-                                Double.POSITIVE_INFINITY);
+        muParameterDriver = new ParameterDriver(cr3bp.getName() + MASS_RATIO_SUFFIX,
+                                                cr3bp.getMassRatio(), MU_SCALE, 0.0,
+                                                Double.POSITIVE_INFINITY);
     }
 
     /** {@inheritDoc} */

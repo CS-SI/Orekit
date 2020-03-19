@@ -23,9 +23,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
 /** Detector for XZ Plane crossing.
  * @author Vincent Mouraux
  */
-public class HaloXZPlaneCrossingDetector
-    extends
-    AbstractDetector<HaloXZPlaneCrossingDetector> {
+public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCrossingDetector> {
 
     /**
      * Simple Constructor.
@@ -57,12 +55,10 @@ public class HaloXZPlaneCrossingDetector
 
     /** {@inheritDoc} */
     @Override
-    protected HaloXZPlaneCrossingDetector
-        create(final double newMaxCheck, final double newThreshold,
-               final int newMaxIter,
-               final EventHandler<? super HaloXZPlaneCrossingDetector> newHandler) {
-        return new HaloXZPlaneCrossingDetector(newMaxCheck, newThreshold, newMaxIter,
-                                    newHandler);
+    protected HaloXZPlaneCrossingDetector create(final double newMaxCheck, final double newThreshold,
+                                                 final int newMaxIter,
+                                                 final EventHandler<? super HaloXZPlaneCrossingDetector> newHandler) {
+        return new HaloXZPlaneCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
     /** Compute the value of the detection function.

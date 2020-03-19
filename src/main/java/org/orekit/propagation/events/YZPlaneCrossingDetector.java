@@ -23,9 +23,7 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
 /** Detector for YZ Planes crossing.
  * @author Vincent Mouraux
  */
-public class YZPlaneCrossingDetector
-    extends
-    AbstractDetector<YZPlaneCrossingDetector> {
+public class YZPlaneCrossingDetector extends AbstractDetector<YZPlaneCrossingDetector> {
 
     /** Offset from X=0 plane. */
     private final double delta;
@@ -63,12 +61,10 @@ public class YZPlaneCrossingDetector
 
     /** {@inheritDoc} */
     @Override
-    protected YZPlaneCrossingDetector
-        create(final double newMaxCheck, final double newThreshold,
-               final int newMaxIter,
-               final EventHandler<? super YZPlaneCrossingDetector> newHandler) {
-        return new YZPlaneCrossingDetector(delta, newMaxCheck, newThreshold, newMaxIter,
-                                    newHandler);
+    protected YZPlaneCrossingDetector create(final double newMaxCheck, final double newThreshold,
+                                             final int newMaxIter,
+                                             final EventHandler<? super YZPlaneCrossingDetector> newHandler) {
+        return new YZPlaneCrossingDetector(delta, newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
     /** Compute the value of the detection function.

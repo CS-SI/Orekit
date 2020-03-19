@@ -23,9 +23,7 @@ import org.orekit.bodies.CelestialBody;
  * System.
  * @author Vincent Mouraux
  */
-public class CR3BPRotatingFrame
-    extends
-    Frame {
+public class CR3BPRotatingFrame extends Frame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20190520L;
@@ -38,14 +36,8 @@ public class CR3BPRotatingFrame
      */
     public CR3BPRotatingFrame(final double mu, final CelestialBody primaryBody,
                               final CelestialBody secondaryBody) {
-        super(primaryBody.getInertiallyOrientedFrame(), new CR3BPRotatingTransformProvider(mu, primaryBody,
-                                                 secondaryBody),
-              primaryBody.getName() +
-                                                                 "-" +
-                                                                 secondaryBody
-                                                                     .getName() +
-                                                                 "-CR3BPBarycenter",
-              true);
+        super(primaryBody.getInertiallyOrientedFrame(), new CR3BPRotatingTransformProvider(mu, primaryBody,  secondaryBody),
+              primaryBody.getName() + "-" + secondaryBody.getName() + "-CR3BPBarycenter", true);
     }
 
 }

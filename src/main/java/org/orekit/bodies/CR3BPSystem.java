@@ -416,8 +416,7 @@ public class CR3BPSystem {
      * @param absPv1 AbsolutePVCoordinates in standard units
      * @return AbsolutePVCoordinates in the rotating frame [-,-]
      */
-    public AbsolutePVCoordinates
-        getNormalizedAPV(final AbsolutePVCoordinates absPv1) {
+    public AbsolutePVCoordinates getNormalizedAPV(final AbsolutePVCoordinates absPv1) {
         // 1.   Apply the transformation from input to rotating frame
         // 2.   Dimensionalize  the state vector using the instantaneously
         //      defined characteristic quantities

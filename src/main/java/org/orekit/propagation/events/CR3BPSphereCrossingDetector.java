@@ -26,9 +26,7 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
 /** Detector for YZ Planes crossing.
  * @author Vincent Mouraux
  */
-public class CR3BPSphereCrossingDetector
-    extends
-    AbstractDetector<CR3BPSphereCrossingDetector> {
+public class CR3BPSphereCrossingDetector extends AbstractDetector<CR3BPSphereCrossingDetector> {
 
     /** Radius of the primary body. */
     private final double primaryR;
@@ -78,12 +76,10 @@ public class CR3BPSphereCrossingDetector
 
     /** {@inheritDoc} */
     @Override
-    protected CR3BPSphereCrossingDetector
-        create(final double newMaxCheck, final double newThreshold,
-               final int newMaxIter,
-               final EventHandler<? super CR3BPSphereCrossingDetector> newHandler) {
-        return new CR3BPSphereCrossingDetector(primaryR, secondaryR, syst, newMaxCheck, newThreshold, newMaxIter,
-                                    newHandler);
+    protected CR3BPSphereCrossingDetector create(final double newMaxCheck, final double newThreshold,
+                                                 final int newMaxIter,
+                                                 final EventHandler<? super CR3BPSphereCrossingDetector> newHandler) {
+        return new CR3BPSphereCrossingDetector(primaryR, secondaryR, syst, newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
     /** Compute the value of the detection function.
