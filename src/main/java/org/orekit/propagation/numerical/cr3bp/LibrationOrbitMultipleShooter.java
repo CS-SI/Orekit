@@ -237,7 +237,7 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
 
         int i  = 6;
         for (int index : mapConstraints.keySet()) {
-            final int np = (int) (index / 6);
+            final int np = index / 6;
             final int nc = index % 6;
             final AbsolutePVCoordinates absPv = patchedSpacecraftStates.get(np).getAbsPVA();
             if (nc < 3) {
