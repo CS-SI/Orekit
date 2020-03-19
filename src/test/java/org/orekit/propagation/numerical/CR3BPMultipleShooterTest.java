@@ -1,6 +1,5 @@
-package org.orekit.propagation.numerical;
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -15,8 +14,7 @@ package org.orekit.propagation.numerical;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
+package org.orekit.propagation.numerical;
 
 import java.util.ArrayList;
 import java.util.List;
