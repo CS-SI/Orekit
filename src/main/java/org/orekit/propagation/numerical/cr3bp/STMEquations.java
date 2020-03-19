@@ -156,7 +156,6 @@ public class STMEquations
                 phi2dA[i][j] = stm[DIM * i + j];
             }
         }
-        final RealMatrix phiM = new Array2DRowRealMatrix(phi2dA, false);
-        return phiM;
+        return new Array2DRowRealMatrix(phi2dA, false);
     }
 }

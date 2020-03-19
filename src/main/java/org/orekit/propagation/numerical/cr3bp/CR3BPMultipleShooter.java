@@ -55,10 +55,7 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
     /** {@inheritDoc} */
     protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
                                                        final AdditionalEquations additionalEquation) {
-        final SpacecraftState augmentedInitialState =
-                        ((STMEquations) additionalEquation).setInitialPhi(initialState);
-
-        return augmentedInitialState;
+        return ((STMEquations) additionalEquation).setInitialPhi(initialState);
     }
 
     /** {@inheritDoc} */

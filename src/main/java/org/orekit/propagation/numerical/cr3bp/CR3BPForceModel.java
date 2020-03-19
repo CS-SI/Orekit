@@ -176,11 +176,8 @@ public class CR3BPForceModel extends AbstractForceModel {
                 .add(fpy.multiply(fpy)).add(fpz.multiply(fpz)));
 
         // Potential of the Spacecraft
-        final DerivativeStructure potential =
-            (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
+        return (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
                 .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
-
-        return potential;
     }
 
     /**
@@ -220,11 +217,8 @@ public class CR3BPForceModel extends AbstractForceModel {
                 .add(fpy.multiply(fpy)).add(fpz.multiply(fpz)));
 
         // Potential of the Spacecraft
-        final FieldDerivativeStructure <T>fieldPotential =
-            (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
+        return (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
                 .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
-
-        return fieldPotential;
     }
 
     /** {@inheritDoc} */
