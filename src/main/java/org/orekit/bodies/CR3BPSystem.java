@@ -138,7 +138,7 @@ public class CR3BPSystem {
 
         this.mu = mu;
         this.dDim = a;
-        this.vDim = FastMath.sqrt(mu1 / dDim); // - mu * dDim));
+        this.vDim = FastMath.sqrt(mu1 / dDim);
         this.tDim = 2 * FastMath.PI * dDim / vDim;
         this.rotatingFrame = new CR3BPRotatingFrame(mu, primaryBody, secondaryBody);
 
@@ -308,10 +308,6 @@ public class CR3BPSystem {
                 lPosition = l1Position;
                 break;
 
-            default:
-                lPosition = l2Position;
-                break;
-
             case L3:
                 lPosition = l3Position;
                 break;
@@ -323,6 +319,11 @@ public class CR3BPSystem {
             case L5:
                 lPosition = l5Position;
                 break;
+
+            default:
+                lPosition = l2Position;
+                break;
+
         }
         return lPosition;
     }
