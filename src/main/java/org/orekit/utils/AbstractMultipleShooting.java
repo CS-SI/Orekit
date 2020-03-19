@@ -500,11 +500,14 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     private RealMatrix getStateTransitionMatrix(final SpacecraftState s) {
         final Map<String, double[]> map = s.getAdditionalStates();
         RealMatrix phiM = null;
-        for (String name : map.keySet()) {
+
+        for (final Map.Entry<String, double[]> entry : map.entrySet()) {
+            // Extract entry values
+            final String name = entry.getKey();
             if (additionalName.equals(name)) {
                 final int dim = 6;
                 final double[][] phi2dA = new double[dim][dim];
-                final double[] stm = map.get(name);
+                final double[] stm = entry.getValue();
                 for (int i = 0; i < dim; i++) {
                     for (int j = 0; j < 6; j++) {
                         phi2dA[i][j] = stm[dim * i + j];
@@ -513,6 +516,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
                 phiM = new Array2DRowRealMatrix(phi2dA, false);
             }
         }
+
         return phiM;
     }
 

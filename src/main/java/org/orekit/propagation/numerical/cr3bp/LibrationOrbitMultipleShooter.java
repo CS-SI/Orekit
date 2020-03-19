@@ -233,17 +233,21 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
         fxAdditionnal[5] = apvn.getVelocity().getZ() - apv0.getVelocity().getZ();
 
         int i  = 6;
-        for (int index : mapConstraints.keySet()) {
-            final int np = index / 6;
-            final int nc = index % 6;
+        for (final Map.Entry<Integer, Double> entry : mapConstraints.entrySet()) {
+            // Extract entry values
+            final int    key   = entry.getKey();
+            final double value = entry.getValue();
+            final int np = key / 6;
+            final int nc = key % 6;
             final AbsolutePVCoordinates absPv = patchedSpacecraftStates.get(np).getAbsPVA();
             if (nc < 3) {
-                fxAdditionnal[i] = absPv.getPosition().toArray()[nc] - mapConstraints.get(index);
+                fxAdditionnal[i] = absPv.getPosition().toArray()[nc] - value;
             } else {
-                fxAdditionnal[i] = absPv.getVelocity().toArray()[nc - 3] -  mapConstraints.get(index);
+                fxAdditionnal[i] = absPv.getVelocity().toArray()[nc - 3] -  value;
             }
             i++;
         }
+
         return fxAdditionnal;
     }
 
