@@ -16,12 +16,7 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.DecompositionSolver;
-import org.hipparchus.linear.QRDecomposition;
-import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
@@ -37,28 +32,22 @@ import org.orekit.utils.ParameterDriversList;
  * @see org.orekit.propagation.AbstractPropagator
  * @since 10.2
  */
-public class AbsoluteJacobiansMapper extends AbstractJacobiansMapper {
+public class AbsoluteJacobiansMapper extends JacobiansMapper {
 
     /** State dimension, fixed to 6. */
     public static final int STATE_DIMENSION = 6;
-
-    /** Selected parameters for Jacobian computation. */
-    private final ParameterDriversList parameters;
-
-    /** Name. */
-    private String name;
 
     /** Simple constructor.
      * @param name name of the Jacobians
      * @param parameters selected parameters for Jacobian computation
      */
     public AbsoluteJacobiansMapper(final String name, final ParameterDriversList parameters) {
-        super(name, parameters);
-        this.parameters = parameters;
-        this.name = name;
+        // orbit type and angle type are not used here
+        super(name, parameters, null, null);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] getConversionJacobian(final SpacecraftState state) {
 
         final double[][] identity = new double[STATE_DIMENSION][STATE_DIMENSION];
@@ -69,106 +58,6 @@ public class AbsoluteJacobiansMapper extends AbstractJacobiansMapper {
 
         return identity;
 
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * This method converts the Jacobians to Cartesian parameters and put the converted data
-     * in the one-dimensional {@code p} array.
-     * </p>
-     */
-    public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
-                             final double[][] dY1dP, final double[] p) {
-
-        // set up a converter
-        final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getConversionJacobian(state), false);
-        final DecompositionSolver solver = new QRDecomposition(dY1dC1).getSolver();
-
-        // convert the provided state Jacobian
-        final RealMatrix dC1dY0 = solver.solve(new Array2DRowRealMatrix(dY1dY0, false));
-
-        // map the converted state Jacobian to one-dimensional array
-        int index = 0;
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                p[index++] = dC1dY0.getEntry(i, j);
-            }
-        }
-
-        if (parameters.getNbParams() != 0) {
-            // convert the provided state Jacobian
-            final RealMatrix dC1dP = solver.solve(new Array2DRowRealMatrix(dY1dP, false));
-
-            // map the converted parameters Jacobian to one-dimensional array
-            for (int i = 0; i < STATE_DIMENSION; ++i) {
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
-                    p[index++] = dC1dP.getEntry(i, j);
-                }
-            }
-        }
-
-    }
-
-    /** {@inheritDoc} */
-    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0) {
-
-        // get the conversion Jacobian
-        final double[][] dYdC = getConversionJacobian(state);
-
-        // extract the additional state
-        final double[] p = state.getAdditionalState(name);
-
-        // compute dYdY0 = dYdC * dCdY0, without allocating new arrays
-        for (int i = 0; i < STATE_DIMENSION; i++) {
-            final double[] rowC = dYdC[i];
-            final double[] rowD = dYdY0[i];
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                double sum = 0;
-                int pIndex = j;
-                for (int k = 0; k < STATE_DIMENSION; ++k) {
-                    sum += rowC[k] * p[pIndex];
-                    pIndex += STATE_DIMENSION;
-                }
-                rowD[j] = sum;
-            }
-        }
-
-    }
-
-    /** {@inheritDoc} */
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
-
-        if (parameters.getNbParams() != 0) {
-
-            // get the conversion Jacobian
-            final double[][] dYdC = getConversionJacobian(state);
-
-            // extract the additional state
-            final double[] p = state.getAdditionalState(name);
-
-            // compute dYdP = dYdC * dCdP, without allocating new arrays
-            for (int i = 0; i < STATE_DIMENSION; i++) {
-                final double[] rowC = dYdC[i];
-                final double[] rowD = dYdP[i];
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
-                    double sum = 0;
-                    int pIndex = j + STATE_DIMENSION * STATE_DIMENSION;
-                    for (int k = 0; k < STATE_DIMENSION; ++k) {
-                        sum += rowC[k] * p[pIndex];
-                        pIndex += parameters.getNbParams();
-                    }
-                    rowD[j] = sum;
-                }
-            }
-
-        }
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getAdditionalStateDimension() {
-        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
     }
 
 }

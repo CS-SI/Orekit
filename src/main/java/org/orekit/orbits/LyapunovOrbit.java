@@ -63,7 +63,7 @@ public class LyapunovOrbit extends LibrationOrbit {
     /** {@inheritDoc} */
     @Override
     protected PVCoordinates applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
-        return diff.computeLyapunov();
+        return diff.compute(LibrationOrbitType.LYAPUNOV);
     }
 
 }

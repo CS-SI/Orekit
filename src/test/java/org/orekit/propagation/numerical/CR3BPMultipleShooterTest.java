@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CR3BPDifferentialCorrection;
 import org.orekit.orbits.HaloOrbit;
+import org.orekit.orbits.LibrationOrbitFamily;
 import org.orekit.orbits.LibrationOrbitType;
 import org.orekit.orbits.RichardsonExpansion;
 import org.orekit.propagation.SpacecraftState;
@@ -52,7 +53,7 @@ public class CR3BPMultipleShooterTest {
         
         final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitType.NORTHERN);
+        final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
 
         // Adaptive stepsize boundaries
         final double minStep = 1E-12;
@@ -142,7 +143,7 @@ public class CR3BPMultipleShooterTest {
     @Test(expected=OrekitException.class)
     public void testLagrangianError() {
         CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
-        final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitType.NORTHERN);
+        final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
         h.getClass();
     }
 
@@ -156,8 +157,7 @@ public class CR3BPMultipleShooterTest {
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 
         final PVCoordinates initialConditions =
-                        new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)
-                        .computeHalo();
+                        new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod).compute(LibrationOrbitType.HALO);
         initialConditions.toString();
     }
 
@@ -173,7 +173,7 @@ public class CR3BPMultipleShooterTest {
 
         // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
         // of 8 000 km
-        HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitType.SOUTHERN);
+        HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.SOUTHERN);
 
         final PVCoordinates pv = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 

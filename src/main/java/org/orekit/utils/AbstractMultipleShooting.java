@@ -521,18 +521,71 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         return phiM;
     }
 
-    /** Compute the additional constraints.
-     *  @param propagatedSP propagated SpacecraftState
-     *  @return fxAdditionnal additional constraints
-     */
-    protected abstract double[] computeAdditionalConstraints(List<SpacecraftState> propagatedSP);
-
     /** Compute a part of the Jacobian matrix with derivatives from epoch.
      * The CR3BP is a time invariant problem. The derivatives w.r.t. epoch are zero.
      *  @param propagatedSP propagatedSP
      *  @return jacobianMatrix Jacobian sub-matrix
      */
-    protected abstract double[][] computeEpochJacobianMatrix(List<SpacecraftState> propagatedSP);
+    protected double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+
+        final boolean[] map = getFreeEpochMap();
+
+        final int nFreeEpoch = getNumberOfFreeEpoch();
+        final int ncolumns = 1 + nFreeEpoch;
+        final int nrows = patchedSpacecraftStates.size() - 1;
+
+        final double[][] M = new double[nrows][ncolumns];
+
+        // The Jacobian matrix has the following form:
+
+        //      [-1 -1   1  0                 ]
+        //      [-1     -1   1  0             ]
+        // F =  [..          ..   ..          ]
+        //      [..               ..   ..   0 ]
+        //      [-1                    -1   1 ]
+
+        int index = 1;
+        for (int i = 0; i < nrows; i++) {
+            M[i][0] = -1;
+            if (map[i]) {
+                M[i][index] = -1;
+                index++;
+            }
+            if (map[i + 1]) {
+                M[i][index] =  1;
+            }
+        }
+
+        return M;
+    }
+
+    /** Update the array of additional constraints.
+     * @param startIndex start index
+     * @param fxAdditional array of additional constraints
+     */
+    protected void updateAdditionalConstraints(final int startIndex, final double[] fxAdditional) {
+        int iter = startIndex;
+        for (final Map.Entry<Integer, Double> entry : getConstraintsMap().entrySet()) {
+            // Extract entry values
+            final int    key   = entry.getKey();
+            final double value = entry.getValue();
+            final int np = key / 6;
+            final int nc = key % 6;
+            final AbsolutePVCoordinates absPv = getPatchedSpacecraftState().get(np).getAbsPVA();
+            if (nc < 3) {
+                fxAdditional[iter] = absPv.getPosition().toArray()[nc] - value;
+            } else {
+                fxAdditional[iter] = absPv.getVelocity().toArray()[nc - 3] -  value;
+            }
+            iter++;
+        }
+    }
+
+    /** Compute the additional constraints.
+     *  @param propagatedSP propagated SpacecraftState
+     *  @return fxAdditionnal additional constraints
+     */
+    protected abstract double[] computeAdditionalConstraints(List<SpacecraftState> propagatedSP);
 
     /** Compute a part of the Jacobian matrix from additional constraints.
      *  @param propagatedSP propagatedSP

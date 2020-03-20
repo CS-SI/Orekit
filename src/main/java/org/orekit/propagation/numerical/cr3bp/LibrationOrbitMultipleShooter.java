@@ -162,40 +162,6 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
-    protected double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
-
-        final boolean[] freeEpochMap = getFreeEpochMap();
-
-        final int nFreeEpoch = getNumberOfFreeEpoch();
-        final int ncolumns = 1 + nFreeEpoch;
-        final int nrows = npoints - 1;
-
-        final double[][] M = new double[nrows][ncolumns];
-
-        // The Jacobian matrix has the following form:
-
-        //      [-1 -1   1  0                 ]
-        //      [-1     -1   1  0             ]
-        // F =  [..          ..   ..          ]
-        //      [..               ..   ..   0 ]
-        //      [-1                    -1   1 ]
-
-        int index = 1;
-        for (int i = 0; i < nrows; i++) {
-            M[i][0] = -1;
-            if (freeEpochMap[i]) {
-                M[i][index] = -1;
-                index++;
-            }
-            if (freeEpochMap[i + 1]) {
-                M[i][index] =  1;
-            }
-        }
-
-        return M;
-    }
-
-    /** {@inheritDoc} */
     protected double[] computeAdditionalConstraints(final List<SpacecraftState> propagatedSP) {
 
         // The additional constraint vector has the following form :
@@ -232,22 +198,8 @@ public class LibrationOrbitMultipleShooter extends AbstractMultipleShooting {
         fxAdditionnal[4] = apvn.getVelocity().getY() - apv0.getVelocity().getY();
         fxAdditionnal[5] = apvn.getVelocity().getZ() - apv0.getVelocity().getZ();
 
-        int i  = 6;
-        for (final Map.Entry<Integer, Double> entry : mapConstraints.entrySet()) {
-            // Extract entry values
-            final int    key   = entry.getKey();
-            final double value = entry.getValue();
-            final int np = key / 6;
-            final int nc = key % 6;
-            final AbsolutePVCoordinates absPv = patchedSpacecraftStates.get(np).getAbsPVA();
-            if (nc < 3) {
-                fxAdditionnal[i] = absPv.getPosition().toArray()[nc] - value;
-            } else {
-                fxAdditionnal[i] = absPv.getVelocity().toArray()[nc - 3] -  value;
-            }
-            i++;
-        }
-
+        // Update additional constraints
+        updateAdditionalConstraints(6, fxAdditionnal);
         return fxAdditionnal;
     }
 

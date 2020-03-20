@@ -44,9 +44,9 @@ public class HaloOrbitTest {
     public void testHaloOrbit() {
 	    CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 	    final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
-	    final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitType.NORTHERN);
+	    final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
 	    final HaloOrbit h2 = new HaloOrbit(syst, firstGuess, 2.0);
-	    final HaloOrbit h3 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L2), 8E6, LibrationOrbitType.SOUTHERN);
+	    final HaloOrbit h3 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L2), 8E6, LibrationOrbitFamily.SOUTHERN);
 
 	    final double orbitalPeriod1 = h1.getOrbitalPeriod();
 	    final double orbitalPeriod2 = h2.getOrbitalPeriod();
@@ -83,7 +83,7 @@ public class HaloOrbitTest {
     @Test(expected=OrekitException.class)
     	public void testLagrangianError() {
     	CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
-    	final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitType.NORTHERN);
+    	final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
     	h.getClass();
     }
 
@@ -102,7 +102,7 @@ public class HaloOrbitTest {
 
         // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
         // of 8 000 km
-        HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitType.SOUTHERN);
+        HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.SOUTHERN);
 
         final double orbitalPeriod = h.getOrbitalPeriod();
 
@@ -111,8 +111,7 @@ public class HaloOrbitTest {
         final PVCoordinates firstGuess = h.getInitialPV();
 
         final PVCoordinates initialConditions =
-            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)
-                .computeHalo();
+            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod).compute(LibrationOrbitType.HALO);
 
         final AbsolutePVCoordinates initialAbsPV =
             new AbsolutePVCoordinates(Frame, initialDate, initialConditions);
@@ -176,8 +175,7 @@ public class HaloOrbitTest {
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 
         final PVCoordinates initialConditions =
-            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)
-                .computeHalo();
+            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod).compute(LibrationOrbitType.HALO);
         initialConditions.toString();
     }
 
@@ -193,7 +191,7 @@ public class HaloOrbitTest {
 
         // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
         // of 8 000 km
-        HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitType.SOUTHERN);
+        HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.SOUTHERN);
 
         final PVCoordinates pv = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 

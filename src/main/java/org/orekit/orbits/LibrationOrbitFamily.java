@@ -16,17 +16,20 @@
  */
 package org.orekit.orbits;
 
-/**
- * Enumerate for {@link LibrationOrbit Libration Orbit} type.
- * @author Bryan Cazabonne
+
+/** Enumerate for {@link LibrationOrbit Libration Orbit} family.
+ * <p>
+ * The Northern and Southern families of Libration orbits are
+ * related to through symmetry.
+ * </p>
+ * @author Vincent Mouraux
  * @since 10.2
  */
-public enum LibrationOrbitType {
+public enum LibrationOrbitFamily {
 
-    /** Halo orbit type. */
-    HALO,
+    /** Northern. */
+    NORTHERN,
 
-    /** Lyapunov orbit type. */
-    LYAPUNOV;
-
+    /** Southern. */
+    SOUTHERN;
 }

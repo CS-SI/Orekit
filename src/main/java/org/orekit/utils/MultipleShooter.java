@@ -33,9 +33,6 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  */
 public class MultipleShooter extends AbstractMultipleShooting {
 
-    /** Number of patch points. */
-    private int npoints;
-
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
      * @param initialGuessList initial patch points to be corrected.
@@ -47,7 +44,6 @@ public class MultipleShooter extends AbstractMultipleShooting {
     public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
                            final List<AdditionalEquations> additionalEquations, final double arcDuration, final double tolerance) {
         super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, "derivatives");
-        this.npoints = initialGuessList.size();
     }
 
     /** {@inheritDoc} */
@@ -74,72 +70,19 @@ public class MultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
-    protected double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
-
-        final boolean[] freeEpochMap = getFreeEpochMap();
-
-        final int nFreeEpoch = getNumberOfFreeEpoch();
-        final int ncolumns = 1 + nFreeEpoch;
-        final int nrows = npoints - 1;
-
-        final double[][] M = new double[nrows][ncolumns];
-
-        // The Jacobian matrix has the following form:
-
-        //      [-1 -1   1  0                 ]
-        //      [-1     -1   1  0             ]
-        // F =  [..          ..   ..          ]
-        //      [..               ..   ..   0 ]
-        //      [-1                    -1   1 ]
-
-        int index = 1;
-        for (int i = 0; i < nrows; i++) {
-            M[i][0] = -1;
-            if (freeEpochMap[i]) {
-                M[i][index] = -1;
-                index++;
-            }
-            if (freeEpochMap[i + 1]) {
-                M[i][index] =  1;
-            }
-        }
-
-        return M;
-    }
-
-    /** {@inheritDoc} */
     protected double[] computeAdditionalConstraints(final List<SpacecraftState> propagatedSP) {
-
         // The additional constraint vector has the following form :
 
         //           [ y1i - y1d ]---- other constraints (component of
         // Fadd(X) = [    ...    ]    | a patch point eaquals to a
         //           [vz2i - vz2d]----  desired value)
 
-        final Map<Integer, Double> mapConstraints = getConstraintsMap();
         // Number of additional constraints
-        final int n = mapConstraints.size();
-
-        final List<SpacecraftState> patchedSpacecraftStates = getPatchedSpacecraftState();
-
+        final int      n             = getConstraintsMap().size();
         final double[] fxAdditionnal = new double[n];
-        int i = 0;
 
-        for (final Map.Entry<Integer, Double> entry : mapConstraints.entrySet()) {
-            // Extract entry values
-            final int    key   = entry.getKey();
-            final double value = entry.getValue();
-            final int np = key / 6;
-            final int nc = key % 6;
-            final AbsolutePVCoordinates absPv = patchedSpacecraftStates.get(np).getAbsPVA();
-            if (nc < 3) {
-                fxAdditionnal[i] = absPv.getPosition().toArray()[nc] - value;
-            } else {
-                fxAdditionnal[i] = absPv.getVelocity().toArray()[nc - 3] - value;
-            }
-            i++;
-        }
-
+        // Update additional constraints
+        updateAdditionalConstraints(0, fxAdditionnal);
         return fxAdditionnal;
     }
 

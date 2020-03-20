@@ -177,10 +177,10 @@ public class EpochDerivativesEquations implements AdditionalEquations {
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
-        final int stateDimension = 6;
-        final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        final double[][] dYdP  = new double[stateDimension][selected.getNbParams() + 6];
-        for (int i = 0; i < stateDimension; ++i) {
+        final int epochStateDimension = 6;
+        final double[][] dYdY0 = new double[epochStateDimension][epochStateDimension];
+        final double[][] dYdP  = new double[epochStateDimension][selected.getNbParams() + 6];
+        for (int i = 0; i < epochStateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
         return setInitialJacobians(s0, dYdY0, dYdP);
@@ -211,21 +211,21 @@ public class EpochDerivativesEquations implements AdditionalEquations {
         freezeParametersSelection();
 
         // Check dimensions
-        final int stateDim = dY1dY0.length;
-        if (stateDim != 6 || stateDim != dY1dY0[0].length) {
+        final int stateDimEpoch = dY1dY0.length;
+        if (stateDimEpoch != 6 || stateDimEpoch != dY1dY0[0].length) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_6X6,
-                                      stateDim, dY1dY0[0].length);
+                                      stateDimEpoch, dY1dY0[0].length);
         }
-        if (dY1dP != null && stateDim != dY1dP.length) {
+        if (dY1dP != null && stateDimEpoch != dY1dP.length) {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
-                                      stateDim, dY1dP.length);
+                                      stateDimEpoch, dY1dP.length);
         }
 
         // store the matrices as a single dimension array
         initialized = true;
-        final AbsoluteJacobiansMapper mapper = getMapper();
-        final double[] p = new double[mapper.getAdditionalStateDimension() + 6];
-        mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
+        final AbsoluteJacobiansMapper absoluteMapper = getMapper();
+        final double[] p = new double[absoluteMapper.getAdditionalStateDimension() + 6];
+        absoluteMapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
         // set value in propagator
         return s1.addAdditionalState(name, p);
@@ -249,11 +249,11 @@ public class EpochDerivativesEquations implements AdditionalEquations {
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
 
         // initialize acceleration Jacobians to zero
-        final int paramDim = selected.getNbParams() + 1; // added epoch
-        final int dim = 3;
-        final double[][] dAccdParam = new double[dim][paramDim];
-        final double[][] dAccdPos   = new double[dim][dim];
-        final double[][] dAccdVel   = new double[dim][dim];
+        final int paramDimEpoch = selected.getNbParams() + 1; // added epoch
+        final int dimEpoch      = 3;
+        final double[][] dAccdParam = new double[dimEpoch][paramDimEpoch];
+        final double[][] dAccdPos   = new double[dimEpoch][dimEpoch];
+        final double[][] dAccdVel   = new double[dimEpoch][dimEpoch];
 
         final DSConverter fullConverter    = new DSConverter(s, 6, propagator.getAttitudeProvider());
         final DSConverter posOnlyConverter = new DSConverter(s, 3, propagator.getAttitudeProvider());
@@ -285,12 +285,13 @@ public class EpochDerivativesEquations implements AdditionalEquations {
                 }
             }
 
+            // Add the derivatives of the acceleration w.r.t. the Epoch
             if (forceModel instanceof ThirdBodyAttractionEpoch) {
                 final double[] parametersValues = new double[] {parameters[0].getValue()};
                 final double[] derivatives = ((ThirdBodyAttractionEpoch) forceModel).getDerivativesToEpoch(s, parametersValues);
-                dAccdParam[0][paramDim - 1] += derivatives[0];
-                dAccdParam[1][paramDim - 1] += derivatives[1];
-                dAccdParam[2][paramDim - 1] += derivatives[2];
+                dAccdParam[0][paramDimEpoch - 1] += derivatives[0];
+                dAccdParam[1][paramDimEpoch - 1] += derivatives[1];
+                dAccdParam[2][paramDimEpoch - 1] += derivatives[2];
             }
 
         }
@@ -322,20 +323,20 @@ public class EpochDerivativesEquations implements AdditionalEquations {
         // copy C and E into Adot and Bdot
         final int stateDim = 6;
         final double[] p = s.getAdditionalState(getName());
-        System.arraycopy(p, dim * stateDim, pDot, 0, dim * stateDim);
+        System.arraycopy(p, dimEpoch * stateDim, pDot, 0, dimEpoch * stateDim);
 
         // compute Cdot and Ddot
-        for (int i = 0; i < dim; ++i) {
+        for (int i = 0; i < dimEpoch; ++i) {
             final double[] dAdPi = dAccdPos[i];
             final double[] dAdVi = dAccdVel[i];
             for (int j = 0; j < stateDim; ++j) {
-                pDot[(dim + i) * stateDim + j] =
+                pDot[(dimEpoch + i) * stateDim + j] =
                     dAdPi[0] * p[j]                + dAdPi[1] * p[j +     stateDim] + dAdPi[2] * p[j + 2 * stateDim] +
                     dAdVi[0] * p[j + 3 * stateDim] + dAdVi[1] * p[j + 4 * stateDim] + dAdVi[2] * p[j + 5 * stateDim];
             }
         }
 
-        for (int k = 0; k < paramDim; ++k) {
+        for (int k = 0; k < paramDimEpoch; ++k) {
             // the variational equations of the parameters Jacobian matrix are computed
             // one column at a time, they have the following form:
             // [      ]   [                 |                  ]   [   ]   [                  ]
@@ -360,18 +361,18 @@ public class EpochDerivativesEquations implements AdditionalEquations {
 
             // copy F into Edot
             final int columnTop = stateDim * stateDim + k;
-            pDot[columnTop]                = p[columnTop + 3 * paramDim];
-            pDot[columnTop +     paramDim] = p[columnTop + 4 * paramDim];
-            pDot[columnTop + 2 * paramDim] = p[columnTop + 5 * paramDim];
+            pDot[columnTop]                     = p[columnTop + 3 * paramDimEpoch];
+            pDot[columnTop +     paramDimEpoch] = p[columnTop + 4 * paramDimEpoch];
+            pDot[columnTop + 2 * paramDimEpoch] = p[columnTop + 5 * paramDimEpoch];
 
             // compute Fdot
-            for (int i = 0; i < dim; ++i) {
-                final double[] dAdPi = dAccdPos[i];
-                final double[] dAdVi = dAccdVel[i];
-                pDot[columnTop + (dim + i) * paramDim] =
+            for (int i = 0; i < dimEpoch; ++i) {
+                final double[] dAdP = dAccdPos[i];
+                final double[] dAdV = dAccdVel[i];
+                pDot[columnTop + (dimEpoch + i) * paramDimEpoch] =
                     dAccdParam[i][k] +
-                    dAdPi[0] * p[columnTop]                + dAdPi[1] * p[columnTop +     paramDim] + dAdPi[2] * p[columnTop + 2 * paramDim] +
-                    dAdVi[0] * p[columnTop + 3 * paramDim] + dAdVi[1] * p[columnTop + 4 * paramDim] + dAdVi[2] * p[columnTop + 5 * paramDim];
+                    dAdP[0] * p[columnTop]                     + dAdP[1] * p[columnTop +     paramDimEpoch] + dAdP[2] * p[columnTop + 2 * paramDimEpoch] +
+                    dAdV[0] * p[columnTop + 3 * paramDimEpoch] + dAdV[1] * p[columnTop + 4 * paramDimEpoch] + dAdV[2] * p[columnTop + 5 * paramDimEpoch];
             }
 
         }

@@ -84,7 +84,7 @@ public class LyapunovOrbitTest {
     @Test(expected=OrekitException.class)
 	    public void testLagrangianError() {
 	    CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
-	    final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitType.NORTHERN);
+	    final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
 	    h.getClass();
     }
     
@@ -165,8 +165,7 @@ public class LyapunovOrbitTest {
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 
         final PVCoordinates initialConditions =
-            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod)
-                .computeLyapunov();
+            new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod).compute(LibrationOrbitType.LYAPUNOV);
         initialConditions.toString();
     }
     

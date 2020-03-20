@@ -55,7 +55,7 @@ public class HaloOrbit extends LibrationOrbit {
      * @param type type of the Halo Orbit (Northern or Southern)
      */
     public HaloOrbit(final RichardsonExpansion richardson,
-                     final double az, final LibrationOrbitType type) {
+                     final double az, final LibrationOrbitFamily type) {
         super(richardson.getCr3bpSystem(),
               richardson.computeHaloFirstGuess(az, type, 0.0, 0.0),
               richardson.getHaloOrbitalPeriod(az));
@@ -64,7 +64,7 @@ public class HaloOrbit extends LibrationOrbit {
     /** {@inheritDoc} */
     @Override
     protected PVCoordinates applyCorrectionOnPV(final CR3BPDifferentialCorrection diff) {
-        return diff.computeHalo();
+        return diff.compute(LibrationOrbitType.HALO);
     }
 
 }

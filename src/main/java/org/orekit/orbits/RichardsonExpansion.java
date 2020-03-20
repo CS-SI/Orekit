@@ -212,7 +212,7 @@ public class RichardsonExpansion {
      * @param phi Orbit phase, rad
      * @return firstGuess PVCoordinates of the first guess
     */
-    public PVCoordinates computeHaloFirstGuess(final double azr, final LibrationOrbitType type,
+    public PVCoordinates computeHaloFirstGuess(final double azr, final LibrationOrbitFamily type,
                                            final double t, final double phi) {
 
         // Z-Axis Halo Orbit Amplitude
@@ -223,7 +223,7 @@ public class RichardsonExpansion {
         final double nu   = 1.0 + s1 * ax * ax + s2 * az * az;
         final double tau  = nu * t;
         final double tau1 = wp * tau + phi;
-        final double m    = (type == LibrationOrbitType.NORTHERN) ? 1 : 3;
+        final double m    = (type == LibrationOrbitFamily.NORTHERN) ? 1 : 3;
         final double dm   = 2 - m;
 
         // First guess position relative to its Lagrangian point

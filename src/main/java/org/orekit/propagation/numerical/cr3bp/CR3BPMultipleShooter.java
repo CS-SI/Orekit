@@ -95,6 +95,7 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
         final int nFreeEpoch = getNumberOfFreeEpoch();
         // Rows and columns dimensions
@@ -144,21 +145,8 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
             i = 6;
         }
 
-        for (final Map.Entry<Integer, Double> entry : mapConstraints.entrySet()) {
-            // Extract entry values
-            final int    key   = entry.getKey();
-            final double value = entry.getValue();
-            final int np = key / 6;
-            final int nc = key % 6;
-            final AbsolutePVCoordinates absPv = patchedSpacecraftStates.get(np).getAbsPVA();
-            if (nc < 3) {
-                fxAdditionnal[i] = absPv.getPosition().toArray()[nc] - value;
-            } else {
-                fxAdditionnal[i] = absPv.getVelocity().toArray()[nc - 3] -  value;
-            }
-            i++;
-        }
-
+        // Update additional constraints
+        updateAdditionalConstraints(i, fxAdditionnal);
         return fxAdditionnal;
     }
 

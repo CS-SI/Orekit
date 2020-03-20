@@ -28,7 +28,6 @@ import org.orekit.bodies.CR3BPSystem;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -127,25 +126,13 @@ public class CR3BPDifferentialCorrection {
 
     }
 
-    /** Return the real starting PVCoordinates on the Halo orbit after differential correction from a first guess.
+    /**
+     * Return the real starting PVCoordinates on the Libration orbit type
+     * after differential correction from a first guess.
+     * @param type libration orbit type
      * @return pv Position-Velocity of the starting point on the Halo Orbit
      */
-    public PVCoordinates computeHalo() {
-
-        // number of iteration
-        double iter = 0;
-
-        // Time settings (this date has no effect on the result, this is only for code structure purpose)
-        final AbsoluteDate initialDate = new AbsoluteDate(1996, 06, 25, 0, 0, 00.000, utc);
-
-        final Frame rotatingFrame = syst.getRotatingFrame();
-
-        // Initializing PVCoordinates with first guess
-        PVCoordinates pv = firstGuess;
-
-        // Maximum integration Time to cross XZ plane equals to one full orbit.
-        final double integrationTime = orbitalPeriodApprox;
-
+    public PVCoordinates compute(final LibrationOrbitType type) {
         // Event detector settings
         final double maxcheck = 10;
         final double threshold = 1E-10;
@@ -172,25 +159,44 @@ public class CR3BPDifferentialCorrection {
         // Add previously set event detector to the propagator
         propagator.addEventDetector(XZPlaneCrossing);
 
+        return type == LibrationOrbitType.HALO ? computeHalo(stm) : computeLyapunov(stm);
+    }
+
+    /** Return the real starting PVCoordinates on the Halo orbit after
+     * differential correction from a first guess.
+     * @param stm additional equations
+     * @return pv Position-Velocity of the starting point on the Halo Orbit
+     */
+    private PVCoordinates computeHalo(final STMEquations stm) {
+
+        // number of iteration
+        double iHalo = 0;
+
+        // Time settings (this date has no effect on the result, this is only for code structure purpose)
+        final AbsoluteDate startDateHalo = new AbsoluteDate(1996, 06, 25, 0, 0, 00.000, utc);
+
+        // Initializing PVCoordinates with first guess
+        PVCoordinates pvHalo = firstGuess;
+
         // Start a new differentially corrected propagation until it converges to a Halo Orbit
         do {
 
             // SpacecraftState initialization
-            final AbsolutePVCoordinates initialAbsPV = new AbsolutePVCoordinates(rotatingFrame, initialDate, pv);
-            final SpacecraftState       initialState = new SpacecraftState(initialAbsPV);
+            final AbsolutePVCoordinates initialAbsPVHalo = new AbsolutePVCoordinates(syst.getRotatingFrame(), startDateHalo, pvHalo);
+            final SpacecraftState       initialStateHalo = new SpacecraftState(initialAbsPVHalo);
 
             // Additional equations initialization
-            final SpacecraftState augmentedInitialState = stm.setInitialPhi(initialState);
+            final SpacecraftState augmentedInitialStateHalo = stm.setInitialPhi(initialStateHalo);
 
             // boolean changed to true by crossing XZ plane during propagation. Has to be true for the differential correction to converge
             cross = false;
 
             // Propagator initialization
-            propagator.setInitialState(augmentedInitialState);
+            propagator.setInitialState(augmentedInitialStateHalo);
 
             // Propagate until trajectory crosses XZ Plane
-            final SpacecraftState finalState =
-                propagator.propagate(initialDate.shiftedBy(integrationTime));
+            final SpacecraftState finalStateHalo =
+                propagator.propagate(startDateHalo.shiftedBy(orbitalPeriodApprox));
 
             // Stops computation if trajectory did not cross XZ Plane after one full orbital period
             if (cross == false) {
@@ -198,29 +204,29 @@ public class CR3BPDifferentialCorrection {
             }
 
             // Get State Transition Matrix phi
-            final RealMatrix phi = stm.getStateTransitionMatrix(finalState);
+            final RealMatrix phiHalo = stm.getStateTransitionMatrix(finalStateHalo);
 
             // Gap from desired X and Z axis velocity value ()
-            final double dvxf = -finalState.getPVCoordinates().getVelocity().getX();
-            final double dvzf = -finalState.getPVCoordinates().getVelocity().getZ();
+            final double dvxf = -finalStateHalo.getPVCoordinates().getVelocity().getX();
+            final double dvzf = -finalStateHalo.getPVCoordinates().getVelocity().getZ();
 
-            orbitalPeriod = 2 * finalState.getDate().durationFrom(initialDate);
+            orbitalPeriod = 2 * finalStateHalo.getDate().durationFrom(startDateHalo);
 
             if (FastMath.abs(dvxf) > 1E-8 || FastMath.abs(dvzf) > 1E-8) {
                 // Y axis velocity
                 final double vy =
-                    finalState.getPVCoordinates().getVelocity().getY();
+                    finalStateHalo.getPVCoordinates().getVelocity().getY();
 
                 // Spacecraft acceleration
-                final Vector3D acc  = finalState.getPVCoordinates().getAcceleration();
+                final Vector3D acc  = finalStateHalo.getPVCoordinates().getAcceleration();
                 final double   accx = acc.getX();
                 final double   accz = acc.getZ();
 
                 // Compute A coefficients
-                final double a11 = phi.getEntry(3, 0) - accx * phi.getEntry(1, 0) / vy;
-                final double a12 = phi.getEntry(3, 4) - accx * phi.getEntry(1, 4) / vy;
-                final double a21 = phi.getEntry(5, 0) - accz * phi.getEntry(1, 0) / vy;
-                final double a22 = phi.getEntry(5, 4) - accz * phi.getEntry(1, 4) / vy;
+                final double a11 = phiHalo.getEntry(3, 0) - accx * phiHalo.getEntry(1, 0) / vy;
+                final double a12 = phiHalo.getEntry(3, 4) - accx * phiHalo.getEntry(1, 4) / vy;
+                final double a21 = phiHalo.getEntry(5, 0) - accz * phiHalo.getEntry(1, 0) / vy;
+                final double a22 = phiHalo.getEntry(5, 4) - accz * phiHalo.getEntry(1, 4) / vy;
 
                 // A determinant used for matrix inversion
                 final double aDet = a11 * a22 - a21 * a12;
@@ -230,90 +236,61 @@ public class CR3BPDifferentialCorrection {
                 final double deltavy0 = (-a21 * dvxf + a11 * dvzf) / aDet;
 
                 // Computation of the corrected initial PVCoordinates
-                final double newx  = pv.getPosition().getX() + deltax0;
-                final double newvy = pv.getVelocity().getY() + deltavy0;
+                final double newx  = pvHalo.getPosition().getX() + deltax0;
+                final double newvy = pvHalo.getVelocity().getY() + deltavy0;
 
-                pv = new PVCoordinates(new Vector3D(newx,
-                                                    pv.getPosition().getY(),
-                                                    pv.getPosition().getZ()),
-                                      new Vector3D(pv.getVelocity().getX(),
-                                                   newvy,
-                                                   pv.getVelocity().getZ()));
-                ++iter;
+                pvHalo = new PVCoordinates(new Vector3D(newx,
+                                                        pvHalo.getPosition().getY(),
+                                                        pvHalo.getPosition().getZ()),
+                                           new Vector3D(pvHalo.getVelocity().getX(),
+                                                        newvy,
+                                                        pvHalo.getVelocity().getZ()));
+                ++iHalo;
             } else {
                 break;
             }
 
-        } while (iter < 30);  // Converge within 1E-8 tolerance and under 5 iterations
+        } while (iHalo < 30);  // Converge within 1E-8 tolerance and under 5 iterations
 
         // Return
-        return pv;
+        return pvHalo;
     }
 
-    /** Return the real starting PVCoordinates on the Lyapunov orbit after differential correction from a first guess.
+    /** Return the real starting PVCoordinates on the Lyapunov orbit after
+     * differential correction from a first guess.
+     * @param stm additional equations
      * @return pv Position-Velocity of the starting point on the Lyapunov Orbit
      */
-    public PVCoordinates computeLyapunov() {
+    public PVCoordinates computeLyapunov(final STMEquations stm) {
 
         // number of iteration
-        double iter = 0;
+        double iLyapunov = 0;
 
         // Time settings (this date has no effect on the result, this is only for code structure purpose)
-        final AbsoluteDate initialDate = new AbsoluteDate(1996, 06, 25, 0, 0, 00.000, utc);
-
-        final Frame rotatingFrame = syst.getRotatingFrame();
+        final AbsoluteDate startDateLyapunov = new AbsoluteDate(1996, 06, 25, 0, 0, 00.000, utc);
 
         // Initializing PVCoordinates with first guess
-        PVCoordinates pv = firstGuess;
-
-        // Maximum integration Time to cross XZ plane equals to one full orbit.
-        final double integrationTime = orbitalPeriodApprox;
-
-        // Event detector settings
-        final double maxcheck = 10;
-        final double threshold = 1E-10;
-
-        // Event detector definition
-        final EventDetector XZPlaneCrossing =
-            new HaloXZPlaneCrossingDetector(maxcheck, threshold).withHandler(new PlaneCrossingHandler());
-
-        // Additional equations set in order to compute the State Transition Matrix along the propagation
-        final STMEquations stm = new STMEquations(syst);
-
-        // CR3BP has no defined orbit type
-        propagator.setOrbitType(null);
-
-        // CR3BP has central Attraction
-        propagator.setIgnoreCentralAttraction(true);
-
-        // Add CR3BP Force Model to the propagator
-        propagator.addForceModel(new CR3BPForceModel(syst));
-
-        // Add previously set additional equations to the propagator
-        propagator.addAdditionalEquations(stm);
-
-        // Add previously set event detector to the propagator
-        propagator.addEventDetector(XZPlaneCrossing);
+        PVCoordinates pvLyapunov = firstGuess;
 
         // Start a new differentially corrected propagation until it converges to a Halo Orbit
         do {
 
             // SpacecraftState initialization
-            final AbsolutePVCoordinates initialAbsPV = new AbsolutePVCoordinates(rotatingFrame, initialDate, pv);
-            final SpacecraftState       initialState = new SpacecraftState(initialAbsPV);
+            final AbsolutePVCoordinates initialAbsPVLyapunov = new AbsolutePVCoordinates(syst.getRotatingFrame(), startDateLyapunov, pvLyapunov);
+            final SpacecraftState       initialStateLyapunov = new SpacecraftState(initialAbsPVLyapunov);
 
             // Additional equations initialization
-            final SpacecraftState augmentedInitialState = stm.setInitialPhi(initialState);
+            final SpacecraftState augmentedInitialStateLyapunov = stm.setInitialPhi(initialStateLyapunov);
 
             // boolean changed to true by crossing XZ plane during propagation. Has to be true for the differential correction to converge
             cross = false;
 
             // Propagator initialization
-            propagator.setInitialState(augmentedInitialState);
+            propagator.setInitialState(augmentedInitialStateLyapunov);
 
             // Propagate until trajectory crosses XZ Plane
-            final SpacecraftState finalState =
-                propagator.propagate(initialDate.shiftedBy(integrationTime));
+            final SpacecraftState finalStateLyapunov =
+                propagator.propagate(startDateLyapunov.shiftedBy(orbitalPeriodApprox));
 
             // Stops computation if trajectory did not cross XZ Plane after one full orbital period
             if (cross == false) {
@@ -321,40 +298,42 @@ public class CR3BPDifferentialCorrection {
             }
 
             // Get State Transition Matrix phi
-            final RealMatrix phi = stm.getStateTransitionMatrix(finalState);
+            final RealMatrix phi = stm.getStateTransitionMatrix(finalStateLyapunov);
 
             // Gap from desired y position and x velocity value ()
-            final double dvxf = -finalState.getPVCoordinates().getVelocity().getX();
+            final double dvxf = -finalStateLyapunov.getPVCoordinates().getVelocity().getX();
 
-            orbitalPeriod = 2 * finalState.getDate().durationFrom(initialDate);
+            orbitalPeriod = 2 * finalStateLyapunov.getDate().durationFrom(startDateLyapunov);
 
             if (FastMath.abs(dvxf) > 1E-14) {
                 // Y axis velocity
-                final double vy = finalState.getPVCoordinates().getVelocity().getY();
+                final double vy = finalStateLyapunov.getPVCoordinates().getVelocity().getY();
 
                 // Spacecraft acceleration
-                final double accy = finalState.getPVCoordinates().getAcceleration().getY();
+                final double accy = finalStateLyapunov.getPVCoordinates().getAcceleration().getY();
 
                 // Compute A coefficients
                 final double deltavy0 = dvxf / (phi.getEntry(3, 4) - accy * phi.getEntry(1, 4) / vy);
 
                 // Computation of the corrected initial PVCoordinates
-                final double newvy = pv.getVelocity().getY() + deltavy0;
+                final double newvy = pvLyapunov.getVelocity().getY() + deltavy0;
 
-                pv = new PVCoordinates(new Vector3D(pv.getPosition().getX(),
-                                                    pv.getPosition().getY(), 0),
-                                       new Vector3D(pv.getVelocity().getX(),
-                                                    newvy, 0));
+                pvLyapunov = new PVCoordinates(new Vector3D(pvLyapunov.getPosition().getX(),
+                                                            pvLyapunov.getPosition().getY(),
+                                                            0),
+                                               new Vector3D(pvLyapunov.getVelocity().getX(),
+                                                            newvy,
+                                                            0));
 
-                ++iter;
+                ++iLyapunov;
             } else {
                 break;
             }
 
-        } while (iter < 30); // Converge within 1E-8 tolerance and under 5 iterations
+        } while (iLyapunov < 30); // Converge within 1E-8 tolerance and under 5 iterations
 
         // Return
-        return pv;
+        return pvLyapunov;
     }
 
     /** Get the orbital period of the required orbit.
