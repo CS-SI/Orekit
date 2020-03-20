@@ -52,37 +52,37 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testgetRotatingFrame() {
+    public void testGetRotatingFrame() {
     	final Frame baryFrame = CR3BPFactory.getSunEarthCR3BP().getRotatingFrame();
     	Assert.assertNotNull(baryFrame);
     }
 
     @Test
-    public void testgetPrimary() {
+    public void testGetPrimary() {
     	final CelestialBody primaryBody = CR3BPFactory.getSunEarthCR3BP().getPrimary();
     	Assert.assertNotNull(primaryBody);
     }
 
     @Test
-    public void testgetSecondary() {
+    public void testGetSecondary() {
     	final CelestialBody secondaryBody = CR3BPFactory.getSunEarthCR3BP().getSecondary();
     	Assert.assertNotNull(secondaryBody);	
     }
 
     @Test
-    public void testgetMu() {
+    public void testGetMu() {
     	final double mu = CR3BPFactory.getSunJupiterCR3BP().getMassRatio();
     	Assert.assertNotNull(mu);
     }
 
     @Test
-    public void testgetName() {
+    public void testGetName() {
     	final String name = CR3BPFactory.getSunEarthCR3BP().getName();
     	Assert.assertNotNull(name);
     }
 
     @Test
-    public void testgetLPos() {
+    public void testGetLPos() {
     	final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 	
     	final Vector3D l1Position = syst.getLPosition(LagrangianPoints.L1);
@@ -112,7 +112,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testgetGamma() {
+    public void testGetGamma() {
     	final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
     
     	final double l1Gamma = syst.getGamma(LagrangianPoints.L1);
@@ -128,7 +128,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testgetRealAPV() {
+    public void testGetRealAPV() {
         
         // Time settings
         final AbsoluteDate initialDate =

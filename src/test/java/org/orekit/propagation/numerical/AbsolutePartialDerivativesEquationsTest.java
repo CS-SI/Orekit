@@ -30,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -96,6 +97,11 @@ public class AbsolutePartialDerivativesEquationsTest {
         assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
         assertThat(forceModel.accelerationDerivativesVelocity.toVector3D(), is(pv.getVelocity()));
 
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testNotInitialized() {
+        new AbsolutePartialDerivativesEquations("partials", propagator).getMapper();
     }
 
     /** Mock {@link ForceModel}. */
