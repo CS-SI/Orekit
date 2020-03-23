@@ -124,12 +124,11 @@ public class IntegerBootstrapping extends LambdaMethod {
             }
             a_B = a;
             final IntegerLeastSquareSolution sol = new IntegerLeastSquareSolution(a_B, p_aB);
-            final IntegerLeastSquareSolution[] sols = {sol};
-            return sols;
+            return new IntegerLeastSquareSolution[] {sol};
         }
         else {
-            final IntegerLeastSquareSolution[] sols = {null};
-            return sols;
+            // Return an empty array
+            return new IntegerLeastSquareSolution[0];
         }
     }
 

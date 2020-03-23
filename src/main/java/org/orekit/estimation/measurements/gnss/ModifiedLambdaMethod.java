@@ -125,7 +125,6 @@ public class ModifiedLambdaMethod extends AbstractLambdaMethod {
         int count              = 0;
         boolean endSearch      = false;
         int ulevel             = 0;
-        double newDist         = 0.0;
 
         // Determine which level to move to after z(0) is chosen at level 1.
         final int k0;
@@ -153,7 +152,7 @@ public class ModifiedLambdaMethod extends AbstractLambdaMethod {
                     break;
                 }
             }
-            newDist = dist[k] + y[k] * y[k] / diag[k];
+            double newDist = dist[k] + y[k] * y[k] / diag[k];
             while (newDist < maxDist) {
                 // move to level k-1
                 if (k != 0) {
@@ -277,7 +276,7 @@ public class ModifiedLambdaMethod extends AbstractLambdaMethod {
                 L[lIndex(p1, j)] = rowP2[j];
             }
             D[p1] = rowP2[p1];
-            final double[] colP1 = getColPmax(L, D, rowP1, rowP2, p2, p1);
+            final double[] colP1 = getColPmax(L, D, rowP1, p2, p1);
             //Update column P1
             for (int i = p1 + 1; i < D.length; i++) {
                 L[lIndex(i, p1)] = L[lIndex(i, p2)];
@@ -315,12 +314,11 @@ public class ModifiedLambdaMethod extends AbstractLambdaMethod {
      * @param L double array being the lower triangular matrix
      * @param D double array being the diagonal matrix
      * @param row double array being the row of the matrix at given position
-     * @param rowBis double array being the row of the matrix at the others position
      * @param pmin position at which we get the column
      * @param pmax other positions
      * @return array of double
      */
-    private double[] getColPmax(final double[] L, final double[] D, final double[] row, final double[] rowBis, final int pmin, final int pmax) {
+    private double[] getColPmax(final double[] L, final double[] D, final double[] row, final int pmin, final int pmax) {
         final double[] col = new double[D.length];
         col[pmin] = row[pmax];
         for (int i = pmin + 1; i < pmax; i++) {
