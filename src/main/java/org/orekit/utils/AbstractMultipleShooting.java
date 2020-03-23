@@ -607,7 +607,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Set the constraint of a closed orbit or not.
      *  @param isClosed true if orbit should be closed
      */
-    protected void setClosedOrbitConstraint(final boolean isClosed) {
+    public void setClosedOrbitConstraint(final boolean isClosed) {
         if (this.isClosedOrbit != isClosed) {
             nConstraints = nConstraints + (isClosed ? 6 : -6);
             this.isClosedOrbit = isClosed;

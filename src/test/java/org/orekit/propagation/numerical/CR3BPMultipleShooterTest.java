@@ -114,6 +114,7 @@ public class CR3BPMultipleShooterTest {
         multipleShooting.setPatchPointComponentFreedom(2, 5, false);
         multipleShooting.setEpochFreedom(1, false);
         multipleShooting.setEpochFreedom(2, false);
+        multipleShooting.addConstraint(1, 1, 1.0e-5);
         
         // Differential correction
         h1.applyDifferentialCorrection();
@@ -137,7 +138,7 @@ public class CR3BPMultipleShooterTest {
         Assert.assertEquals(initialPVDC.getPosition().getZ(), initialPVMS.getPosition().getZ(), 1.0E-15);
         Assert.assertEquals(initialPVDC.getVelocity().getY(), initialPVMS.getVelocity().getY(), 7.2E-3);
 
-        Assert.assertEquals(periodDC, periodMS, 7.4E-4);
+        Assert.assertEquals(periodDC, periodMS, 3.0E-2);
     }
 
     @Test(expected=OrekitException.class)

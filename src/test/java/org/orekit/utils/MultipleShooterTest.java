@@ -185,6 +185,102 @@ public class MultipleShooterTest {
 
     }
 
+    @Test
+    public void testMultipleShootingWithEstimatedParameters() {
+
+        // Time settings
+        // -------------
+        final AbsoluteDate initialDate =
+                        new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
+                                         TimeScalesFactory.getUTC());
+        final double arcDuration = 10000;
+       
+        final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(1.25E10, 1.450E11, -7.5E9),
+                                                           new Vector3D(-30000.0, 2500.0, -3500.0));
+
+        // Integration parameters
+        // ---------------------------
+        // Adaptive stepsize boundaries
+        final double minStep = 1;
+        final double maxstep = 30000;
+
+        // Integrator tolerances
+        final double positionTolerance = 1000;
+        final double velocityTolerance = 1;
+        final double massTolerance = 1.0e-6;
+        final double[] vecAbsoluteTolerances = {positionTolerance, positionTolerance, positionTolerance, velocityTolerance, velocityTolerance, velocityTolerance, massTolerance };
+        final double[] vecRelativeTolerances =
+                        new double[vecAbsoluteTolerances.length];
+
+        // Integrator definition
+        final AdaptiveStepsizeIntegrator integrator =
+                        new DormandPrince853Integrator(minStep, maxstep,
+                                                       vecAbsoluteTolerances,
+                                                       vecRelativeTolerances);
+
+        // Load Celestial bodies
+        // ---------------------
+        final CelestialBody   sun     = CelestialBodyFactory.getSun();
+        final CelestialBody   earth    = CelestialBodyFactory.getEarthMoonBarycenter();
+        final Frame primaryFrame = sun.getInertiallyOrientedFrame();
+
+        // Trajectory definition
+        // ---------------------
+        final int narcs = 5;
+        final List<SpacecraftState> correctedList = new ArrayList<SpacecraftState>(narcs + 1);
+        final AbsolutePVCoordinates firstGuessAPV = new AbsolutePVCoordinates(primaryFrame, initialDate, firstGuess);
+        List<SpacecraftState> firstGuessList2 = generatePatchPointsEphemeris(sun, earth, firstGuessAPV, arcDuration, narcs, integrator);
+        final List<NumericalPropagator> propagatorList  = initializePropagatorsWithEstimated(sun, earth, integrator, narcs);
+        final List<AdditionalEquations> additionalEquations = addAdditionalEquations(propagatorList);
+
+        for (int i = 0; i < narcs + 1; i++) {
+            final SpacecraftState sp = firstGuessList2.get(i);
+            correctedList.add(new SpacecraftState(sp.getAbsPVA(), sp.getAttitude()));
+        }
+
+        // Perturbation on a patch point
+        // -----------------------------
+
+        final int nP = 1; // Perturbated patch point
+        final Vector3D deltaP = new Vector3D(-50000,1000,0);
+        final Vector3D deltaV = new Vector3D(0.1,0,1.0);
+        final double deltaEpoch = 1000;
+
+        final SpacecraftState firstGuessSP = correctedList.get(nP);
+        final AttitudeProvider attPro = propagatorList.get(nP).getAttitudeProvider();
+
+        // Small change of the a patch point
+        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP); 
+        final Vector3D newVel = firstGuessSP.getAbsPVA().getVelocity().add(deltaV);
+        final AbsoluteDate newDate = firstGuessSP.getDate().shiftedBy(deltaEpoch);
+        AbsolutePVCoordinates absPva = new AbsolutePVCoordinates(firstGuessSP.getFrame(), newDate, newPos, newVel);
+        final Attitude attitude = attPro.getAttitude(absPva, newDate, absPva.getFrame());
+        SpacecraftState newSP = new SpacecraftState(absPva , attitude);
+        correctedList.set(1, newSP);
+
+        final double tolerance = 1.0;
+
+        MultipleShooter multipleShooting = new MultipleShooter(correctedList, propagatorList, additionalEquations, arcDuration, tolerance);
+        multipleShooting.setPatchPointComponentFreedom(1, 0, false);
+        multipleShooting.setPatchPointComponentFreedom(1, 1, false);
+        multipleShooting.setPatchPointComponentFreedom(1, 2, false);
+        multipleShooting.setPatchPointComponentFreedom(1, 3, false);
+        multipleShooting.setPatchPointComponentFreedom(narcs + 1, 0, false);
+        multipleShooting.setPatchPointComponentFreedom(narcs + 1, 1, false);
+        multipleShooting.setPatchPointComponentFreedom(narcs + 1, 2, false);
+        multipleShooting.setEpochFreedom(1, false);
+
+        multipleShooting.compute();
+
+        // Verify
+        Assert.assertEquals(0.0,        Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.007568,   Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(231.922890, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.007547,   Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
+        Assert.assertEquals(233.233939, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
+        Assert.assertEquals(0.028078,   Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
+    }
+
     @Test(expected=OrekitException.class)
     public void testNotInitialized() {
         new EpochDerivativesEquations("partials", propagator).getMapper();
@@ -253,6 +349,26 @@ public class MultipleShooterTest {
 
             propagator.addForceModel(new NewtonianAttraction(primary.getGM()));
             propagator.addForceModel(new ThirdBodyAttractionEpoch(secondary));
+
+            propagator.setOrbitType(null);
+            propagatorList.add(propagator);
+        }        
+        return propagatorList;
+    }
+
+    private static List<NumericalPropagator> initializePropagatorsWithEstimated(final CelestialBody primary, final CelestialBody secondary, final ODEIntegrator integrator,
+                                                                                final int propagationNumber) {
+        final List<NumericalPropagator> propagatorList = new ArrayList<NumericalPropagator>(propagationNumber);
+
+        // Definition of the propagator
+        for(int i = 0; i < propagationNumber; i++) {
+
+            NumericalPropagator propagator = new NumericalPropagator(integrator);
+
+            propagator.addForceModel(new NewtonianAttraction(primary.getGM()));
+            final ForceModel model = new ThirdBodyAttractionEpoch(secondary);
+            model.getParametersDrivers()[0].setSelected(true);
+            propagator.addForceModel(model);
 
             propagator.setOrbitType(null);
             propagatorList.add(propagator);
