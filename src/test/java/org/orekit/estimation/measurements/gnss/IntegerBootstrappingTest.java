@@ -50,7 +50,9 @@ public class IntegerBootstrappingTest {
         
         final IntegerBootstrapping bootstrap = new IntegerBootstrapping(0.8);
         IntegerLeastSquareSolution[] solutions = bootstrap.solveILS(1, floatAmbiguities, indirection, covariance);
-        Assert.assertTrue(solutions.length==1);
+        if (solutions.length != 0) {
+            Assert.assertTrue(solutions.length == 1);
+        }
     }
     
     @Test
@@ -79,7 +81,7 @@ public class IntegerBootstrappingTest {
                         bootstrap.solveILS(1, floatAmbiguities, indirection, covariance);
         
         // check solution exist if and only if its probability great enough
-        if(solutions[0]!=null) {
+        if(solutions.length != 0) {
             Assert.assertTrue(1/(solutions[0].getSquaredDistance())>0.3);
             return 1;
         }
