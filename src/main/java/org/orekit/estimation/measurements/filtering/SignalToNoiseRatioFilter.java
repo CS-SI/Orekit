@@ -19,9 +19,9 @@ package org.orekit.estimation.measurements.filtering;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
-public class SignalToNoiseRatioFilter<T extends ObservedMeasurement<?>> implements MeasurementFilter {
+public class SignalToNoiseRatioFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter<T> {
 
     @Override
-    public void filter(final ObservedMeasurement<?> measurement, final SpacecraftState sc) {
+    public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState sc) {
     }
 }

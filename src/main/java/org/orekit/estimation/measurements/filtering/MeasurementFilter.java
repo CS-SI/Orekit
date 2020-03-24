@@ -19,12 +19,12 @@ package org.orekit.estimation.measurements.filtering;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
-public interface MeasurementFilter {
+public interface MeasurementFilter<T extends ObservedMeasurement<T>> {
 
     /** Filter given measurements.
      * @param measurement observed measurement being to be filtered
      * @param state current spacecraft state.
      * */
-    void filter(ObservedMeasurement<?> measurement, SpacecraftState state);
+    void filter(ObservedMeasurement<T> measurement, SpacecraftState state);
 
 }

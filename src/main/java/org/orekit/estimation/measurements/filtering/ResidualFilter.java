@@ -21,7 +21,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
-public class ResidualFilter<T extends ObservedMeasurement<?>> implements MeasurementFilter {
+public class ResidualFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter<T> {
 
     /** Elevation threshold under which the measurement will be rejected. */
     private final double threshold;
@@ -35,7 +35,7 @@ public class ResidualFilter<T extends ObservedMeasurement<?>> implements Measure
     }
 
     @Override
-    public void filter(final ObservedMeasurement<?> measurement, final SpacecraftState state) {
+    public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
         final SpacecraftState[] sc              = new SpacecraftState[] {state};
         final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, sc);
         final double[] observedValue            = measurement.getObservedValue();

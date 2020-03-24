@@ -98,7 +98,7 @@ public class ElevationFilteringTest {
     }
     
     
-    @Test
+	@Test
     public void testElevationFilter() {
 
         //We generate measurements where elevation < threshold
@@ -126,14 +126,15 @@ public class ElevationFilteringTest {
         SortedSet<ObservedMeasurement<?>> measurements0 = generator0.generate(date, date.shiftedBy(3600 * 5));
         
         //Elevation filter
-        ElevationFilter<?> filter = new ElevationFilter<Range>(station, threshold);
+        ElevationFilter<Range> filter = new ElevationFilter<>(station, threshold);
         
         //Filter the observation, what should stay in it should be the same as the measurements generated with elevation greater than threshold.
         final ArrayList<ObservedMeasurement<?>> processMeasurements = new ArrayList<>();
         for(ObservedMeasurement<?> meas : measurements0) {
+        	final Range range = (Range) meas;
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
-            filter.filter(meas, currentSC);
+            filter.filter(range, currentSC);
             if(meas.isEnabled()) {
                 processMeasurements.add(meas);
             }

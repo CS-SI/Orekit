@@ -20,7 +20,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
-public class ElevationFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter {
+public class ElevationFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter<T> {
 
     /** Elevation threshold under which the measurement will be rejected (angle in rad). */
     private final double threshold;
@@ -38,7 +38,7 @@ public class ElevationFilter<T extends ObservedMeasurement<T>> implements Measur
     }
 
     @Override
-    public void filter(final ObservedMeasurement<?> measurement, final SpacecraftState state) {
+    public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
         final double trueElevation = station.getBaseFrame().getElevation(state.getPVCoordinates().getPosition(),
                                                                          state.getFrame(), state.getDate());
         if (trueElevation < threshold) {

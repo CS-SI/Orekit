@@ -121,13 +121,14 @@ public class ResidualsFilteringTest {
         final double threshold  = 2.7;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
         SortedSet<ObservedMeasurement<?>> measurements = generator.generate(date, date.shiftedBy(3600*5));
-        final ResidualFilter<Range> filter = new ResidualFilter<Range>(threshold);
+        final ResidualFilter<Range> filter = new ResidualFilter<>(threshold);
 
         final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
         for (ObservedMeasurement<?> meas : measurements) {
+            final Range range = (Range) meas;
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
-            filter.filter(meas, currentSC);
+            filter.filter(range, currentSC);
             if (meas.isEnabled()) {
                 processMeasurements.add(meas);
             }
@@ -159,13 +160,14 @@ public class ResidualsFilteringTest {
         final double noise = 20;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
         SortedSet<ObservedMeasurement<?>> measurements = generator.generate(date, date.shiftedBy(3600*5));
-        final ResidualFilter<Range> filter = new ResidualFilter<Range>(10);
+        final ResidualFilter<Range> filter = new ResidualFilter<>(10);
 
         final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
         for (ObservedMeasurement<?> meas : measurements) {
+        	final Range range = (Range) meas;
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
-            filter.filter(meas, currentSC);
+            filter.filter(range, currentSC);
             if (meas.isEnabled()) {
                 processMeasurements.add(meas);
             }
