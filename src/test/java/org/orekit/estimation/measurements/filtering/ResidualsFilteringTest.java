@@ -1,6 +1,7 @@
-package org.orekit.estimation.measurements.pretreatment;
+package org.orekit.estimation.measurements.filtering;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedSet;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -22,12 +23,12 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
+import org.orekit.estimation.measurements.filtering.ResidualFilter;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
 import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.MeasurementBuilder;
 import org.orekit.estimation.measurements.generation.RangeBuilder;
 import org.orekit.estimation.measurements.generation.SignSemantic;
-import org.orekit.estimation.measurements.pretreatment.ElevationFilter;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.Frame;
@@ -48,18 +49,15 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class ElevationFilteringTest {
+public class ResidualsFilteringTest {
+    
 
-    
-    //Elevation threshold
-    final double threshold = FastMath.toRadians(5);
-    
     @Before
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }
-    
+
     private Propagator buildPropagator(final Orbit orbit) {
         NumericalPropagator propa = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 0.001, 0.001));
         propa.setOrbitType(OrbitType.CARTESIAN);
@@ -67,8 +65,9 @@ public class ElevationFilteringTest {
         return propa;
     }
     
-    private MeasurementBuilder<Range> getBuilder(final RandomGenerator random, final GroundStation groundStation,
-                                                 final ObservableSatellite satellite, final double noise) {
+    private MeasurementBuilder<Range> getBuilder(final RandomGenerator random,
+                                                   final GroundStation groundStation,
+                                                   final ObservableSatellite satellite, final double noise) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { noise });
         MeasurementBuilder<Range> rb =
                         new RangeBuilder(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random)),
@@ -79,18 +78,17 @@ public class ElevationFilteringTest {
     private ElevationDetector getElvetaionDetector(final TopocentricFrame topo, final double minElevation) {
         ElevationDetector detector =
                         new ElevationDetector(topo).
-                        withConstantElevation(minElevation);
+                        withConstantElevation(FastMath.toRadians(5.0));
         return detector;
     }
     
-    private Generator getGenerator(final Orbit orbit, final GroundStation station, final TopocentricFrame topo, final double noise, final double elevation) {
+    private Generator getGenerator(final Orbit orbit, final GroundStation station, final ObservableSatellite satellite, final TopocentricFrame topo, final double noise) {
         Generator generator = new Generator();
-        final ObservableSatellite satellite = new ObservableSatellite(0);
         Propagator propagator = buildPropagator(orbit);
         generator.addPropagator(propagator);
         RandomGenerator random = new Well19937a(0x01e226dd859c2c9dl);
         MeasurementBuilder<Range> builder = getBuilder(random, station, satellite, noise);
-        EventDetector event = getElvetaionDetector(topo, elevation);
+        EventDetector event = getElvetaionDetector(topo, 10.0);
         FixedStepSelector dateSelecor = new FixedStepSelector(30, TimeScalesFactory.getUTC());
         EventBasedScheduler<Range> scheduler = new EventBasedScheduler<Range>(builder, dateSelecor, propagator, event, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE);
         generator.addScheduler(scheduler);
@@ -99,9 +97,8 @@ public class ElevationFilteringTest {
     
     
     @Test
-    public void testElevationFilter() {
-
-        //We generate measurements where elevation < threshold
+    public void testFilterWithoutRejection() {
+        
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
         final Vector3D pos = new Vector3D(17427070, -1841865, 20201040);
@@ -117,33 +114,62 @@ public class ElevationFilteringTest {
         final OneAxisEllipsoid body = new OneAxisEllipsoid(equatorialRadius, flattening, bodyFrame);
         final GeodeticPoint position = new GeodeticPoint(29.868112727, -89.673232869, -14.853146);
         final TopocentricFrame topo = new TopocentricFrame(body, position, "SBCH");
+        final ObservableSatellite satellite = new ObservableSatellite(0);
         final GroundStation station = new GroundStation(topo);
-        final double noise = 0.1;
-        Generator generatorThreshold = getGenerator(orbit, station, topo, noise, threshold);
-        Generator generator0 = getGenerator(orbit, station, topo, noise, 0.0);
-        //Generate two measurements sorted set, one with elevation greter than threshold the other greater than 0
-        SortedSet<ObservedMeasurement<?>> measurementsPlusThreshold = generatorThreshold.generate(date, date.shiftedBy(3600 * 5));
-        SortedSet<ObservedMeasurement<?>> measurements0 = generator0.generate(date, date.shiftedBy(3600 * 5));
         
-        //Elevation filter
-        ElevationFilter<?> filter = new ElevationFilter<Range>(station, threshold);
-        
-        //Filter the observation, what should stay in it should be the same as the measurements generated with elevation greater than threshold.
-        final ArrayList<ObservedMeasurement<?>> processMeasurements = new ArrayList<>();
-        for(ObservedMeasurement<?> meas : measurements0) {
+        final double noise      = 1;
+        final double threshold  = 2.7;
+        Generator generator = getGenerator(orbit, station, satellite, topo, noise);
+        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(date, date.shiftedBy(3600*5));
+        final ResidualFilter<Range> filter = new ResidualFilter<Range>(threshold);
+
+        final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
+        for (ObservedMeasurement<?> meas : measurements) {
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
             filter.filter(meas, currentSC);
-            if(meas.isEnabled()) {
+            if (meas.isEnabled()) {
                 processMeasurements.add(meas);
             }
         }
-        Assert.assertEquals(processMeasurements.size(), measurementsPlusThreshold.size());
-        int i = 0;
-        for(ObservedMeasurement<?> meas: measurementsPlusThreshold) {
-            Assert.assertEquals(0.0,  meas.getDate().durationFrom(processMeasurements.get(i).getDate()), 1.0e-9);
-            Assert.assertEquals(0.0, meas.getObservedValue()[0] - processMeasurements.get(i).getObservedValue()[0], 1);
-            i++;
+        Assert.assertEquals(processMeasurements.size(), measurements.size());
+    }
+    
+    @Test
+    public void testFilterWithRejection() {
+        
+        //Create the initial orbit
+        final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
+        final Vector3D pos = new Vector3D(17427070, -1841865, 20201040);
+        final Vector3D vel = new Vector3D(-1102.915, 3471.771, 1237.860);
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel),
+                                  FramesFactory.getEME2000(), date,
+                                  Constants.EGM96_EARTH_MU);
+        
+        //Create the measurements generator.
+        final Frame bodyFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final double equatorialRadius = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        final double flattening = Constants.WGS84_EARTH_FLATTENING;
+        final OneAxisEllipsoid body = new OneAxisEllipsoid(equatorialRadius, flattening, bodyFrame);
+        final GeodeticPoint position = new GeodeticPoint(29.868112727, -89.673232869, -14.853146);
+        final TopocentricFrame topo = new TopocentricFrame(body, position, "SBCH");
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final GroundStation station = new GroundStation(topo);
+        
+        final double noise = 20;
+        Generator generator = getGenerator(orbit, station, satellite, topo, noise);
+        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(date, date.shiftedBy(3600*5));
+        final ResidualFilter<Range> filter = new ResidualFilter<Range>(10);
+
+        final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
+        for (ObservedMeasurement<?> meas : measurements) {
+            final SpacecraftState currentSC =
+                            new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
+            filter.filter(meas, currentSC);
+            if (meas.isEnabled()) {
+                processMeasurements.add(meas);
+            }
         }
+        Assert.assertEquals(2, measurements.size()-processMeasurements.size());
     }
 }

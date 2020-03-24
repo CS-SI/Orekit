@@ -14,29 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.pretreatment;
+package org.orekit.estimation.measurements.filtering;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
-public class ResidualsFilter<T extends ObservedMeasurement<?>> implements PreProcessingFilter {
+public class ResidualFilter<T extends ObservedMeasurement<?>> implements MeasurementFilter {
 
     /** Elevation threshold under which the measurement will be rejected. */
     private final double threshold;
 
     /**
      * Contructor.
-     * @param threshold maximum value between estimated and obrserved value in order to the measurement to be accepted
+     * @param threshold maximum value between estimated and observed value in order to the measurement to be accepted
      */
-    public ResidualsFilter(final double threshold) {
+    public ResidualFilter(final double threshold) {
         this.threshold  = threshold;
     }
 
     @Override
-    public void filter(final ObservedMeasurement<?> measurement, final SpacecraftState currentSC) {
-        final SpacecraftState[] sc              = new SpacecraftState[] {currentSC};
+    public void filter(final ObservedMeasurement<?> measurement, final SpacecraftState state) {
+        final SpacecraftState[] sc              = new SpacecraftState[] {state};
         final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, sc);
         final double[] observedValue            = measurement.getObservedValue();
         final double[] estimatedValue           = estimated.getEstimatedValue();

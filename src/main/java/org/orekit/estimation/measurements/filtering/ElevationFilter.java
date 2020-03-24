@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.pretreatment;
+package org.orekit.estimation.measurements.filtering;
 
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
-public class ElevationFilter<T extends ObservedMeasurement<T>> implements PreProcessingFilter {
+public class ElevationFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter {
 
     /** Elevation threshold under which the measurement will be rejected (angle in rad). */
     private final double threshold;
 
     /** Ground station considered. */
     private final GroundStation station;
-
 
     /**Contructor.
      * @param station considered by the filter
@@ -39,9 +38,9 @@ public class ElevationFilter<T extends ObservedMeasurement<T>> implements PrePro
     }
 
     @Override
-    public void filter(final ObservedMeasurement<?> measurement, final SpacecraftState sc) {
-        final double trueElevation      = station.getBaseFrame().getElevation(sc.getPVCoordinates().getPosition(),
-                                                                              sc.getFrame(), sc.getDate());
+    public void filter(final ObservedMeasurement<?> measurement, final SpacecraftState state) {
+        final double trueElevation = station.getBaseFrame().getElevation(state.getPVCoordinates().getPosition(),
+                                                                         state.getFrame(), state.getDate());
         if (trueElevation < threshold) {
             measurement.setEnabled(false);
         }

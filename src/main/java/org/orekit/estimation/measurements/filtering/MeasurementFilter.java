@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.pretreatment;
+package org.orekit.estimation.measurements.filtering;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
-public interface PreProcessingFilter {
+public interface MeasurementFilter {
 
     /** Filter given measurements.
      * @param measurement observed measurement being to be filtered
-     * @param currentSC current spacecraft state.
+     * @param state current spacecraft state.
      * */
-    void filter( ObservedMeasurement<?> measurement, SpacecraftState currentSC);
+    void filter(ObservedMeasurement<?> measurement, SpacecraftState state);
+
 }

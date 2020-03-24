@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.pretreatment;
+package org.orekit.estimation.measurements.filtering;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
-public class Signal2NoiseRatioFilter<T extends ObservedMeasurement<?>> implements PreProcessingFilter {
+public class SignalToNoiseRatioFilter<T extends ObservedMeasurement<?>> implements MeasurementFilter {
 
     @Override
     public void filter(final ObservedMeasurement<?> measurement, final SpacecraftState sc) {
