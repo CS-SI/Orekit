@@ -21,30 +21,51 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
+/**
+ * Residual pre-processing filter.
+ * <p>
+ * The measurement residual is defined by the difference between
+ * the observed value and the estimated value of the measurement.
+ * </p>
+ * @param <T> the type of the measurement
+ * @author Bryan Cazabonne
+ * @author David Soulard
+ * @since 10.2
+ */
 public class ResidualFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter<T> {
 
-    /** Elevation threshold under which the measurement will be rejected. */
+    /** Threshold under which the measurement will be rejected. */
     private final double threshold;
 
     /**
-     * Contructor.
-     * @param threshold maximum value between estimated and observed value in order to the measurement to be accepted
+     * Constructor.
+     * @param threshold maximum value for the measurement residual
      */
     public ResidualFilter(final double threshold) {
         this.threshold  = threshold;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
+
+        // Computation of the estimated value of the measurement
         final SpacecraftState[] sc              = new SpacecraftState[] {state};
-        final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, sc);
-        final double[] observedValue            = measurement.getObservedValue();
+        final EstimatedMeasurement<T> estimated = measurement.estimate(0, 0, sc);
         final double[] estimatedValue           = estimated.getEstimatedValue();
+
+        // Observed parameters (i.e. value and standard deviation)
+        final double[] observedValue            = measurement.getObservedValue();
         final double[] sigma                    = measurement.getTheoreticalStandardDeviation();
+
+        // Check if observed value is not too far from estimation
         for (int i = 0; i < observedValue.length; i++) {
             if (FastMath.abs(observedValue[i] - estimatedValue[i]) > threshold * sigma[i]) {
+                // Observed value is too far, measurement is disabled
                 measurement.setEnabled(false);
             }
         }
+
     }
+
 }

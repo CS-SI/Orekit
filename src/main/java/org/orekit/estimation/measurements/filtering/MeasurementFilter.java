@@ -19,10 +19,30 @@ package org.orekit.estimation.measurements.filtering;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
+/** Interface for measurement pre-processing filter.
+ * <p>
+ * Pre-processing filters are used to disabled measurements
+ * before they are used during an orbit determination process.
+ * Example of pre-processing filters are:</p>
+ * <ul>
+ *     <li>Minimum satellite elevation</li>
+ *     <li>Minimum value of the signal-to-noise ratio</li>
+ *     <li>Measurement residual</li>
+ * </ul>
+ * @param <T> the type of the measurement
+ * @author Bryan Cazabonne
+ * @author David Soulard
+ * @since 10.2
+ */
 public interface MeasurementFilter<T extends ObservedMeasurement<T>> {
 
-    /** Filter given measurements.
-     * @param measurement observed measurement being to be filtered
+    /** Apply a filter to an observed measurement.
+     * <p>
+     * If the observed measurement is rejected by the filter,
+     * the method {@link ObservedMeasurement#isEnabled()} will
+     * return <code>false</code>.
+     * </p>
+     * @param measurement observed measurement
      * @param state current spacecraft state.
      * */
     void filter(ObservedMeasurement<T> measurement, SpacecraftState state);

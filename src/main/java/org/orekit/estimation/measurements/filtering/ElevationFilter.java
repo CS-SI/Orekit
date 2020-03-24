@@ -20,27 +20,39 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
+/**
+ * Elevation pre-processing filter.
+ * @param <T> the type of the measurement
+ * @author Bryan Cazabonne
+ * @author David Soulard
+ * @since 10.2
+ */
 public class ElevationFilter<T extends ObservedMeasurement<T>> implements MeasurementFilter<T> {
 
-    /** Elevation threshold under which the measurement will be rejected (angle in rad). */
+    /** Elevation threshold under which the measurement will be rejected [rad]. */
     private final double threshold;
 
     /** Ground station considered. */
     private final GroundStation station;
 
-    /**Contructor.
+    /**
+     * Constructor.
      * @param station considered by the filter
-     * @param threshold minimum elevation for an measurements to be accepted (rad)
+     * @param threshold minimum elevation for a measurements to be accepted, in radians
      */
     public ElevationFilter(final GroundStation station, final double threshold) {
-        this.station        = station;
-        this.threshold      = threshold;
+        this.station   = station;
+        this.threshold = threshold;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
+        // Current elevation of the satellite
         final double trueElevation = station.getBaseFrame().getElevation(state.getPVCoordinates().getPosition(),
-                                                                         state.getFrame(), state.getDate());
+                                                                         state.getFrame(),
+                                                                         state.getDate());
+        // Filter
         if (trueElevation < threshold) {
             measurement.setEnabled(false);
         }
