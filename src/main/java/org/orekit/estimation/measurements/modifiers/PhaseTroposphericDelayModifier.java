@@ -79,7 +79,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
      * @return the measurement error due to Troposphere
      */
     private double phaseErrorTroposphericModel(final GroundStation station, final SpacecraftState state, final double wavelength) {
-        //
+        // satellite position
         final Vector3D position = state.getPVCoordinates().getPosition();
 
         // elevation
@@ -106,7 +106,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
      * @param station station
      * @param state spacecraft state
      * @param parameters tropospheric model parameters
-     * @param wavelength of the measurements (m)
+     * @param wavelength of the measurements
      * @return the measurement error due to Troposphere
      */
     private <T extends RealFieldElement<T>> T phaseErrorTroposphericModel(final GroundStation station,
@@ -132,7 +132,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
             // delay in meters
             final T delay = tropoModel.pathDelay(elevation, height, parameters, state.getDate());
 
-            return delay.multiply(1 / wavelength);
+            return delay.divide(wavelength);
         }
 
         return zero;
@@ -167,18 +167,9 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state,
                                                  final double wavelength) {
-
-        final ParameterFunction rangeError = new ParameterFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public double value(final ParameterDriver parameterDriver) {
-                return phaseErrorTroposphericModel(station, state, wavelength);
-            }
-        };
-
+        final ParameterFunction rangeError = parameterDriver -> phaseErrorTroposphericModel(station, state, wavelength);
         final ParameterFunction phaseErrorDerivative =
                         Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
-
         return phaseErrorDerivative.value(driver);
 
     }
@@ -217,6 +208,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
+        // Old range value
         final double[] oldValue = estimated.getEstimatedValue();
 
         // update estimated derivatives with Jacobian of the measure wrt state
@@ -226,8 +218,8 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final DerivativeStructure dsDelay = phaseErrorTroposphericModel(station, dsState, dsParameters, measurement.getWavelength());
         final double[] derivatives = dsDelay.getAllDerivatives();
 
+        // Update state derivatives
         final double[][] djac = phaseErrorJacobianState(derivatives, converter.getFreeStateParameters());
-
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
@@ -237,6 +229,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         estimated.setStateDerivatives(0, stateDerivatives);
 
 
+        // Update tropospheric parameter derivatives
         int index = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
@@ -249,6 +242,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
             }
         }
 
+        // Update station parameter derivatives
         for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
                                                           station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),
@@ -261,7 +255,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
             }
         }
 
-        // update estimated value taking into account the tropospheric delay.
+        // Update estimated value taking into account the tropospheric delay.
         // The tropospheric delay is directly added to the phase.
         final double[] newValue = oldValue.clone();
         newValue[0] = newValue[0] + dsDelay.getReal();

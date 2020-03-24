@@ -50,16 +50,7 @@ public class OnBoardAntennaPhaseModifier implements EstimationModifier<Phase> {
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<Phase> estimated) {
-        modifyOneWay(estimated);
-    }
-
-    /** Apply a modifier to a one-way range measurement.
-     * @param estimated estimated measurement to modify
-     */
-    private void modifyOneWay(final EstimatedMeasurement<Phase> estimated) {
-
         // the participants are spacecraft at emission, ground station at reception
-
         final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
         final AbsoluteDate               emissionDate = participants[0].getDate();
         final Vector3D                   pReception   = participants[1].getPosition();
@@ -86,7 +77,6 @@ public class OnBoardAntennaPhaseModifier implements EstimationModifier<Phase> {
         // modify the value
         value[0] += (rangeUsingAntennaPhaseCenter - rangeUsingSpacecraftCenter) / estimated.getObservedMeasurement().getWavelength();
         estimated.setEstimatedValue(value);
-
     }
 
 }
