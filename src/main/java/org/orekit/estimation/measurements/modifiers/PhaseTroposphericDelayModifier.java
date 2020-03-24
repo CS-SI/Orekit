@@ -1,12 +1,12 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,6 +36,14 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 
+/**
+ * Class modifying theoretical phase measurement with tropospheric delay.
+ * The effect of tropospheric correction on the phase is directly computed
+ * through the computation of the tropospheric delay.
+ * @author David Soulard
+ * @author Bryan Cazabonne
+ * @since 10.2
+ */
 public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase> {
 
     /** Tropospheric delay model. */
