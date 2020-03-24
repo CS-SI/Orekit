@@ -206,17 +206,17 @@ public class AmbiguitySolver {
     */
     private RealMatrix getCovMatrix(final RealMatrix cov, final int[] indirection) {
         final RealMatrix Qab = MatrixUtils.createRealMatrix(indirection.length, cov.getColumnDimension());
-        int i1 = -1;
-        final int i2 = 0;
-        int i = 0;
-        while (i < indirection.length) {
-            i1++;
-            i++;
+        int index = 0;
+        int iter  = 0;
+        while (iter < indirection.length) {
+            // Loop on column dimension
             for (int j = 0; j < cov.getColumnDimension(); j++) {
                 if (!belongTo(indirection, j)) {
-                    Qab.setEntry(i1, i2, cov.getEntry(i1, i2));
+                    Qab.setEntry(index, 0, cov.getEntry(index, 0));
                 }
             }
+            index++;
+            iter++;
         }
         return Qab;
     }
