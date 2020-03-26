@@ -1763,7 +1763,8 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
                 for (final ObservationData od : observationDataSet.getObservationData()) {
-                    if (!Double.isNaN(od.getValue())) {
+                    final double snr = od.getSignalStrength();
+                    if (!Double.isNaN(od.getValue()) && (snr == 0 || snr >= 4)) {
                         if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
                             // this is a measurement we want
                             final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();

@@ -274,8 +274,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test
         //definition of the accuracy for the test
 
-        final double distanceAccuracy = 2.86;
-        final double velocityAccuracy = 2.57e-3;
+        final double distanceAccuracy = 2.67;
+        final double velocityAccuracy = 2.55e-3;
 
         //test on the convergence
         final int numberOfIte  = 2;
@@ -293,9 +293,10 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
-        final long nbRange = 8981;
+        final long nbRangeInit     = 8981;
+        final long nbRangeExcluded = 305;
         final double[] RefStatRange = { -3.92, 8.46, 0.0, 0.888 };
-        Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
+        Assert.assertEquals(nbRangeInit - nbRangeExcluded, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               0.3);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.3);
         Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
