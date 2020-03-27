@@ -31,13 +31,11 @@ public class PolynomialSingleFrequencyCycleSlipDetectorTest {
         Utils.setDataRoot("regular-data");
     }
 
-
     @Test
     public void testTheNumberOFCycleFind() throws URISyntaxException, IOException {
         
-        final String inputPath = GeomFreeCombiSlipDetectorTest.class.getClassLoader().getResource("orbit-determination/GNSS/KFPhase_od_test_GPS07 .in").toURI().getPath();
+        final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/seat0440.16d.Z").toURI().getPath();
         final File input  = new File(inputPath);
-        //String fileName = "shld0440.16d.Z";
         String fileName = "seat0440.16d.Z";
         NamedData nd = new NamedData(fileName,
                                      () -> new FileInputStream(new File(input.getParentFile(), fileName)));
@@ -106,9 +104,9 @@ public class PolynomialSingleFrequencyCycleSlipDetectorTest {
     }
     //Test to verify that the cycle-slips because of data gap are computed
     @Test
-    public void testtimecycleSlip() throws URISyntaxException, IOException {
+    public void testTimeCycleSlip() throws URISyntaxException, IOException {
         
-        final String inputPath = GeomFreeCombiSlipDetectorTest.class.getClassLoader().getResource("orbit-determination/GNSS/KFPhase_od_test_GPS07 .in").toURI().getPath();
+        final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
         NamedData nd = new NamedData(fileName,
@@ -152,10 +150,11 @@ public class PolynomialSingleFrequencyCycleSlipDetectorTest {
             }
         }
     }
+
     //Test to check the detectors find the cycle slip added to data on purpose
     @Test
     public void testCycleSlipDetection() throws URISyntaxException, IOException {
-        final String inputPath = GeomFreeCombiSlipDetectorTest.class.getClassLoader().getResource("orbit-determination/GNSS/KFPhase_od_test_GPS07 .in").toURI().getPath();
+        final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithoutCycleSlip.16o";
         NamedData nd = new NamedData(fileName,

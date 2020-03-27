@@ -69,6 +69,10 @@ public class CycleSlipDetectorResults {
 
     /**
      * Return the end date at the given frequency.
+     * <p>
+     * For dual-Frequency cycle-slip detector, the {@link Frequency} contained
+     * in the map is the higher frequency (e.g. for L1-L2 the frequency in the map will be L1)
+     * </p>
      * @param f frequency
      * @return date of end of validity of the detectors
      */
@@ -78,6 +82,10 @@ public class CycleSlipDetectorResults {
 
     /**
      * Get beginning date of validity of the cycle slip detector.
+     * <p>
+     * For dual-Frequency cycle-slip detector, the {@link Frequency} contained
+     * in the map is the higher frequency (e.g. for L1-L2 the frequency in the map will be L1)
+     * </p>
      * @return absoluteDate of beginning of validity of the cycle slip detector
      */
     protected Map<Frequency, AbsoluteDate> getBegin() {
@@ -95,6 +103,10 @@ public class CycleSlipDetectorResults {
 
     /**
      * Get the cycle slip Map with contains the results.
+     * <p>
+     * For dual-Frequency cycle-slip detector, the {@link Frequency} contained
+     * in the map is the higher frequency (e.g. for L1-L2 the frequency in the map will be L1)
+     * </p>
      * @return cycle slip map containing the results
      */
     protected Map<Frequency, ArrayList<AbsoluteDate>> getCycleSlipMap() {

@@ -21,18 +21,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.fitting.PolynomialCurveFitter;
-import org.hipparchus.fitting.WeightedObservedPoint;
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
-import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 
 public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
 
@@ -110,48 +104,6 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
         this.station = name;
     }
 
-    /**
-     * The method is in charge of collecting the measurements, manage them, and call the detection method.
-     * @param obser ObservationDataSet coming from the RINEX file
-     * @param threshold maximum discrepancy for the current value with respect to the predicted value above which a cycle-slip is detected
-     * NOTICE: The default manageData method is the one for statistical
-     */
-    protected void manageData(final ObservationDataSet obser, final double threshold) {
-        final int numSat = obser.getPrnNumber();
-        String nameSat = "";
-        final AbsoluteDate date = obser.getDate();
-        final List<DataMeasure> dataPhase = new ArrayList<>();
-        final List<DataMeasure> dataRange = new ArrayList<>();
-        for (ObservationData od: obser.getObservationData()) {
-            if (!Double.isNaN(od.getValue())) {
-                //check if there is a cycle_slip at the current time
-                if (od.getObservationType().getMeasurementType() == MeasurementType.CARRIER_PHASE) {
-                    final Frequency f = od.getObservationType().getFrequency(obser.getSatelliteSystem());
-                    final double value = od.getValue();
-                    dataPhase.add(new DataMeasure(value, f));
-
-                }
-                if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
-                    final Frequency f = od.getObservationType().getFrequency(obser.getSatelliteSystem());
-                    final double value = od.getValue();
-                    dataRange.add(new DataMeasure(value, f));
-                }
-            }
-        }
-        for (int i = 0; i < dataPhase.size(); i++) {
-            for (int j = 0; j < dataRange.size(); j++) {
-                if (dataRange.get(j).getFrequency() == dataPhase.get(i).getFrequency()) {
-                    //We have a both phase and code measuremnt at the same frequency.
-                    final double f = dataPhase.get(i).GetFrequencyMHz();
-                    final double value = (Constants.SPEED_OF_LIGHT / (f * 1e6)) * dataPhase.get(i).getValue() - dataRange.get(j).getValue();
-                    nameSat = setName(numSat, obser.getSatelliteSystem());
-                    final int slip = cycleSlipDetection(nameSat, date, value, dataPhase.get(i).getFrequency(),  threshold);
-                    if (slip == 1) { cycleSlipDataSet(nameSat, date, value, dataPhase.get(i).getFrequency()); };
-                }
-            }
-        }
-    }
-
     /** Set the data: collect data at the current Date, at the current frequency, for a given satellite, add it within the attributes data and stuff.
      * @param nameSat name of the satellite (e.g.: "GPS - 7")
      * @param date date of the measurement
@@ -189,61 +141,6 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
 
     }
 
-    /** Compute if there is a cycle slip at a specific date.
-     * @param nameSat name of the satellite, on the predefined format (e.g.: GPS - 07 for satellite 7 of GPS constellation)
-     * @param currentDate the date at which we check if a cycle-slip occurs
-     * @param value phase measurement minus code measurement
-     * @param freq frequency used (expressed in MHz)
-     * @param threshold maximum discrepancy for the current value with respect to the predicted value above which a cycle-slip is detected
-     * @return 0 if a cycle slip has been detected, 1  otherwise.
-     */
-    protected int cycleSlipDetection(final String nameSat, final AbsoluteDate currentDate, final double value, final Frequency freq, final double threshold) {
-        if (data != null) {
-            for (CycleSlipDetectorResults d: data) {
-                //found the right cycle data
-                if (d.getSatelliteName().compareTo(nameSat) == 0 && d.getCycleSlipMap().containsKey(freq)) {
-                    final Map<Frequency, DataForDetection> values = stuff.get(data.indexOf(d));
-                    final DataForDetection v = values.get(freq);
-                    //Check the time gap condition
-                    final double deltaT = FastMath.abs(currentDate.durationFrom(v.figures[v.write].getDate()));
-                    if (deltaT > dt) {
-                        d.addCycleSlipDate(freq, currentDate);
-                        v.figures       = new SlipComputationData[minMeasurementNumber];
-                        v.figures[0]    = new SlipComputationData(value, currentDate);
-                        v.canBeComputed = 1;
-                        v.write         = 0;
-                        d.setDate(freq, currentDate);
-                        return 0;
-                    }
-                    //Compute the fitting polynamil if there are enough measurement since last cycle-slip
-                    if (v.canBeComputed >= minMeasurementNumber) {
-                        final List<WeightedObservedPoint> xy = new ArrayList<>();
-                        for (int i = 0; i < minMeasurementNumber; i++) {
-                            final SlipComputationData current = v.figures[i];
-
-                            xy.add(new WeightedObservedPoint(1.0, current.getDate().durationFrom(currentDate),
-                                                             current.getValue()));
-                        }
-                        final PolynomialCurveFitter fitting = PolynomialCurveFitter.create(2);
-                        //Check if there is a cycle_slip
-                        if (FastMath.abs(fitting.fit(xy)[0] - value) > threshold) {
-                            d.addCycleSlipDate(freq, currentDate);
-                            v.figures       = new SlipComputationData[minMeasurementNumber];
-                            v.figures[0]    = new SlipComputationData(value, currentDate);
-                            v.canBeComputed = 1;
-                            v.write         = 0;
-                            d.setDate(freq, currentDate);
-                            return 0;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-        return 1;
-    }
-
     /**
      * Create the Name of a satellite from its PRN number and satellite System it belongs to.
      * @param numSat satellite PRN number
@@ -278,7 +175,7 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
      * @param freq frequency used in the link
      * @return true if it already exist within attribute data
      */
-    protected boolean alreadyExist(final String nameSat, final Frequency freq) {
+    private boolean alreadyExist(final String nameSat, final Frequency freq) {
         if (data != null) {
             for (CycleSlipDetectorResults result: data) {
                 if (result.getSatelliteName().compareTo(nameSat) == 0) {
@@ -295,7 +192,7 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
      * @param frequency frequency use
      * @param value phase measurement minus code measurement
      */
-    protected void addValue(final String NameSat, final AbsoluteDate date, final Frequency frequency, final double value) {
+    private void addValue(final String NameSat, final AbsoluteDate date, final Frequency frequency, final double value) {
         for (CycleSlipDetectorResults result: data) {
             //find the good position to add the data
             if (result.getSatelliteName().compareTo(NameSat) == 0 && result.getCycleSlipMap().containsKey(frequency)) {
@@ -348,52 +245,6 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
          */
         protected AbsoluteDate getDate() {
             return date;
-        }
-    }
-
-    /** Class containers for stocking either phase or range measure on a given frequency.
-     * Contains a value (phase or range) and the frequency of the measurements.
-     * @author David Soulard
-     */
-    protected class DataMeasure {
-
-        /** phase measurement minus code measurement. */
-        private double value;
-
-        /**Frequency use.*/
-        private Frequency freq;
-
-        /** Simple constructor.
-         * @param value phase measurement minus code measurement
-         * @param f frequency use
-         */
-        DataMeasure(final double value, final Frequency f) {
-            this.value  = value;
-            this.freq   = f;
-        }
-
-        /**
-         * Get the value saved within the DataMeasure.
-         * @return the value saved within the DataMeasure
-         */
-        protected double getValue() {
-            return value;
-        }
-
-        /**
-         * Get the frequency saved within this.
-         * @return the frequency saved within this
-         */
-        protected Frequency getFrequency() {
-            return freq;
-        }
-
-        /**
-         * Get the frequency value saved in MHz.
-         * @return the frequency in MHZ.
-         */
-        protected double GetFrequencyMHz() {
-            return freq.getMHzFrequency();
         }
     }
 

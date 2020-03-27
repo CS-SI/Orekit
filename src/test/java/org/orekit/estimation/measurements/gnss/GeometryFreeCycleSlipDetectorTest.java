@@ -22,7 +22,7 @@ import org.orekit.gnss.RinexLoader;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class GeomFreeCombiSlipDetectorTest {
+public class GeometryFreeCycleSlipDetectorTest {
     
     @Before
     public void setUp() {
@@ -32,7 +32,7 @@ public class GeomFreeCombiSlipDetectorTest {
     @Test
     public void testTheBasicData() throws URISyntaxException, IOException {
         
-        final String inputPath = GeomFreeCombiSlipDetectorTest.class.getClassLoader().getResource("orbit-determination/GNSS/KFPhase_od_test_GPS07 .in").toURI().getPath();
+        final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/shld0440.16d.Z").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "shld0440.16d.Z";
         NamedData nd = new NamedData(fileName,
@@ -43,6 +43,7 @@ public class GeomFreeCombiSlipDetectorTest {
             nd = filter.filter(nd);
         }
         final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        //RinexLoader  loader = loadCompressed("cycleSlip/shld0440.16d.Z");
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         GeometryFreeCycleSlipDetector slipDetectors =
             new GeometryFreeCycleSlipDetector(obserDataSets, 31, 0.0, 10, 5, 1);
@@ -85,7 +86,7 @@ public class GeomFreeCombiSlipDetectorTest {
     
     @Test
     public void testTimeCycleSlip() throws URISyntaxException, IOException {
-        final String inputPath = GeomFreeCombiSlipDetectorTest.class.getClassLoader().getResource("orbit-determination/GNSS/KFPhase_od_test_GPS07 .in").toURI().getPath();
+        final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
         NamedData nd = new NamedData(fileName,
@@ -113,7 +114,7 @@ public class GeomFreeCombiSlipDetectorTest {
     
     @Test
     public void testCycleSlip() throws URISyntaxException, IOException {
-        final String inputPath = GeomFreeCombiSlipDetectorTest.class.getClassLoader().getResource("orbit-determination/GNSS/KFPhase_od_test_GPS07 .in").toURI().getPath();
+        final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
         NamedData nd = new NamedData(fileName,
@@ -172,4 +173,5 @@ public class GeomFreeCombiSlipDetectorTest {
         if(d.getSatelliteName().substring(6).compareTo("31")==0) {return 31;} else {return 32;}
               
     }
+
 }
