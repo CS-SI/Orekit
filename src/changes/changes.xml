@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="add" >
+        Added a time span tropospheric estimated model.
+      </action>
       <action dev="bryan" type="add" issue="646">
         Merged cr3bp branch into develop.
       </action>
