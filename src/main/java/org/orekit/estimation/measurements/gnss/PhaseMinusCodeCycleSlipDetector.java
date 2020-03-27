@@ -50,7 +50,7 @@ import org.orekit.utils.Constants;
  * @author David Soulard
  * @since 10.2
  */
-public class PolynomialSingleFrequencyCycleSlipDetector extends AbstractCycleSlipDetector {
+public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
 
     /** Mega Hertz to Hertz conversion. */
     private static final double MHZ_TO_HZ = 1.0e6;
@@ -65,7 +65,7 @@ public class PolynomialSingleFrequencyCycleSlipDetector extends AbstractCycleSli
      * @param n number of measurement before starting
      * @param order polynomial order
      */
-    public PolynomialSingleFrequencyCycleSlipDetector(final List<ObservationDataSet> obserDataSets, final double dt, final double threshold, final int n, final int order) {
+    public PhaseMinusCodeCycleSlipDetector(final List<ObservationDataSet> obserDataSets, final double dt, final double threshold, final int n, final int order) {
         super(obserDataSets, dt, threshold, n);
         this.order = order;
         for (ObservationDataSet obser: obserDataSets) {

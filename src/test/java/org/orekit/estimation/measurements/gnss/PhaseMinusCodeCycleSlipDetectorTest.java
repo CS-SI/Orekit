@@ -24,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 
-public class PolynomialSingleFrequencyCycleSlipDetectorTest {
+public class PhaseMinusCodeCycleSlipDetectorTest {
     
     @Before
     public void setUp() {
@@ -46,8 +46,8 @@ public class PolynomialSingleFrequencyCycleSlipDetectorTest {
         }
         final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
-        PolynomialSingleFrequencyCycleSlipDetector slipDetectors =
-            new PolynomialSingleFrequencyCycleSlipDetector(obserDataSets, 90, 10, 20, 3); 
+        PhaseMinusCodeCycleSlipDetector slipDetectors =
+            new PhaseMinusCodeCycleSlipDetector(obserDataSets, 90, 10, 20, 3); 
         for(CycleSlipDetectorResults d: slipDetectors.getResults()) {
             switch(getPrn(d)) {
                 case 1: 
@@ -118,8 +118,8 @@ public class PolynomialSingleFrequencyCycleSlipDetectorTest {
         }
         final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
-        PolynomialSingleFrequencyCycleSlipDetector slipDetectors =
-            new PolynomialSingleFrequencyCycleSlipDetector(obserDataSets, 90, 1e15, 20, 3);
+        PhaseMinusCodeCycleSlipDetector slipDetectors =
+            new PhaseMinusCodeCycleSlipDetector(obserDataSets, 90, 1e15, 20, 3);
         for(CycleSlipDetectorResults d: slipDetectors.getResults()) {
             switch(getPrn(d)) {
                 case 1: 
@@ -178,8 +178,8 @@ public class PolynomialSingleFrequencyCycleSlipDetectorTest {
         };
         
         for(int i = 0; i<thresholdL2.length; i++) {
-            PolynomialSingleFrequencyCycleSlipDetector slipDetectorsL2 =
-                            new PolynomialSingleFrequencyCycleSlipDetector(obserDataSets, dt, thresholdL2[i], N, m);
+            PhaseMinusCodeCycleSlipDetector slipDetectorsL2 =
+                            new PhaseMinusCodeCycleSlipDetector(obserDataSets, dt, thresholdL2[i], N, m);
             for(CycleSlipDetectorResults d:slipDetectorsL2.getResults()) {
                 if(i == 0) {
                     final ArrayList<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
@@ -203,8 +203,8 @@ public class PolynomialSingleFrequencyCycleSlipDetectorTest {
             new AbsoluteDate(2016, 02, 13, 02, 8, 13.000, TimeScalesFactory.getUTC())
           };
         for (int i=0; i<thresholdL1.length; i++) {
-            PolynomialSingleFrequencyCycleSlipDetector slipDetectorsL1 =
-                            new PolynomialSingleFrequencyCycleSlipDetector(obserDataSets, dt, thresholdL1[i], N, m+1);
+            PhaseMinusCodeCycleSlipDetector slipDetectorsL1 =
+                            new PhaseMinusCodeCycleSlipDetector(obserDataSets, dt, thresholdL1[i], N, m+1);
             for(CycleSlipDetectorResults d:slipDetectorsL1.getResults()) {
                 if(i == 0) {
                     final ArrayList<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
