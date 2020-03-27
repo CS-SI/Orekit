@@ -112,6 +112,7 @@ import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.MappingFunction;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.TimeSpanEstimatedTroposphericModel;
 import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
@@ -1400,25 +1401,75 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
                 final DiscreteTroposphericModel troposphericModel;
                 if (stationTroposphericModelEstimated[i] && mappingModel != null) {
+                    // Estimated tropospheric model
 
+                    // Compute pressure and temperature for estimated tropospheric model
+                    final double pressure;
+                    final double temperature;
                     if (stationWeatherEstimated[i]) {
+                        // Empirical models to compute the pressure and the temperature
                         final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
                                                                                                           stationLongitudes[i],
                                                                                                           body.getBodyFrame());
                         weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
                                                                                       TimeScalesFactory.getUTC()));
-                        final double temperature = weather.getTemperature();
-                        final double pressure    = weather.getPressure();
-                        troposphericModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                           stationTroposphericZenithDelay[i]);
+                        temperature = weather.getTemperature();
+                        pressure    = weather.getPressure();
+
                     } else {
-                        troposphericModel = new EstimatedTroposphericModel(mappingModel, stationTroposphericZenithDelay[i]);
+                        // Standard atmosphere model : temperature: 18 degree Celsius and pressure: 1013.25 mbar
+                        temperature = 273.15 + 18.0;
+                        pressure    = 1013.25;
                     }
 
-                    final ParameterDriver totalDelay = troposphericModel.getParametersDrivers().get(0);
-                    totalDelay.setSelected(stationZenithDelayEstimated[i]);
-                    totalDelay.setName(stationNames[i].substring(0, 5) + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                    // Initial model used to initialize the time span tropospheric model
+                    final EstimatedTroposphericModel initialModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                   stationTroposphericZenithDelay[i]);
+
+                    // Initialize the time span tropospheric model
+                    final TimeSpanEstimatedTroposphericModel timeSpanModel = new TimeSpanEstimatedTroposphericModel(initialModel);
+
+                    // Median date
+                    final AbsoluteDate epoch = parser.getDate(ParameterKey.TROPOSPHERIC_CORRECTION_DATE, TimeScalesFactory.getUTC());
+
+                    // Station name
+                    final String subName = stationNames[i].substring(0, 5);
+
+                    // Estimated tropospheric model BEFORE the median date
+                    final EstimatedTroposphericModel modelBefore = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                  stationTroposphericZenithDelay[i]);
+                    final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
+                    totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelayBefore.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+
+                    // Estimated tropospheric model AFTER the median date
+                    final EstimatedTroposphericModel modelAfter = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                 stationTroposphericZenithDelay[i]);
+                    final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
+                    totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelayAfter.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+
+                    // Add models to the time span tropospheric model
+                    // A very ugly trick is used when no measurements are available for a specific time span.
+                    // Indeed, the tropospheric parameter will not be estimated for the time span with no measurements.
+                    // Therefore, the diagonal elements of the covariance matrix will be equal to zero.
+                    // At the end, an exception is thrown when accessing the physical covariance matrix because of singularities issues.
+                    if (subName.equals("SEAT/")) {
+                        // Do not add the model because no measurements are available
+                        // for the time span before the median date for this station.
+                    } else {
+                        timeSpanModel.addTroposphericModelValidBefore(modelBefore, epoch);
+                    }
+                    if (subName.equals("BADG/") || subName.equals("IRKM/")) {
+                        // Do not add the model because no measurements are available
+                        // for the time span after the median date for this station.
+                    } else {
+                        timeSpanModel.addTroposphericModelValidAfter(modelAfter, epoch);
+                    }
+
+                    troposphericModel = timeSpanModel;
                 } else {
+                    // Empirical tropospheric model
                     troposphericModel = SaastamoinenModel.getStandardModel();
                 }
 

@@ -1308,6 +1308,9 @@ ground.station.niell.mapping.function          [31] = true
 ground.station.range.tropospheric.correction   [31] = true
 ground.station.weather.estimated               [31] = true
 
+# Time span models
+tropospheric.correction.date = 2016-02-13T02:30:00.000
+
 ### Measurements parameters
 range.outlier.rejection.multiplier              = 6
 range.outlier.rejection.starting.iteration      = 2
