@@ -52,34 +52,31 @@ import org.orekit.utils.Constants;
  */
 public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
 
-    /** Mega Hertz to Hertz conversion. */
+    /** Mega Hertz to Hertz conversion factor. */
     private static final double MHZ_TO_HZ = 1.0e6;
 
     /** Order of the polynomial used for fitting. */
     private final int order;
 
+    /** Threshold above which cycle-slip occurs. */
+    private final double threshold;
+
     /** Polynomial single frequency cycle-slip detector Constructor.
-     * @param obserDataSets observationDataSet list from a RINEX file
      * @param dt time gap threshold between two consecutive measurement (if time between two consecutive measurement is greater than dt, a cycle slip is declared)
      * @param threshold threshold above which cycle-slip occurs
      * @param n number of measurement before starting
      * @param order polynomial order
      */
-    public PhaseMinusCodeCycleSlipDetector(final List<ObservationDataSet> obserDataSets, final double dt, final double threshold, final int n, final int order) {
-        super(obserDataSets, dt, threshold, n);
-        this.order = order;
-        for (ObservationDataSet obser: obserDataSets) {
-            setStationName(obser.getHeader().getMarkerName());
-            manageData(obser, threshold);
-        }
+    public PhaseMinusCodeCycleSlipDetector(final double dt, final double threshold,
+                                           final int n, final int order) {
+        super(dt, n);
+        this.threshold = threshold;
+        this.order     = order;
     }
 
-    /**
-     * The method is in charge of collecting the measurements, manage them, and call the detection method.
-     * @param observation ObservationDataSet coming from the RINEX file
-     * @param threshold maximum discrepancy for the current value with respect to the predicted value above which a cycle-slip is detected
-     */
-    private void manageData(final ObservationDataSet observation, final double threshold) {
+    /** {@inheritDoc} */
+    @Override
+    protected void manageData(final ObservationDataSet observation) {
 
         // Extract observation data
         final SatelliteSystem system = observation.getSatelliteSystem();
@@ -121,7 +118,7 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
                     final String nameSat = setName(prn, observation.getSatelliteSystem());
 
                     // Check for cycle-slip detection
-                    final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system),  threshold);
+                    final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system));
                     if (!slip) {
                         // Update cycle slip data
                         cycleSlipDataSet(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system));
@@ -132,31 +129,41 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
 
     }
 
-    /** Compute if there is a cycle slip at a specific date.
-     * @param nameSat name of the satellite, on the predefined format (e.g.: GPS - 07 for satellite 7 of GPS constellation)
+    /**
+     * Compute if there is a cycle slip at a specific date.
+     * @param nameSat name of the satellite, on the predefined format (e.g. GPS - 07 for satellite 7 of GPS constellation)
      * @param currentDate the date at which we check if a cycle-slip occurs
-     * @param value phase measurement minus code measurement
-     * @param freq frequency used (expressed in MHz)
-     * @param threshold maximum discrepancy for the current value with respect to the predicted value above which a cycle-slip is detected
+     * @param phaseMinusCode phase measurement minus code measurement
+     * @param frequency frequency used
      * @return true if a cycle slip has been detected.
      */
-    private boolean cycleSlipDetection(final String nameSat, final AbsoluteDate currentDate, final double value, final Frequency freq, final double threshold) {
-        final List<CycleSlipDetectorResults> data = getResults();
+    private boolean cycleSlipDetection(final String nameSat, final AbsoluteDate currentDate,
+                                       final double phaseMinusCode, final Frequency frequency) {
+
+        // Access the cycle slip results to know if a cycle-slip already occurred
+        final List<CycleSlipDetectorResults>         data  = getResults();
         final List<Map<Frequency, DataForDetection>> stuff = getStuffReference();
+
+        // If a cycle-slip already occurred
         if (data != null) {
-            for (CycleSlipDetectorResults d: data) {
-                //found the right cycle data
-                if (d.getSatelliteName().compareTo(nameSat) == 0 && d.getCycleSlipMap().containsKey(freq)) {
-                    final Map<Frequency, DataForDetection> values = stuff.get(data.indexOf(d));
-                    final DataForDetection v = values.get(freq);
-                    //Check the time gap condition
+
+            // Loop on cycle-slip results
+            for (CycleSlipDetectorResults resultPmC : data) {
+
+                // Found the right cycle data
+                if (resultPmC.getSatelliteName().compareTo(nameSat) == 0 && resultPmC.getCycleSlipMap().containsKey(frequency)) {
+                    final Map<Frequency, DataForDetection> values = stuff.get(data.indexOf(resultPmC));
+                    final DataForDetection v = values.get(frequency);
+
+                    // Check the time gap condition
                     if (FastMath.abs(currentDate.durationFrom(v.getFiguresReference()[v.getWrite()].getDate())) > getMaxTimeBeetween2Measurement()) {
-                        d.addCycleSlipDate(freq, currentDate);
-                        v.resetFigures( new SlipComputationData[getMinMeasurementNumber()], value, currentDate);
-                        d.setDate(freq, currentDate);
+                        resultPmC.addCycleSlipDate(frequency, currentDate);
+                        v.resetFigures( new SlipComputationData[getMinMeasurementNumber()], phaseMinusCode, currentDate);
+                        resultPmC.setDate(frequency, currentDate);
                         return true;
                     }
-                    //Compute the fitting polynamil if there are enough measurement since last cycle-slip
+
+                    // Compute the fitting polynomial if there are enough measurement since last cycle-slip
                     if (v.getCanBeComputed() >= getMinMeasurementNumber()) {
                         final List<WeightedObservedPoint> xy = new ArrayList<>();
                         for (int i = 0; i < getMinMeasurementNumber(); i++) {
@@ -164,20 +171,28 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
                             xy.add(new WeightedObservedPoint(1.0, current.getDate().durationFrom(currentDate),
                                                                  current.getValue()));
                         }
+
                         final PolynomialCurveFitter fitting = PolynomialCurveFitter.create(order);
-                        //Check if there is a cycle_slip
-                        if (FastMath.abs(fitting.fit(xy)[0] - value) > threshold) {
-                            d.addCycleSlipDate(freq, currentDate);
-                            v.resetFigures( new SlipComputationData[getMinMeasurementNumber()], value, currentDate);
-                            d.setDate(freq, currentDate);
+                        // Check if there is a cycle_slip
+                        if (FastMath.abs(fitting.fit(xy)[0] - phaseMinusCode) > threshold) {
+                            resultPmC.addCycleSlipDate(frequency, currentDate);
+                            v.resetFigures( new SlipComputationData[getMinMeasurementNumber()], phaseMinusCode, currentDate);
+                            resultPmC.setDate(frequency, currentDate);
                             return true;
                         }
+
                     } else {
                         break;
                     }
+
                 }
+
             }
+
         }
+
+        // No cycle-slip
         return false;
     }
+
 }

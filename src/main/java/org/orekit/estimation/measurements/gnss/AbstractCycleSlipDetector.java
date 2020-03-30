@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.SatelliteSystem;
@@ -33,48 +31,59 @@ import org.orekit.time.AbsoluteDate;
  * @author David Soulard
  * @since 10.2
  */
-public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
+public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
 
-    /** Name of the station which define the detector. */
-    private String station;
+    /** Separator for satellite name. */
+    private static final String SEPARATOR = " - ";
 
     /** Minimum number of measurement needed before being able to figure out cycle-slip occurrence.*/
     private int minMeasurementNumber;
 
-    /** Maximum time lapse between two measurements without considering a cycle-slip occurred. */
+    /** Maximum time lapse between two measurements without considering a cycle-slip occurred [s]. */
     private final double dt;
 
-    /** List which contains all the info regarding the cycle slip.*/
-    private List<CycleSlipDetectorResults> data = new ArrayList<>();
+    /** List which contains all the info regarding the cycle slip. */
+    private List<CycleSlipDetectorResults> data;
 
     /** List of all the things use for cycle-slip detections. */
-    private List<Map<Frequency, DataForDetection>> stuff = new ArrayList<>();
+    private List<Map<Frequency, DataForDetection>> stuff;
 
     /**
      * Cycle-slip detector Abstract Constructor.
-     * @param obserDataSets observationDataSet list from a RINEX file
-     * @param dt time gap threshold between two consecutive measurements (if time between two consecutive measurement is greater than dt, a cycle slip is declared)
-     * @param threshold maximum discrepancy for the current value with respect to the predicted value above which a cycle-slip is detected
-     * @param n  Number of measure needed before starting test if a cycle-slip occurs
+     * @param dt time gap between two consecutive measurements in seconds
+     *        (if time between two consecutive measurement is greater than dt, a cycle slip is declared)
+     * @param n number of measures needed before starting test if a cycle-slip occurs
      */
-    public AbstractCycleSlipDetector(final List<ObservationDataSet> obserDataSets, final double dt, final double threshold, final int n) {
-        this.minMeasurementNumber    = n;
-        this.dt                 = dt;
+    AbstractCycleSlipDetector(final double dt, final int n) {
+        this.minMeasurementNumber = n;
+        this.dt                   = dt;
+        this.data                 = new ArrayList<>();
+        this.stuff                = new ArrayList<>();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<CycleSlipDetectorResults> detect(final List<ObservationDataSet> observations) {
+        // Loop on observation data set
+        for (ObservationDataSet observation: observations) {
+            // Manage data
+            manageData(observation);
+        }
+        // Return the results of the cycle-slip detection
+        return getResults();
     }
 
     /**
-     * Get the name of the station which defined the detector.
-     * @return the name of station which defined the detector
+     * The method is in charge of collecting the measurements, manage them, and call the detection method.
+     * @param observation observation data set
      */
-    public String getStationName() {
-        return station;
-    }
+    protected abstract void manageData(ObservationDataSet observation);
 
     /**
      * Get the minimum number of measurement needed before being able to figure out cycle-slip occurrence.
      * @return the minimum number of measurement needed before being able to figure out cycle-slip occurrence.
      */
-    public int getMinMeasurementNumber() {
+    protected int getMinMeasurementNumber() {
         return minMeasurementNumber;
     }
 
@@ -82,48 +91,43 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
      * Get the maximum time lapse between 2 measurements without considering a cycle-slip has occurring between both.
      * @return the maximum time lapse between 2 measurements
      */
-    public double getMaxTimeBeetween2Measurement() {
+    protected double getMaxTimeBeetween2Measurement() {
         return dt;
     }
 
-    /**Get on all the results computed by the detector (e.g.: dates of cycle-slip).
+    /**
+     * Get on all the results computed by the detector (e.g.: dates of cycle-slip).
      * @return  all the results computed by the detector (e.g.: dates of cycle-slip).
      */
-    public List<CycleSlipDetectorResults> getResults() {
+    protected List<CycleSlipDetectorResults> getResults() {
         return data;
     }
 
     /**
-     * Getter of the stuff (all the things needed for, the detector).
+     * Get the stuff (all the things needed for, the detector).
      * @return return stuff
      */
     protected List<Map<Frequency, DataForDetection>> getStuffReference() {
         return stuff;
     }
 
-    /**
-     * Set the name of the station which define the detector.
-     * @param name of the station
-     */
-    protected void setStationName(final String name) {
-        this.station = name;
-    }
-
     /** Set the data: collect data at the current Date, at the current frequency, for a given satellite, add it within the attributes data and stuff.
-     * @param nameSat name of the satellite (e.g.: "GPS - 7")
+     * @param nameSat name of the satellite (e.g. "GPS - 7")
      * @param date date of the measurement
      * @param value measurement at the current date
      * @param freq frequency used
      */
-    protected void cycleSlipDataSet(final String nameSat, final AbsoluteDate date, final double value, final Frequency freq)  {
-        if (data == null) {
+    protected void cycleSlipDataSet(final String nameSat, final AbsoluteDate date,
+                                    final double value, final Frequency freq)  {
+        // Check if cycle-slip data are empty
+        if (data.isEmpty()) {
             data.add(new CycleSlipDetectorResults(nameSat, date, freq));
             final Map<Frequency, DataForDetection> newMap = new HashMap<>();
             newMap.put(freq, new DataForDetection(value, date));
             stuff.add(newMap);
         } else {
             if (!alreadyExist(nameSat, freq)) {
-             // As the couple satellite-frequency, first possibility is that the satellite already exist within the data but not at this frequency
+                // As the couple satellite-frequency, first possibility is that the satellite already exist within the data but not at this frequency
                 for (CycleSlipDetectorResults r: data) {
                     if (r.getSatelliteName().compareTo(nameSat) == 0) {
                         r.addAtOtherFrequency(freq, date);
@@ -139,46 +143,28 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
                 newMap.put(freq, new DataForDetection(value, date));
                 stuff.add(newMap);
             } else {
-                //We add the value phi-R; the date; update the write indice
-                addValue(nameSat, date, freq, value);
+                // We add the value of the combination of measurements
+                addValue(nameSat, date, value, freq);
             }
         }
 
     }
 
     /**
-     * Create the Name of a satellite from its PRN number and satellite System it belongs to.
+     * Create the name of a satellite from its PRN number and satellite System it belongs to.
      * @param numSat satellite PRN number
      * @param sys Satellite System of the satellite
      * @return the satellite name on a specified format (e.g.: "GPS - 7")
      */
-    public String setName(final int numSat, final SatelliteSystem sys) {
-        switch (sys) {
-            case GPS:
-                return "GPS - " + numSat;
-            case GALILEO:
-                return "GAL - " + numSat;
-            case GLONASS:
-                return "GLO - " + numSat;
-            case BEIDOU:
-                return "BEI - " + numSat;
-            case QZSS:
-                return "QZS - " + numSat;
-            case IRNSS:
-                return "IRN - " + numSat;
-            case SBAS:
-                return "SBA - " + numSat;
-            case MIXED:
-                return "MIX - " + numSat;
-            default:
-                throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM);
-        }
+    protected String setName(final int numSat, final SatelliteSystem sys) {
+        return sys.name() + SEPARATOR + numSat;
     }
 
-    /** Return true if the link (defined by a frequency and a satellite) have been already built.
+    /**
+     * Return true if the link (defined by a frequency and a satellite) has been already built.
      * @param nameSat name of the satellite (e.g.: GPS - 07 for satelite 7 of GPS constellation).
      * @param freq frequency used in the link
-     * @return true if it already exist within attribute data
+     * @return true if it already exists within attribute data
      */
     private boolean alreadyExist(final String nameSat, final Frequency freq) {
         if (data != null) {
@@ -191,61 +177,63 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
         return false;
     }
 
-    /** Add a value the data.
-     * @param NameSat name of the satellite (satellite system - PRN)
+    /**
+     * Add a value the data.
+     * @param nameSat name of the satellite (satellite system - PRN)
      * @param date date of the measurement
-     * @param frequency frequency use
      * @param value phase measurement minus code measurement
+     * @param frequency frequency use
      */
-    private void addValue(final String NameSat, final AbsoluteDate date, final Frequency frequency, final double value) {
+    private void addValue(final String nameSat, final AbsoluteDate date,
+                          final double value, final Frequency frequency) {
+        // Loop on cycle-slip data
         for (CycleSlipDetectorResults result: data) {
-            //find the good position to add the data
-            if (result.getSatelliteName().compareTo(NameSat) == 0 && result.getCycleSlipMap().containsKey(frequency)) {
-                //the date is not to far away from the last one
+            // Find the good position to add the data
+            if (result.getSatelliteName().compareTo(nameSat) == 0 && result.getCycleSlipMap().containsKey(frequency)) {
+                // The date is not to far away from the last one
                 final Map<Frequency, DataForDetection> valuesMap = stuff.get(data.indexOf(result));
                 final DataForDetection detect = valuesMap.get(frequency);
-                detect.write                        = (detect.write + 1) % minMeasurementNumber;
-                detect.figures[detect.write]        = new SlipComputationData(value, date);
+                detect.write                  = (detect.write + 1) % minMeasurementNumber;
+                detect.figures[detect.write]  = new SlipComputationData(value, date);
                 result.setDate(frequency, date);
                 detect.canBeComputed++;
                 break;
-
             }
         }
     }
 
-    /** Class containers for computed if cycle-slip occurs.
-     * contains a value (phase measurement minus range measurement) and the date of measurements.
+    /**
+     * Container for computed if cycle-slip occurs.
      * @author David Soulard
-     *
      */
-    protected class SlipComputationData {
+    class SlipComputationData {
 
-        /**Value = phi - R where phi is the phase measurement and R the code measurement. */
+        /** Value of the measurement. */
         private double value;
 
-        /**Date of measurement.*/
+        /** Date of measurement. */
         private AbsoluteDate date;
 
-        /** Simple constructor.
-         * @param d phase measurement minus code measurementS
+        /**
+         * Simple constructor.
+         * @param value value of the measurement
          * @param date date of the measurement
          */
-        SlipComputationData(final double d, final AbsoluteDate date) {
-            this.value  = d;
+        SlipComputationData(final double value, final AbsoluteDate date) {
+            this.value  = value;
             this.date   = date;
         }
 
         /**
-         * Get the measurement value saved within this.
-         * @return the measurement value saved within this
+         * Get the value of the measurement.
+         * @return value of the measurement
          */
         protected double getValue() {
             return value;
         }
 
         /**
-         * Getter on the date of measurement saved within this.
+         * Get the date of measurement saved within this.
          * @return date of measurement saved within this
          */
         protected AbsoluteDate getDate() {
@@ -254,18 +242,18 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
     }
 
     /**
-     * Containers for all the data need for doing cycle-slip detection.
+     * Container for all the data need for doing cycle-slip detection.
      * @author David Soulard
-     *
      */
-    protected class DataForDetection {
-        /**Array used to compute cycle slip.*/
+    class DataForDetection {
+
+        /** Array used to compute cycle slip. */
         private SlipComputationData[] figures;
 
-        /**Integer to make the array above circular.*/
-        private int write = 0;
+        /** Integer to make the array above circular. */
+        private int write;
 
-        /** integer to know how many data have been added since last cycle-slip. */
+        /** Integer to know how many data have been added since last cycle-slip. */
         private int canBeComputed;
 
         /**
@@ -274,9 +262,10 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
          * @param date date at which measurements are taken.
          */
         DataForDetection(final double value, final AbsoluteDate date) {
-            this.figures                = new SlipComputationData[minMeasurementNumber];
-            this.figures[0]             = new SlipComputationData(value, date);
-            this.canBeComputed          = 1;
+            this.figures       = new SlipComputationData[minMeasurementNumber];
+            this.figures[0]    = new SlipComputationData(value, date);
+            this.canBeComputed = 1;
+            this.write         = 0;
         }
 
         /**
@@ -287,7 +276,8 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
             return figures;
         }
 
-        /** Get the reference of the counter of position into the array.
+        /**
+         * Get the reference of the counter of position into the array.
          * @return the position on which writing should occur within the circular array figures.
          */
         protected int getWrite() {
@@ -303,7 +293,7 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
         }
 
         /**
-         * ReSet this to the initial value when a cycle slip occurs.
+         * Reset this to the initial value when a cycle slip occurs.
          * The first element is already setting with a value and a date
          * @param newF new SlipComputationData[] to be used within the detector
          * @param value to be added in the first element of the array
@@ -316,16 +306,5 @@ public abstract class AbstractCycleSlipDetector  implements CycleSlipDetectors {
             this.canBeComputed  = 1;
         }
 
-        /**
-         * Setter when a new measurements is added (only used in the Statistical case).
-         * All the parameter are adjusted with respect to the new measurement
-         * @param value value of the measurement considered
-         * @param currentDate  date of the measurement
-         */
-        protected void goOneStep(final double value, final AbsoluteDate currentDate) {
-            this.write                    = (this.write + 1) % minMeasurementNumber;
-            this.figures[this.write]    = new SlipComputationData(value, currentDate);
-            this.canBeComputed++;
-        }
     }
 }

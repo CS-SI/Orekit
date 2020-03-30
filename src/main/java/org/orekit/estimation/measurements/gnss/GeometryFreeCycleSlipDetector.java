@@ -53,28 +53,24 @@ import org.orekit.time.AbsoluteDate;
  */
 public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
 
-    /**
-     * Constructor.
-     * @param obserDataSets observationDataSet list from a RINEX file
-     * @param dt time gap threshold between two consecutive measurement (if time between two consecutive measurement is greater than dt, a cycle slip is declared)
-     * @param threshold as for Geometry free a threshold is computed for each frequency, this is never used.
-     * @param n number of measurement before starting
-     */
-    public GeometryFreeCycleSlipDetector(final List<ObservationDataSet> obserDataSets, final double dt,
-                                         final double threshold, final int n) {
-        super(obserDataSets, dt, threshold, n);
-        for (final ObservationDataSet obser : obserDataSets) {
-            setStationName(obser.getHeader().getMarkerName());
-            manageData(obser, dt);
-        }
-    }
+    /** Threshold above which cycle-slip occurs. */
+    private final double threshold;
 
     /**
-     * The method is in charge of collecting the measurements, manage them, and call the detection method.
-     * @param observation ObservationDataSet coming from the RINEX file
-     * @param threshold maximum discrepancy for the current value with respect to the predicted value above which a cycle-slip is detected
+     * Constructor.
+     * @param dt time gap threshold between two consecutive measurement (if time between two consecutive measurement is greater than dt, a cycle slip is declared)
+     * @param threshold threshold above which cycle-slip occurs
+     * @param n number of measurement before starting
      */
-    private void manageData(final ObservationDataSet observation, final double threshold) {
+    public GeometryFreeCycleSlipDetector(final double dt, final double threshold, final int n) {
+        super(dt, n);
+        this.threshold = threshold;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected void manageData(final ObservationDataSet observation) {
 
         // Extract observation data
         final int             prn    = observation.getPrnNumber();
@@ -100,7 +96,7 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
             final String nameSat = setName(prn, observation.getSatelliteSystem());
             // Check for cycle-slip detection
             final Frequency frequency = cod.getUsedObservationData().get(0).getObservationType().getFrequency(system);
-            final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), frequency, threshold);
+            final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), frequency);
             if (!slip) {
                 // Update cycle slip data
                 cycleSlipDataSet(nameSat, date, cod.getValue(), cod.getUsedObservationData().get(0).getObservationType().getFrequency(system));
@@ -113,51 +109,66 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
      * Compute if there is a cycle slip at an specific date.
      * @param nameSat name of the satellite, on the pre-defined format (e.g.: GPS - 07 for satellite 7 of GPS constellation)
      * @param currentDate the date at which we check if a cycle-slip occurs
-     * @param value phase measurement minus code measurement
-     * @param freq frequency used (expressed in MHz)
-     * @param threshold of measurement combination use (e.g.: 12 for L1-L2)
+     * @param valueGF geometry free measurement
+     * @param frequency frequency used
      * @return true if a cycle slip has been detected.
      */
-    private boolean cycleSlipDetection(final String nameSat, final AbsoluteDate currentDate, final double value, final Frequency freq, final double threshold) {
-        final List<CycleSlipDetectorResults> data = getResults();
+    private boolean cycleSlipDetection(final String nameSat, final AbsoluteDate currentDate,
+                                       final double valueGF, final Frequency frequency) {
+
+        // Access the cycle slip results to know if a cycle-slip already occurred
+        final List<CycleSlipDetectorResults>         data  = getResults();
         final List<Map<Frequency, DataForDetection>> stuff = getStuffReference();
+
+        // If a cycle-slip already occurred
         if (data != null) {
-            for (CycleSlipDetectorResults d: data) {
-                //found the right cycle data
-                if (d.getSatelliteName().compareTo(nameSat) == 0 && d.getCycleSlipMap().containsKey(freq)) {
-                    final Map<Frequency, DataForDetection> values = stuff.get(data.indexOf(d));
-                    final DataForDetection v = values.get(freq);
-                    //Check the time gap condition
-                    final double deltaT = FastMath.abs(currentDate.durationFrom(v.getFiguresReference()[v.getWrite()].getDate()));
+
+            // Loop on cycle-slip results
+            for (CycleSlipDetectorResults resultGF : data) {
+
+                // Found the right cycle data
+                if (resultGF.getSatelliteName().compareTo(nameSat) == 0 && resultGF.getCycleSlipMap().containsKey(frequency)) {
+                    final Map<Frequency, DataForDetection> values = stuff.get(data.indexOf(resultGF));
+                    final DataForDetection dataForDetection = values.get(frequency);
+
+                    // Check the time gap condition
+                    final double deltaT = FastMath.abs(currentDate.durationFrom(dataForDetection.getFiguresReference()[dataForDetection.getWrite()].getDate()));
                     if (deltaT > getMaxTimeBeetween2Measurement()) {
-                        d.addCycleSlipDate(freq, currentDate);
-                        v.resetFigures(new SlipComputationData[getMinMeasurementNumber()], value, currentDate);
-                        d.setDate(freq, currentDate);
+                        resultGF.addCycleSlipDate(frequency, currentDate);
+                        dataForDetection.resetFigures(new SlipComputationData[getMinMeasurementNumber()], valueGF, currentDate);
+                        resultGF.setDate(frequency, currentDate);
                         return true;
                     }
-                    //Compute the fitting polynomial if there are enough measurement since last cycle-slip
-                    if (v.getCanBeComputed() >= getMinMeasurementNumber()) {
+
+                    // Compute the fitting polynomial if there are enough measurement since last cycle-slip
+                    if (dataForDetection.getCanBeComputed() >= getMinMeasurementNumber()) {
                         final List<WeightedObservedPoint> xy = new ArrayList<>();
                         for (int i = 0; i < getMinMeasurementNumber(); i++) {
-                            final SlipComputationData current = v.getFiguresReference()[i];
-
+                            final SlipComputationData current = dataForDetection.getFiguresReference()[i];
                             xy.add(new WeightedObservedPoint(1.0, current.getDate().durationFrom(currentDate),
                                                              current.getValue()));
                         }
+
                         final PolynomialCurveFitter fitting = PolynomialCurveFitter.create(2);
-                        //Check if there is a cycle_slip
-                        if (FastMath.abs(fitting.fit(xy)[0] - value) > threshold) {
-                            d.addCycleSlipDate(freq, currentDate);
-                            v.resetFigures(new SlipComputationData[getMinMeasurementNumber()], value, currentDate);
-                            d.setDate(freq, currentDate);
+                        // Check if there is a cycle_slip
+                        if (FastMath.abs(fitting.fit(xy)[0] - valueGF) > threshold) {
+                            resultGF.addCycleSlipDate(frequency, currentDate);
+                            dataForDetection.resetFigures(new SlipComputationData[getMinMeasurementNumber()], valueGF, currentDate);
+                            resultGF.setDate(frequency, currentDate);
                             return true;
                         }
+
                     } else {
                         break;
                     }
+
                 }
+
             }
+
         }
+
+        // No cycle-slip
         return false;
     }
 

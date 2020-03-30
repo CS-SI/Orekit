@@ -18,22 +18,21 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.List;
 
+import org.orekit.gnss.ObservationDataSet;
+
 /**
  * Interface for phase measurement cycle-slip detection.
  * @author David Soulard
+ * @author Bryan Cazabonne
  * @since 10.2
  */
 public interface CycleSlipDetectors {
 
     /**
-     * Getter on the results of the detectors.
-     * @return  the list results computed by the cycleSlip detectors (e.g.: date of cycle-slip)
+     * Detects if a cycle-slip occurs for a given list of observation data set.
+     * @param observations list of observation data set
+     * @return a list of results computed by the cycle-slip detectors
      */
-    List<CycleSlipDetectorResults> getResults();
+    List<CycleSlipDetectorResults> detect(List<ObservationDataSet> observations);
 
-    /**
-     * Get the name of station which defines the detector.
-     * @return station name which define the detector
-     */
-    String getStationName();
 }

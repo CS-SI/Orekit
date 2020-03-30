@@ -31,16 +31,16 @@ import org.orekit.time.AbsoluteDate;
  */
 public class CycleSlipDetectorResults {
 
-    /** Integer corresponding to the PRN number of the satellite.*/
+    /** Integer corresponding to the PRN number of the satellite. */
     private String satellite;
 
-    /** Date from which for this satellite cycle-slip detection begins.*/
+    /** Date from which for this satellite cycle-slip detection begins. */
     private Map<Frequency, AbsoluteDate> begin;
 
-    /** Date up to  which for this satellite  cycle-slip detection is valid.*/
+    /** Date up to  which for this satellite  cycle-slip detection is valid. */
     private Map<Frequency, AbsoluteDate> end;
 
-    /** List of date at which cycle slip occurs.*/
+    /** List of date at which cycle slip occurs. */
     private Map<Frequency, List<AbsoluteDate>> results;
 
     /**

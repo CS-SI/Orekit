@@ -62,8 +62,9 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
-            new PhaseMinusCodeCycleSlipDetector(obserDataSets, 90, 10, 20, 3); 
-        for(CycleSlipDetectorResults d: slipDetectors.getResults()) {
+            new PhaseMinusCodeCycleSlipDetector(90, 10, 20, 3); 
+        final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
+        for(CycleSlipDetectorResults d: results) {
             switch(getPrn(d)) {
                 case 1: 
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
@@ -135,8 +136,9 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
-            new PhaseMinusCodeCycleSlipDetector(obserDataSets, 90, 1e15, 20, 3);
-        for(CycleSlipDetectorResults d: slipDetectors.getResults()) {
+            new PhaseMinusCodeCycleSlipDetector(90, 1e15, 20, 3);
+        final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
+        for(CycleSlipDetectorResults d: results) {
             switch(getPrn(d)) {
                 case 1: 
                     //The date have been created  manually within the file
@@ -195,8 +197,9 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         
         for(int i = 0; i<thresholdL2.length; i++) {
             PhaseMinusCodeCycleSlipDetector slipDetectorsL2 =
-                            new PhaseMinusCodeCycleSlipDetector(obserDataSets, dt, thresholdL2[i], N, m);
-            for(CycleSlipDetectorResults d:slipDetectorsL2.getResults()) {
+                            new PhaseMinusCodeCycleSlipDetector(dt, thresholdL2[i], N, m);
+            final List<CycleSlipDetectorResults> resultsL2 = slipDetectorsL2.detect(obserDataSets);
+            for(CycleSlipDetectorResults d : resultsL2) {
                 if(i == 0) {
                     final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
                     Assert.assertEquals(3, computedDateOnL2.size());
@@ -220,8 +223,9 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
           };
         for (int i=0; i<thresholdL1.length; i++) {
             PhaseMinusCodeCycleSlipDetector slipDetectorsL1 =
-                            new PhaseMinusCodeCycleSlipDetector(obserDataSets, dt, thresholdL1[i], N, m+1);
-            for(CycleSlipDetectorResults d:slipDetectorsL1.getResults()) {
+                            new PhaseMinusCodeCycleSlipDetector(dt, thresholdL1[i], N, m+1);
+            final List<CycleSlipDetectorResults> resultsL1 = slipDetectorsL1.detect(obserDataSets);
+            for(CycleSlipDetectorResults d : resultsL1) {
                 if(i == 0) {
                     final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
                     Assert.assertEquals(3, computedDateOnL1.size());

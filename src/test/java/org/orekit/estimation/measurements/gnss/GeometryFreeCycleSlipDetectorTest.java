@@ -62,8 +62,9 @@ public class GeometryFreeCycleSlipDetectorTest {
         //RinexLoader  loader = loadCompressed("cycleSlip/shld0440.16d.Z");
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         GeometryFreeCycleSlipDetector slipDetectors =
-            new GeometryFreeCycleSlipDetector(obserDataSets, 31, 0.0, 10);
-        for(CycleSlipDetectorResults d: slipDetectors.getResults()) {
+            new GeometryFreeCycleSlipDetector(31, 31.0, 10);
+        final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
+        for(CycleSlipDetectorResults d: results) {
             switch(getPrn(d)) {
     
                 case 1: 
@@ -116,14 +117,16 @@ public class GeometryFreeCycleSlipDetectorTest {
         final List<ObservationDataSet>  obserDataSets = loader.getObservationDataSets();
         //With dt = 31 s, cycle slip should not exist, a very huge threshold is used to not detect cycle-slip
         GeometryFreeCycleSlipDetector slipDetectors =
-            new GeometryFreeCycleSlipDetector(obserDataSets, 31, 0.0,10);    
-        for(CycleSlipDetectorResults d: slipDetectors.getResults()) {
+            new GeometryFreeCycleSlipDetector(31, 31.0, 10);    
+        final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
+        for(CycleSlipDetectorResults d: results) {
             Assert.assertFalse(d.getCycleSlipMap().get(Frequency.G01).isEmpty());
         }
         //With dt = 29 s, a cycle-slip should occur at each new measurement (97 times)
         GeometryFreeCycleSlipDetector slipDetectors2 =
-                        new GeometryFreeCycleSlipDetector(obserDataSets, 29, 0.0,10);
-        for(CycleSlipDetectorResults d: slipDetectors2.getResults()) {
+                        new GeometryFreeCycleSlipDetector(29, 29.0, 10);
+        final List<CycleSlipDetectorResults> results2 = slipDetectors2.detect(obserDataSets);
+        for(CycleSlipDetectorResults d: results2) {
             Assert.assertTrue(d.getCycleSlipMap().get(Frequency.G01).size() == 97);
         }
     }
@@ -145,12 +148,13 @@ public class GeometryFreeCycleSlipDetectorTest {
         //With dt = 31 s, cycle slip for time gap cannot be detected (see previous test).
         //We use T0 = 60s for threshold time constant as advice from Navipedia page.
         GeometryFreeCycleSlipDetector slipDetectors =
-            new GeometryFreeCycleSlipDetector(obserDataSets,31, 0.0, 9); 
+            new GeometryFreeCycleSlipDetector(31, 31.0, 9);
+        final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
         //According to excel graph, cycle-slip occur at 1 h 59m 43s
         AbsoluteDate trueDate = new AbsoluteDate(2016, 02, 13, 1, 59, 43, TimeScalesFactory.getUTC());
-        final int size = slipDetectors.getResults().get(0).getCycleSlipMap().get(Frequency.G01).size();
+        final int size = results.get(0).getCycleSlipMap().get(Frequency.G01).size();
         Assert.assertEquals(1, size);
-        final AbsoluteDate computedDate = slipDetectors.getResults().get(0).getCycleSlipMap().get(Frequency.G01).get(0);
+        final AbsoluteDate computedDate = results.get(0).getCycleSlipMap().get(Frequency.G01).get(0);
         Assert.assertEquals(0.0, trueDate.durationFrom(computedDate),  1e-9);
    }
     
