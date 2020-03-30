@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.orekit.gnss.Frequency;
 import org.orekit.time.AbsoluteDate;
@@ -40,7 +41,7 @@ public class CycleSlipDetectorResults {
     private Map<Frequency, AbsoluteDate> end;
 
     /** List of date at which cycle slip occurs.*/
-    private Map<Frequency, ArrayList<AbsoluteDate>> results;
+    private Map<Frequency, List<AbsoluteDate>> results;
 
     /**
      * Constructor.
@@ -49,13 +50,12 @@ public class CycleSlipDetectorResults {
      * @param freq frequency corresponding to the measurements.
      */
     CycleSlipDetectorResults(final String satellite, final AbsoluteDate date, final Frequency freq) {
-        this.satellite  = satellite;
-        final Map<Frequency, AbsoluteDate> beginMap = new HashMap<>();
-        beginMap.put(freq, date);
-        this.begin      = beginMap;
-        this.end        = new HashMap<Frequency, AbsoluteDate>();
+        this.begin     = new HashMap<>();
+        this.end       = new HashMap<>();
+        this.results   = new HashMap<>();
+        this.satellite = satellite;
+        begin.put(freq, date);
         end.put(freq, date);
-        this.results    = new HashMap<>();;
         results.put(freq, new ArrayList<AbsoluteDate>());
     }
 
@@ -63,7 +63,7 @@ public class CycleSlipDetectorResults {
      * Get the satellite name.
      * @return satellite name
      */
-    protected String getSatelliteName() {
+    public String getSatelliteName() {
         return satellite;
     }
 
@@ -76,28 +76,16 @@ public class CycleSlipDetectorResults {
      * @param f frequency
      * @return date of end of validity of the detectors
      */
-    protected AbsoluteDate getEndDate(final Frequency f) {
+    public AbsoluteDate getEndDate(final Frequency f) {
         return end.get(f);
     }
 
     /**
-     * Get beginning date of validity of the cycle slip detector.
-     * <p>
-     * For dual-Frequency cycle-slip detector, the {@link Frequency} contained
-     * in the map is the higher frequency (e.g. for L1-L2 the frequency in the map will be L1)
-     * </p>
-     * @return absoluteDate of beginning of validity of the cycle slip detector
-     */
-    protected Map<Frequency, AbsoluteDate> getBegin() {
-        return begin;
-    }
-
-    /**
-     * Return the date of validity begining of the detector.
+     * Return the date of validity beginning of the detector.
      * @param f frequency
      * @return AbsoluteDate
      */
-    protected AbsoluteDate getBeginDate(final Frequency f) {
+    public AbsoluteDate getBeginDate(final Frequency f) {
         return begin.get(f);
     }
 
@@ -109,7 +97,7 @@ public class CycleSlipDetectorResults {
      * </p>
      * @return cycle slip map containing the results
      */
-    protected Map<Frequency, ArrayList<AbsoluteDate>> getCycleSlipMap() {
+    public Map<Frequency, List<AbsoluteDate>> getCycleSlipMap() {
         return results;
     }
 
@@ -118,8 +106,8 @@ public class CycleSlipDetectorResults {
      * @param f frequency of the measurement used to detect the cycle-slip
      * @param date date of the cycle-slip detected.
      */
-    protected void addCycleSlipDate(final Frequency f, final AbsoluteDate date) {
-        final ArrayList<AbsoluteDate> newList = results.get(f);
+    void addCycleSlipDate(final Frequency f, final AbsoluteDate date) {
+        final List<AbsoluteDate> newList = results.get(f);
         newList.add(date);
         results.put(f, newList);
     }
@@ -129,7 +117,7 @@ public class CycleSlipDetectorResults {
      * @param f frequency corresponding to the data
      * @param date date of measurement
      */
-    protected void addAtOtherFrequency(final Frequency f, final AbsoluteDate date) {
+    void addAtOtherFrequency(final Frequency f, final AbsoluteDate date) {
         begin.put(f, date);
         end.put(f, date);
         results.put(f, new ArrayList<AbsoluteDate>());
@@ -137,10 +125,10 @@ public class CycleSlipDetectorResults {
 
     /**
      * Setter for the ending data.
-     * @param f : frequency at which the measurement at current date is taken.
-     * @param date : new date of end
+     * @param f frequency at which the measurement at current date is taken.
+     * @param date new date of end
      */
-    protected void setDate(final Frequency f, final AbsoluteDate date) {
+    void setDate(final Frequency f, final AbsoluteDate date) {
         end.put(f, date);
     }
 

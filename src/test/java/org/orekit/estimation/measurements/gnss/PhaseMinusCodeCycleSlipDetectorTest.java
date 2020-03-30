@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -118,6 +117,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             }   
         }  
     }
+
     //Test to verify that the cycle-slips because of data gap are computed
     @Test
     public void testTimeCycleSlip() throws URISyntaxException, IOException {
@@ -198,11 +198,11 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                             new PhaseMinusCodeCycleSlipDetector(obserDataSets, dt, thresholdL2[i], N, m);
             for(CycleSlipDetectorResults d:slipDetectorsL2.getResults()) {
                 if(i == 0) {
-                    final ArrayList<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
+                    final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
                     Assert.assertEquals(3, computedDateOnL2.size());
                     Assert.assertEquals(0.0, computedDateOnL2.get(0).durationFrom(dateL2[i]), 0.0);
                 } else {
-                    final ArrayList<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
+                    final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
                     Assert.assertEquals(0, computedDateOnL2.size());
                 }
 
@@ -223,7 +223,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                             new PhaseMinusCodeCycleSlipDetector(obserDataSets, dt, thresholdL1[i], N, m+1);
             for(CycleSlipDetectorResults d:slipDetectorsL1.getResults()) {
                 if(i == 0) {
-                    final ArrayList<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
+                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
                     Assert.assertEquals(3, computedDateOnL1.size());
                     int i1 = 0;
                     for(AbsoluteDate date: computedDateOnL1) {
@@ -231,10 +231,10 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                         i1++;
                     }
                 } else if (i == 1) {
-                    final ArrayList<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
+                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
                     Assert.assertEquals(2, computedDateOnL1.size());
                 } else {
-                    final ArrayList<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
+                    final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
                     Assert.assertEquals(0, computedDateOnL1.size());
                 }
             }
