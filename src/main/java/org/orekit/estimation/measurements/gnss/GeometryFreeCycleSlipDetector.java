@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -38,9 +38,9 @@ import org.orekit.time.AbsoluteDate;
  * href="https://gssc.esa.int/navipedia/index.php/Detector_based_in_carrier_phase_data:_The_geometry-free_combination">
  * Detector based in carrier phase data: The geometry-free combination</a> by Zornoza and M. Hernández-Pajares. Within this class
  * a second order polynomial is used to smooth the data. We consider a cycle-slip occurring if the current measurement is  too
- * far from the one predicted with the polynomial (algorithm 1 on Navipedia).
+ * far from the one predicted with the polynomial.
  * <p>
- * For building the detector, one should give a RINEX file a threshold, a gap time limit, and an integer.
+ * For building the detector, one should give a threshold and a gap time limit.
  * After construction of the detectors, one can have access to a List of CycleData. Each CycleDate represents
  * a link between the station (define by the RINEX file) and a satellite at a specific frequency. For each cycle data,
  * one has access to the begin and end of availability, and a sorted set which contains all the date at which

@@ -40,7 +40,7 @@ import org.orekit.utils.Constants;
  * a polynomial is used to smooth the data. We consider a cycle_slip occurring if the current measurement is  too
  * far from the one predicted with the polynomial (algorithm 1 on Navipedia).
  * <p>
- * For building the detector, one should give a RINEX file a threshold, a gap time limit, and an integer.
+ * For building the detector, one should give a threshold and a gap time limit.
  * After construction of the detectors, one can have access to a List of CycleData. Each CycleDate represents
  * a link between the station (define by the RINEX file) and a satellite at a specific frequency. For each cycle data,
  * one has access to the begin and end of availability, and a sorted set which contains all the date at which
