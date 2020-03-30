@@ -496,6 +496,198 @@ public class TLETest {
         Assert.assertEquals(tle.getLine2(), "2 99999  97.3982 239.8686 0016311 175.5448 123.6195 15.14038717    18");    	
     }
     
+    @Test
+    public void testMeanMotionRange() {
+    	final double[] wrongMeanMotions = new double[] {-42.0};
+	    for (double wrongMeanMotion : wrongMeanMotions) {
+	        try {   	
+	        	TLE tle = new TLE(99999,
+				    			 'X',
+				    			 2020,
+				    			 42,
+				    			 "F",
+				    			 0,
+				    			 999,
+				    			 new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()),
+				    			 wrongMeanMotion,
+				    			 0.0,
+				    			 0.0,
+				    			 0.0016310523359516962,
+				    			 1.6999188604164899,
+				    			 3.063834020452862,
+				    			 4.1864962873682305,
+				    			 2.157567545975006,
+				    			 1,
+				    			 1e-05);
+	            Assert.fail("an exception should have been thrown");
+	        } catch (OrekitException oe) {
+	            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+	            Assert.assertEquals(wrongMeanMotion, oe.getParts()[2]);
+	            Assert.assertEquals("meanMotion", oe.getParts()[1]);
+	        }
+    	}
+    }
+    
+    @Test
+    public void testInclinationRange() {
+    	final double[] wrongInclinations = new double[] {-42.0, +42.0};
+	    for (double wrongInclination : wrongInclinations) {
+	        try {   	
+	        	TLE tle = new TLE(99999,
+				    			 'X',
+				    			 2020,
+				    			 42,
+				    			 "F",
+				    			 0,
+				    			 999,
+				    			 new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()),
+				    			 0.0011010400252833312,
+				    			 0.0,
+				    			 0.0,
+				    			 0.0016310523359516962,
+				    			 wrongInclination,
+				    			 3.063834020452862,
+				    			 4.1864962873682305,
+				    			 2.157567545975006,
+				    			 1,
+				    			 1e-05);
+	            Assert.fail("an exception should have been thrown");
+	        } catch (OrekitException oe) {
+	            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+	            Assert.assertEquals(wrongInclination, oe.getParts()[2]);
+	            Assert.assertEquals("inclination", oe.getParts()[1]);
+	        }
+    	}
+    }
+    
+    @Test
+    public void testRaanRange() {
+    	final double[] wrongRaans = new double[] {-42.0, +42.0};
+	    for (double wrongRaan : wrongRaans) {
+	        try {   	
+	        	TLE tle = new TLE(99999,
+				    			 'X',
+				    			 2020,
+				    			 42,
+				    			 "F",
+				    			 0,
+				    			 999,
+				    			 new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()),
+				    			 0.0011010400252833312,
+				    			 0.0,
+				    			 0.0,
+				    			 0.0016310523359516962,
+				    			 1.6999188604164899,
+				    			 3.063834020452862,
+				    			 wrongRaan,
+				    			 2.157567545975006,
+				    			 1,
+				    			 1e-05);
+	            Assert.fail("an exception should have been thrown");
+	        } catch (OrekitException oe) {
+	            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+	            Assert.assertEquals(wrongRaan, oe.getParts()[2]);
+	            Assert.assertEquals("raan", oe.getParts()[1]);
+	        }
+    	}
+    }
+    
+    @Test
+    public void testEccentricityRange() {
+    	final double[] wrongEccentricities = new double[] {-42.0, +42.0};
+	    for (double wrongEccentricity : wrongEccentricities) {
+	        try {   	
+	        	TLE tle = new TLE(99999,
+				    			 'X',
+				    			 2020,
+				    			 42,
+				    			 "F",
+				    			 0,
+				    			 999,
+				    			 new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()),
+				    			 0.0011010400252833312,
+				    			 0.0,
+				    			 0.0,
+				    			 wrongEccentricity,
+				    			 1.6999188604164899,
+				    			 3.063834020452862,
+				    			 4.1864962873682305,
+				    			 2.157567545975006,
+				    			 1,
+				    			 1e-05);
+	            Assert.fail("an exception should have been thrown");
+	        } catch (OrekitException oe) {
+	            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+	            Assert.assertEquals(wrongEccentricity, oe.getParts()[2]);
+	            Assert.assertEquals("eccentricity", oe.getParts()[1]);
+	        }
+    	}
+    }
+    
+    @Test
+    public void testPaRange() {
+    	final double[] wrongPas = new double[] {-42.0, +42.0};
+	    for (double wrongPa : wrongPas) {
+	        try {   	
+	        	TLE tle = new TLE(99999,
+				    			 'X',
+				    			 2020,
+				    			 42,
+				    			 "F",
+				    			 0,
+				    			 999,
+				    			 new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()),
+				    			 0.0011010400252833312,
+				    			 0.0,
+				    			 0.0,
+				    			 0.0016310523359516962,
+				    			 1.6999188604164899,
+				    			 wrongPa,
+				    			 4.1864962873682305,
+				    			 2.157567545975006,
+				    			 1,
+				    			 1e-05);
+	            Assert.fail("an exception should have been thrown");
+	        } catch (OrekitException oe) {
+	            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+	            Assert.assertEquals(wrongPa, oe.getParts()[2]);
+	            Assert.assertEquals("pa", oe.getParts()[1]);
+	        }
+    	}
+    }
+    
+    @Test
+    public void testMeanAnomalyRange() {
+    	final double[] wrongMeanAnomalys = new double[] {-42.0, +42.0};
+	    for (double wrongMeanAnomaly : wrongMeanAnomalys) {
+	        try {   	
+	        	TLE tle = new TLE(99999,
+				    			 'X',
+				    			 2020,
+				    			 42,
+				    			 "F",
+				    			 0,
+				    			 999,
+				    			 new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()),
+				    			 0.0011010400252833312,
+				    			 0.0,
+				    			 0.0,
+				    			 0.0016310523359516962,
+				    			 1.6999188604164899,
+				    			 3.063834020452862,
+				    			 4.1864962873682305,
+				    			 wrongMeanAnomaly,
+				    			 1,
+				    			 1e-05);
+	            Assert.fail("an exception should have been thrown");
+	        } catch (OrekitException oe) {
+	            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+	            Assert.assertEquals(wrongMeanAnomaly, oe.getParts()[2]);
+	            Assert.assertEquals("meanAnomaly", oe.getParts()[1]);
+	        }
+    	}
+    }
+    
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
