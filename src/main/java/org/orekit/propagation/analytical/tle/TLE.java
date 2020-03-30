@@ -229,8 +229,25 @@ public class TLE implements TimeStamped, Serializable {
 
     }
 
-    /** Simple constructor from already parsed elements. This constructor uses the {@link
+    /** 
+     * <p>
+     * Simple constructor from already parsed elements. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
+     * </p>
+     * 
+     * <p>
+     * If the right ascension of ascending node Ω or the argument of perigee ω are between
+     *  -2π and 0, they are forced to be positive by adding 2π. 
+     *  After that, a range check is performed on some of the orbital elements: 
+     *   <pre>
+     *     meanMotion &gt; 0
+     *     0 &lt;= i &lt;= π
+     *     0 &lt;= Ω &lt;= 2π
+     *     0 &lt;= e &lt;= 1
+     *     0 &lt;= ω &lt;= 2π
+     *     0 &lt;= meanAnomaly &lt;= 2π
+     *   </pre>
+     * </p>
      *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
@@ -268,8 +285,25 @@ public class TLE implements TimeStamped, Serializable {
                 DataContext.getDefault().getTimeScales().getUTC());
     }
 
-    /** Simple constructor from already parsed elements using the given time scale as UTC.
-     *
+    /** 
+     * <p>
+     * Simple constructor from already parsed elements using the given time scale as UTC.
+     * </p>
+     * 
+     * <p>
+     * If the right ascension of ascending node Ω or the argument of perigee ω are between
+     *  -2π and 0, they are forced to be positive by adding 2π. 
+     *  After that, a range check is performed on some of the orbital elements: 
+     *   <pre>
+     *     meanMotion &gt; 0
+     *     0 &lt;= i &lt;= π
+     *     0 &lt;= Ω &lt;= 2π
+     *     0 &lt;= e &lt;= 1
+     *     0 &lt;= ω &lt;= 2π
+     *     0 &lt;= meanAnomaly &lt;= 2π
+     *   </pre>
+     * </p>
+     *  
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
      * @param launchYear launch year (all digits)
@@ -310,18 +344,60 @@ public class TLE implements TimeStamped, Serializable {
         this.elementNumber   = elementNumber;
 
         // orbital parameters
-        this.epoch                      = epoch;
-        this.meanMotion                 = meanMotion;
+        this.epoch                      = epoch;      
+        if (meanMotion < 0.0) {
+            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
+                                      satelliteNumber, "meanMotion", meanMotion);
+        } 
+        this.meanMotion                 = meanMotion; 
         this.meanMotionFirstDerivative  = meanMotionFirstDerivative;
         this.meanMotionSecondDerivative = meanMotionSecondDerivative;
-        this.inclination                = i;
-        this.raan                       = raan;
-        this.eccentricity               = e;
-        this.pa                         = pa;
+        
+        // Checking inclination range        
+        if ((i < 0.0) || (i > FastMath.PI)) {
+            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
+                                      satelliteNumber, "inclination", i);
+        }
+        this.inclination                = i;        
+        
+        // Checking RAAN range
+        if ((raan < -2*FastMath.PI) || (raan > 2*FastMath.PI)) {
+            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
+                                      satelliteNumber, "raan", raan);
+        } 
+        if (raan < 0.0) {
+        	this.raan = raan + 2*FastMath.PI; // Forcing RAAN to be positive
+        } else {
+        	this.raan = raan;
+        } 
+        
+        // Checking eccentricity range
+        if ((e < 0.0) || (e > 1.0)) {
+            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
+                                      satelliteNumber, "eccentricity", e);
+        }
+        this.eccentricity               = e;  
+        
+        // Checking PA range
+        if ((pa < -2*FastMath.PI) || (pa > 2*FastMath.PI)) {
+            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
+                                      satelliteNumber, "pa", pa);
+        }
+        if (pa < 0.0) {
+        	this.pa = pa + 2*FastMath.PI; // Forcing PA to be positive
+        } else {
+        	this.pa = pa;
+        }
+        
+        // Checking mean anomaly range
+        if ((meanAnomaly < 0.0) || (meanAnomaly > 2*FastMath.PI)) {
+            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
+                                      satelliteNumber, "meanAnomaly", meanAnomaly);
+        }
         this.meanAnomaly                = meanAnomaly;
 
-        this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
-        this.bStar                   = bStar;
+        this.revolutionNumberAtEpoch    = revolutionNumberAtEpoch;
+        this.bStar                      = bStar;
 
         // don't build the line until really needed
         this.line1 = null;
