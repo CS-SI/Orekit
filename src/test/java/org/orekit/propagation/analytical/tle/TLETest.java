@@ -470,7 +470,32 @@ public class TLETest {
         Assert.assertEquals(tleRef.getLine2(), changedBStar.getLine2());
         Assert.assertEquals(1.0e-4, new TLE(changedBStar.getLine1(), changedBStar.getLine2()).getBStar(), 1.0e-15);
     }
-
+    
+    @Test 
+    public void testIssue664NegativeRaanPa() {    	 
+    	TLE tle = new TLE(99999,
+		    			 'X',
+		    			 2020,
+		    			 42,
+		    			 "F",
+		    			 0,
+		    			 999,
+		    			 new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()),
+		    			 0.0011010400252833312,
+		    			 0.0,
+		    			 0.0,
+		    			 0.0016310523359516962,
+		    			 1.6999188604164899,
+		    			 -3.219351286726724,
+		    			 -2.096689019811356,
+		    			 2.157567545975006,
+		    			 1,
+		    			 1e-05);
+    	// Comparing with TLE strings generated in Orekit Python after forcing the RAAN and PA to the [0, 2*Pi] range
+        Assert.assertEquals(tle.getLine1(), "1 99999X 20042F   20001.04166667  .00000000  00000-0  10000-4 0  9997");
+        Assert.assertEquals(tle.getLine2(), "2 99999  97.3982 239.8686 0016311 175.5448 123.6195 15.14038717    18");    	
+    }
+    
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
