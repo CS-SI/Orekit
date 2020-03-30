@@ -59,10 +59,9 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
      * @param dt time gap threshold between two consecutive measurement (if time between two consecutive measurement is greater than dt, a cycle slip is declared)
      * @param threshold as for Geometry free a threshold is computed for each frequency, this is never used.
      * @param n number of measurement before starting
-     * @param t0 time constant for the threshold
-     * @param fact multiplicative factor for customizing the threshold
      */
-    public GeometryFreeCycleSlipDetector(final List<ObservationDataSet> obserDataSets, final double dt, final double threshold, final int n, final double t0, final double fact) {
+    public GeometryFreeCycleSlipDetector(final List<ObservationDataSet> obserDataSets, final double dt,
+                                         final double threshold, final int n) {
         super(obserDataSets, dt, threshold, n);
         for (final ObservationDataSet obser : obserDataSets) {
             setStationName(obser.getHeader().getMarkerName());
