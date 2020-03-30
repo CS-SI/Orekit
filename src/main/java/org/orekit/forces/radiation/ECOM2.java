@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -40,17 +40,17 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 
-/** This class is used to compute solar radiation pressure acceleration with ECOM2 model.
+/**
+ * The Empirical CODE Orbit Model 2 (ECOM2) of the Center for Orbit Determination in Europe (CODE).
  * <p>This model is based on <a
  * href="https://www.semanticscholar.org/paper/CODE%E2%80%99s-new-solar-radiation-pressure-model-for-GNSS-Arnold-Meindl/25d2a4d7b40688326c8f70cd292adf3b01fd2a7c">
  * CODE's new solar radidation pressure model for GNSS orbit determination</a> by
  * D. Arnold, M. Meindl and al in 2015 paper. See also <a href="http://www.igs.org/assets/pdf/IGSWS-2018-PS03-01.pdf">
  * Impact of solar radiation pressure mis-modeling on GNSS satellite orbit determination for quicker overview. </a>
  * IGS 2018 Workshop poster by Tzu-Pang Tseng.
- *
  * @author David Soulard
+ * @since 10.2
  */
-
 public class ECOM2 extends AbstractForceModel {
 
     /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
@@ -70,18 +70,23 @@ public class ECOM2 extends AbstractForceModel {
     /** Highest order for parameter along eD axis (satellite --> sun direction). */
     private final int nD;
 
-    /**Highest order for parameter along eB axis. */
+    /** Highest order for parameter along eB axis. */
     private final int nB;
 
     /** Estimated acceleration coefficients.
-     * The 2 * nD first driver are Fourier driver along eD, axis, then along eY, then 2*nB following are along eB axis   */
+     * <p>
+     * The 2 * nD first driver are Fourier driver along eD, axis,
+     * then along eY, then 2*nB following are along eB axis.
+     * </p>
+     */
     private final ParameterDriver[] coefs;
 
     /** Sun model. */
     private final ExtendedPVCoordinatesProvider sun;
 
 
-    /**ECOM2 model constructor.
+    /**
+     * Constructor.
      * @param nD truncation rank of Fourier series in D term.
      * @param nB truncation rank of Fourier series in B term.
      * @param X  parameters initial value
@@ -131,12 +136,13 @@ public class ECOM2 extends AbstractForceModel {
         this.equatorialRadius = equatorialRadius;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean dependsOnPositionOnly() {
         return false;
     }
 
-
+    /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
         //Build the coordinate system
@@ -167,7 +173,7 @@ public class ECOM2 extends AbstractForceModel {
         return new Vector3D(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
     }
 
-
+    /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T>
         acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
@@ -214,6 +220,7 @@ public class ECOM2 extends AbstractForceModel {
         return Stream.of(new FieldUmbraDetector<>(field), new FieldPenumbraDetector<>(field));
     }
 
+    /** {@inheritDoc} */
     @Override
     public ParameterDriver[] getParametersDrivers() {
         return coefs;
@@ -251,7 +258,8 @@ public class ECOM2 extends AbstractForceModel {
         return coefs[2 * (nD + nB) + 2];
     }
 
-    /** Get the useful angles for eclipse computation.
+    /**
+     * Get the useful angles for eclipse computation.
      * @param sunPosition Sun position in the selected frame
      * @param position the satellite's position in the selected frame
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
@@ -277,7 +285,8 @@ public class ECOM2 extends AbstractForceModel {
         return angle;
     }
 
-    /** Get the useful angles for eclipse computation.
+    /**
+     * Get the useful angles for eclipse computation.
      * @param sunPosition Sun position in the selected frame
      * @param position the satellite's position in the selected frame.
      * @param <T> extends RealFieldElement
@@ -412,9 +421,7 @@ public class ECOM2 extends AbstractForceModel {
 
     }
 
-    /** This class defines the umbra entry/exit detector.
-     * @since 9.2
-     */
+    /** This class defines the umbra entry/exit detector. */
     private class FieldUmbraDetector<T extends RealFieldElement<T>>
         extends FieldAbstractDetector<FieldUmbraDetector<T>, T> {
 
@@ -473,9 +480,7 @@ public class ECOM2 extends AbstractForceModel {
 
     }
 
-    /** This class defines the penumbra entry/exit detector.
-     * @since 9.2
-     */
+    /** This class defines the penumbra entry/exit detector. */
     private class FieldPenumbraDetector<T extends RealFieldElement<T>>
           extends FieldAbstractDetector<FieldPenumbraDetector<T>, T> {
 
