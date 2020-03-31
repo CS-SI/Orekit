@@ -367,10 +367,10 @@ public class ModifiedLambdaMethod extends AbstractLambdaMethod {
 
     /** Return the symbol of parameter a.
      * @param a the double for which we want the want the symbol
-     * @return -1.0 if a <= 0 or 1.0 if a > 0
+     * @return -1.0 if a is lower than or equal to 0 or 1.0 if a is greater than 0
      */
     protected double sign(final double a) {
-        return (a <= 0.0) ? -1.0 : ((a > 0.0) ? 1.0 : a); // return +0.0/-0.0/NaN depending on a
+        return (a <= 0.0) ? -1.0 : ((a > 0.0) ? 1.0 : a);
     }
 
 }

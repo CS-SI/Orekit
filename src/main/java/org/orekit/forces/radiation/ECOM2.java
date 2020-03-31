@@ -61,10 +61,13 @@ import org.orekit.utils.ParameterDriver;
  * <b>D4B1</b> (i.e. <i>nD</i> = 2 an <i>nB</i> = 1) configurations. At the opposite, in Arnold paper, it
  * is recommend to not use <b>D2B0</b> (i.e. <i>nD</i> = 1 and <i>nB</i> = 0) configuration.
  * </p>
- * @see "Arnold, Daniel, et al. "CODE’s new solar radiation pressure model for GNSS orbit determination."
- *      Journal of geodesy 89.8 (2015): 775-791."
- * @see "Tzu-Pang tseng and Michael Moore, "Impact of solar radiation pressure mis-modeling on
- *      GNSS satellite orbit determination" IGS Worshop, Wuhan, China, 2018."
+ *
+ * @see "Arnold, Daniel, et al, CODE’s new solar radiation pressure model for GNSS orbit determination,
+ *       Journal of geodesy 89.8 (2015): 775-791."
+ *
+ * @see "Tzu-Pang tseng and Michael Moore, Impact of solar radiation pressure mis-modeling on
+ *       GNSS satellite orbit determination, IGS Worshop, Wuhan, China, 2018."
+ *
  * @author David Soulard
  * @since 10.2
  */
