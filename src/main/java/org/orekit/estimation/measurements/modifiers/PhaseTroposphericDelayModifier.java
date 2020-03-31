@@ -24,13 +24,13 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
@@ -220,7 +220,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final double[] oldValue = estimated.getEstimatedValue();
 
         // update estimated derivatives with Jacobian of the measure wrt state
-        final TroposphericDSConverter converter = new TroposphericDSConverter(state, 6, Propagator.DEFAULT_LAW);
+        final TroposphericDSConverter converter = new TroposphericDSConverter(state, 6, new InertialProvider(state.getFrame()));
         final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(tropoModel);
         final DerivativeStructure[] dsParameters = converter.getParameters(dsState, tropoModel);
         final DerivativeStructure dsDelay = phaseErrorTroposphericModel(station, dsState, dsParameters, measurement.getWavelength());
