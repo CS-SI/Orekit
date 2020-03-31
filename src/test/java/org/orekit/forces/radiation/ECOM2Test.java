@@ -1,47 +1,67 @@
 package org.orekit.forces.radiation;
 
+import java.io.FileNotFoundException;
+import java.text.ParseException;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
-public class ECOM2Test {
+public class ECOM2Test extends AbstractForceModelTest {
     
     @Before
     public void setUp() throws OrekitException {
-        //Utils.setDataRoot("regular-data:potential/shm-format");
-        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
+        Utils.setDataRoot("potential/shm-format:regular-data");
     }
+
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
                                                 OrbitType orbitType, PositionAngle angleType,
                                                 ForceModel... models)
@@ -111,12 +131,11 @@ public class ECOM2Test {
                        168 * (sP2h.getZ() - sM2h.getZ()) +
                        672 * (sP1h.getZ() - sM1h.getZ())) / (840 * h);
     }
-    
-    
+
     @Test
     public void testJacobianModelMatrix() {
         final DSFactory factory = new DSFactory(6, 1);
-        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(2, 0);
         ForceModel gravityField =
             new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
         
@@ -134,14 +153,14 @@ public class ECOM2Test {
         final FieldVector3D<DerivativeStructure>        pos     = new FieldVector3D<DerivativeStructure>(x, y, z);
         final FieldVector3D<DerivativeStructure>        vel     = new FieldVector3D<DerivativeStructure>(xDot, yDot, zDot);
         final FieldPVCoordinates<DerivativeStructure>   dsPV    = new FieldPVCoordinates<DerivativeStructure>(pos, vel);
-        final FieldAbsoluteDate<DerivativeStructure>    dsDate  = new FieldAbsoluteDate<>(field, new AbsoluteDate(2016, 2, 13, 2, 31, 30, TimeScalesFactory.getUTC()));
+        final FieldAbsoluteDate<DerivativeStructure>    dsDate  = new FieldAbsoluteDate<>(field, new AbsoluteDate(2003, 2, 13, 2, 31, 30, TimeScalesFactory.getUTC()));
         final DerivativeStructure                       mu      = one.multiply(Constants.EGM96_EARTH_MU);                             
         final FieldOrbit<DerivativeStructure>           dsOrbit = new FieldCartesianOrbit<DerivativeStructure>(dsPV, FramesFactory.getEME2000(), dsDate, mu);
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<DerivativeStructure>(dsOrbit);
         
         //Build the forceModel
-        final ECOM2  forceModel = new ECOM2(2, 2, 1e-7, -1e-4, 1e-4, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
-       
+        final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+
         //Compute acceleration with state derivatives
         final FieldVector3D<DerivativeStructure> acc = forceModel.acceleration(dsState, forceModel.getParameters(field));
         final double[] accX = acc.getX().getAllDerivatives();
@@ -207,6 +226,170 @@ public class ECOM2Test {
         }
         
     }
-    
-  
+
+    @Test
+    public void testRealField() {
+        
+        // Initial field Keplerian orbit
+        // The variables are the six orbital parameters
+        DSFactory factory = new DSFactory(6, 4);
+        DerivativeStructure a_0 = factory.variable(0, 7e6);
+        DerivativeStructure e_0 = factory.variable(1, 0.01);
+        DerivativeStructure i_0 = factory.variable(2, 1.2);
+        DerivativeStructure R_0 = factory.variable(3, 0.7);
+        DerivativeStructure O_0 = factory.variable(4, 0.5);
+        DerivativeStructure n_0 = factory.variable(5, 0.1);
+
+        Field<DerivativeStructure> field = a_0.getField();
+        DerivativeStructure zero = field.getZero();
+
+        // Initial date = J2000 epoch
+        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
+        
+        // J2000 frame
+        Frame EME = FramesFactory.getEME2000();
+
+        // Create initial field Keplerian orbit
+        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                                 PositionAngle.MEAN,
+                                                                                 EME,
+                                                                                 J2000,
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
+        
+        // Initial field and classical S/Cs
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
+        SpacecraftState iSR = initialState.toSpacecraftState();
+
+        // Field integrator and classical integrator
+        ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator =
+                        new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
+        ClassicalRungeKuttaIntegrator RIntegrator =
+                        new ClassicalRungeKuttaIntegrator(6);
+        OrbitType type = OrbitType.EQUINOCTIAL;
+        
+        // Field and classical numerical propagators
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
+        FNP.setInitialState(initialState);
+
+        NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
+        NP.setInitialState(iSR);
+
+        // Set up the force model to test
+        final ECOM2 forceModel = new ECOM2(0, 0, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+
+        FNP.addForceModel(forceModel);
+        NP.addForceModel(forceModel);
+        
+        // Do the test
+        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 300., NP, FNP,
+                                  1.0e-30, 1.3e-8, 6.7e-11, 1.4e-10,
+                                  1, false);
+    }
+
+    @Test
+    public void testParameterDerivative() {
+
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final SpacecraftState state =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
+                                                       Constants.EIGEN5C_EARTH_MU));
+
+        //Build the forceModel
+        final ECOM2 forceModel = new ECOM2(0, 0, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+
+        Assert.assertFalse(forceModel.dependsOnPositionOnly());
+
+        checkParameterDerivative(state, forceModel, ECOM2.ECOM_COEFFICIENT + " B0", 1.0e-4, 3.0e-12);
+        checkParameterDerivative(state, forceModel, ECOM2.ECOM_COEFFICIENT + " D0", 1.0e-4, 3.0e-12);
+        checkParameterDerivative(state, forceModel, ECOM2.ECOM_COEFFICIENT + " Y0", 1.0e-4, 3.0e-12);
+    }
+
+    @Test
+    public void testJacobianVsFiniteDifferences() {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+
+        final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+
+        SpacecraftState state = new SpacecraftState(orbit,
+                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.0e-6, false);
+
+    }
+
+    @Test
+    public void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
+                                           FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3),
+                                           FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
+                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
+        final double period = orbit.getKeplerianPeriod();
+        Assert.assertEquals(86164, period, 1);
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+
+        // creation of the force model
+        OneAxisEllipsoid earth =
+            new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
+                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final ECOM2 SRP = new ECOM2(2, 2, 1e-7, sun, earth.getEquatorialRadius());
+
+        // creation of the propagator
+        double[] absTolerance = {
+            0.1, 1.0e-9, 1.0e-9, 1.0e-5, 1.0e-5, 1.0e-5, 0.001
+        };
+        double[] relTolerance = {
+            1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-7
+        };
+        AdaptiveStepsizeIntegrator integrator =
+            new DormandPrince853Integrator(900.0, 60000, absTolerance, relTolerance);
+        integrator.setInitialStepSize(3600);
+        final NumericalPropagator calc = new NumericalPropagator(integrator);
+        calc.addForceModel(SRP);
+
+        // Step Handler
+        calc.setMasterMode(FastMath.floor(period), new SolarStepHandler());
+        AbsoluteDate finalDate = date.shiftedBy(10 * period);
+        calc.setInitialState(new SpacecraftState(orbit, 1500.0));
+        calc.propagate(finalDate);
+        Assert.assertTrue(calc.getCalls() < 7100);
+    }
+
+    private static class SolarStepHandler implements OrekitFixedStepHandler {
+
+        public void handleStep(SpacecraftState currentState, boolean isLast) {
+            final double dex = currentState.getEquinoctialEx() - 0.01071166;
+            final double dey = currentState.getEquinoctialEy() - 0.00654848;
+            final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
+            Assert.assertTrue(alpha > 100.0);
+            Assert.assertTrue(alpha < 112.0);
+            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003482, 0.003525);
+        }
+
+    }
+
+    public static void checkRadius(double radius , double min , double max) {
+        Assert.assertTrue(radius >= min);
+        Assert.assertTrue(radius <= max);
+    }
+
+
 }

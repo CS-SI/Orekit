@@ -42,19 +42,45 @@ import org.orekit.utils.ParameterDriver;
 
 /**
  * The Empirical CODE Orbit Model 2 (ECOM2) of the Center for Orbit Determination in Europe (CODE).
- * <p>This model is based on <a
- * href="https://www.semanticscholar.org/paper/CODE%E2%80%99s-new-solar-radiation-pressure-model-for-GNSS-Arnold-Meindl/25d2a4d7b40688326c8f70cd292adf3b01fd2a7c">
- * CODE's new solar radidation pressure model for GNSS orbit determination</a> by
- * D. Arnold, M. Meindl and al in 2015 paper. See also <a href="http://www.igs.org/assets/pdf/IGSWS-2018-PS03-01.pdf">
- * Impact of solar radiation pressure mis-modeling on GNSS satellite orbit determination for quicker overview. </a>
- * IGS 2018 Workshop poster by Tzu-Pang Tseng.
+ * <p>
+ * The drag acceleration is computed as follows :
+ * γ = γ<sub>0</sub> + D(u)e<sub>D</sub> + Y(u)e<sub>Y</sub> + B(u)e<sub>B</sub>
+ * </p> <p>
+ * In the above equation, γ<sub>0</sub> is a selectable a priori model. Since 2013, no
+ * a priori model is used for CODE IGS contribution (i.e. γ<sub>0</sub> = 0). Moreover,
+ * u denotes the satellite's argument of latitude.
+ * </p> <p>
+ * D(u), Y(u) and B(u) are three functions of the ECOM2 model that can be represented
+ * as Fourier series. The coefficients of the Fourier series are estimated during the
+ * estimation process. he ECOM2 model has user-defines upper limits <i>nD</i> and
+ * <i>nB</i> for the Fourier series (i.e. <i>nD</i> for D(u) and <i>nB</i> for
+ * B(u). Y(u) is defined as a constant value).
+ * </p> <p>
+ * It exists several configurations to initialize <i>nD</i> and <i>nB</i> values. However,
+ * Arnold et al recommend to use <b>D2B1</b> (i.e. <i>nD</i> = 1 and <i>nB</i> = 1) and
+ * <b>D4B1</b> (i.e. <i>nD</i> = 2 an <i>nB</i> = 1) configurations. At the opposite, in Arnold paper, it
+ * is recommend to not use <b>D2B0</b> (i.e. <i>nD</i> = 1 and <i>nB</i> = 0) configuration.
+ * </p>
+ * @see "Arnold, Daniel, et al. "CODE’s new solar radiation pressure model for GNSS orbit determination."
+ *      Journal of geodesy 89.8 (2015): 775-791."
+ * @see "Tzu-Pang tseng and Michael Moore, "Impact of solar radiation pressure mis-modeling on
+ *      GNSS satellite orbit determination" IGS Worshop, Wuhan, China, 2018."
  * @author David Soulard
  * @since 10.2
  */
 public class ECOM2 extends AbstractForceModel {
 
+    /** Parameter name for ECOM model coefficients enabling Jacobian processing. */
+    public static final String ECOM_COEFFICIENT = "ECOM coefficient";
+
     /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
     private static final double ANGULAR_MARGIN = 1.0e-10;
+
+    /** Minimum value for ECOM2 estimated parameters. */
+    private static final double MIN_VALUE = Double.NEGATIVE_INFINITY;
+
+    /** Maximum value for ECOM2 estimated parameters. */
+    private static final double MAX_VALUE = Double.POSITIVE_INFINITY;
 
     /** Central body model. */
     private final double equatorialRadius;
@@ -84,52 +110,50 @@ public class ECOM2 extends AbstractForceModel {
     /** Sun model. */
     private final ExtendedPVCoordinatesProvider sun;
 
-
     /**
      * Constructor.
      * @param nD truncation rank of Fourier series in D term.
      * @param nB truncation rank of Fourier series in B term.
-     * @param X  parameters initial value
-     * @param Xmin parameters minimum value
-     * @param Xmax parameters maximum value
+     * @param value parameters initial value
      * @param sun provide for Sun parameter
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      */
-    public ECOM2(final int nD, final int nB, final double X, final double Xmin,  final double Xmax, final ExtendedPVCoordinatesProvider sun, final double equatorialRadius) {
+    public ECOM2(final int nD, final int nB, final double value,
+                 final ExtendedPVCoordinatesProvider sun, final double equatorialRadius) {
         this.nB = nB;
         this.nD = nD;
         this.coefs = new ParameterDriver[2 * (nD + nB) + 3];
         ParameterDriver driver;
-        //Add parameter along eB axis in alphabetical order
-        driver = new ParameterDriver("B0", X, SCALE, Xmin, Xmax);
+        // Add parameter along eB axis in alphabetical order
+        driver = new ParameterDriver(ECOM_COEFFICIENT + " B0", value, SCALE, MIN_VALUE, MAX_VALUE);
         driver.setSelected(true);
         coefs[0] = driver;
         for (int i = 1; i < nB + 1; i++) {
-            driver = new ParameterDriver("Bcos" + Integer.toString(i - 1), X, SCALE, Xmin, Xmax);
+            driver = new ParameterDriver(ECOM_COEFFICIENT + " Bcos" + Integer.toString(i - 1), value, SCALE, MIN_VALUE, MAX_VALUE);
             driver.setSelected(true);
             coefs[i]  = driver;
         }
         for (int i = nB + 1; i < 2 * nB + 1; i++) {
-            driver = new ParameterDriver("Bsin" + Integer.toString(i - (nB + 1)), X, SCALE, Xmin, Xmax);
+            driver = new ParameterDriver(ECOM_COEFFICIENT + " Bsin" + Integer.toString(i - (nB + 1)), value, SCALE, MIN_VALUE, MAX_VALUE);
             driver.setSelected(true);
             coefs[i] = driver;
         }
-        //Add driver along eD axis in alphabetical order
-        driver = new ParameterDriver("D0", X, SCALE, Xmin, Xmax);
+        // Add driver along eD axis in alphabetical order
+        driver = new ParameterDriver(ECOM_COEFFICIENT + " D0", value, SCALE, MIN_VALUE, MAX_VALUE);
         driver.setSelected(true);
         coefs[2 * nB + 1 ] = driver;
         for (int i = 2 * nB + 2; i < 2 * nB + 2 + nD; i++) {
-            driver = new ParameterDriver("Dcos" + Integer.toString(i - (2 * nB + 2)), X, SCALE, Xmin, Xmax);
+            driver = new ParameterDriver(ECOM_COEFFICIENT + " Dcos" + Integer.toString(i - (2 * nB + 2)), value, SCALE, MIN_VALUE, MAX_VALUE);
             driver.setSelected(true);
             coefs[i] = driver;
         }
         for (int i = 2 * nB + 2 + nD; i < 2 * (nB + nD) + 2; i++) {
-            driver = new ParameterDriver("Dsin" + Integer.toString(i - (2 * nB + nD + 2)), X, SCALE, Xmin, Xmax);
+            driver = new ParameterDriver(ECOM_COEFFICIENT + " Dsin" + Integer.toString(i - (2 * nB + nD + 2)), value, SCALE, MIN_VALUE, MAX_VALUE);
             driver.setSelected(true);
             coefs[i] = driver;
         }
-        //Add  Y0
-        driver = new ParameterDriver("Y0", X, SCALE, Xmin, Xmax);
+        // Add  Y0
+        driver = new ParameterDriver(ECOM_COEFFICIENT + " Y0", value, SCALE, MIN_VALUE, MAX_VALUE);
         driver.setSelected(true);
         coefs[2 * (nB + nD) + 2] = driver;
         this.sun = sun;
@@ -145,18 +169,18 @@ public class ECOM2 extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
-        //Build the coordinate system
+        // Build the coordinate system
         final Vector3D Z = s.getPVCoordinates().getMomentum().normalize();
         final Vector3D sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition().normalize();
         final Vector3D Y = Z.crossProduct(sunPos);
         final Vector3D X = Y.crossProduct(Z);
-        //Building eD, eY, eB vectors;
+        // Build eD, eY, eB vectors
         final Vector3D position = s.getPVCoordinates().getPosition().normalize();
         final Vector3D eD = sunPos.add(-1.0, position);
         final Vector3D eY = position.crossProduct(eD);
         final Vector3D eB = eD.crossProduct(eY);
 
-        // Angular argument difference u_s - u;
+        // Angular argument difference u_s - u
         final double  delta_u =  FastMath.atan2(position.dotProduct(Y), position.dotProduct(X));
 
         // Compute B(u)
@@ -169,27 +193,26 @@ public class ECOM2 extends AbstractForceModel {
         for (int i = 1; i < nD + 1; i++) {
             d_u += parameters[2 * nB + 1 + i] * FastMath.cos((2 * i - 1) * delta_u) + parameters[2 * nB + 1 + i + nD] * FastMath.sin((2 * i - 1) * delta_u);
         }
-        //Return acceleration
+        // Return acceleration
         return new Vector3D(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
-        acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
-        //Build the coordinate system
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
+        // Build the coordinate system
         final FieldVector3D<T> Z = s.getPVCoordinates().getMomentum().normalize();
         final FieldVector3D<T> sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition().normalize();
         final FieldVector3D<T> Y = Z.crossProduct(sunPos);
         final FieldVector3D<T> X = Y.crossProduct(Z);
 
-        //Building eD, eY, eB vectors;
+        // Build eD, eY, eB vectors
         final FieldVector3D<T> position = s.getPVCoordinates().getPosition().normalize();
         final FieldVector3D<T> eD = sunPos.add(-1.0, position);
         final FieldVector3D<T> eY = position.crossProduct(eD);
         final FieldVector3D<T> eB = eD.crossProduct(eY);
 
-        // Angular argument difference u_s - u;
+        // Angular argument difference u_s - u
         final T  delta_u = FastMath.atan2(position.dotProduct(Y), position.dotProduct(X));
 
         // Compute B(u)
@@ -203,8 +226,8 @@ public class ECOM2 extends AbstractForceModel {
         for (int i = 1; i < nD + 1; i++) {
             d_u =  d_u.add(FastMath.cos(delta_u.multiply(2 * i - 1)).multiply(parameters[2 * nB + 1 + i])).add(FastMath.sin(delta_u.multiply(2 * i - 1)).multiply(parameters[2 * nB + 1 + i + nD]));
         }
-        //return the acceleration
-        return new FieldVector3D<T>(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
+        // Return the acceleration
+        return new FieldVector3D<>(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
     }
 
 
@@ -224,38 +247,6 @@ public class ECOM2 extends AbstractForceModel {
     @Override
     public ParameterDriver[] getParametersDrivers() {
         return coefs;
-    }
-
-    /**
-     * Get the drivers on the parameter along eD axis.
-     * @return drivers which concerning eD axis.
-     */
-    public ParameterDriver[] getDParametersDrivers() {
-        final ParameterDriver[] drivers = new ParameterDriver[2 * nD + 1];
-        for (int i = 2 * nB + 1; i < 2 * (nB + nD) + 2; i++) {
-            drivers[i - (2 * nB + 1)] = coefs[i];
-        }
-        return drivers;
-    }
-
-    /**
-     * Get the drivers on the parameter along eB axis.
-     * @return drivers which concerning eB axis.
-     */
-    public ParameterDriver[] getBParametersDrivers() {
-        final ParameterDriver[] drivers = new ParameterDriver[2 * nB + 1];
-        for (int i = 0; i < 2 * nB + 1; i++) {
-            drivers[i] = coefs[i];
-        }
-        return drivers;
-    }
-
-    /**
-     * Get the driver on the parameter along eY axis.
-     * @return drivers which concerning eY axis.
-     */
-    public ParameterDriver getYParametersDriver() {
-        return coefs[2 * (nD + nB) + 2];
     }
 
     /**
