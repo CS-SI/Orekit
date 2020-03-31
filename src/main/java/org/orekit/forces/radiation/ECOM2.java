@@ -105,7 +105,7 @@ public class ECOM2 extends AbstractForceModel {
      * then along eY, then 2*nB following are along eB axis.
      * </p>
      */
-    private final ParameterDriver[] coefs;
+    private final ParameterDriver[] coefficients;
 
     /** Sun model. */
     private final ExtendedPVCoordinatesProvider sun;
@@ -122,40 +122,40 @@ public class ECOM2 extends AbstractForceModel {
                  final ExtendedPVCoordinatesProvider sun, final double equatorialRadius) {
         this.nB = nB;
         this.nD = nD;
-        this.coefs = new ParameterDriver[2 * (nD + nB) + 3];
+        this.coefficients = new ParameterDriver[2 * (nD + nB) + 3];
         ParameterDriver driver;
         // Add parameter along eB axis in alphabetical order
         driver = new ParameterDriver(ECOM_COEFFICIENT + " B0", value, SCALE, MIN_VALUE, MAX_VALUE);
         driver.setSelected(true);
-        coefs[0] = driver;
+        coefficients[0] = driver;
         for (int i = 1; i < nB + 1; i++) {
             driver = new ParameterDriver(ECOM_COEFFICIENT + " Bcos" + Integer.toString(i - 1), value, SCALE, MIN_VALUE, MAX_VALUE);
             driver.setSelected(true);
-            coefs[i]  = driver;
+            coefficients[i]  = driver;
         }
         for (int i = nB + 1; i < 2 * nB + 1; i++) {
             driver = new ParameterDriver(ECOM_COEFFICIENT + " Bsin" + Integer.toString(i - (nB + 1)), value, SCALE, MIN_VALUE, MAX_VALUE);
             driver.setSelected(true);
-            coefs[i] = driver;
+            coefficients[i] = driver;
         }
         // Add driver along eD axis in alphabetical order
         driver = new ParameterDriver(ECOM_COEFFICIENT + " D0", value, SCALE, MIN_VALUE, MAX_VALUE);
         driver.setSelected(true);
-        coefs[2 * nB + 1 ] = driver;
+        coefficients[2 * nB + 1 ] = driver;
         for (int i = 2 * nB + 2; i < 2 * nB + 2 + nD; i++) {
             driver = new ParameterDriver(ECOM_COEFFICIENT + " Dcos" + Integer.toString(i - (2 * nB + 2)), value, SCALE, MIN_VALUE, MAX_VALUE);
             driver.setSelected(true);
-            coefs[i] = driver;
+            coefficients[i] = driver;
         }
         for (int i = 2 * nB + 2 + nD; i < 2 * (nB + nD) + 2; i++) {
             driver = new ParameterDriver(ECOM_COEFFICIENT + " Dsin" + Integer.toString(i - (2 * nB + nD + 2)), value, SCALE, MIN_VALUE, MAX_VALUE);
             driver.setSelected(true);
-            coefs[i] = driver;
+            coefficients[i] = driver;
         }
         // Add  Y0
         driver = new ParameterDriver(ECOM_COEFFICIENT + " Y0", value, SCALE, MIN_VALUE, MAX_VALUE);
         driver.setSelected(true);
-        coefs[2 * (nB + nD) + 2] = driver;
+        coefficients[2 * (nB + nD) + 2] = driver;
         this.sun = sun;
         this.equatorialRadius = equatorialRadius;
     }
@@ -246,7 +246,7 @@ public class ECOM2 extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public ParameterDriver[] getParametersDrivers() {
-        return coefs;
+        return coefficients.clone();
     }
 
     /**

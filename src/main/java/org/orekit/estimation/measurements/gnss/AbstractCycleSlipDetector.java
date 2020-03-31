@@ -206,7 +206,7 @@ public abstract class AbstractCycleSlipDetector implements CycleSlipDetectors {
      * Container for computed if cycle-slip occurs.
      * @author David Soulard
      */
-    class SlipComputationData {
+    static class SlipComputationData {
 
         /** Value of the measurement. */
         private double value;
