@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
@@ -135,7 +137,7 @@ public class TLETest {
     @Test
     public void testBug74() {
         checkSymmetry("1 00001U 00001A   12026.45833333 2.94600864  39565-9  16165-7 1    12",
-                      "2 00001 627.0796 454.4522 0000000 624.9662   0.4817  0.00000000    12");
+                      "2 00001 127.0796 254.4522 0000000 224.9662   0.4817  0.00000000    11");
     }
 
     @Test
@@ -221,10 +223,9 @@ public class TLETest {
                               FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
             tle.getLine2();
             Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
-            Assert.assertEquals(5555, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals("eccentricity", oe.getParts()[1]);
+        } catch (MathIllegalArgumentException except) {
+            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, except.getSpecifier());
+            Assert.assertEquals(1.0075476, except.getParts()[0]);
         }
     }
 
