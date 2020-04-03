@@ -109,9 +109,11 @@ import org.orekit.models.earth.displacement.OceanLoadingCoefficientsBLQFactory;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.models.earth.ionosphere.EstimatedIonosphericModel;
+import org.orekit.models.earth.ionosphere.IonosphericMappingFunction;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
+import org.orekit.models.earth.ionosphere.SingleLayerModelMappingFunction;
 import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
@@ -1494,7 +1496,8 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             if (stationIonosphericCorrection[i]) {
                 if (stationIonosphericModelEstimated[i]) {
                     // Estimated ionospheric model
-                    ionosphericModel  = new EstimatedIonosphericModel(stationIonosphericVTEC[i], stationIonosphericHIon[i]);
+                    final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(stationIonosphericHIon[i]);
+                    ionosphericModel  = new EstimatedIonosphericModel(mapping, stationIonosphericVTEC[i]);
                     final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().get(0);
                     ionosphericDriver.setSelected(stationVTECEstimated[i]);
                     ionosphericDriver.setName(stationNames[i].substring(0, 5) + EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT);

@@ -65,7 +65,8 @@ public class EstimatedIonosphericModelTest {
     @Test
     public void testL1GPS() {
         // Model
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(1.0, 0.0);
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(0.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 1.0);
         // Delay
         final double delay = model.pathDelay(0.5 * FastMath.PI,
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
@@ -83,7 +84,8 @@ public class EstimatedIonosphericModelTest {
         // Zero
         final T zero = field.getZero();
         // Model
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(1.0, 0.0);
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(0.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 1.0);
         // Delay
         final T delay = model.pathDelay(zero.add(0.5 * FastMath.PI),
                                         Frequency.G01.getMHzFrequency() * 1.0e6,
@@ -93,51 +95,11 @@ public class EstimatedIonosphericModelTest {
     }
 
     @Test
-    public void testMappingFunction() {
-        // Model
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(50.0, 450e3);
-        // z = 70°
-        final double factor70 = model.mappingFunction(FastMath.toRadians(20.0));
-        Assert.assertEquals(2.09, factor70, 0.01);
-        // z = 75°
-        final double factor75 = model.mappingFunction(FastMath.toRadians(15.0));
-        Assert.assertEquals(2.32, factor75, 0.01);
-        // z = 80°
-        final double factor80 = model.mappingFunction(FastMath.toRadians(10.0));
-        Assert.assertEquals(2.55, factor80, 0.01);
-        // z = 85°
-        final double factor85 = model.mappingFunction(FastMath.toRadians(5.0));
-        Assert.assertEquals(2.73, factor85, 0.01);
-    }
-
-    @Test
-    public void testFieldMappingFunction() {
-        doTestFieldMappingFunction(Decimal64Field.getInstance());
-    }
-
-    private <T extends RealFieldElement<T>> void doTestFieldMappingFunction(final Field<T> field) {
-        final T zero = field.getZero();
-        // Model
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(50.0, 450e3);
-        // z = 70°
-        final T factor70 = model.mappingFunction(zero.add(FastMath.toRadians(20.0)));
-        Assert.assertEquals(2.09, factor70.getReal(), 0.01);
-        // z = 75°
-        final T factor75 = model.mappingFunction(zero.add(FastMath.toRadians(15.0)));
-        Assert.assertEquals(2.32, factor75.getReal(), 0.01);
-        // z = 80°
-        final T factor80 = model.mappingFunction(zero.add(FastMath.toRadians(10.0)));
-        Assert.assertEquals(2.55, factor80.getReal(), 0.01);
-        // z = 85°
-        final T factor85 = model.mappingFunction(zero.add(FastMath.toRadians(5.0)));
-        Assert.assertEquals(2.73, factor85.getReal(), 0.01);
-    }
-
-    @Test
     public void testDelay() {
         final double elevation = 70.;
 
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(50.0, 450e3);
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
         
         double delayMeters = model.pathDelay(FastMath.toRadians(elevation),
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
@@ -155,7 +117,8 @@ public class EstimatedIonosphericModelTest {
     private <T extends RealFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final double elevation = 70.;
 
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(50.0, 450e3);
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
         T zero = field.getZero();
         T delayMeters = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
@@ -173,7 +136,8 @@ public class EstimatedIonosphericModelTest {
     private <T extends RealFieldElement<T>> void doTestEquality(final Field<T> field) {
         final double elevation = 70.;
 
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(50.0, 450e3);
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
         T zero = field.getZero();
         T delayMetersF = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
@@ -206,7 +170,8 @@ public class EstimatedIonosphericModelTest {
         final GroundStation station = new GroundStation(baseFrame);
         
         // Ionospheric model
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(10.0, 450e3);
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 10.0);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -339,7 +304,8 @@ public class EstimatedIonosphericModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
         
         // Ionospheric model
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(50.0, 450e3);
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {

@@ -55,31 +55,25 @@ public class EstimatedIonosphericModel implements IonosphericModel {
     /** Serializable UID. */
     private static final long serialVersionUID = 20200304L;
 
-    /** Mean Earth radius [km]. */
-    private static final double RE = 6371.0;
-
-    /** Meters to kilometers factor. */
-    private static final double M_TO_KM = 0.001;
-
     /** Ionospheric delay factor. */
     private static final double FACTOR = 40.3e16;
+
+    /** Ionospheric mapping Function model. */
+    private final IonosphericMappingFunction model;
 
     /** Driver for the Vertical Total Electron Content.*/
     private final ParameterDriver vtec;
 
-    /** Ionospheric single layer in kilometers.*/
-    private final double hIon;
 
     /**
      * Build a new instance.
+     * @param model ionospheric mapping function
      * @param vtecValue value of the Vertical Total Electron Content in TECUnits
-     * @param height height of the ionospheric single layer in meters
      */
-    public EstimatedIonosphericModel(final double vtecValue, final double height) {
-        this.vtec = new ParameterDriver(EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT,
-                                        vtecValue, FastMath.scalb(1.0, 3), 0.0, 1000.0);
-        // Convert meters to kilometers
-        this.hIon = height * M_TO_KM;
+    public EstimatedIonosphericModel(final IonosphericMappingFunction model, final double vtecValue) {
+        this.model = model;
+        this.vtec  = new ParameterDriver(EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT,
+                                         vtecValue, FastMath.scalb(1.0, 3), 0.0, 1000.0);
     }
 
     /** {@inheritDoc} */
@@ -114,7 +108,7 @@ public class EstimatedIonosphericModel implements IonosphericModel {
         // Square of the frequency
         final double freq2 = frequency * frequency;
         // Mapping factor
-        final double fz = mappingFunction(elevation);
+        final double fz = model.mappingFactor(elevation);
         // "Slant" Total Electron Content
         final double stec = parameters[0] * fz;
         // Delay computation
@@ -154,7 +148,7 @@ public class EstimatedIonosphericModel implements IonosphericModel {
         // Square of the frequency
         final double freq2 = frequency * frequency;
         // Mapping factor
-        final T fz = mappingFunction(elevation);
+        final T fz = model.mappingFactor(elevation);
         // "Slant" Total Electron Content
         final T stec = parameters[0].multiply(fz);
         // Delay computation
@@ -162,39 +156,9 @@ public class EstimatedIonosphericModel implements IonosphericModel {
         return stec.multiply(alpha);
     }
 
-    /**
-     * Computes the ionospheric mapping function.
-     * @param elevation the elevation of the satellite in radians
-     * @return the mapping function
-     */
-    public double mappingFunction(final double elevation) {
-        // Calculate the zenith angle from the elevation
-        final double z = FastMath.abs(0.5 * FastMath.PI - elevation);
-        // Distance ratio
-        final double ratio = RE / (RE + hIon);
-        // Mapping function
-        final double coef = FastMath.sin(z) * ratio;
-        return 1.0 / FastMath.sqrt(1.0 - coef * coef);
-    }
-
-    /**
-     * Computes the ionospheric mapping function.
-     * @param <T> type of the elements
-     * @param elevation the elevation of the satellite in radians
-     * @return the mapping function
-     */
-    public <T extends RealFieldElement<T>> T mappingFunction(final T elevation) {
-        // Calculate the zenith angle from the elevation
-        final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
-        // Distance ratio
-        final double ratio = RE / (RE + hIon);
-        // Mapping function
-        final T coef = FastMath.sin(z).multiply(ratio);
-        return FastMath.sqrt(coef.multiply(coef).negate().add(1.0)).reciprocal();
-    }
-
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(vtec);
     }
+
 }
