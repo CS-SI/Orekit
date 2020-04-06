@@ -160,6 +160,9 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE lines do not refer to the same objec
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = invalid TLE parameter for object {0}: {1} = {2}
 
+# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
+TLE_INVALID_PARAMETER_RANGE = invalid TLE parameter {0}: {1} not in range [{2}, {3}]
+
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 
