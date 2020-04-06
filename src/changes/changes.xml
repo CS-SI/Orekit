@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="669">
+        Added estimated ionospheric model.
+      </action>
       <action dev="bryan" type="add" issue="645">
         Merged phase-measurement branch into develop.
       </action>
