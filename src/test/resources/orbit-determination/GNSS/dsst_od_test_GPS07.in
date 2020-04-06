@@ -123,6 +123,9 @@ solid.tides.displacement.correction                   = true
 solid.tides.displacement.remove.permanent.deformation = false
 ocean.loading.correction                              = false
 
+## Shapiro time delay on range measurement
+range.shapiro = false
+
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] =  SHLD/C1
 ground.station.latitude                        [0] =   41.868362882 

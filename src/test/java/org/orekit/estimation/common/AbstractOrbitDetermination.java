@@ -80,6 +80,7 @@ import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.ShapiroRangeModifier;
 import org.orekit.estimation.sequential.ConstantProcessNoise;
 import org.orekit.estimation.sequential.KalmanEstimation;
 import org.orekit.estimation.sequential.KalmanEstimator;
@@ -323,6 +324,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, false);
         final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser, false);
@@ -347,7 +349,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
                                                          stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
-                                                         rangeOutliersManager, rangeRateOutliersManager));
+                                                         rangeOutliersManager, rangeRateOutliersManager, shapiroRangeModifier));
             } else {
                 // the measurements come from an Orekit custom file
                 independentMeasurements.addAll(readMeasurements(nd,
@@ -493,6 +495,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, true);
         final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser, true);
@@ -518,7 +521,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
                                                          stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
-                                                         rangeOutliersManager, rangeRateOutliersManager));
+                                                         rangeOutliersManager, rangeRateOutliersManager, shapiroRangeModifier));
             } else {
                 // the measurements come from an Orekit custom file
                 independentMeasurements.addAll(readMeasurements(nd,
@@ -1211,6 +1214,20 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         return offset.getNorm() > 0 ? new OnBoardAntennaRangeModifier(offset) : null;
     }
 
+    /** Set up range modifier taking shapiro effect.
+     * @param parser input file parser
+     * @return range modifier (may be null if antenna offset is zero or undefined)
+     */
+    private ShapiroRangeModifier createShapiroRangeModifier(final KeyValueFileParser<ParameterKey> parser) {
+        final ShapiroRangeModifier shapiro;
+        if (!parser.containsKey(ParameterKey.RANGE_SHAPIRO)) {
+            shapiro = null;
+        } else {
+            shapiro = parser.getBoolean(ParameterKey.RANGE_SHAPIRO) ? new ShapiroRangeModifier(getMu()) : null;
+        }
+        return shapiro;
+    }
+
     /** Set up stations.
      * @param parser input file parser
      * @param conventions IERS conventions to use
@@ -1814,6 +1831,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
      * @param weights base weights for measurements
      * @param rangeOutliersManager manager for range measurements outliers (null if none configured)
      * @param rangeRateOutliersManager manager for range-rate measurements outliers (null if none configured)
+     * @param shapiroRangeModifier shapiro range modifier (null if none configured)
      * @return measurements list
      * @exception IOException if measurement file cannot be read
      */
@@ -1824,7 +1842,8 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                                                    final OnBoardAntennaRangeModifier satAntennaRangeModifier,
                                                    final Weights weights,
                                                    final OutlierFilter<Range> rangeOutliersManager,
-                                                   final OutlierFilter<RangeRate> rangeRateOutliersManager)
+                                                   final OutlierFilter<RangeRate> rangeRateOutliersManager,
+                                                   final ShapiroRangeModifier shapiroRangeModifier)
         throws IOException {
         final String notConfigured = " not configured";
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
@@ -1867,6 +1886,9 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                             }
                             if (satAntennaRangeModifier != null) {
                                 range.addModifier(satAntennaRangeModifier);
+                            }
+                            if (shapiroRangeModifier != null) {
+                                range.addModifier(shapiroRangeModifier);
                             }
                             if (stationData.getRangeBias() != null) {
                                 range.addModifier(stationData.getRangeBias());
