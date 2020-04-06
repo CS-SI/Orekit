@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -229,8 +230,26 @@ public class TLE implements TimeStamped, Serializable {
 
     }
 
-    /** Simple constructor from already parsed elements. This constructor uses the {@link
-     * DataContext#getDefault() default data context}.
+    /**
+     * <p>
+     * Simple constructor from already parsed elements. This constructor uses the
+     * {@link DataContext#getDefault() default data context}.
+     * </p>
+     * 
+     * <p>
+     * The mean anomaly, the right ascension of ascending node Ω and the argument of 
+     * perigee ω are normalized into the [0, 2π] interval as they can be negative. 
+     * After that, a range check is performed on some of the orbital elements:
+     * 
+     * <pre>
+     *     meanMotion &gt;= 0
+     *     0 &lt;= i &lt;= π
+     *     0 &lt;= Ω &lt;= 2π
+     *     0 &lt;= e &lt;= 1
+     *     0 &lt;= ω &lt;= 2π
+     *     0 &lt;= meanAnomaly &lt;= 2π
+     * </pre>
+     * </p>
      *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
@@ -268,8 +287,27 @@ public class TLE implements TimeStamped, Serializable {
                 DataContext.getDefault().getTimeScales().getUTC());
     }
 
-    /** Simple constructor from already parsed elements using the given time scale as UTC.
-     *
+    /**
+     * <p>
+     * Simple constructor from already parsed elements using the given time scale as
+     * UTC.
+     * </p>
+     * 
+     * <p>
+     * The mean anomaly, the right ascension of ascending node Ω and the argument of 
+     * perigee ω are normalized into the [0, 2π] interval as they can be negative. 
+     * After that, a range check is performed on some of the orbital elements:
+     * 
+     * <pre>
+     *     meanMotion &gt;= 0
+     *     0 &lt;= i &lt;= π
+     *     0 &lt;= Ω &lt;= 2π
+     *     0 &lt;= e &lt;= 1
+     *     0 &lt;= ω &lt;= 2π
+     *     0 &lt;= meanAnomaly &lt;= 2π
+     * </pre>
+     * </p>
+     * 
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
      * @param launchYear launch year (all digits)
@@ -310,18 +348,32 @@ public class TLE implements TimeStamped, Serializable {
         this.elementNumber   = elementNumber;
 
         // orbital parameters
-        this.epoch                      = epoch;
-        this.meanMotion                 = meanMotion;
-        this.meanMotionFirstDerivative  = meanMotionFirstDerivative;
+        this.epoch = epoch;
+        // Checking mean motion range
+        checkParameterRangeInclusive("meanMotion", meanMotion, 0.0, Double.POSITIVE_INFINITY);
+        this.meanMotion = meanMotion;
+        this.meanMotionFirstDerivative = meanMotionFirstDerivative;
         this.meanMotionSecondDerivative = meanMotionSecondDerivative;
-        this.inclination                = i;
-        this.raan                       = raan;
-        this.eccentricity               = e;
-        this.pa                         = pa;
-        this.meanAnomaly                = meanAnomaly;
+
+        // Checking inclination range
+        checkParameterRangeInclusive("inclination", i, 0, FastMath.PI);
+        this.inclination = i;
+
+        // Normalizing RAAN in [0,2pi] interval
+        this.raan = MathUtils.normalizeAngle(raan, FastMath.PI);
+
+        // Checking eccentricity range
+        checkParameterRangeInclusive("eccentricity", e, 0.0, 1.0);
+        this.eccentricity = e;
+
+        // Normalizing PA in [0,2pi] interval
+        this.pa = MathUtils.normalizeAngle(pa, FastMath.PI);
+
+        // Normalizing mean anomaly in [0,2pi] interval
+        this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, FastMath.PI);
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
-        this.bStar                   = bStar;
+        this.bStar = bStar;
 
         // don't build the line until really needed
         this.line1 = null;
@@ -744,6 +796,37 @@ public class TLE implements TimeStamped, Serializable {
             }
         }
         return sum % 10;
+    }
+
+    /**
+     * <p>
+     * Check if the given parameter is within an acceptable range.
+     * The bounds are inclusive: an exception is raised when either of those conditions are met:
+     * <ul>
+     *     <li>The parameter is strictly greater than upperBound</li>
+     *     <li>The parameter is strictly lower than lowerBound</li>
+     * </ul>
+     * </p>
+     * <p>
+     * In either of these cases, an OrekitException is raised with a TLE_INVALID_PARAMETER_RANGE 
+     * message, for instance:
+     * <pre>
+     *   "invalid TLE parameter eccentricity: 42.0 not in range [0.0, 1.0]"
+     * </pre>
+     * </p>
+     * @param parameterName name of the parameter
+     * @param parameter value of the parameter
+     * @param lowerBound lower bound of the acceptable range (inclusive)
+     * @param upperBound upper bound of the acceptable range (inclusive)
+     */
+    private void checkParameterRangeInclusive(final String parameterName, final double parameter,
+            final double lowerBound,
+            final double upperBound) {
+        if ((parameter < lowerBound) || (parameter > upperBound)) {
+            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, parameterName,
+                    parameter,
+                    lowerBound, upperBound);
+        }
     }
 
     /** Check if this tle equals the provided tle.
