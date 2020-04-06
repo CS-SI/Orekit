@@ -41,6 +41,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -129,6 +130,75 @@ public class EstimatedIonosphericModelTest {
     }
 
     @Test
+    public void testZeroDelay() {
+        // Frequency
+        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+
+        // Geodetic point
+        final double height       = 0.0;
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
+        // Body: earth
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        // Topocentric frame
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+
+        // Ionospheric model
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 10.0);
+
+        // Spacecraft state
+        final AbsoluteDate    date    = AbsoluteDate.J2000_EPOCH;
+        final Frame           frame   = FramesFactory.getEME2000();
+        final Orbit           orbit   = new KeplerianOrbit(24464560.0, 0.05, 0.122138,
+                                               3.10686, 1.00681, 0.048363,
+                                               PositionAngle.MEAN, frame, date, Constants.WGS84_EARTH_MU);
+        final SpacecraftState state = new SpacecraftState(orbit);
+
+        // Delay
+        final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
+        Assert.assertEquals(0.0, delay, Double.MIN_VALUE);
+    }
+
+    @Test
+    public void testFieldZeroDelay() {
+        doTestFieldZeroDelay(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
+        final T zero = field.getZero();
+        // Frequency
+        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+
+        // Geodetic point
+        final double height       = 0.0;
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
+        // Body: earth
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        // Topocentric frame
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+
+        // Ionospheric model
+        final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 10.0);
+
+        // Spacecraft state
+        final FieldAbsoluteDate<T>    date    = FieldAbsoluteDate.getJ2000Epoch(field);
+        final Frame                   frame   = FramesFactory.getEME2000();
+        final FieldOrbit<T>           orbit   = new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.05), zero.add(0.122138),
+                                                                          zero.add(3.10686), zero.add(1.00681), zero.add(0.048363),
+                                                                          PositionAngle.MEAN, frame, date, zero.add(Constants.WGS84_EARTH_MU));
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
+
+        // Delay
+        final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
+        Assert.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
+    }
+
+    @Test
     public void testEquality() {
         doTestEquality(Decimal64Field.getInstance());
     }
@@ -158,7 +228,7 @@ public class EstimatedIonosphericModelTest {
 
         // Geodetic point
         final double height       = 0.0;
-        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(0.0), FastMath.toRadians(0.0), height);
         // Body: earth
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -206,7 +276,7 @@ public class EstimatedIonosphericModelTest {
         // Verify delay equality
         final double delayR = model.pathDelay(dsState.toSpacecraftState(), baseFrame, frequency, model.getParameters());
         final DerivativeStructure delayD = model.pathDelay(dsState, baseFrame, frequency, model.getParameters(field));
-        Assert.assertEquals(delayR, delayD.getValue(), 10e15);
+        Assert.assertEquals(delayR, delayD.getValue(), 1e-15);
 
         // Compute Delay with state derivatives
         final DerivativeStructure delay = model.pathDelay(dsElevation, frequency, model.getParameters(field));
