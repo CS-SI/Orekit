@@ -77,6 +77,8 @@ import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
+import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.estimation.sequential.ConstantProcessNoise;
 import org.orekit.estimation.sequential.KalmanEstimation;
@@ -106,6 +108,12 @@ import org.orekit.models.earth.displacement.OceanLoading;
 import org.orekit.models.earth.displacement.OceanLoadingCoefficientsBLQFactory;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
+import org.orekit.models.earth.ionosphere.EstimatedIonosphericModel;
+import org.orekit.models.earth.ionosphere.IonosphericMappingFunction;
+import org.orekit.models.earth.ionosphere.IonosphericModel;
+import org.orekit.models.earth.ionosphere.KlobucharIonoCoefficientsLoader;
+import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
+import org.orekit.models.earth.ionosphere.SingleLayerModelMappingFunction;
 import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
@@ -130,6 +138,7 @@ import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -1252,7 +1261,11 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
         final boolean[] stationWeatherEstimated           = parser.getBooleanArray(ParameterKey.GROUND_STATION_WEATHER_ESTIMATED);
         final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
-        //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
+        final boolean[] stationIonosphericCorrection      = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_IONOSPHERIC_CORRECTION);
+        final boolean[] stationIonosphericModelEstimated  = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_MODEL_ESTIMATED);
+        final boolean[] stationVTECEstimated              = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_VTEC_ESTIMATED);
+        final double[]  stationIonosphericVTEC            = parser.getDoubleArray(ParameterKey.GROUND_STATION_IONOSPHERIC_VTEC_VALUE);
+        final double[]  stationIonosphericHIon            = parser.getDoubleArray(ParameterKey.GROUND_STATION_IONOSPHERIC_HION_VALUE);
 
         final TidalDisplacement tidalDisplacement;
         if (parser.containsKey(ParameterKey.SOLID_TIDES_DISPLACEMENT_CORRECTION) &&
@@ -1478,13 +1491,34 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                 rangeTroposphericCorrection = null;
             }
 
+            // Ionospheric correction
+            final IonosphericModel ionosphericModel;
+            if (stationIonosphericCorrection[i]) {
+                if (stationIonosphericModelEstimated[i]) {
+                    // Estimated ionospheric model
+                    final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(stationIonosphericHIon[i]);
+                    ionosphericModel  = new EstimatedIonosphericModel(mapping, stationIonosphericVTEC[i]);
+                    final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().get(0);
+                    ionosphericDriver.setSelected(stationVTECEstimated[i]);
+                    ionosphericDriver.setName(stationNames[i].substring(0, 5) + EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT);
+                } else {
+                    final TimeScale utc = TimeScalesFactory.getUTC();
+                    // Klobuchar model
+                    final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
+                    loader.loadKlobucharIonosphericCoefficients(parser.getDate(ParameterKey.ORBIT_DATE, utc).getComponents(utc).getDate());
+                    ionosphericModel = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
+                }
+            } else {
+                ionosphericModel = null;
+            }
 
             stations.put(stationNames[i],
                          new StationData(station,
                                          rangeSigma,     rangeBias,
                                          rangeRateSigma, rangeRateBias,
                                          azELSigma,      azELBias,
-                                         refractionCorrection, rangeTroposphericCorrection));
+                                         refractionCorrection, rangeTroposphericCorrection,
+                                         ionosphericModel));
         }
         return stations;
 
@@ -1808,7 +1842,6 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             default:
                 prnNumber = -1;
         }
-        final Iono iono = new Iono(false);
         final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
@@ -1827,8 +1860,11 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                             final Range range = new Range(stationData.getStation(), false, observationDataSet.getDate(),
                                                           od.getValue(), stationData.getRangeSigma(),
                                                           weights.getRangeBaseWeight(), satellite);
-                            range.addModifier(iono.getRangeModifier(od.getObservationType().getFrequency(system),
-                                                                    observationDataSet.getDate()));
+                            if (stationData.getIonosphericModel() != null) {
+                                final RangeIonosphericDelayModifier ionoModifier = new RangeIonosphericDelayModifier(stationData.getIonosphericModel(),
+                                                                                                                     od.getObservationType().getFrequency(system).getMHzFrequency() * 1.0e6);
+                                          range.addModifier(ionoModifier);
+                            }
                             if (satAntennaRangeModifier != null) {
                                 range.addModifier(satAntennaRangeModifier);
                             }
@@ -1854,8 +1890,12 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                             final RangeRate rangeRate = new RangeRate(stationData.getStation(), observationDataSet.getDate(),
                                                                       od.getValue(), stationData.getRangeRateSigma(),
                                                                       weights.getRangeRateBaseWeight(), false, satellite);
-                            rangeRate.addModifier(iono.getRangeRateModifier(od.getObservationType().getFrequency(system),
-                                                                            observationDataSet.getDate()));
+                            if (stationData.getIonosphericModel() != null) {
+                                final RangeRateIonosphericDelayModifier ionoModifier = new RangeRateIonosphericDelayModifier(stationData.getIonosphericModel(),
+                                                                                                                             od.getObservationType().getFrequency(system).getMHzFrequency() * 1.0e6,
+                                                                                                                             false);
+                                rangeRate.addModifier(ionoModifier);
+                            }
                             if (stationData.getRangeRateBias() != null) {
                                 rangeRate.addModifier(stationData.getRangeRateBias());
                             }
