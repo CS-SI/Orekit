@@ -490,7 +490,7 @@ public class TLETest {
         final double[] wrongMeanMotions = new double[] { -42.0 };
         for (double wrongMeanMotion : wrongMeanMotions) {
             try {
-                TLE tle = new TLE(99999, 'X', 2020, 42, "F", 0, 999,
+                new TLE(99999, 'X', 2020, 42, "F", 0, 999,
                         new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), wrongMeanMotion, 0.0,
                         0.0, 0.0016310523359516962, 1.6999188604164899, 3.063834020452862, 4.1864962873682305,
                         2.157567545975006, 1, 1e-05);
@@ -510,7 +510,7 @@ public class TLETest {
         final double[] wrongInclinations = new double[] { -42.0, +42.0 };
         for (double wrongInclination : wrongInclinations) {
             try {
-                TLE tle = new TLE(99999, 'X', 2020, 42, "F", 0, 999,
+                new TLE(99999, 'X', 2020, 42, "F", 0, 999,
                         new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), 0.0011010400252833312,
                         0.0, 0.0, 0.0016310523359516962, wrongInclination, 3.063834020452862, 4.1864962873682305,
                         2.157567545975006, 1, 1e-05);
@@ -531,7 +531,7 @@ public class TLETest {
         final double[] wrongEccentricities = new double[] { -42.0, +42.0 };
         for (double wrongEccentricity : wrongEccentricities) {
             try {
-                TLE tle = new TLE(99999, 'X', 2020, 42, "F", 0, 999,
+                new TLE(99999, 'X', 2020, 42, "F", 0, 999,
                         new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), 0.0011010400252833312,
                         0.0, 0.0, wrongEccentricity, 1.6999188604164899, 3.063834020452862, 4.1864962873682305,
                         2.157567545975006, 1, 1e-05);

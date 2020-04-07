@@ -74,6 +74,15 @@ public class TLE implements TimeStamped, Serializable {
     /** Identifier for SDP8 type of ephemeris. */
     public static final int SDP8 = 5;
 
+    /** Name of the mean motion parameter. */
+    private static final String MEAN_MOTION = "meanMotion";
+
+    /** Name of the inclination parameter. */
+    private static final String INCLINATION = "inclination";
+
+    /** Name of the eccentricity parameter. */
+    private static final String ECCENTRICITY = "eccentricity";
+
     /** Pattern for line 1. */
     private static final Pattern LINE_1_PATTERN =
         Pattern.compile("1 [ 0-9]{5}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ 0+-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
@@ -235,12 +244,12 @@ public class TLE implements TimeStamped, Serializable {
      * Simple constructor from already parsed elements. This constructor uses the
      * {@link DataContext#getDefault() default data context}.
      * </p>
-     * 
+     *
      * <p>
-     * The mean anomaly, the right ascension of ascending node Ω and the argument of 
-     * perigee ω are normalized into the [0, 2π] interval as they can be negative. 
+     * The mean anomaly, the right ascension of ascending node Ω and the argument of
+     * perigee ω are normalized into the [0, 2π] interval as they can be negative.
      * After that, a range check is performed on some of the orbital elements:
-     * 
+     *
      * <pre>
      *     meanMotion &gt;= 0
      *     0 &lt;= i &lt;= π
@@ -292,12 +301,12 @@ public class TLE implements TimeStamped, Serializable {
      * Simple constructor from already parsed elements using the given time scale as
      * UTC.
      * </p>
-     * 
+     *
      * <p>
-     * The mean anomaly, the right ascension of ascending node Ω and the argument of 
-     * perigee ω are normalized into the [0, 2π] interval as they can be negative. 
+     * The mean anomaly, the right ascension of ascending node Ω and the argument of
+     * perigee ω are normalized into the [0, 2π] interval as they can be negative.
      * After that, a range check is performed on some of the orbital elements:
-     * 
+     *
      * <pre>
      *     meanMotion &gt;= 0
      *     0 &lt;= i &lt;= π
@@ -307,7 +316,7 @@ public class TLE implements TimeStamped, Serializable {
      *     0 &lt;= meanAnomaly &lt;= 2π
      * </pre>
      * </p>
-     * 
+     *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
      * @param launchYear launch year (all digits)
@@ -350,20 +359,20 @@ public class TLE implements TimeStamped, Serializable {
         // orbital parameters
         this.epoch = epoch;
         // Checking mean motion range
-        checkParameterRangeInclusive("meanMotion", meanMotion, 0.0, Double.POSITIVE_INFINITY);
+        checkParameterRangeInclusive(MEAN_MOTION, meanMotion, 0.0, Double.POSITIVE_INFINITY);
         this.meanMotion = meanMotion;
         this.meanMotionFirstDerivative = meanMotionFirstDerivative;
         this.meanMotionSecondDerivative = meanMotionSecondDerivative;
 
         // Checking inclination range
-        checkParameterRangeInclusive("inclination", i, 0, FastMath.PI);
+        checkParameterRangeInclusive(INCLINATION, i, 0, FastMath.PI);
         this.inclination = i;
 
         // Normalizing RAAN in [0,2pi] interval
         this.raan = MathUtils.normalizeAngle(raan, FastMath.PI);
 
         // Checking eccentricity range
-        checkParameterRangeInclusive("eccentricity", e, 0.0, 1.0);
+        checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, 1.0);
         this.eccentricity = e;
 
         // Normalizing PA in [0,2pi] interval
@@ -508,18 +517,18 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(addPadding("satelliteNumber-2", satelliteNumber, '0', 5, true));
 
         buffer.append(' ');
-        buffer.append(addPadding("inclination", f34.format(FastMath.toDegrees(inclination)), ' ', 8, true));
+        buffer.append(addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination)), ' ', 8, true));
         buffer.append(' ');
         buffer.append(addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true));
         buffer.append(' ');
-        buffer.append(addPadding("eccentricity", (int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true));
+        buffer.append(addPadding(ECCENTRICITY, (int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true));
         buffer.append(' ');
         buffer.append(addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true));
         buffer.append(' ');
         buffer.append(addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(addPadding("meanMotion", f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true));
+        buffer.append(addPadding(MEAN_MOTION, f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true));
         buffer.append(addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true));
 
         buffer.append(Integer.toString(checksum(buffer)));
@@ -808,7 +817,7 @@ public class TLE implements TimeStamped, Serializable {
      * </ul>
      * </p>
      * <p>
-     * In either of these cases, an OrekitException is raised with a TLE_INVALID_PARAMETER_RANGE 
+     * In either of these cases, an OrekitException is raised with a TLE_INVALID_PARAMETER_RANGE
      * message, for instance:
      * <pre>
      *   "invalid TLE parameter eccentricity: 42.0 not in range [0.0, 1.0]"
