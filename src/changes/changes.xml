@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="clement" type="add" issue="656">
+        Added CssiSpaceWeatherLoader which provides three-hourly space weather
+        data and implements DTM2000InputParameters and NRLMSISE00InputParameters
+      </action>
       <action dev="bryan" type="fix" issue="663">
         Fixed initialization of the triggering event for ImpulseManeuver class.
       </action>
