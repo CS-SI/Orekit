@@ -23,8 +23,6 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.Iterator;
-import java.util.NavigableSet;
 import java.util.TreeSet;
 
 import org.orekit.annotation.DefaultDataContext;
@@ -41,6 +39,7 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ImmutableTimeStampedCache;
 
 /**
  * This class reads and provides solar activity data needed by
@@ -63,8 +62,11 @@ public class CssiSpaceWeatherLoader extends AbstractSelfFeedingLoader
     /** Serializable UID. */
     private static final long serialVersionUID = 4249411710645968978L;
 
+    /** Number of neighbors to use. */
+    private static final int N_NEIGHBORS = 7;
+
     /** Data set. */
-    private final NavigableSet<TimeStamped> data;
+    private ImmutableTimeStampedCache<LineParameters> data;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -113,7 +115,7 @@ public class CssiSpaceWeatherLoader extends AbstractSelfFeedingLoader
         lastObservedDate = null;
         lastDailyPredictedDate = null;
         lastDate = null;
-        data = new TreeSet<>(new ChronologicalComparator());
+        data = ImmutableTimeStampedCache.emptyCache();
         this.utc = utc;
     }
 
@@ -147,16 +149,25 @@ public class CssiSpaceWeatherLoader extends AbstractSelfFeedingLoader
             return;
         }
 
-        if (date.equals(firstDate)) {
-            nextParam = (LineParameters) data.higher(date);
-            previousParam = (LineParameters) data.first();
-        } else if (date.equals(lastDate)) {
-            nextParam = (LineParameters) data.last();
-            previousParam = (LineParameters) data.floor(date);
-        } else {
-            nextParam = (LineParameters) data.higher(date);
-            previousParam = (LineParameters) data.floor(date);
+        Object daNeigbors[] = data.getNeighbors(date).toArray();
+        previousParam = (LineParameters) daNeigbors[3];
+        nextParam = (LineParameters) daNeigbors[4];
+        if (previousParam.getDate().compareTo(date) > 0) {
+            /**
+             * Throwing exception if neighbors are unbalanced because we are at the beginning of the data set
+             */
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
         }
+
+        /*
+         * if (date.equals(firstDate)) { nextParam = (LineParameters) data.higher(date);
+         * previousParam = (LineParameters) data.first(); } else if
+         * (date.equals(lastDate)) { nextParam = (LineParameters) data.last();
+         * previousParam = (LineParameters) data.floor(date); } else { nextParam =
+         * (LineParameters) data.higher(date); previousParam = (LineParameters)
+         * data.floor(date); }
+         */
+
     }
 
     /**
@@ -359,7 +370,6 @@ public class CssiSpaceWeatherLoader extends AbstractSelfFeedingLoader
         }
     }
 
-    @Override
     public String getSupportedNames() {
         return super.getSupportedNames();
     }
@@ -504,6 +514,8 @@ public class CssiSpaceWeatherLoader extends AbstractSelfFeedingLoader
     public void loadData(final InputStream input, final String name)
             throws IOException, ParseException, OrekitException {
 
+        TreeSet<LineParameters> set = new TreeSet<LineParameters>(new ChronologicalComparator());
+
         // read the data
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
 
@@ -512,11 +524,11 @@ public class CssiSpaceWeatherLoader extends AbstractSelfFeedingLoader
             if (line.length() > 0) {
 
                 if (line.equals("BEGIN DAILY_PREDICTED")) {
-                    lastObservedDate = data.last().getDate();
+                    lastObservedDate = set.last().getDate();
                 }
 
                 if (line.equals("BEGIN MONTHLY_FIT")) {
-                    lastDailyPredictedDate = data.last().getDate();
+                    lastDailyPredictedDate = set.last().getDate();
                 }
 
                 if (line.length() == 130 && isNumeric(line.substring(0, 4))) {
@@ -526,22 +538,7 @@ public class CssiSpaceWeatherLoader extends AbstractSelfFeedingLoader
                     final int day = Integer.parseInt(line.substring(8, 10));
                     final AbsoluteDate date = new AbsoluteDate(year, month, day, this.utc);
 
-                    boolean addEntry = true;
-                    final Iterator<TimeStamped> iterator = data.tailSet(date).iterator();
-                    if (iterator.hasNext()) {
-                        /**
-                         * Checking for duplicates
-                         * There are usually two months of overlapping daily predictions in these two categories:
-                         * - DAILY_PREDICTED
-                         * - MONTHLY_FIT
-                         */
-                        final LineParameters existingEntry = (LineParameters) iterator.next();
-                        if (existingEntry.getDate().equals(date)) {
-                            addEntry = false; // Already an entry for this date, discarding the new one
-                        }
-                    }
-
-                    if (addEntry) {
+                    if (!set.contains(date)) { // Checking if entry doesn't exist yet
                         final double[] threeHourlyKp = new double[8];
                         /**
                          * Kp is written as an integer where a unit equals 0.1,
@@ -572,15 +569,17 @@ public class CssiSpaceWeatherLoader extends AbstractSelfFeedingLoader
 
                         final double lst81Obs = Double.parseDouble(line.substring(125, 130));
 
-                        data.add(new LineParameters(date, threeHourlyKp, kpSum, threeHourlyAp, apAvg, f107Adj,
+                        set.add(new LineParameters(date, threeHourlyKp, kpSum, threeHourlyAp, apAvg, f107Adj,
                                 fluxQualifier, ctr81Adj, lst81Adj, f107Obs, ctr81Obs, lst81Obs));
                     }
                 }
             }
         }
 
-        firstDate = data.first().getDate();
-        lastDate = data.last().getDate();
+        firstDate = set.first().getDate();
+        lastDate = set.last().getDate();
+
+        data = new ImmutableTimeStampedCache<LineParameters>(N_NEIGHBORS, set);
 
         return;
     }
