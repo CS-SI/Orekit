@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="evan" type="update">
+        Improve error message for TimeStampedCache by including requested date.
+      </action>
       <action dev="bryan" type="fix" issue="663">
         Fixed initialization of the triggering event for ImpulseManeuver class.
       </action>
