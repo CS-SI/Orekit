@@ -391,10 +391,10 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = as entradas xeneradas non están en orde cr
 # no data generated around date: {0}
 NO_DATA_GENERATED = ningún dato xerado alrededor da data: {0}
 
-# unable to generate new data before {0}
+# unable to generate new data before {0}, data requested for {1}
 UNABLE_TO_GENERATE_NEW_DATA_BEFORE = imposible de xerar datos antes de {0}
 
-# unable to generate new data after {0}
+# unable to generate new data after {0}, data requested for {1}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposible de xerar datos despois de {0}
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -156,11 +157,14 @@ public class ImmutableTimeStampedCacheTest {
                           data.subList(size - 3, size).toArray());
 
         // after last date
+        AbsoluteDate central = data.get(size - 1).shiftedBy(1);
         try {
-            cache.getNeighbors(data.get(size - 1).shiftedBy(1));
+            cache.getNeighbors(central);
             Assert.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
             // expected
+            Assert.assertThat(e.getMessage(),
+                    CoreMatchers.containsString(central.toString()));
         }
     }
 
