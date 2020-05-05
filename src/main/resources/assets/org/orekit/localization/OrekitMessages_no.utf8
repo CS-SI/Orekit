@@ -392,10 +392,10 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = generte oppføringer er ikke sorterte: {0} 
 NO_DATA_GENERATED = ingen data generert rundt dato: {0}
 
 # unable to generate new data before {0}, data requested for {1}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = kan ikke generere ny data før {0}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
 
 # unable to generate new data after {0}, data requested for {1}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = kan ikke generere ny data etter {0}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = kan ikke beregne hyperbolsk eksentrisk anomali fra hovedanomalien etter {0} iterasjoner
