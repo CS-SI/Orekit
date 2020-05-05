@@ -178,7 +178,14 @@
       <roles>
         <role>developer</role>
       </roles>
-    </developer>    
+    </developer>
+    <developer>
+      <name>Cl&#233;ment Jonglez</name>
+      <id>clement</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>
