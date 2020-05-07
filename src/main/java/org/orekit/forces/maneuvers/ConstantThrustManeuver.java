@@ -16,11 +16,14 @@
  */
 package org.orekit.forces.maneuvers;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.maneuvers.propulsion.AbstractConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** This class implements a simple maneuver with constant thrust.
@@ -248,5 +251,33 @@ public class ConstantThrustManeuver extends Maneuver {
      */
     public double getDuration() {
         return ((DateBasedManeuverTriggers) (getManeuverTriggers())).getDuration();
+    }
+
+    /** Check if maneuvering is on.
+     * @param s current state
+     * @return true if maneuver is on at this state
+     * @since 10.1
+     */
+    public boolean isFiring(final SpacecraftState s) {
+        return isFiring(s.getDate());
+    }
+
+    /** Check if maneuvering is on.
+     * @param s current state
+     * @param <T> type of the field elements
+     * @return true if maneuver is on at this state
+     * @since 10.1
+     */
+    public <T extends RealFieldElement<T>> boolean isFiring(final FieldSpacecraftState<T> s) {
+        return isFiring(s.getDate().toAbsoluteDate());
+    }
+
+    /** Check if maneuvering is on.
+     * @param date current date
+     * @return true if maneuver is on at this date
+     * @since 10.1
+     */
+    public boolean isFiring(final AbsoluteDate date) {
+        return getManeuverTriggers().isFiring(date, new double[] {});
     }
 }

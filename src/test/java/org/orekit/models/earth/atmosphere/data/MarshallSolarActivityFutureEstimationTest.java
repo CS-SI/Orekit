@@ -20,6 +20,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -536,6 +542,33 @@ public class MarshallSolarActivityFutureEstimationTest {
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         manager.feed(msafe.getSupportedNames(), msafe);
+    }
+
+    @Test
+    public void testSerialization() throws IOException, ClassNotFoundException {
+        MarshallSolarActivityFutureEstimation original =
+                        new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data.txt$",
+                                                                  StrengthLevel.AVERAGE);
+
+        DataProvidersManager managerOriginal = DataContext.getDefault().getDataProvidersManager();
+        managerOriginal.feed(original.getSupportedNames(), original);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(original);
+
+        Assert.assertTrue(bos.size() > 400);
+        Assert.assertTrue(bos.size() < 450);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        AbsoluteDate date = new AbsoluteDate(2004, 1, 1, utc);
+        MarshallSolarActivityFutureEstimation deserialized = (MarshallSolarActivityFutureEstimation) ois.readObject();
+        DataProvidersManager managerDeserialized = DataContext.getDefault().getDataProvidersManager();
+        managerDeserialized.feed(deserialized.getSupportedNames(), deserialized);
+        Assert.assertEquals(original.getMeanFlux(date),    deserialized.getMeanFlux(date),    1.0e-12);
+        Assert.assertEquals(original.getDailyFlux(date),   deserialized.getDailyFlux(date),   1.0e-12);
+        Assert.assertEquals(original.getInstantFlux(date), deserialized.getInstantFlux(date), 1.0e-12);
     }
 
     @Before

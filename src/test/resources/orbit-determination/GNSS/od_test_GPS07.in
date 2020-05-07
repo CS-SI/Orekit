@@ -123,6 +123,9 @@ solid.tides.displacement.correction                   = true
 solid.tides.displacement.remove.permanent.deformation = false
 ocean.loading.correction                              = false
 
+## Shapiro time delay on range measurement
+range.shapiro = true
+
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] =  SHLD/C1
 ground.station.latitude                        [0] =   41.868362882 
@@ -160,6 +163,11 @@ ground.station.global.mapping.function         [0] = false
 ground.station.niell.mapping.function          [0] = true
 ground.station.range.tropospheric.correction   [0] = true
 ground.station.weather.estimated               [0] = true
+ground.station.range.ionospheric.correction    [0] = true
+ground.station.ionospheric.model.estimated     [0] = true
+ground.station.ionospheric.vtec.estimated      [0] = true
+ground.station.ionospheric.vtec.value          [0] = 10.0
+ground.station.ionospheric.hion.value          [0] = 350e3
 
 ground.station.name                            [1] =  SHLD/C2
 ground.station.latitude                        [1] =   41.868362882 
@@ -197,6 +205,11 @@ ground.station.global.mapping.function         [1] = false
 ground.station.niell.mapping.function          [1] = true
 ground.station.range.tropospheric.correction   [1] = true
 ground.station.weather.estimated               [1] = true
+ground.station.range.ionospheric.correction    [1] = true
+ground.station.ionospheric.model.estimated     [1] = true
+ground.station.ionospheric.vtec.estimated      [1] = true
+ground.station.ionospheric.vtec.value          [1] = 10.0
+ground.station.ionospheric.hion.value          [1] = 350e3
 
 ground.station.name                            [2] =  SHLD/P2
 ground.station.latitude                        [2] =   41.868362882 
@@ -234,6 +247,11 @@ ground.station.global.mapping.function         [2] = false
 ground.station.niell.mapping.function          [2] = true
 ground.station.range.tropospheric.correction   [2] = true
 ground.station.weather.estimated               [2] = true
+ground.station.range.ionospheric.correction    [2] = true
+ground.station.ionospheric.model.estimated     [2] = true
+ground.station.ionospheric.vtec.estimated      [2] = true
+ground.station.ionospheric.vtec.value          [2] = 10.0
+ground.station.ionospheric.hion.value          [2] = 350e3
 
 ground.station.name                            [3] =  SEAT/C1
 ground.station.latitude                        [3] =   47.653972656
@@ -271,6 +289,11 @@ ground.station.global.mapping.function         [3] = false
 ground.station.niell.mapping.function          [3] = true
 ground.station.range.tropospheric.correction   [3] = true
 ground.station.weather.estimated               [3] = true
+ground.station.range.ionospheric.correction    [3] = true
+ground.station.ionospheric.model.estimated     [3] = true
+ground.station.ionospheric.vtec.estimated      [3] = true
+ground.station.ionospheric.vtec.value          [3] = 10.0
+ground.station.ionospheric.hion.value          [3] = 350e3
 
 ground.station.name                            [4] =  SEAT/C2
 ground.station.latitude                        [4] =   47.653972656
@@ -308,6 +331,11 @@ ground.station.global.mapping.function         [4] = false
 ground.station.niell.mapping.function          [4] = true
 ground.station.range.tropospheric.correction   [4] = true
 ground.station.weather.estimated               [4] = true
+ground.station.range.ionospheric.correction    [4] = true
+ground.station.ionospheric.model.estimated     [4] = true
+ground.station.ionospheric.vtec.estimated      [4] = true
+ground.station.ionospheric.vtec.value          [4] = 10.0
+ground.station.ionospheric.hion.value          [4] = 350e3
 
 ground.station.name                            [5] =  SEAT/P2
 ground.station.latitude                        [5] =   47.653972656
@@ -345,6 +373,11 @@ ground.station.global.mapping.function         [5] = false
 ground.station.niell.mapping.function          [5] = true
 ground.station.range.tropospheric.correction   [5] = true
 ground.station.weather.estimated               [5] = true
+ground.station.range.ionospheric.correction    [5] = true
+ground.station.ionospheric.model.estimated     [5] = true
+ground.station.ionospheric.vtec.estimated      [5] = true
+ground.station.ionospheric.vtec.value          [5] = 10.0
+ground.station.ionospheric.hion.value          [5] = 350e3
 
 ground.station.name                            [6] =  SBCH/C1
 ground.station.latitude                        [6] =  29.868112727
@@ -382,6 +415,11 @@ ground.station.global.mapping.function         [6] = false
 ground.station.niell.mapping.function          [6] = true
 ground.station.range.tropospheric.correction   [6] = true
 ground.station.weather.estimated               [6] = true
+ground.station.range.ionospheric.correction    [6] = true
+ground.station.ionospheric.model.estimated     [6] = true
+ground.station.ionospheric.vtec.estimated      [6] = true
+ground.station.ionospheric.vtec.value          [6] = 10.0
+ground.station.ionospheric.hion.value          [6] = 350e3
 
 ground.station.name                            [7] =  SBCH/C2
 ground.station.latitude                        [7] =  29.868112727
@@ -419,6 +457,11 @@ ground.station.global.mapping.function         [7] = false
 ground.station.niell.mapping.function          [7] = true
 ground.station.range.tropospheric.correction   [7] = true
 ground.station.weather.estimated               [7] = true
+ground.station.range.ionospheric.correction    [7] = true
+ground.station.ionospheric.model.estimated     [7] = true
+ground.station.ionospheric.vtec.estimated      [7] = true
+ground.station.ionospheric.vtec.value          [7] = 10.0
+ground.station.ionospheric.hion.value          [7] = 350e3
 
 ground.station.name                            [8] =  SBCH/P2
 ground.station.latitude                        [8] =  29.868112727
@@ -456,6 +499,11 @@ ground.station.global.mapping.function         [8] = false
 ground.station.niell.mapping.function          [8] = true
 ground.station.range.tropospheric.correction   [8] = true
 ground.station.weather.estimated               [8] = true
+ground.station.range.ionospheric.correction    [8] = true
+ground.station.ionospheric.model.estimated     [8] = true
+ground.station.ionospheric.vtec.estimated      [8] = true
+ground.station.ionospheric.vtec.value          [8] = 10.0
+ground.station.ionospheric.hion.value          [8] = 350e3
 
 ground.station.name                            [9] =  BRIG/C1
 ground.station.latitude                        [9] =  42.520093759
@@ -493,6 +541,11 @@ ground.station.global.mapping.function         [9] = false
 ground.station.niell.mapping.function          [9] = true
 ground.station.range.tropospheric.correction   [9] = true
 ground.station.weather.estimated               [9] = true
+ground.station.range.ionospheric.correction    [9] = true
+ground.station.ionospheric.model.estimated     [9] = true
+ground.station.ionospheric.vtec.estimated      [9] = true
+ground.station.ionospheric.vtec.value          [9] = 10.0
+ground.station.ionospheric.hion.value          [9] = 350e3
 
 ground.station.name                            [10] =  BRIG/C2
 ground.station.latitude                        [10] =  42.520093759
@@ -530,6 +583,11 @@ ground.station.global.mapping.function         [10] = false
 ground.station.niell.mapping.function          [10] = true
 ground.station.range.tropospheric.correction   [10] = true
 ground.station.weather.estimated               [10] = true
+ground.station.range.ionospheric.correction    [10] = true
+ground.station.ionospheric.model.estimated     [10] = true
+ground.station.ionospheric.vtec.estimated      [10] = true
+ground.station.ionospheric.vtec.value          [10] = 10.0
+ground.station.ionospheric.hion.value          [10] = 350e3
 
 ground.station.name                            [11] =  BRIG/P2
 ground.station.latitude                        [11] =  42.520093759
@@ -567,6 +625,11 @@ ground.station.global.mapping.function         [11] = false
 ground.station.niell.mapping.function          [11] = true
 ground.station.range.tropospheric.correction   [11] = true
 ground.station.weather.estimated               [11] = true
+ground.station.range.ionospheric.correction    [11] = true
+ground.station.ionospheric.model.estimated     [11] = true
+ground.station.ionospheric.vtec.estimated      [11] = true
+ground.station.ionospheric.vtec.value          [11] = 10.0
+ground.station.ionospheric.hion.value          [11] = 350e3
 
 ground.station.name                            [12] =  AZBH/C1
 ground.station.latitude                        [12] =   35.107490239
@@ -604,6 +667,11 @@ ground.station.global.mapping.function         [12] = false
 ground.station.niell.mapping.function          [12] = true
 ground.station.range.tropospheric.correction   [12] = true
 ground.station.weather.estimated               [12] = true
+ground.station.range.ionospheric.correction    [12] = true
+ground.station.ionospheric.model.estimated     [12] = true
+ground.station.ionospheric.vtec.estimated      [12] = true
+ground.station.ionospheric.vtec.value          [12] = 10.0
+ground.station.ionospheric.hion.value          [12] = 350e3
 
 ground.station.name                            [13] =  AZBH/C2
 ground.station.latitude                        [13] =   35.107490239
@@ -641,6 +709,11 @@ ground.station.global.mapping.function         [13] = false
 ground.station.niell.mapping.function          [13] = true
 ground.station.range.tropospheric.correction   [13] = true
 ground.station.weather.estimated               [13] = true
+ground.station.range.ionospheric.correction    [13] = true
+ground.station.ionospheric.model.estimated     [13] = true
+ground.station.ionospheric.vtec.estimated      [13] = true
+ground.station.ionospheric.vtec.value          [13] = 10.0
+ground.station.ionospheric.hion.value          [13] = 350e3
 
 ground.station.name                            [14] =  AZBH/P2
 ground.station.latitude                        [14] =   35.107490239
@@ -678,6 +751,11 @@ ground.station.global.mapping.function         [14] = false
 ground.station.niell.mapping.function          [14] = true
 ground.station.range.tropospheric.correction   [14] = true
 ground.station.weather.estimated               [14] = true
+ground.station.range.ionospheric.correction    [14] = true
+ground.station.ionospheric.model.estimated     [14] = true
+ground.station.ionospheric.vtec.estimated      [14] = true
+ground.station.ionospheric.vtec.value          [14] = 10.0
+ground.station.ionospheric.hion.value          [14] = 350e3
 
 ground.station.name                            [15] =  BADG/C1
 ground.station.latitude                        [15] =   51.7697056
@@ -715,6 +793,11 @@ ground.station.global.mapping.function         [15] = false
 ground.station.niell.mapping.function          [15] = true
 ground.station.range.tropospheric.correction   [15] = true
 ground.station.weather.estimated               [15] = true
+ground.station.range.ionospheric.correction    [15] = true
+ground.station.ionospheric.model.estimated     [15] = true
+ground.station.ionospheric.vtec.estimated      [15] = true
+ground.station.ionospheric.vtec.value          [15] = 10.0
+ground.station.ionospheric.hion.value          [15] = 350e3
 
 ground.station.name                            [16] =  BADG/P1
 ground.station.latitude                        [16] =   51.7697056
@@ -752,6 +835,11 @@ ground.station.global.mapping.function         [16] = false
 ground.station.niell.mapping.function          [16] = true
 ground.station.range.tropospheric.correction   [16] = true
 ground.station.weather.estimated               [16] = true
+ground.station.range.ionospheric.correction    [16] = true
+ground.station.ionospheric.model.estimated     [16] = true
+ground.station.ionospheric.vtec.estimated      [16] = true
+ground.station.ionospheric.vtec.value          [16] = 10.0
+ground.station.ionospheric.hion.value          [16] = 350e3
 
 ground.station.name                            [17] =  BADG/P2
 ground.station.latitude                        [17] =   51.7697056
@@ -789,6 +877,11 @@ ground.station.global.mapping.function         [17] = false
 ground.station.niell.mapping.function          [17] = true
 ground.station.range.tropospheric.correction   [17] = true
 ground.station.weather.estimated               [17] = true
+ground.station.range.ionospheric.correction    [17] = true
+ground.station.ionospheric.model.estimated     [17] = true
+ground.station.ionospheric.vtec.estimated      [17] = true
+ground.station.ionospheric.vtec.value          [17] = 10.0
+ground.station.ionospheric.hion.value          [17] = 350e3
 
 ground.station.name                            [18] =  BRMU/C1
 ground.station.latitude                        [18] =   32.3704000
@@ -826,6 +919,11 @@ ground.station.global.mapping.function         [18] = false
 ground.station.niell.mapping.function          [18] = true
 ground.station.range.tropospheric.correction   [18] = true
 ground.station.weather.estimated               [18] = true
+ground.station.range.ionospheric.correction    [18] = true
+ground.station.ionospheric.model.estimated     [18] = true
+ground.station.ionospheric.vtec.estimated      [18] = true
+ground.station.ionospheric.vtec.value          [18] = 10.0
+ground.station.ionospheric.hion.value          [18] = 350e3
 
 ground.station.name                            [19] =  BRMU/C2
 ground.station.latitude                        [19] =   32.3704000
@@ -863,6 +961,11 @@ ground.station.global.mapping.function         [19] = false
 ground.station.niell.mapping.function          [19] = true
 ground.station.range.tropospheric.correction   [19] = true
 ground.station.weather.estimated               [19] = true
+ground.station.range.ionospheric.correction    [19] = true
+ground.station.ionospheric.model.estimated     [19] = true
+ground.station.ionospheric.vtec.estimated      [19] = true
+ground.station.ionospheric.vtec.value          [19] = 10.0
+ground.station.ionospheric.hion.value          [19] = 350e3
 
 ground.station.name                            [20] =  BRMU/P2
 ground.station.latitude                        [20] =   32.3704000
@@ -900,6 +1003,11 @@ ground.station.global.mapping.function         [20] = false
 ground.station.niell.mapping.function          [20] = true
 ground.station.range.tropospheric.correction   [20] = true
 ground.station.weather.estimated               [20] = true
+ground.station.range.ionospheric.correction    [20] = true
+ground.station.ionospheric.model.estimated     [20] = true
+ground.station.ionospheric.vtec.estimated      [20] = true
+ground.station.ionospheric.vtec.value          [20] = 10.0
+ground.station.ionospheric.hion.value          [20] = 350e3
 
 ground.station.name                            [21] =  BRMU/C5
 ground.station.latitude                        [21] =   32.3704000
@@ -937,6 +1045,11 @@ ground.station.global.mapping.function         [21] = false
 ground.station.niell.mapping.function          [21] = true
 ground.station.range.tropospheric.correction   [21] = true
 ground.station.weather.estimated               [21] = true
+ground.station.range.ionospheric.correction    [21] = true
+ground.station.ionospheric.model.estimated     [21] = true
+ground.station.ionospheric.vtec.estimated      [21] = true
+ground.station.ionospheric.vtec.value          [21] = 10.0
+ground.station.ionospheric.hion.value          [21] = 350e3
 
 ground.station.name                            [22] =  IRKM/C1
 ground.station.latitude                        [22] =   52.2190241
@@ -974,6 +1087,11 @@ ground.station.global.mapping.function         [22] = false
 ground.station.niell.mapping.function          [22] = true
 ground.station.range.tropospheric.correction   [22] = true
 ground.station.weather.estimated               [22] = true
+ground.station.range.ionospheric.correction    [22] = true
+ground.station.ionospheric.model.estimated     [22] = true
+ground.station.ionospheric.vtec.estimated      [22] = true
+ground.station.ionospheric.vtec.value          [22] = 10.0
+ground.station.ionospheric.hion.value          [22] = 350e3
 
 ground.station.name                            [23] =  IRKM/P2
 ground.station.latitude                        [23] =   52.2190241
@@ -1011,6 +1129,11 @@ ground.station.global.mapping.function         [23] = false
 ground.station.niell.mapping.function          [23] = true
 ground.station.range.tropospheric.correction   [23] = true
 ground.station.weather.estimated               [23] = true
+ground.station.range.ionospheric.correction    [23] = true
+ground.station.ionospheric.model.estimated     [23] = true
+ground.station.ionospheric.vtec.estimated      [23] = true
+ground.station.ionospheric.vtec.value          [23] = 10.0
+ground.station.ionospheric.hion.value          [23] = 350e3
 
 ground.station.name                            [24] =  IRKM/P1
 ground.station.latitude                        [24] =   52.2190241
@@ -1048,6 +1171,11 @@ ground.station.global.mapping.function         [24] = false
 ground.station.niell.mapping.function          [24] = true
 ground.station.range.tropospheric.correction   [24] = true
 ground.station.weather.estimated               [24] = true
+ground.station.range.ionospheric.correction    [24] = true
+ground.station.ionospheric.model.estimated     [24] = true
+ground.station.ionospheric.vtec.estimated      [24] = true
+ground.station.ionospheric.vtec.value          [24] = 10.0
+ground.station.ionospheric.hion.value          [24] = 350e3
 
 ground.station.name                            [25] =  HNPT/C1
 ground.station.latitude                        [25] =   38.5888167
@@ -1085,6 +1213,11 @@ ground.station.global.mapping.function         [25] = false
 ground.station.niell.mapping.function          [25] = true
 ground.station.range.tropospheric.correction   [25] = true
 ground.station.weather.estimated               [25] = true
+ground.station.range.ionospheric.correction    [25] = true
+ground.station.ionospheric.model.estimated     [25] = true
+ground.station.ionospheric.vtec.estimated      [25] = true
+ground.station.ionospheric.vtec.value          [25] = 10.0
+ground.station.ionospheric.hion.value          [25] = 350e3
 
 ground.station.name                            [26] =  HNPT/C2
 ground.station.latitude                        [26] =   38.5888167
@@ -1122,6 +1255,11 @@ ground.station.global.mapping.function         [26] = false
 ground.station.niell.mapping.function          [26] = true
 ground.station.range.tropospheric.correction   [26] = true
 ground.station.weather.estimated               [26] = true
+ground.station.range.ionospheric.correction    [26] = true
+ground.station.ionospheric.model.estimated     [26] = true
+ground.station.ionospheric.vtec.estimated      [26] = true
+ground.station.ionospheric.vtec.value          [26] = 10.0
+ground.station.ionospheric.hion.value          [26] = 350e3
 
 ground.station.name                            [27] =  HNPT/P2
 ground.station.latitude                        [27] =   38.5888167
@@ -1159,6 +1297,11 @@ ground.station.global.mapping.function         [27] = false
 ground.station.niell.mapping.function          [27] = true
 ground.station.range.tropospheric.correction   [27] = true
 ground.station.weather.estimated               [27] = true
+ground.station.range.ionospheric.correction    [27] = true
+ground.station.ionospheric.model.estimated     [27] = true
+ground.station.ionospheric.vtec.estimated      [27] = true
+ground.station.ionospheric.vtec.value          [27] = 10.0
+ground.station.ionospheric.hion.value          [27] = 350e3
 
 ground.station.name                            [28] =  HNPT/C5
 ground.station.latitude                        [28] =   38.5888167
@@ -1196,6 +1339,11 @@ ground.station.global.mapping.function         [28] = false
 ground.station.niell.mapping.function          [28] = true
 ground.station.range.tropospheric.correction   [28] = true
 ground.station.weather.estimated               [28] = true
+ground.station.range.ionospheric.correction    [28] = true
+ground.station.ionospheric.model.estimated     [28] = true
+ground.station.ionospheric.vtec.estimated      [28] = true
+ground.station.ionospheric.vtec.value          [28] = 10.0
+ground.station.ionospheric.hion.value          [28] = 350e3
 
 ground.station.name                            [29] =  USN7/P1
 ground.station.latitude                        [29] = 38.9205661
@@ -1233,6 +1381,11 @@ ground.station.global.mapping.function         [29] = false
 ground.station.niell.mapping.function          [29] = true
 ground.station.range.tropospheric.correction   [29] = true
 ground.station.weather.estimated               [29] = true
+ground.station.range.ionospheric.correction    [29] = true
+ground.station.ionospheric.model.estimated     [29] = true
+ground.station.ionospheric.vtec.estimated      [29] = true
+ground.station.ionospheric.vtec.value          [29] = 10.0
+ground.station.ionospheric.hion.value          [29] = 350e3
 
 ground.station.name                            [30] =  USN7/P2
 ground.station.latitude                        [30] =   38.9205661
@@ -1270,6 +1423,11 @@ ground.station.global.mapping.function         [30] = false
 ground.station.niell.mapping.function          [30] = true
 ground.station.range.tropospheric.correction   [30] = true
 ground.station.weather.estimated               [30] = true
+ground.station.range.ionospheric.correction    [30] = true
+ground.station.ionospheric.model.estimated     [30] = true
+ground.station.ionospheric.vtec.estimated      [30] = true
+ground.station.ionospheric.vtec.value          [30] = 10.0
+ground.station.ionospheric.hion.value          [30] = 350e3
 
 ground.station.name                            [31] =  USN7/C1
 ground.station.latitude                        [31] =   38.9205661
@@ -1307,6 +1465,14 @@ ground.station.global.mapping.function         [31] = false
 ground.station.niell.mapping.function          [31] = true
 ground.station.range.tropospheric.correction   [31] = true
 ground.station.weather.estimated               [31] = true
+ground.station.range.ionospheric.correction    [31] = true
+ground.station.ionospheric.model.estimated     [31] = true
+ground.station.ionospheric.vtec.estimated      [31] = true
+ground.station.ionospheric.vtec.value          [31] = 10.0
+ground.station.ionospheric.hion.value          [31] = 350e3
+
+# Time span models
+tropospheric.correction.date = 2016-02-13T02:30:00.000
 
 ### Measurements parameters
 range.outlier.rejection.multiplier              = 6

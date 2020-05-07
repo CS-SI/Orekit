@@ -148,6 +148,32 @@ public class TIRFProviderTest {
 
     }
 
+    /** Issue #636 */
+    @Test
+    public void testContinuousDuringLeap() {
+        // setup
+        Utils.setDataRoot("regular-data");
+        Frame tirf = FramesFactory.getTIRF(IERSConventions.IERS_2010, true);
+        Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate dateA = new AbsoluteDate(2005, 12, 31, 23, 59, 0.0, utc);
+        AbsoluteDate dateB = new AbsoluteDate(2006, 1, 1, 0, 1, 0.0, utc);
+        double dt = 0.5;
+        double expected = dt * 2 * FastMath.PI / (23 * 3600 + 56 * 60 + 4.1);
+        double tol = expected * 1e-6;
+        Rotation previous = cirf.getTransformTo(tirf, dateA.shiftedBy(-dt)).getRotation();
+
+        // action + verify
+        for (AbsoluteDate d = dateA; d.compareTo(dateB) < 0; d = d.shiftedBy(dt)) {
+            Rotation actual = cirf.getTransformTo(tirf, d).getRotation();
+            Assert.assertEquals("At " + d.toString(utc),
+                    expected,
+                    Rotation.distance(previous, actual),
+                    tol);
+            previous = actual;
+        }
+    }
+
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);

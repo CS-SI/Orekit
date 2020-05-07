@@ -102,6 +102,7 @@ public enum OrekitMessages implements Localizable {
     MISSING_SECOND_TLE_LINE("expected a second TLE line after line {0}:\n{0}: \"{1}\""),
     TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT("TLE lines do not refer to the same object:\n{0}\n{1}"),
     TLE_INVALID_PARAMETER("invalid TLE parameter for object {0}: {1} = {2}"),
+    TLE_INVALID_PARAMETER_RANGE("invalid TLE parameter {0}: {1} not in range [{2}, {3}]"),
     TLE_CHECKSUM_ERROR("wrong checksum of TLE line {0}, expected {1} but got {2} ({3})"),
     NO_TLE_DATA_AVAILABLE("no TLE data available"),
     NOT_POSITIVE_SPACECRAFT_MASS("spacecraft mass is not positive: {0} kg"),
@@ -167,6 +168,10 @@ public enum OrekitMessages implements Localizable {
     CCSDS_TDM_KEYWORD_NOT_FOUND("No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}"),
     CCSDS_TIME_SYSTEM_NOT_READ_YET("Parameter {0} needs a time system to be interpreted"),
     CCSDS_TDM_UNKNOWN_FORMAT("TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML"),
+    CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the attitude blocks: {0} ≠ {1}"),
+    CCSDS_AEM_NULL_ATTITUDE_TYPE("invalid attitude type {0}"),
+    CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
+    CCSDS_AEM_INVALID_ROTATION_SEQUENCE("the rotation sequence of the Euler angles {0} is invalid"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
@@ -244,10 +249,15 @@ public enum OrekitMessages implements Localizable {
     MODIP_GRID_NOT_LOADED("MODIP grid not be loaded from {0}"),
     NEQUICK_F2_FM3_NOT_LOADED("NeQuick coefficient f2 or fm3 not be loaded from {0}"),
     NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE("file {0} is not a supported Hatanaka-compressed file"),
+    CANNOT_COMPUTE_LAGRANGIAN("Cannot compute around {0}"),
+    TRAJECTORY_NOT_CROSSING_XZPLANE("The trajectory does not cross XZ Plane, it will not result in a Halo Orbit"),
+    MULTIPLE_SHOOTING_UNDERCONSTRAINED("The multiple shooting problem is underconstrained : {0} free variables, {1} constraints"),
     INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS("invalid measurement types {0} and {1} for the combination of measurements {2}"),
     INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS("frequencies {0} and {1} are incompatibles for the {2} combination"),
     NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates"),
-    EXCEPTIONAL_DATA_CONTEXT("Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.");
+    EXCEPTIONAL_DATA_CONTEXT("Use of the ExceptionalDataContext detected. This is typically used to detect developer errors."),
+    NON_DIFFERENT_DATES_FOR_OBSERVATIONS("observations {0}, {1} and {2} must have different dates"),
+    NON_COPLANAR_POINTS("observations are not in the same plane");
 
     // CHECKSTYLE: resume JavadocVariable check
 

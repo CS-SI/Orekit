@@ -35,18 +35,18 @@ import org.orekit.gnss.SatelliteSystem;
  * narrow-lane combination of code measurements.
  * </p>
  * <pre>
- *    m<sub>MW</sub> =  Φ<sub>WL</sub> - R<sub>NL</sub>
- *    m<sub>MW</sub> =  λ<sub>WL</sub> * N<sub>WL</sub> + b + ε
+ *    mMW =  ΦWL- RNL
+ *    mMW =  λWL * NWL+ b + ε
  * </pre>
  * With:
  * <ul>
- * <li>m<sub>MW</sub> : Melbourne-Wübbena measurement.</li>
- * <li>Φ<sub>WL</sub> : Wide-Lane phase measurement.</li>
- * <li>R<sub>NL</sub> : Narrow-Lane code measurement.</li>
- * <li>λ<sub>WL</sub> : Wide-Lane wavelength.</li>
- * <li>N<sub>WL</sub> : Wide-Lane ambiguity (N<sub>f1</sub> - N<sub>f2</sub>).</li>
- * <li>b              : Satellite and receiver instrumental delays.</li>
- * <li>ε              : Measurement noise.</li>
+ * <li>mMW : Melbourne-Wübbena measurement.</li>
+ * <li>ΦWL : Wide-Lane phase measurement.</li>
+ * <li>RNL : Narrow-Lane code measurement.</li>
+ * <li>λWL : Wide-Lane wavelength.</li>
+ * <li>NWL : Wide-Lane ambiguity (Nf1 - Nf2).</li>
+ * <li>b   : Satellite and receiver instrumental delays.</li>
+ * <li>ε   : Measurement noise.</li>
  * </ul>
  * <p>
  * {@link NarrowLaneCombination Narrow-Lane} and {@link WideLaneCombination Wide-Lane}
@@ -69,7 +69,7 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     MelbourneWubbenaCombination(final SatelliteSystem system) {
         this.system = system;
@@ -149,12 +149,7 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
         }
         // Verify if used frequencies are the same.
         // Possible numerical error is taken into account by using a threshold of acceptance
-        if (FastMath.abs(frequency[0] - frequency[2]) - FastMath.abs(frequency[1] - frequency[3]) < THRESHOLD) {
-            // Frequencies used for the combinations are the same
-            return true;
-        } else {
-            return false;
-        }
+        return (FastMath.abs(frequency[0] - frequency[2]) - FastMath.abs(frequency[1] - frequency[3])) < THRESHOLD;
     }
 
     /** {@inheritDoc} */

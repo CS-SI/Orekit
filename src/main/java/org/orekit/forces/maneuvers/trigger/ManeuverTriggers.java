@@ -26,6 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Generic interface for the maneuver triggers used in a {@link Maneuver}.
@@ -54,17 +55,19 @@ public interface ManeuverTriggers {
     <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
 
     /** Find out if the maneuver is firing or not.
+     * @param date current date
      * @param parameters maneuver triggers parameters
      * @return true if the maneuver is firing, false otherwise
      */
-    boolean isFiring(double[] parameters);
+    boolean isFiring(AbsoluteDate date, double[] parameters);
 
     /** Find out if the maneuver is firing or not.
+     * @param date current date
      * @param parameters maneuver triggers parameters
      * @param <T> extends RealFieldElement&lt;T&gt;
      * @return true if the maneuver is firing, false otherwise
      */
-    <T extends RealFieldElement<T>> boolean isFiring(T parameters[]);
+    <T extends RealFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T parameters[]);
 
     /** Get the maneuver triggers parameter drivers.
      * @return maneuver triggers parameter drivers

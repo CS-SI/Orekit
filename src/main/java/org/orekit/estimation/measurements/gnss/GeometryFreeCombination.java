@@ -35,7 +35,7 @@ import org.orekit.gnss.SatelliteSystem;
  * <ul>
  * <li>mGF: Geometry-free measurement.</li>
  * <li>m1 : First measurement.</li>
- * <li>m1 : Second measurement.</li>
+ * <li>m2 : Second measurement.</li>
  * </ul>
  * <p>
  * Geometry-Free combination is a dual frequency combination.
@@ -48,7 +48,7 @@ public class GeometryFreeCombination extends AbstractDualFrequencyCombination {
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     GeometryFreeCombination(final SatelliteSystem system) {
         super(CombinationType.GEOMETRY_FREE, system);

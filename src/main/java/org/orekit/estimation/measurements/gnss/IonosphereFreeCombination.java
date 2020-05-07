@@ -52,7 +52,7 @@ public class IonosphereFreeCombination extends AbstractDualFrequencyCombination 
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     IonosphereFreeCombination(final SatelliteSystem system) {
         super(CombinationType.IONO_FREE, system);
@@ -77,18 +77,11 @@ public class IonosphereFreeCombination extends AbstractDualFrequencyCombination 
         // Get the ratios f/f0
         final double ratioF1   = f1.getRatio();
         final double ratioF2   = f2.getRatio();
-        // Multiplication factor used to compute the combined frequency
-        int k = 1;
         // Get the integer part of the ratios
         final int ratioF1Int = (int) ratioF1;
         final int ratioF2Int = (int) ratioF2;
-        // Check if the ratios are composed of a decimal part
-        if (ratioF1 - ratioF1Int > 0.0 || ratioF2 - ratioF2Int > 0.0) {
-            // Do nothing, k remains equal to 1
-        } else {
-            // k is the GCD of the interger ratio
-            k = ArithmeticUtils.gcd(ratioF1Int, ratioF2Int);
-        }
+        // Multiplication factor used to compute the combined frequency
+        final int k = ((ratioF1 - ratioF1Int > 0.0) || (ratioF2 - ratioF2Int > 0.0)) ? 1 : ArithmeticUtils.gcd(ratioF1Int, ratioF2Int);
         // Combined frequency
         return MathArrays.linearCombination(ratioF1, ratioF1, -ratioF2, ratioF2) * (Frequency.F0 / k);
     }

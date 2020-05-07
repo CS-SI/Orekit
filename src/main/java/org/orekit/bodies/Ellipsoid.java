@@ -246,53 +246,106 @@ public class Ellipsoid implements Serializable {
     public Vector3D pointOnLimb(final Vector3D observer, final Vector3D outside)
         throws MathRuntimeException {
 
-        // there is no limb if we are inside the ellipsoid
+        // There is no limb if we are inside the ellipsoid
         if (isInside(observer)) {
             throw new OrekitException(OrekitMessages.POINT_INSIDE_ELLIPSOID);
         }
-        // cut the ellipsoid, to find an elliptical plane section
+        // Cut the ellipsoid, to find an elliptical plane section
         final Vector3D normal  = Vector3D.crossProduct(observer, outside);
         final Ellipse  section = getPlaneSection(Vector3D.ZERO, normal);
-        final double   a2      = section.getA() * section.getA();
-        final double   b2      = section.getB() * section.getB();
 
         // the point on limb is tangential to the ellipse
         // if T(xt, yt) is an ellipse point at which the tangent is drawn
         // if O(xo, yo) is a point outside of the ellipse belonging to the tangent at T,
         // then the two following equations holds:
-        //  a² yt²   + b² xt²   = a² b²  (T belongs to the ellipse)
-        //  a² yt yo + b² xt xo = a² b²  (TP is tangent to the ellipse)
+        // (1) a² yt²   + b² xt²   = a² b²  (T belongs to the ellipse)
+        // (2) a² yt yo + b² xt xo = a² b²  (TP is tangent to the ellipse)
         // using the second equation to eliminate yt from the first equation, we get
         // b² (a² - xt xo)² + a² xt² yo² = a⁴ yo²
-        // (a² yo² + b² xo²) xt² - 2 a² b² xo xt + a⁴ (b² - yo²) = 0
+        // (3) (a² yo² + b² xo²) xt² - 2 a² b² xo xt + a⁴ (b² - yo²) = 0
         // which can easily be solved for xt
+
+        // To avoid numerical errors, the x and y coordinates in the ellipse plane are normalized using:
+        // x' = x / a and y' = y / b
+        //
+        // This gives:
+        // (1) y't² + x't² = 1
+        // (2) y't y'o + x't x'o = 1
+        //
+        // And finally:
+        // (3) (x'o² + y'o²) x't² - 2 x't x'o + 1 - y'o² = 0
+        //
+        // Solving for x't, we get the reduced discriminant:
+        // delta' = beta'² - alpha' * gamma'
+        //
+        // With:
+        // beta' = x'o
+        // alpha' = x'o² + y'o²
+        // gamma' = 1 - y'o²
+        //
+        // Simplifying to  cancel a term of x'o².
+        // delta' = y'o² (x'o² + y'o² - 1) = y'o² (alpha' - 1)
+        //
+        // After solving for xt1, xt2 using (3) the values are substituted into (2) to
+        // compute yt1, yt2. Then terms of x'o may be canceled from the expressions for
+        // yt1 and yt2. Additionally a point discontinuity is removed at y'o=0 from both
+        // yt1 and yt2.
+        //
+        // y't1 = (y'o - x'o d) / (x'o² + y'o²)
+        // y't2 = (x'o y'o + d) / (x + sqrt(delta'))
+        //
+        // where:
+        // d = sign(y'o) sqrt(alpha' - 1)
+
+        // Get the point in ellipse plane frame (2D)
         final Vector2D observer2D = section.toPlane(observer);
-        final double   xo         = observer2D.getX();
-        final double   yo         = observer2D.getY();
-        final double   xo2        = xo * xo;
-        final double   yo2        = yo * yo;
-        final double   alpha      = a2 * yo2 + b2 * xo2;
-        final double   beta       = a2 * b2 * xo;
-        final double   gamma      = a2 * a2 * (b2 - yo2);
-        // we know there are two solutions as we already checked the point is outside ellipsoid
-        final double   sqrt       = FastMath.sqrt(beta * beta - alpha * gamma);
-        final double   xt1;
-        final double   xt2;
-        if (beta > 0) {
-            final double s = beta + sqrt;
-            xt1 = s / alpha;
-            xt2 = gamma / s;
+
+        // Normalize and compute intermediary terms
+        final double ap = section.getA();
+        final double bp = section.getB();
+        final double xpo = observer2D.getX() / ap;
+        final double ypo = observer2D.getY() / bp;
+        final double xpo2 = xpo * xpo;
+        final double ypo2 = ypo * ypo;
+        final double   alphap      = ypo2 + xpo2;
+        final double   gammap      = 1. - ypo2;
+
+        // Compute the roots
+        // We know there are two solutions as we already checked the point is outside ellipsoid
+        final double sqrt = FastMath.sqrt(alphap - 1);
+        final double sqrtp = FastMath.abs(ypo) * sqrt;
+        final double sqrtSigned = FastMath.copySign(sqrt, ypo);
+
+        // Compute the roots (ordered by value)
+        final double   xpt1;
+        final double   xpt2;
+        final double   ypt1;
+        final double   ypt2;
+        if (xpo > 0) {
+            final double s = xpo + sqrtp;
+            // xpt1 = (beta' + sqrt(delta')) / alpha' (with beta' = x'o)
+            xpt1 = s / alphap;
+            // x't2 = gamma' / (beta' + sqrt(delta')) since x't1 * x't2 = gamma' / alpha'
+            xpt2 = gammap / s;
+            // Get the corresponding values of y't
+            ypt1 = (ypo - xpo * sqrtSigned) / alphap;
+            ypt2 = (xpo * ypo + sqrtSigned) / s;
         } else {
-            final double s = beta - sqrt;
-            xt1 = gamma / s;
-            xt2 = s / alpha;
+            final double s = xpo - sqrtp;
+            // x't1 and x't2 are reverted compared to previous solution
+            xpt1 = gammap / s;
+            xpt2 = s / alphap;
+            // Get the corresponding values of y't
+            ypt2 = (ypo + xpo * sqrtSigned) / alphap;
+            ypt1 = (xpo * ypo - sqrtSigned) / s;
         }
 
-        // we return the limb point in the direction of the outside point
-        final Vector3D t1 = section.toSpace(new Vector2D(xt1, b2 * (a2 - xt1 * xo) / (a2 * yo)));
-        final Vector3D t2 = section.toSpace(new Vector2D(xt2, b2 * (a2 - xt2 * xo) / (a2 * yo)));
-        return Vector3D.distance(t1, outside) <= Vector3D.distance(t2, outside) ? t1 : t2;
+        // De-normalize and express the two solutions in 3D
+        final Vector3D tp1 = section.toSpace(new Vector2D(ap * xpt1, bp * ypt1));
+        final Vector3D tp2 = section.toSpace(new Vector2D(ap * xpt2, bp * ypt2));
 
+        // Return the limb point in the direction of the outside point
+        return Vector3D.distance(tp1, outside) <= Vector3D.distance(tp2, outside) ? tp1 : tp2;
     }
 
 }

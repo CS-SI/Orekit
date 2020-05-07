@@ -139,7 +139,7 @@ public class Maneuver extends AbstractForceModel {
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
         // Specific drivers for the triggers are extracted from the array given by the ForceModel interface
-        if (maneuverTriggers.isFiring(getManeuverTriggersParameters(parameters))) {
+        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Compute thrust acceleration in inertial frame
             adder.addNonKeplerianAcceleration(acceleration(s, parameters));
@@ -161,7 +161,7 @@ public class Maneuver extends AbstractForceModel {
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
         // Specific drivers for the triggers are extracted from the array given by the ForceModel interface
-        if (maneuverTriggers.isFiring(getManeuverTriggersParameters(parameters))) {
+        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Compute thrust acceleration in inertial frame
             adder.addNonKeplerianAcceleration(acceleration(s, parameters));
@@ -178,7 +178,7 @@ public class Maneuver extends AbstractForceModel {
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
         // Specific drivers for the triggers are extracted from the array given by the ForceModel interface
-        if (maneuverTriggers.isFiring(getManeuverTriggersParameters(parameters))) {
+        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Attitude during maneuver
             final Attitude maneuverAttitude =
@@ -203,7 +203,7 @@ public class Maneuver extends AbstractForceModel {
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
         // Specific drivers for the triggers are extracted from the array given by the ForceModel interface
-        if (maneuverTriggers.isFiring(getManeuverTriggersParameters(parameters))) {
+        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Attitude during maneuver
             final FieldAttitude<T> maneuverAttitude =

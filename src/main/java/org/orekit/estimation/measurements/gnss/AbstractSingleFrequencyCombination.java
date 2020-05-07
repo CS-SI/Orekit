@@ -137,7 +137,7 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
         final double f = freq1.getMHzFrequency();
 
         // Combined value
-        final double combinedValue = getCombinedValue(phase.getValue(), pseudoRange.getValue(), f);
+        final double combinedValue = getCombinedValue(phase.getValue(), pseudoRange.getValue());
 
         // Combined observation data
         return new CombinedObservationData(CombinationType.PHASE_MINUS_CODE, MeasurementType.COMBINED_RANGE_PHASE,
@@ -148,10 +148,9 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
      * Get the combined observed value of two measurements.
      * @param phase observed value of the phase measurement
      * @param pseudoRange observed value of the range measurement
-     * @param f frequency of both measurements in MHz
      * @return combined observed value
      */
-    protected abstract double getCombinedValue(double phase, double pseudoRange, double f);
+    protected abstract double getCombinedValue(double phase, double pseudoRange);
 
     /**
      * Verifies if two observation data can be combine.
@@ -161,37 +160,21 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
      * @return true if observation data can be combined
      */
     private boolean isCombinationPossible(final int version, final ObservationData phase, final ObservationData pseudoRange) {
-
         // Observation types
         final ObservationType obsType1 = phase.getObservationType();
         final ObservationType obsType2 = pseudoRange.getObservationType();
-
-        // Phase minus Code combination is possible only if data frequencies are the same
+        // Single-frequency combination is possible only if data frequencies are the same
         if (obsType1.getFrequency(system) == obsType2.getFrequency(system)) {
-
             // Switch on Rinex version
             switch (version) {
-                case 2:
-                    // Rinex 2 version
-                    return true;
-                case 3:
-                    if (obsType1.getSignalCode() == obsType2.getSignalCode()) {
-                        // Observation code is the same. Combination of measurements can be performed
-                        return true;
-                    } else {
-                        // Observation code is not the same. Combination of measurements can not be performed
-                        return false;
-                    }
-                default:
-                    // Not supported Rinex version. Combination is not possible
-                    return false;
+                case 2 : return true;
+                case 3 : return obsType1.getSignalCode() == obsType2.getSignalCode();
+                default: return false;
             }
-
         } else {
             // False because observation data have different frequency
             return false;
         }
-
     }
 
 }

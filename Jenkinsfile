@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
-                        sh 'mvn verify assembly:single'
+                        sh 'mvn verify site'
                     }
                     else if ( env.BRANCH_NAME ==~ /^develop$/ ) {
                         sh 'mvn install site'
@@ -38,30 +38,11 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy') {
-            // Deploy to staging area only on branch develop or master
-            // Official deployment on oss.sonatype.org will be done manually
-            // NB: we skip tests on this stage
-            when { anyOf { branch 'develop' ; branch 'master' } }
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'jenkins-at-nexus',
-                                                  usernameVariable: 'NEXUS_USERNAME',
-                                                  passwordVariable: 'NEXUS_PASSWORD')]) {
-                    sh 'mvn $MAVEN_CLI_OPTS deploy -DskipTests=true -Pci-deploy'
-                }
-            }
-        }
     }
 
     post {
         always {
             archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            script {
-                if ( env.BRANCH_NAME ==~ /^release-[.0-9]+$/ ) {
-                    archiveArtifacts artifacts: 'target/*.zip', fingerprint: true
-                }
-            }
             junit testResults: '**/target/surefire-reports/*.xml'
             jacoco execPattern: 'target/**.exec',
                    classPattern: '**/classes',

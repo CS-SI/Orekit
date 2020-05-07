@@ -375,6 +375,14 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
     }
 
+    /** Get the flag for the initialization of the state jacobian.
+     * @return true if the state jacobian is initialized
+     * @since 10.2
+     */
+    public boolean isInitialize() {
+        return initialized;
+    }
+
     /** Fill Jacobians rows.
      * @param derivatives derivatives of a component of acceleration (along either x, y or z)
      * @param index component index (0 for x, 1 for y, 2 for z)

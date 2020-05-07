@@ -244,7 +244,7 @@ public class HelmertTransformation implements TransformProvider {
         private final ITRFVersion destination;
 
         /** Transformation. */
-        private final HelmertTransformationWithoutTimeScale transformation;
+        private final transient HelmertTransformationWithoutTimeScale transformation;
 
         /** Simple constructor.
          * @param origin origin ITRF

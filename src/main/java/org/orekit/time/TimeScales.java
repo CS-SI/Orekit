@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.function.BiFunction;
 
 import org.orekit.frames.EOPEntry;
-import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.Frames;
 import org.orekit.utils.IERSConventions;
 
@@ -318,7 +317,7 @@ public interface TimeScales {
      *                    collection.
      * @return a set of time scales based on the given data.
      * @see UTCTAIOffsetsLoader.Parser
-     * @see EOPHistoryLoader.Parser
+     * @see org.orekit.frames.EOPHistoryLoader.Parser
      */
     static TimeScales of(
             final Collection<? extends OffsetModel> utcMinusTai,

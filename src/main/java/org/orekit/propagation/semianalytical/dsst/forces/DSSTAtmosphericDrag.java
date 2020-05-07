@@ -51,14 +51,22 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     /** Upper limit for atmospheric drag (m) . */
     private static final double ATMOSPHERE_ALTITUDE_MAX = 1000000.;
 
-    /** Atmospheric model. */
-    private final Atmosphere atmosphere;
-
-    /** Spacecraft shape. */
-    private final DragSensitive spacecraft;
+    /** Atmospheric drag force model. */
+    private final DragForce drag;
 
     /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
     private final double     rbar;
+
+    /** Simple constructor with custom force.
+     * @param force atmospheric drag force model
+     * @param mu central attraction coefficient
+     */
+    public DSSTAtmosphericDrag(final DragForce force, final double mu) {
+        //Call to the constructor from superclass using the numerical drag model as ForceModel
+        super("DSST-drag-", GAUSS_THRESHOLD, force, mu);
+        this.drag = force;
+        this.rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+    }
 
     /** Simple constructor assuming spherical spacecraft.
      * @param atmosphere atmospheric model
@@ -79,18 +87,14 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft, final double mu) {
 
         //Call to the constructor from superclass using the numerical drag model as ForceModel
-        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft), mu);
-
-        this.atmosphere = atmosphere;
-        this.spacecraft = spacecraft;
-        this.rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        this(new DragForce(atmosphere, spacecraft), mu);
     }
 
     /** Get the atmospheric model.
      * @return atmosphere model
      */
     public Atmosphere getAtmosphere() {
-        return atmosphere;
+        return drag.getAtmosphere();
     }
 
     /** Get the critical distance.
@@ -167,8 +171,9 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected ParameterDriver[] getParametersDriversWithoutMu() {
-        return spacecraft.getDragParametersDrivers();
+        return drag.getParametersDrivers();
     }
 
     /** Get spacecraft shape.
@@ -176,7 +181,14 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      * @return spacecraft shape
      */
     public DragSensitive getSpacecraft() {
-        return spacecraft;
+        return drag.getSpacecraft();
     }
 
+    /** Get drag force.
+     *
+     * @return drag force
+     */
+    public DragForce getDrag() {
+        return drag;
+    }
 }

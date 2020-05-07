@@ -61,6 +61,7 @@
       <item name="Contributing"  href="/contributing.html"      />
       <item name="Guidelines"    href="/guidelines.html"        />
       <item name="Javadoc"       href="/apidocs/index.html"     />
+      <item name="Release guide" href="/release-guide.html"     />
       </menu>
     <menu ref="reports"/>
   </body>

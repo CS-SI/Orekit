@@ -52,7 +52,7 @@ public class NarrowLaneCombination extends AbstractDualFrequencyCombination {
 
     /**
      * Package private constructor for the factory.
-     * @param system satellite system for wich the combination is applied
+     * @param system satellite system for which the combination is applied
      */
     NarrowLaneCombination(final SatelliteSystem system) {
         super(CombinationType.NARROW_LANE, system);

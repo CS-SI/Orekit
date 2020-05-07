@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.models.earth.ionosphere.IonosphericModel;
 
 /** Container for stations-related data.
  * @author Luc Maisonobe
@@ -57,6 +58,9 @@ class StationData {
     /** Tropospheric correction (may be null). */
     private final RangeTroposphericDelayModifier rangeTroposphericCorrection;
 
+    /** Ionospheric model (may be null). */
+    private final IonosphericModel ionosphericModel;
+
     /** Simple constructor.
      * @param station ground station
      * @param rangeSigma range sigma
@@ -67,13 +71,15 @@ class StationData {
      * @param azELBias azimuth-elevation bias (may be null if bias is fixed to zero)
      * @param refractionCorrection refraction correction for elevation (may be null)
      * @param rangeTroposphericCorrection tropospheric correction  for the range (may be null)
+     * @param ionosphericModel ionospheric model for the range (may be null)
      */
     StationData(final GroundStation station,
                 final double rangeSigma, final Bias<Range> rangeBias,
                 final double rangeRateSigma, final Bias<RangeRate> rangeRateBias,
                 final double[] azElSigma, final Bias<AngularAzEl> azELBias,
                 final AngularRadioRefractionModifier refractionCorrection,
-                final RangeTroposphericDelayModifier rangeTroposphericCorrection) {
+                final RangeTroposphericDelayModifier rangeTroposphericCorrection,
+                final IonosphericModel ionosphericModel) {
         this.station                     = station;
         this.rangeSigma                  = rangeSigma;
         this.rangeBias                   = rangeBias;
@@ -83,6 +89,7 @@ class StationData {
         this.azELBias                    = azELBias;
         this.refractionCorrection        = refractionCorrection;
         this.rangeTroposphericCorrection = rangeTroposphericCorrection;
+        this.ionosphericModel            = ionosphericModel;
     }
 
     /** Get ground station.
@@ -145,6 +152,13 @@ class StationData {
      */
     public RangeTroposphericDelayModifier getRangeTroposphericCorrection() {
         return rangeTroposphericCorrection;
+    }
+
+    /** Ionospheric model (may be null).
+     * @return ionospheric model
+     */
+    public IonosphericModel getIonosphericModel() {
+        return ionosphericModel;
     }
 
 }

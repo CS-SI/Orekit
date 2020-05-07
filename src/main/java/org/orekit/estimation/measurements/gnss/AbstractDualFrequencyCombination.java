@@ -172,27 +172,12 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
      * @return true if observation data can be combined
      */
     private boolean isCombinationPossible(final ObservationData data1, final ObservationData data2) {
-
         // Observation types
         final ObservationType obsType1 = data1.getObservationType();
         final ObservationType obsType2 = data2.getObservationType();
-
-        // Geometry-Free combination is possible only if data frequencies are diffrents
-        if (obsType1.getFrequency(system) != obsType2.getFrequency(system)) {
-
-            if (obsType1.getSignalCode() == obsType2.getSignalCode()) {
-                // Observation code is the same. Combination of measurements can be performed
-                return true;
-            } else {
-                // Observation code is not the same. Combination of measurements can not be performed
-                return false;
-            }
-
-        } else {
-            // False because observation data have the same frequency
-            return false;
-        }
-
+        // Dual-frequency combination is possible only if observation code is the same and data frequencies are different
+        return (obsType1.getFrequency(system) != obsType2.getFrequency(system)) &&
+                        (obsType1.getSignalCode() == obsType2.getSignalCode());
     }
 
 }

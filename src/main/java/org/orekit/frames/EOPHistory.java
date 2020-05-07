@@ -288,7 +288,11 @@ public class EOPHistory implements Serializable {
             if (neighbor.getUT1MinusUTC() - firstDUT > 0.9) {
                 // there was a leap second between the entries
                 dut = neighbor.getUT1MinusUTC() - 1.0;
-                if (neighbor.getDate().compareTo(date) <= 0) {
+                // UTCScale considers the discontinuity to occur at the start of the leap
+                // second so this code must use the same convention. EOP entries are time
+                // stamped at midnight UTC so 1 second before is the start of the leap
+                // second.
+                if (neighbor.getDate().shiftedBy(-1).compareTo(date) <= 0) {
                     beforeLeap = false;
                 }
             } else {

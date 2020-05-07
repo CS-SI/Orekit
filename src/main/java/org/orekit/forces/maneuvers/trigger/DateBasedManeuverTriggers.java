@@ -41,8 +41,14 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
     /** End of the maneuver. */
     private final AbsoluteDate endDate;
 
-    /** State of the engine, currently firing or not. */
-    private boolean firing;
+    /** Triggered date of engine start. */
+    private AbsoluteDate triggeredStart;
+
+    /** Triggered date of engine stop. */
+    private AbsoluteDate triggeredEnd;
+
+    /** Propagation direction. */
+    private boolean forward;
 
     public DateBasedManeuverTriggers(final AbsoluteDate date,
                                      final double duration) {
@@ -53,7 +59,9 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
             this.endDate   = date;
             this.startDate = endDate.shiftedBy(duration);
         }
-        this.firing = false;
+        this.triggeredStart    = null;
+        this.triggeredEnd      = null;
+
     }
 
     /** Get the start date.
@@ -83,13 +91,22 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
         // set the initial value of firing
         final AbsoluteDate sDate = initialState.getDate();
-        final boolean isForward = sDate.compareTo(target) < 0;
-        final boolean isBetween =
-                startDate.compareTo(sDate) < 0 && endDate.compareTo(sDate) > 0;
-        final boolean isOnStart = startDate.compareTo(sDate) == 0;
-        final boolean isOnEnd = endDate.compareTo(sDate) == 0;
+        this.forward             = sDate.compareTo(target) < 0;
+        final boolean isBetween  = sDate.isBetween(startDate, endDate);
+        final boolean isOnStart  = startDate.compareTo(sDate) == 0;
+        final boolean isOnEnd    = endDate.compareTo(sDate) == 0;
 
-        firing = isBetween || (isForward && isOnStart) || (!isForward && isOnEnd);
+        triggeredStart = null;
+        triggeredEnd   = null;
+        if (forward) {
+            if (isBetween || isOnStart) {
+                triggeredStart = startDate;
+            }
+        } else {
+            if (isBetween || isOnEnd) {
+                triggeredEnd = endDate;
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -101,13 +118,13 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
         // at end time and disabled at start time
         final DateDetector startDetector = new DateDetector(startDate).
             withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
-                firing = d.isForward();
+                triggeredStart = state.getDate();
                 return Action.RESET_DERIVATIVES;
             }
             );
         final DateDetector endDetector = new DateDetector(endDate).
             withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
-                firing = !d.isForward();
+                triggeredEnd = state.getDate();
                 return Action.RESET_DERIVATIVES;
             });
         return Stream.of(startDetector, endDetector);
@@ -122,12 +139,12 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
         // at end time and disabled at start time
         final FieldDateDetector<T> startDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, startDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
-                firing = d.isForward();
+                triggeredStart = state.getDate().toAbsoluteDate();
                 return Action.RESET_DERIVATIVES;
             });
         final FieldDateDetector<T> endDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, endDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
-                firing = !d.isForward();
+                triggeredEnd = state.getDate().toAbsoluteDate();
                 return Action.RESET_DERIVATIVES;
             });
         return Stream.of(startDetector, endDetector);
@@ -135,14 +152,62 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
 
     /** {@inheritDoc} */
     @Override
-    public boolean isFiring(final double[] parameters) {
+    public boolean isFiring(final AbsoluteDate date, final double[] parameters) {
         // Firing state does not depend on a parameter driver here
-        return firing;
+        return isFiring(date);
     }
 
     @Override
-    public <T extends RealFieldElement<T>> boolean isFiring(final T parameters[]) {
+    public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date,
+                                                            final T parameters[]) {
         // Firing state does not depend on a parameter driver here
-        return firing;
+        return isFiring(date.toAbsoluteDate());
     }
+
+    /** Check if maneuvering is on.
+     * @param date current date
+     * @return true if maneuver is on at this date
+     */
+    public boolean isFiring(final AbsoluteDate date) {
+        if (forward) {
+            if (triggeredStart == null) {
+                // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
+                return false;
+            } else if (date.durationFrom(triggeredStart) < 0.0) {
+                // we are unambiguously before maneuver start
+                return false;
+            } else {
+                if (triggeredEnd == null) {
+                    // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
+                    return true;
+                } else if (date.durationFrom(triggeredEnd) < 0.0) {
+                    // we are unambiguously before maneuver end
+                    return true;
+                } else {
+                    // we are at or after maneuver end
+                    return false;
+                }
+            }
+        } else {
+            if (triggeredEnd == null) {
+                // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
+                return false;
+            } else if (date.durationFrom(triggeredEnd) > 0.0) {
+                // we are unambiguously after maneuver end
+                return false;
+            } else {
+                if (triggeredStart == null) {
+                    // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
+                    return true;
+                } else if (date.durationFrom(triggeredStart) > 0.0) {
+                    // we are unambiguously after maneuver start
+                    return true;
+                } else {
+                    // we are at or before maneuver start
+                    return false;
+                }
+            }
+        }
+    }
+
 }
