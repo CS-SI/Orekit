@@ -94,10 +94,8 @@ public class ConstantThrustManeuver extends Maneuver {
      * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and
      * the maneuver triggers {@link DateBasedManeuverTriggers}
      * </p><p>
-     * If the {@code driversNamePrefix} is empty, the names will
-     * be {@link #THRUST "thrust"} and {@link #FLOW_RATE "flow rate"}, otherwise
-     * the prefix is prepended to these fixed strings. A typical use case is to
-     * use something like "1A-" or "2B-" as a prefix corresponding to the
+     * The name of the maneuver is used to distinguish the parameter drivers.
+     * A typical use case is to use something like "1A-" or "2B-" as a prefix corresponding to the
      * name of the thruster to use, so separate parameters can be adjusted
      * for the different thrusters involved during an orbit determination
      * where maneuvers parameters are estimated.
@@ -123,10 +121,8 @@ public class ConstantThrustManeuver extends Maneuver {
      * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and
      * the maneuver triggers {@link DateBasedManeuverTriggers}
      * </p><p>
-     * If the {@code driversNamePrefix} is empty, the names will
-     * be {@link #THRUST "thrust"} and {@link #FLOW_RATE "flow rate"}, otherwise
-     * the prefix is prepended to these fixed strings. A typical use case is to
-     * use something like "1A-" or "2B-" as a prefix corresponding to the
+     * The name of the maneuver is used to distinguish the parameter drivers.
+     * A typical use case is to use something like "1A-" or "2B-" as a prefix corresponding to the
      * name of the thruster to use, so separate parameters can be adjusted
      * for the different thrusters involved during an orbit determination
      * where maneuvers parameters are estimated.
