@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="674">
+        Added an exception if eccentricity is negative for keplerian orbit.
+      </action>
       <action dev="evan" type="fix" issue="667">
         Fix build on CentOS/RedHat 7.
       </action>
