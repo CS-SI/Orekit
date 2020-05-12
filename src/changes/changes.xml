@@ -24,6 +24,9 @@
       <action dev="bryan" type="fix" issue="674">
         Added an exception if eccentricity is negative for keplerian orbit.
       </action>
+      <action dev="evan" type="fix" issue="667">
+        Fix build on CentOS/RedHat 7.
+      </action>
       <action dev="bryan" type="fix" issue="662">
         Fixed forgotten additional state in Ephemeris propagator.
       </action>
