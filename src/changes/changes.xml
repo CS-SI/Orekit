@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="680">
+        Allowed ephemeris class to be used with absolute PV coordinates.
+      </action>
       <action dev="bryan" type="fix" issue="674">
         Added an exception if eccentricity is negative for keplerian orbit.
       </action>
