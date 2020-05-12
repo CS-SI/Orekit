@@ -327,6 +327,39 @@ public class EphemerisTest {
         }
     }
 
+    @Test
+    public void testIssue662() {
+
+        // Input parameters
+        int numberOfInterals = 1440;
+        double deltaT = finalDate.durationFrom(initDate)/((double)numberOfInterals);
+
+        // Build the list of spacecraft states
+        String additionalName  = "testValue";
+        double additionalValue = 1.0;
+        List<SpacecraftState> states = new ArrayList<SpacecraftState>(numberOfInterals + 1);
+        for (int j = 0; j<= numberOfInterals; j++) {
+            states.add(propagator.propagate(initDate.shiftedBy((j * deltaT))).addAdditionalState(additionalName, additionalValue));
+        }
+
+        // Build the epemeris propagator
+        Ephemeris ephemPropagator = new Ephemeris(states, 2);
+
+        // State before adding an attitude provider
+        SpacecraftState stateBefore = ephemPropagator.propagate(ephemPropagator.getMaxDate().shiftedBy(-60.0));
+        Assert.assertEquals(1,               stateBefore.getAdditionalState(additionalName).length);
+        Assert.assertEquals(additionalValue, stateBefore.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
+
+        // Set an attitude provider
+        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+
+        // State after adding an attitude provider
+        SpacecraftState stateAfter = ephemPropagator.propagate(ephemPropagator.getMaxDate().shiftedBy(-60.0));
+        Assert.assertEquals(1,               stateAfter.getAdditionalState(additionalName).length);
+        Assert.assertEquals(additionalValue, stateAfter.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
+
+    }
+
     @Before
     public void setUp() throws IllegalArgumentException, OrekitException {
         Utils.setDataRoot("regular-data");
