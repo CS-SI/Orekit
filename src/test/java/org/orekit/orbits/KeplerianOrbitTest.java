@@ -39,6 +39,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -1591,6 +1592,22 @@ public class KeplerianOrbitTest {
         double E = KeplerianOrbit.meanToEllipticEccentric(anomaly, e);
         // Verify that an infinite loop did not occur
         Assert.assertTrue(Double.isNaN(E));  
+    }
+
+    @Test
+    public void testIssue674() {
+        try {
+            new KeplerianOrbit(24464560.0, -0.7311, 0.122138, 3.10686, 1.00681,
+                               0.048363, PositionAngle.MEAN,
+                               FramesFactory.getEME2000(), date, mu);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
+            Assert.assertEquals("eccentricity", oe.getParts()[0]);
+            Assert.assertEquals(-0.7311, ((Double) oe.getParts()[1]).doubleValue(), Double.MIN_VALUE);
+            Assert.assertEquals(0.0, ((Double) oe.getParts()[2]).doubleValue(), Double.MIN_VALUE);
+            Assert.assertEquals(Double.POSITIVE_INFINITY, ((Double) oe.getParts()[3]).doubleValue(), Double.MIN_VALUE);
+        }
     }
 
     @Before

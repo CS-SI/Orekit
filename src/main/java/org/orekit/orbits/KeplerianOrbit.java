@@ -30,6 +30,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -82,6 +83,9 @@ public class KeplerianOrbit extends Orbit {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
+
+    /** Name of the eccentricity parameter. */
+    private static final String ECCENTRICITY = "eccentricity";
 
     /** Factory for first time derivatives. */
     private static final DSFactory FACTORY = new DSFactory(1, 1);
@@ -141,7 +145,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** Creates a new instance.
      * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity
+     * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
      * @param pa perigee argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
@@ -167,7 +171,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** Creates a new instance.
      * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity
+     * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
      * @param pa perigee argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
@@ -200,6 +204,9 @@ public class KeplerianOrbit extends Orbit {
         if (a * (1 - e) < 0) {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
         }
+
+        // Checking eccentricity range
+        checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, Double.POSITIVE_INFINITY);
 
         this.a       = a;
         this.aDot    = aDot;
@@ -343,6 +350,9 @@ public class KeplerianOrbit extends Orbit {
             e = FastMath.sqrt(1 - m2 / muA);
             v = hyperbolicEccentricToTrue(FastMath.log((eCH + eSH) / (eCH - eSH)) / 2, e);
         }
+
+        // Checking eccentricity range
+        checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, Double.POSITIVE_INFINITY);
 
         // compute perigee argument
         final Vector3D node = new Vector3D(raan, 0.0);
@@ -1591,6 +1601,28 @@ public class KeplerianOrbit extends Orbit {
                                   append("; raan: ").append(FastMath.toDegrees(raan)).
                                   append("; v: ").append(FastMath.toDegrees(v)).
                                   append(";}").toString();
+    }
+
+    /** Check if the given parameter is within an acceptable range.
+     * The bounds are inclusive: an exception is raised when either of those conditions are met:
+     * <ul>
+     *     <li>The parameter is strictly greater than upperBound</li>
+     *     <li>The parameter is strictly lower than lowerBound</li>
+     * </ul>
+     * <p>
+     * In either of these cases, an OrekitException is raised.
+     * </p>
+     * @param parameterName name of the parameter
+     * @param parameter value of the parameter
+     * @param lowerBound lower bound of the acceptable range (inclusive)
+     * @param upperBound upper bound of the acceptable range (inclusive)
+     */
+    private void checkParameterRangeInclusive(final String parameterName, final double parameter,
+                                              final double lowerBound, final double upperBound) {
+        if ((parameter < lowerBound) || (parameter > upperBound)) {
+            throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, parameterName,
+                                      parameter, lowerBound, upperBound);
+        }
     }
 
     /** Replace the instance with a data transfer object for serialization.
