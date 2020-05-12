@@ -1055,6 +1055,68 @@ public class AbsoluteDateTest {
                 OrekitMatchers.closeTo(0, FastMath.max(absTol, tol)));
     }
 
+    /** Check {@link AbsoluteDate#toStringRfc3339(TimeScale)}. */
+    @Test
+    public void testToStringRfc3339() {
+        // setup
+        AbsoluteDate date = new AbsoluteDate(2009, 1, 1, utc);
+        double one = FastMath.nextDown(1.0);
+        double zeroUlp = FastMath.nextUp(0.0);
+        double oneUlp = FastMath.ulp(1.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+
+        // action
+        // test midnight
+        check(date, "2009-01-01T00:00:00Z");
+        check(date.shiftedBy(1), "2009-01-01T00:00:01Z");
+        // test digits and rounding
+        check(date.shiftedBy(12.3456789123456789), "2009-01-01T00:00:12.34567891234568Z");
+        check(date.shiftedBy(0.0123456789123456789), "2009-01-01T00:00:00.01234567891235Z");
+        // test min and max values
+        check(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00Z");
+        check(date.shiftedBy(59.0).shiftedBy(one), "2009-01-01T00:00:59.99999999999999Z");
+        check(date.shiftedBy(86399).shiftedBy(one), "2009-01-01T23:59:59.99999999999999Z");
+        check(date.shiftedBy(oneUlp), "2009-01-01T00:00:00Z");
+        check(date.shiftedBy(one), "2009-01-01T00:00:01Z");
+        check(date.shiftedBy(-zeroUlp), "2009-01-01T00:00:00Z");
+        // test leap
+        check(date.shiftedBy(-oneUlp), "2008-12-31T23:59:60.99999999999999Z");
+        check(date.shiftedBy(-1).shiftedBy(one), "2008-12-31T23:59:60.99999999999999Z");
+        check(date.shiftedBy(-0.5), "2008-12-31T23:59:60.5Z");
+        check(date.shiftedBy(-1).shiftedBy(zeroUlp), "2008-12-31T23:59:60Z");
+        check(date.shiftedBy(-1), "2008-12-31T23:59:60Z");
+        check(date.shiftedBy(-1).shiftedBy(-zeroUlp), "2008-12-31T23:59:60Z");
+        check(date.shiftedBy(-1).shiftedBy(-oneUlp), "2008-12-31T23:59:60Z");
+        check(date.shiftedBy(-2), "2008-12-31T23:59:59Z");
+        check(date.shiftedBy(-1).shiftedBy(-sixtyUlp), "2008-12-31T23:59:59.99999999999999Z");
+        check(date.shiftedBy(-61).shiftedBy(zeroUlp), "2008-12-31T23:59:00Z");
+        check(date.shiftedBy(-61).shiftedBy(oneUlp), "2008-12-31T23:59:00Z");
+        // test proleptic
+        check(new AbsoluteDate(123, 4, 5, 6, 7, 8.9, utc), "0123-04-05T06:07:08.9Z");
+
+        // there is not way to produce valid RFC3339 for these cases
+        // I would rather print something useful than throw an exception
+        // so these cases don't check for a correct answer, just an informative one
+        check(new AbsoluteDate(-123, 4, 5, 6, 7, 8.9, utc), "-123-04-05T06:07:08.9Z");
+        check(new AbsoluteDate(-1230, 4, 5, 6, 7, 8.9, utc), "-1230-04-05T06:07:08.9Z");
+        // test far future
+        check(new AbsoluteDate(12300, 4, 5, 6, 7, 8.9, utc), "12300-04-05T06:07:08.9Z");
+        // test infinity
+        check(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999Z");
+        check(AbsoluteDate.PAST_INFINITY, "-5877490-03-03T00:00:00Z");
+        // test NaN
+        // \uFFFD is "�", the unicode replacement character
+        // that is what DecimalFormat uses instead of "NaN"
+        check(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFDZ");
+    }
+
+    private void check(final AbsoluteDate d, final String s) {
+        MatcherAssert.assertThat(d.toStringRfc3339(utc),
+                CoreMatchers.is(s));
+        MatcherAssert.assertThat(d.getComponents(utc).toStringRfc3339(),
+                CoreMatchers.is(s));
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
