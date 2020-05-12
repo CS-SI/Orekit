@@ -419,7 +419,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     public void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 4);
         DerivativeStructure a_0 = factory.variable(0, 7201009.7124401);
-        DerivativeStructure e_0 = factory.variable(1, 1e-3);
+        DerivativeStructure e_0 = factory.variable(1, 5e-3);
         DerivativeStructure i_0 = factory.variable(2, 98.7 * FastMath.PI / 180);
         DerivativeStructure R_0 = factory.variable(3, 15.0 * 22.5 * FastMath.PI / 180);
         DerivativeStructure O_0 = factory.variable(4, 93.0 * FastMath.PI / 180);
@@ -475,7 +475,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
-                                  1.0e-14, 3.0e-8, 2.0e-11, 3.0e-8,
+                                  1.0e-14, 5.9e-8, 1.8e-11, 1.8e-10,
                                   1, false);
     }
 
