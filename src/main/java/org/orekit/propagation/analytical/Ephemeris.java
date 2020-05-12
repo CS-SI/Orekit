@@ -219,7 +219,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             pvProvider.setCurrentState(evaluatedState);
             final Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date,
                                                                              evaluatedState.getFrame());
-            return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude, evaluatedState.getMass());
+            return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude,
+                                       evaluatedState.getMass(), evaluatedState.getAdditionalStates());
         }
     }
 

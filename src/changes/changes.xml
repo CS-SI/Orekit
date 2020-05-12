@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="662">
+        Fixed forgotten additional state in Ephemeris propagator.
+      </action>
       <action dev="evan" type="update">
         Improve error message for TimeStampedCache by including requested date.
       </action>
