@@ -39,6 +39,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -253,6 +254,11 @@ public class FieldKeplerianOrbitTest {
     @Test
     public void testIssue544() {
         doTestIssue544(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue674() {
+        doTestIssue674(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestKeplerianToKeplerian(final Field<T> field) {
@@ -1891,6 +1897,24 @@ public class FieldKeplerianOrbitTest {
         T E = FieldKeplerianOrbit.meanToEllipticEccentric(anomaly, e);
         // Verify that an infinite loop did not occur
         Assert.assertTrue(Double.isNaN(E.getReal()));  
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue674(Field<T> field) {
+        try {
+            final T zero = field.getZero();
+            final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
+            new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(-0.7311), zero.add(0.122138),
+                                      zero.add(3.10686), zero.add(1.00681),
+                                      zero.add(0.048363), PositionAngle.MEAN,
+                                      FramesFactory.getEME2000(), date, zero.add(mu));
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
+            Assert.assertEquals("eccentricity", oe.getParts()[0]);
+            Assert.assertEquals(-0.7311, ((Double) oe.getParts()[1]).doubleValue(), Double.MIN_VALUE);
+            Assert.assertEquals(0.0, ((Double) oe.getParts()[2]).doubleValue(), Double.MIN_VALUE);
+            Assert.assertEquals(Double.POSITIVE_INFINITY, ((Double) oe.getParts()[3]).doubleValue(), Double.MIN_VALUE);
+        }
     }
 
 }

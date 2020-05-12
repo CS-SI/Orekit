@@ -608,3 +608,6 @@ NON_DIFFERENT_DATES_FOR_OBSERVATIONS = observations {0}, {1} and {2} must have d
 
 # observations are not in the same plane
 NON_COPLANAR_POINTS = observations are not in the same plane
+
+# invalid parameter {0}: {1} not in range [{2}, {3}]
+INVALID_PARAMETER_RANGE = invalid parameter {0}: {1} not in range [{2}, {3}]
