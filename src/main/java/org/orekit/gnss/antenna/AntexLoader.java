@@ -181,10 +181,10 @@ public class AntexLoader {
         public void loadData(final InputStream input, final String name)
             throws IOException, OrekitException {
 
+            int                              lineNumber           = 0;
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
                 // placeholders for parsed data
-                int                              lineNumber           = 0;
                 SatelliteSystem                  satelliteSystem      = null;
                 String                           antennaType          = null;
                 SatelliteType                    satelliteType        = null;
@@ -426,7 +426,11 @@ public class AntexLoader {
                     }
                 }
 
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          lineNumber, name, "tot");
             }
+
         }
 
         /** Extract a string from a line.

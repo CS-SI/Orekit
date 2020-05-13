@@ -172,9 +172,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
         prnList.clear();
 
         // Creates the reader
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             // Gathers data to create one GPSAlmanac from 13 consecutive lines
             final List<Pair<String, String>> entries =
                     new ArrayList<>(KEY.length);

@@ -181,15 +181,16 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException {
 
-        // Open stream and parse data
-        final BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
-        final String splitter = "\\s+";
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            ++lineNumber;
-            line = line.trim();
+        String line = null;
+        // Open stream and parse data
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            try {
+            final String splitter = "\\s+";
+            for (line = br.readLine(); line != null; line = br.readLine()) {
+                ++lineNumber;
+                line = line.trim();
+
                 // Read alphas
                 if (line.length() > 0 && line.endsWith("ALPHA")) {
                     final String[] alpha_line = line.split(splitter);
@@ -207,10 +208,11 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
                         beta[j] = Double.parseDouble(beta_line[j].replace("D", "E"));
                     }
                 }
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
             }
+
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
 
         // Check that alphas and betas were found
@@ -218,7 +220,5 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
             throw new OrekitException(OrekitMessages.NO_KLOBUCHAR_ALPHA_BETA_IN_FILE, name);
         }
 
-        // Close the stream after reading
-        input.close();
     }
 }
