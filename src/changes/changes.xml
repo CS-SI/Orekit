@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="681">
+        Fix AbsoluteDate.getComponents(...) produces invalid times.
+      </action>
+      <action dev="evan" type="fix" issue="676">
+        Fix AbsoluteDate.getComponents(utc) throws "non-existent time 23:59:61".
+      </action>
       <action dev="bryan" type="fix" issue="680">
         Allowed ephemeris class to be used with absolute PV coordinates.
       </action>

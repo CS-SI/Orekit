@@ -1088,13 +1088,12 @@ public class AbsoluteDate
 
         // extract calendar elements
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
-        TimeComponents timeComponents = new TimeComponents((int) time, offset2000B);
 
-        if (timeScale.insideLeap(this)) {
-            // fix the seconds number to take the leap into account
-            timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
-                                                timeComponents.getSecond() + timeScale.getLeap(this));
-        }
+        // extract time element, accounting for leap seconds
+        final double leap = timeScale.insideLeap(this) ? timeScale.getLeap(this) : 0;
+        final int minuteDuration = timeScale.minuteDuration(this);
+        final TimeComponents timeComponents =
+                TimeComponents.fromSeconds((int) time, offset2000B, leap, minuteDuration);
 
         // build the components
         return new DateTimeComponents(dateComponents, timeComponents);
