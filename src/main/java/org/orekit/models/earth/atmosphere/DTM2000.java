@@ -303,13 +303,8 @@ public class DTM2000 implements Atmosphere {
         t0   = new double[size];
         tp   = new double[size];
 
-        final InputStream in = DTM2000.class.getResourceAsStream(DTM2000);
-        if (in == null) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, DTM2000);
-        }
-
-        try (BufferedReader r = new BufferedReader(
-                new InputStreamReader(in, StandardCharsets.UTF_8))) {
+        try (InputStream in = checkNull(DTM2000.class.getResourceAsStream(DTM2000));
+             BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
 
             r.readLine();
             r.readLine();
@@ -414,6 +409,20 @@ public class DTM2000 implements Atmosphere {
         return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(dateD),
                           inputParams.getMeanFlux(dateD), inputParams.getThreeHourlyKP(dateD),
                           inputParams.get24HoursKp(dateD));
+    }
+
+    /**
+     * Helper method to check for null resources. Throws an exception if {@code
+     * stream} is null.
+     *
+     * @param stream loaded from the class resources.
+     * @return {@code stream}.
+     */
+    private static InputStream checkNull(final InputStream stream) {
+        if (stream == null) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, DTM2000);
+        }
+        return stream;
     }
 
     /** Local holder for intermediate results ensuring the model is reentrant. */

@@ -260,6 +260,17 @@ public class AntexLoaderTest {
         }
     }
 
+    @Test
+    public void testCorruptedFile() {
+        try {
+            new AntexLoader("^igs14-corrupted\\.atx$");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(21, ((Integer) oe.getParts()[0]).intValue());
+        }
+    }
+
     private void checkSatellite(final TimeSpanMap<SatelliteAntenna> tsm,
                                 final int startYear, final int startMonth, final int startDay,
                                 final int endYear, final int endMonth, final int endDay,

@@ -522,10 +522,9 @@ public class PoissonSeriesParser {
         }
         final Pattern regularLinePattern = Pattern.compile(builder.toString());
 
-        try {
+        // setup the reader
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
-            // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
             int lineNumber    =  0;
             int expectedIndex = -1;
             int nTerms        = -1;

@@ -339,9 +339,7 @@ public class AEMParser extends ADMParser {
             if (line.trim().length() > 0) {
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    Scanner sc = null;
-                    try {
-                        sc = new Scanner(line);
+                    try (Scanner sc = new Scanner(line)) {
                         final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
                         // Create an array with the maximum possible size
                         final double[] attitudeData = new double[MAX_SIZE];
@@ -359,10 +357,6 @@ public class AEMParser extends ADMParser {
                     } catch (NumberFormatException nfe) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);
-                    } finally {
-                        if (sc != null) {
-                            sc.close();
-                        }
                     }
                 } else {
                     switch (pi.keyValue.getKeyword()) {
