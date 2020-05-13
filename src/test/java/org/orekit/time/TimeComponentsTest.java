@@ -17,8 +17,13 @@
 package org.orekit.time;
 
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 
 
 public class TimeComponentsTest {
@@ -172,6 +177,59 @@ public class TimeComponentsTest {
             }
         }
         Assert.assertFalse(times[0].equals(this));
+    }
+
+    @Test
+    public void testFromSeconds() {
+        // setup
+        double zeroUlp = FastMath.nextUp(0.0);
+        double one = FastMath.nextDown(1.0);
+        double sixty = FastMath.nextDown(60.0);
+        double sixtyOne = FastMath.nextDown(61.0);
+
+        // action + verify
+        MatcherAssert.assertThat(TimeComponents.fromSeconds(0, 0, 0, 60).getSecond(),
+                CoreMatchers.is(0.0));
+        MatcherAssert.assertThat(TimeComponents.fromSeconds(0, zeroUlp, 0, 60).getSecond(),
+                CoreMatchers.is(zeroUlp));
+        MatcherAssert.assertThat(TimeComponents.fromSeconds(86399, one, 0, 60).getSecond(),
+                CoreMatchers.is(sixty));
+        MatcherAssert.assertThat(TimeComponents.fromSeconds(86399, one, 1, 61).getSecond(),
+                CoreMatchers.is(sixtyOne));
+        // I don't like this NaN behavior, but it matches the 10.1 implementation and
+        // GLONASSAnalyticalPropagatorTest relied on it.
+        // It seems more logical to throw an out of range exception in this case.
+        MatcherAssert.assertThat(TimeComponents.fromSeconds(86399, Double.NaN, 0, 60).getSecond(),
+                CoreMatchers.is(Double.NaN));
+        MatcherAssert.assertThat(TimeComponents.fromSeconds(86399, Double.NaN, 0, 60).getMinute(),
+                CoreMatchers.is(59));
+        MatcherAssert.assertThat(TimeComponents.fromSeconds(86399, Double.NaN, 1, 61).getSecond(),
+                CoreMatchers.is(Double.NaN));
+        MatcherAssert.assertThat(TimeComponents.fromSeconds(86399, Double.NaN, 1, 61).getMinute(),
+                CoreMatchers.is(59));
+
+        // check errors
+        try {
+            TimeComponents.fromSeconds(0, FastMath.nextDown(0), 0, 60);
+            Assert.fail("Expected Exception");
+        } catch (OrekitIllegalArgumentException e) {
+            MatcherAssert.assertThat(e.getSpecifier(),
+                    CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
+        }
+        try {
+            TimeComponents.fromSeconds(86399, 1, 0, 60);
+            Assert.fail("Expected Exception");
+        } catch (OrekitIllegalArgumentException e) {
+            MatcherAssert.assertThat(e.getSpecifier(),
+                    CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
+        }
+        try {
+            TimeComponents.fromSeconds(86399, 1, 1, 61);
+            Assert.fail("Expected Exception");
+        } catch (OrekitIllegalArgumentException e) {
+            MatcherAssert.assertThat(e.getSpecifier(),
+                    CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
+        }
     }
 
 }
