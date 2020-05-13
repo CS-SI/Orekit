@@ -24,6 +24,9 @@
       <action dev="bryan" type="fix" issue="651">
         Improved use of try with resources statement.
       </action>
+      <action dev="bryan" type="fix" issue="679" due-to="luc, maxime">
+        Improved testRetrogradeOrbit in CircularOrbit and KeplerianOrbit tests.
+      </action>
       <action dev="bryan" type="fix" issue="680">
         Allowed ephemeris class to be used with absolute PV coordinates.
       </action>
