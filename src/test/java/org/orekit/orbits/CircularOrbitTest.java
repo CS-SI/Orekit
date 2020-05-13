@@ -1108,7 +1108,7 @@ public class CircularOrbitTest {
     @Test
     public void testEquatorialRetrograde() {
         Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
-        Vector3D velocity = new Vector3D(0.0, -6500.0, 0.0);
+        Vector3D velocity = new Vector3D(0.0, -6500.0, 1.0e-10);
         double r2 = position.getNormSq();
         double r  = FastMath.sqrt(r2);
         Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
@@ -1119,7 +1119,7 @@ public class CircularOrbitTest {
         Assert.assertEquals(-738.145, orbit.getADot(), 1.0e-3);
         Assert.assertEquals(0.05995861, orbit.getE(), 1.0e-8);
         Assert.assertEquals(-6.523e-5, orbit.getEDot(), 1.0e-8);
-        Assert.assertEquals(FastMath.PI, orbit.getI(), 1.0e-15);
+        Assert.assertEquals(FastMath.PI, orbit.getI(), 2.0e-14);
         Assert.assertEquals(-4.615e-5, orbit.getIDot(), 1.0e-8);
         Assert.assertTrue(Double.isNaN(orbit.getHx()));
         Assert.assertTrue(Double.isNaN(orbit.getHxDot()));
