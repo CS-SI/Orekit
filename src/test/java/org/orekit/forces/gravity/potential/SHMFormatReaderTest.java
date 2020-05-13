@@ -158,6 +158,13 @@ public class SHMFormatReaderTest {
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile4() {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-4-eigen_coef", false));
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
     @Test
     public void testZeroTide() {
         Utils.setDataRoot("potential");

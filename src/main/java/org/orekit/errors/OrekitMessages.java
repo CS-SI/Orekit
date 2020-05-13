@@ -339,9 +339,9 @@ public enum OrekitMessages implements Localizable {
                 stream = loader.getResourceAsStream(resourceName);
             }
             if (stream != null) {
-                try {
+                try (InputStreamReader inputStreamReader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
                     // Only this line is changed to make it to read properties files as UTF-8.
-                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                    bundle = new PropertyResourceBundle(inputStreamReader);
                 } finally {
                     stream.close();
                 }

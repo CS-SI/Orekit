@@ -225,14 +225,14 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         normalized = true;
         TideSystem tideSystem = TideSystem.UNKNOWN;
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         boolean inHeader = true;
-        double[][] c               = null;
-        double[][] s               = null;
-        boolean okCoeffs           = false;
+        double[][] c     = null;
+        double[][] s     = null;
+        boolean okCoeffs = false;
         int lineNumber   = 0;
-        for (String line = r.readLine(); line != null; line = r.readLine()) {
-            try {
+        String line      = null;
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            for (line = r.readLine(); line != null; line = r.readLine()) {
                 ++lineNumber;
                 if (line.trim().length() == 0) {
                     continue;
@@ -357,13 +357,13 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                                                        lineNumber, name, line);
                     }
                 }
-            } catch (NumberFormatException nfe) {
-                final OrekitParseException pe = new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                                         lineNumber, name, line);
-                pe.initCause(nfe);
-                throw pe;
+
             }
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
+
 
         if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {
             // ensure at least the (0, 0) element is properly set

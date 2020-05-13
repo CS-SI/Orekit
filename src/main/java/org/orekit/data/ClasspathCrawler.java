@@ -94,17 +94,15 @@ public class ClasspathCrawler implements DataProvider {
             if (!"".equals(name)) {
 
                 final String convertedName = name.replace('\\', '/');
-                final InputStream stream = classLoader.getResourceAsStream(convertedName);
-                if (stream == null) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);
-                }
-
-                listElements.add(convertedName);
-                try {
-                    stream.close();
+                try (InputStream stream = classLoader.getResourceAsStream(convertedName)) {
+                    if (stream == null) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);
+                    }
+                    listElements.add(convertedName);
                 } catch (IOException exc) {
                     // ignore this error
                 }
+
             }
         }
 

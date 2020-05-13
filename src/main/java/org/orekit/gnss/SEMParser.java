@@ -160,9 +160,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
         prnList.clear();
 
         // Creates the reader
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             // Reads the number of almanacs in the file from the first line
             String[] token = getTokens(reader);
             final int almanacNb = Integer.parseInt(token[0].trim());

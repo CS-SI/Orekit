@@ -95,33 +95,40 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             setTideSystem(TideSystem.TIDE_FREE);
         }
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         final List<List<Double>> c = new ArrayList<>();
         final List<List<Double>> s = new ArrayList<>();
         boolean okFields = true;
-        for (String line = r.readLine(); okFields && line != null; line = r.readLine()) {
-            if (line.length() >= 15) {
+        int lineNumber = 0;
+        String line = null;
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            for (line = r.readLine(); okFields && line != null; line = r.readLine()) {
+                lineNumber++;
+                if (line.length() >= 15) {
 
-                // get the fields defining the current the potential terms
-                final String[] tab = line.trim().split("\\s+");
-                if (tab.length != 6) {
-                    okFields = false;
-                }
-
-                final int i = Integer.parseInt(tab[0]);
-                final int j = Integer.parseInt(tab[1]);
-                if (i <= getMaxParseDegree() && j <= getMaxParseOrder()) {
-                    for (int k = 0; k <= i; ++k) {
-                        extendListOfLists(c, k, FastMath.min(k, getMaxParseOrder()),
-                                          missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-                        extendListOfLists(s, k, FastMath.min(k, getMaxParseOrder()),
-                                          missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                    // get the fields defining the current the potential terms
+                    final String[] tab = line.trim().split("\\s+");
+                    if (tab.length != 6) {
+                        okFields = false;
                     }
-                    parseCoefficient(tab[2], c, i, j, "C", name);
-                    parseCoefficient(tab[3], s, i, j, "S", name);
-                }
 
+                    final int i = Integer.parseInt(tab[0]);
+                    final int j = Integer.parseInt(tab[1]);
+                    if (i <= getMaxParseDegree() && j <= getMaxParseOrder()) {
+                        for (int k = 0; k <= i; ++k) {
+                            extendListOfLists(c, k, FastMath.min(k, getMaxParseOrder()),
+                                              missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                            extendListOfLists(s, k, FastMath.min(k, getMaxParseOrder()),
+                                              missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                        }
+                        parseCoefficient(tab[2], c, i, j, "C", name);
+                        parseCoefficient(tab[3], s, i, j, "S", name);
+                    }
+
+                }
             }
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
 
         if (missingCoefficientsAllowed() && getMaxParseDegree() > 0 && getMaxParseOrder() > 0) {
