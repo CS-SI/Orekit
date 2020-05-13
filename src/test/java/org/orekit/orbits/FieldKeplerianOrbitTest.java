@@ -1743,7 +1743,7 @@ public class FieldKeplerianOrbitTest {
 
     private <T extends RealFieldElement<T>> void doTestEquatorialRetrograde(final Field<T> field) {
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(10000000.0), field.getZero(), field.getZero());
-        FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero());
+        FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero().add(1.0e-10));
         T r2 = position.getNormSq();
         T r  = r2.sqrt();
         FieldVector3D<T> acceleration = new FieldVector3D<>(r.multiply(r2.reciprocal().multiply(-mu)), position,
@@ -1757,7 +1757,7 @@ public class FieldKeplerianOrbitTest {
         Assert.assertEquals(-738.145, orbit.getADot().getReal(), 1.0e-3);
         Assert.assertEquals(0.05995861, orbit.getE().getReal(), 1.0e-8);
         Assert.assertEquals(-6.523e-5, orbit.getEDot().getReal(), 1.0e-8);
-        Assert.assertEquals(FastMath.PI, orbit.getI().getReal(), 1.0e-15);
+        Assert.assertEquals(FastMath.PI, orbit.getI().getReal(), 2.0e-14);
         Assert.assertEquals(-4.615e-5, orbit.getIDot().getReal(), 1.0e-8);
         Assert.assertTrue(Double.isNaN(orbit.getHx().getReal()));
         Assert.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
