@@ -3115,11 +3115,12 @@ public enum IERSConventions {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, nameLove);
                 }
 
+                int lineNumber = 1;
+                String line = null;
                 // setup the reader
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
-                    String line = reader.readLine();
-                    int lineNumber = 1;
+                    line = reader.readLine();
 
                     // look for the Love numbers
                     while (line != null) {
@@ -3150,6 +3151,10 @@ public enum IERSConventions {
                         line = reader.readLine();
 
                     }
+                } catch (NumberFormatException nfe) {
+                    // this should never happen with files embedded within Orekit
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, nameLove, line);
                 }
             }
 

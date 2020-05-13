@@ -196,10 +196,7 @@ public class OMMParser extends ODMParser {
     /** {@inheritDoc} */
     public OMMFile parse(final InputStream stream, final String fileName) {
 
-        try {
-
-            final BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
@@ -283,7 +280,6 @@ public class OMMParser extends ODMParser {
                         }
                 }
             }
-            reader.close();
             return file;
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

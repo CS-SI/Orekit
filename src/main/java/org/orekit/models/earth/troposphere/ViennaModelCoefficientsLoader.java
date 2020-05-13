@@ -267,9 +267,8 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException {
 
-        // Open stream and parse data
-        final BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
+        String line = null;
         final String splitter = "\\s+";
 
         // Initialize Lists
@@ -280,11 +279,13 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
         final ArrayList<Double> zhd        = new ArrayList<>();
         final ArrayList<Double> zwd        = new ArrayList<>();
 
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            ++lineNumber;
-            line = line.trim();
+        // Open stream and parse data
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            try {
+            for (line = br.readLine(); line != null; line = br.readLine()) {
+                ++lineNumber;
+                line = line.trim();
+
                 // Fill latitudes and longitudes lists
                 if (line.length() > 0 && line.startsWith("! Range/resolution:")) {
                     final String[] range_line = line.split(splitter);
@@ -314,16 +315,12 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
                     zhd.add(Double.valueOf(values_line[4]));
                     zwd.add(Double.valueOf(values_line[5]));
                 }
-
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
             }
 
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
-
-        // Close the stream after reading
-        input.close();
 
         final int dimLat = latitudes.size();
         final int dimLon = longitudes.size();

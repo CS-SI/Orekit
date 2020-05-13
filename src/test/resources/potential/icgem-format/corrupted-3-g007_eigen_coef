@@ -1,0 +1,55 @@
+THE COMBINED GRAVITY FIELD MODEL EIGEN-5C
+=========================================
+
+Reference:
+EIGEN-GL05C - A new global combined high-resolution GRACE-based gravity
+field model of the GFZ-GRGS cooperation,
+Ch. Foerste (1), F. Flechtner (1), R. Schmidt (1), R. Stubenvoll (1), M. Rothacher (1),
+J. Kusche (1), H. Neumayer (1), R. Biancale (2), J.-M. Lemoine (2),
+F. Barthelmes (1), S. Bruinsma (2), R. Koenig (1) and Ul. Meyer (1),
+Geophysical Research Abstracts,
+Vol. 10, EGU2008-A-03426, 2008
+SRef-ID: 1607-7962/gra/EGU2008-A-03426
+
+(1) GeoForschungsZentrum Potsdam, Dept. Geodesy and Remote Sensing, Germany,
+    Telegrafenberg, D-14473 Potsdam, Germany
+    fax: ++49 331 288 1169
+    e-mail: foer@gfz-potsdam.de
+
+(2) Groupe de Recherche de Geodesie Spatiale, 18,
+    avenue Edouard Belin, F-31055 Toulouse, France
+    fax: ++33 5 61 253098
+    e-mail: richard.biancale@cnes.fr
+
+The reference epoch of this gravity field model is 01 Oct 2004
+
+Update 20 November 2008:
+------------------------
+Addition of the drift rates for C20, C21, S21, C30 and C40, which have to be taken
+into account in accordance with the GFZ Level-2 Processing Standards Release 4.
+
+product_type                  gravity_field
+modelname                     EIGEN-5C
+earth_gravity_constant        0.3986004415E+15
+radius                        0.6378136460E+07
+max_degree                    8
+errors                        calibrated
+norm                          fully_normalized
+tide_system                   tide_free
+ 
+ 
+ 
+key    L    M         C                  S           sigma C    sigma S
+end_of_head ===========================================================================
+gfc    0    0 0.100000000000D+01 0.000000000000D+00 0.0000D+00 0.0000D+00
+gfc    1    0 0.000000000000D+00 0.000000000000D+00 0.0000D+00 0.0000D+00
+gfct   2    0      corrupted     0.000000000000D+00 0.2709D-10 0.0000D+00 20041001
+dot    2    0 0.116275500000D-10 0.000000000000D+00 0.0000D+00 0.0000D+00
+gfct   3    0 0.957212879862D-06 0.000000000000D+00 0.1142D-10 0.0000D+00 20041001
+dot    3    0 0.490000000000D-11 0.000000000000D+00 0.0000D+00 0.0000D+00
+gfct   4    0 0.539988144712D-06 0.000000000000D+00 0.1095D-10 0.0000D+00 20041001
+dot    4    0 0.470000000000D-11 0.000000000000D+00 0.0000D+00 0.0000D+00
+gfc    5    0 0.686821280969D-07 0.000000000000D+00 0.1926D-11 0.0000D+00
+
+
+

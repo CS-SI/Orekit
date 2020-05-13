@@ -766,9 +766,6 @@ public class NeQuickModel implements IonosphericModel {
                                           lineNumber, name, line);
             }
 
-            // Close the stream after reading
-            input.close();
-
             // Clone parsed grid
             grid = array.clone();
 
@@ -939,9 +936,6 @@ public class NeQuickModel implements IonosphericModel {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           lineNumber, name, line);
             }
-
-            // Close the stream after reading
-            input.close();
 
             f2Loader  = f2Temp.clone();
             fm3Loader = fm3Temp.clone();
