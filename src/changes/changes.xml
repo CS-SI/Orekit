@@ -21,6 +21,15 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="evan" type="add" issue="677">
+        Add AbsoluteDate.toStringRfc3339() and DateTimeComponents.toStringRfc3339().
+      </action>
+      <action dev="evan" type="fix" issue="681">
+        Fix AbsoluteDate.getComponents(...) produces invalid times.
+      </action>
+      <action dev="evan" type="fix" issue="676">
+        Fix AbsoluteDate.getComponents(utc) throws "non-existent time 23:59:61".
+      </action>
       <action dev="bryan" type="fix" issue="651">
         Improved use of try with resources statement.
       </action>
