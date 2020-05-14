@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="641">
+        Allow Pattern functionalities instead of String.replaceAll() and String.split().
+      </action>
       <action dev="evan" type="add" issue="677">
         Add AbsoluteDate.toStringRfc3339() and DateTimeComponents.toStringRfc3339().
       </action>

@@ -18,6 +18,7 @@ package org.orekit.models.earth.troposphere;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -66,6 +67,12 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
 
     /** Default lowest acceptable elevation angle [rad]. */
     public static final double DEFAULT_LOW_ELEVATION_THRESHOLD = 0.05;
+
+    /** First pattern for δR correction term table. */
+    private static final Pattern FIRST_DELTA_R_PATTERN = Pattern.compile("^\\^");
+
+    /** Second pattern for δR correction term table. */
+    private static final Pattern SECOND_DELTA_R_PATTERN = Pattern.compile("\\$$");
 
     /** X values for the B function. */
     private static final double[] X_VALUES_FOR_B = {
@@ -342,7 +349,9 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
                                                      loader.getValuesSamples());
         }
         throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE,
-                                  deltaRFileName.replaceAll("^\\^", "").replaceAll("\\$$", ""));
+                                  SECOND_DELTA_R_PATTERN.
+                                  matcher(FIRST_DELTA_R_PATTERN.matcher(deltaRFileName).replaceAll("")).
+                                  replaceAll(""));
     }
 
     /** Create the default δR function.

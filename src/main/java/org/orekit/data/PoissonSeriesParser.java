@@ -229,6 +229,9 @@ public class PoissonSeriesParser {
     /** Pattern for fields with Doodson number. */
     private static final String  DOODSON_TYPE_PATTERN = "\\p{Digit}{2,3}[.,]\\p{Digit}{3}";
 
+    /** Pattern for String replacement. */
+    private static final Pattern PATTERN = Pattern.compile("[.,]");
+
     /** Parser for the polynomial part. */
     private final PolynomialParser polynomialParser;
 
@@ -568,7 +571,7 @@ public class PoissonSeriesParser {
                     final int cP       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 3));
                     final int cNprime  = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 4));
                     final int cPs      = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 5));
-                    final int nDoodson = (doodson      < 0) ? 0 : Integer.parseInt(regularMatcher.group(doodson).replaceAll("[.,]", ""));
+                    final int nDoodson = (doodson      < 0) ? 0 : Integer.parseInt(PATTERN.matcher(regularMatcher.group(doodson)).replaceAll(""));
 
                     // get the tide multiplier
                     int cGamma   = (gamma < 0) ? 0 : Integer.parseInt(regularMatcher.group(gamma));

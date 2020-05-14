@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.regex.Pattern;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
@@ -70,6 +71,9 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "CGIM*0\\.*N$";
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** The alpha coefficients loaded. */
     private double[] alpha;
@@ -186,14 +190,13 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
         // Open stream and parse data
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            final String splitter = "\\s+";
             for (line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 line = line.trim();
 
                 // Read alphas
                 if (line.length() > 0 && line.endsWith("ALPHA")) {
-                    final String[] alpha_line = line.split(splitter);
+                    final String[] alpha_line = SEPARATOR.split(line);
                     alpha = new double[4];
                     for (int j = 0; j < 4; j++) {
                         alpha[j] = Double.parseDouble(alpha_line[j].replace("D", "E"));
@@ -202,7 +205,7 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
 
                 // Read betas
                 if (line.length() > 0 && line.endsWith("BETA")) {
-                    final String[] beta_line = line.split(splitter);
+                    final String[] beta_line = SEPARATOR.split(line);
                     beta = new double[4];
                     for (int j = 0; j < 4; j++) {
                         beta[j] = Double.parseDouble(beta_line[j].replace("D", "E"));

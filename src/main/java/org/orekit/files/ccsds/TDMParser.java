@@ -16,9 +16,6 @@
  */
 package org.orekit.files.ccsds;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,6 +25,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.annotation.DefaultDataContext;
@@ -70,6 +72,12 @@ import org.xml.sax.helpers.DefaultHandler;
  * @since 9.0
  */
 public class TDMParser extends DefaultHandler {
+
+    /** Pattern for dash. */
+    private static final Pattern DASH = Pattern.compile("-");
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** Enumerate for the format. */
     public enum TDMFileFormat {
@@ -621,7 +629,7 @@ public class TDMParser extends DefaultHandler {
          * @return CCSDS frame corresponding to the name
          */
         private CCSDSFrame parseCCSDSFrame(final String frameName) {
-            return CCSDSFrame.valueOf(frameName.replaceAll("-", ""));
+            return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
         }
 
         /** Parse a date.
@@ -658,7 +666,7 @@ public class TDMParser extends DefaultHandler {
             // Parse an observation line
             // An observation line should consist in the string "keyword = epoch value"
             // parseInfo.keyValue.getValue() should return the string "epoch value"
-            final String[] fields = parseInfo.keyValue.getValue().split("\\s+");
+            final String[] fields = SEPARATOR.split(parseInfo.keyValue.getValue());
 
             // Check that there are 2 fields in the value of the key
             if (fields.length != 2) {
