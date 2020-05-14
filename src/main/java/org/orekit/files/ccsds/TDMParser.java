@@ -16,9 +16,6 @@
  */
 package org.orekit.files.ccsds;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,6 +25,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.annotation.DefaultDataContext;
@@ -361,6 +363,9 @@ public class TDMParser extends DefaultHandler {
      */
     private static class ParseInfo {
 
+        /** Pattern for dash. */
+        private static final Pattern DASH = Pattern.compile("-");
+
         /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
         private final AbsoluteDate missionReferenceDate;
 
@@ -621,7 +626,7 @@ public class TDMParser extends DefaultHandler {
          * @return CCSDS frame corresponding to the name
          */
         private CCSDSFrame parseCCSDSFrame(final String frameName) {
-            return CCSDSFrame.valueOf(frameName.replaceAll("-", ""));
+            return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
         }
 
         /** Parse a date.
