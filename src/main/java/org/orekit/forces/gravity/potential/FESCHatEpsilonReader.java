@@ -47,6 +47,9 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
     /** Pattern for fields with Doodson number. */
     private static final String  DOODSON_TYPE_PATTERN = "\\p{Digit}{2,3}[.,]\\p{Digit}{3}";
 
+    /** Pattern for regular data. */
+    private static final Pattern PATTERN = Pattern.compile("[.,]");
+
     /** Sea water fensity. */
     private static final double RHO   = 1025;
 
@@ -138,7 +141,7 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
                     // we have found a regular data line
 
                     // parse fields
-                    final int doodson = Integer.parseInt(regularMatcher.group(1).replaceAll("[.,]", ""));
+                    final int doodson = Integer.parseInt(PATTERN.matcher(regularMatcher.group(1)).replaceAll(""));
                     final int n       = Integer.parseInt(regularMatcher.group(3));
                     final int m       = Integer.parseInt(regularMatcher.group(4));
 

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -146,6 +147,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Gravity field coefficient cosine amplitude. */
     private static final String ACOS                    = "acos";
 
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
+
     /** Indicator for normalized coefficients. */
     private boolean normalized;
 
@@ -237,7 +241,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 if (line.trim().length() == 0) {
                     continue;
                 }
-                final String[] tab = line.split("\\s+");
+                final String[] tab = SEPARATOR.split(line);
                 if (inHeader) {
                     if ((tab.length == 2) && PRODUCT_TYPE.equals(tab[0])) {
                         if (!GRAVITY_FIELD.equals(tab[1])) {

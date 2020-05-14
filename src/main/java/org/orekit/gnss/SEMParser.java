@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
@@ -66,7 +67,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
     private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.al3$";
 
     /** Separator for parsing. */
-    private static final String SEPARATOR = "\\s+";
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     // Fields
     /** the list of all the almanacs read from the file. */
@@ -283,7 +284,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
     private String[] getTokens(final BufferedReader reader) throws IOException {
         final String line = reader.readLine();
         if (line != null) {
-            return line.trim().split(SEPARATOR);
+            return SEPARATOR.split(line.trim());
         } else {
             throw new IOException();
         }

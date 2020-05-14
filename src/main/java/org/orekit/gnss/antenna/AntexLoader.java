@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -57,6 +58,9 @@ public class AntexLoader {
 
     /** Default supported files name pattern for antex files. */
     public static final String DEFAULT_ANTEX_SUPPORTED_NAMES = "^\\w{5}(?:_\\d{4})?\\.atx$";
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** Satellites antennas. */
     private final List<TimeSpanMap<SatelliteAntenna>> satellitesAntennas;
@@ -399,7 +403,7 @@ public class AntexLoader {
                             break;
                         default :
                             if (inFrequency) {
-                                final String[] fields = line.trim().split("\\s+");
+                                final String[] fields = SEPARATOR.split(line.trim());
                                 if (fields.length != grid1D.length + 1) {
                                     throw new OrekitException(OrekitMessages.WRONG_COLUMNS_NUMBER,
                                                               name, lineNumber, grid1D.length + 1, fields.length);

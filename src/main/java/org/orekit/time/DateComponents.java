@@ -129,13 +129,13 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     private static final int MJD_TO_J2000 = 51544;
 
     /** Basic and extended format calendar date. */
-    private static Pattern CALENDAR_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)$");
+    private static final Pattern CALENDAR_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)$");
 
     /** Basic and extended format ordinal date. */
-    private static Pattern ORDINAL_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d\\d)$");
+    private static final Pattern ORDINAL_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d\\d)$");
 
     /** Basic and extended format week date. */
-    private static Pattern WEEK_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?W(\\d\\d)-?(\\d)$");
+    private static final Pattern WEEK_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?W(\\d\\d)-?(\\d)$");
 
     static {
         // this static statement makes sure the reference epoch are initialized

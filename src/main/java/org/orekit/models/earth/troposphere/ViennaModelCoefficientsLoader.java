@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
@@ -89,6 +90,9 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "VMF*_\\\\*\\*\\.*H$";
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** The hydrostatic and wet a coefficients loaded. */
     private double[] coefficientsA;
@@ -269,7 +273,6 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
 
         int lineNumber = 0;
         String line = null;
-        final String splitter = "\\s+";
 
         // Initialize Lists
         final ArrayList<Double> latitudes  = new ArrayList<>();
@@ -288,7 +291,7 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
 
                 // Fill latitudes and longitudes lists
                 if (line.length() > 0 && line.startsWith("! Range/resolution:")) {
-                    final String[] range_line = line.split(splitter);
+                    final String[] range_line = SEPARATOR.split(line);
 
                     // Latitudes list
                     for (double lat = Double.parseDouble(range_line[2]); lat <= Double.parseDouble(range_line[3]); lat = lat + Double.parseDouble(range_line[6])) {
@@ -309,7 +312,7 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
 
                 // Fill ah, aw, zhd and zwd lists
                 if (line.length() > 0 && !line.startsWith("!")) {
-                    final String[] values_line = line.split(splitter);
+                    final String[] values_line = SEPARATOR.split(line);
                     ah.add(Double.valueOf(values_line[2]));
                     aw.add(Double.valueOf(values_line[3]));
                     zhd.add(Double.valueOf(values_line[4]));

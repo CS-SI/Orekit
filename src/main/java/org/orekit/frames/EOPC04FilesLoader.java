@@ -73,6 +73,9 @@ import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
  */
 class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR;
+
     /** Pattern to match the columns header. */
     private static final Pattern COLUMNS_HEADER_PATTERN;
 
@@ -110,6 +113,9 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
     private static final int NUT_1_FIELD;
 
     static {
+
+        SEPARATOR = Pattern.compile(" +");
+
         // Header have either the following form:
         //       Date      MJD      x          y        UT1-UTC       LOD         dPsi      dEps       x Err     y Err   UT1-UTC Err  LOD Err    dPsi Err   dEpsilon Err
         //                          "          "           s           s            "         "        "          "          s           s            "         "
@@ -213,7 +219,7 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                     if (DATA_LINE_PATTERN.matcher(line).matches()) {
                         inHeader = false;
                         // this is a data line, build an entry from the extracted fields
-                        final String[] fields = line.split(" +");
+                        final String[] fields = SEPARATOR.split(line);
                         final DateComponents dc = new DateComponents(Integer.parseInt(fields[YEAR_FIELD]),
                                                                      Integer.parseInt(fields[MONTH_FIELD]),
                                                                      Integer.parseInt(fields[DAY_FIELD]));

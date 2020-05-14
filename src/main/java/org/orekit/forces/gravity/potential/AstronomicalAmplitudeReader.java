@@ -49,6 +49,9 @@ public class AstronomicalAmplitudeReader implements DataLoader {
     private static final String  REAL_TYPE_PATTERN =
             "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
 
+    /** Pattern for regular data. */
+    private static final Pattern PATTERN = Pattern.compile("[.,]");
+
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
@@ -137,7 +140,7 @@ public class AstronomicalAmplitudeReader implements DataLoader {
                 final Matcher regularMatcher = regularLinePattern.matcher(line);
                 if (regularMatcher.matches()) {
                     // we have found a regular data line
-                    final int    doodson = Integer.parseInt(regularMatcher.group(columnDoodson).replaceAll("[.,]", ""));
+                    final int    doodson = Integer.parseInt(PATTERN.matcher(regularMatcher.group(columnDoodson)).replaceAll(""));
                     final double hf      = scale * Double.parseDouble(regularMatcher.group(columnHf));
                     amplitudesMap.put(doodson, hf);
                 }
