@@ -121,37 +121,58 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     }
 
-    /** Build a time from the second number within the day.
-     * <p>
-     * This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return 0}).
-     * </p>
-     * @param secondInDay second number from 0.0 to {@link
-     * org.orekit.utils.Constants#JULIAN_DAY} (excluded)
-     * @exception OrekitIllegalArgumentException if seconds number is out of range
+    /**
+     * Build a time from the second number within the day.
+     *
+     * <p>If the {@code secondInDay} is less than {@code 60.0} then {@link #getSecond()}
+     * will be less than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
+     * may produce an invalid value of {@link #getSecond()} during a negative leap second,
+     * through there has never been one. For more control over the number of seconds in
+     * the final minute use {@link #fromSeconds(int, double, double, int)}.
+     *
+     * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
+     * 0}).
+     *
+     * @param secondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
+     *                    1} (excluded)
+     * @throws OrekitIllegalArgumentException if seconds number is out of range
+     * @see #fromSeconds(int, double, double, int)
+     * @see #TimeComponents(int, double)
      */
     public TimeComponents(final double secondInDay)
-        throws OrekitIllegalArgumentException {
+            throws OrekitIllegalArgumentException {
         this(0, secondInDay);
     }
 
-    /** Build a time from the second number within the day.
-     * <p>
-     * The second number is defined here as the sum
-     * {@code secondInDayA + secondInDayB} from 0.0 to {@link
-     * org.orekit.utils.Constants#JULIAN_DAY} {@code + 1} (excluded). The two parameters
-     * are used for increased accuracy.
-     * </p>
-     * <p>
-     * This constructor is always in UTC (i.e. {@link #getMinutesFromUTC()} will return 0).
-     * </p>
+    /**
+     * Build a time from the second number within the day.
+     *
+     * <p>The second number is defined here as the sum
+     * {@code secondInDayA + secondInDayB} from 0.0 to {@link Constants#JULIAN_DAY}
+     * {@code + 1} (excluded). The two parameters are used for increased accuracy.
+     *
+     * <p>If the sum is less than {@code 60.0} then {@link #getSecond()} will be less
+     * than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
+     * may produce an invalid value of {@link #getSecond()} during a negative leap second,
+     * through there has never been one. For more control over the number of seconds in
+     * the final minute use {@link #fromSeconds(int, double, double, int)}.
+     *
+     * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC()} will
+     * return 0).
+     *
      * @param secondInDayA first part of the second number
      * @param secondInDayB last part of the second number
-     * @exception OrekitIllegalArgumentException if seconds number is out of range
+     * @throws OrekitIllegalArgumentException if seconds number is out of range
      * @see #fromSeconds(int, double, double, int)
      */
     public TimeComponents(final int secondInDayA, final double secondInDayB)
-        throws OrekitIllegalArgumentException {
-        this(secondInDayA, secondInDayB, 0.0, 61);
+            throws OrekitIllegalArgumentException {
+        // if the total is at least 86400 then assume there is a leap second
+        this(
+                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? secondInDayA : secondInDayA - 1,
+                secondInDayB,
+                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 0 : 1,
+                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 60 : 61);
     }
 
     /**
@@ -200,7 +221,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if (wholeSeconds < 0 || wholeSeconds >= Constants.JULIAN_DAY) {
             throw new OrekitIllegalArgumentException(
                     OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
-                    wholeSeconds + fractional,
+                    // this can produce some strange messages due to rounding
+                    secondInDayA + secondInDayB,
                     0,
                     Constants.JULIAN_DAY);
         }

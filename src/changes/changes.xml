@@ -27,6 +27,10 @@
       <action dev="bryan" type="fix" issue="641">
         Allow Pattern functionalities instead of String.replaceAll() and String.split().
       </action>
+      <action dev="evan" type="fix" issue="658">
+        Fix invalid hour when using TimeScale(double) or TimeScale(int, double) with a
+        value in [86400, 86401]. Treat these values as indicating a leap second.
+      </action>
       <action dev="evan" type="add" issue="677">
         Add AbsoluteDate.toStringRfc3339() and DateTimeComponents.toStringRfc3339().
       </action>
