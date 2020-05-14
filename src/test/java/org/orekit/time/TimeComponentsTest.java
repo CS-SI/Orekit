@@ -230,6 +230,20 @@ public class TimeComponentsTest {
             MatcherAssert.assertThat(e.getSpecifier(),
                     CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
         }
+        try {
+            TimeComponents.fromSeconds(0, 0, -1, 59);
+            Assert.fail("Expected Exception");
+        } catch (OrekitIllegalArgumentException e) {
+            MatcherAssert.assertThat(e.getSpecifier(),
+                    CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
+        }
+        try {
+            TimeComponents.fromSeconds(0, 0, 1, 59);
+            Assert.fail("Expected Exception");
+        } catch (OrekitIllegalArgumentException e) {
+            MatcherAssert.assertThat(e.getSpecifier(),
+                    CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
+        }
     }
 
     @Test
