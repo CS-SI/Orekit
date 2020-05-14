@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
@@ -2360,6 +2361,9 @@ public enum IERSConventions {
 
     };
 
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\p{Space}+");
+
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
 
@@ -3127,7 +3131,7 @@ public enum IERSConventions {
 
                         line = line.trim();
                         if (!(line.isEmpty() || line.startsWith("#"))) {
-                            final String[] fields = line.split("\\p{Space}+");
+                            final String[] fields = SEPARATOR.split(line);
                             if (fields.length != 5) {
                                 // this should never happen with files embedded within Orekit
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

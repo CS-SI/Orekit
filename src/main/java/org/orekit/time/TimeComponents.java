@@ -54,7 +54,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         new DecimalFormat("00.000", new DecimalFormatSymbols(Locale.US));
 
     /** Basic and extends formats for local time, with optional timezone. */
-    private static Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|([-+]\\d\\d(?::?\\d\\d)?))?$");
+    private static final Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|([-+]\\d\\d(?::?\\d\\d)?))?$");
 
     /** Hour number. */
     private final int hour;

@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -52,6 +53,9 @@ import org.orekit.utils.Constants;
  * @author Fabien Maussion
  */
 public class SHMFormatReader extends PotentialCoefficientsReader {
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** First field labels. */
     private static final String GRCOEF = "GRCOEF";
@@ -128,7 +132,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                 for (line = r.readLine(); line != null; line = r.readLine()) {
                     lineNumber++;
                     if (line.length() >= 6) {
-                        final String[] tab = line.split("\\s+");
+                        final String[] tab = SEPARATOR.split(line);
 
                         // read the earth values
                         if ("EARTH".equals(tab[0])) {

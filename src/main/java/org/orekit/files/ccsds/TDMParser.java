@@ -73,6 +73,12 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class TDMParser extends DefaultHandler {
 
+    /** Pattern for dash. */
+    private static final Pattern DASH = Pattern.compile("-");
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
+
     /** Enumerate for the format. */
     public enum TDMFileFormat {
 
@@ -362,9 +368,6 @@ public class TDMParser extends DefaultHandler {
      * @author sports
      */
     private static class ParseInfo {
-
-        /** Pattern for dash. */
-        private static final Pattern DASH = Pattern.compile("-");
 
         /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
         private final AbsoluteDate missionReferenceDate;
@@ -663,7 +666,7 @@ public class TDMParser extends DefaultHandler {
             // Parse an observation line
             // An observation line should consist in the string "keyword = epoch value"
             // parseInfo.keyValue.getValue() should return the string "epoch value"
-            final String[] fields = parseInfo.keyValue.getValue().split("\\s+");
+            final String[] fields = SEPARATOR.split(parseInfo.keyValue.getValue());
 
             // Check that there are 2 fields in the value of the key
             if (fields.length != 2) {

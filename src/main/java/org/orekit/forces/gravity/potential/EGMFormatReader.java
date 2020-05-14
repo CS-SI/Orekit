@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -41,6 +42,9 @@ import org.orekit.utils.Constants;
  * @author Fabien Maussion
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** Flag for using WGS84 values for equatorial radius and central attraction coefficient. */
     private final boolean useWgs84Coefficients;
@@ -106,7 +110,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
                 if (line.length() >= 15) {
 
                     // get the fields defining the current the potential terms
-                    final String[] tab = line.trim().split("\\s+");
+                    final String[] tab = SEPARATOR.split(line.trim());
                     if (tab.length != 6) {
                         okFields = false;
                     }
