@@ -122,6 +122,13 @@ public class EGMFormatReaderTest {
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
+    @Test(expected=OrekitException.class)
+    public void testCorruptedFile3() {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("corrupted-3-egm96_to5", false));
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
     @Test
     public void testZeroTidePattern1() {
         Utils.setDataRoot("potential");

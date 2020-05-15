@@ -136,6 +136,7 @@ public class OrDetectorTest {
         or.init(s, t);
 
         // verify
+        Assert.assertEquals(2, or.getDetectors().size());
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
         Mockito.verify(c).init(s, t);

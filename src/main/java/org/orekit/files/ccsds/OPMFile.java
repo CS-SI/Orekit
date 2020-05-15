@@ -43,7 +43,7 @@ public class OPMFile extends OGMFile {
     /** Position vector (m). */
     private Vector3D position;
 
-    /** Velocity vector (m/s. */
+    /** Velocity vector (m/s). */
     private Vector3D velocity;
 
     /** Maneuvers. */

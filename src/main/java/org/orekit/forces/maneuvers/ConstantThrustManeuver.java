@@ -27,8 +27,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -227,20 +225,10 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         this.triggeredEnd      = null;
 
         // Build the parameter drivers, using maneuver name as prefix
-        ParameterDriver tpd = null;
-        ParameterDriver fpd = null;
-        try {
-            tpd = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
-                                      0.0, Double.POSITIVE_INFINITY);
-            fpd = new ParameterDriver(name + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
-                                      Double.NEGATIVE_INFINITY, 0.0 );
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
-
-        this.thrustDriver   = tpd;
-        this.flowRateDriver = fpd;
+        this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
+                                                  0.0, Double.POSITIVE_INFINITY);
+        this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
+                                                  Double.NEGATIVE_INFINITY, 0.0 );
 
     }
 

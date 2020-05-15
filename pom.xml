@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>10.1</version>
+  <version>10.2-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -24,7 +24,7 @@
     <orekit.jacoco-maven-plugin.version>0.8.5</orekit.jacoco-maven-plugin.version>
     <orekit.maven-bundle-plugin.version>4.2.1</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>3.1.0</orekit.maven-checkstyle-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>3.1.1</orekit.maven-checkstyle-plugin.version>
     <orekit.checkstyle.version>8.29</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.8.1</orekit.maven-compiler-plugin.version>
@@ -38,7 +38,9 @@
     <orekit.maven-site-plugin.version>3.8.2</orekit.maven-site-plugin.version>
     <orekit.maven-wagon-ssh-plugin.version>3.3.4</orekit.maven-wagon-ssh-plugin.version>
     <orekit.maven-source-plugin.version>3.2.1</orekit.maven-source-plugin.version>
-    <orekit.maven-surefire-plugin.version>3.0.0-M4</orekit.maven-surefire-plugin.version>
+    <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
+         https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
+    <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.0.0-M4</orekit.maven-surefire-report-plugin.version>
     <orekit.mockito-core.version>3.2.4</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
@@ -178,7 +180,14 @@
       <roles>
         <role>developer</role>
       </roles>
-    </developer>    
+    </developer>
+    <developer>
+      <name>Cl&#233;ment Jonglez</name>
+      <id>clement</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>
@@ -265,6 +274,9 @@
     </contributor>
     <contributor>
       <name>Shiva Iyer</name>
+    </contributor>
+    <contributor>
+      <name>David Soulard</name>
     </contributor>
   </contributors>
 

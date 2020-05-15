@@ -187,6 +187,14 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
+    public void testCorruptedFile3() {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-3-g007_eigen_coef", false));
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
+
+    @Test(expected=OrekitException.class)
     public void testInvalidNorm() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_invalid_norm_icgem", false));

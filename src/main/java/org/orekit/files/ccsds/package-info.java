@@ -16,7 +16,7 @@
  */
 /**
  *
- *This package provides a parser for orbit data stored in CCSDS Orbit Data Message format.
+ *This package provides a parser for elements data stored in CCSDS Navigation Data Message format.
  *
  * @author sports
  * @since 6.1

@@ -144,6 +144,8 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         forward = t.durationFrom(s0.getDate()) >= 0;
+        // Initialize the triggering event
+        trigger.init(s0, t);
     }
 
     /** {@inheritDoc} */
