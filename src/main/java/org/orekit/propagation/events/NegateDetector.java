@@ -68,6 +68,15 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
         this.original = original;
     }
 
+    /**
+     * Get the delegate event detector.
+     * @return the delegate event detector
+     * @since 10.2
+     */
+    public EventDetector getOriginal() {
+        return original;
+    }
+
     @Override
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {

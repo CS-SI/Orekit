@@ -247,6 +247,15 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
         }
     }
 
+    /**
+     * Get the list of original detectors.
+     * @return the list of original detectors
+     * @since 10.2
+     */
+    public List<EventDetector> getDetectors() {
+        return new ArrayList<EventDetector>(detectors);
+    }
+
     /** Local class for operator. */
     private enum Operator {
 

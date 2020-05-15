@@ -291,7 +291,6 @@ public class APMParser extends ADMParser {
             if (pi.maneuver != null) {
                 file.addManeuver(pi.maneuver);
             }
-            reader.close();
             return file;
 
         } catch (IOException ioe) {

@@ -91,10 +91,8 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
         }
         final Pattern regularLinePattern = Pattern.compile(builder.toString());
 
-        try {
-
-            // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        // setup the reader
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
             final List<T> table = new ArrayList<T>();
 

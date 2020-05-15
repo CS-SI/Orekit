@@ -38,7 +38,9 @@
     <orekit.maven-site-plugin.version>3.8.2</orekit.maven-site-plugin.version>
     <orekit.maven-wagon-ssh-plugin.version>3.3.4</orekit.maven-wagon-ssh-plugin.version>
     <orekit.maven-source-plugin.version>3.2.1</orekit.maven-source-plugin.version>
-    <orekit.maven-surefire-plugin.version>3.0.0-M4</orekit.maven-surefire-plugin.version>
+    <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
+         https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
+    <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.0.0-M4</orekit.maven-surefire-report-plugin.version>
     <orekit.mockito-core.version>3.2.4</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
@@ -178,7 +180,14 @@
       <roles>
         <role>developer</role>
       </roles>
-    </developer>    
+    </developer>
+    <developer>
+      <name>Cl&#233;ment Jonglez</name>
+      <id>clement</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>

@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.Constants;
 
 
 /** Class representing a time within the day broken up as hour,
@@ -54,7 +55,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         new DecimalFormat("00.000", new DecimalFormatSymbols(Locale.US));
 
     /** Basic and extends formats for local time, with optional timezone. */
-    private static Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|([-+]\\d\\d(?::?\\d\\d)?))?$");
+    private static final Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|([-+]\\d\\d(?::?\\d\\d)?))?$");
 
     /** Hour number. */
     private final int hour;
@@ -137,18 +138,57 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * <p>
      * The second number is defined here as the sum
      * {@code secondInDayA + secondInDayB} from 0.0 to {@link
-     * org.orekit.utils.Constants#JULIAN_DAY} (excluded). The two parameters
+     * org.orekit.utils.Constants#JULIAN_DAY} {@code + 1} (excluded). The two parameters
      * are used for increased accuracy.
      * </p>
      * <p>
-     * This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return 0}).
+     * This constructor is always in UTC (i.e. {@link #getMinutesFromUTC()} will return 0).
      * </p>
      * @param secondInDayA first part of the second number
      * @param secondInDayB last part of the second number
      * @exception OrekitIllegalArgumentException if seconds number is out of range
+     * @see #fromSeconds(int, double, double, int)
      */
     public TimeComponents(final int secondInDayA, final double secondInDayB)
         throws OrekitIllegalArgumentException {
+        this(secondInDayA, secondInDayB, 0.0, 61);
+    }
+
+    /**
+     * Build a time from the second number within the day.
+     *
+     * <p>The second number is defined here as the sum {@code secondInDayA + secondInDayB}
+     * from 0.0 (included) to {@link org.orekit.utils.Constants#JULIAN_DAY} (excluded).
+     * The two parameters are used for increased accuracy. If the seconds of minute
+     * ({@link #getSecond()}) computed from {@code secondInDayA + secondInDayB} is greater
+     * than or equal to {@code minuteDuration} then the second of minute will be set to
+     * {@code FastMath.nextDown(minuteDuration)}. This prevents rounding to an invalid
+     * seconds of minute number when the input values have greater precision than a {@code
+     * double}.
+     *
+     * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
+     * 0}).
+     *
+     * <p>This constructor is private to avoid confusion with the other constructors that
+     * would be caused by overloading. Use {@link #fromSeconds(int, double, double,
+     * int)}.
+     *
+     * @param secondInDayA   first part of the second number.
+     * @param secondInDayB   last part of the second number.
+     * @param leap           magnitude of the leap second, if currently inside of a leap.
+     *                       This value is not used to compute hours and minutes, but it
+     *                       is added to the computed second of minute. It must satisfy
+     *                       the {@code leap + 60.0 <= minuteDuration}.
+     * @param minuteDuration number of seconds in the current minute. Normally {@code 60},
+     *                       sometimes {@code 61}.
+     * @throws OrekitIllegalArgumentException if seconds number is out of range
+     * @see #fromSeconds(int, double, double, int)
+     * @since 10.2
+     */
+    private TimeComponents(final int secondInDayA,
+                           final double secondInDayB,
+                           final double leap,
+                           final int minuteDuration) throws OrekitIllegalArgumentException {
 
         // split the numbers as a whole number of seconds
         // and a fractional part between 0.0 (included) and 1.0 (excluded)
@@ -157,10 +197,12 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         final double fractional = secondInDayB - carry;
 
         // range check
-        if (wholeSeconds < 0 || wholeSeconds > 86400) {
-            // beware, 86400 must be allowed to cope with leap seconds introduction days
-            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER,
-                                                     wholeSeconds + fractional);
+        if (wholeSeconds < 0 || wholeSeconds >= Constants.JULIAN_DAY) {
+            throw new OrekitIllegalArgumentException(
+                    OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
+                    wholeSeconds + fractional,
+                    0,
+                    Constants.JULIAN_DAY);
         }
 
         // extract the time components
@@ -168,9 +210,56 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         wholeSeconds  -= 3600 * hour;
         minute         = wholeSeconds / 60;
         wholeSeconds  -= 60 * minute;
-        second         = wholeSeconds + fractional;
+        // at this point ((minuteDuration - wholeSeconds) - leap) - fractional > 0,
+        // but naiveSecond may round to minuteDuration, creating an invalid time.
+        // In that case round down to preserve a valid time at the cost of up to 1 ULP of error.
+        // See #676 and #681.
+        final double naiveSecond = wholeSeconds + (leap + fractional);
+        if (naiveSecond < minuteDuration || Double.isNaN(naiveSecond)) {
+            second = naiveSecond;
+        } else {
+            second = FastMath.nextDown((double) minuteDuration);
+        }
         minutesFromUTC = 0;
 
+    }
+
+    /**
+     * Build a time from the second number within the day.
+     * <p>
+     * The second number is defined here as the sum {@code secondInDayA + secondInDayB}
+     * from 0.0 (included) to {@link org.orekit.utils.Constants#JULIAN_DAY} (excluded).
+     * The two parameters are used for increased accuracy. If the seconds of minute
+     * ({@link #getSecond()}) computed from {@code secondInDayA + secondInDayB} is greater
+     * than or equal to {@code minuteDuration} then the second of minute will be set to
+     * {@code FastMath.nextDown(minuteDuration)}. This prevents rounding to an invalid
+     * seconds of minute number when the input values have greater precision than a {@code
+     * double}.
+     *
+     * <p>If {@code secondsInDayB} is NaN then the hour and minute will be determined from
+     * {@code secondInDayA} and the second of minute will be NaN.
+     *
+     * <p>This factory method is always in UTC (i.e. {@link #getMinutesFromUTC() will
+     * return 0}).
+     *
+     * @param secondInDayA   first part of the second number.
+     * @param secondInDayB   last part of the second number.
+     * @param leap           magnitude of the leap second, if currently inside of a leap.
+     *                       This value is not used to compute hours and minutes, but it
+     *                       is added to the computed second of minute. It must satisfy
+     *                       the {@code leap + 60.0 <= minuteDuration}.
+     * @param minuteDuration number of seconds in the current minute. Normally {@code 60},
+     *                       sometimes {@code 61} during a leap second.
+     * @return new time components for the specified time.
+     * @throws OrekitIllegalArgumentException if seconds number is out of range
+     * @see #TimeComponents(int, double)
+     * @since 10.2
+     */
+    public static TimeComponents fromSeconds(final int secondInDayA,
+                                             final double secondInDayB,
+                                             final double leap,
+                                             final int minuteDuration) {
+        return new TimeComponents(secondInDayA, secondInDayB, leap, minuteDuration);
     }
 
     /** Parse a string in ISO-8601 format to build a time.

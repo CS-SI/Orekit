@@ -202,6 +202,9 @@ NON_EXISTENT_TIME = non-existent time {0}
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = out of range seconds number: {0}
 
+# out of range seconds number: {0} is not in [{1}, {2})
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = out of range seconds number: {0} is not in [{1}, {2})
+
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = angle type not supported, supported angles: {0}, {1} and {2}
 
@@ -391,11 +394,11 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = generated entries not sorted: {0} > {1}
 # no data generated around date: {0}
 NO_DATA_GENERATED = no data generated around date: {0}
 
-# unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = unable to generate new data before {0}
+# unable to generate new data before {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = unable to generate new data before {0}, data requested for {1}
 
-# unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = unable to generate new data after {0}
+# unable to generate new data after {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = unable to generate new data after {0}, data requested for {1}
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
@@ -608,3 +611,6 @@ NON_DIFFERENT_DATES_FOR_OBSERVATIONS = observations {0}, {1} and {2} must have d
 
 # observations are not in the same plane
 NON_COPLANAR_POINTS = observations are not in the same plane
+
+# invalid parameter {0}: {1} not in range [{2}, {3}]
+INVALID_PARAMETER_RANGE = invalid parameter {0}: {1} not in range [{2}, {3}]

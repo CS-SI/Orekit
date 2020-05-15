@@ -202,6 +202,9 @@ NON_EXISTENT_TIME = μη έγκυρη ώρα {0}
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = αριθμός δευτερολέπτων εκτός εύρους: {0}
 
+# out of range seconds number: {0} is not in [{1}, {2})
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
+
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = μη έγκυρος τύπος γωνίας, γωνίες που υποστηρίζονται {0}, {1} και {2}
 
@@ -391,11 +394,11 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = οι παράγωγες είσοδοι δε
 # no data generated around date: {0}
 NO_DATA_GENERATED = κανένα δεδομένο δεν έχει παραχθεί γύρω από την ημερομηνία: {0}
 
-# unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = αδύνατο να δημιουργήσει νέα δεδομένα πριν από {0}
+# unable to generate new data before {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
 
-# unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = αδύνατο να δημιουργήσει νέα δεδομένα μετά από {0}
+# unable to generate new data after {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = αδύνατο να υπολογίστει υπερβολική εκκεντρική ανωμαλία από τη μέση ανωμαλία μετά από {0} επαναλήψεις
@@ -608,3 +611,6 @@ NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # observations are not in the same plane
 NON_COPLANAR_POINTS = <MISSING TRANSLATION>
+
+# invalid parameter {0}: {1} not in range [{2}, {3}]
+INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>

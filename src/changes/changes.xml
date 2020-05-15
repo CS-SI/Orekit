@@ -21,6 +21,42 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="605">
+        Added support for Rinex C0, L0, S0 and D0 observation types.
+      </action>
+      <action dev="bryan" type="fix" issue="641">
+        Allow Pattern functionalities instead of String.replaceAll() and String.split().
+      </action>
+      <action dev="evan" type="add" issue="677">
+        Add AbsoluteDate.toStringRfc3339() and DateTimeComponents.toStringRfc3339().
+      </action>
+      <action dev="evan" type="fix" issue="681">
+        Fix AbsoluteDate.getComponents(...) produces invalid times.
+      </action>
+      <action dev="evan" type="fix" issue="676">
+        Fix AbsoluteDate.getComponents(utc) throws "non-existent time 23:59:61".
+      </action>
+      <action dev="bryan" type="fix" issue="651">
+        Improved use of try with resources statement.
+      </action>
+      <action dev="bryan" type="fix" issue="679" due-to="luc, maxime">
+        Improved testRetrogradeOrbit in CircularOrbit and KeplerianOrbit tests.
+      </action>
+      <action dev="bryan" type="fix" issue="680">
+        Allowed ephemeris class to be used with absolute PV coordinates.
+      </action>
+      <action dev="bryan" type="fix" issue="674">
+        Added an exception if eccentricity is negative for keplerian orbit.
+      </action>
+      <action dev="evan" type="fix" issue="667">
+        Fix build on CentOS/RedHat 7.
+      </action>
+      <action dev="bryan" type="fix" issue="662">
+        Fixed forgotten additional state in Ephemeris propagator.
+      </action>
+      <action dev="evan" type="update">
+        Improve error message for TimeStampedCache by including requested date.
+      </action>
       <action dev="bryan" type="fix" issue="663">
         Fixed initialization of the triggering event for ImpulseManeuver class.
       </action>

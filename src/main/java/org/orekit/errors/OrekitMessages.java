@@ -116,6 +116,7 @@ public enum OrekitMessages implements Localizable {
     NON_EXISTENT_HMS_TIME("non-existent time {0}:{1}:{2}"),
     NON_EXISTENT_TIME("non-existent time {0}"),
     OUT_OF_RANGE_SECONDS_NUMBER("out of range seconds number: {0}"),
+    OUT_OF_RANGE_SECONDS_NUMBER_DETAIL("out of range seconds number: {0} is not in [{1}, {2})"),
     ANGLE_TYPE_NOT_SUPPORTED("angle type not supported, supported angles: {0}, {1} and {2}"),
     SATELLITE_COLLIDED_WITH_TARGET("satellite collided with target"),
     ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND("attitude pointing law misses ground"),
@@ -189,8 +190,8 @@ public enum OrekitMessages implements Localizable {
     NO_CACHED_ENTRIES("no cached entries"),
     NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}"),
     NO_DATA_GENERATED("no data generated around date: {0}"),
-    UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}"),
-    UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}"),
+    UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}, data requested for {1}"),
+    UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}, data requested for {1}"),
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
@@ -257,7 +258,8 @@ public enum OrekitMessages implements Localizable {
     NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations {0} and {1} are not in chronological dates"),
     EXCEPTIONAL_DATA_CONTEXT("Use of the ExceptionalDataContext detected. This is typically used to detect developer errors."),
     NON_DIFFERENT_DATES_FOR_OBSERVATIONS("observations {0}, {1} and {2} must have different dates"),
-    NON_COPLANAR_POINTS("observations are not in the same plane");
+    NON_COPLANAR_POINTS("observations are not in the same plane"),
+    INVALID_PARAMETER_RANGE("invalid parameter {0}: {1} not in range [{2}, {3}]");
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -338,11 +340,9 @@ public enum OrekitMessages implements Localizable {
                 stream = loader.getResourceAsStream(resourceName);
             }
             if (stream != null) {
-                try {
+                try (InputStreamReader inputStreamReader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
                     // Only this line is changed to make it to read properties files as UTF-8.
-                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, StandardCharsets.UTF_8));
-                } finally {
-                    stream.close();
+                    bundle = new PropertyResourceBundle(inputStreamReader);
                 }
             }
             return bundle;

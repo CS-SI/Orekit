@@ -89,7 +89,7 @@ public class ConstantThrustManeuverInitializationTest {
     public void setUp() {
         startDate = new AbsoluteDate();
         double a = Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 400e3;
-        double e = 0.001;
+        double e = 0.003;
         double i = (Math.PI / 4);
         double pa = 0.0;
         double raan = 0.0;

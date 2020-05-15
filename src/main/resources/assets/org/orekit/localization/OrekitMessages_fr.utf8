@@ -202,6 +202,9 @@ NON_EXISTENT_TIME = heure inexistante {0}
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = numéro de seconde hors domaine : {0}
 
+# out of range seconds number: {0} is not in [{1}, {2})
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
+
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = type d''angle non supporté, angles supportés : {0}, {1} et {2}
 
@@ -391,11 +394,11 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = les entrées générées ne sont pas dans l
 # no data generated around date: {0}
 NO_DATA_GENERATED = aucune donnée générée aux alentours de la date : {0}
 
-# unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des données avant le {0}
+# unable to generate new data before {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des données avant le {0}, données requises pour {1}
 
-# unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des données après le {0}
+# unable to generate new data after {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des données après le {0}, données requises pour {1}
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
@@ -608,3 +611,6 @@ NON_DIFFERENT_DATES_FOR_OBSERVATIONS = les observations {0}, {1} et {2} doivent 
 
 # observations are not in the same plane
 NON_COPLANAR_POINTS = les observations ne sont pas dans le même plan
+
+# invalid parameter {0}: {1} not in range [{2}, {3}]
+INVALID_PARAMETER_RANGE = paramètre invalide {0}: {1} n''est pas dans l''intervalle [{2}, {3}]
