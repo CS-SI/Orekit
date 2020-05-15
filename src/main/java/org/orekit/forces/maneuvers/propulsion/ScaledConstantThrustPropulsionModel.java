@@ -21,8 +21,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.ParameterDriver;
 
 /** Thrust propulsion model with parameters (for estimation) represented by scale factors
@@ -53,7 +51,9 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
     /** Parameter driver for the scale factor on the Z component of the thrust in S/C frame. */
     private final ParameterDriver scaleFactorThrustZDriver;
 
-    /** Constructor with infinite possible deviation for the scale factors.
+    /** Constructor with min/max deviation for the scale factors.
+     * Typical usage is, for example, if you know that your propulsion system
+     * usually has an error of less than 10% then set the min/max to respectively 0.9 and 1.1.
      * @param thrust the thrust (N)
      * @param isp the isp (s)
      * @param direction in spacecraft frame
@@ -63,47 +63,15 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
                                                final double isp,
                                                final Vector3D direction,
                                                final String name) {
-        this(thrust, isp, direction, name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-    }
-
-    /** Constructor with min/max deviation for the scale factors.
-     * Typical usage is, for example, if you know that your propulsion system
-     * usually has an error of less than 10% then set the min/max to respectively 0.9 and 1.1.
-     * @param thrust the thrust (N)
-     * @param isp the isp (s)
-     * @param direction in spacecraft frame
-     * @param name the name of the maneuver
-     * @param minScaleFactor minimum value for scale factor on X, Y and Z axis
-     * @param maxScaleFactor maximum value for scale factor on X, Y and Z axis
-     */
-    public ScaledConstantThrustPropulsionModel(final double thrust,
-                                               final double isp,
-                                               final Vector3D direction,
-                                               final String name,
-                                               final double minScaleFactor,
-                                               final double maxScaleFactor) {
         super(thrust, isp, direction, name);
 
         // Build the parameter drivers, using maneuver name as prefix
-        ParameterDriver scaleFactorThrustXD = null;
-        ParameterDriver scaleFactorThrustYD = null;
-        ParameterDriver scaleFactorThrustZD = null;
-
-        try {
-            scaleFactorThrustXD = new ParameterDriver(name + THRUSTX_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                      minScaleFactor, maxScaleFactor);
-            scaleFactorThrustYD = new ParameterDriver(name + THRUSTY_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                      minScaleFactor, maxScaleFactor);
-            scaleFactorThrustZD = new ParameterDriver(name + THRUSTZ_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                      minScaleFactor, maxScaleFactor);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
-
-        this.scaleFactorThrustXDriver   = scaleFactorThrustXD;
-        this.scaleFactorThrustYDriver   = scaleFactorThrustYD;
-        this.scaleFactorThrustZDriver   = scaleFactorThrustZD;
+        this.scaleFactorThrustXDriver   = new ParameterDriver(name + THRUSTX_SCALE_FACTOR, 1., THRUST_SCALE,
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.scaleFactorThrustYDriver   = new ParameterDriver(name + THRUSTY_SCALE_FACTOR, 1., THRUST_SCALE,
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.scaleFactorThrustZDriver   = new ParameterDriver(name + THRUSTZ_SCALE_FACTOR, 1., THRUST_SCALE,
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
     /** Get the thrust vector in S/C frame from scale factors (N).

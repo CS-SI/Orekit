@@ -21,8 +21,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
@@ -82,20 +80,10 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
         final double initialFlowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
 
         // Build the parameter drivers, using maneuver name as prefix
-        ParameterDriver tpd = null;
-        ParameterDriver fpd = null;
-        try {
-            tpd = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
-                                      0.0, Double.POSITIVE_INFINITY);
-            fpd = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
-                                      Double.NEGATIVE_INFINITY, 0.0 );
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
-
-        this.thrustDriver   = tpd;
-        this.flowRateDriver = fpd;
+        this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
+                                                  0.0, Double.POSITIVE_INFINITY);
+        this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
+                                                  Double.NEGATIVE_INFINITY, 0.0 );
     }
 
     /** {@inheritDoc} */
