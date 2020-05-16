@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
@@ -289,7 +291,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         // time
         final String timeString;
         if (t.getSecondsInLocalDay() != 0) {
-            final DecimalFormat format = new DecimalFormat("00.##############");
+            final DecimalFormat format = new DecimalFormat("00.##############", new DecimalFormatSymbols(Locale.US));
             timeString = String.format("%02d:%02d:", t.getHour(), t.getMinute()) +
                     format.format(t.getSecond());
         } else {
