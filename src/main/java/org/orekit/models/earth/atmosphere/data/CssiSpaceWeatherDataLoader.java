@@ -239,7 +239,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         }
 
         /**
-         * Gets the arithmetic average of all eight Ap indices for the current entry. 
+         * Gets the arithmetic average of all eight Ap indices for the current entry.
          * @return the average of all eight Ap indices
          */
         public double getApAvg() {
@@ -355,7 +355,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
     }
 
     /**
-     * Gets the day (at data start) of the last daily data entry  
+     * Gets the day (at data start) of the last daily data entry
      * @return the last daily predicted date
      */
     public AbsoluteDate getLastDailyPredictedDate() {
@@ -363,7 +363,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
     }
 
     /**
-     * Gets the day (at data start) of the last observed data entry  
+     * Gets the day (at data start) of the last observed data entry
      * @return the last observed date
      */
     public AbsoluteDate getLastObservedDate() {
@@ -393,64 +393,74 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
             throws IOException, ParseException, OrekitException {
 
         // read the data
-        final LineReader reader = new LineReader(name,
-                new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8)));
+        int lineNumber = 0;
+        String line = null;
 
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            line = line.trim();
-            if (line.length() > 0) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-                if (line.equals("BEGIN DAILY_PREDICTED")) {
-                    lastObservedDate = set.last().getDate();
-                }
+            final LineReader reader = new LineReader(name, br);
 
-                if (line.equals("BEGIN MONTHLY_FIT")) {
-                    lastDailyPredictedDate = set.last().getDate();
-                }
+            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+                lineNumber++;
 
-                if (line.length() == 130 && isNumeric(line.substring(0, 4))) {
-                    // extract the data from the line
-                    final int year = Integer.parseInt(line.substring(0, 4));
-                    final int month = Integer.parseInt(line.substring(5, 7));
-                    final int day = Integer.parseInt(line.substring(8, 10));
-                    final AbsoluteDate date = new AbsoluteDate(year, month, day, this.utc);
+                line = line.trim();
+                if (line.length() > 0) {
 
-                    if (!set.contains(date)) { // Checking if entry doesn't exist yet
-                        final double[] threeHourlyKp = new double[8];
-                        /**
-                         * Kp is written as an integer where a unit equals 0.1, the conversion is
-                         * Kp_double = 0.1 * double(Kp_integer)
-                         */
-                        for (int i = 0; i < 8; i++) {
-                            threeHourlyKp[i] = 0.1 * Double.parseDouble(line.substring(19 + 3 * i, 21 + 3 * i));
+                    if (line.equals("BEGIN DAILY_PREDICTED")) {
+                        lastObservedDate = set.last().getDate();
+                    }
+
+                    if (line.equals("BEGIN MONTHLY_FIT")) {
+                        lastDailyPredictedDate = set.last().getDate();
+                    }
+
+                    if (line.length() == 130 && isNumeric(line.substring(0, 4))) {
+                        // extract the data from the line
+                        final int year = Integer.parseInt(line.substring(0, 4));
+                        final int month = Integer.parseInt(line.substring(5, 7));
+                        final int day = Integer.parseInt(line.substring(8, 10));
+                        final AbsoluteDate date = new AbsoluteDate(year, month, day, this.utc);
+
+                        if (!set.contains(date)) { // Checking if entry doesn't exist yet
+                            final double[] threeHourlyKp = new double[8];
+                            /**
+                             * Kp is written as an integer where a unit equals 0.1, the conversion is
+                             * Kp_double = 0.1 * double(Kp_integer)
+                             */
+                            for (int i = 0; i < 8; i++) {
+                                threeHourlyKp[i] = 0.1 * Double.parseDouble(line.substring(19 + 3 * i, 21 + 3 * i));
+                            }
+                            final double kpSum = 0.1 * Double.parseDouble(line.substring(43, 46));
+
+                            final double[] threeHourlyAp = new double[8];
+                            for (int i = 0; i < 8; i++) {
+                                threeHourlyAp[i] = Double.parseDouble(line.substring(47 + 4 * i, 50 + 4 * i));
+                            }
+                            final double apAvg = Double.parseDouble(line.substring(79, 82));
+
+                            final double f107Adj = Double.parseDouble(line.substring(93, 98));
+
+                            final int fluxQualifier = Integer.parseInt(line.substring(99, 100));
+
+                            final double ctr81Adj = Double.parseDouble(line.substring(101, 106));
+
+                            final double lst81Adj = Double.parseDouble(line.substring(107, 112));
+
+                            final double f107Obs = Double.parseDouble(line.substring(113, 118));
+
+                            final double ctr81Obs = Double.parseDouble(line.substring(119, 124));
+
+                            final double lst81Obs = Double.parseDouble(line.substring(125, 130));
+
+                            set.add(new LineParameters(date, threeHourlyKp, kpSum, threeHourlyAp, apAvg, f107Adj,
+                                    fluxQualifier, ctr81Adj, lst81Adj, f107Obs, ctr81Obs, lst81Obs));
                         }
-                        final double kpSum = 0.1 * Double.parseDouble(line.substring(43, 46));
-
-                        final double[] threeHourlyAp = new double[8];
-                        for (int i = 0; i < 8; i++) {
-                            threeHourlyAp[i] = Double.parseDouble(line.substring(47 + 4 * i, 50 + 4 * i));
-                        }
-                        final double apAvg = Double.parseDouble(line.substring(79, 82));
-
-                        final double f107Adj = Double.parseDouble(line.substring(93, 98));
-
-                        final int fluxQualifier = Integer.parseInt(line.substring(99, 100));
-
-                        final double ctr81Adj = Double.parseDouble(line.substring(101, 106));
-
-                        final double lst81Adj = Double.parseDouble(line.substring(107, 112));
-
-                        final double f107Obs = Double.parseDouble(line.substring(113, 118));
-
-                        final double ctr81Obs = Double.parseDouble(line.substring(119, 124));
-
-                        final double lst81Obs = Double.parseDouble(line.substring(125, 130));
-
-                        set.add(new LineParameters(date, threeHourlyKp, kpSum, threeHourlyAp, apAvg, f107Adj,
-                                fluxQualifier, ctr81Adj, lst81Adj, f107Obs, ctr81Obs, lst81Obs));
                     }
                 }
             }
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                    lineNumber, name, line);
         }
 
         firstDate = set.first().getDate();
