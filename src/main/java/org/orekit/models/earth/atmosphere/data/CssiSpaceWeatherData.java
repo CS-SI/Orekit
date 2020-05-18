@@ -16,6 +16,9 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
@@ -136,9 +139,9 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
             return;
         }
 
-        Object neigbors[] = data.getNeighbors(date).toArray();
-        previousParam = (LineParameters) neigbors[0];
-        nextParam = (LineParameters) neigbors[1];
+        List<LineParameters> neigbors = data.getNeighbors(date).collect(Collectors.toList());
+        previousParam = neigbors.get(0);
+        nextParam = neigbors.get(1);
         if (previousParam.getDate().compareTo(date) > 0) {
             /**
              * Throwing exception if neighbors are unbalanced because we are at the
