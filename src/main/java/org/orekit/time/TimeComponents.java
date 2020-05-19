@@ -121,53 +121,89 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     }
 
-    /** Build a time from the second number within the day.
-     * <p>
-     * This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return 0}).
-     * </p>
-     * @param secondInDay second number from 0.0 to {@link
-     * org.orekit.utils.Constants#JULIAN_DAY} (excluded)
-     * @exception OrekitIllegalArgumentException if seconds number is out of range
+    /**
+     * Build a time from the second number within the day.
+     *
+     * <p>If the {@code secondInDay} is less than {@code 60.0} then {@link #getSecond()}
+     * will be less than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
+     * may produce an invalid value of {@link #getSecond()} during a negative leap second,
+     * through there has never been one. For more control over the number of seconds in
+     * the final minute use {@link #fromSeconds(int, double, double, int)}.
+     *
+     * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
+     * 0}).
+     *
+     * @param secondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
+     *                    1} (excluded)
+     * @throws OrekitIllegalArgumentException if seconds number is out of range
+     * @see #fromSeconds(int, double, double, int)
+     * @see #TimeComponents(int, double)
      */
     public TimeComponents(final double secondInDay)
-        throws OrekitIllegalArgumentException {
+            throws OrekitIllegalArgumentException {
         this(0, secondInDay);
-    }
-
-    /** Build a time from the second number within the day.
-     * <p>
-     * The second number is defined here as the sum
-     * {@code secondInDayA + secondInDayB} from 0.0 to {@link
-     * org.orekit.utils.Constants#JULIAN_DAY} {@code + 1} (excluded). The two parameters
-     * are used for increased accuracy.
-     * </p>
-     * <p>
-     * This constructor is always in UTC (i.e. {@link #getMinutesFromUTC()} will return 0).
-     * </p>
-     * @param secondInDayA first part of the second number
-     * @param secondInDayB last part of the second number
-     * @exception OrekitIllegalArgumentException if seconds number is out of range
-     * @see #fromSeconds(int, double, double, int)
-     */
-    public TimeComponents(final int secondInDayA, final double secondInDayB)
-        throws OrekitIllegalArgumentException {
-        this(secondInDayA, secondInDayB, 0.0, 61);
     }
 
     /**
      * Build a time from the second number within the day.
      *
-     * <p>The second number is defined here as the sum {@code secondInDayA + secondInDayB}
-     * from 0.0 (included) to {@link org.orekit.utils.Constants#JULIAN_DAY} (excluded).
-     * The two parameters are used for increased accuracy. If the seconds of minute
-     * ({@link #getSecond()}) computed from {@code secondInDayA + secondInDayB} is greater
-     * than or equal to {@code minuteDuration} then the second of minute will be set to
-     * {@code FastMath.nextDown(minuteDuration)}. This prevents rounding to an invalid
-     * seconds of minute number when the input values have greater precision than a {@code
-     * double}.
+     * <p>The second number is defined here as the sum
+     * {@code secondInDayA + secondInDayB} from 0.0 to {@link Constants#JULIAN_DAY}
+     * {@code + 1} (excluded). The two parameters are used for increased accuracy.
+     *
+     * <p>If the sum is less than {@code 60.0} then {@link #getSecond()} will be less
+     * than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
+     * may produce an invalid value of {@link #getSecond()} during a negative leap second,
+     * through there has never been one. For more control over the number of seconds in
+     * the final minute use {@link #fromSeconds(int, double, double, int)}.
+     *
+     * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC()} will
+     * return 0).
+     *
+     * @param secondInDayA first part of the second number
+     * @param secondInDayB last part of the second number
+     * @throws OrekitIllegalArgumentException if seconds number is out of range
+     * @see #fromSeconds(int, double, double, int)
+     */
+    public TimeComponents(final int secondInDayA, final double secondInDayB)
+            throws OrekitIllegalArgumentException {
+        // if the total is at least 86400 then assume there is a leap second
+        this(
+                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? secondInDayA : secondInDayA - 1,
+                secondInDayB,
+                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 0 : 1,
+                (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 60 : 61);
+    }
+
+    /**
+     * Build a time from the second number within the day.
+     *
+     * <p>The seconds past midnight is the sum {@code secondInDayA + secondInDayB +
+     * leap}. The two parameters are used for increased accuracy. Only the first part of
+     * the sum ({@code secondInDayA + secondInDayB}) is used to compute the hours and
+     * minutes. The third parameter ({@code leap}) is added directly to the second value
+     * ({@link #getSecond()}) to implement leap seconds. These three quantities must
+     * satisfy the following constraints. This first guarantees the hour and minute are
+     * valid, the second guarantees the second is valid.
+     *
+     * <code><pre>
+     *     0 <= secondInDayA + secondInDayB < 86400
+     *     0 <= (secondInDayA + secondInDayB) % 60 + leap < minuteDuration
+     *     0 <= leap <= minuteDuration - 60                        if minuteDuration >= 60
+     *     0 >= leap >= minuteDuration - 60                        if minuteDuration <  60
+     * </pre></code>
+     *
+     * <p>If the seconds of minute ({@link #getSecond()}) computed from {@code
+     * secondInDayA + secondInDayB + leap} is greater than or equal to {@code
+     * minuteDuration} then the second of minute will be set to {@code
+     * FastMath.nextDown(minuteDuration)}. This prevents rounding to an invalid seconds of
+     * minute number when the input values have greater precision than a {@code double}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
+     *
+     * <p>If {@code secondsInDayB} or {@code leap} is NaN then the hour and minute will
+     * be determined from {@code secondInDayA} and the second of minute will be NaN.
      *
      * <p>This constructor is private to avoid confusion with the other constructors that
      * would be caused by overloading. Use {@link #fromSeconds(int, double, double,
@@ -175,13 +211,12 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      *
      * @param secondInDayA   first part of the second number.
      * @param secondInDayB   last part of the second number.
-     * @param leap           magnitude of the leap second, if currently inside of a leap.
-     *                       This value is not used to compute hours and minutes, but it
-     *                       is added to the computed second of minute. It must satisfy
-     *                       the {@code leap + 60.0 <= minuteDuration}.
-     * @param minuteDuration number of seconds in the current minute. Normally {@code 60},
-     *                       sometimes {@code 61}.
-     * @throws OrekitIllegalArgumentException if seconds number is out of range
+     * @param leap           magnitude of the leap second if this point in time is during
+     *                       a leap second, otherwise {@code 0.0}. This value is not used
+     *                       to compute hours and minutes, but it is added to the computed
+     *                       second of minute.
+     * @param minuteDuration number of seconds in the current minute, normally {@code 60}.
+     * @throws OrekitIllegalArgumentException if the inequalities above do not hold.
      * @see #fromSeconds(int, double, double, int)
      * @since 10.2
      */
@@ -200,9 +235,17 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if (wholeSeconds < 0 || wholeSeconds >= Constants.JULIAN_DAY) {
             throw new OrekitIllegalArgumentException(
                     OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
-                    wholeSeconds + fractional,
+                    // this can produce some strange messages due to rounding
+                    secondInDayA + secondInDayB,
                     0,
                     Constants.JULIAN_DAY);
+        }
+        final int maxExtraSeconds = minuteDuration - 60;
+        if (leap * maxExtraSeconds < 0 ||
+                FastMath.abs(leap) > FastMath.abs(maxExtraSeconds)) {
+            throw new OrekitIllegalArgumentException(
+                    OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
+                    leap, 0, maxExtraSeconds);
         }
 
         // extract the time components
@@ -210,11 +253,17 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         wholeSeconds  -= 3600 * hour;
         minute         = wholeSeconds / 60;
         wholeSeconds  -= 60 * minute;
-        // at this point ((minuteDuration - wholeSeconds) - leap) - fractional > 0,
-        // but naiveSecond may round to minuteDuration, creating an invalid time.
+        // at this point ((minuteDuration - wholeSeconds) - leap) - fractional > 0
+        // or else one of the preconditions was violated. Even if there is not violation,
+        // naiveSecond may round to minuteDuration, creating an invalid time.
         // In that case round down to preserve a valid time at the cost of up to 1 ULP of error.
         // See #676 and #681.
         final double naiveSecond = wholeSeconds + (leap + fractional);
+        if (naiveSecond < 0) {
+            throw new OrekitIllegalArgumentException(
+                    OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
+                    naiveSecond, 0, minuteDuration);
+        }
         if (naiveSecond < minuteDuration || Double.isNaN(naiveSecond)) {
             second = naiveSecond;
         } else {
@@ -226,33 +275,43 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /**
      * Build a time from the second number within the day.
-     * <p>
-     * The second number is defined here as the sum {@code secondInDayA + secondInDayB}
-     * from 0.0 (included) to {@link org.orekit.utils.Constants#JULIAN_DAY} (excluded).
-     * The two parameters are used for increased accuracy. If the seconds of minute
-     * ({@link #getSecond()}) computed from {@code secondInDayA + secondInDayB} is greater
-     * than or equal to {@code minuteDuration} then the second of minute will be set to
-     * {@code FastMath.nextDown(minuteDuration)}. This prevents rounding to an invalid
-     * seconds of minute number when the input values have greater precision than a {@code
-     * double}.
      *
-     * <p>If {@code secondsInDayB} is NaN then the hour and minute will be determined from
-     * {@code secondInDayA} and the second of minute will be NaN.
+     * <p>The seconds past midnight is the sum {@code secondInDayA + secondInDayB +
+     * leap}. The two parameters are used for increased accuracy. Only the first part of
+     * the sum ({@code secondInDayA + secondInDayB}) is used to compute the hours and
+     * minutes. The third parameter ({@code leap}) is added directly to the second value
+     * ({@link #getSecond()}) to implement leap seconds. These three quantities must
+     * satisfy the following constraints. This first guarantees the hour and minute are
+     * valid, the second guarantees the second is valid.
      *
-     * <p>This factory method is always in UTC (i.e. {@link #getMinutesFromUTC() will
-     * return 0}).
+     * <code><pre>
+     *     0 <= secondInDayA + secondInDayB < 86400
+     *     0 <= (secondInDayA + secondInDayB) % 60 + leap <= minuteDuration
+     *     0 <= leap <= minuteDuration - 60                        if minuteDuration >= 60
+     *     0 >= leap >= minuteDuration - 60                        if minuteDuration <  60
+     * </pre></code>
+     *
+     * <p>If the seconds of minute ({@link #getSecond()}) computed from {@code
+     * secondInDayA + secondInDayB + leap} is greater than or equal to {@code 60 + leap}
+     * then the second of minute will be set to {@code FastMath.nextDown(60 + leap)}. This
+     * prevents rounding to an invalid seconds of minute number when the input values have
+     * greater precision than a {@code double}.
+     *
+     * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
+     * 0}).
+     *
+     * <p>If {@code secondsInDayB} or {@code leap} is NaN then the hour and minute will
+     * be determined from {@code secondInDayA} and the second of minute will be NaN.
      *
      * @param secondInDayA   first part of the second number.
      * @param secondInDayB   last part of the second number.
-     * @param leap           magnitude of the leap second, if currently inside of a leap.
-     *                       This value is not used to compute hours and minutes, but it
-     *                       is added to the computed second of minute. It must satisfy
-     *                       the {@code leap + 60.0 <= minuteDuration}.
-     * @param minuteDuration number of seconds in the current minute. Normally {@code 60},
-     *                       sometimes {@code 61} during a leap second.
+     * @param leap           magnitude of the leap second if this point in time is during
+     *                       a leap second, otherwise {@code 0.0}. This value is not used
+     *                       to compute hours and minutes, but it is added to the computed
+     *                       second of minute.
+     * @param minuteDuration number of seconds in the current minute, normally {@code 60}.
      * @return new time components for the specified time.
-     * @throws OrekitIllegalArgumentException if seconds number is out of range
-     * @see #TimeComponents(int, double)
+     * @throws OrekitIllegalArgumentException if the inequalities above do not hold.
      * @since 10.2
      */
     public static TimeComponents fromSeconds(final int secondInDayA,

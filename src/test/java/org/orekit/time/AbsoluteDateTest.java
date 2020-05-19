@@ -927,7 +927,7 @@ public class AbsoluteDateTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL, oiae.getSpecifier());
-            Assert.assertEquals(86401.5, (Double) oiae.getParts()[0], 0);
+            Assert.assertEquals(86400.5, (Double) oiae.getParts()[0], 0);
             Assert.assertEquals(0, ((Number) oiae.getParts()[1]).doubleValue(), 0);
             Assert.assertEquals(86400, ((Number) oiae.getParts()[2]).doubleValue(), 0);
         }
