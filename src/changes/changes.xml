@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="682">
+        Changed visibility of OrbitType parameter drivers' names to public.
+      </action>
       <action dev="bryan" type="fix" issue="605">
         Added support for Rinex C0, L0, S0 and D0 observation types.
       </action>
