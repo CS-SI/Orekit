@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS Group
+<!--- Copyright 2002-2020 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -291,7 +291,7 @@ interoperability in space systems.
 
 ## Maintained library
 
-Orekit has been in development since 2002 inside [CS Group](http://www.c-s.fr/)
+Orekit has been in development since 2002 inside [CS GROUP](http://www.c-s.fr/)
 and is still used and maintained by its
 experts and an open community. It is ruled by a meritocratic governance
 model and the Project Management Committee involves actors from
