@@ -39,7 +39,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Converter for states and parameters arrays.
  * @author Luc Maisonobe
+ * @deprecated as of 10.2, replaced by {@link TroposphericGradientConverter}
  */
+@Deprecated
 public class TroposphericDSConverter {
 
     /** Dimension of the state. */
