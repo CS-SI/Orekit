@@ -37,6 +37,7 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
  *     .withMaxCheck(field.getZero().add(1e10));
  * </pre>
  *
+ * @param <T> the type of numbers this detector uses.
  * @author Evan Ward
  * @since 10.2
  */
@@ -50,6 +51,8 @@ public class FieldFunctionalDetector<T extends RealFieldElement<T>>
      * Create an event detector with the default values. These are {@link
      * #DEFAULT_MAXCHECK}, {@link #DEFAULT_THRESHOLD}, {@link #DEFAULT_MAX_ITER}, {@link
      * ContinueOnEvent}, and a g function that is identically unity.
+     *
+     * @param field on which this detector is defined.
      */
     public FieldFunctionalDetector(final Field<T> field) {
         this(field.getZero().add(DEFAULT_MAXCHECK),
