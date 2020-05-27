@@ -24,6 +24,9 @@
       <action dev="bryan" type="update" issue="682">
         Changed visibility of OrbitType parameter drivers' names to public.
       </action>
+      <action dev="evan" type="add" issue="684">
+        Add FieldFunctionalDetector.
+      </action>
       <action dev="bryan" type="fix" issue="605">
         Added support for Rinex C0, L0, S0 and D0 observation types.
       </action>
