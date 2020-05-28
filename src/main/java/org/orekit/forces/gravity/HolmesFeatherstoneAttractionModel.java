@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -1045,11 +1046,11 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // check for faster computation dedicated to derivatives with respect to state
         if (isStateDerivative(s)) {
             @SuppressWarnings("unchecked")
-            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPVCoordinates().getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
                                                                                s.getFrame(), p,
-                                                                               (DerivativeStructure) mu);
+                                                                               (Gradient) mu);
             return a;
         }
 
@@ -1083,14 +1084,13 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      */
     private <T extends RealFieldElement<T>> boolean isStateDerivative(final FieldSpacecraftState<T> state) {
         try {
-            final DerivativeStructure dsMass = (DerivativeStructure) state.getMass();
-            final int o = dsMass.getOrder();
-            final int p = dsMass.getFreeParameters();
-            if (o != 1 || (p < 3)) {
+            final Gradient gMass = (Gradient) state.getMass();
+            final int p = gMass.getFreeParameters();
+            if (p < 3) {
                 return false;
             }
             @SuppressWarnings("unchecked")
-            final FieldPVCoordinates<DerivativeStructure> pv = (FieldPVCoordinates<DerivativeStructure>) state.getPVCoordinates();
+            final FieldPVCoordinates<Gradient> pv = (FieldPVCoordinates<Gradient>) state.getPVCoordinates();
             return isVariable(pv.getPosition().getX(), 0) &&
                    isVariable(pv.getPosition().getY(), 1) &&
                    isVariable(pv.getPosition().getZ(), 2);
@@ -1100,16 +1100,16 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** Check if a derivative represents a specified variable.
-     * @param ds derivative to check
+     * @param g derivative to check
      * @param index index of the variable
      * @return true if the derivative represents a specified variable
-     * @since 9.0
+     * @since 10.2
      */
-    private boolean isVariable(final DerivativeStructure ds, final int index) {
-        final double[] derivatives = ds.getAllDerivatives();
+    private boolean isVariable(final Gradient g, final int index) {
+        final double[] derivatives = g.getGradient();
         boolean check = true;
-        for (int i = 1; i < derivatives.length; ++i) {
-            check &= derivatives[i] == ((index + 1 == i) ? 1.0 : 0.0);
+        for (int i = 0; i < derivatives.length; ++i) {
+            check &= derivatives[i] == ((index == i) ? 1.0 : 0.0);
         }
         return check;
     }
@@ -1134,16 +1134,19 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * depend on mass).
      * </p>
      * @param date current date
-    * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param frame inertial reference frame for state (both orbit and attitude)
      * @param position position of spacecraft in inertial frame
      * @param mu central attraction coefficient to use
      * @return acceleration with all derivatives specified by the input parameters
      * own derivatives
-          * @since 6.0
+     * @since 10.2
      */
-    private FieldVector3D<DerivativeStructure> accelerationWrtState(final AbsoluteDate date, final Frame frame,
-                                                                    final FieldVector3D<DerivativeStructure> position,
-                                                                    final DerivativeStructure mu) {
+    private FieldVector3D<Gradient> accelerationWrtState(final AbsoluteDate date, final Frame frame,
+                                                         final FieldVector3D<Gradient> position,
+                                                         final Gradient mu) {
+
+        // free parameters
+        final int freeParameters = mu.getFreeParameters();
 
         // get the position in body frame
         final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
@@ -1162,24 +1165,21 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
 
         // distribute all partial derivatives in a compact acceleration vector
-        final double[] derivatives = new double[1 + position.getX().getFreeParameters()];
-        final DerivativeStructure[] accDer = new DerivativeStructure[3];
+        final double[] derivatives = new double[freeParameters];
+        final Gradient[] accDer = new Gradient[3];
         for (int i = 0; i < 3; ++i) {
 
-            // first element is value of acceleration (i.e. gradient of field)
-            derivatives[0] = gInertial[i];
-
-            // next three elements are one row of the Jacobian of acceleration (i.e. Hessian of field)
-            derivatives[1] = hInertial.getEntry(i, 0);
-            derivatives[2] = hInertial.getEntry(i, 1);
-            derivatives[3] = hInertial.getEntry(i, 2);
+            // Jacobian of acceleration (i.e. Hessian of field)
+            derivatives[0] = hInertial.getEntry(i, 0);
+            derivatives[1] = hInertial.getEntry(i, 1);
+            derivatives[2] = hInertial.getEntry(i, 2);
 
             // next element is derivative with respect to parameter mu
-            if (derivatives.length > 4 && isVariable(mu, 3)) {
-                derivatives[4] = gInertial[i] / mu.getReal();
+            if (derivatives.length > 3 && isVariable(mu, 3)) {
+                derivatives[3] = gInertial[i] / mu.getReal();
             }
 
-            accDer[i] = position.getX().getFactory().build(derivatives);
+            accDer[i] = new Gradient(gInertial[i], derivatives);
 
         }
 

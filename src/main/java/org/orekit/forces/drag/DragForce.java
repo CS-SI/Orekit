@@ -20,8 +20,8 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.forces.AbstractForceModel;
@@ -94,6 +94,7 @@ public class DragForce extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
@@ -109,7 +110,7 @@ public class DragForce extends AbstractForceModel {
         // Using finite differences instead of automatic differentiation as it seems to be much
         // faster for the drag's derivatives' computation
         if (isStateDerivative(s)) {
-            rho = this.getDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, position);
+            rho =  (T) this.getDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<Gradient>) position);
         } else {
             rho    = atmosphere.getDensity(date, position, frame);
         }
@@ -150,20 +151,18 @@ public class DragForce extends AbstractForceModel {
      */
     private <T extends RealFieldElement<T>> boolean isStateDerivative(final FieldSpacecraftState<T> state) {
         try {
-            final DerivativeStructure dsMass = (DerivativeStructure) state.getMass();
-            final int o = dsMass.getOrder();
-            final int p = dsMass.getFreeParameters();
+            final Gradient gMass = (Gradient) state.getMass();
+            final int p = gMass.getFreeParameters();
 
             // To be in the desired case:
-            // Order must be 1 (first order derivatives only)
             // Number of parameters must be 6 (PV), 7 (PV + drag coefficient) or 8 (PV + drag coefficient + lift ratio)
-            if (o != 1 || (p != 6 && p != 7 && p != 8)) {
+            if (p != 6 && p != 7 && p != 8) {
                 return false;
             }
 
             // Check that the first 6 parameters are position and velocity
             @SuppressWarnings("unchecked")
-            final FieldPVCoordinates<DerivativeStructure> pv = (FieldPVCoordinates<DerivativeStructure>) state.getPVCoordinates();
+            final FieldPVCoordinates<Gradient> pv = (FieldPVCoordinates<Gradient>) state.getPVCoordinates();
             return isVariable(pv.getPosition().getX(), 0) &&
                    isVariable(pv.getPosition().getY(), 1) &&
                    isVariable(pv.getPosition().getZ(), 2) &&
@@ -176,16 +175,16 @@ public class DragForce extends AbstractForceModel {
     }
 
     /** Check if a derivative represents a specified variable.
-     * @param ds derivative to check
+     * @param g derivative to check
      * @param index index of the variable
      * @return true if the derivative represents a specified variable
-     * @since 9.0
+     * @since 10.2
      */
-    private boolean isVariable(final DerivativeStructure ds, final int index) {
-        final double[] derivatives = ds.getAllDerivatives();
+    private boolean isVariable(final Gradient g, final int index) {
+        final double[] derivatives = g.getGradient();
         boolean check = true;
-        for (int i = 1; i < derivatives.length; ++i) {
-            check &= derivatives[i] == ((index + 1 == i) ? 1.0 : 0.0);
+        for (int i = 0; i < derivatives.length; ++i) {
+            check &= derivatives[i] == ((index == i) ? 1.0 : 0.0);
         }
         return check;
     }
@@ -214,31 +213,23 @@ public class DragForce extends AbstractForceModel {
      * @param date current date
      * @param frame inertial reference frame for state (both orbit and attitude)
      * @param position position of spacecraft in inertial frame
-     * @param <T> type of the elements
      * @return the density and its derivatives
-          * @since 9.0
+     * @since 10.2
      */
-    private <T extends RealFieldElement<T>> T getDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
-                                                                                       final Frame frame,
-                                                                                       final FieldVector3D<T> position) {
-
-        // Retrieve derivation properties for parameter T
-        // It is implied here that T is a DerivativeStructure
-        // With order 1 and 6, 7 or 8 free parameters
-        // This is all checked before in method isStateDerivatives
-        final DSFactory factory = ((DerivativeStructure) position.getX()).getFactory();
+    private Gradient getDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
+                                                              final Frame frame,
+                                                              final FieldVector3D<Gradient> position) {
 
         // Build a DerivativeStructure using only derivatives with respect to position
-        final DSFactory factory3 = new DSFactory(3, 1);
-        final FieldVector3D<DerivativeStructure> position3 =
-                        new FieldVector3D<>(factory3.variable(0, position.getX().getReal()),
-                                            factory3.variable(1,  position.getY().getReal()),
-                                            factory3.variable(2,  position.getZ().getReal()));
+        final FieldVector3D<Gradient> position3 =
+                        new FieldVector3D<>(Gradient.variable(3, 0, position.getX().getReal()),
+                                            Gradient.variable(3, 1,  position.getY().getReal()),
+                                            Gradient.variable(3, 2,  position.getZ().getReal()));
 
         // Get atmosphere properties in atmosphere own frame
         final Frame      atmFrame  = atmosphere.getFrame();
         final Transform  toBody    = frame.getTransformTo(atmFrame, date);
-        final FieldVector3D<DerivativeStructure> posBodyDS = toBody.transformPosition(position3);
+        final FieldVector3D<Gradient> posBodyDS = toBody.transformPosition(position3);
         final Vector3D   posBody   = posBodyDS.toVector3D();
 
         // Estimate density model by finite differences and composition
@@ -251,23 +242,20 @@ public class DragForce extends AbstractForceModel {
         final double dRhodX = (atmosphere.getDensity(date, new Vector3D(x + delta, y,         z),         atmFrame) - rho0) / delta;
         final double dRhodY = (atmosphere.getDensity(date, new Vector3D(x,         y + delta, z),         atmFrame) - rho0) / delta;
         final double dRhodZ = (atmosphere.getDensity(date, new Vector3D(x,         y,         z + delta), atmFrame) - rho0) / delta;
-        final double[] dXdQ = posBodyDS.getX().getAllDerivatives();
-        final double[] dYdQ = posBodyDS.getY().getAllDerivatives();
-        final double[] dZdQ = posBodyDS.getZ().getAllDerivatives();
+        final double[] dXdQ = posBodyDS.getX().getGradient();
+        final double[] dYdQ = posBodyDS.getY().getGradient();
+        final double[] dZdQ = posBodyDS.getZ().getGradient();
 
         // Density with derivatives:
         // - The value and only the 3 first derivatives (those with respect to spacecraft position) are computed
         // - Others are set to 0.
-        final int p = factory.getCompiler().getFreeParameters();
-        final double[] rhoAll = new double[p + 1];
-        rhoAll[0] = rho0;
-        for (int i = 1; i < 4; ++i) {
+        final int p = position.getX().getFreeParameters();
+        final double[] rhoAll = new double[p];
+        for (int i = 0; i < 3; ++i) {
             rhoAll[i] = dRhodX * dXdQ[i] + dRhodY * dYdQ[i] + dRhodZ * dZdQ[i];
         }
-        @SuppressWarnings("unchecked")
-        final T rho = (T) (factory.build(rhoAll));
 
-        return rho;
+        return new Gradient(rho0, rhoAll);
     }
 
     /** Get the atmospheric model.
