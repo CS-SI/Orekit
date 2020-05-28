@@ -1044,13 +1044,21 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final T mu = parameters[0];
 
         // check for faster computation dedicated to derivatives with respect to state
-        if (isStateDerivative(s)) {
+        if (isGradientStateDerivative(s)) {
             @SuppressWarnings("unchecked")
             final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPVCoordinates().getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
                                                                                s.getFrame(), p,
                                                                                (Gradient) mu);
+            return a;
+        } else if (isDSStateDerivative(s)) {
+            @SuppressWarnings("unchecked")
+            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            @SuppressWarnings("unchecked")
+            final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
+                                                                               s.getFrame(), p,
+                                                                               (DerivativeStructure) mu);
             return a;
         }
 
@@ -1082,7 +1090,31 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @return true if state corresponds to derivatives with respect to state
      * @since 9.0
      */
-    private <T extends RealFieldElement<T>> boolean isStateDerivative(final FieldSpacecraftState<T> state) {
+    private <T extends RealFieldElement<T>> boolean isDSStateDerivative(final FieldSpacecraftState<T> state) {
+        try {
+            final DerivativeStructure dsMass = (DerivativeStructure) state.getMass();
+            final int o = dsMass.getOrder();
+            final int p = dsMass.getFreeParameters();
+            if (o != 1 || p < 3) {
+                return false;
+            }
+            @SuppressWarnings("unchecked")
+            final FieldPVCoordinates<DerivativeStructure> pv = (FieldPVCoordinates<DerivativeStructure>) state.getPVCoordinates();
+            return isVariable(pv.getPosition().getX(), 0) &&
+                   isVariable(pv.getPosition().getY(), 1) &&
+                   isVariable(pv.getPosition().getZ(), 2);
+        } catch (ClassCastException cce) {
+            return false;
+        }
+    }
+
+    /** Check if a field state corresponds to derivatives with respect to state.
+     * @param state state to check
+     * @param <T> type of the filed elements
+     * @return true if state corresponds to derivatives with respect to state
+     * @since 10.2
+     */
+    private <T extends RealFieldElement<T>> boolean isGradientStateDerivative(final FieldSpacecraftState<T> state) {
         try {
             final Gradient gMass = (Gradient) state.getMass();
             final int p = gMass.getFreeParameters();
@@ -1100,6 +1132,21 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** Check if a derivative represents a specified variable.
+     * @param ds derivative to check
+     * @param index index of the variable
+     * @return true if the derivative represents a specified variable
+     * @since 9.0
+     */
+    private boolean isVariable(final DerivativeStructure ds, final int index) {
+        final double[] derivatives = ds.getAllDerivatives();
+        boolean check = true;
+        for (int i = 1; i < derivatives.length; ++i) {
+            check &= derivatives[i] == ((index + 1 == i) ? 1.0 : 0.0);
+        }
+        return check;
+    }
+
+    /** Check if a derivative represents a specified variable.
      * @param g derivative to check
      * @param index index of the variable
      * @return true if the derivative represents a specified variable
@@ -1112,6 +1159,82 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
             check &= derivatives[i] == ((index == i) ? 1.0 : 0.0);
         }
         return check;
+    }
+
+    /** Compute acceleration derivatives with respect to state parameters.
+     * <p>
+     * From a theoretical point of view, this method computes the same values
+     * as {@link #acceleration(FieldSpacecraftState, RealFieldElement[])} in the
+     * specific case of {@link DerivativeStructure} with respect to state, so
+     * it is less general. However, it is *much* faster in this important case.
+     * <p>
+     * <p>
+     * The derivatives should be computed with respect to position. The input
+     * parameters already take into account the free parameters (6 or 7 depending
+     * on derivation with respect to mass being considered or not) and order
+     * (always 1). Free parameters at indices 0, 1 and 2 correspond to derivatives
+     * with respect to position. Free parameters at indices 3, 4 and 5 correspond
+     * to derivatives with respect to velocity (these derivatives will remain zero
+     * as acceleration due to gravity does not depend on velocity). Free parameter
+     * at index 6 (if present) corresponds to to derivatives with respect to mass
+     * (this derivative will remain zero as acceleration due to gravity does not
+     * depend on mass).
+     * </p>
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in inertial frame
+     * @param mu central attraction coefficient to use
+     * @return acceleration with all derivatives specified by the input parameters
+     * own derivatives
+     * @since 6.0
+     */
+    private FieldVector3D<DerivativeStructure> accelerationWrtState(final AbsoluteDate date, final Frame frame,
+                                                                    final FieldVector3D<DerivativeStructure> position,
+                                                                    final DerivativeStructure mu) {
+
+        // free parameters
+        final int freeParameters = mu.getFreeParameters();
+
+        // get the position in body frame
+        final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
+        final Transform toBodyFrame   = fromBodyFrame.getInverse();
+        final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
+
+        // compute gradient and Hessian
+        final GradientHessian gh   = gradientHessian(date, positionBody, mu.getReal());
+
+        // gradient of the non-central part of the gravity field
+        final double[] gInertial = fromBodyFrame.transformVector(new Vector3D(gh.getGradient())).toArray();
+
+        // Hessian of the non-central part of the gravity field
+        final RealMatrix hBody     = new Array2DRowRealMatrix(gh.getHessian(), false);
+        final RealMatrix rot       = new Array2DRowRealMatrix(toBodyFrame.getRotation().getMatrix());
+        final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
+
+        // distribute all partial derivatives in a compact acceleration vector
+        final double[] derivatives = new double[freeParameters + 1];
+        final DerivativeStructure[] accDer = new DerivativeStructure[3];
+        for (int i = 0; i < 3; ++i) {
+
+            // first element is value of acceleration (i.e. gradient of field)
+            derivatives[0] = gInertial[i];
+
+            // Jacobian of acceleration (i.e. Hessian of field)
+            derivatives[1] = hInertial.getEntry(i, 0);
+            derivatives[2] = hInertial.getEntry(i, 1);
+            derivatives[3] = hInertial.getEntry(i, 2);
+
+            // next element is derivative with respect to parameter mu
+            if (derivatives.length > 4 && isVariable(mu, 3)) {
+                derivatives[4] = gInertial[i] / mu.getReal();
+            }
+
+            accDer[i] = position.getX().getFactory().build(derivatives);
+
+        }
+
+        return new FieldVector3D<>(accDer);
+
     }
 
     /** Compute acceleration derivatives with respect to state parameters.
