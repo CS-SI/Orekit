@@ -1266,6 +1266,7 @@ public class GroundStationTest {
     }
 
     @Test
+    @Deprecated
     public void testNoReferenceDate() {
         Utils.setDataRoot("regular-data");
         final Frame eme2000 = FramesFactory.getEME2000();
@@ -1309,6 +1310,51 @@ public class GroundStationTest {
         
     }
 
+    @Test
+    public void testNoReferenceDateGradient() {
+        Utils.setDataRoot("regular-data");
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        final OneAxisEllipsoid earth =
+                        new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                             Constants.WGS84_EARTH_FLATTENING,
+                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final GroundStation station = new GroundStation(new TopocentricFrame(earth,
+                                                                             new GeodeticPoint(0.1, 0.2, 100),
+                                                                             "dummy"));
+        try {
+            station.getOffsetToInertial(eme2000, date);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+        }
+        
+        try {
+            int freeParameters = 9;
+            Map<String, Integer> indices = new HashMap<>();
+            for (final ParameterDriver driver : Arrays.asList(station.getPrimeMeridianOffsetDriver(),
+                                                              station.getPrimeMeridianDriftDriver(),
+                                                              station.getPolarOffsetXDriver(),
+                                                              station.getPolarDriftXDriver(),
+                                                              station.getPolarOffsetYDriver(),
+                                                              station.getPolarDriftYDriver(),
+                                                              station.getClockOffsetDriver(),
+                                                              station.getEastOffsetDriver(),
+                                                              station.getNorthOffsetDriver(),
+                                                              station.getZenithOffsetDriver())) {
+                indices.put(driver.getName(), indices.size());
+            }
+            station.getOffsetToInertial(eme2000, date, freeParameters, indices);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+        }
+        
+    }
+
+    @Deprecated
     private void doTestCartesianDerivatives(double latitude, double longitude, double altitude, double stepFactor,
                                             double relativeTolerancePositionValue, double relativeTolerancePositionDerivative,
                                             double relativeToleranceVelocityValue, double relativeToleranceVelocityDerivative,
@@ -1419,6 +1465,7 @@ public class GroundStationTest {
 
     }
 
+    @Deprecated
     private void doTestAngularDerivatives(double latitude, double longitude, double altitude, double stepFactor,
                                           double toleranceRotationValue,     double toleranceRotationDerivative,
                                           double toleranceRotationRateValue, double toleranceRotationRateDerivative,

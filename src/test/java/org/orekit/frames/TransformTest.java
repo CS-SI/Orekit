@@ -784,8 +784,8 @@ public class TransformTest {
             linearB.setColumn(3, new double[] { p0.getX(), p0.getY(), p0.getZ() });
 
             // both linear transforms should be equal
-            Assert.assertEquals(0.0, linearB.subtract(linearA).getNorm(),
-                                1.0e-15 * linearA.getNorm());
+            Assert.assertEquals(0.0, linearB.subtract(linearA).getNorm1(),
+                                1.0e-15 * linearA.getNorm1());
 
             for (int i = 0; i < 100; ++i) {
                 Vector3D p  = randomVector(1.0e3, random);
