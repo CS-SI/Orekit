@@ -20,6 +20,7 @@ package org.orekit.forces.gravity;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -99,6 +100,40 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             return null;
         }
     }
+
+    @Override
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
+                                                                      final AbsoluteDate date, final  Frame frame,
+                                                                      final FieldVector3D<Gradient> position,
+                                                                      final FieldVector3D<Gradient> velocity,
+                                                                      final FieldRotation<Gradient> rotation,
+                                                                      final Gradient mass)
+        {
+        try {
+            java.lang.reflect.Field bodyField = ThirdBodyAttraction.class.getDeclaredField("body");
+            bodyField.setAccessible(true);
+            CelestialBody body = (CelestialBody) bodyField.get(forceModel);
+            double gm = forceModel.getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+
+            // compute bodies separation vectors and squared norm
+            final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
+            final double r2Central          = centralToBody.getNormSq();
+            final FieldVector3D<Gradient> satToBody = position.subtract(centralToBody).negate();
+            final Gradient r2Sat = satToBody.getNormSq();
+
+            // compute relative acceleration
+            final FieldVector3D<Gradient> satAcc =
+                    new FieldVector3D<>(r2Sat.sqrt().multiply(r2Sat).reciprocal().multiply(gm), satToBody);
+            final Vector3D centralAcc =
+                    new Vector3D(gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
+            return satAcc.subtract(centralAcc);
+
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
+
 
     @Test(expected= OrekitException.class)
     public void testSunContrib() {
@@ -194,6 +229,68 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-16, 5.0e-10, 3.0e-11, 3.0e-10,
+                                  1, false);
+    }
+
+    /**Testing if the propagation between the FieldPropagation and the propagation
+     * is equivalent.
+     * Also testing if propagating X+dX with the propagation is equivalent to
+     * propagation X with the FieldPropagation and then applying the taylor
+     * expansion of dX to the result.*/
+    @Test
+    public void RealFieldGradientTest() {
+        int freeParameters = 6;
+        Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
+        Gradient e_0 = Gradient.variable(freeParameters, 1, 0.4);
+        Gradient i_0 = Gradient.variable(freeParameters, 2, 85 * FastMath.PI / 180);
+        Gradient R_0 = Gradient.variable(freeParameters, 3, 0.7);
+        Gradient O_0 = Gradient.variable(freeParameters, 4, 0.5);
+        Gradient n_0 = Gradient.variable(freeParameters, 5, 0.1);
+        Gradient mu  = Gradient.constant(freeParameters, Constants.EIGEN5C_EARTH_MU);
+
+        Field<Gradient> field = a_0.getField();
+        Gradient zero = field.getZero();
+
+        FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
+
+        Frame EME = FramesFactory.getEME2000();
+
+        FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                      PositionAngle.MEAN,
+                                                                      EME,
+                                                                      J2000,
+                                                                      mu);
+
+        FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
+
+        SpacecraftState iSR = initialState.toSpacecraftState();
+        OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+
+
+        AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(zero.add(60));
+        AdaptiveStepsizeIntegrator RIntegrator =
+                        new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        RIntegrator.setInitialStepSize(60);
+
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
+        FNP.setInitialState(initialState);
+
+        NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
+        NP.setInitialState(iSR);
+
+        final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
+
+        FNP.addForceModel(forceModel);
+        NP.addForceModel(forceModel);
+        
+        // Do the test
+        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+                                  1.0e-16, 1.3e-2, 2.9e-4, 1.4e-3,
                                   1, false);
     }
 
@@ -339,6 +436,25 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
+    public void testParameterDerivativeGradient() {
+
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final SpacecraftState state =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
+                                                       Constants.EIGEN5C_EARTH_MU));
+
+        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
+        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+        final String name = moon.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
+        checkParameterDerivativeGradient(state, forceModel, name, 1.0, 7.0e-15);
+
+    }
+
+    @Test
     public void testJacobianVs80Implementation() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -355,6 +471,25 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.VVLH),
                                              1.0e-50, false);
+    }
+
+    @Test
+    public void testJacobianVs80ImplementationGradient() {
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
+        checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
+                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             1.0e-15, false);
     }
 
     @Test

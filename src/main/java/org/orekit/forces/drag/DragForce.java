@@ -111,11 +111,11 @@ public class DragForce extends AbstractForceModel {
         // Using finite differences instead of automatic differentiation as it seems to be much
         // faster for the drag's derivatives' computation
         if (isGradientStateDerivative(s)) {
-            rho =  (T) this.getDensityWrtStateUsingFiniteDifferences(frame, date.toAbsoluteDate(), (FieldVector3D<Gradient>) position);
+            rho =  (T) this.getGradientDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<Gradient>) position);
         } else if (isDSStateDerivative(s)) {
-            rho = (T) this.getDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<DerivativeStructure>) position);
+            rho = (T) this.getDSDensityWrtStateUsingFiniteDifferences(date.toAbsoluteDate(), frame, (FieldVector3D<DerivativeStructure>) position);
         } else {
-            rho    = atmosphere.getDensity(date, position, frame);
+            rho = atmosphere.getDensity(date, position, frame);
         }
 
         // Spacecraft relative velocity with respect to the atmosphere
@@ -266,15 +266,15 @@ public class DragForce extends AbstractForceModel {
      * @return the density and its derivatives
      * @since 9.0
      */
-    private DerivativeStructure getDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
-                                                                         final Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position) {
+    private DerivativeStructure getDSDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
+                                                                           final Frame frame,
+                                                                           final FieldVector3D<DerivativeStructure> position) {
 
         // Retrieve derivation properties for parameter T
         // It is implied here that T is a DerivativeStructure
         // With order 1 and 6, 7 or 8 free parameters
         // This is all checked before in method isStateDerivatives
-        final DSFactory factory = ((DerivativeStructure) position.getX()).getFactory();
+        final DSFactory factory = position.getX().getFactory();
 
         // Build a DerivativeStructure using only derivatives with respect to position
         final DSFactory factory3 = new DSFactory(3, 1);
@@ -322,7 +322,7 @@ public class DragForce extends AbstractForceModel {
      * <p>
      * From a theoretical point of view, this method computes the same values
      * as {@link Atmosphere#getDensity(FieldAbsoluteDate, FieldVector3D, Frame)} in the
-     * specific case of {@link DerivativeStructure} with respect to state, so
+     * specific case of {@link Gradient} with respect to state, so
      * it is less general. However, it is *much* faster in this important case.
      * <p>
      * <p>
@@ -337,15 +337,15 @@ public class DragForce extends AbstractForceModel {
      * and/or lift ratio (one of these or both).
      * This 2 last derivatives will remain zero as atmospheric density does not depend on them.
      * </p>
-     * @param frame inertial reference frame for state (both orbit and attitude)
      * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
      * @param position position of spacecraft in inertial frame
      * @return the density and its derivatives
      * @since 10.2
      */
-    private Gradient getDensityWrtStateUsingFiniteDifferences(final Frame frame,
-                                                              final AbsoluteDate date,
-                                                              final FieldVector3D<Gradient> position) {
+    private Gradient getGradientDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
+                                                                      final Frame frame,
+                                                                      final FieldVector3D<Gradient> position) {
 
         // Build a Gradient using only derivatives with respect to position
         final FieldVector3D<Gradient> position3 =
