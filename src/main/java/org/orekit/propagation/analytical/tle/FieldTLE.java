@@ -171,13 +171,14 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
      * before trying to build this object.<p>
+     * @param field field utilized by default
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
      * @see #TLE(String, String, TimeScale)
      */
     @DefaultDataContext
-    public FieldTLE(final String line1, final String line2) {
-        this(line1, line2, DataContext.getDefault().getTimeScales().getUTC());
+    public FieldTLE(final Field<T> field, final String line1, final String line2) {
+        this(field, line1, line2, DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Simple constructor from unparsed two lines using the given time scale as UTC.
@@ -286,13 +287,13 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * double, double, double, double, double, double, int, double, TimeScale)
      */
     @DefaultDataContext
-    public TLE(final int satelliteNumber, final char classification,
+    public FieldTLE(final int satelliteNumber, final char classification,
                final int launchYear, final int launchNumber, final String launchPiece,
-               final int ephemerisType, final int elementNumber, final AbsoluteDate epoch,
-               final double meanMotion, final double meanMotionFirstDerivative,
-               final double meanMotionSecondDerivative, final double e, final double i,
-               final double pa, final double raan, final double meanAnomaly,
-               final int revolutionNumberAtEpoch, final double bStar) {
+               final int ephemerisType, final int elementNumber, final FieldAbsoluteDate<T> epoch,
+               final T meanMotion, final T meanMotionFirstDerivative,
+               final T meanMotionSecondDerivative, final T e, final T i,
+               final T pa, final T raan, final T meanAnomaly,
+               final int revolutionNumberAtEpoch, final T bStar) {
         this(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
                 ephemerisType, elementNumber, epoch, meanMotion,
                 meanMotionFirstDerivative, meanMotionSecondDerivative, e, i, pa, raan,
@@ -342,13 +343,13 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @param utc the UTC time scale.
      * @since 10.1
      */
-    public TLE(final int satelliteNumber, final char classification,
+    public FieldTLE(final int satelliteNumber, final char classification,
                final int launchYear, final int launchNumber, final String launchPiece,
-               final int ephemerisType, final int elementNumber, final AbsoluteDate epoch,
-               final double meanMotion, final double meanMotionFirstDerivative,
-               final double meanMotionSecondDerivative, final double e, final double i,
-               final double pa, final double raan, final double meanAnomaly,
-               final int revolutionNumberAtEpoch, final double bStar,
+               final int ephemerisType, final int elementNumber, final FieldAbsoluteDate<T> epoch,
+               final T meanMotion, final T meanMotionFirstDerivative,
+               final T meanMotionSecondDerivative, final T e, final T i,
+               final T pa, final T raan, final T meanAnomaly,
+               final int revolutionNumberAtEpoch, final T bStar,
                final TimeScale utc) {
 
         // identification
@@ -363,27 +364,27 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         // orbital parameters
         this.epoch = epoch;
         // Checking mean motion range
-        checkParameterRangeInclusive(MEAN_MOTION, meanMotion, 0.0, Double.POSITIVE_INFINITY);
+        checkParameterRangeInclusive(MEAN_MOTION, meanMotion.getReal(), 0.0, Double.POSITIVE_INFINITY);
         this.meanMotion = meanMotion;
         this.meanMotionFirstDerivative = meanMotionFirstDerivative;
         this.meanMotionSecondDerivative = meanMotionSecondDerivative;
 
         // Checking inclination range
-        checkParameterRangeInclusive(INCLINATION, i, 0, FastMath.PI);
+        checkParameterRangeInclusive(INCLINATION, i.getReal(), 0, FastMath.PI);
         this.inclination = i;
 
         // Normalizing RAAN in [0,2pi] interval
-        this.raan = MathUtils.normalizeAngle(raan, FastMath.PI);
+        this.raan = MathUtils.normalizeAngle(raan, raan.getField().getZero().add(FastMath.PI));
 
         // Checking eccentricity range
-        checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, 1.0);
+        checkParameterRangeInclusive(ECCENTRICITY, e.getReal(), 0.0, 1.0);
         this.eccentricity = e;
 
         // Normalizing PA in [0,2pi] interval
-        this.pa = MathUtils.normalizeAngle(pa, FastMath.PI);
+        this.pa = MathUtils.normalizeAngle(pa, pa.getField().getZero().add(FastMath.PI));
 
         // Normalizing mean anomaly in [0,2pi] interval
-        this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, FastMath.PI);
+        this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, meanAnomaly.getField().getZero().add(FastMath.PI));
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
         this.bStar = bStar;
@@ -451,17 +452,17 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         buffer.append(addPadding("fraction", fraction,  '0', 8, true));
 
         buffer.append(' ');
-        final double n1 = meanMotionFirstDerivative * 1.86624e9 / FastMath.PI;
+        final double n1 = meanMotionFirstDerivative.getReal() * 1.86624e9 / FastMath.PI;
         final String sn1 = addPadding("meanMotionFirstDerivative",
                                       new DecimalFormat(".00000000", SYMBOLS).format(n1), ' ', 10, true);
         buffer.append(sn1);
 
         buffer.append(' ');
-        final double n2 = meanMotionSecondDerivative * 5.3747712e13 / FastMath.PI;
+        final double n2 = meanMotionSecondDerivative.getReal() * 5.3747712e13 / FastMath.PI;
         buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(formatExponentMarkerFree("B*", bStar, 5, ' ', 8, true));
+        buffer.append(formatExponentMarkerFree("B*", bStar.getReal(), 5, ' ', 8, true));
 
         buffer.append(' ');
         buffer.append(ephemerisType);
@@ -525,14 +526,14 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         buffer.append(' ');
         buffer.append(addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true));
         buffer.append(' ');
-        buffer.append(addPadding(ECCENTRICITY, (int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true));
+        buffer.append(addPadding(ECCENTRICITY, (int) FastMath.rint(eccentricity.getReal() * 1.0e7), '0', 7, true));
         buffer.append(' ');
         buffer.append(addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true));
         buffer.append(' ');
         buffer.append(addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(addPadding(MEAN_MOTION, f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true));
+        buffer.append(addPadding(MEAN_MOTION, f211.format(meanMotion.getReal() * 43200.0 / FastMath.PI), ' ', 11, true));
         buffer.append(addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true));
 
         buffer.append(Integer.toString(checksum(buffer)));
@@ -672,63 +673,63 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** Get the TLE current date.
      * @return the epoch
      */
-    public AbsoluteDate getDate() {
+    public FieldAbsoluteDate<T> getDate() {
         return epoch;
     }
 
     /** Get the mean motion.
      * @return the mean motion (rad/s)
      */
-    public double getMeanMotion() {
+    public T getMeanMotion() {
         return meanMotion;
     }
 
     /** Get the mean motion first derivative.
      * @return the mean motion first derivative (rad/s²)
      */
-    public double getMeanMotionFirstDerivative() {
+    public T getMeanMotionFirstDerivative() {
         return meanMotionFirstDerivative;
     }
 
     /** Get the mean motion second derivative.
      * @return the mean motion second derivative (rad/s³)
      */
-    public double getMeanMotionSecondDerivative() {
+    public T getMeanMotionSecondDerivative() {
         return meanMotionSecondDerivative;
     }
 
     /** Get the eccentricity.
      * @return the eccentricity
      */
-    public double getE() {
+    public T getE() {
         return eccentricity;
     }
 
     /** Get the inclination.
      * @return the inclination (rad)
      */
-    public double getI() {
+    public T getI() {
         return inclination;
     }
 
     /** Get the argument of perigee.
      * @return omega (rad)
      */
-    public double getPerigeeArgument() {
+    public T getPerigeeArgument() {
         return pa;
     }
 
     /** Get Right Ascension of the Ascending node.
      * @return the raan (rad)
      */
-    public double getRaan() {
+    public T getRaan() {
         return raan;
     }
 
     /** Get the mean anomaly.
      * @return the mean anomaly (rad)
      */
-    public double getMeanAnomaly() {
+    public T getMeanAnomaly() {
         return meanAnomaly;
     }
 
@@ -742,7 +743,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** Get the ballistic coefficient.
      * @return bStar
      */
-    public double getBStar() {
+    public T getBStar() {
         return bStar;
     }
 
@@ -858,7 +859,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         if (!(o instanceof TLE)) {
             return false;
         }
-        final TLE tle = (TLE) o;
+        final FieldTLE<T> tle = (FieldTLE<T>) o;
         return satelliteNumber == tle.satelliteNumber &&
                 classification == tle.classification &&
                 launchYear == tle.launchYear &&
