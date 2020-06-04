@@ -127,40 +127,40 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
     protected void sxpPropagate(final T tSince) {
 
         // Update for secular gravity and atmospheric drag.
-        final double xmdf = tle.getMeanAnomaly() + xmdot * tSince;
-        final double omgadf = tle.getPerigeeArgument() + omgdot * tSince;
-        final double xn0ddf = tle.getRaan() + xnodot * tSince;
+        final T xmdf = tle.getMeanAnomaly().add(xmdot.multiply(tSince));
+        final T omgadf = tle.getPerigeeArgument().add(omgdot.multiply(tSince));
+        final T xn0ddf = tle.getRaan().add(xnodot.multiply(tSince));
         omega = omgadf;
-        double xmp = xmdf;
-        final double tsq = tSince * tSince;
-        xnode = xn0ddf + xnodcf * tsq;
-        double tempa = 1 - c1 * tSince;
-        double tempe = tle.getBStar() * c4 * tSince;
-        double templ = t2cof * tsq;
+        T xmp = xmdf;
+        final T tsq = tSince.multiply(tSince);
+        xnode = xn0ddf.add(xnodcf.multiply(tsq));
+        T tempa = c1.multiply(tSince).negate().add(1.0);
+        T tempe = tle.getBStar().multiply(c4).multiply(tSince);
+        T templ = t2cof.multiply(tsq);
 
         if (!lessThan220) {
-            final double delomg = omgcof * tSince;
-            double delm = 1. + eta * FastMath.cos(xmdf);
-            delm = xmcof * (delm * delm * delm - delM0);
-            final double temp = delomg + delm;
-            xmp = xmdf + temp;
-            omega = omgadf - temp;
-            final double tcube = tsq * tSince;
-            final double tfour = tSince * tcube;
-            tempa = tempa - d2 * tsq - d3 * tcube - d4 * tfour;
-            tempe = tempe + tle.getBStar() * c5 * (FastMath.sin(xmp) - sinM0);
-            templ = templ + t3cof * tcube + tfour * (t4cof + tSince * t5cof);
+            final T delomg = omgcof.multiply(tSince);
+            T delm = eta.multiply(FastMath.cos(xmdf)).add(1.0);
+            delm = xmcof.multiply(delm.multiply(delm).multiply(delm).subtract(delM0));
+            final T temp = delomg.add(delm);
+            xmp = xmdf.add(temp);
+            omega = omgadf.subtract(temp);
+            final T tcube = tsq.multiply(tSince);
+            final T tfour = tSince.multiply(tcube);
+            tempa = tempa.subtract(d2.multiply(tsq)).subtract(d3.multiply(tcube)).subtract(d4.multiply(tfour));
+            tempe = tempe.add(tle.getBStar().multiply(c5).multiply(FastMath.sin(xmp).subtract(sinM0)));
+            templ = templ.add(t3cof.multiply(tcube)).add(tfour.multiply(t4cof.add(tSince.multiply(t5cof))));
         }
 
-        a = a0dp * tempa * tempa;
-        e = tle.getE() - tempe;
+        a = a0dp.multiply(tempa).multiply(tempa);
+        e = tle.getE().subtract(tempe);
 
         // A highly arbitrary lower limit on e,  of 1e-6:
-        if (e < 1e-6) {
-            e = 1e-6;
+        if (e.getReal() < 1e-6) {
+            e = e.getField().getZero().add(1e-6);
         }
 
-        xl = xmp + omega + xnode + xn0dp * templ;
+        xl = xmp.add(omega).add(xnode).add(xn0dp.multiply(templ));
 
         i = tle.getI();
 
