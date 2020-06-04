@@ -1,8 +1,169 @@
+/* Copyright 2002-2020 CS Group
+ * Licensed to CS Group (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.analytical.tle;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
 
-public class FieldSGP4 {
-    
-  //coming soon
+/** This class contains methods to compute propagated coordinates with the SGP4 model.
+ * <p>
+ * The user should not bother in this class since it is handled internaly by the
+ * {@link TLEPropagator}.
+ * </p>
+ * <p>This implementation is largely inspired from the paper and source code <a
+ * href="https://www.celestrak.com/publications/AIAA/2006-6753/">Revisiting Spacetrack
+ * Report #3</a> and is fully compliant with its results and tests cases.</p>
+ * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
+ * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
+ * @author Fabien Maussion (java translation)
+ */
+public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator<T> {
+
+    /** If perige is less than 220 km, some calculus are avoided. */
+    private boolean lessThan220;
+
+    /** (1 + eta * cos(M0))³. */
+    private T delM0;
+
+    // CHECKSTYLE: stop JavadocVariable check
+    private T d2;
+    private T d3;
+    private T d4;
+    private T t3cof;
+    private T t4cof;
+    private T t5cof;
+    private T sinM0;
+    private T omgcof;
+    private T xmcof;
+    private T c5;
+    // CHECKSTYLE: resume JavadocVariable check
+
+    /** Constructor for a unique initial TLE.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param initialTLE the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @see #SGP4(TLE, AttitudeProvider, double, Frame)
+     */
+    @DefaultDataContext
+    public FieldSGP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,
+                final T mass) {
+        this(initialTLE, attitudeProvider, mass,
+                DataContext.getDefault().getFrames().getTEME());
+    }
+
+    /** Constructor for a unique initial TLE.
+     * @param initialTLE the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @param teme the TEME frame to use for propagation.
+     * @since 10.1
+     */
+    public FieldSGP4(final FieldTLE<T> initialTLE,
+                final AttitudeProvider attitudeProvider,
+                final T mass,
+                final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
+    }
+
+    /** Initialization proper to each propagator (SGP or SDP).
+     */
+    protected void sxpInitialize() {
+
+        // For perigee less than 220 kilometers, the equations are truncated to
+        // linear variation in sqrt a and quadratic variation in mean anomaly.
+        // Also, the c3 term, the delta omega term, and the delta m term are dropped.
+        lessThan220 = perige.getReal() < 220;
+        if (!lessThan220) {
+            final T c1sq = c1.multiply(c1);
+            delM0 = eta.multiply(FastMath.cos(tle.getMeanAnomaly())).add(1.0);
+            delM0 = delM0.multiply(delM0).multiply(delM0);
+            d2 = a0dp.multiply(tsi).multiply(c1sq).multiply(4.0);
+            final T temp = d2.multiply(tsi).multiply(c1).divide(3.0);
+            d3 = a0dp.multiply(17.0).add(s4).multiply(temp);
+            d4 = temp.multiply(0.5).multiply(a0dp).multiply(tsi).multiply(a0dp.multiply(221.0).add(s4.multiply(31.0))).multiply(c1);
+            t3cof = d2.add(c1sq.multiply(2));
+            t4cof = d3.multiply(3.0).add(c1.multiply(d2.multiply(12.0).add(c1sq.multiply(10)))).multiply(0.25);
+            t5cof = d4.multiply(3.0).add(c1.multiply(12.0).multiply(d3)).add(
+                    d2.multiply(d2).multiply(6.0)).add(c1sq.multiply(15.0).multiply(d2.multiply(2).add(c1sq))).multiply(0.2);
+            sinM0 = FastMath.sin(tle.getMeanAnomaly());
+            if (tle.getE().getReal() < 1e-4) {
+                omgcof = omgcof.getField().getZero();
+                xmcof = xmcof.getField().getZero();
+            } else  {
+                final T c3 = coef.multiply(tsi).multiply(xn0dp).multiply(TLEConstants.A3OVK2 * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(sini0.divide(tle.getE()));
+                xmcof = coef.multiply(tle.getBStar()).divide(eeta).multiply(-TLEConstants.TWO_THIRD * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS);
+                omgcof = tle.getBStar().multiply(c3).multiply(FastMath.cos(tle.getPerigeeArgument()));
+            }
+        }
+
+        c5 = coef1.multiply(2).multiply(a0dp).multiply(beta02).multiply(etasq.add(eeta).multiply(2.75).add(eeta.multiply(etasq)).add(1));
+        // initialized
+    }
+
+    /** Propagation proper to each propagator (SGP or SDP).
+     * @param tSince the offset from initial epoch (min)
+     */
+    protected void sxpPropagate(final T tSince) {
+
+        // Update for secular gravity and atmospheric drag.
+        final double xmdf = tle.getMeanAnomaly() + xmdot * tSince;
+        final double omgadf = tle.getPerigeeArgument() + omgdot * tSince;
+        final double xn0ddf = tle.getRaan() + xnodot * tSince;
+        omega = omgadf;
+        double xmp = xmdf;
+        final double tsq = tSince * tSince;
+        xnode = xn0ddf + xnodcf * tsq;
+        double tempa = 1 - c1 * tSince;
+        double tempe = tle.getBStar() * c4 * tSince;
+        double templ = t2cof * tsq;
+
+        if (!lessThan220) {
+            final double delomg = omgcof * tSince;
+            double delm = 1. + eta * FastMath.cos(xmdf);
+            delm = xmcof * (delm * delm * delm - delM0);
+            final double temp = delomg + delm;
+            xmp = xmdf + temp;
+            omega = omgadf - temp;
+            final double tcube = tsq * tSince;
+            final double tfour = tSince * tcube;
+            tempa = tempa - d2 * tsq - d3 * tcube - d4 * tfour;
+            tempe = tempe + tle.getBStar() * c5 * (FastMath.sin(xmp) - sinM0);
+            templ = templ + t3cof * tcube + tfour * (t4cof + tSince * t5cof);
+        }
+
+        a = a0dp * tempa * tempa;
+        e = tle.getE() - tempe;
+
+        // A highly arbitrary lower limit on e,  of 1e-6:
+        if (e < 1e-6) {
+            e = 1e-6;
+        }
+
+        xl = xmp + omega + xnode + xn0dp * templ;
+
+        i = tle.getI();
+
+    }
 
 }
