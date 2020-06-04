@@ -19,7 +19,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
@@ -30,14 +30,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
-import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldPVCoordinates;
@@ -181,12 +179,13 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @param initialTLE the unique TLE to propagate
+     * @param field field used as default
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
      */
     @DefaultDataContext
-    protected FieldTLEPropagator(final FieldTLE<T> initialTLE, Field<T> field,
+    protected FieldTLEPropagator(final FieldTLE<T> initialTLE, final Field<T> field,
                             final AttitudeProvider attitudeProvider,
                             final T mass) {
         this(initialTLE, field, attitudeProvider, mass,
@@ -245,7 +244,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         return selectExtrapolator(
                 tle,
                 Propagator.getDefaultLaw(frames),
-                DEFAULT_MASS,
+                tle.getE().getField().getZero().add(DEFAULT_MASS),
                 frames.getTEME());
     }
 
@@ -344,7 +343,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
         // Values of s and qms2t :
         s4 = s4.getField().getZero().add(TLEConstants.S);  // unmodified value for s
-        T q0ms24 = q0ms24.getField().getZero().add(TLEConstants.QOMS2T); // unmodified value for q0ms2T
+        T q0ms24 = s4.getField().getZero().add(TLEConstants.QOMS2T); // unmodified value for q0ms2T
 
         perige = a0dp.multiply(tle.getE().negate().add(1.0)).subtract(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(
                                                                                                 TLEConstants.EARTH_RADIUS); // perige
@@ -405,15 +404,17 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
         final T x1m5th = theta2.multiply(5.0).negate().add(1.0);
 
-        omgdot = -0.5 * temp8 * x1m5th +
-                 0.0625 * temp9 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
-                 temp10 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
+        omgdot = temp8.multiply(-0.5).multiply(x1m5th).add(
+                 temp9.multiply(0.0625).multiply(theta2.multiply(114.0).negate().add(
+                 theta4.multiply(395.0)).add(7.0))).add(
+                 temp10.multiply(theta2.multiply(36.0).negate().add(theta4.multiply(49.0)).add(3.0)));
 
         final T xhdot1 = temp8.negate().multiply(cosi0);
 
-        xnodot = xhdot1 + (0.5 * temp9 * (4.0 - 19.0 * theta2) + 2.0 * temp10 * (3.0 - 7.0 * theta2)) * cosi0;
-        xnodcf = 3.5 * beta02 * xhdot1 * c1;
-        t2cof = 1.5 * c1;
+        xnodot = xhdot1.add(temp9.multiply(0.5).multiply(theta2.multiply(19.0).negate().add(4.0)).add(
+                 temp10.multiply(2.0).multiply(theta2.multiply(7.0).negate().add(3.0)))).multiply(cosi0);
+        xnodcf = beta02.multiply(xhdot1).multiply(c1).multiply(3.5);
+        t2cof = c1.multiply(1.5);
 
     }
 
@@ -423,29 +424,30 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     private FieldPVCoordinates<T> computePVCoordinates() {
 
         // Long period periodics
-        final double axn = e * FastMath.cos(omega);
-        double temp = 1.0 / (a * (1.0 - e * e));
-        final double xlcof = 0.125 * TLEConstants.A3OVK2 * sini0 * (3.0 + 5.0 * cosi0) / (1.0 + cosi0);
-        final double aycof = 0.25 * TLEConstants.A3OVK2 * sini0;
-        final double xll = temp * xlcof * axn;
-        final double aynl = temp * aycof;
-        final double xlt = xl + xll;
-        final double ayn = e * FastMath.sin(omega) + aynl;
-        final double elsq = axn * axn + ayn * ayn;
-        final double capu = MathUtils.normalizeAngle(xlt - xnode, FastMath.PI);
-        double epw = capu;
-        double ecosE = 0;
-        double esinE = 0;
-        double sinEPW = 0;
-        double cosEPW = 0;
+        final T axn = e.multiply(FastMath.cos(omega));
+        T temp = a.multiply(e.multiply(e).negate().add(1.0)).reciprocal();
+        final T xlcof = sini0.multiply(0.125 * TLEConstants.A3OVK2).multiply(
+                             cosi0.multiply(5.0).add(3.0).divide(cosi0.add(1.0)));
+        final T aycof = sini0.multiply(0.25 * TLEConstants.A3OVK2);
+        final T xll = temp.multiply(xlcof).multiply(axn);
+        final T aynl = temp.multiply(aycof);
+        final T xlt = xl.add(xll);
+        final T ayn = e.multiply(FastMath.sin(omega)).add(aynl);
+        final T elsq = axn.multiply(axn).add(ayn.multiply(ayn));
+        final T capu = MathUtils.normalizeAngle(xlt.subtract(xnode), xlt.getField().getZero().add(FastMath.PI));
+        T epw = capu;
+        T ecosE = epw.getField().getZero();
+        T esinE = epw.getField().getZero();
+        T sinEPW = epw.getField().getZero();
+        T cosEPW = epw.getField().getZero();
 
         // Dundee changes:  items dependent on cosio get recomputed:
-        final double cosi0Sq = cosi0 * cosi0;
-        final double x3thm1 = 3.0 * cosi0Sq - 1.0;
-        final double x1mth2 = 1.0 - cosi0Sq;
-        final double x7thm1 = 7.0 * cosi0Sq - 1.0;
+        final T cosi0Sq = cosi0.multiply(cosi0);
+        final T x3thm1 = cosi0Sq.multiply(3.0).subtract(1.0);
+        final T x1mth2 = cosi0Sq.negate().add(1.0);
+        final T x7thm1 = cosi0Sq.multiply(7.0).subtract(1.0);
 
-        if (e > (1 - 1e-6)) {
+        if (e.getReal() > (1 - 1e-6)) {
             throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, e);
         }
 
@@ -457,84 +459,84 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
             sinEPW = FastMath.sin( epw);
             cosEPW = FastMath.cos( epw);
-            ecosE = axn * cosEPW + ayn * sinEPW;
-            esinE = axn * sinEPW - ayn * cosEPW;
-            final double f = capu - epw + esinE;
-            if (FastMath.abs(f) < newtonRaphsonEpsilon) {
+            ecosE = axn.multiply(cosEPW).add(ayn.multiply(sinEPW));
+            esinE = axn.multiply(sinEPW).subtract(ayn.multiply(cosEPW));
+            final T f = capu.subtract(epw).add(esinE);
+            if (FastMath.abs(f.getReal()) < newtonRaphsonEpsilon) {
                 break;
             }
-            final double fdot = 1.0 - ecosE;
-            double delta_epw = f / fdot;
+            final T fdot = ecosE.negate().add(1.0);
+            T delta_epw = f.divide(fdot);
             if (j == 0) {
-                final double maxNewtonRaphson = 1.25 * FastMath.abs(e);
+                final T maxNewtonRaphson = e.abs().multiply(1.25);
                 doSecondOrderNewtonRaphson = false;
-                if (delta_epw > maxNewtonRaphson) {
+                if (delta_epw.getReal() > maxNewtonRaphson.getReal()) {
                     delta_epw = maxNewtonRaphson;
-                } else if (delta_epw < -maxNewtonRaphson) {
-                    delta_epw = -maxNewtonRaphson;
+                } else if (delta_epw.getReal() < -maxNewtonRaphson.getReal()) {
+                    delta_epw = maxNewtonRaphson.negate();
                 } else {
                     doSecondOrderNewtonRaphson = true;
                 }
             }
             if (doSecondOrderNewtonRaphson) {
-                delta_epw = f / (fdot + 0.5 * esinE * delta_epw);
+                delta_epw = f.divide(fdot.add(esinE.multiply(0.5).multiply(delta_epw)));
             }
-            epw += delta_epw;
+            epw = epw.add(delta_epw);
         }
 
         // Short period preliminary quantities
-        temp = 1.0 - elsq;
-        final double pl = a * temp;
-        final double r = a * (1.0 - ecosE);
-        double temp2 = a / r;
-        final double betal = FastMath.sqrt(temp);
-        temp = esinE / (1.0 + betal);
-        final double cosu = temp2 * (cosEPW - axn + ayn * temp);
-        final double sinu = temp2 * (sinEPW - ayn - axn * temp);
-        final double u = FastMath.atan2(sinu, cosu);
-        final double sin2u = 2.0 * sinu * cosu;
-        final double cos2u = 2.0 * cosu * cosu - 1.0;
-        final double temp1 = TLEConstants.CK2 / pl;
-        temp2 = temp1 / pl;
+        temp = elsq.negate().add(1.0);
+        final T pl = a.multiply(temp);
+        final T r = a.multiply(ecosE.negate().add(1.0));
+        T temp2 = a.divide(r);
+        final T betal = FastMath.sqrt(temp);
+        temp = esinE.divide(betal.add(1.0));
+        final T cosu = temp2.multiply(cosEPW.subtract(axn).add(ayn.multiply(temp)));
+        final T sinu = temp2.multiply(sinEPW.subtract(ayn).subtract(axn.multiply(temp)));
+        final T u = FastMath.atan2(sinu, cosu);
+        final T sin2u = sinu.multiply(cosu).multiply(2.0);
+        final T cos2u = cosu.multiply(cosu).multiply(2.0).subtract(1.0);
+        final T temp1 = pl.reciprocal().multiply(TLEConstants.CK2);
+        temp2 = temp1.divide(pl);
 
         // Update for short periodics
-        final double rk = r * (1.0 - 1.5 * temp2 * betal * x3thm1) + 0.5 * temp1 * x1mth2 * cos2u;
-        final double uk = u - 0.25 * temp2 * x7thm1 * sin2u;
-        final double xnodek = xnode + 1.5 * temp2 * cosi0 * sin2u;
-        final double xinck = i + 1.5 * temp2 * cosi0 * sini0 * cos2u;
+        final T rk = r.multiply(temp2.multiply(betal).multiply(x3thm1).multiply(-1.5).add(1.0)).add(
+                     temp1.multiply(x1mth2).multiply(cos2u).multiply(0.5));
+        final T uk = u.subtract(temp2.multiply(x7thm1).multiply(sin2u).multiply(0.25));
+        final T xnodek = xnode.add(temp2.multiply(cosi0).multiply(sin2u).multiply(1.5));
+        final T xinck = i.add(temp2.multiply(cosi0).multiply(sini0).multiply(cos2u).multiply(1.5));
 
         // Orientation vectors
-        final double sinuk = FastMath.sin(uk);
-        final double cosuk = FastMath.cos(uk);
-        final double sinik = FastMath.sin(xinck);
-        final double cosik = FastMath.cos(xinck);
-        final double sinnok = FastMath.sin(xnodek);
-        final double cosnok = FastMath.cos(xnodek);
-        final double xmx = -sinnok * cosik;
-        final double xmy = cosnok * cosik;
-        final double ux = xmx * sinuk + cosnok * cosuk;
-        final double uy = xmy * sinuk + sinnok * cosuk;
-        final double uz = sinik * sinuk;
+        final T sinuk = FastMath.sin(uk);
+        final T cosuk = FastMath.cos(uk);
+        final T sinik = FastMath.sin(xinck);
+        final T cosik = FastMath.cos(xinck);
+        final T sinnok = FastMath.sin(xnodek);
+        final T cosnok = FastMath.cos(xnodek);
+        final T xmx = sinnok.negate().multiply(cosik);
+        final T xmy = cosnok.multiply(cosik);
+        final T ux = xmx.multiply(sinuk).add(cosnok.multiply(cosuk));
+        final T uy = xmy.multiply(sinuk).add(sinnok.multiply(cosuk));
+        final T uz = sinik.multiply(sinuk);
 
         // Position and velocity
-        final double cr = 1000 * rk * TLEConstants.EARTH_RADIUS;
-        final Vector3D pos = new Vector3D(cr * ux, cr * uy, cr * uz);
+        final T cr = rk.multiply(1000 * TLEConstants.EARTH_RADIUS);
+        final FieldVector3D<T> pos = new FieldVector3D<T>(cr.multiply(ux), cr.multiply(uy), cr.multiply(uz));
 
-        final double rdot   = TLEConstants.XKE * FastMath.sqrt(a) * esinE / r;
-        final double rfdot  = TLEConstants.XKE * FastMath.sqrt(pl) / r;
-        final double xn     = TLEConstants.XKE / (a * FastMath.sqrt(a));
-        final double rdotk  = rdot - xn * temp1 * x1mth2 * sin2u;
-        final double rfdotk = rfdot + xn * temp1 * (x1mth2 * cos2u + 1.5 * x3thm1);
-        final double vx     = xmx * cosuk - cosnok * sinuk;
-        final double vy     = xmy * cosuk - sinnok * sinuk;
-        final double vz     = sinik * cosuk;
+        final T rdot = FastMath.sqrt(a).multiply(esinE.divide(r)).multiply(TLEConstants.XKE);
+        final T rfdot  = FastMath.sqrt(pl).divide(r).multiply(TLEConstants.XKE);
+        final T xn     = a.multiply(FastMath.sqrt(a)).reciprocal().multiply(TLEConstants.XKE);
+        final T rdotk = rdot.subtract(xn.multiply(temp1).multiply(x1mth2).multiply(sin2u));
+        final T rfdotk = rfdot.add(xn.multiply(temp1).multiply(x1mth2.multiply(cos2u).add(x3thm1.multiply(1.5))));
+        final T vx     = xmx.multiply(cosuk).subtract(cosnok.multiply(sinuk));
+        final T vy     = xmy.multiply(cosuk).subtract(sinnok.multiply(sinuk));
+        final T vz     = sinik.multiply(cosuk);
 
         final double cv = 1000.0 * TLEConstants.EARTH_RADIUS / 60.0;
-        final Vector3D vel = new Vector3D(cv * (rdotk * ux + rfdotk * vx),
-                                          cv * (rdotk * uy + rfdotk * vy),
-                                          cv * (rdotk * uz + rfdotk * vz));
-
-        return new PVCoordinates(pos, vel);
+        final FieldVector3D<T> vel = new FieldVector3D<T>(rdotk.multiply(ux).add(rfdotk.multiply(vx)).multiply(cv),
+                                                          rdotk.multiply(uy).add(rfdotk.multiply(vy)).multiply(cv),
+                                                          rdotk.multiply(uz).add(rfdotk.multiply(vz)).multiply(cv));
+        return new FieldPVCoordinates<T>(pos, vel);
 
     }
 
@@ -558,19 +560,19 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     }
 
     /** {@inheritDoc} */
-    protected double getMass(final AbsoluteDate date) {
+    protected T getMass(final FieldAbsoluteDate<T> date) {
         return mass;
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
-        return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+        return new FieldCartesianOrbit<T>(getPVCoordinates(date), teme, date, date.getField().getZero().add(TLEConstants.MU));
     }
 
     /** Get the underlying TLE.
      * @return underlying TLE
      */
-    public TLE getTLE() {
+    public FieldTLE<T> getTLE() {
         return tle;
     }
 
