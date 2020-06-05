@@ -33,7 +33,6 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -372,9 +371,9 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         coef1 = coef.divide(psisq.pow(3.5));
 
         // C2 and C1 coefficients computation :
-        final T temp1 = etasq.multiply(1.5).add(eeta.multiply(etasq.add(4.0))).multiply(coef1).multiply(xn0dp);
-        final T temp2 = x3thm1.multiply(etasq.multiply(etasq.add(8.0)).multiply(3.0).add(8.0));
-        c2 = temp1.add(temp2.multiply(tsi.divide(psisq).multiply(0.75 * TLEConstants.CK2)));
+        c2 = etasq.multiply(1.5).add(eeta.multiply(etasq.add(4.0))).multiply(coef1).multiply(xn0dp).add(
+             x3thm1.multiply(etasq.multiply(etasq.add(8.0)).multiply(3.0).add(8.0)).multiply(
+             tsi.divide(psisq).multiply(0.75 * TLEConstants.CK2)));
         c1 = tle.getBStar().multiply(c2);
         sini0 = FastMath.sin(tle.getI());
 
